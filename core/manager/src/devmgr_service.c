@@ -128,11 +128,6 @@ static int DevmgrServiceAttachDevice(
         HDF_LOGE("hostClnt is null");
         return HDF_FAILURE;
     }
-    struct IDevHostService *hostService = hostClnt->hostService;
-    if ((hostService == NULL) || (hostClnt->deviceInfos == NULL)) {
-        HDF_LOGE("hostService or hostClnt->deviceInfos is null");
-        return HDF_FAILURE;
-    }
     struct DeviceTokenClnt *tokenClnt = DeviceTokenClntNewInstance(token);
     if (tokenClnt == NULL) {
         HDF_LOGE("tokenClnt is null");
