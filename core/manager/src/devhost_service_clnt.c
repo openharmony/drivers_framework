@@ -62,7 +62,6 @@ int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt)
         }
         ret = devHostSvcIf->AddDevice(devHostSvcIf, deviceInfo);
         if (ret != HDF_SUCCESS) {
-            deviceInfo->preload = DEVICE_PRELOAD_DISABLE;
             HDF_LOGE("Install %s driver failed, ret = %d", deviceInfo->svcName, ret);
         }
     }
