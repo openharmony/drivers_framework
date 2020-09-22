@@ -50,12 +50,12 @@ struct UartHost *UartHostCreate(struct HdfDeviceObject *device)
     struct UartHost *host = NULL;
 
     if (device == NULL) {
-        HDF_LOGE("%s: invalid parameter\n", __func__);
+        HDF_LOGE("%s: invalid parameter", __func__);
         return NULL;
     }
     host = (struct UartHost *)OsalMemCalloc(sizeof(*host));
     if (host == NULL) {
-        HDF_LOGE("%s: OsalMemCalloc error\n", __func__);
+        HDF_LOGE("%s: OsalMemCalloc error", __func__);
         return NULL;
     }
     host->device = device;

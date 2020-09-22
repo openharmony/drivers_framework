@@ -41,12 +41,12 @@ int32_t I2cCntlrTransfer(struct I2cCntlr *cntlr, struct I2cMsg *msgs, int16_t co
     int32_t ret;
 
     if (cntlr == NULL) {
-        HDF_LOGE("I2cCntlrTransfer: cntlr is null\n");
+        HDF_LOGE("I2cCntlrTransfer: cntlr is null");
         return HDF_ERR_INVALID_OBJECT;
     }
 
     if (cntlr->ops == NULL || cntlr->ops->transfer == NULL) {
-        HDF_LOGE("I2cCntlrTransfer: ops or transfer is null\n");
+        HDF_LOGE("I2cCntlrTransfer: ops or transfer is null");
         return HDF_ERR_NOT_SUPPORT;
     }
 
@@ -61,16 +61,16 @@ int32_t I2cCntlrAdd(struct I2cCntlr *cntlr)
     }
 
     if (cntlr->device == NULL) {
-        HDF_LOGE("I2cCntlrAdd: no device associated!\n");
+        HDF_LOGE("I2cCntlrAdd: no device associated!");
         return HDF_ERR_INVALID_OBJECT;
     }
 
     if (cntlr->ops == NULL) {
-        HDF_LOGE("I2cCntlrAdd: no ops supplied!\n");
+        HDF_LOGE("I2cCntlrAdd: no ops supplied!");
         return HDF_ERR_INVALID_OBJECT;
     }
     if (OsalMutexInit(&cntlr->lock) != HDF_SUCCESS) {
-        HDF_LOGE("I2cCntlrAdd: init lock fail!\n");
+        HDF_LOGE("I2cCntlrAdd: init lock fail!");
         return HDF_FAILURE;
     }
     cntlr->device->service = &cntlr->service;
@@ -84,7 +84,7 @@ void I2cCntlrRemove(struct I2cCntlr *cntlr)
     }
 
     if (cntlr->device == NULL) {
-        HDF_LOGE("I2cCntlrBind: no device associated!\n");
+        HDF_LOGE("I2cCntlrBind: no device associated!");
         return;
     }
 

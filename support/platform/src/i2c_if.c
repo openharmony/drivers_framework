@@ -48,7 +48,7 @@ static struct I2cCntlr *I2cCntlrGetByNumber(int16_t num)
     char *cntlrName = NULL;
 
     if (num < 0 || num >= I2C_BUS_MAX) {
-        HDF_LOGE("I2cCntlrGetByNumber: invalid num:%d\n", num);
+        HDF_LOGE("I2cCntlrGetByNumber: invalid num:%d", num);
         return NULL;
     }
     cntlrName = OsalMemCalloc(SERVICE_NAME_LEN + 1);
@@ -57,13 +57,13 @@ static struct I2cCntlr *I2cCntlrGetByNumber(int16_t num)
     }
     if (snprintf_s(cntlrName, SERVICE_NAME_LEN + 1, SERVICE_NAME_LEN,
         "HDF_PLATFORM_I2C_%d", num) < 0) {
-        HDF_LOGE("I2cCntlrGetByNumber: format cntlr name fail!\n");
+        HDF_LOGE("I2cCntlrGetByNumber: format cntlr name fail!");
         OsalMemFree(cntlrName);
         return NULL;
     }
     cntlr = (struct I2cCntlr *)DevSvcManagerClntGetService(cntlrName);
     if (cntlr == NULL) {
-        HDF_LOGE("I2cCntlrGetByNumber: get cntlr fail!\n");
+        HDF_LOGE("I2cCntlrGetByNumber: get cntlr fail!");
     }
     OsalMemFree(cntlrName);
     return cntlr;

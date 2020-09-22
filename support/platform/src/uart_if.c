@@ -52,7 +52,7 @@ static struct UartHost *UartGetHostByBusNum(uint32_t num)
     ret = snprintf_s(name, UART_HOST_NAME_LEN + 1, UART_HOST_NAME_LEN,
         "HDF_PLATFORM_UART_%u", num);
     if (ret < 0) {
-        HDF_LOGE("%s: snprintf_s failed\n", __func__);
+        HDF_LOGE("%s: snprintf_s failed", __func__);
         OsalMemFree(name);
         return NULL;
     }
@@ -68,16 +68,16 @@ struct DevHandle *UartOpen(uint32_t port)
 
     host = UartGetHostByBusNum(port);
     if (host == NULL) {
-        HDF_LOGE("%s: get host error\n", __func__);
+        HDF_LOGE("%s: get host error", __func__);
         return NULL;
     }
     handle = (struct DevHandle *)OsalMemCalloc(sizeof(*handle));
     if (handle == NULL) {
-        HDF_LOGE("%s: handle malloc error\n", __func__);
+        HDF_LOGE("%s: handle malloc error", __func__);
         return NULL;
     }
     if (UartHostInit(host) != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostInit error\n", __func__);
+        HDF_LOGE("%s: UartHostInit error", __func__);
         OsalMemFree(handle);
         return NULL;
     }
@@ -88,11 +88,11 @@ struct DevHandle *UartOpen(uint32_t port)
 void UartClose(struct DevHandle *handle)
 {
     if (handle == NULL) {
-        HDF_LOGE("%s: handle is NULL\n", __func__);
+        HDF_LOGE("%s: handle is NULL", __func__);
         return;
     }
     if (UartHostDeinit((struct UartHost *)handle->object) != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostDeinit error\n", __func__);
+        HDF_LOGE("%s: UartHostDeinit error", __func__);
     }
     OsalMemFree(handle);
 }

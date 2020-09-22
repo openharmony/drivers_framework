@@ -46,7 +46,7 @@ static struct GpioCntlr *GpioGetCntlr(void)
     }
     service = (struct GpioCntlr*)DevSvcManagerClntGetService("HDF_PLATFORM_GPIO");
     if (service == NULL) {
-        HDF_LOGE("GpioGetCntlr: get service fail!\n");
+        HDF_LOGE("GpioGetCntlr: get service fail!");
     }
     return service;
 }

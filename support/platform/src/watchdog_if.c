@@ -48,7 +48,7 @@ static struct Watchdog *WatchdogGetById(int16_t wdtId)
     struct Watchdog *service = NULL;
 
     if (wdtId < 0 || wdtId >= WATCHDOG_ID_MAX) {
-        HDF_LOGE("WatchdogGetById: invalid id:%d\n", wdtId);
+        HDF_LOGE("WatchdogGetById: invalid id:%d", wdtId);
         return NULL;
     }
     serviceName = OsalMemCalloc(WATCHDOG_NAME_LEN + 1);
@@ -57,13 +57,13 @@ static struct Watchdog *WatchdogGetById(int16_t wdtId)
     }
     if (snprintf_s(serviceName, WATCHDOG_NAME_LEN + 1, WATCHDOG_NAME_LEN,
         "HDF_PLATFORM_WATCHDOG_%d", wdtId) < 0) {
-        HDF_LOGE("WatchdogGetById: format service name fail!\n");
+        HDF_LOGE("WatchdogGetById: format service name fail!");
         OsalMemFree(serviceName);
         return NULL;
     }
     service = (struct Watchdog *)DevSvcManagerClntGetService(serviceName);
     if (service == NULL) {
-        HDF_LOGE("WatchdogGetById: get service fail!\n");
+        HDF_LOGE("WatchdogGetById: get service fail!");
     }
     OsalMemFree(serviceName);
     return service;
