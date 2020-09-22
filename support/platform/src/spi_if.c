@@ -56,7 +56,7 @@ static struct SpiCntlr *SpiGetCntlrByBusNum(uint32_t num)
     }
     ret = snprintf_s(name, HOST_NAME_LEN + 1, HOST_NAME_LEN, "HDF_PLATFORM_SPI_%u", num);
     if (ret < 0) {
-        HDF_LOGE("%s: snprintf_s failed\n", __func__);
+        HDF_LOGE("%s: snprintf_s failed", __func__);
         OsalMemFree(name);
         return NULL;
     }
@@ -121,7 +121,7 @@ int32_t SpiGetCfg(struct DevHandle *handle, struct SpiCfg *cfg)
 void SpiClose(struct DevHandle *handle)
 {
     if (handle == NULL) {
-        HDF_LOGE("%s: handle is NULL\n", __func__);
+        HDF_LOGE("%s: handle is NULL", __func__);
         return;
     }
     if (handle->object != NULL) {
@@ -147,12 +147,12 @@ struct DevHandle *SpiOpen(const struct SpiDevInfo *info)
     }
     handle = (struct DevHandle *)OsalMemCalloc(sizeof(*handle));
     if (handle == NULL) {
-        HDF_LOGE("%s: handle malloc error\n", __func__);
+        HDF_LOGE("%s: handle malloc error", __func__);
         return NULL;
     }
     object = (struct SpiObject *)OsalMemCalloc(sizeof(*object));
     if (object == NULL) {
-        HDF_LOGE("%s: object malloc error\n", __func__);
+        HDF_LOGE("%s: object malloc error", __func__);
         OsalMemFree(handle);
         return NULL;
     }

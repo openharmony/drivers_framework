@@ -42,11 +42,11 @@ int32_t SpiCntlrTransfer(struct SpiCntlr *cntlr, uint32_t csNum, struct SpiMsg *
     int32_t ret;
 
     if (cntlr == NULL) {
-        HDF_LOGE("%s: invalid parameter\n", __func__);
+        HDF_LOGE("%s: invalid parameter", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
     if (cntlr->method == NULL || cntlr->method->Transfer == NULL) {
-        HDF_LOGE("%s: transfer not support\n", __func__);
+        HDF_LOGE("%s: transfer not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
 
@@ -62,12 +62,12 @@ int32_t SpiCntlrSetCfg(struct SpiCntlr *cntlr, uint32_t csNum, struct SpiCfg *cf
     int32_t ret;
 
     if (cntlr == NULL) {
-        HDF_LOGE("%s: invalid parameter\n", __func__);
+        HDF_LOGE("%s: invalid parameter", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
     if (cntlr->method == NULL || cntlr->method->SetCfg == NULL) {
-        HDF_LOGE("%s: not support\n", __func__);
+        HDF_LOGE("%s: not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
 
@@ -83,12 +83,12 @@ int32_t SpiCntlrGetCfg(struct SpiCntlr *cntlr, uint32_t csNum, struct SpiCfg *cf
     int32_t ret;
 
     if (cntlr == NULL) {
-        HDF_LOGE("%s: invalid parameter\n", __func__);
+        HDF_LOGE("%s: invalid parameter", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
     if (cntlr->method == NULL || cntlr->method->GetCfg == NULL) {
-        HDF_LOGE("%s: not support\n", __func__);
+        HDF_LOGE("%s: not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
 
@@ -113,13 +113,13 @@ struct SpiCntlr *SpiCntlrCreate(struct HdfDeviceObject *device)
     struct SpiCntlr *cntlr = NULL;
 
     if (device == NULL) {
-        HDF_LOGE("%s: invalid parameter\n", __func__);
+        HDF_LOGE("%s: invalid parameter", __func__);
         return NULL;
     }
 
     cntlr = (struct SpiCntlr *)OsalMemCalloc(sizeof(*cntlr));
     if (cntlr == NULL) {
-        HDF_LOGE("%s: OsalMemCalloc error\n", __func__);
+        HDF_LOGE("%s: OsalMemCalloc error", __func__);
         return NULL;
     }
     cntlr->device = device;
