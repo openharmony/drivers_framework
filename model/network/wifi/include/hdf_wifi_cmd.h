@@ -196,6 +196,7 @@ typedef enum {
 } WifiMfp;
 
 typedef enum {
+    WIFI_IFTYPE_UNSPECIFIED,
     WIFI_IFTYPE_ADHOC,
     WIFI_IFTYPE_STATION,
     WIFI_IFTYPE_AP,
