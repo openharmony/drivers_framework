@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "hcs_tree_if.h"
@@ -51,13 +28,13 @@ static struct DeviceResourceAttr *GetAttrInNode(const struct DeviceResourceNode 
 
 bool HcsGetBool(const struct DeviceResourceNode *node, const char *attrName)
 {
+    uint8_t value;
     struct DeviceResourceAttr *attr = GetAttrInNode(node, attrName);
     if ((attr == NULL) || (attr->value == NULL)) {
         HDF_LOGE("%s failed, the node or attrName is NULL", __func__);
         return false;
     }
 
-    uint8_t value;
     if (!HcsSwapToUint8(&value, attr->value + HCS_PREFIX_LENGTH, HcsGetPrefix(attr->value))) {
         HDF_LOGE("%s failed, Incorrect prefix code", __func__);
         return false;
@@ -132,6 +109,7 @@ static const char *GetArrayElem(const struct DeviceResourceAttr *attr, uint32_t 
 {
     int32_t offset = HCS_WORD_LENGTH + HCS_PREFIX_LENGTH;
     uint16_t count;
+    uint32_t i;
     if ((HcsGetPrefix(attr->value) != CONFIG_ARRAY) ||
         !HcsSwapToUint16(&count, attr->value + HCS_PREFIX_LENGTH, CONFIG_WORD)) {
         HDF_LOGE("%s failed, the attr of %s is not array", __func__, attr->name);
@@ -141,7 +119,7 @@ static const char *GetArrayElem(const struct DeviceResourceAttr *attr, uint32_t 
         HDF_LOGE("%s failed, the index: %u >= count: %u", __func__, index, count);
         return NULL;
     }
-    for (uint32_t i = 0; i < index; i++) {
+    for (i = 0; i < index; i++) {
         int32_t result = HcsGetDataTypeOffset(attr->value + offset);
         if (result < 0) {
             return NULL;
@@ -245,13 +223,14 @@ int32_t HcsGetUint64ArrayElem(const struct DeviceResourceNode *node, const char 
 int32_t HcsGetUint8Array(const struct DeviceResourceNode *node, const char *attrName, uint8_t *value, uint32_t len,
     uint8_t def)
 {
+    int32_t ret = HDF_SUCCESS;
+    uint32_t i;
     if ((value == NULL) || (len == 0)) {
         HDF_LOGE("%s failed, parameter error, len: %u", __func__, len);
         return HDF_FAILURE;
     }
 
-    int32_t ret = HDF_SUCCESS;
-    for (uint32_t i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         int32_t result = HcsGetUint8ArrayElem(node, attrName, i, value + i, def);
         // If the error type is HDF_ERR_INVALID_OBJECT, the error is recorded and returned after the loop exits.
         CONTINUE_RETURN_DIFFERENT_ERRNO(ret, result);
@@ -262,13 +241,14 @@ int32_t HcsGetUint8Array(const struct DeviceResourceNode *node, const char *attr
 int32_t HcsGetUint16Array(const struct DeviceResourceNode *node, const char *attrName, uint16_t *value, uint32_t len,
     uint16_t def)
 {
+    int32_t ret = HDF_SUCCESS;
+    uint32_t i;
     if ((value == NULL) || (len == 0)) {
         HDF_LOGE("%s failed, parameter error, len: %u", __func__, len);
         return HDF_FAILURE;
     }
 
-    int32_t ret = HDF_SUCCESS;
-    for (uint32_t i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         int32_t result = HcsGetUint16ArrayElem(node, attrName, i, value + i, def);
         // If the error type is HDF_ERR_INVALID_OBJECT, the error is recorded and returned after the loop exits.
         CONTINUE_RETURN_DIFFERENT_ERRNO(ret, result);
@@ -279,13 +259,14 @@ int32_t HcsGetUint16Array(const struct DeviceResourceNode *node, const char *att
 int32_t HcsGetUint32Array(const struct DeviceResourceNode *node, const char *attrName, uint32_t *value, uint32_t len,
     uint32_t def)
 {
+    int32_t ret = HDF_SUCCESS;
+    uint32_t i;
     if ((value == NULL) || (len == 0)) {
         HDF_LOGE("%s failed, parameter error, len: %u", __func__, len);
         return HDF_FAILURE;
     }
 
-    int32_t ret = HDF_SUCCESS;
-    for (uint32_t i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         int32_t result = HcsGetUint32ArrayElem(node, attrName, i, value + i, def);
         // If the error type is HDF_ERR_INVALID_OBJECT, the error is recorded and returned after the loop exits.
         CONTINUE_RETURN_DIFFERENT_ERRNO(ret, result);
@@ -296,12 +277,13 @@ int32_t HcsGetUint32Array(const struct DeviceResourceNode *node, const char *att
 int32_t HcsGetUint64Array(const struct DeviceResourceNode *node, const char *attrName, uint64_t *value, uint32_t len,
     uint64_t def)
 {
+    uint32_t i;
     if ((value == NULL) || (len == 0)) {
         HDF_LOGE("%s failed, parameter error, len: %u", __func__, len);
         return HDF_FAILURE;
     }
 
-    for (uint32_t i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         int32_t result = HcsGetUint64ArrayElem(node, attrName, i, value + i, def);
         if (result != HDF_SUCCESS) {
             HDF_LOGE("%s failed, the ret is %d", __func__, result);
@@ -314,10 +296,11 @@ int32_t HcsGetUint64Array(const struct DeviceResourceNode *node, const char *att
 int32_t HcsGetStringArrayElem(const struct DeviceResourceNode *node, const char *attrName, uint32_t index,
     const char **value, const char *def)
 {
+    const char *realValue = NULL;
     struct DeviceResourceAttr *attr = GetAttrInNode(node, attrName);
     RETURN_DEFAULT_VALUE(attr, attrName, value, def);
 
-    const char *realValue = GetArrayElem(attr, index);
+    realValue = GetArrayElem(attr, index);
     if ((realValue == NULL) || (HcsGetPrefix(realValue) != CONFIG_STRING)) {
         *value = def;
         HDF_LOGE("%s failed, %s attr is default value", __func__, attrName);
@@ -342,13 +325,13 @@ int32_t HcsGetString(const struct DeviceResourceNode *node, const char *attrName
 
 int32_t HcsGetElemNum(const struct DeviceResourceNode *node, const char *attrName)
 {
+    uint16_t num;
     struct DeviceResourceAttr *attr = GetAttrInNode(node, attrName);
     if ((attr == NULL) || (attr->value == NULL) || (HcsGetPrefix(attr->value) != CONFIG_ARRAY)) {
         HDF_LOGE("%s failed, %s attr error", __func__, (attrName == NULL) ? "error attrName" : attrName);
         return HDF_FAILURE;
     }
 
-    uint16_t num;
     (void)HcsSwapToUint16(&num, attr->value + HCS_PREFIX_LENGTH, CONFIG_WORD);
     return num;
 }
@@ -380,12 +363,13 @@ static const struct DeviceResourceNode *TraverseTreeNode(const struct DeviceReso
 
 const struct DeviceResourceNode *HcsGetNodeByMatchAttr(const struct DeviceResourceNode *node, const char *attrValue)
 {
+    const struct DeviceResourceNode *curNode = NULL;
     struct DeviceResourceIface *instance = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if ((attrValue == NULL) || (instance == NULL) || (instance->GetRootNode == NULL)) {
         HDF_LOGE("%s failed, attrValue is NULL or DeviceResourceGetIfaceInstance error", __func__);
         return NULL;
     }
-    const struct DeviceResourceNode *curNode = (node != NULL) ? node : instance->GetRootNode();
+    curNode = (node != NULL) ? node : instance->GetRootNode();
     while (curNode != NULL) {
         if (GetAttrValueInNode(curNode, attrValue) != NULL) {
             break;
@@ -397,12 +381,12 @@ const struct DeviceResourceNode *HcsGetNodeByMatchAttr(const struct DeviceResour
 
 const struct DeviceResourceNode *HcsGetChildNode(const struct DeviceResourceNode *node, const char *nodeName)
 {
+    struct DeviceResourceNode *child = NULL;
     if ((node == NULL) || (nodeName == NULL)) {
         HDF_LOGE("%s failed, the node or nodeName is NULL", __func__);
         return NULL;
     }
 
-    struct DeviceResourceNode *child = NULL;
     for (child = node->child; child != NULL; child = child->sibling) {
         if ((child->name != NULL) && (strcmp(nodeName, child->name) == 0)) {
             break;
@@ -413,20 +397,22 @@ const struct DeviceResourceNode *HcsGetChildNode(const struct DeviceResourceNode
 
 const struct DeviceResourceNode *HcsGetNodeByRefAttr(const struct DeviceResourceNode *node, const char *attrName)
 {
+    uint32_t attrValue;
+    struct DeviceResourceIface *instance = NULL;
+    const struct DeviceResourceNode *curNode = NULL;
     struct DeviceResourceAttr *attr = GetAttrInNode(node, attrName);
     if ((attr == NULL) || (attr->value == NULL) || (HcsGetPrefix(attr->value) != CONFIG_REFERENCE)) {
         HDF_LOGE("%s failed, %s attr error", __func__, (attrName == NULL) ? "error attrName" : attrName);
         return NULL;
     }
 
-    uint32_t attrValue;
     (void)HcsSwapToUint32(&attrValue, attr->value + HCS_PREFIX_LENGTH, CONFIG_DWORD);
-    struct DeviceResourceIface *instance = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
+    instance = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if ((instance == NULL) || (instance->GetRootNode == NULL)) {
         HDF_LOGE("%s failed, DeviceResourceGetIfaceInstance error", __func__);
         return NULL;
     }
-    const struct DeviceResourceNode *curNode = instance->GetRootNode();
+    curNode = instance->GetRootNode();
     while (curNode != NULL) {
         if (curNode->hashValue == attrValue) {
             break;

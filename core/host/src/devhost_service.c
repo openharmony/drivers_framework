@@ -1,39 +1,18 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "devhost_service.h"
 #include "devmgr_service_clnt.h"
 #include "devsvc_manager_clnt.h"
 #include "hdf_base.h"
+#include "hdf_device_node_ext.h"
 #include "hdf_driver_loader.h"
+#include "hdf_io_service.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 #include "osal_mem.h"
@@ -79,12 +58,13 @@ static struct HdfDevice *DevHostServiceGetDevice(struct DevHostService *inst, ui
             return NULL;
         }
         device->hostId = inst->hostId;
+        device->deviceId = deviceId;
         HdfSListAdd(&inst->devices, &device->node);
     }
     return device;
 }
 
-static int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDeviceInfo *deviceInfo)
+int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDeviceInfo *deviceInfo)
 {
     int ret = HDF_FAILURE;
     struct HdfDevice *device = NULL;
@@ -116,8 +96,8 @@ static int DevHostServiceAddDevice(struct IDevHostService *inst, const struct Hd
     return HDF_SUCCESS;
 
 error:
-    if (HdfSListIsEmpty(&hostService->devices)) {
-        DevHostServiceFreeDevice(hostService, hostService->hostId);
+    if (!HdfSListIsEmpty(&hostService->devices)) {
+        DevHostServiceFreeDevice(hostService, deviceInfo->deviceId);
     }
     return ret;
 }
@@ -140,7 +120,21 @@ static int DevHostServiceDelDevice(struct IDevHostService *inst, const struct Hd
     }
 
     driverLoader->UnLoadNode(driverLoader, deviceInfo);
-    if (HdfSListIsEmpty(&hostService->devices)) {
+    struct HdfSListIterator it;
+    struct HdfDeviceNode *deviceNode = NULL;
+    HdfSListIteratorInit(&it, &device->services);
+    while (HdfSListIteratorHasNext(&it)) {
+        deviceNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+            struct HdfSListNode, HdfSListIteratorNext(&it), struct HdfDeviceNode, entry);
+        if ((strcmp(deviceNode->deviceInfo->moduleName, deviceInfo->moduleName) == 0) &&
+            (strcmp(deviceNode->deviceInfo->svcName, deviceInfo->svcName) == 0)) {
+            struct DeviceNodeExt *deviceNodeExt = (struct DeviceNodeExt *)deviceNode;
+            HdfSListRemove(&device->services, &deviceNode->entry);
+            DeviceNodeExtRelease(&deviceNodeExt->super.super.object);
+        }
+    }
+
+    if (!HdfSListIsEmpty(&hostService->devices)) {
         DevHostServiceFreeDevice(hostService, device->deviceId);
     }
     DevSvcManagerClntRemoveService(deviceInfo->svcName);
@@ -157,7 +151,7 @@ static int DevHostServiceStartService(struct IDevHostService *service)
     return DevmgrServiceClntAttachDeviceHost(hostService->hostId, service);
 }
 
-static void DevHostServiceConstruct(struct DevHostService *service)
+void DevHostServiceConstruct(struct DevHostService *service)
 {
     struct IDevHostService *hostServiceIf = &service->super;
     if (hostServiceIf != NULL) {
@@ -169,7 +163,7 @@ static void DevHostServiceConstruct(struct DevHostService *service)
     }
 }
 
-static void DevHostServiceDestruct(struct DevHostService *service)
+void DevHostServiceDestruct(struct DevHostService *service)
 {
     HdfSListFlush(&service->devices, HdfDeviceDelete);
     HdfServiceObserverDestruct(&service->observer);

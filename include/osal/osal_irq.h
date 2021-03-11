@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
@@ -35,7 +12,7 @@
  *
  * @brief Defines the structures and interfaces for the Operating System Abstraction Layer (OSAL) module.
  *
- * The OSAL module harmonizes OS interface differences and provides unified OS interfaces externally,
+ * The OSAL module OpenHarmony OS interface differences and provides unified OS interfaces externally,
  * including the memory management, thread, mutex, spinlock, semaphore, timer, file, interrupt, time,
  * atomic, firmware, and I/O operation modules.
  *
@@ -64,23 +41,27 @@ extern "C" {
 /**
  * @brief Enumerates interrupt trigger modes.
  *
- * @since 1.1
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     OSAL_IRQF_TRIGGER_NONE = 0, /**< Edge-triggered is not set */
     OSAL_IRQF_TRIGGER_RISING = 1, /**< Rising edge triggered */
-    OSAL_IRQF_TRIGGER_FALLING = 2, /**< Failing edge triggered */
+    OSAL_IRQF_TRIGGER_FALLING = 2, /**< Falling edge triggered */
     OSAL_IRQF_TRIGGER_HIGH = 4, /**< High-level triggered */
     OSAL_IRQF_TRIGGER_LOW = 8, /**< Low-level triggered */
 } OSAL_IRQ_TRIGGER_MODE;
 
 /**
  * @brief Defines an IRQ type.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef uint32_t (*OsalIRQHandle)(uint32_t irqId, void *dev);
 
 /**
- * @brief Registers an IRQ.
+ * @brief Registers the function for processing the specified IRQ.
  *
  * @param irqId Indicates the IRQ ID.
  * @param config Indicates the interrupt trigger mode. For details, see {@link OSAL_IRQ_TRIGGER_MODE}.
@@ -101,9 +82,11 @@ typedef uint32_t (*OsalIRQHandle)(uint32_t irqId, void *dev);
 int32_t OsalRegisterIrq(uint32_t irqId, uint32_t config, OsalIRQHandle handle, const char *name, void *dev);
 
 /**
- * @brief Unregisters an IRQ.
+ * @brief Unregisters the interrupt processing function so that the system will no longer process the specified IRQ.
  *
  * @param irqId Indicates the IRQ ID.
+ * @param dev Indicates the pointer to the parameter passed to the interrupt processing function
+ *        in {@link OsalRegisterIrq}.
  *
  * @return Returns a value listed below: \n
  * HDF_STATUS | Description
@@ -115,10 +98,10 @@ int32_t OsalRegisterIrq(uint32_t irqId, uint32_t config, OsalIRQHandle handle, c
  * @since 1.0
  * @version 1.0
  */
-int32_t OsalUnregisterIrq(uint32_t irqId);
+int32_t OsalUnregisterIrq(uint32_t irqId, void *dev);
 
 /**
- * @brief Enables an IRQ.
+ * @brief Enables the processing of the specified IRQ.
  *
  * @param irqId Indicates the IRQ ID.
  *
@@ -134,7 +117,7 @@ int32_t OsalUnregisterIrq(uint32_t irqId);
 int32_t OsalEnableIrq(uint32_t irqId);
 
 /**
- * @brief Disables an IRQ.
+ * @brief Disables the IRQ function of a device.
  *
  * @param irqId Indicates the IRQ ID.
  *

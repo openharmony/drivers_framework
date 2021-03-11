@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
@@ -53,6 +30,7 @@
 #define HDF_DEVICE_DESC_H
 
 #include "hdf_device_section.h"
+#include "hdf_io_service_if.h"
 #include "hdf_object.h"
 #include "hdf_sbuf.h"
 
@@ -95,6 +73,7 @@ typedef enum {
  */
 typedef enum {
     DEVICE_PRELOAD_ENABLE = 0, /**< The driver is loaded during system startup by default. */
+    DEVICE_PRELOAD_ENABLE_STEP2, /**< The driver is loaded after OS startup if quick start is enabled. */
     DEVICE_PRELOAD_DISABLE,     /**< The driver is not loaded during system startup by default. */
     DEVICE_PRELOAD_INVALID     /**< The loading policy is incorrect. */
 } DevicePreload;
@@ -110,9 +89,12 @@ typedef enum {
 struct HdfDeviceObject {
     /** Pointer to the service interface object, which is registered with the HDF by the driver */
     struct IDeviceIoService *service;
-    /** Pointer to the private data of the device, which is read by the HDF from the configuration file and
+    /** Pointer to the property of the device, which is read by the HDF from the configuration file and
     transmitted to the driver. */
     const struct DeviceResourceNode *property;
+    DeviceClass deviceClass;
+    /** Pointer to the private data of the device */
+    void *private;
 };
 
 /**
@@ -323,7 +305,6 @@ int32_t HdfDeviceSubscribeService(
  */
 int32_t HdfDeviceSendEvent(const struct HdfDeviceObject *deviceObject, uint32_t id, const struct HdfSBuf *data);
 
-
 /**
  * @brief Sends an event message to a specified client object.
  *
@@ -338,6 +319,20 @@ int32_t HdfDeviceSendEvent(const struct HdfDeviceObject *deviceObject, uint32_t 
  * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
  * @since 1.0 */
 int32_t HdfDeviceSendEventToClient(const struct HdfDeviceIoClient *client, uint32_t id, const struct HdfSBuf *data);
+
+/**
+ * @brief Sets the driver device class.
+ *
+ * After setting the driver device class, you can obtain the service name of this driver device type via
+ * {@link HdfGetServiceNameByDeviceClass}.
+ *
+ *
+ * @param deviceObject Indicates the pointer to the driver device object.
+ * @param deviceClass Indicates the device class defined by {@link DeviceClass}.
+ *
+ * @return Returns <b>true</b> if the operation is successful; returns <b>false</b> otherwise.
+ * @since 1.0 */
+bool HdfDeviceSetClass(struct HdfDeviceObject *deviceObject, DeviceClass deviceClass);
 
 #endif /* HDF_DEVICE_DESC_H */
 /** @} */

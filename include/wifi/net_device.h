@@ -1,41 +1,20 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
  * @addtogroup WLAN
  * @{
  *
- * @brief Defines a WLAN module that supports cross-OS migration, component adaptation, and modular assembly and
- * compilation. Driver developers of WLAN vendors can adapt their driver code based on the unified APIs provided
- * by the WLAN module.
+ * @brief Provides cross-OS migration, component adaptation, and modular assembly and compilation.
+ *
+ * Based on the unified APIs provided by the WLAN module, developers of the Hardware Driver Interface
+ * (HDI) are capable of creating, disabling, scanning for, and connecting to WLAN hotspots, managing WLAN chips,
+ * network devices, and power, and applying for, releasing, and moving network data buffers.
  *
  * @since 1.0
  * @version 1.0
@@ -58,124 +37,219 @@
 
 #ifndef HDF_NET_DEVICE_MODULE_H
 #define HDF_NET_DEVICE_MODULE_H
-#include <stdint.h>
-#include <net/if.h>
+#include "hdf_base.h"
 #include "hdf_netbuf.h"
 #include "hdf_log.h"
+#include "net_device_types_adapter.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef IFNAMSIZ
-#define IFNAMSIZ 16
-#endif
-
 /**
  * @brief Indicates a 6-byte MAC address.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define MAC_ADDR_SIZE 6
 /**
  * @brief Indicates that the network port is working.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define NET_DEVICE_IFF_RUNNING IFF_RUNNING
 /**
  * @brief Indicates Reverse Address Resolution Protocol (RARP).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_RARP 0x8035
 /**
  * @brief Indicates Port Access Entity (PAE).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_PAE 0x888e
 /**
  * @brief Indicates Internet Protocol (IP).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_IP 0x0800
 /**
  * @brief Indicates AppleTalk Address Resolution Protocol (AARP).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_AARP 0x80f3
 /**
  * @brief Indicates Internetwork Packet Exchange (IPX).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_IPX 0x8137
 /**
  * @brief Indicates Address Resolution Protocol (ARP).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_ARP 0x0806
 /**
  * @brief Indicates Internet Protocol version 6 (IPv6).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_IPV6 0x86dd
 /**
  * @brief Indicates Tunneled Direct Link Setup (TDLS).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_TDLS 0x890d
 /**
  * @brief Indicates Virtual Local Area Network (VLAN).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_VLAN 0x8100
 /**
  * @brief Indicates WLAN Authentication and Privacy Infrastructure (WAPI).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_WAI 0x88b4
 /**
  * @brief Indicates Link Layer Topology Discovery (LLTD).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_LLTD_TYPE 0x88D9
 /**
  * @brief Indicates 802.1x network port authentication.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_ONE_X_TYPE 0x888E
 /**
  * @brief Indicates a tunnel protocol.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TUNNEL_TYPE 0x88bd
 /**
  * @brief Indicates the point-to-point discovery type.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_PPP_DISC 0x8863
 /**
  * @brief Indicates the point-to-point session discovery type.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_PPP_SES 0x8864
 /**
  * @brief Indicates IPv6 over Low Power Wireless Personal Area Networks (6LoWPANs).
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define ETHER_TYPE_6LO 0xa0ed
 
 /**
  * @brief Indicates the Transmission Control Protocol (TCP).
+ *
+ * @since 1.0
+ * @version 1.0
  */
-#define TCP_PROTOCAL       6
+#define TCP_PROTOCOL       6
 /**
  * @brief Indicates the User Datagram Protocol (UDP).
+ *
+ * @since 1.0
+ * @version 1.0
  */
-#define UDP_PROTOCAL       17
+#define UDP_PROTOCOL       17
 /**
  * @brief Indicates the shift in the priority for an IP address.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define IP_PRI_SHIFT        5
 
 /**
  * @brief Indicates the source port number of DHCP.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define DHCP_UDP_SRC_PORT   68
 /**
  * @brief Indicates the destination port number of DHCP.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 #define DHCP_UDP_DES_PORT   67
 
 /**
- * @brief Enumerates network interface categories, including lightweight OS and rich OS.
+ * @brief Indicates the default MTU value of the WLAN.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+#define DEFAULT_MTU 1500
+
+/**
+ * @brief Indicates the maximum MTU value of the WLAN.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+#define WLAN_MAX_MTU 1500
+
+/**
+ * @brief Indicates the minimum MTU value of the WLAN.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+#define WLAN_MIN_MTU 576
+
+/**
+ * @brief Enumerates network interface categories, including lightweight OS and full OS.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     LITE_OS,   /**< Lightweight OS */
-    RICH_OS   /**< Rich OS */
+    FULL_OS   /**< Full OS */
 } NetIfCategory;
 
 /**
  * @brief Enumerates network interface states, including online and offline.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     NETIF_DOWN,  /**< Network interface offline */
@@ -184,6 +258,9 @@ typedef enum {
 
 /**
  * @brief Enumerates network link layer states, including online and offline.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     NETIF_LINK_DOWN,  /**< Data link offline */
@@ -192,6 +269,9 @@ typedef enum {
 
 /**
  * @brief Enumerates data link types, including Ethernet and WLAN.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     ETHERNET_LINK = 1,  /**< Ethernet */
@@ -200,6 +280,9 @@ typedef enum {
 
 /**
  * @brief Enumerates data processing results, including continuing processing, processing completed, and error.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     PROCESSING_CONTINUE,  /**< Continuing processing */
@@ -208,17 +291,10 @@ typedef enum {
 } ProcessingResult;
 
 /**
- * @brief Enumerates data sending results, including sending succeeded, other data being sent at the link layer,
- * and data link layer being locked.
- */
-typedef enum {
-    NETDEV_TX_OK = 0x00,      /**< Sending succeeded */
-    NETDEV_TX_BUSY = 0x10,    /**< Other data being sent at the link layer */
-    NETDEV_TX_LOCKED = 0x20,  /**< Data link layer being locked */
-} NetDevTxResult;
-
-/**
  * @brief Enumerates 802.11 network port types, including AP, STA, and P2P.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     PROTOCOL_80211_IFTYPE_UNSPECIFIED,                         /**< Unspecified */
@@ -238,6 +314,9 @@ typedef enum {
 
 /**
  * @brief Enumerates network device errors, including common errors and errors in adding network devices to LwIP.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef enum {
     COMMON_ERROR = 1,  /**< Common errors */
@@ -249,6 +328,7 @@ typedef enum {
  * and Ethernet type.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct EtherHeader {
     uint8_t etherDhost[MAC_ADDR_SIZE];  /**< Destination address {@link MAC_ADDR_SIZE} */
@@ -263,6 +343,7 @@ struct EtherHeader {
  * and total length.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct IpHeader {
     uint8_t    versionAndHl;   /**< Version and header length */
@@ -286,6 +367,7 @@ struct IpHeader {
  * port number.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct UdpHeader {
     uint16_t source;  /**< Source port number */
@@ -298,7 +380,9 @@ struct UdpHeader {
  * @brief Defines the TCP header information of a data frame, including the source port number and destination
  * port number.
  *
- * @since 1.0 */
+ * @since 1.0
+ * @version 1.0
+ */
 struct TcpHeader {
     uint16_t  sPort;   /**< Source port number */
     uint16_t  dPort;   /**< Destination port number */
@@ -315,6 +399,7 @@ struct TcpHeader {
  * @brief Defines an IPv4 address.
  *
  * @since 1.0
+ * @version 1.0
  */
 typedef struct {
     uint32_t addr;  /**< IPv4 address */
@@ -324,6 +409,7 @@ typedef struct {
  * @brief Defines a network device notification, including an IP address and the notification type.
  *
  * @since 1.0
+ * @version 1.0
  */
 typedef struct {
     uint32_t ipAddr;      /**< IP address */
@@ -334,11 +420,18 @@ typedef struct {
  * @brief Defines the network port type, for example, the WLAN network port.
  *
  * @since 1.0
+ * @version 1.0
  */
 typedef union {
     Protocol80211IfType wlanType;  /**< WLAN network port type: AP or STA */
 } IfType;
 
+/**
+ * @brief Describes the status of a network device.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct NetDevStats {
     uint32_t rxPackets; /**< Total number of received packets */
     uint32_t txPackets; /**< Total number of transmitted packets */
@@ -347,13 +440,14 @@ struct NetDevStats {
     uint32_t rxErrors;  /**< Number of received error packets */
     uint32_t txErrors;  /**< Transmitted error packets */
     uint32_t rxDropped; /**< Packets that are dropped after being received */
-    uint32_t txDropped; /**< Packets dropped before transmission*/
+    uint32_t txDropped; /**< Packets dropped before transmission */
 };
 
 /**
  * @brief Defines ioctrl data.
  *
  * @since 1.0
+ * @version 1.0
  */
 typedef struct {
     uint32_t fake;     /**< magic field */
@@ -364,6 +458,7 @@ typedef struct {
  * @brief Defines a network device, including the network interface category and name, and network port type.
  *
  * @since 1.0
+ * @version 1.0
  */
 typedef struct NetDevice {
     NetIfCategory netifCateg;                 /**< Network interface category {@link NetIfCategory} */
@@ -379,11 +474,13 @@ typedef struct NetDevice {
     uint16_t neededHeadRoom;                  /**< Length reserved for the header in netbuff{@link NetBuf} */
     uint16_t neededTailRoom;                  /**< Length reserved for the tail in netbuff{@link NetBuf} */
     uint8_t addrLen;                          /**< MAC address length */
+    const char* classDriverName;              /**< driver name of class driver */
+    void *classDriverPriv;                    /**< Private structure for the platform */
     void *mlPriv;                             /**< Private structure for the driver */
-    struct WirelessDev *ieee80211Ptr;         /**< Pointer to a wireless device */
+    void *ieee80211Ptr;                       /**< Pointer to a wireless device */
     void *specialProcPriv;                    /**< Private structure for data processing */
     struct NetDeviceInterFace *netDeviceIf;   /**< Network device interface */
-    struct NetDevice *owner;                 /**< Network device */
+    struct NetDevice *owner;                  /**< Network device */
     struct NetDevStats stats;                 /**< Network statistics */
 } NetDevice;
 
@@ -392,23 +489,24 @@ typedef struct NetDevice {
  * opening, and closing a network device.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct NetDeviceInterFace {
     int32_t (*init)(struct NetDevice *netDev);  /**< Initializes a network device to be added. */
     void (*deInit)(struct NetDevice *netDev);   /**< Deinitializes a network device to be delete. */
     int32_t (*open)(struct NetDevice *netDev);  /**< Opens the data link layer. */
     int32_t (*stop)(struct NetDevice *netDev);  /**< Closes the data link layer. */
-    NetDevTxResult (*xmit)(struct NetDevice *netDev, struct NetBuf *netBuff); /**< Sends data. */
+    NetDevTxResult (*xmit)(struct NetDevice *netDev, NetBuf *netBuff); /**< Sends data. */
     int32_t (*ioctl)(struct NetDevice *netDev, IfReq *req, int32_t cmd);      /**< Used for the control command word. */
     int32_t (*setMacAddr)(struct NetDevice *netDev, void *addr);              /**< Sets the MAC address. */
     struct NetDevStats *(*getStats)(struct NetDevice *netDev);                /**< Obtains the statistics. */
     void (*setNetIfStatus)(struct NetDevice *netDev, NetIfStatus status);     /**< Sets the network port status. */
-    uint16_t (*selectQueue)(struct NetDevice *netDev, struct NetBuf *netBuff);/**< Selects a priority queue. */
+    uint16_t (*selectQueue)(struct NetDevice *netDev, NetBuf *netBuff);/**< Selects a priority queue. */
     uint32_t (*netifNotify)(struct NetDevice *netDev, NetDevNotify *notify);  /**< Notifies the network port status. */
     int32_t (*changeMtu)(struct NetDevice *netDev, int32_t newMtu);           /**< Changes the maximum number of
                                                                                * transmission units.
                                                                                */
-    ProcessingResult (*specialEtherTypeProcess)(const struct NetDevice *netDev, struct NetBuf *buff);
+    ProcessingResult (*specialEtherTypeProcess)(const struct NetDevice *netDev, NetBuf *buff);
                                                                               /**< Performs private processing without
                                                                                * involving network-layer data.
                                                                                */
@@ -446,7 +544,7 @@ int32_t NetDeviceDeInit(struct NetDevice *netDevice);
  * @brief Adds a network device to a protocol stack.
  *
  * @param netDevice Indicates the pointer to the network device structure obtained during initialization.
- * @param netDevice Indicates the network port type, as enumerated in {@link Protocol80211IfType}.
+ * @param ifType Indicates the network port type, as enumerated in {@link Protocol80211IfType}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value representing {@link HDF_STATUS}
  * if the operation fails.
@@ -561,6 +659,7 @@ int32_t NetIfSetAddr(const struct NetDevice *netDevice, const IpV4Addr *ipAddr, 
  *
  * @param netDevice Indicates the pointer to the network device obtained during initialization.
  * @paramstatus Indicates the network port state, as enumerated in {@link NetIfSatus}.
+ * @param status Indicates the network port state, as enumerated in {@link NetIfSatus}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
  *
@@ -568,6 +667,20 @@ int32_t NetIfSetAddr(const struct NetDevice *netDevice, const IpV4Addr *ipAddr, 
  * @version 1.0
  */
 int32_t NetIfSetStatus(const struct NetDevice *netDevice, NetIfStatus status);
+
+/**
+ * @brief Sets a specified MAC address for a given {@link NetDevice}.
+ *
+ * @param netDevice Indicates the pointer to the {@link NetDevice}.
+ * @param macAddr Indicates the pointer to the MAC address to set.
+ * @param length Indicates the length of the MAC address to set.
+ *
+ * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+int32_t NetIfSetMacAddr(struct NetDevice *netDevice, const unsigned char *macAddr, unsigned char length);
 
 /**
  * @brief Notifies the network layer of the data link layer status.
@@ -585,6 +698,8 @@ int32_t NetIfSetLinkStatus(const struct NetDevice *netDevice, NetIfLinkStatus st
 /**
  * @brief Transfers the input data packets from the network side to a protocol stack.
  *
+ * @param netDevice Indicates the pointer to the network device structure {@link netDevice} obtained
+ * during initialization.
  * @param buff Indicates the network-side data, in Ether format.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
@@ -592,11 +707,13 @@ int32_t NetIfSetLinkStatus(const struct NetDevice *netDevice, NetIfLinkStatus st
  * @since 1.0
  * @version 1.0
  */
-int32_t NetIfRx(const struct NetDevice *netDevice, struct NetBuf *buff);
+int32_t NetIfRx(const struct NetDevice *netDevice, NetBuf *buff);
 
 /**
  * @brief Transfers data packets from the network side to a protocol stack in an interrupt processing thread.
  *
+ * @param netDevice Indicates the pointer to the network device structure {@link netDevice} obtained
+ * during initialization.
  * @param buff Indicates the network-side data, in Ether format.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a non-zero value {@link HDF_STATUS} if the
@@ -605,14 +722,14 @@ int32_t NetIfRx(const struct NetDevice *netDevice, struct NetBuf *buff);
  * @since 1.0
  * @version 1.0
  */
-int32_t NetIfRxNi(const struct NetDevice *netDevice, struct NetBuf *buff);
+int32_t NetIfRxNi(const struct NetDevice *netDevice, NetBuf *buff);
 
 /**
  * @brief Starts the DHCP server.
  *
  * @param netDevice Indicates the pointer to the network device structure {@link netDevice} obtained
  * during initialization.
- * @param beginIp Indicates the IP address to start.
+ * @param ip Indicates the IP address to start.
  * @param ipNum Indicates the number of IP addresses.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
@@ -620,7 +737,7 @@ int32_t NetIfRxNi(const struct NetDevice *netDevice, struct NetBuf *buff);
  * @since 1.0
  * @version 1.0
  */
-int32_t NetIfDhcpsStart(const struct NetDevice *netDevice, char *ip, u16_t ipNum);
+int32_t NetIfDhcpsStart(const struct NetDevice *netDevice, char *ip, uint16_t ipNum);
 
 /**
  * @brief Stops the DHCP server.
@@ -675,7 +792,7 @@ int32_t NetIfDhcpIsBound(const struct NetDevice *netDevice);
 #define GET_NET_DEV_HEAD_ROOM(dev) ((dev)->neededHeadRoom)
 #define GET_NET_DEV_TAIL_ROOM(dev) ((dev)->neededTailRoom)
 #define GET_NET_DEV_MTU(dev) ((dev)->mtu)
-#define GET_NET_DEV_WIRELESS(dev) ((dev)->ieee80211Ptr)
+#define GET_NET_DEV_CFG80211_WIRELESS(dev) ((struct wireless_dev*)((dev)->ieee80211Ptr))
 #define GET_NET_DEV_PRIV(dev) ((dev)->mlPriv)
 #define GET_NET_DEV_MAC_ADDR(dev) ((dev)->macAddr)
 #define GET_NET_DEV_IF(dev) ((dev)->netDeviceIf)
@@ -688,3 +805,4 @@ int32_t NetIfDhcpIsBound(const struct NetDevice *netDevice);
 #endif
 
 #endif /* HDF_NET_DEVICE_MODULE_H */
+/** @} */

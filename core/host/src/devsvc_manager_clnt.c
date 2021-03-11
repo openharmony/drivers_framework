@@ -1,36 +1,15 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "devsvc_manager_clnt.h"
+#include "devmgr_service.h"
 #include "devsvc_manager.h"
+#include "hdf_attribute_manager.h"
 #include "hdf_base.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
@@ -46,7 +25,7 @@ int DevSvcManagerClntAddService(const char *svcName, struct HdfDeviceObject *ser
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
-    if (serviceManager->AddService == NULL) {
+    if (serviceManager == NULL || serviceManager->AddService == NULL) {
         HDF_LOGE("AddService function is not assigned");
         return HDF_FAILURE;
     }
@@ -62,7 +41,7 @@ const struct HdfObject *DevSvcManagerClntGetService(const char *svcName)
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
-    if (serviceManager->GetService == NULL) {
+    if (serviceManager == NULL || serviceManager->GetService == NULL) {
         HDF_LOGE("GetService function is not assigned");
         return NULL;
     }
@@ -78,11 +57,37 @@ struct HdfDeviceObject *DevSvcManagerClntGetDeviceObject(const char *svcName)
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
-    if (serviceManager->GetObject == NULL) {
+    if (serviceManager == NULL || serviceManager->GetObject == NULL) {
         HDF_LOGE("GetObject function is not assigned");
         return NULL;
     }
     return serviceManager->GetObject(serviceManager, svcName);
+}
+
+struct HdfDeviceObject *HdfRegisterDevice(const char *moduleName, const char *serviceName)
+{
+    int ret;
+    if (!HdfDeviceListAdd(moduleName, serviceName)) {
+        HDF_LOGE("%s device info add failed!", __func__);
+        return NULL;
+    }
+    ret = DevmgrServiceLoadDevice(serviceName);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s load device %s failed!", __func__, serviceName);
+        HdfDeviceListDel(moduleName, serviceName);
+        return NULL;
+    }
+    return DevSvcManagerClntGetDeviceObject(serviceName);
+}
+
+void HdfUnregisterDevice(const char *moduleName, const char *serviceName)
+{
+    int ret;
+    ret = DevmgrServiceUnLoadDevice(serviceName);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s unload device %s failed!", __func__, serviceName);
+    }
+    HdfDeviceListDel(moduleName, serviceName);
 }
 
 int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCallback callback)
@@ -94,7 +99,7 @@ int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCall
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
-    if (serviceManager->SubscribeService == NULL) {
+    if (serviceManager == NULL || serviceManager->SubscribeService == NULL) {
         HDF_LOGE("SubscribeService function is not assigned");
         return HDF_FAILURE;
     }
@@ -110,7 +115,7 @@ int DevSvcManagerClntUnsubscribeService(const char *svcName)
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
-    if (serviceManager->UnsubscribeService == NULL) {
+    if (serviceManager == NULL || serviceManager->UnsubscribeService == NULL) {
         HDF_LOGE("UnsubService function is not assigned");
         return HDF_FAILURE;
     }
@@ -126,7 +131,7 @@ void DevSvcManagerClntRemoveService(const char *svcName)
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
-    if (serviceManager->RemoveService == NULL) {
+    if (serviceManager == NULL || serviceManager->RemoveService == NULL) {
         HDF_LOGE("Remove service function is not assigned");
         return;
     }

@@ -1,49 +1,32 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "securec.h"
+#ifndef __USER__
 #include "devsvc_manager_clnt.h"
+#else
+#include "hdf_io_service_if.h"
+#endif
 #include "hdf_log.h"
 #include "osal_mem.h"
+#ifndef __USER__
 #include "uart_core.h"
+#endif
 #include "uart_if.h"
 
 #define HDF_LOG_TAG uart_if_c
 #define UART_HOST_NAME_LEN 32
 
-static struct UartHost *UartGetHostByBusNum(uint32_t num)
+static void *UartGetObjGetByBusNum(uint32_t num)
 {
     int ret;
+    void *obj = NULL;
     char *name = NULL;
-    struct UartHost *host = NULL;
 
     name = (char *)OsalMemCalloc(UART_HOST_NAME_LEN + 1);
     if (name == NULL) {
@@ -56,99 +39,218 @@ static struct UartHost *UartGetHostByBusNum(uint32_t num)
         OsalMemFree(name);
         return NULL;
     }
-    host = (struct UartHost *)DevSvcManagerClntGetService(name);
+
+#ifdef __USER__
+    obj = (void *)HdfIoServiceBind(name);
+#else
+    obj = (void *)DevSvcManagerClntGetService(name);
+#endif
     OsalMemFree(name);
-    return host;
+    return obj;
 }
 
-struct DevHandle *UartOpen(uint32_t port)
+static void UartPutObjByPointer(const void *obj)
 {
-    struct DevHandle *handle = NULL;
-    struct UartHost *host = NULL;
-
-    host = UartGetHostByBusNum(port);
-    if (host == NULL) {
-        HDF_LOGE("%s: get host error", __func__);
-        return NULL;
+    if (obj == NULL) {
+        return;
     }
-    handle = (struct DevHandle *)OsalMemCalloc(sizeof(*handle));
+#ifdef __USER__
+    HdfIoServiceRecycle((struct HdfIoService *)obj);
+#endif
+};
+
+DevHandle UartOpen(uint32_t port)
+{
+    int32_t ret;
+    void *handle = NULL;
+
+    handle = UartGetObjGetByBusNum(port);
     if (handle == NULL) {
-        HDF_LOGE("%s: handle malloc error", __func__);
+        HDF_LOGE("%s: get handle error", __func__);
         return NULL;
     }
-    if (UartHostInit(host) != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostInit error", __func__);
-        OsalMemFree(handle);
+
+#ifdef __USER__
+    struct HdfIoService *service = (struct HdfIoService *)handle;
+    if (service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
+        UartPutObjByPointer(handle);
         return NULL;
     }
-    handle->object = host;
-    return handle;
+    ret = service->dispatcher->Dispatch(&service->object, UART_IO_INIT, NULL, NULL);
+#else
+    ret = UartHostInit((struct UartHost *)handle);
+#endif
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: UartHostInit error, ret %d", __func__, ret);
+        UartPutObjByPointer(handle);
+        return NULL;
+    }
+
+    return (DevHandle)handle;
 }
 
-void UartClose(struct DevHandle *handle)
+void UartClose(DevHandle handle)
 {
+    int32_t ret;
     if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL", __func__);
         return;
     }
-    if (UartHostDeinit((struct UartHost *)handle->object) != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostDeinit error", __func__);
+
+#ifdef __USER__
+    struct HdfIoService *service = (struct HdfIoService *)handle;
+    if (service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
+        UartPutObjByPointer(handle);
+        return;
     }
-    OsalMemFree(handle);
+    ret = service->dispatcher->Dispatch(&service->object, UART_IO_DEINIT, NULL, NULL);
+#else
+    ret = UartHostDeinit((struct UartHost *)handle);
+#endif
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: UartHostDeinit error, ret %d", __func__, ret);
+    }
+    UartPutObjByPointer(handle);
 }
 
-int32_t UartRead(struct DevHandle *handle, uint8_t *data, uint32_t size)
+#ifdef __USER__
+static int32_t UartUserReceive(DevHandle handle, void *data, uint32_t size, enum UartIoCmd cmd)
 {
-    if (handle == NULL) {
+    int32_t ret;
+    uint32_t rLen;
+    const void *rBuf = NULL;
+    struct HdfSBuf *reply = NULL;
+    struct HdfIoService *service = (struct HdfIoService *)handle;
+
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    return UartHostRead((struct UartHost *)handle->object, data, size);
+    /* Four bits are used to store the buffer length, and four bits are used to align the memory. */
+    reply = HdfSBufObtain(size + sizeof(uint64_t));
+    if (reply == NULL) {
+        HDF_LOGE("%s: failed to obtain reply", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+    ret = service->dispatcher->Dispatch(&service->object, cmd, NULL, reply);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: failed to read, ret %d", __func__, ret);
+        goto __EXIT;
+    }
+    if (!HdfSbufReadBuffer(reply, &rBuf, &rLen)) {
+        HDF_LOGE("%s: sbuf read buffer failed", __func__);
+        ret = HDF_ERR_IO;
+        goto __EXIT;
+    }
+    if (size != rLen && cmd != UART_IO_READ) {
+        HDF_LOGE("%s: read error, size %u, rLen %u", __func__, size, rLen);
+        ret = HDF_FAILURE;
+        goto __EXIT;
+    }
+    if (memcpy_s(data, size, rBuf, rLen) != EOK) {
+        HDF_LOGE("%s: memcpy rBuf failed", __func__);
+        ret = HDF_ERR_IO;
+        goto __EXIT;
+    }
+    if (cmd == UART_IO_READ) {
+        ret = rLen;
+    }
+__EXIT:
+    HdfSBufRecycle(reply);
+    return ret;
 }
 
-int32_t UartWrite(struct DevHandle *handle, uint8_t *data, uint32_t size)
+static int32_t UartUserSend(DevHandle handle, void *data, uint32_t size, enum UartIoCmd cmd)
 {
-    if (handle == NULL) {
+    int32_t ret;
+    struct HdfSBuf *buf = NULL;
+    struct HdfIoService *service = (struct HdfIoService *)handle;
+
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    return UartHostWrite((struct UartHost *)handle->object, data, size);
+    buf = HdfSBufObtain(size);
+    if (buf == NULL) {
+        HDF_LOGE("%s: failed to obtain buf", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+    if (!HdfSbufWriteBuffer(buf, data, size)) {
+        HDF_LOGE("%s: sbuf write buffer failed", __func__);
+        HdfSBufRecycle(buf);
+        return HDF_ERR_IO;
+    }
+
+    ret = service->dispatcher->Dispatch(&service->object, cmd, buf, NULL);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: failed to write, ret %d", __func__, ret);
+    }
+    HdfSBufRecycle(buf);
+    return ret;
+}
+#endif
+
+int32_t UartRead(DevHandle handle, uint8_t *data, uint32_t size)
+{
+#ifdef __USER__
+    return UartUserReceive(handle, data, size, UART_IO_READ);
+#else
+    return UartHostRead((struct UartHost *)handle, data, size);
+#endif
 }
 
-int32_t UartGetBaud(struct DevHandle *handle, uint32_t *baudRate)
+int32_t UartWrite(DevHandle handle, uint8_t *data, uint32_t size)
 {
-    if (handle == NULL) {
-        return HDF_ERR_INVALID_PARAM;
-    }
-    return UartHostGetBaud((struct UartHost *)handle->object, baudRate);
+#ifdef __USER__
+    return UartUserSend(handle, data, size, UART_IO_WRITE);
+#else
+    return UartHostWrite((struct UartHost *)handle, data, size);
+#endif
 }
 
-int32_t UartSetBaud(struct DevHandle *handle, uint32_t baudRate)
+int32_t UartGetBaud(DevHandle handle, uint32_t *baudRate)
 {
-    if (handle == NULL) {
-        return HDF_ERR_INVALID_PARAM;
-    }
-    return UartHostSetBaud((struct UartHost *)handle->object, baudRate);
+#ifdef __USER__
+    return UartUserReceive(handle, baudRate, sizeof(*baudRate), UART_IO_GET_BAUD);
+#else
+    return UartHostGetBaud((struct UartHost *)handle, baudRate);
+#endif
 }
 
-int32_t UartGetAttribute(struct DevHandle *handle, struct UartAttribute *attribute)
+int32_t UartSetBaud(DevHandle handle, uint32_t baudRate)
 {
-    if (handle == NULL) {
-        return HDF_ERR_INVALID_PARAM;
-    }
-    return UartHostGetAttribute((struct UartHost *)handle->object, attribute);
+#ifdef __USER__
+    return UartUserSend(handle, &baudRate, sizeof(baudRate), UART_IO_SET_BAUD);
+#else
+    return UartHostSetBaud((struct UartHost *)handle, baudRate);
+#endif
 }
 
-int32_t UartSetAttribute(struct DevHandle *handle, struct UartAttribute *attribute)
+int32_t UartGetAttribute(DevHandle handle, struct UartAttribute *attribute)
 {
-    if (handle == NULL) {
-        return HDF_ERR_INVALID_PARAM;
-    }
-    return UartHostSetAttribute((struct UartHost *)handle->object, attribute);
+#ifdef __USER__
+    return UartUserReceive(handle, attribute, sizeof(*attribute), UART_IO_GET_ATTRIBUTE);
+#else
+    return UartHostGetAttribute((struct UartHost *)handle, attribute);
+#endif
 }
 
-int32_t UartSetTransMode(struct DevHandle *handle, enum UartTransMode mode)
+int32_t UartSetAttribute(DevHandle handle, struct UartAttribute *attribute)
 {
-    if (handle == NULL) {
-        return HDF_ERR_INVALID_PARAM;
-    }
-    return UartHostSetTransMode((struct UartHost *)handle->object, mode);
+#ifdef __USER__
+    return UartUserSend(handle, attribute, sizeof(*attribute), UART_IO_SET_ATTRIBUTE);
+#else
+    return UartHostSetAttribute((struct UartHost *)handle, attribute);
+#endif
+}
+
+int32_t UartSetTransMode(DevHandle handle, enum UartTransMode mode)
+{
+#ifdef __USER__
+    return UartUserSend(handle, &mode, sizeof(mode), UART_IO_SET_TRANSMODE);
+#else
+    return UartHostSetTransMode((struct UartHost *)handle, mode);
+#endif
 }

@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
@@ -128,7 +105,7 @@ enum I2cFlag {
  * returns <b>NULL</b> otherwise.
  * @since 1.0
  */
-struct DevHandle *I2cOpen(int16_t number);
+DevHandle I2cOpen(int16_t number);
 
  /**
  * @brief Releases the handle of an I2C controller.
@@ -140,7 +117,7 @@ struct DevHandle *I2cOpen(int16_t number);
  *
  * @since 1.0
  */
-void I2cClose(struct DevHandle *handle);
+void I2cClose(DevHandle handle);
 
 /**
  * @brief Launches a custom transfer to an I2C device.
@@ -157,7 +134,7 @@ void I2cClose(struct DevHandle *handle);
  *
  * @since 1.0
  */
-int32_t I2cTransfer(struct DevHandle *handle, struct I2cMsg *msgs, int16_t count);
+int32_t I2cTransfer(DevHandle handle, struct I2cMsg *msgs, int16_t count);
 
 #ifdef __cplusplus
 #if __cplusplus

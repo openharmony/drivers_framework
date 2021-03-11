@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
@@ -127,7 +104,7 @@ typedef void SdioIrqHandler(void *);
  * returns <b>NULL</b> otherwise.
  * @since 1.0
  */
-struct DevHandle *SdioOpen(int16_t busNum);
+DevHandle SdioOpen(int16_t busNum);
 
 /**
  * @brief Closes an SDIO controller.
@@ -139,7 +116,7 @@ struct DevHandle *SdioOpen(int16_t busNum);
  *
  * @since 1.0
  */
-void SdioClose(struct DevHandle *handle);
+void SdioClose(DevHandle handle);
 
 /**
  * @brief Incrementally reads a given length of data from the specified SDIO address.
@@ -158,7 +135,7 @@ void SdioClose(struct DevHandle *handle);
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioReadBytes(struct DevHandle *handle, uint8_t *data, uint32_t addr,
+int32_t SdioReadBytes(DevHandle handle, uint8_t *data, uint32_t addr,
     uint32_t size, uint32_t timeOut);
 
 /**
@@ -178,7 +155,7 @@ int32_t SdioReadBytes(struct DevHandle *handle, uint8_t *data, uint32_t addr,
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioWriteBytes(struct DevHandle *handle, uint8_t *data, uint32_t addr,
+int32_t SdioWriteBytes(DevHandle handle, uint8_t *data, uint32_t addr,
     uint32_t size, uint32_t timeOut);
 
 /**
@@ -198,7 +175,7 @@ int32_t SdioWriteBytes(struct DevHandle *handle, uint8_t *data, uint32_t addr,
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioReadBytesFromFixedAddr(struct DevHandle *handle, uint8_t *data,
+int32_t SdioReadBytesFromFixedAddr(DevHandle handle, uint8_t *data,
     uint32_t addr, uint32_t size, uint32_t timeOut);
 
 /**
@@ -218,7 +195,7 @@ int32_t SdioReadBytesFromFixedAddr(struct DevHandle *handle, uint8_t *data,
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioWriteBytesToFixedAddr(struct DevHandle *handle, uint8_t *data,
+int32_t SdioWriteBytesToFixedAddr(DevHandle handle, uint8_t *data,
     uint32_t addr, uint32_t size, uint32_t timeOut);
 
 /**
@@ -237,7 +214,7 @@ int32_t SdioWriteBytesToFixedAddr(struct DevHandle *handle, uint8_t *data,
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioReadBytesFromFunc0(struct DevHandle *handle, uint8_t *data,
+int32_t SdioReadBytesFromFunc0(DevHandle handle, uint8_t *data,
     uint32_t addr, uint32_t size, uint32_t timeOut);
 
 /**
@@ -256,7 +233,7 @@ int32_t SdioReadBytesFromFunc0(struct DevHandle *handle, uint8_t *data,
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioWriteBytesToFunc0(struct DevHandle *handle, uint8_t *data,
+int32_t SdioWriteBytesToFunc0(DevHandle handle, uint8_t *data,
     uint32_t addr, uint32_t size, uint32_t timeOut);
 
 /**
@@ -271,7 +248,7 @@ int32_t SdioWriteBytesToFunc0(struct DevHandle *handle, uint8_t *data,
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioSetBlockSize(struct DevHandle *handle, uint32_t blockSize);
+int32_t SdioSetBlockSize(DevHandle handle, uint32_t blockSize);
 
 /**
  * @brief Obtains common information.
@@ -287,7 +264,7 @@ int32_t SdioSetBlockSize(struct DevHandle *handle, uint32_t blockSize);
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioGetCommonInfo(struct DevHandle *handle, SdioCommonInfo *info, SdioCommonInfoType infoType);
+int32_t SdioGetCommonInfo(DevHandle handle, SdioCommonInfo *info, SdioCommonInfoType infoType);
 
 /**
  * @brief Sets common information.
@@ -303,7 +280,7 @@ int32_t SdioGetCommonInfo(struct DevHandle *handle, SdioCommonInfo *info, SdioCo
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioSetCommonInfo(struct DevHandle *handle, SdioCommonInfo *info, SdioCommonInfoType infoType);
+int32_t SdioSetCommonInfo(DevHandle handle, SdioCommonInfo *info, SdioCommonInfoType infoType);
 
 /**
  * @brief Flushes data.
@@ -315,7 +292,7 @@ int32_t SdioSetCommonInfo(struct DevHandle *handle, SdioCommonInfo *info, SdioCo
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioFlushData(struct DevHandle *handle);
+int32_t SdioFlushData(DevHandle handle);
 
 /**
  * @brief Claims a host exclusively.
@@ -328,7 +305,7 @@ int32_t SdioFlushData(struct DevHandle *handle);
  *
  * @since 1.0
  */
-void SdioClaimHost(struct DevHandle *handle);
+void SdioClaimHost(DevHandle handle);
 
 /**
  * @brief Releases the exclusively claimed host.
@@ -339,7 +316,7 @@ void SdioClaimHost(struct DevHandle *handle);
  *
  * @since 1.0
  */
-void SdioReleaseHost(struct DevHandle *handle);
+void SdioReleaseHost(DevHandle handle);
 
 /**
  * @brief Enables the SDIO device so that its register can be accessed.
@@ -349,7 +326,7 @@ void SdioReleaseHost(struct DevHandle *handle);
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioEnableFunc(struct DevHandle *handle);
+int32_t SdioEnableFunc(DevHandle handle);
 
 /**
  * @brief Disables the SDIO device.
@@ -361,7 +338,7 @@ int32_t SdioEnableFunc(struct DevHandle *handle);
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioDisableFunc(struct DevHandle *handle);
+int32_t SdioDisableFunc(DevHandle handle);
 
 /**
  * @brief Claims an SDIO IRQ.
@@ -374,7 +351,7 @@ int32_t SdioDisableFunc(struct DevHandle *handle);
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioClaimIrq(struct DevHandle *handle, SdioIrqHandler *irqHandler);
+int32_t SdioClaimIrq(DevHandle handle, SdioIrqHandler *irqHandler);
 
 /**
  * @brief Releases an SDIO IRQ.
@@ -386,7 +363,7 @@ int32_t SdioClaimIrq(struct DevHandle *handle, SdioIrqHandler *irqHandler);
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  * @since 1.0
  */
-int32_t SdioReleaseIrq(struct DevHandle *handle);
+int32_t SdioReleaseIrq(DevHandle handle);
 
 #ifdef __cplusplus
 #if __cplusplus

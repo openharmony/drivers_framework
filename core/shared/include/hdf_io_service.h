@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #ifndef HDF_IO_SERVICE_H
@@ -38,14 +15,42 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define DEV_NODE_PATH "/dev/"
+#define DEV_NODE_PATH "/dev/hdf/"
+#define DEV_PATH "/dev/"
 #define DEV_MGR_NODE "dev_mgr"
 #define MAX_MODE_SIZE 0777
+#define DEV_NODE_PATH_MODE 0755
+#define HDF_WRITE_READ _IOWR('b', 1, struct HdfSBuf)
+#define HDF_READ_DEV_EVENT _IOR('b', 2, struct HdfSBuf)
+#define HDF_LISTEN_EVENT_START _IO('b', 3)
+#define HDF_LISTEN_EVENT_STOP _IO('b', 4)
+#define HDF_LISTEN_EVENT_WAKEUP _IO('b', 5)
+#define HDF_LISTEN_EVENT_EXIT _IO('b', 6)
 
-struct HdfIoService *HdfIoServiceObtain(
-    struct HdfObject *object, struct HdfIoDispatcher *dispatcher);
-struct HdfIoService *HdfIoServiceAdapterObtain(const char* serviceName, mode_t mode);
+typedef enum {
+    DEVMGR_LOAD_SERVICE = 0,
+    DEVMGR_UNLOAD_SERVICE,
+    DEVMGR_GET_SERVICE,
+} DevMgrCmd;
+
+struct HdfWriteReadBuf {
+    int cmdCode;
+    size_t writeSize;     // bytes to write
+    size_t writeConsumed; // bytes consumed by driver (for ERESTARTSYS)
+    uintptr_t writeBuffer;
+    size_t readSize; // bytes to read
+    size_t readConsumed; // bytes consumed by driver (for ERESTARTSYS)
+    uintptr_t readBuffer;
+};
+
+struct HdfIoService *HdfIoServicePublish(const char *serviceName, uint32_t mode);
+void HdfIoServiceRemove(struct HdfIoService *service);
+
+struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName);
 void HdfIoServiceAdapterRecycle(struct HdfIoService *service);
+struct HdfIoService *HdfIoServiceAdapterPublish(const char *serviceName, uint32_t mode) __attribute__((weak));
+void HdfIoServiceAdapterRemove(struct HdfIoService *service) __attribute__((weak));
+int32_t HdfLoadDriverByServiceName(const char *serviceName);
 
 #ifdef __cplusplus
 }

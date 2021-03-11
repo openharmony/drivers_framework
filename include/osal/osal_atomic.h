@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
@@ -35,7 +12,7 @@
  *
  * @brief Defines the structures and interfaces for the Operating System Abstraction Layer (OSAL) module.
  *
- * The OSAL module harmonizes OS interface differences and provides unified OS interfaces externally,
+ * The OSAL module OpenHarmony OS interface differences and provides unified OS interfaces externally,
  * including the memory management, thread, mutex, spinlock, semaphore, timer, file, interrupt, time,
  * atomic, firmware, and I/O operation modules.
  *
@@ -60,7 +37,7 @@
 #ifndef OSAL_ATOMIC_H
 #define OSAL_ATOMIC_H
 
-#include "hdf_base.h"
+#include "osal_atomic_def.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,6 +45,9 @@ extern "C" {
 
 /**
  * @brief Describes an atomic.
+ *
+ * @since 1.0
+ * @version 1.0
  */
 typedef struct {
     volatile int32_t counter;/**< Counter (an atomic variable).
@@ -81,10 +61,11 @@ typedef struct {
  * @param v Indicates the pointer to the atomic {@link OsalAtomic}.
  *
  * @return Returns the counter.
+ *
  * @since 1.0
  * @version 1.0
  */
-int32_t OsalAtomicRead(const OsalAtomic *v);
+#define OsalAtomicRead(v) OsalAtomicReadWrapper(v)
 
 /**
  * @brief Sets the counter for an atomic.
@@ -95,7 +76,7 @@ int32_t OsalAtomicRead(const OsalAtomic *v);
  * @since 1.0
  * @version 1.0
  */
-void OsalAtomicSet(OsalAtomic *v, int32_t counter);
+#define OsalAtomicSet(v, counter) OsalAtomicSetWrapper(v, counter)
 
 /**
  * @brief Increments the counter of an atomic by 1.
@@ -105,7 +86,19 @@ void OsalAtomicSet(OsalAtomic *v, int32_t counter);
  * @since 1.0
  * @version 1.0
  */
-void OsalAtomicInc(OsalAtomic *v);
+#define OsalAtomicInc(v) OsalAtomicIncWrapper(v)
+
+/**
+ * @brief Increments the counter of an atomic by 1 and returns the new counter.
+ *
+ * @param v Indicates the pointer to the atomic {@link OsalAtomic}.
+ *
+ * @return Returns the new counter.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+#define OsalAtomicIncReturn(v) OsalAtomicIncRetWrapper(v)
 
 /**
  * @brief Decrements the counter of an atomic by 1.
@@ -115,7 +108,19 @@ void OsalAtomicInc(OsalAtomic *v);
  * @since 1.0
  * @version 1.0
  */
-void OsalAtomicDec(OsalAtomic *v);
+#define OsalAtomicDec(v) OsalAtomicDecWrapper(v)
+
+/**
+ * @brief Decrements the counter of an atomic by 1 and returns the new counter.
+ *
+ * @param v Indicates the pointer to the atomic {@link OsalAtomic}.
+ *
+ * @return Returns the new counter.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+#define OsalAtomicDecReturn(v) OsalAtomicDecRetWrapper(v)
 
 /**
  * @brief Tests the value of a specified bit of a variable.
@@ -124,10 +129,11 @@ void OsalAtomicDec(OsalAtomic *v);
  * @param addr Indicates the pointer to the variable.
  *
  * @return Returns the bit value.
+ *
  * @since 1.0
  * @version 1.0
  */
-int32_t OsalTestBit(unsigned long nr, const volatile unsigned long *addr);
+#define OsalTestBit(nr, addr) OsalTestBitWrapper(nr, addr)
 
 /**
  * @brief Sets the value of a specified bit of the variable and returns the bit value before the setting.
@@ -136,10 +142,11 @@ int32_t OsalTestBit(unsigned long nr, const volatile unsigned long *addr);
  * @param addr Indicates the pointer to the variable.
  *
  * @return Returns the bit value before the setting.
+ *
  * @since 1.0
  * @version 1.0
  */
-int32_t OsalTestSetBit(unsigned long nr, volatile unsigned long *addr);
+#define OsalTestSetBit(nr, addr) OsalTestSetBitWrapper(nr, addr)
 
 /**
  * @brief Clears the value of a specified bit of the variable and returns the bit value before clearing.
@@ -148,10 +155,11 @@ int32_t OsalTestSetBit(unsigned long nr, volatile unsigned long *addr);
  * @param addr Indicates the pointer to the variable.
  *
  * @return Returns the bit value before the bit is cleared.
+ *
  * @since 1.0
  * @version 1.0
  */
-int32_t OsalTestClearBit(unsigned long nr, volatile unsigned long *addr);
+#define OsalTestClearBit(nr, addr) OsalTestClearBitWrapper(nr, addr)
 
 /**
  * @brief Clears the value of a specified bit of the variable.
@@ -162,7 +170,7 @@ int32_t OsalTestClearBit(unsigned long nr, volatile unsigned long *addr);
  * @since 1.0
  * @version 1.0
  */
-void OsalClearBit(unsigned long nr, volatile unsigned long *addr);
+#define OsalClearBit(nr, addr) OsalClearBitWrapper(nr, addr)
 
 #ifdef __cplusplus
 }

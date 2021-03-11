@@ -1,36 +1,12 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "devmgr_service.h"
-#include <string.h>
 #include "devhost_service_clnt.h"
 #include "device_token_clnt.h"
 #include "hdf_attribute_manager.h"
@@ -47,16 +23,18 @@
 static int DevmgrServiceActiveDevice(struct DevHostServiceClnt *hostClnt, struct HdfDeviceInfo *deviceInfo, bool isLoad)
 {
     struct IDevHostService *devHostSvcIf = (struct IDevHostService *)hostClnt->hostService;
-    if (isLoad) {
+    if (isLoad && (deviceInfo->preload != DEVICE_PRELOAD_ENABLE)) {
         int ret = devHostSvcIf->AddDevice(devHostSvcIf, deviceInfo);
         if (ret == HDF_SUCCESS) {
             deviceInfo->preload = DEVICE_PRELOAD_ENABLE;
         }
         return ret;
-    } else {
+    } else if (!isLoad && (deviceInfo->preload != DEVICE_PRELOAD_DISABLE)) {
         devHostSvcIf->DelDevice(devHostSvcIf, deviceInfo);
         deviceInfo->preload = DEVICE_PRELOAD_DISABLE;
         return HDF_SUCCESS;
+    } else {
+        return HDF_FAILURE;
     }
 }
 
@@ -68,6 +46,31 @@ static int DevmgrServiceFindAndActiveDevice(const char *svcName, bool isLoad)
     struct DevHostServiceClnt *hostClnt = NULL;
     struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
     if (devMgrSvc == NULL || svcName == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    HdfSListIteratorInit(&itHost, &devMgrSvc->hosts);
+    while (HdfSListIteratorHasNext(&itHost)) {
+        hostClnt = (struct DevHostServiceClnt *)HdfSListIteratorNext(&itHost);
+        HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
+        while (HdfSListIteratorHasNext(&itDeviceInfo)) {
+            deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
+            if (strcmp(deviceInfo->svcName, svcName) == 0) {
+                return DevmgrServiceActiveDevice(hostClnt, deviceInfo, isLoad);
+            }
+        }
+    }
+    return HDF_FAILURE;
+}
+
+int32_t DevmgrServiceLoadLeftDriver(struct DevmgrService *devMgrSvc)
+{
+    int32_t ret;
+    struct HdfSListIterator itHost;
+    struct HdfSListIterator itDeviceInfo;
+    struct HdfDeviceInfo *deviceInfo = NULL;
+    struct DevHostServiceClnt *hostClnt = NULL;
+    if (devMgrSvc == NULL) {
         return HDF_FAILURE;
     }
 
@@ -77,14 +80,17 @@ static int DevmgrServiceFindAndActiveDevice(const char *svcName, bool isLoad)
         HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
         while (HdfSListIteratorHasNext(&itDeviceInfo)) {
             deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
-            if ((strcmp(deviceInfo->svcName, svcName) == 0) && (deviceInfo->preload == DEVICE_PRELOAD_DISABLE)) {
-                return DevmgrServiceActiveDevice(hostClnt, deviceInfo, isLoad);
+            if (deviceInfo->preload == DEVICE_PRELOAD_ENABLE_STEP2) {
+                ret = DevmgrServiceActiveDevice(hostClnt, deviceInfo, true);
+                if (ret != HDF_SUCCESS) {
+                    HDF_LOGE("%s load driver %s failed!", __func__, deviceInfo->moduleName);
+                }
             }
         }
     }
-    HDF_LOGE("Find %s deviceInfo failed, active is: %u", svcName, isLoad);
-    return HDF_FAILURE;
+    return HDF_SUCCESS;
 }
+
 
 int DevmgrServiceLoadDevice(const char *svcName)
 {
@@ -156,6 +162,7 @@ static int DevmgrServiceAttachDeviceHost(
         HDF_LOGE("Get device list failed");
         return HDF_FAILURE;
     }
+    hostClnt->devCount = HdfSListCount(hostClnt->deviceInfos);
     hostClnt->hostService = hostService;
     return DevHostServiceClntInstallDriver(hostClnt);
 }
@@ -174,8 +181,8 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
     }
     HdfSListInit(&hostList);
     if (!HdfAttributeManagerGetHostList(&hostList)) {
-        HDF_LOGW("Get device host list failed");
-        return HDF_FAILURE;
+        HDF_LOGW("%s get host list is null", __func__);
+        return HDF_SUCCESS;
     }
     HdfSListIteratorInit(&it, &hostList);
     while (HdfSListIteratorHasNext(&it)) {
@@ -207,7 +214,7 @@ int DevmgrServiceStartService(struct IDevmgrService *inst)
     return DevmgrServiceStartDeviceHosts(dmService);
 }
 
-static bool DevmgrServiceConstruct(struct DevmgrService *inst)
+bool DevmgrServiceConstruct(struct DevmgrService *inst)
 {
     if (OsalMutexInit(&inst->devMgrMutex) != HDF_SUCCESS) {
         HDF_LOGE("%s mutex init failed", __func__);
@@ -260,6 +267,7 @@ void DevmgrServiceRelease(struct HdfObject *object)
 
 void DevmgrServiceAcquireWakeLock(struct IDevmgrService *inst, struct IPowerStateToken *tokenIf)
 {
+    (void)inst;
     struct PowerStateManager *stateManager = PowerStateManagerGetInstance();
     if ((stateManager != NULL) && (stateManager->AcquireWakeLock != NULL)) {
         stateManager->AcquireWakeLock(stateManager, tokenIf);
@@ -268,6 +276,7 @@ void DevmgrServiceAcquireWakeLock(struct IDevmgrService *inst, struct IPowerStat
 
 void DevmgrServiceReleaseWakeLock(struct IDevmgrService *inst, struct IPowerStateToken *tokenIf)
 {
+    (void)inst;
     struct PowerStateManager *stateManager = PowerStateManagerGetInstance();
     if ((stateManager != NULL) && (stateManager->ReleaseWakeLock != NULL)) {
         stateManager->ReleaseWakeLock(stateManager, tokenIf);

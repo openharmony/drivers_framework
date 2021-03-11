@@ -1,35 +1,13 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "hdf_log.h"
+#include "plat_log.h"
 #include "rtc_base.h"
 
 #define HDF_LOG_TAG rtc_base
@@ -46,7 +24,7 @@ uint8_t RtcGetMonthDays(const uint8_t isLeapYear, const uint8_t month)
     if (RTC_FEBRUARY == month) {
         days = RTC_TWO_MONTH_DAY + isLeapYear;
     } else {
-        oddMonth = (month > RTC_AUGUST) ? (month - RTC_UNIT_DIFF) : month;
+        oddMonth = (month >= RTC_AUGUST) ? (month - RTC_UNIT_DIFF) : month;
         days = (oddMonth & RTC_ODD_MONTH_MASK) ? RTC_GREAT_MONTH_DAY : RTC_SMALL_MONTH_DAY;
     }
     return days;
@@ -99,6 +77,7 @@ uint8_t RtcGetWeekDay(const struct RtcTime *time)
     return ((RTC_BEGIN_WEEKDAY + days - RTC_UNIT_DIFF) % RTC_MAX_WEEKDAY + RTC_UNIT_DIFF);
 }
 
+#ifndef __KERNEL__
 uint64_t RtcTimeToTimestamp(const struct RtcTime *time)
 {
     uint64_t seconds;
@@ -110,7 +89,7 @@ uint64_t RtcTimeToTimestamp(const struct RtcTime *time)
         HDF_LOGE("RtcTimeToTimestamp: time null");
         return RTC_FALSE;
     }
-    HDF_LOGD("RtcToTimestamp:year-month-day hour:min:second ms %04u-%02u-%02u %02u:%02u:%02u .%03u",
+    PLAT_LOGV("RtcToTimestamp:year-month-day hour:min:second ms %04u-%02u-%02u %02u:%02u:%02u .%03u",
         time->year, time->month, time->day, time->hour, time->minute, time->second, time->millisecond);
     if (RtcIsInvalid(time) == RTC_TRUE) {
         HDF_LOGE("RtcTimeToTimestamp: time invalid");
@@ -164,6 +143,7 @@ void TimestampToRtcTime(struct RtcTime *time, const uint64_t seconds)
     time->month += RTC_UNIT_DIFF;
     time->day += RTC_UNIT_DIFF;
     time->weekday = RtcGetWeekDay(time);
-    HDF_LOGD("TimestampToRtc:year-month-day weekday hour:min:second ms %04u-%02u-%02u %u %02u:%02u:%02u .%03u",
+    PLAT_LOGV("TimestampToRtc:year-month-day weekday hour:min:second ms %04u-%02u-%02u %u %02u:%02u:%02u .%03u",
         time->year, time->month, time->day, time->weekday, time->hour, time->minute, time->second, time->millisecond);
 }
+#endif

@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #ifndef SPI_CORE_H
@@ -45,26 +22,28 @@ struct SpiCntlrMethod {
     int32_t (*GetCfg)(struct SpiCntlr *, struct SpiCfg *);
     int32_t (*SetCfg)(struct SpiCntlr *, struct SpiCfg *);
     int32_t (*Transfer)(struct SpiCntlr *, struct SpiMsg *, uint32_t);
+    int32_t (*Open)(struct SpiCntlr *);
+    int32_t (*Close)(struct SpiCntlr *);
 };
 
 struct SpiCntlr {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
     uint32_t busNum;
+    uint32_t numCs;
     uint32_t curCs;
     struct OsalMutex lock;
     struct SpiCntlrMethod *method;
+    struct DListHead list;
     void *priv;
 };
 
 struct SpiDev {
     struct SpiCntlr *cntlr;
     struct DListHead list;
+    struct SpiCfg cfg;
     uint32_t csNum;
-    uint32_t maxSpeedHz;
-    uint16_t mode;
-    uint8_t bitsPerWord;
-    uint8_t transferMode;
+    void *priv;
 };
 
 struct SpiCntlr *SpiCntlrCreate(struct HdfDeviceObject *device);
@@ -99,5 +78,7 @@ static inline struct SpiCntlr *SpiCntlrFromDevice(struct HdfDeviceObject *device
 int32_t SpiCntlrTransfer(struct SpiCntlr *, uint32_t, struct SpiMsg *, uint32_t);
 int32_t SpiCntlrSetCfg(struct SpiCntlr *, uint32_t, struct SpiCfg *);
 int32_t SpiCntlrGetCfg(struct SpiCntlr *, uint32_t, struct SpiCfg *);
+int32_t SpiCntlrOpen(struct SpiCntlr *, uint32_t);
+int32_t SpiCntlrClose(struct SpiCntlr *, uint32_t);
 
 #endif /* SPI_CORE_H */

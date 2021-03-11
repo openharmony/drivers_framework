@@ -1,40 +1,17 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef _WIFI_HAL_H_
-#define _WIFI_HAL_H_
+#ifndef HDF_WIFI_CMD_H
+#define HDF_WIFI_CMD_H
 
-#include <stdint.h>
+#include "hdf_base.h"
 #include <stddef.h>
-#include <net/if.h>
+#include "net_device.h"
 #include "hdf_device_desc.h"
 #include "hdf_sbuf.h"
 
@@ -105,55 +82,6 @@ typedef enum {
 } WifiHiddenSsid;
 
 typedef enum {
-    WIFI_WPA_CMD_SET_AP = 0,
-    WIFI_WPA_CMD_NEW_KEY,
-    WIFI_WPA_CMD_DEL_KEY,
-    WIFI_WPA_CMD_SET_KEY,
-    WIFI_WPA_CMD_SEND_MLME,
-    WIFI_WPA_CMD_SEND_EAPOL = 5,
-    WIFI_WPA_CMD_RECEIVE_EAPOL,
-    WIFI_WPA_CMD_ENALBE_EAPOL,
-    WIFI_WPA_CMD_DISABLE_EAPOL,
-    WIFI_WPA_CMD_GET_ADDR,
-    WIFI_WPA_CMD_SET_POWER = 10,
-    WIFI_WPA_CMD_SET_MODE,
-    WIFI_WPA_CMD_GET_HW_FEATURE,
-    WIFI_WPA_CMD_STOP_AP,
-    WIFI_WPA_CMD_DEL_VIRTUAL_INTF,
-    WIFI_WPA_CMD_SCAN = 15,
-    WIFI_WPA_CMD_DISCONNECT,
-    WIFI_WPA_CMD_ASSOC,
-    WIFI_WPA_CMD_SET_NETDEV,
-    WIFI_WPA_CMD_SET_AP_WPS_P2P_IE,
-    WIFI_WPA_CMD_CHANGE_BEACON = 20,
-    WIFI_WPA_CMD_DHCP_START,
-    WIFI_WPA_CMD_DHCP_STOP,
-    WIFI_WPA_CMD_DHCP_SUCC_CHECK,
-    WIFI_WPA_CMD_SET_REKEY_INFO,
-    WIFI_WPA_CMD_SET_PM_ON = 25,
-    WIFI_WPA_CMD_IP_NOTIFY_DRIVER,
-    WIFI_WPA_CMD_SET_MAX_STA,
-    WIFI_WPA_CMD_STA_REMOVE,
-    WIFI_WPA_CMD_SEND_ACTION,
-    WIFI_WPA_CMD_SET_MESH_USER = 30,
-    WIFI_WPA_CMD_SET_MESH_GTK,
-    WIFI_WPA_CMD_EN_AUTO_PEER,
-    WIFI_WPA_CMD_EN_ACCEPT_PEER,
-    WIFI_WPA_CMD_EN_ACCEPT_STA,
-    WIFI_WPA_CMD_ADD_IF = 35,
-    WIFI_WPA_CMD_PROBE_REQUEST_REPORT,
-    WIFI_WPA_CMD_REMAIN_ON_CHANNEL,
-    WIFI_WPA_CMD_CANCEL_REMAIN_ON_CHANNEL,
-    WIFI_WPA_CMD_SET_P2P_NOA,
-    WIFI_WPA_CMD_SET_P2P_POWERSAVE = 40,
-    WIFI_WPA_CMD_REMOVE_IF,
-    WIFI_WPA_CMD_GET_P2P_MAC_ADDR,
-    WIFI_WPA_CMD_GET_DRIVER_FLAGS,
-    WIFI_WPA_CMD_SET_USR_APP_IE,
-    WIFI_WPA_CMD_BUTT
-} WifiWPACmdType;
-
-typedef enum {
     WIFI_WPA_EVENT_NEW_STA = 0,
     WIFI_WPA_EVENT_DEL_STA,
     WIFI_WPA_EVENT_RX_MGMT,
@@ -169,6 +97,7 @@ typedef enum {
     WIFI_WPA_EVENT_CHANNEL_SWITCH,
     WIFI_WPA_EVENT_EAPOL_RECV,
     WIFI_WPA_EVENT_TIMEOUT_DISCONN,
+    WIFI_WPA_EVENT_RESET_DRIVER = 15,
     WIFI_WPA_EVENT_BUTT
 } WifiWpaEventType;
 
@@ -222,6 +151,10 @@ typedef struct {
     WifiIfType ifType;
     WifiPhyMode mode;
 } WifiSetNewDev;
+
+typedef struct {
+    uint8_t mac[ETH_ADDR_LEN];
+} WifiStaInfo;
 
 typedef struct {
     int32_t numRates;
@@ -354,9 +287,11 @@ typedef struct {
     uint32_t flags;
 } WifiIeee80211Channel;
 
+#define MAX_SUPPORTED_RATE 12
+
 typedef struct {
     int32_t channelNum;
-    uint16_t bitrate[12];
+    uint16_t bitrate[MAX_SUPPORTED_RATE];
     uint16_t htCapab;
     uint8_t resv[2];
     WifiIeee80211Channel iee80211Channel[14];
@@ -477,8 +412,6 @@ typedef enum {
     WIFI_CHAN_NO_80MHZ      = 1 << 7,
     WIFI_CHAN_NO_160MHZ     = 1 << 8,
 } WifiChannelFlags;
-
-int32_t WifiCmdProcess(struct HdfDeviceObject *device, int32_t cmd, struct HdfSBuf *reqData, struct HdfSBuf *rspData);
 
 #ifdef __cplusplus
 #if __cplusplus

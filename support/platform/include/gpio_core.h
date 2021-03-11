@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #ifndef GPIO_CORE_H
@@ -34,7 +11,9 @@
 
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
+#include "hdf_dlist.h"
 #include "gpio_if.h"
+#include "osal_spinlock.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -44,26 +23,65 @@ extern "C" {
 
 struct GpioCntlr;
 struct GpioMethod;
+struct GpioInfo;
 
+#define GPIO_NUM_DEFAULT 200
+
+/**
+ * @brief Defines the struct which represent a hardware GPIO controller.
+ *
+ * @since 1.0
+ */
 struct GpioCntlr {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
-    void *priv;
     struct GpioMethod *ops;
+    struct DListHead list;
+    OsalSpinlock spin;
+    uint16_t start;
+    uint16_t count;
+    struct GpioInfo *ginfos;
+    void *priv;
 };
 
+/**
+ * @brief Defines the struct which represent a hardware GPIO pin.
+ *
+ * @since 1.0
+ */
+struct GpioInfo {
+    GpioIrqFunc irqFunc;
+    void *irqData;
+};
+
+/**
+ * @brief Defines the struct which contains the hooks which a GPIO driver need to implement.
+ *
+ * @since 1.0
+ */
 struct GpioMethod {
-    int32_t (*request)(struct GpioCntlr *cntlr, uint16_t gpio);
-    int32_t (*release)(struct GpioCntlr *cntlr, uint16_t gpio);
-    int32_t (*write)(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t val);
-    int32_t (*read)(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t *val);
-    int32_t (*setDir)(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t dir);
-    int32_t (*getDir)(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t *dir);
-    int32_t (*toIrq)(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t *irq);
-    int32_t (*setIrq)(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg);
-    int32_t (*unsetIrq)(struct GpioCntlr *cntlr, uint16_t gpio);
-    int32_t (*enableIrq)(struct GpioCntlr *cntlr, uint16_t gpio);
-    int32_t (*disableIrq)(struct GpioCntlr *cntlr, uint16_t gpio);
+    /** request exclusive access to an GPIO pin, optional */
+    int32_t (*request)(struct GpioCntlr *cntlr, uint16_t local);
+    /** release exclusive access to an GPIO pin, optional */
+    int32_t (*release)(struct GpioCntlr *cntlr, uint16_t local);
+    /** write the level value into a GPIO pin */
+    int32_t (*write)(struct GpioCntlr *cntlr, uint16_t local, uint16_t val);
+    /** read the level value of a GPIO pin */
+    int32_t (*read)(struct GpioCntlr *cntlr, uint16_t local, uint16_t *val);
+    /** set the direction for a GPIO pin */
+    int32_t (*setDir)(struct GpioCntlr *cntlr, uint16_t local, uint16_t dir);
+    /** get the direction of a GPIO pin */
+    int32_t (*getDir)(struct GpioCntlr *cntlr, uint16_t local, uint16_t *dir);
+    /** get the irq number of a GPIO pin, optional */
+    int32_t (*toIrq)(struct GpioCntlr *cntlr, uint16_t local, uint16_t *irq);
+    /** set the ISR function for a GPIO pin */
+    int32_t (*setIrq)(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode, GpioIrqFunc func, void *arg);
+    /** unset the ISR function for a GPIO pin */
+    int32_t (*unsetIrq)(struct GpioCntlr *cntlr, uint16_t local);
+    /** enable a GPIO pin interrupt */
+    int32_t (*enableIrq)(struct GpioCntlr *cntlr, uint16_t local);
+    /** disable a GPIO pin interrupt */
+    int32_t (*disableIrq)(struct GpioCntlr *cntlr, uint16_t local);
 };
 
 /**
@@ -98,23 +116,32 @@ static inline struct GpioCntlr *GpioCntlrFromDevice(struct HdfDeviceObject *devi
     return (device == NULL) ? NULL : (struct GpioCntlr *)device->service;
 }
 
-int32_t GpioCntlrWrite(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t val);
+int32_t GpioCntlrWrite(struct GpioCntlr *cntlr, uint16_t local, uint16_t val);
 
-int32_t GpioCntlrRead(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t *val);
+int32_t GpioCntlrRead(struct GpioCntlr *cntlr, uint16_t local, uint16_t *val);
 
-int32_t GpioCntlrSetDir(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t dir);
+int32_t GpioCntlrSetDir(struct GpioCntlr *cntlr, uint16_t local, uint16_t dir);
 
-int32_t GpioCntlrGetDir(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t *dir);
+int32_t GpioCntlrGetDir(struct GpioCntlr *cntlr, uint16_t local, uint16_t *dir);
 
-int32_t GpioCntlrToIrq(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t *irq);
+int32_t GpioCntlrToIrq(struct GpioCntlr *cntlr, uint16_t local, uint16_t *irq);
 
-int32_t GpioCntlrSetIrq(struct GpioCntlr *cntlr, uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg);
+int32_t GpioCntlrSetIrq(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode, GpioIrqFunc func, void *arg);
 
-int32_t GpioCntlrUnsetIrq(struct GpioCntlr *cntlr, uint16_t gpio);
+int32_t GpioCntlrUnsetIrq(struct GpioCntlr *cntlr, uint16_t local);
 
-int32_t GpioCntlrEnableIrq(struct GpioCntlr *cntlr, uint16_t gpio);
+int32_t GpioCntlrEnableIrq(struct GpioCntlr *cntlr, uint16_t local);
 
-int32_t GpioCntlrDisableIrq(struct GpioCntlr *cntlr, uint16_t gpio);
+int32_t GpioCntlrDisableIrq(struct GpioCntlr *cntlr, uint16_t local);
+
+void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local);
+
+struct GpioCntlr *GpioGetCntlr(uint16_t gpio);
+
+static inline uint16_t GpioGetLocalNumber(struct GpioCntlr *cntlr, uint16_t gpio)
+{
+    return (cntlr == NULL) ? gpio : (gpio - cntlr->start);
+}
 
 #ifdef __cplusplus
 #if __cplusplus

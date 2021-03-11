@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
@@ -267,6 +244,23 @@ enum UartTransMode {
 };
 
 /**
+ * @brief Enumerates UART I/O commands.
+ *
+ * @since 1.0
+ */
+enum UartIoCmd {
+    UART_IO_INIT = 0,        /**< Initialize the UART device. */
+    UART_IO_DEINIT,          /**< Deinitialize the UART device. */
+    UART_IO_READ,            /**< Read data. */
+    UART_IO_WRITE,           /**< Write data. */
+    UART_IO_GET_BAUD,        /**< Obtain the baud rate. */
+    UART_IO_SET_BAUD,        /**< Set the baud rate. */
+    UART_IO_GET_ATTRIBUTE,   /**< Obtain the device attributes. */
+    UART_IO_SET_ATTRIBUTE,   /**< Set the device attributes. */
+    UART_IO_SET_TRANSMODE,   /**< Set the transmission mode. */
+};
+
+/**
  * @brief Obtains the UART device handle.
  *
  * Before accessing the UART device, you must call this function to obtain the UART device handle.
@@ -276,7 +270,7 @@ enum UartTransMode {
  * @return Returns the pointer to the UART device handle if the handle is obtained; returns <b>NULL</b> otherwise.
  * @since 1.0
  */
-struct DevHandle *UartOpen(uint32_t port);
+DevHandle UartOpen(uint32_t port);
 
 /**
  * @brief Releases the UART device handle.
@@ -288,7 +282,7 @@ struct DevHandle *UartOpen(uint32_t port);
  *
  * @since 1.0
  */
-void UartClose(struct DevHandle *handle);
+void UartClose(DevHandle handle);
 
 /**
  * @brief Reads data of a specified size from a UART device.
@@ -300,7 +294,7 @@ void UartClose(struct DevHandle *handle);
  * @return Returns the size of the data that is successfully read; returns a negative number if the reading fails.
  * @since 1.0
  */
-int32_t UartRead(struct DevHandle *handle, uint8_t *data, uint32_t size);
+int32_t UartRead(DevHandle handle, uint8_t *data, uint32_t size);
 
 /**
  * @brief Writes data of a specified size into a UART device.
@@ -312,7 +306,7 @@ int32_t UartRead(struct DevHandle *handle, uint8_t *data, uint32_t size);
  * @return Returns <b>0</b> if the data is successfully written; returns a negative number otherwise.
  * @since 1.0
  */
-int32_t UartWrite(struct DevHandle *handle, uint8_t *data, uint32_t size);
+int32_t UartWrite(DevHandle handle, uint8_t *data, uint32_t size);
 
 /**
  * @brief Obtains the baud rate of the UART device.
@@ -323,7 +317,7 @@ int32_t UartWrite(struct DevHandle *handle, uint8_t *data, uint32_t size);
  * @return Returns <b>0</b> if the baud rate is obtained; returns a negative number otherwise.
  * @since 1.0
  */
-int32_t UartGetBaud(struct DevHandle *handle, uint32_t *baudRate);
+int32_t UartGetBaud(DevHandle handle, uint32_t *baudRate);
 
 /**
  * @brief Sets the baud rate for the UART device.
@@ -334,7 +328,7 @@ int32_t UartGetBaud(struct DevHandle *handle, uint32_t *baudRate);
  * @return Returns <b>0</b> if the setting is successful; returns a negative number otherwise.
  * @since 1.0
  */
-int32_t UartSetBaud(struct DevHandle *handle, uint32_t baudRate);
+int32_t UartSetBaud(DevHandle handle, uint32_t baudRate);
 
 /**
  * @brief Obtains the UART attribute.
@@ -346,7 +340,7 @@ int32_t UartSetBaud(struct DevHandle *handle, uint32_t baudRate);
  *
  * @return Returns <b>0</b> if the UART attribute is obtained; returns a negative number otherwise.
  * @since 1.0 */
-int32_t UartGetAttribute(struct DevHandle *handle, struct UartAttribute *attribute);
+int32_t UartGetAttribute(DevHandle handle, struct UartAttribute *attribute);
 
 /**
  * @brief Sets the UART attribute.
@@ -359,7 +353,7 @@ int32_t UartGetAttribute(struct DevHandle *handle, struct UartAttribute *attribu
  * @return Returns <b>0</b> if the setting is successful; returns a negative number otherwise.
  * @since 1.0
  */
-int32_t UartSetAttribute(struct DevHandle *handle, struct UartAttribute *attribute);
+int32_t UartSetAttribute(DevHandle handle, struct UartAttribute *attribute);
 
 /**
  * @brief Sets the UART transmission mode.
@@ -370,7 +364,7 @@ int32_t UartSetAttribute(struct DevHandle *handle, struct UartAttribute *attribu
  * @return Returns <b>0</b> if the setting is successful; returns a negative number otherwise.
  * @since 1.0
  */
-int32_t UartSetTransMode(struct DevHandle *handle, enum UartTransMode mode);
+int32_t UartSetTransMode(DevHandle handle, enum UartTransMode mode);
 
 #ifdef __cplusplus
 #if __cplusplus

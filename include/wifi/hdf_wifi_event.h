@@ -1,41 +1,20 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
  * @addtogroup WLAN
  * @{
  *
- * @brief Defines a WLAN module that supports cross-OS migration, component adaptation, and modular assembly and
- * compilation. Driver developers of WLAN vendors can adapt their driver code based on the unified APIs provided
- * by the WLAN module.
+ * @brief Provides cross-OS migration, component adaptation, and modular assembly and compilation.
+ *
+ * Based on the unified APIs provided by the WLAN module, developers of the Hardware Driver Interface
+ * (HDI) are capable of creating, disabling, scanning for, and connecting to WLAN hotspots, managing WLAN chips,
+ * network devices, and power, and applying for, releasing, and moving network data buffers.
  *
  * @since 1.0
  * @version 1.0
@@ -59,7 +38,6 @@
 #include "hdf_wifi_cmd.h"
 #include "wifi_mac80211_ops.h"
 #include "net_device.h"
-#include <stdint.h>
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -71,6 +49,7 @@ extern "C" {
  * @brief Defines the rate information received or sent over WLAN.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct RateInfo {
     uint8_t    flags;   /**< Flag field, used to indicate a specific rate transmission type of 802.11n */
@@ -84,6 +63,7 @@ struct RateInfo {
  * @brief Defines parameters related to the WLAN module that works in station mode.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct StaBssParameters {
     uint8_t  flags;           /**< Flag, used to indicate a specific rate transmission type of 802.11n */
@@ -95,6 +75,7 @@ struct StaBssParameters {
  * @brief Defines the update of the <b>Sta</b> flag.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct StaFlagUpdate {
     uint32_t mask;  /**< Flag mask */
@@ -105,6 +86,7 @@ struct StaFlagUpdate {
  * @brief Defines station information.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct StationInfo {
     uint32_t                          filled;           /**< Flag values of relevant structures */
@@ -145,6 +127,7 @@ struct StationInfo {
  * @brief Defines authentication information.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct Auth {
     uint16_t authAlg;          /**< Authentication algorithm */
@@ -157,6 +140,7 @@ struct Auth {
  * @brief Defines deauthentication information.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct Deauth {
     uint16_t reasonCode;  /**< Deauthentication cause code */
@@ -166,6 +150,7 @@ struct Deauth {
  * @brief Defines station association request.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct AssocReq {
     uint16_t capabInfo;       /**< WLAN capability information */
@@ -177,6 +162,7 @@ struct AssocReq {
  * @brief Defines station association response.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct AssocResp {
     uint16_t capabInfo;   /**< WLAN capability information */
@@ -189,6 +175,7 @@ struct AssocResp {
  * @brief Defines station reassociation request.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct ReassocReq {
     uint16_t capabInfo;       /**< WLAN capability information */
@@ -201,6 +188,7 @@ struct ReassocReq {
  * @brief Defines station reassociation response.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct ReassocResp {
     uint16_t capabInfo;   /**< WLAN capability information */
@@ -213,6 +201,7 @@ struct ReassocResp {
  * @brief Defines station disconnection.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct Disassoc {
     uint16_t reasonCode;  /**< Cause code */
@@ -222,6 +211,7 @@ struct Disassoc {
  * @brief Defines the update of the <b>Sta</b> flag.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct Beacon {
     uint64_t timestamp;   /**< Timestamp */
@@ -234,6 +224,7 @@ struct Beacon {
  * @brief Defines scanning response.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct ProbeResp {
     uint64_t timestamp;   /**< Timestamp */
@@ -246,6 +237,7 @@ struct ProbeResp {
  * @brief Defines management frame information.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct Ieee80211Mgmt {
     uint16_t frameControl;               /**< Frame control field */
@@ -271,6 +263,7 @@ struct Ieee80211Mgmt {
  * @brief Represents the scanned BSS information.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct ScannedBssInfo {
     int32_t                  signal;   /**< Signal strength */
@@ -284,6 +277,7 @@ struct ScannedBssInfo {
  * @brief Defines association results.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct ConnetResult {
     uint8_t   bssid[ETH_ADDR_LEN];  /**< MAC address of the AP associated with the station */
@@ -301,6 +295,7 @@ struct ConnetResult {
  * fails to be associated.
  *
  * @since 1.0
+ * @version 1.0
  */
 enum WifiHmacMgmtStatus {
     WIFI_HMAC_MGMT_SUCCESS = 0,     /**< Association succeeds */
@@ -314,7 +309,7 @@ enum WifiHmacMgmtStatus {
 /**
  * @brief Reports a new STA event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param macAddr Indicates the pointer to the MAC address of the station. This parameter cannot be null.
  * @param addrLen Indicates the length of the MAC address of the station. The length is fixed to six bytes.
  * @param info Indicates the pointer to the station information.
@@ -322,81 +317,86 @@ enum WifiHmacMgmtStatus {
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventNewSta(const struct NetDevice *netdev, const uint8_t *macAddr, uint8_t addrLen,
+int32_t HdfWifiEventNewSta(const struct NetDevice *netDev, const uint8_t *macAddr, uint8_t addrLen,
     const struct StationInfo *info);
 
 /**
  * @brief Reports a station deletion event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param macAddr Indicates the pointer to the MAC address of the station. This parameter cannot be null.
  * @param addrLen Indicates the length of the MAC address of the station. The length is fixed to six bytes.
  *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventDelSta(struct NetDevice *netdev, const uint8_t *macAddr, uint8_t addrLen);
+int32_t HdfWifiEventDelSta(struct NetDevice *netDev, const uint8_t *macAddr, uint8_t addrLen);
 
 /**
  * @brief Reports a scanned BSS event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
- * @param wiphy Indicates the pointer to the physical layer of the wireless network. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param channel Indicates the pointer to the channel information. This parameter cannot be null.
  * @param bssInfo Indicates the pointer to the BSS information. This parameter cannot be null.
  *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventInformBssFrame(const struct NetDevice *netdev, struct Wiphy *wiphy,
-    const struct Ieee80211Channel *channel, const struct ScannedBssInfo *bssInfo);
+int32_t HdfWifiEventInformBssFrame(const struct NetDevice *netDev, const struct WlanChannel *channel,
+    const struct ScannedBssInfo *bssInfo);
 
 /**
  * @brief Reports a scanning completion event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param status Indicates the scanning completion status. Value <b>0</b> indicates that the scanning is successful,
  * and other values indicate that the scanning fails.
  *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventScanDone(const struct NetDevice *netdev, WifiScanStatus status);
+int32_t HdfWifiEventScanDone(const struct NetDevice *netDev, WifiScanStatus status);
 
 /**
  * @brief Reports a connection result event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param result Indicates the pointer to the connection result. This parameter cannot be null.
  *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventConnectResult(const struct NetDevice *netdev, const struct ConnetResult *result);
+int32_t HdfWifiEventConnectResult(const struct NetDevice *netDev, const struct ConnetResult *result);
 
 /**
  * @brief Reports a disconnection event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param reason Indicates the reason for disconnection.
  * @param ie Indicates the pointer to the deauth/disassoc frame IE.
- * @param ieLen Indicates the length of the deauth/disassoc IE.
+ * @param len Indicates the length of the deauth/disassoc IE.
  *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventDisconnected(const struct NetDevice *netdev, uint16_t reason, const uint8_t *ie, uint32_t len);
+int32_t HdfWifiEventDisconnected(const struct NetDevice *netDev, uint16_t reason, const uint8_t *ie, uint32_t len);
 
 /**
  * @brief Reports a transmission management status event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param buf Indicates the pointer to the transmission management frame. This parameter cannot be null.
  * @param len Indicates the length of the transmission management frame.
  * @param ack Indicates whether the transmission management frame is acknowledged.
@@ -404,13 +404,14 @@ int32_t HdfWifiEventDisconnected(const struct NetDevice *netdev, uint16_t reason
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventMgmtTxStatus(const struct NetDevice *netdev, const uint8_t *buf, size_t len, uint8_t ack);
+int32_t HdfWifiEventMgmtTxStatus(const struct NetDevice *netDev, const uint8_t *buf, size_t len, uint8_t ack);
 
 /**
  * @brief Reports a receive management status event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param freq Indicates the frequency of receiving management frame.
  * @param sigMbm Indicates the signal strength (in dBm).
  * @param buf Indicates the pointer to the receive management frame. This parameter cannot be null.
@@ -419,31 +420,35 @@ int32_t HdfWifiEventMgmtTxStatus(const struct NetDevice *netdev, const uint8_t *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventRxMgmt(const struct NetDevice *netdev, int32_t freq, int32_t sigMbm,
+int32_t HdfWifiEventRxMgmt(const struct NetDevice *netDev, int32_t freq, int32_t sigMbm,
     const uint8_t *buf, size_t len);
 
 /**
  * @brief Reports a CSA channel switching event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  * @param freq Indicates the frequency of the channel.
  *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
-int32_t HdfWifiEventCsaChannelSwitch(const struct NetDevice *netdev, int32_t freq);
+int32_t HdfWifiEventCsaChannelSwitch(const struct NetDevice *netDev, int32_t freq);
 
 /**
  * @brief Reports a timeout disconnection event.
  *
- * @param netdev Indicates the pointer to the network device. This parameter cannot be null.
+ * @param netDev Indicates the pointer to the network device. This parameter cannot be null.
  *
  * @return Returns <b>0</b> if the event is reported successfully; returns <b>-1</b> otherwise.
  *
- * @since 1.0 */
-int32_t HdfWifiEventTimeoutDisconnected(const struct NetDevice *netdev);
+ * @since 1.0
+ * @version 1.0
+ */
+int32_t HdfWifiEventTimeoutDisconnected(const struct NetDevice *netDev);
 
 /**
  * @brief Reports the event of receiving the EAPOL frame and notifies WPA to read the EAPOL frame.
@@ -454,14 +459,28 @@ int32_t HdfWifiEventTimeoutDisconnected(const struct NetDevice *netdev);
  * @return Returns <b>0</b> if the operation is successful; returns <b>-1</b> otherwise.
  *
  * @since 1.0
+ * @version 1.0
  */
 int32_t HdfWifiEventEapolRecv(const char *name, void *context);
 
+/**
+ * @brief Reports the WLAN driver reset result.
+ *
+ * @param chipId Indicates the chip ID. This parameter cannot be null.
+ * @param resetStatus Indicates the WLAN driver reset result.
+ *
+ * @return Returns <b>0</b> if the result is reported successfully; returns <b>-1</b> otherwise.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus);
+
 #ifdef __cplusplus
 #if __cplusplus
-    }
+}
 #endif
 #endif
 
 #endif /* __HDF_WIFI_EVENT_H__ */
-
+/** @} */

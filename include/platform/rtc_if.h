@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
@@ -106,7 +83,7 @@ struct RtcTime {
  * @return Returns {@link DevHandle} if the operation is successful; returns <b>NULL</b> if the operation fails.
  * @since 1.0
  */
-struct DevHandle *RtcOpen(void);
+DevHandle RtcOpen(void);
 
 /**
  * @brief Releases a specified handle of the RTC device.
@@ -115,7 +92,7 @@ struct DevHandle *RtcOpen(void);
  *
  * @since 1.0
  */
-void RtcClose(struct DevHandle *handle);
+void RtcClose(DevHandle handle);
 
 /**
  * @brief Reads time from the RTC driver.
@@ -130,7 +107,7 @@ void RtcClose(struct DevHandle *handle);
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcReadTime(struct DevHandle *handle, struct RtcTime *time);
+int32_t RtcReadTime(DevHandle handle, struct RtcTime *time);
 
 /**
  * @brief Writes format-compliant time to the RTC driver.
@@ -145,7 +122,7 @@ int32_t RtcReadTime(struct DevHandle *handle, struct RtcTime *time);
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcWriteTime(struct DevHandle *handle, const struct RtcTime *time);
+int32_t RtcWriteTime(DevHandle handle, const struct RtcTime *time);
 
 /**
  * @brief Reads the RTC alarm time that was set last time.
@@ -158,7 +135,7 @@ int32_t RtcWriteTime(struct DevHandle *handle, const struct RtcTime *time);
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcReadAlarm(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, struct RtcTime *time);
+int32_t RtcReadAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, struct RtcTime *time);
 
 /**
  * @brief Writes the RTC alarm time based on the alarm index.
@@ -174,7 +151,7 @@ int32_t RtcReadAlarm(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, st
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcWriteAlarm(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, const struct RtcTime *time);
+int32_t RtcWriteAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, const struct RtcTime *time);
 
 /**
  * @brief Registers {@link RtcAlarmCallback} that will be invoked when an alarm is generated at the specified time.
@@ -187,7 +164,7 @@ int32_t RtcWriteAlarm(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, c
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcRegisterAlarmCallback(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb);
+int32_t RtcRegisterAlarmCallback(DevHandle handle, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb);
 
 /**
  * @brief Enables or disables alarm interrupts.
@@ -204,7 +181,7 @@ int32_t RtcRegisterAlarmCallback(struct DevHandle *handle, enum RtcAlarmIndex al
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcAlarmInterruptEnable(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, uint8_t enable);
+int32_t RtcAlarmInterruptEnable(DevHandle handle, enum RtcAlarmIndex alarmIndex, uint8_t enable);
 
 /**
  * @brief Reads the RTC external frequency.
@@ -218,7 +195,7 @@ int32_t RtcAlarmInterruptEnable(struct DevHandle *handle, enum RtcAlarmIndex ala
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcGetFreq(struct DevHandle *handle, uint32_t *freq);
+int32_t RtcGetFreq(DevHandle handle, uint32_t *freq);
 
 /**
  * @brief Sets the frequency of the external crystal oscillator connected to the RTC driver.
@@ -233,7 +210,7 @@ int32_t RtcGetFreq(struct DevHandle *handle, uint32_t *freq);
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcSetFreq(struct DevHandle *handle, uint32_t freq);
+int32_t RtcSetFreq(DevHandle handle, uint32_t freq);
 
 /**
  * @brief Resets the RTC driver.
@@ -246,7 +223,7 @@ int32_t RtcSetFreq(struct DevHandle *handle, uint32_t freq);
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcReset(struct DevHandle *handle);
+int32_t RtcReset(DevHandle handle);
 
 /**
  * @brief Reads the configuration of a custom RTC register based on the register index.
@@ -261,7 +238,7 @@ int32_t RtcReset(struct DevHandle *handle);
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcReadReg(struct DevHandle *handle, uint8_t usrDefIndex, uint8_t *value);
+int32_t RtcReadReg(DevHandle handle, uint8_t usrDefIndex, uint8_t *value);
 
 /**
  * @brief Writes the configuration of a custom RTC register based on the register index.
@@ -276,7 +253,7 @@ int32_t RtcReadReg(struct DevHandle *handle, uint8_t usrDefIndex, uint8_t *value
  * For details, see {@link HDF_STATUS}.
  * @since 1.0
  */
-int32_t RtcWriteReg(struct DevHandle *handle, uint8_t usrDefIndex, uint8_t value);
+int32_t RtcWriteReg(DevHandle handle, uint8_t usrDefIndex, uint8_t value);
 
 #ifdef __cplusplus
 #if __cplusplus

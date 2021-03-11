@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "devsvc_manager.h"
@@ -82,8 +59,7 @@ int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *svcName, st
     OsalMutexLock(&devSvcManager->mutex);
     HdfSListAdd(&devSvcManager->services, &record->entry);
     OsalMutexUnlock(&devSvcManager->mutex);
-    return HdfServiceObserverPublishService(
-        &devSvcManager->observer, svcName, 0, SERVICE_POLICY_PUBLIC, (struct HdfObject *)service->service);
+    return HDF_SUCCESS;
 }
 
 int DevSvcManagerSubscribeService(struct IDevSvcManager *inst, const char *svcName, struct SubscriberCallback callBack)
@@ -91,11 +67,6 @@ int DevSvcManagerSubscribeService(struct IDevSvcManager *inst, const char *svcNa
     int ret = HDF_FAILURE;
     struct DevSvcManager *devSvcMgr = (struct DevSvcManager *)inst;
     if (svcName == NULL || devSvcMgr == NULL) {
-        return ret;
-    }
-
-    ret = HdfServiceObserverSubscribeService(&devSvcMgr->observer, svcName, 0, callBack);
-    if (ret != HDF_SUCCESS) {
         return ret;
     }
 
@@ -109,17 +80,6 @@ int DevSvcManagerSubscribeService(struct IDevSvcManager *inst, const char *svcNa
 
     return DevmgrServiceLoadDevice(svcName);
 }
-
-int DevSvcManagerUnsubscribeService(struct IDevSvcManager *inst, const char *svcName)
-{
-    struct DevSvcManager *devSvcMgr = (struct DevSvcManager *)inst;
-    if (devSvcMgr == NULL) {
-        return HDF_FAILURE;
-    }
-    HdfServiceObserverRemoveRecord(&devSvcMgr->observer, svcName);
-    return HDF_SUCCESS;
-}
-
 
 void DevSvcManagerRemoveService(struct IDevSvcManager *inst, const char *svcName)
 {
@@ -147,7 +107,6 @@ struct HdfDeviceObject *DevSvcManagerGetObject(struct IDevSvcManager *inst, cons
     if (serviceRecord != NULL) {
         return serviceRecord->value;
     }
-    HDF_LOGE("Get object failed, serviceRecord is null, svcName is %s", svcName);
     return NULL;
 }
 
@@ -155,18 +114,21 @@ struct HdfObject *DevSvcManagerGetService(struct IDevSvcManager *inst, const cha
 {
     struct HdfDeviceObject *deviceObject = DevSvcManagerGetObject(inst, svcName);
     if (deviceObject == NULL) {
-        HDF_LOGE("Get service failed");
         return NULL;
     }
     return (struct HdfObject *)deviceObject->service;
 }
 
-static bool DevSvcManagerConstruct(struct DevSvcManager *inst)
+bool DevSvcManagerConstruct(struct DevSvcManager *inst)
 {
+    if (inst == NULL) {
+        HDF_LOGE("%s: inst is null!", __func__);
+        return false;
+    }
     struct IDevSvcManager *devSvcMgrIf = &inst->super;
     devSvcMgrIf->AddService = DevSvcManagerAddService;
     devSvcMgrIf->SubscribeService = DevSvcManagerSubscribeService;
-    devSvcMgrIf->UnsubscribeService = DevSvcManagerUnsubscribeService;
+    devSvcMgrIf->UnsubscribeService = NULL;
     devSvcMgrIf->RemoveService = DevSvcManagerRemoveService;
     devSvcMgrIf->GetService = DevSvcManagerGetService;
     devSvcMgrIf->GetObject = DevSvcManagerGetObject;

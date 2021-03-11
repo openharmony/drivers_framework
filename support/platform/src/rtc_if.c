@@ -1,32 +1,9 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include "hdf_base.h"
@@ -41,9 +18,8 @@
 
 static char *g_rtcServiceName = "HDF_PLATFORM_RTC";
 
-struct DevHandle *RtcOpen()
+DevHandle RtcOpen()
 {
-    struct DevHandle *handle = NULL;
     struct RtcHost *host = NULL;
 
     host = (struct RtcHost *)DevSvcManagerClntGetService(g_rtcServiceName);
@@ -51,42 +27,34 @@ struct DevHandle *RtcOpen()
         HDF_LOGE("rtc get service name failed");
         return NULL;
     }
-    handle = OsalMemCalloc(sizeof(*handle));
-    if (handle == NULL) {
-        return NULL;
-    }
-    handle->object = host;
-    return handle;
+    return (DevHandle)host;
 }
 
-void RtcClose(struct DevHandle *handle)
+void RtcClose(DevHandle handle)
 {
-    if (handle != NULL) {
-        handle->object = NULL;
-        OsalMemFree(handle);
-    }
+    (void)handle;
 }
 
-int32_t RtcReadTime(struct DevHandle *handle, struct RtcTime *time)
+int32_t RtcReadTime(DevHandle handle, struct RtcTime *time)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcReadTime: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->ReadTime == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->ReadTime(host, time);
 }
 
-int32_t RtcWriteTime(struct DevHandle *handle, const struct RtcTime *time)
+int32_t RtcWriteTime(DevHandle handle, const struct RtcTime *time)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcWriteTime: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -96,34 +64,34 @@ int32_t RtcWriteTime(struct DevHandle *handle, const struct RtcTime *time)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->WriteTime == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->WriteTime(host, time);
 }
 
-int32_t RtcReadAlarm(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, struct RtcTime *time)
+int32_t RtcReadAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, struct RtcTime *time)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcReadAlarm: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->ReadAlarm == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->ReadAlarm(host, alarmIndex, time);
 }
 
-int32_t RtcWriteAlarm(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, const struct RtcTime *time)
+int32_t RtcWriteAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, const struct RtcTime *time)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcWriteAlarm: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -133,52 +101,52 @@ int32_t RtcWriteAlarm(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, c
         return HDF_ERR_INVALID_PARAM;
     }
 
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->WriteAlarm == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->WriteAlarm(host, alarmIndex, time);
 }
 
-int32_t RtcRegisterAlarmCallback(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb)
+int32_t RtcRegisterAlarmCallback(DevHandle handle, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcRegisterAlarmCallback: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->RegisterAlarmCallback == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->RegisterAlarmCallback(host, alarmIndex, cb);
 }
 
-int32_t RtcAlarmInterruptEnable(struct DevHandle *handle, enum RtcAlarmIndex alarmIndex, uint8_t enable)
+int32_t RtcAlarmInterruptEnable(DevHandle handle, enum RtcAlarmIndex alarmIndex, uint8_t enable)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcAlarmInterruptEnable: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->AlarmInterruptEnable == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->AlarmInterruptEnable(host, alarmIndex, enable);
 }
 
-int32_t RtcGetFreq(struct DevHandle *handle, uint32_t *freq)
+int32_t RtcGetFreq(DevHandle handle, uint32_t *freq)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcGetFreq: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->GetFreq == NULL) {
         HDF_LOGE("RtcGetFreq: pointer null");
         return HDF_ERR_NOT_SUPPORT;
@@ -186,60 +154,60 @@ int32_t RtcGetFreq(struct DevHandle *handle, uint32_t *freq)
     return host->method->GetFreq(host, freq);
 }
 
-int32_t RtcSetFreq(struct DevHandle *handle, uint32_t freq)
+int32_t RtcSetFreq(DevHandle handle, uint32_t freq)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcSetFreq: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->SetFreq == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->SetFreq(host, freq);
 }
 
-int32_t RtcReset(struct DevHandle *handle)
+int32_t RtcReset(DevHandle handle)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcReset: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->Reset == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->Reset(host);
 }
 
-int32_t RtcReadReg(struct DevHandle *handle, uint8_t usrDefIndex, uint8_t *value)
+int32_t RtcReadReg(DevHandle handle, uint8_t usrDefIndex, uint8_t *value)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcReadReg: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->ReadReg == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->ReadReg(host, usrDefIndex, value);
 }
 
-int32_t RtcWriteReg(struct DevHandle *handle, uint8_t usrDefIndex, uint8_t value)
+int32_t RtcWriteReg(DevHandle handle, uint8_t usrDefIndex, uint8_t value)
 {
     struct RtcHost *host = NULL;
 
-    if (handle == NULL || handle->object == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("RtcReadReg: handle is null");
         return HDF_ERR_INVALID_OBJECT;
     }
-    host = (struct RtcHost *)handle->object;
+    host = (struct RtcHost *)handle;
     if (host->method == NULL || host->method->WriteReg == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }

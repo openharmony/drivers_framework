@@ -1,41 +1,20 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 /**
  * @addtogroup WLAN
  * @{
  *
- * @brief Defines a WLAN module that supports cross-OS migration, component adaptation, and modular assembly and
- * compilation. Driver developers of WLAN vendors can adapt their driver code based on the unified APIs provided
- * by the WLAN module.
+ * @brief Provides cross-OS migration, component adaptation, and modular assembly and compilation.
+ *
+ * Based on the unified APIs provided by the WLAN module, developers of the Hardware Driver Interface
+ * (HDI) are capable of creating, disabling, scanning for, and connecting to WLAN hotspots, managing WLAN chips,
+ * network devices, and power, and applying for, releasing, and moving network data buffers.
  *
  * @since 1.0
  * @version 1.0
@@ -46,8 +25,8 @@
  *
  * @brief Provides features of the WLAN module and functions to create and delete modules.
  *
- * The <b>WifiModule</b> object is a core abstraction of the WLAN driver. It contains a module that communicates with
- * user-level processes and also contains features.
+ * The {@link WifiModule} object is a core abstraction of the WLAN driver. It contains a module that communicates
+ * with user-level processes and also contains features.
  *
  * @since 1.0
  * @version 1.0
@@ -58,33 +37,102 @@
 
 #include "wifi_inc.h"
 #include "wifi_module_config.h"
+#include "net_device.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-/***********************************************************************
-*
-*                            WLAN MODULE
-*
-************************************************************************/
+
+/**
+ * @brief Defines a WLAN feature.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+struct WifiFeature {
+    char name[MAX_WIFI_COMPONENT_NAME_LEN]; /**< Feature name, which contains a maximum of 10 characters */
+    /**
+     * @brief Initializes a feature.
+     *
+     * @param feature Indicates the pointer to the feature.
+     *
+     * @return Returns <b>0</b> if the feature is initialized; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*init)(struct WifiFeature *feature);
+
+    /**
+     * @brief Deinitializes a feature.
+     *
+     * @param feature Indicates the pointer to the feature.
+     *
+     * @return Returns <b>0</b> if the feature is deinitialized; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*deInit)(struct WifiFeature *feature);
+};
+
+/**
+ * @brief Defines the WLAN feature list.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+struct WifiFeatureList {
+    struct WifiFeature *fe[HDF_WIFI_FEATURE_NUM]; /**< An array of WLAN features */
+};
+
 /**
  * @brief Defines WLAN module APIs.
  *
  * The APIs can be used to obtain, initialize, update, and perform other operations on a WLAN module.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct WifiModuleIface {
-    struct WifiModule *(*getModule)(void);               /**< Obtaining a WLAN module */
-    int32_t (*updateModule)(struct WifiModule *module);  /**< Updating a WLAN module based on a specified
-                                                          * configuration.
-                                                          */
-    int32_t (*init)(struct WifiModule *module);          /**< Initializing a WLAN module */
-    int32_t (*deInit)(struct WifiModule *module);        /**< Deinitializing a WLAN module */
+    /**
+     * @brief Deinitializes a WLAN module.
+     *
+     * @param module Indicates the pointer to the WLAN module.
+     *
+     * @return Returns <b>0</b> if the WLAN module is deinitialized; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*deInit)(struct WifiModule *module);
 
-    int32_t (*addFeature)(struct WifiModule *module, uint16_t featureType, struct WifiFeature *featureData);
-                                                                             /**< Adding a feature */
-    int32_t (*delFeature)(struct WifiModule *module, uint16_t featureType);  /**< Deleting a feature */
+    /**
+     * @brief Adds a feature.
+     *
+     * @param module Indicates the pointer to the WLAN module.
+     * @param featureType Indicates the feature type.
+     * @param feature Indicates the pointer to the feature.
+     *
+     * @return Returns <b>0</b> if the feature is added; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*addFeature)(struct WifiModule *module, uint16_t featureType, struct WifiFeature *feature);
+
+    /**
+     * @brief Deletes a feature.
+     *
+     * @param module Indicates the pointer to the WLAN module.
+     * @param featureType Indicates the feature type.
+     *
+     * @return Returns <b>0</b> if the feature is deleted; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*delFeature)(struct WifiModule *module, uint16_t featureType);
 };
 
 /**
@@ -94,119 +142,75 @@ struct WifiModuleIface {
  * processes, and WLAN features.
  *
  * @since 1.0
+ * @version 1.0
  */
 struct WifiModule {
-    void *modulePrivate;                    /**< Private data */
-    struct WifiModuleIface *iface;          /**< APIs */
-    struct WifiModuleConfig moduleConfig;   /**< Module configurations */
-    struct WifiFeatureList *feList;         /**< WLAN features */
+    void *modulePrivate;                  /**< Private data */
+    struct WifiModuleIface iface;         /**< APIs */
+    struct WifiModuleConfig moduleConfig; /**< Module configurations */
+    struct WifiFeatureList feList;        /**< WLAN features */
 };
 
 /**
- * @brief Creates a {@link WifiModule} object based on a specified configuration generated by the HCS.
- *
- * @param config Indicates the pointer to the configuration generated by the HCS.
- *
- * @return Returns the created {@link WifiModule} object.
+ * @brief Defines a WLAN chip driver.
  *
  * @since 1.0
  * @version 1.0
  */
-struct WifiModule *WifiModuleCreate(const struct HdfConfigWifiModuleConfig *config);
+struct HdfChipDriver {
+    uint16_t type;                          /**< Chip type */
+    char name[MAX_WIFI_COMPONENT_NAME_LEN]; /**< Chip name */
+    struct HdfMac80211BaseOps *ops;         /**< MAC address for the basic feature */
+    struct HdfMac80211STAOps *staOps;       /**< MAC address for the STA feature */
+    struct HdfMac80211APOps *apOps;         /**< MAC address for the AP feature */
+    void *priv;                             /**< Private data of the chip driver */
+    /**
+     * @brief Initializes a chip driver.
+     *
+     * @param chipDriver Indicates the pointer to the chip driver.
+     * @param netDev Indicates the pointer to the network device structure obtained during initialization.
+     *
+     * @return Returns <b>0</b> if the chip is initialized; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*init)(struct HdfChipDriver *chipDriver, NetDevice *netDev);
+
+    /**
+     * @brief Deinitializes a chip driver.
+     *
+     * @param chipDriver Indicates the pointer to the chip driver.
+     * @param netDev Indicates the pointer to the network device structure obtained during initialization.
+     *
+     * @return Returns <b>0</b> if the chip is deinitialized; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*deinit)(struct HdfChipDriver *chipDriver, NetDevice *netDev);
+};
 
 /**
- * @brief Deletes a specified {@link WifiModule} object.
+ * @brief Initializes a <b>WifiModule</b> object.
  *
- * @param module Indicates the pointer to the {@link WifiModule} object to delete.
+ * @param module Indicates the pointer to the <b>WifiModule</b> object to initialize.
+ * @param config Indicates the pointer to the configuration generated by the HDF Configuration Source (HCS).
+ *
+ * @return Returns <b>0</b> if the <b>WifiModule</b> object is initialized; returns a negative value otherwise.
  *
  * @since 1.0
  * @version 1.0
  */
-void WifiModuleDelete(struct WifiModule *module);
+int16_t InitWifiModule(struct WifiModule *module, const struct HdfConfigWlanModuleConfig *config);
 
-/***********************************************************************
-*
-*                            WLAN MODULE FEATURE
-*
-************************************************************************/
-/**
- * @brief Defines a WLAN feature.
- *
- * @since 1.0
- */
-struct WifiFeature {
-    char name[MAX_WIFI_COMPONENT_NAME_LEN];          /**< Feature name, which can contain a maximum of 10 characters */
-    struct HdfWifiChipData *chip;                    /**< Chip */
-    int32_t (*init)(struct WifiFeature *feature);    /**< Function for initializing the feature */
-    int32_t (*deInit)(struct WifiFeature *feature);  /**< Function for deinitializing the feature */
-};
-
-/**
- * @brief Defines the WLAN feature list.
- *
- * @since 1.0
- */
-struct WifiFeatureList {
-    struct WifiFeature *fe[HDF_WIFI_FEATURE_NUM];  /**< An array of WLAN features */
-};
-
-/**
- * @brief Deletes a specified feature from a specified module.
- *
- * @param module Indicates the pointer to the module.
- * @param featureType Indicates the type of the feature to delete.
- *
- * @return Returns <b>0</b> if the feature is deleted successfully; returns <b>-1</b> otherwise.
- *
- * @since 1.0
- * @version 1.0
- */
-int32_t DelFeature(struct WifiModule *module, uint16_t featureType);
-
-/**
- * @brief Adds a specified feature to a specified module.
- *
- * @param module Indicates the pointer to the module.
- * @param featureType Indicates the type of the feature to add.
- * @param featureData Indicates the pointer to the feature to add.
- *
- * @return Returns <b>0</b> if the feature is added successfully; returns a negative value otherwise.
- *
- * @since 1.0
- * @version 1.0
- */
-int32_t AddFeature(struct WifiModule *module, uint16_t featureType, struct WifiFeature *featureData);
-
-/***********************************************************************
-*
-*                            WLAN MODULE CHIP
-*
-************************************************************************/
-/**
- * @brief Defines a WLAN chip.
- *
- * @since 1.0
- */
-struct HdfWifiChipData {
-    uint16_t type;                                        /**< Chip type */
-    char name[MAX_WIFI_COMPONENT_NAME_LEN];               /**< Chip name */
-    struct WifiMac80211Ops *ops;                          /**< Chip MAC address */
-    int32_t (*init)(struct HdfWifiChipData *chipData, const struct HdfConfigWifiChip *chipConfig);
-                                                          /**< Function for initializing the chip */
-    int32_t (*deinit)(struct HdfWifiChipData *chipData);  /**< Function for deinitializing the chip */
-};
-
-#define HDF_WIFI_CHIP_DECLARE(chipName) \
-    extern struct HdfWifiChipData g_hdf##chipName##ChipDriver __attribute__((weak))
-
-#define HDF_WIFI_CHIP(chipName) &g_hdf##chipName##ChipDriver
-
-#define HDF_WIFI_CHIP_DRIVER(chipName, initFunc, deInitFunc) \
-    struct HdfWifiChipData g_hdf##chipName##ChipDriver = {   \
-        .name = #chipName,                                   \
-        .init = initFunc,                                    \
-        .deinit = deInitFunc,                                \
-    }
+#define RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipOps, opsName)                                     \
+    do {                                                                                      \
+        if ((chipOps) == NULL ||(chipOps)->opsName == NULL) { \
+            HDF_LOGE("macOps" #opsName "not implement");                                      \
+            return HDF_ERR_INVALID_OBJECT;                                                    \
+        }                                                                                     \
+    } while (0)
 
 
 #ifdef __cplusplus
@@ -214,4 +218,4 @@ struct HdfWifiChipData {
 #endif
 
 #endif // HDFLITE_WIFI_MODULE_H
-
+/** @} */

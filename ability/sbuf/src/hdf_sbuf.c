@@ -1,35 +1,12 @@
 /*
- * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
- * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of
- *    conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list
- *    of conditions and the following disclaimer in the documentation and/or other materials
- *    provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used
- *    to endorse or promote products derived from this software without specific prior written
- *    permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <securec.h>
+#include "securec.h"
 #include "osal_mem.h"
 #include "hdf_log.h"
 #include "hdf_sbuf.h"
@@ -37,6 +14,14 @@
 #define HDF_SBUF_GROW_SIZE_DEFAULT 256
 #define HDF_SBUF_MAX_SIZE (512 * 1024) // 512kB
 #define HDF_SBUF_ALIGN 4
+
+#ifndef INT16_MAX
+#ifdef S16_MAX
+#define INT16_MAX S16_MAX
+#else
+#define INT16_MAX 32767
+#endif // !S16_MAX
+#endif // INT16_MAX
 
 static inline size_t HdfSbufGetAlignSize(size_t size)
 {
@@ -125,12 +110,14 @@ static bool HdfSbufGrow(struct HdfSBuf *sbuf, uint32_t growSize)
         return false;
     }
 
-    if (memcpy_s(newData, newSize, sbuf->data, sbuf->writePos) != EOK) {
-        OsalMemFree(newData);
-        return false;
+    if (sbuf->data != NULL) {
+        if (memcpy_s(newData, newSize, sbuf->data, sbuf->writePos) != EOK) {
+            OsalMemFree(newData);
+            return false;
+        }
+        OsalMemFree(sbuf->data);
     }
 
-    OsalMemFree(sbuf->data);
     sbuf->data = newData;
     sbuf->capacity = newSize;
 
@@ -139,7 +126,7 @@ static bool HdfSbufGrow(struct HdfSBuf *sbuf, uint32_t growSize)
 
 static bool HdfSbufWrite(struct HdfSBuf *sbuf, const uint8_t *data, uint32_t size)
 {
-    if (sbuf == NULL || data == NULL) {
+    if (sbuf == NULL || sbuf->data == NULL || data == NULL) {
         return false;
     }
 
@@ -174,7 +161,7 @@ static bool HdfSbufWrite(struct HdfSBuf *sbuf, const uint8_t *data, uint32_t siz
 
 static bool HdfSbufRead(struct HdfSBuf *sbuf, uint8_t *data, uint32_t readSize)
 {
-    if (sbuf == NULL || data == NULL) {
+    if (sbuf == NULL || sbuf->data == NULL || data == NULL) {
         return false;
     }
 
@@ -216,10 +203,9 @@ bool HdfSbufWriteBuffer(struct HdfSBuf *sbuf, const void *data, uint32_t writeSi
     return true;
 }
 
-/* return actual read size */
 bool HdfSbufReadBuffer(struct HdfSBuf *sbuf, const void **data, uint32_t *readSize)
 {
-    if (sbuf == NULL || data == NULL || readSize == NULL) {
+    if (sbuf == NULL || sbuf->data == NULL || data == NULL || readSize == NULL) {
         HDF_LOGE("%s:input invalid", __func__);
         return false;
     }
@@ -339,7 +325,7 @@ bool HdfSbufReadInt8(struct HdfSBuf *sbuf, int8_t *value)
 
 const char *HdfSbufReadString(struct HdfSBuf *sbuf)
 {
-    if (sbuf == NULL) {
+    if (sbuf == NULL || sbuf->data == NULL) {
         HDF_LOGE("%s:input null", __func__);
         return NULL;
     }
@@ -393,6 +379,9 @@ struct HdfSBuf *HdfSBufObtain(size_t capacity)
 
 struct HdfSBuf *HdfSBufBind(uintptr_t base, size_t size)
 {
+    if (base == 0 || size == 0) {
+        return NULL;
+    }
     /* require 4 byte alignment for base */
     if ((base & 0x3) != 0) {
         HDF_LOGE("Base is not align for 4-byte");
@@ -435,7 +424,7 @@ struct HdfSBuf *HdfSBufCopy(const struct HdfSBuf *sbuf)
 
 struct HdfSBuf *HdfSBufMove(struct HdfSBuf *sbuf)
 {
-    if (sbuf == NULL) {
+    if (sbuf == NULL || sbuf->isBind) {
         return NULL;
     }
 
@@ -463,6 +452,7 @@ void HdfSbufTransDataOwnership(struct HdfSBuf *sbuf)
 
     sbuf->isBind = false;
 }
+
 void HdfSBufRecycle(struct HdfSBuf *sbuf)
 {
     if (sbuf != NULL) {
