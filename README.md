@@ -43,7 +43,7 @@ This repository stores the core source code information of the OpenHarmony drive
 │   ├── display    # Display framework module
 │   ├── input      # Input framework module
 │   ├── network    # WLAN framework module
-│   └── sensor    # Sensor driver module
+│   └── sensor     # Sensor driver module
 ├── support        # Basic capabilities
 │   └── platform   # Platform driver framework and APIs, including GPIO, I2C, and SPI
 ├── tools          # Source code related to the tools of the HDF
