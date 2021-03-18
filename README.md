@@ -43,7 +43,7 @@ This repository stores the core source code information of the OpenHarmony drive
 │   ├── display    # Display framework module
 │   ├── input      # Input framework module
 │   ├── network    # WLAN framework module
-│   └── sensor    # Sensor driver module
+│   └── sensor     # Sensor driver module
 ├── support        # Basic capabilities
 │   └── platform   # Platform driver framework and APIs, including GPIO, I2C, and SPI
 ├── tools          # Source code related to the tools of the HDF
@@ -152,13 +152,13 @@ For details, see  [WLAN Overview](en-us_topic_0000001051643558.md).
 
 ## Repositories Involved<a name="section1371113476307"></a>
 
-Driver subsystem
+[Driver subsystem](https://gitee.com/openharmony/docs/blob/master/en/readme/driver-subsystem.md)
 
-hmf/drivers/framework
+drivers\_framework
 
-hmf/drivers/adapter\_uhdf
+[drivers\_adapter\_uhdf](https://gitee.com/openharmony/drivers_adapter_uhdf/blob/master/README.md)
 
-hmf/drivers/adapter\_khdf\_linux
+[drivers\_adapter\_khdf\_linux](https://gitee.com/openharmony/drivers_adapter_uhdf/blob/master/README.md)
 
-hmf/drivers/adapter\_khdf\_liteos
+[drivers\_adapter\_khdf\_liteos](https://gitee.com/openharmony/drivers_adapter_uhdf/blob/master/README.md)
 
