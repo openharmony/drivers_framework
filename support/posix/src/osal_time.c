@@ -21,13 +21,13 @@ int32_t OsalGetTime(OsalTimespec *time)
     struct timeval tv;
 
     if (time == NULL) {
-        HDF_LOGE("%{public}s invalid para", __func__);
+        HDF_LOGE("%s invalid para", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
     (void)memset_s(&tv, sizeof(tv), 0, sizeof(tv));
     if (gettimeofday(&tv, NULL) != 0) {
-        HDF_LOGE("%{public}s gettimeofday failed", __func__);
+        HDF_LOGE("%s gettimeofday failed", __func__);
         return HDF_FAILURE;
     }
     time->sec = tv.tv_sec;
@@ -41,12 +41,12 @@ int32_t OsalDiffTime(const OsalTimespec *start, const OsalTimespec *end, OsalTim
     uint32_t usec = 0;
     uint32_t sec = 0;
     if (start == NULL || end == NULL || diff == NULL) {
-        HDF_LOGE("%{public}s invalid para", __func__);
+        HDF_LOGE("%s invalid para", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
     if (start->sec > end->sec) {
-        HDF_LOGE("%{public}s start time later then end time", __func__);
+        HDF_LOGE("%s start time later then end time", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -74,7 +74,7 @@ void OsalMSleep(uint32_t ms)
     ts.tv_nsec = HDF_KILO_UNIT * HDF_KILO_UNIT * ((long)(ms % HDF_KILO_UNIT));
     result = nanosleep(&ts, &ts);
     if (result != 0) {
-        HDF_LOGE("%{public}s OsalMSleep failed %{public}d", __func__, errno);
+        HDF_LOGE("%s OsalMSleep failed %d", __func__, errno);
     }
 }
 
@@ -94,7 +94,7 @@ uint64_t OsalGetSysTimeMs()
 
     (void)memset_s(&tv, sizeof(tv), 0, sizeof(tv));
     if (gettimeofday(&tv, NULL) != 0) {
-        HDF_LOGE("%{public}s gettimeofday failed", __func__);
+        HDF_LOGE("%s gettimeofday failed", __func__);
         return 0;
     }
 
