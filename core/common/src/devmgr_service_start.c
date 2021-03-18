@@ -27,7 +27,7 @@ static void GetDeviceServiceNameByClass(DeviceClass deviceClass, struct HdfSBuf 
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct DevHostServiceClnt *hostClnt = NULL;
     struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
-    if (devMgrSvc == NULL) {
+    if (devMgrSvc == NULL || reply == NULL) {
         return;
     }
 
@@ -53,7 +53,6 @@ static void GetDeviceServiceNameByClass(DeviceClass deviceClass, struct HdfSBuf 
 
 int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    (void)reply;
     int ret = HDF_FAILURE;
     int32_t deviceClass = 0;
     const char *svcName = NULL;
