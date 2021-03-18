@@ -98,7 +98,7 @@ int32_t SampleDriverBind(struct HdfDeviceObject *deviceObject)
 int32_t SampleDriverInit(struct HdfDeviceObject *deviceObject)
 {
     // TODO: Init hardware or other resources here.
-    return HDF_S UCCESS;
+    return HDF_SUCCESS;
 }
 ```
 
