@@ -593,7 +593,7 @@ static int32_t HdfTouchDispatch(struct HdfDeviceIoClient *client, int32_t cmd,
         return HDF_FAILURE;
     }
 
-    touchDriver = (TouchDriver *)client->device->private;
+    touchDriver = (TouchDriver *)client->device->priv;
     if (touchDriver == NULL) {
         HDF_LOGE("%s: touchDriver is null", __func__);
         return HDF_FAILURE;
@@ -775,7 +775,7 @@ static int32_t HdfTouchDriverProbe(struct HdfDeviceObject *device)
         touchDriver->hdfTouchDev = device;
         touchDriver->boardCfg = boardCfg;
         AddTouchDriver(touchDriver);
-        device->private = (void *)touchDriver;
+        device->priv = (void *)touchDriver;
         HDF_LOGI("%s: %s exit succ", __func__, boardCfg->attr.devName);
         return HDF_SUCCESS;
     }
@@ -795,11 +795,11 @@ static void HdfTouchDriverRelease(struct HdfDeviceObject *device)
     InputDevice *inputDev = NULL;
     int32_t i;
 
-    if (device == NULL || device->private == NULL) {
+    if (device == NULL || device->priv == NULL) {
         HDF_LOGE("%s: param is null", __func__);
         return;
     }
-    driver = device->private;
+    driver = device->priv;
 
     for (i = 0; i < MAX_TOUCH_DEVICE; i++) {
         if (g_touchDriverList[i] == driver) {
