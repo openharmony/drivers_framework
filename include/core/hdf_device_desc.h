@@ -94,7 +94,7 @@ struct HdfDeviceObject {
     const struct DeviceResourceNode *property;
     DeviceClass deviceClass;
     /** Pointer to the private data of the device */
-    void *private;
+    void *priv;
 };
 
 /**
