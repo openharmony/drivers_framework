@@ -104,7 +104,7 @@ int32_t TouchIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg)
 uint32_t TouchPoll(FAR struct file *filep, InputDevice *inputDev, poll_table *wait)
 {
     uint32_t pollMask = 0;
-    InputDevice *inputdev = (InputDevice *)filep->f_inode->i_private;
+    InputDevice *inputdev = (InputDevice *)((struct drv_data*)filep->f_vnode->data)->priv;
     if (inputdev == NULL) {
         HDF_LOGE("%s: inputdev is null", __func__);
         return pollMask;
