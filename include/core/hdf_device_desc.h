@@ -254,7 +254,7 @@ struct HdfDriverEntry {
 /**
  * @brief Obtains the driver service object based on a driver service name.
  *
- * @param serviceName Indicates the pointer to the released driver service name.
+ * @param svcName Indicates the pointer to the released driver service name.
  *
  * @return Returns the driver service object if the operation is successful; returns <b>NULL</b> otherwise.
  * @since 1.0
