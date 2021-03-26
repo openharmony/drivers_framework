@@ -143,7 +143,7 @@ For details, see  [Touchscreen Overview](en-us_topic_0000001052857350.md).
 
 ### WLAN<a name="section11408103183114"></a>
 
-The WLAN module is developed based on the HDF and supports cross-OS migration, component adaptation, and modular assembly and compilation. Based on the unified APIs provided by the WLAN module, driver developers of WLAN vendors can adapt their driver code and developers of the HarmonyOS Driver Interfaces \(HDIs\) are capable of creating, disabling, scanning, and connecting to WLAN hotspots.
+The WLAN module is developed based on the HDF and supports cross-OS migration, component adaptation, and modular assembly and compilation. Based on the unified APIs provided by the WLAN module, driver developers of WLAN vendors can adapt their driver code and developers of the Hardware Driver Interfaces \(HDIs\) are capable of creating, disabling, scanning, and connecting to WLAN hotspots.
 
 -   APIs for implementing WLAN driver module capabilities: Implement the APIs of the WLAN HDI layer and provide capabilities of setting/obtaining the MAC address, obtaining the feature type, and setting the transmit power for upper-layer input services, as well as the capabilities of creating/releasing a  **WifiModule**, connecting to/disconnecting from a WLAN hotspot, and applying for/releasing a  **NetBuf**  for developers.
 -   APIs to be implemented by developers: Based on the provided platform driver, complete the board-level HCS configuration as well as the differentiated WLAN configuration, and offer APIs for initializing, deregistering, enabling, and disabling a network device.
