@@ -414,7 +414,7 @@ struct HdfSBuf *HdfSBufCopy(const struct HdfSBuf *sbuf)
     new->capacity = sbuf->capacity;
     new->readPos = 0;
     new->writePos = sbuf->writePos;
-    if (memcpy_s(new->data, new->capacity, sbuf->data, sbuf->capacity) != EOK) {
+    if (memcpy_s(new->data, new->capacity, sbuf->data, sbuf->writePos) != EOK) {
         HdfSBufRecycle(new);
         return NULL;
     }
