@@ -209,6 +209,14 @@ static int32_t AssignPfds(struct HdfDevListenerThread *thread, struct pollfd **p
     return pfdCount;
 }
 
+static void HdfDevListenerThreadFree(struct HdfDevListenerThread *thread)
+{
+    OsalMutexDestroy(&thread->mutex);
+    OsalMemFree(thread->pfds);
+    OsalThreadDestroy(&thread->thread);
+    OsalMemFree(thread);
+}
+
 #define POLL_WAIT_TIME_MS 100
 static int32_t HdfDevEventListenTask(void *para)
 {
@@ -255,10 +263,7 @@ exit:
 
     if (thread->shouldStop) {
         /* exit due to async exit call, should free thread struct */
-        OsalMutexDestroy(&thread->mutex);
-        OsalThreadDestroy(&thread->thread);
-        OsalMemFree(thread->pfds);
-        OsalMemFree(thread);
+        HdfDevListenerThreadFree(thread);
     }
 
     return HDF_SUCCESS;
@@ -573,14 +578,6 @@ static void HdfListenThreadPollDel(struct HdfDevListenerThread *thread,  struct 
     adapter->group = NULL;
     thread->pollChanged = true;
     OsalMutexUnlock(&thread->mutex);
-}
-
-static void HdfDevListenerThreadFree(struct HdfDevListenerThread *thread)
-{
-    OsalMutexDestroy(&thread->mutex);
-    OsalMemFree(thread->pfds);
-    OsalThreadDestroy(&thread->thread);
-    OsalMemFree(thread);
 }
 
 static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
