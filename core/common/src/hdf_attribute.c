@@ -323,11 +323,7 @@ bool HdfDeviceListAdd(const char *moduleName, const char *serviceName)
                 if (svcName == NULL) {
                     break;
                 }
-                if (strcpy_s(svcName, strlen(serviceName) + 1, serviceName) != EOK) {
-                    HDF_LOGE("%s: string copy fail", __func__);
-                    OsalMemFree(svcName);
-                    break;
-                }
+                strcpy(svcName, serviceName);
                 deviceNodeInfo->svcName = svcName;
                 HdfSListAdd(hostClnt->deviceInfos, &deviceNodeInfo->node);
                 hostClnt->devCount++;
