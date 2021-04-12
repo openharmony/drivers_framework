@@ -121,7 +121,7 @@ The sensor driver module is developed based on the HDF and supports functions su
 -   APIs for implementing sensor driver module capabilities: Implement the capabilities of registering, loading, and deregistering sensor drivers as well as detecting sensor device depending on the HDF, normalize APIs for sensor devices of the same type, and offer APIs for parsing register configurations, abstract APIs for bus access, and abstract platform APIs.
 -   APIs to be implemented by developers: Based on the HDF Configuration Source \(HCS\), implement differentiated configuration for sensors of the same type and serialized configuration of sensor device parameters, and offer APIs for some sensor device operations to simplify the sensor driver development.
 
-For details, see  [Sensor Driver Overview](en-us_topic_0000001078401780.md).
+For details, see  [Sensor Driver Overview](https://gitee.com/openharmony/docs/blob/master/en/device-dev/driver/sensor.md).
 
 ### Display<a name="section161502341317"></a>
 
@@ -130,7 +130,7 @@ The display driver model that is developed based on the HDF shields the differen
 -   APIs for implementing display driver module capabilities: Implement the Hardware Driver Interfaces \(HDIs\) and their adaptation with the chip platform. In addition, the kernel-mode driver abstracts the common services of the panel driver and provides capabilities of initializing the panel, obtaining the panel configuration, powering on/off the panel, and implementing the backlight control.
 -   APIs to be implemented by developers: Complete the board-level HCS configuration and private data configuration of the panel, or offer differentiated APIs for some components to ensure efficient development of the display driver.
 
-For details, see  [LCD Overview](en-us_topic_0000001052857284.md).
+For details, see  [LCD Overview](https://gitee.com/openharmony/docs/blob/master/en/device-dev/driver/lcd.md).
 
 ### Input<a name="section12629164020115"></a>
 
@@ -139,7 +139,7 @@ The input driver model is developed based on the HDF, provides unified driver AP
 -   APIs for implementing input driver module capabilities: Implement the HDIs and provide capabilities of managing devices, controlling services, and reporting data. Besides, the input driver model provides a unified driver for different input devices and the capabilities of registering/unregistering an input device, reporting event data, parsing configuration, and loading a common driver.
 -   APIs to be implemented by developers: Based on the provided platform driver, add the device descriptions as well as private configuration of the input device and implement differentiated APIs to greatly shorten the time required for developing input drivers.
 
-For details, see  [Touchscreen Overview](en-us_topic_0000001052857350.md).
+For details, see  [Touchscreen Overview](https://gitee.com/openharmony/docs/blob/master/en/device-dev/driver/touchscreen.md).
 
 ### WLAN<a name="section11408103183114"></a>
 
@@ -148,7 +148,7 @@ The WLAN module is developed based on the HDF and supports cross-OS migration, c
 -   APIs for implementing WLAN driver module capabilities: Implement the APIs of the WLAN HDI layer and provide capabilities of setting/obtaining the MAC address, obtaining the feature type, and setting the transmit power for upper-layer input services, as well as the capabilities of creating/releasing a  **WifiModule**, connecting to/disconnecting from a WLAN hotspot, and applying for/releasing a  **NetBuf**  for developers.
 -   APIs to be implemented by developers: Based on the provided platform driver, complete the board-level HCS configuration as well as the differentiated WLAN configuration, and offer APIs for initializing, deregistering, enabling, and disabling a network device.
 
-For details, see  [WLAN Overview](en-us_topic_0000001051643558.md).
+For details, see  [WLAN Overview](https://gitee.com/openharmony/docs/blob/master/en/device-dev/driver/wlan.md).
 
 ## Repositories Involved<a name="section1371113476307"></a>
 

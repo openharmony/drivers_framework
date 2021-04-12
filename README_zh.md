@@ -121,7 +121,7 @@ HDF驱动框架详细开发请参考[驱动开发指南](https://gitee.com/openh
 -   Sensor驱动模型基础能力部分：依赖HDF驱动框架实现Sensor器件驱动的注册，加载，去注册，器件探测等能力，提供同一类型Sensor器件驱动归一接口, 寄存器配置解析操作接口，总线访问抽象接口，平台抽象接口。
 -   开发者实现的部分：依赖HDF驱动框架的HCS\(**H**DF  **C**onfiguration  **S**ource\)配置管理，根据同类型Sensor差异化配置，实现Sensor器件参数序列化配置和器件部分操作接口，简化Sensor器件驱动开发。
 
-基于Sensor驱动模型开发Sensor器件驱动请参考[Sensor驱动开发指南](zh-cn_topic_0000001078401780.md)。
+基于Sensor驱动模型开发Sensor器件驱动请参考[Sensor驱动开发指南](https://gitee.com/openharmony/docs/blob/master/zh-cn/device-dev/driver/SENSOR.md)。
 
 ### Display框架模型说明<a name="section161502341317"></a>
 
@@ -130,7 +130,7 @@ HDF驱动框架详细开发请参考[驱动开发指南](https://gitee.com/openh
 -   Display驱动模型基础能力部分：包括HDI（**H**ardware  **D**river  **I**nterfaces）接口的定义及其实现框架，以及芯片平台对HDI接口的适配实现；内核驱动部分抽象了Panel驱动的公共业务，提供基础的Panel初始化、器件配置信息获取、上下电、背光设置等公共流程。
 -   驱动开发者实现的部分：需要完成板级的HCS配置及Panel私有数据配置，或者实现部分器件差异化接口，保证显示屏驱动开发高效便捷。
 
-基于Display驱动模型开发LCD器件驱动请参考[LCD驱动开发指南](zh-cn_topic_0000001052857284.md)。
+基于Display驱动模型开发LCD器件驱动请参考[LCD驱动开发指南](https://gitee.com/openharmony/docs/blob/master/zh-cn/device-dev/driver/LCD.md)。
 
 ### Input框架模型说明<a name="section12629164020115"></a>
 
@@ -139,7 +139,7 @@ HDF驱动框架详细开发请参考[驱动开发指南](https://gitee.com/openh
 -   Input驱动模型基础能力部分：包括Input HDI层的接口定义及公共实现，对上层输入服务提供设备管理、业务控制、数据上报等驱动能力接口；而Input驱动模型提供不同类型Input设备的归一化驱动, 包括输入设备的注册和注销、event数据的上报通道、配置信息的解析、公共驱动的加载等能力。
 -   开发者实现的部分：根据驱动模型提供的平台驱动，需要完成设备描述配置及器件私有配置，以及实现预留的器件差异化接口，借由此驱动模型，可大幅缩减Input设备驱动的开发周期。
 
-基于Input驱动模型开发Touchscreen器件驱动请参考[Touchscreen驱动开发指南](zh-cn_topic_0000001052857350.md)。
+基于Input驱动模型开发Touchscreen器件驱动请参考[Touchscreen驱动开发指南](https://gitee.com/openharmony/docs/blob/master/zh-cn/device-dev/driver/TOUCHSCREEN.md)。
 
 ### WLAN框架模型说明<a name="section11408103183114"></a>
 
@@ -148,7 +148,7 @@ HDF驱动框架详细开发请参考[驱动开发指南](https://gitee.com/openh
 -   WLAN驱动模型基础能力部分：包括WLAN HDI层的接口定义及公共实现，对上层输入服务提供如设置MAC地址，获取设备的MAC地址，获取特性的类型，设置发射功率等能力；对驱动开发者提供创建/释放WifiModule，关联/取消关联，申请/释放NetBuf等能力。
 -   驱动开发者实现的部分：根据驱动模型提供的平台驱动，需要完成板级的HCS配置及WLAN芯片的私有配置，以及实现预留的初始化/注销网络设备、打开/关闭网络设备等相关接口。
 
-基于WLAN驱动模型开发WLAN器件驱动请参考[WLAN驱动开发指南](zh-cn_topic_0000001051643558.md)。
+基于WLAN驱动模型开发WLAN器件驱动请参考[WLAN驱动开发指南](https://gitee.com/openharmony/docs/blob/master/zh-cn/device-dev/driver/WLAN.md)。
 
 ## 相关仓<a name="section1371113476307"></a>
 
