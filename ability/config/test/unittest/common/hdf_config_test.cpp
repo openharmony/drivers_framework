@@ -98,7 +98,7 @@ void HdfConfigTest::TearDown()
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestCreateDMHslToTree001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestCreateDMHslToTree001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_CREATE_DM_HSL_TO_TREE_001, HDF_MSG_RESUL_DEFALUT};
     printf("HdfConfigTest enter\n\r");
@@ -111,7 +111,7 @@ HWTEST_F(HdfConfigTest, HslTestCreateDMHslToTree001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetNodeByMatchAttrSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetNodeByMatchAttrSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_NODE_BY_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -123,7 +123,7 @@ HWTEST_F(HdfConfigTest, HslTestGetNodeByMatchAttrSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetNodeByMatchAttrFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetNodeByMatchAttrFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_NODE_BY_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -135,7 +135,7 @@ HWTEST_F(HdfConfigTest, HslTestGetNodeByMatchAttrFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetBoolAttrValueSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetBoolAttrValueSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_BOOL_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -147,7 +147,7 @@ HWTEST_F(HdfConfigTest, HslTestGetBoolAttrValueSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetBoolAttrValueFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetBoolAttrValueFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_BOOL_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -159,7 +159,7 @@ HWTEST_F(HdfConfigTest, HslTestGetBoolAttrValueFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint8AttrValueSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint8AttrValueSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT8_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -171,7 +171,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint8AttrValueSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint8AttrValueFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint8AttrValueFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT8_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -183,7 +183,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint8AttrValueFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayElemSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayElemSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT8_ARRAY_ELEM_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -195,7 +195,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayElemSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayElemFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayElemFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT8_ARRAY_ELEM_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -207,7 +207,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayElemFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint8ArraySuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint8ArraySuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT8_ARRAY_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -219,7 +219,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint8ArraySuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT8_ARRAY_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -231,7 +231,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint8ArrayFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint16AttrValueSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint16AttrValueSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT16_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -243,7 +243,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint16AttrValueSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint16AttrValueFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint16AttrValueFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT16_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -255,7 +255,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint16AttrValueFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayElemSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayElemSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT16_ARRAY_ELEM_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -268,7 +268,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayElemSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayElemFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayElemFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT16_ARRAY_ELEM_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -280,7 +280,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayElemFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint16ArraySuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint16ArraySuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT16_ARRAY_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -292,7 +292,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint16ArraySuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT16_ARRAY_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -304,7 +304,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint16ArrayFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint32AttrValueSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint32AttrValueSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT32_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -316,7 +316,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint32AttrValueSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint32AttrValueFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint32AttrValueFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT32_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -328,7 +328,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint32AttrValueFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayElemSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayElemSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT32_ARRAY_ELEM_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -341,7 +341,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayElemSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayElemFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayElemFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT32_ARRAY_ELEM_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -353,7 +353,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayElemFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint32ArraySuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint32ArraySuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT32_ARRAY_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -365,7 +365,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint32ArraySuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT32_ARRAY_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -377,7 +377,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint32ArrayFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint64AttrValueSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint64AttrValueSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT64_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -389,7 +389,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint64AttrValueSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint64AttrValueFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint64AttrValueFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT64_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -401,7 +401,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint64AttrValueFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayElemSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayElemSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT64_ARRAY_ELEM_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -414,7 +414,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayElemSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayElemFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayElemFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT64_ARRAY_ELEM_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -426,7 +426,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayElemFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint64ArraySuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint64ArraySuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT64_ARRAY_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -438,7 +438,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint64ArraySuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_UINT64_ARRAY_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -450,7 +450,7 @@ HWTEST_F(HdfConfigTest, HslTestGetUint64ArrayFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetElemNumSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetElemNumSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_ELEM_NUM_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -462,7 +462,7 @@ HWTEST_F(HdfConfigTest, HslTestGetElemNumSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetElemNumFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetElemNumFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_ELEM_NUM_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -474,7 +474,7 @@ HWTEST_F(HdfConfigTest, HslTestGetElemNumFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetChildNodeSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetChildNodeSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_CHILD_NODE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -486,7 +486,7 @@ HWTEST_F(HdfConfigTest, HslTestGetChildNodeSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetChildNodeFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetChildNodeFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_CHILD_NODE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -498,7 +498,7 @@ HWTEST_F(HdfConfigTest, HslTestGetChildNodeFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestTraverseAttrInNodeSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestTraverseAttrInNodeSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_TRAVERSE_ATTR_IN_NODE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -510,7 +510,7 @@ HWTEST_F(HdfConfigTest, HslTestTraverseAttrInNodeSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestTraverseAttrInNodeFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestTraverseAttrInNodeFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_TRAVERSE_ATTR_IN_NODE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -522,7 +522,7 @@ HWTEST_F(HdfConfigTest, HslTestTraverseAttrInNodeFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetStringSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetStringSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_STRING_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -534,7 +534,7 @@ HWTEST_F(HdfConfigTest, HslTestGetStringSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetStringFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetStringFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_STRING_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -546,7 +546,7 @@ HWTEST_F(HdfConfigTest, HslTestGetStringFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetStringArrayElemSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetStringArrayElemSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_STRING_ARRAY_ELEM_ATTR_VALUE_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -559,7 +559,7 @@ HWTEST_F(HdfConfigTest, HslTestGetStringArrayElemSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetStringArrayElemFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetStringArrayElemFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_STRING_ARRAY_ELEM_ATTR_VALUE_002, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -571,7 +571,7 @@ HWTEST_F(HdfConfigTest, HslTestGetStringArrayElemFail001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetNodeAttrRefSuccess001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetNodeAttrRefSuccess001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_NODE_BY_ATTR_REF_001, HDF_MSG_RESUL_DEFALUT};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -583,7 +583,7 @@ HWTEST_F(HdfConfigTest, HslTestGetNodeAttrRefSuccess001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000DQ0TB
  */
-HWTEST_F(HdfConfigTest, HslTestGetNodeAttrRefFail001, TestSize.Level0)
+HWTEST_F(HdfConfigTest, HslTestGetNodeAttrRefFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_NODE_BY_ATTR_REF_002, HDF_MSG_RESUL_DEFALUT};
     printf("HdfConfigTest last enter\n\r");
