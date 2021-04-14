@@ -60,7 +60,7 @@ void HdfLiteSpiTest::TearDown()
   * @tc.type: FUNC
   * @tc.require: SR000DQ0VO
   */
-HWTEST_F(HdfLiteSpiTest, SpiSetCfgTest001, TestSize.Level0)
+HWTEST_F(HdfLiteSpiTest, SpiSetCfgTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_SET_CFG_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -72,7 +72,7 @@ HWTEST_F(HdfLiteSpiTest, SpiSetCfgTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: SR000DQ0VO
   */
-HWTEST_F(HdfLiteSpiTest, SpiTransferTest001, TestSize.Level0)
+HWTEST_F(HdfLiteSpiTest, SpiTransferTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_TRANSFER_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -84,7 +84,7 @@ HWTEST_F(HdfLiteSpiTest, SpiTransferTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: SR000DQ0VO
   */
-HWTEST_F(HdfLiteSpiTest, SpiWriteTest001, TestSize.Level0)
+HWTEST_F(HdfLiteSpiTest, SpiWriteTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_SPI_TYPE, SPI_WRITE_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -96,7 +96,7 @@ HWTEST_F(HdfLiteSpiTest, SpiWriteTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: SR000DQ0VO
   */
-HWTEST_F(HdfLiteSpiTest, SpiReadTest001, TestSize.Level0)
+HWTEST_F(HdfLiteSpiTest, SpiReadTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_READ_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -108,7 +108,7 @@ HWTEST_F(HdfLiteSpiTest, SpiReadTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: SR000DQ0VO
   */
-HWTEST_F(HdfLiteSpiTest, SpiReliabilityTest001, TestSize.Level0)
+HWTEST_F(HdfLiteSpiTest, SpiReliabilityTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_RELIABILITY_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

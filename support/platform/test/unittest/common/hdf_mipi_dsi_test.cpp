@@ -67,7 +67,7 @@ static void MipiDsiTest(enum MipiDsiTestCmd cmd)
   * @tc.type: FUNC
   * @tc.require: AR000F868F
   */
-HWTEST_F(HdfLiteMipiDsiTest, MipiDsiSetCfgTest001, TestSize.Level0)
+HWTEST_F(HdfLiteMipiDsiTest, MipiDsiSetCfgTest001, TestSize.Level1)
 {
     MipiDsiTest(MIPI_DSI_TEST_SET_CFG);
 }
@@ -78,7 +78,7 @@ HWTEST_F(HdfLiteMipiDsiTest, MipiDsiSetCfgTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868F
   */
-HWTEST_F(HdfLiteMipiDsiTest, MipiDsiGetCfgTest001, TestSize.Level0)
+HWTEST_F(HdfLiteMipiDsiTest, MipiDsiGetCfgTest001, TestSize.Level1)
 {
     MipiDsiTest(MIPI_DSI_TEST_GET_CFG);
 }
@@ -89,7 +89,7 @@ HWTEST_F(HdfLiteMipiDsiTest, MipiDsiGetCfgTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868F
   */
-HWTEST_F(HdfLiteMipiDsiTest, MipiDsiTxRxTest001, TestSize.Level0)
+HWTEST_F(HdfLiteMipiDsiTest, MipiDsiTxRxTest001, TestSize.Level1)
 {
     MipiDsiTest(MIPI_DSI_TEST_TX_RX);
 }
@@ -100,7 +100,7 @@ HWTEST_F(HdfLiteMipiDsiTest, MipiDsiTxRxTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868F
   */
-HWTEST_F(HdfLiteMipiDsiTest, MipiDsiLpHsTest001, TestSize.Level0)
+HWTEST_F(HdfLiteMipiDsiTest, MipiDsiLpHsTest001, TestSize.Level1)
 {
     MipiDsiTest(MIPI_DSI_TEST_TO_LP_TO_HS);
 }
