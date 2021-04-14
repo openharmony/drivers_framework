@@ -60,7 +60,7 @@ void HdfLiteWatchdogTest::TearDown()
   * @tc.type: FUNC
   * @tc.require: AR000F868G
   */
-HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestSetGetTimeout001, TestSize.Level0)
+HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestSetGetTimeout001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_SET_GET_TIMEOUT, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -72,7 +72,7 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestSetGetTimeout001, TestSize.Leve
   * @tc.type: FUNC
   * @tc.require: AR000F868G
   */
-HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestStartStop001, TestSize.Level0)
+HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestStartStop001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_START_STOP, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -84,7 +84,7 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestStartStop001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868G
   */
-HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestFeed001, TestSize.Level0)
+HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestFeed001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_FEED, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -96,7 +96,7 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestFeed001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868G
   */
-HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestReliability001, TestSize.Level0)
+HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestReliability001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_RELIABILITY, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

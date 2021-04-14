@@ -66,7 +66,7 @@ void HdfLiteUartTest::TearDown()
  * @tc.type: FUNC
  * @tc.require: AR000F8689
  */
-HWTEST_F(HdfLiteUartTest, UartSetTransModeTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartSetTransModeTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_UART_TYPE, UART_SET_TRANSMODE_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -79,7 +79,7 @@ HWTEST_F(HdfLiteUartTest, UartSetTransModeTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8689
   */
-HWTEST_F(HdfLiteUartTest, UartWriteTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartWriteTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_UART_TYPE, UAER_WRITE_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -91,7 +91,7 @@ HWTEST_F(HdfLiteUartTest, UartWriteTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8689
   */
-HWTEST_F(HdfLiteUartTest, UartReadTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartReadTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_UART_TYPE, UART_READ_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -103,7 +103,7 @@ HWTEST_F(HdfLiteUartTest, UartReadTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8689
   */
-HWTEST_F(HdfLiteUartTest, UartSetBaudTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartSetBaudTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_UART_TYPE, UART_SET_BAUD_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -115,7 +115,7 @@ HWTEST_F(HdfLiteUartTest, UartSetBaudTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8689
   */
-HWTEST_F(HdfLiteUartTest, UartGetBaudTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartGetBaudTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_UART_TYPE, UART_GET_BAUD_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -127,7 +127,7 @@ HWTEST_F(HdfLiteUartTest, UartGetBaudTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8689
   */
-HWTEST_F(HdfLiteUartTest, UartSetAttributeTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartSetAttributeTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_UART_TYPE, UART_SET_ATTRIBUTE_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -139,7 +139,7 @@ HWTEST_F(HdfLiteUartTest, UartSetAttributeTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8689
   */
-HWTEST_F(HdfLiteUartTest, UartGetAttributeTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartGetAttributeTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_UART_TYPE, UART_GET_ATTRIBUTE_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -151,7 +151,7 @@ HWTEST_F(HdfLiteUartTest, UartGetAttributeTest001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8689
   */
-HWTEST_F(HdfLiteUartTest, UartReliabilityTest001, TestSize.Level0)
+HWTEST_F(HdfLiteUartTest, UartReliabilityTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_UART_TYPE, UART_RELIABILITY_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

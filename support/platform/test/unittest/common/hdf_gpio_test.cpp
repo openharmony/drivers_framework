@@ -61,7 +61,7 @@ void HdfLiteGpioTest::TearDown()
   * @tc.type: FUNC
   * @tc.require: AR000F868H
   */
-HWTEST_F(HdfLiteGpioTest, GpioTestSetGetDir001, TestSize.Level0)
+HWTEST_F(HdfLiteGpioTest, GpioTestSetGetDir001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_GPIO_TYPE, GPIO_TEST_SET_GET_DIR, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -73,7 +73,7 @@ HWTEST_F(HdfLiteGpioTest, GpioTestSetGetDir001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868H
   */
-HWTEST_F(HdfLiteGpioTest, GpioTestWriteRead001, TestSize.Level0)
+HWTEST_F(HdfLiteGpioTest, GpioTestWriteRead001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_GPIO_TYPE, GPIO_TEST_WRITE_READ, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -85,7 +85,7 @@ HWTEST_F(HdfLiteGpioTest, GpioTestWriteRead001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868H
   */
-HWTEST_F(HdfLiteGpioTest, GpioTestIrqLevel001, TestSize.Level0)
+HWTEST_F(HdfLiteGpioTest, GpioTestIrqLevel001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_GPIO_TYPE, GPIO_TEST_IRQ_LEVEL, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -97,7 +97,7 @@ HWTEST_F(HdfLiteGpioTest, GpioTestIrqLevel001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868H
   */
-HWTEST_F(HdfLiteGpioTest, GpioTestIrqEdge001, TestSize.Level0)
+HWTEST_F(HdfLiteGpioTest, GpioTestIrqEdge001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_GPIO_TYPE, GPIO_TEST_IRQ_EDGE, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -109,7 +109,7 @@ HWTEST_F(HdfLiteGpioTest, GpioTestIrqEdge001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868H
   */
-HWTEST_F(HdfLiteGpioTest, GpioTestIrqThread001, TestSize.Level0)
+HWTEST_F(HdfLiteGpioTest, GpioTestIrqThread001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_GPIO_TYPE, GPIO_TEST_IRQ_THREAD, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -121,7 +121,7 @@ HWTEST_F(HdfLiteGpioTest, GpioTestIrqThread001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868H
   */
-HWTEST_F(HdfLiteGpioTest, GpioTestReliability001, TestSize.Level0)
+HWTEST_F(HdfLiteGpioTest, GpioTestReliability001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_GPIO_TYPE, GPIO_TEST_RELIABILITY, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

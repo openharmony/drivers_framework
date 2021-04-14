@@ -69,7 +69,7 @@ void HdfLiteI2cTest::TearDown()
   * @tc.type: FUNC
   * @tc.require: AR000F8688
   */
-HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestTransfer001, TestSize.Level0)
+HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestTransfer001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_I2C_TYPE, I2C_TEST_CMD_TRANSFER, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -84,7 +84,7 @@ HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestTransfer001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8688
   */
-HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestWriteRead001, TestSize.Level0)
+HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestWriteRead001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_I2C_TYPE, I2C_TEST_CMD_WRITE_READ, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -99,7 +99,7 @@ HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestWriteRead001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8688
   */
-HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestMultiThread001, TestSize.Level0)
+HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestMultiThread001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_I2C_TYPE, I2C_TEST_CMD_MULTI_THREAD, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -114,7 +114,7 @@ HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestMultiThread001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8688
   */
-HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestReliability001, TestSize.Level0)
+HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestReliability001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_I2C_TYPE, I2C_TEST_CMD_RELIABILITY, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
