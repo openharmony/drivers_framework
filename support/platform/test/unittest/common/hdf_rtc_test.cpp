@@ -78,7 +78,7 @@ void HdfRtcTest::TearDown()
   * @tc.type: FUNC
   * @tc.require: AR000F868I
   */
-HWTEST_F(HdfRtcTest, testRtcReadWriteTime001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcReadWriteTime001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_TIME, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -90,7 +90,7 @@ HWTEST_F(HdfRtcTest, testRtcReadWriteTime001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868I
   */
-HWTEST_F(HdfRtcTest, testRtcReadWriteMaxTime001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcReadWriteMaxTime001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_MAX_TIME, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -102,7 +102,7 @@ HWTEST_F(HdfRtcTest, testRtcReadWriteMaxTime001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868I
   */
-HWTEST_F(HdfRtcTest, testRtcReadWriteMinTime001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcReadWriteMinTime001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_MIN_TIME, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -114,7 +114,7 @@ HWTEST_F(HdfRtcTest, testRtcReadWriteMinTime001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868I
   */
-HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmTime001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmTime001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_ALARM_TIME, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -126,7 +126,7 @@ HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmTime001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868I
   */
-HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmMaxTime001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmMaxTime001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_ALARM_MAX_TIME, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -137,7 +137,7 @@ HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmMaxTime001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868I
   */
-HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmMinTime001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmMinTime001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_ALARM_MIN_TIME, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -150,7 +150,7 @@ HWTEST_F(HdfRtcTest, testRtcReadWriteAlarmMinTime001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868I
   */
-HWTEST_F(HdfRtcTest, testRtcAlarmEnable001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcAlarmEnable001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_ALARM_ENABLE, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -164,7 +164,7 @@ HWTEST_F(HdfRtcTest, testRtcAlarmEnable001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcAlarmIqr001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcAlarmIqr001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_ALARM_IRQ, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -176,7 +176,7 @@ HWTEST_F(HdfRtcTest, testRtcAlarmIqr001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcRegCallback001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcRegCallback001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_REGISTER_CALLBACK, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -188,7 +188,7 @@ HWTEST_F(HdfRtcTest, testRtcRegCallback001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcRegCallbackNull001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcRegCallbackNull001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_REGISTER_CALLBACK_NULL, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -200,7 +200,7 @@ HWTEST_F(HdfRtcTest, testRtcRegCallbackNull001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcFreq001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcFreq001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_FREQ, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -212,7 +212,7 @@ HWTEST_F(HdfRtcTest, testRtcFreq001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcMaxFreq001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcMaxFreq001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_MAX_FREQ, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -224,7 +224,7 @@ HWTEST_F(HdfRtcTest, testRtcMaxFreq001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcMinFreq001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcMinFreq001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_MIN_FREQ, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -236,7 +236,7 @@ HWTEST_F(HdfRtcTest, testRtcMinFreq001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcUserReg001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcUserReg001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_USER_REG, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -248,7 +248,7 @@ HWTEST_F(HdfRtcTest, testRtcUserReg001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcUserRegMaxIndex001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcUserRegMaxIndex001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_USER_REG_MAX_INDEX, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -260,7 +260,7 @@ HWTEST_F(HdfRtcTest, testRtcUserRegMaxIndex001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcReliability001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcReliability001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_WR_RELIABILITY, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -273,7 +273,7 @@ HWTEST_F(HdfRtcTest, testRtcReliability001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000EKRKU
   */
-HWTEST_F(HdfRtcTest, testRtcModule001, TestSize.Level0)
+HWTEST_F(HdfRtcTest, testRtcModule001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_RTC_TYPE, RTC_FUNCTION_TEST, -1 };
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

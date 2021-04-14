@@ -60,7 +60,7 @@ void HdfLiteSdioTest::TearDown()
   * @tc.type: FUNC
   * @tc.require: AR000F868B
   */
-HWTEST_F(HdfLiteSdioTest, SdioDisableFunc001, TestSize.Level0)
+HWTEST_F(HdfLiteSdioTest, SdioDisableFunc001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SDIO_TYPE, SDIO_DISABLE_FUNC_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -72,7 +72,7 @@ HWTEST_F(HdfLiteSdioTest, SdioDisableFunc001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868B
   */
-HWTEST_F(HdfLiteSdioTest, SdioEnableFunc001, TestSize.Level0)
+HWTEST_F(HdfLiteSdioTest, SdioEnableFunc001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SDIO_TYPE, SDIO_ENABLE_FUNC_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -84,7 +84,7 @@ HWTEST_F(HdfLiteSdioTest, SdioEnableFunc001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868B
   */
-HWTEST_F(HdfLiteSdioTest, SdioSetBlockSize001, TestSize.Level0)
+HWTEST_F(HdfLiteSdioTest, SdioSetBlockSize001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SDIO_TYPE, SDIO_SET_BLOCK_SIZE_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -96,7 +96,7 @@ HWTEST_F(HdfLiteSdioTest, SdioSetBlockSize001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868B
   */
-HWTEST_F(HdfLiteSdioTest, SdioIncrAddrReadAndWriteBytes001, TestSize.Level0)
+HWTEST_F(HdfLiteSdioTest, SdioIncrAddrReadAndWriteBytes001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SDIO_TYPE, SDIO_INCR_ADDR_READ_AND_WRITE_BYTES_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -108,7 +108,7 @@ HWTEST_F(HdfLiteSdioTest, SdioIncrAddrReadAndWriteBytes001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868B
   */
-HWTEST_F(HdfLiteSdioTest, SdioFixedAddrReadAndWriteBytes001, TestSize.Level0)
+HWTEST_F(HdfLiteSdioTest, SdioFixedAddrReadAndWriteBytes001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SDIO_TYPE, SDIO_FIXED_ADDR_READ_AND_WRITE_BYTES_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -120,7 +120,7 @@ HWTEST_F(HdfLiteSdioTest, SdioFixedAddrReadAndWriteBytes001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868B
   */
-HWTEST_F(HdfLiteSdioTest, SdioFunc0ReadAndWriteBytes001, TestSize.Level0)
+HWTEST_F(HdfLiteSdioTest, SdioFunc0ReadAndWriteBytes001, TestSize.Level1)
 {
     struct HdfTestMsg msg = { TEST_PAL_SDIO_TYPE, SDIO_FUNC0_READ_AND_WRITE_BYTES_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
@@ -132,7 +132,7 @@ HWTEST_F(HdfLiteSdioTest, SdioFunc0ReadAndWriteBytes001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F868B
   */
-HWTEST_F(HdfLiteSdioTest, SdioSetAndGetCommonInfo001, TestSize.Level0)
+HWTEST_F(HdfLiteSdioTest, SdioSetAndGetCommonInfo001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SDIO_TYPE, SDIO_SET_AND_GET_COMMON_INFO_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

@@ -66,7 +66,7 @@ static void TestUserEmmcGetCid(void)
   * @tc.type: FUNC
   * @tc.require: AR000F5LSD AR000F5LV3
   */
-HWTEST_F(HdfLiteEmmcTest, EmmcGetCid001, TestSize.Level0)
+HWTEST_F(HdfLiteEmmcTest, EmmcGetCid001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_EMMC_TYPE, EMMC_GET_CID_01, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
