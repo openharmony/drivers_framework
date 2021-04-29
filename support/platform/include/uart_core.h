@@ -41,7 +41,8 @@ struct UartHostMethod {
     int32_t (*SetBaud)(struct UartHost *host, uint32_t baudRate);
     int32_t (*GetAttribute)(struct UartHost *host, struct UartAttribute *attribute);
     int32_t (*SetAttribute)(struct UartHost *host, struct UartAttribute *attribute);
-    int32_t (*SetTransMode)(struct UartHost *handle, enum UartTransMode mode);
+    int32_t (*SetTransMode)(struct UartHost *host, enum UartTransMode mode);
+    int32_t (*pollEvent)(struct UartHost *host, void *filep, void *table);
 };
 
 struct UartHost *UartHostCreate(struct HdfDeviceObject *device);
@@ -131,6 +132,14 @@ static inline int32_t UartHostSetTransMode(struct UartHost *host, enum UartTrans
         return HDF_ERR_NOT_SUPPORT;
     }
     return host->method->SetTransMode(host, mode);
+}
+
+static inline int32_t UartHostPollEvent(struct UartHost *host, void *filep, void *table)
+{
+    if (host == NULL || host->method == NULL || host->method->pollEvent == NULL) {
+        return HDF_ERR_NOT_SUPPORT;
+    }
+    return host->method->pollEvent(host, filep, table);
 }
 
 #ifdef __cplusplus
