@@ -32,20 +32,7 @@ static int32_t I2cCntlrLockDefault(struct I2cCntlr *cntlr)
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-
-__TRY_LOCK:
-    if (OsalAtomicRead(&cntlr->atom) >= 1) {
-        OsalAtomicDec(&cntlr->atom);
-        return HDF_SUCCESS;
-    }
-
-    if (PlatInIrqContext()) {
-        OsalMDelay(LOCK_WAIT_SECONDS_M);
-    } else {
-        OsalMSleep(LOCK_WAIT_SECONDS_M);
-    }
-
-    goto __TRY_LOCK;
+    return OsalMutexLock(&cntlr->lock);
 }
 
 static void I2cCntlrUnlockDefault(struct I2cCntlr *cntlr)
@@ -53,8 +40,7 @@ static void I2cCntlrUnlockDefault(struct I2cCntlr *cntlr)
     if (cntlr == NULL) {
         return;
     }
-
-    OsalAtomicInc(&cntlr->atom);
+    (void)OsalMutexUnlock(&cntlr->lock);
 }
 
 static const struct I2cLockMethod g_i2cLockOpsDefault = {
@@ -165,6 +151,8 @@ void I2cCntlrPut(struct I2cCntlr *cntlr)
 
 int32_t I2cCntlrAdd(struct I2cCntlr *cntlr)
 {
+    int32_t ret;
+
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -183,9 +171,13 @@ int32_t I2cCntlrAdd(struct I2cCntlr *cntlr)
         HDF_LOGE("I2cCntlrAdd: init lock fail!");
         return HDF_FAILURE;
     }
-    OsalAtomicSet(&cntlr->atom, 1);
 
-    return I2cManagerAddCntlr(cntlr);
+    ret = I2cManagerAddCntlr(cntlr);
+    if (ret != HDF_SUCCESS) {
+        (void)OsalMutexDestroy(&cntlr->lock);
+        return ret;
+    }
+    return HDF_SUCCESS;
 }
 
 void I2cCntlrRemove(struct I2cCntlr *cntlr)

@@ -11,7 +11,6 @@
 
 #include "hdf_base.h"
 #include "i2c_if.h"
-#include "osal_atomic.h"
 #include "osal_mutex.h"
 
 #ifdef __cplusplus
@@ -28,7 +27,6 @@ struct I2cLockMethod;
 
 struct I2cCntlr {
     struct OsalMutex lock;
-    OsalAtomic atom;
     void *owner;
     int16_t busId;
     void *priv;
