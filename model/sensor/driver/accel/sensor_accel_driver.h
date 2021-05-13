@@ -59,6 +59,6 @@ struct AccelDrvData {
     struct AccelOpsCall ops;
 };
 
-int32_t RegisterAccelChipOps(struct AccelOpsCall *ops);
+int32_t RegisterAccelChipOps(const struct AccelOpsCall *ops);
 
 #endif /* SENSOR_ACCEL_DRIVER_H */
