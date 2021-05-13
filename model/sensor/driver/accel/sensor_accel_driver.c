@@ -38,7 +38,7 @@ static struct AccelDrvData *AccelGetDrvData(void)
 
 static struct SensorRegCfgGroupNode *g_regCfgGroup[SENSOR_GROUP_MAX] = { NULL };
 
-int32_t RegisterAccelChipOps(struct AccelOpsCall *ops)
+int32_t RegisterAccelChipOps(const struct AccelOpsCall *ops)
 {
     struct AccelDrvData *drvData = NULL;
 
@@ -131,7 +131,7 @@ static int32_t SetAccelEnable(void)
     CHECK_NULL_PTR_RETURN_VALUE(drvData->accelCfg, HDF_ERR_INVALID_PARAM);
     ret = SetSensorRegCfgArray(&drvData->accelCfg->busCfg, drvData->accelCfg->regCfgGroup[SENSOR_ENABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: accel sensor disable config failed", __func__);
+        HDF_LOGE("%s: accel sensor enable config failed", __func__);
         return HDF_FAILURE;
     }
 
@@ -209,7 +209,6 @@ static int32_t InitAccelOps(struct SensorDeviceInfo *deviceInfo)
 {
     struct AccelDrvData *drvData = AccelGetDrvData();
 
-    (void)memset_s((void *)deviceInfo, sizeof(*deviceInfo), 0, sizeof(*deviceInfo));
     deviceInfo->ops.GetInfo = SetAccelInfo;
     deviceInfo->ops.Enable = SetAccelEnable;
     deviceInfo->ops.Disable = SetAccelDisable;

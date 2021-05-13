@@ -13,7 +13,7 @@
 #include "sensor_driver_type.h"
 
 enum SensorMethodCmd {
-    SENSOR_CMD_GET_INFO_LIST = 0xFFFF,
+    SENSOR_CMD_GET_INFO_LIST = 0,
     SENSOR_CMD_ENABLE        = 1,
     SENSOR_CMD_DISABLE       = 2,
     SENSOR_CMD_SET_BATCH     = 3,

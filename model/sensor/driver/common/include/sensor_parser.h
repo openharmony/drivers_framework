@@ -15,6 +15,8 @@
 #include "sensor_driver_type.h"
 #include "spi_if.h"
 
+#define SENSOR_CONFIG_MAX_ITEM 100
+
 enum SensorBusType {
     SENSOR_BUS_I2C = 0,
     SENSOR_BUS_SPI = 1,
