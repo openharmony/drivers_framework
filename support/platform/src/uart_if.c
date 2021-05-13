@@ -128,7 +128,7 @@ static int32_t UartUserReceive(DevHandle handle, void *data, uint32_t size, enum
         HDF_LOGE("%s: service is invalid", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    /* Four bits are used to store the buffer length, and four bits are used to align the memory. */
+    /* Four bytes are used to store the buffer length, and four bytes are used to align the memory. */
     reply = HdfSBufObtain(size + sizeof(uint64_t));
     if (reply == NULL) {
         HDF_LOGE("%s: failed to obtain reply", __func__);
