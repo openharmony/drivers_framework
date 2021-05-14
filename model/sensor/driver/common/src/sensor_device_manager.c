@@ -48,6 +48,10 @@ int32_t AddSensorDevice(const struct SensorDeviceInfo *deviceInfo)
 
     if (!existSensor) {
         devInfoNode = (struct SensorDevInfoNode*)OsalMemCalloc(sizeof(*devInfoNode));
+        if (devInfoNode == NULL) {
+            (void)OsalMutexUnlock(&manager->mutex);
+            return HDF_FAILURE;
+        }
         if (memcpy_s(&devInfoNode->devInfo, sizeof(devInfoNode->devInfo),
             (void *)deviceInfo, sizeof(*deviceInfo)) != EOK) {
             HDF_LOGE("%s: copy sensor info failed", __func__);
@@ -94,7 +98,10 @@ int32_t ReportSensorEvent(const struct SensorReportEvent *events)
 
     (void)OsalMutexLock(&manager->eventMutex);
     struct HdfSBuf *msg = HdfSBufObtain(HDF_SENSOR_EVENT_MAX_BUF);
-    CHECK_NULL_PTR_RETURN_VALUE(msg, HDF_ERR_INVALID_PARAM);
+    if (msg == NULL) {
+        (void)OsalMutexUnlock(&manager->eventMutex);
+        return HDF_ERR_INVALID_PARAM;
+    }
 
     if (!HdfSbufWriteBuffer(msg, events, sizeof(*events))) {
         HDF_LOGE("%s: sbuf write event failed", __func__);
@@ -235,6 +242,7 @@ static int32_t DispatchCmdHandle(struct SensorDeviceInfo *deviceInfo, struct Hdf
 {
     int32_t methodCmd;
     int32_t loop;
+    int32_t count;
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
@@ -248,7 +256,8 @@ static int32_t DispatchCmdHandle(struct SensorDeviceInfo *deviceInfo, struct Hdf
         return HDF_FAILURE;
     }
 
-    for (loop = 0; loop < sizeof(g_sensorCmdHandle) / sizeof(g_sensorCmdHandle[0]); ++loop) {
+    count = sizeof(g_sensorCmdHandle) / sizeof(g_sensorCmdHandle[0]);
+    for (loop = 0; loop < count; ++loop) {
         if ((methodCmd == g_sensorCmdHandle[loop].cmd) && (g_sensorCmdHandle[loop].func != NULL)) {
             return g_sensorCmdHandle[loop].func(deviceInfo, data, reply);
         }
@@ -310,15 +319,22 @@ int32_t InitSensorDevManager(struct HdfDeviceObject *device)
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_PARAM);
 
     DListHeadInit(&manager->sensorDevInfoHead);
-    OsalMutexInit(&manager->mutex);
-    OsalMutexInit(&manager->eventMutex);
+    if (OsalMutexInit(&manager->mutex) != HDF_SUCCESS) {
+        HDF_LOGE("%s: init mutex failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    if (OsalMutexInit(&manager->eventMutex) != HDF_SUCCESS) {
+        HDF_LOGE("%s: init eventMutex failed", __func__);
+        return HDF_FAILURE;
+    }
 
     if (!HdfDeviceSetClass(device, DEVICE_CLASS_SENSOR)) {
         HDF_LOGE("%s: init sensor set class failed", __func__);
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("%s: init sensor manager success", __func__);
+    HDF_LOGI("%s: init sensor manager successfully", __func__);
     return HDF_SUCCESS;
 }
 

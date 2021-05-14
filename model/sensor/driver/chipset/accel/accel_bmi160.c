@@ -25,9 +25,14 @@ static int32_t ReadBmi160RawData(struct SensorCfgData *data, struct AccelData *r
     OsalTimespec time;
 
     (void)memset_s(&time, sizeof(time), 0, sizeof(time));
-    (void)OsalGetTime(&time);
+    (void)memset_s(&reg, sizeof(reg), 0, sizeof(reg));
+
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
+    if (OsalGetTime(&time) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Get accel system time failed", __func__);
+        return HDF_FAILURE;
+    }
     *timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT; /* unit nanosecond */
 
     int32_t ret = ReadSensor(&data->busCfg, BMI160_STATUS_ADDR, &status, sizeof(uint8_t));
@@ -36,34 +41,22 @@ static int32_t ReadBmi160RawData(struct SensorCfgData *data, struct AccelData *r
     }
 
     ret = ReadSensor(&data->busCfg, BMI160_ACCEL_X_LSB_ADDR, &reg[ACCEL_X_AXIS_LSB], sizeof(uint8_t));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: i2c read X_AXIS_LSB failed", __func__);
-    }
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     ret = ReadSensor(&data->busCfg, BMI160_ACCEL_X_MSB_ADDR, &reg[ACCEL_X_AXIS_MSB], sizeof(uint8_t));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: i2c read X_AXIS_MSB failed", __func__);
-    }
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     ret = ReadSensor(&data->busCfg, BMI160_ACCEL_Y_LSB_ADDR, &reg[ACCEL_Y_AXIS_LSB], sizeof(uint8_t));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: i2c read Y_AXIS_LSB failed", __func__);
-    }
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     ret = ReadSensor(&data->busCfg, BMI160_ACCEL_Y_MSB_ADDR, &reg[ACCEL_Y_AXIS_MSB], sizeof(uint8_t));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: i2c read Y_AXIS_MSB failed", __func__);
-    }
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     ret = ReadSensor(&data->busCfg, BMI160_ACCEL_Z_LSB_ADDR, &reg[ACCEL_Z_AXIS_LSB], sizeof(uint8_t));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: i2c read Z_AXIS_LSB failed", __func__);
-    }
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     ret = ReadSensor(&data->busCfg, BMI160_ACCEL_Z_MSB_ADDR, &reg[ACCEL_Z_AXIS_MSB], sizeof(uint8_t));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: i2c read Z_AXIS_MSB failed", __func__);
-    }
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     rawData->x = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ACCEL_X_AXIS_MSB], SENSOR_DATA_WIDTH_8_BIT) |
         reg[ACCEL_X_AXIS_LSB]);
@@ -78,7 +71,7 @@ static int32_t ReadBmi160RawData(struct SensorCfgData *data, struct AccelData *r
 int32_t ReadBmi160Data(struct SensorCfgData *data)
 {
     int32_t ret;
-    struct AccelData  rawData = { 0, 0, 0 };
+    struct AccelData rawData = { 0, 0, 0 };
     int32_t tmp[ACCEL_AXIS_NUM];
     struct SensorReportEvent event;
 
@@ -114,7 +107,7 @@ static int32_t InitBmi160(struct SensorCfgData *data)
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
     ret = SetSensorRegCfgArray(&data->busCfg, data->regCfgGroup[SENSOR_INIT_GROUP]);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: bmi160 sensor init config failed", __func__);
+        HDF_LOGE("%s: BMI160 sensor init config failed", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -123,11 +116,11 @@ static int32_t InitBmi160(struct SensorCfgData *data)
 static int32_t InitAccelPreConfig(void)
 {
     if (SetSensorPinMux(SENSOR_I2C6_DATA_REG_ADDR, SENSOR_ADDR_WIDTH_4_BYTE, SENSOR_I2C_REG_CFG) != HDF_SUCCESS) {
-        HDF_LOGE("%s: data write mux pin failed", __func__);
+        HDF_LOGE("%s: Data write mux pin failed", __func__);
         return HDF_FAILURE;
     }
     if (SetSensorPinMux(SENSOR_I2C6_CLK_REG_ADDR, SENSOR_ADDR_WIDTH_4_BYTE, SENSOR_I2C_REG_CFG) != HDF_SUCCESS) {
-        HDF_LOGE("%s: clc write mux pin failed", __func__);
+        HDF_LOGE("%s: ClK write mux pin failed", __func__);
         return HDF_FAILURE;
     }
 
