@@ -27,7 +27,6 @@
 
 int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data, uint16_t dataLen)
 {
-    uint8_t busType;
     int index = 0;
     unsigned char regBuf[I2C_REG_BUF_LEN] = {0};
     struct I2cMsg msg[I2C_READ_MSG_NUM];
@@ -35,8 +34,7 @@ int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data,
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_FAILURE);
 
-    busType = busCfg->busType;
-    if (busType == SENSOR_BUS_I2C) {
+    if (busCfg->busType == SENSOR_BUS_I2C) {
         CHECK_NULL_PTR_RETURN_VALUE(busCfg->i2cCfg.handle, HDF_FAILURE);
         (void)memset_s(msg, sizeof(msg), 0, sizeof(msg));
 
@@ -50,6 +48,9 @@ int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data,
         } else if (busCfg->i2cCfg.regWidth == SENSOR_ADDR_WIDTH_2_BYTE) {
             regBuf[index++] = (regAddr >> I2C_BYTE_OFFSET) & I2C_BYTE_MASK;
             regBuf[index++] = regAddr & I2C_BYTE_MASK;
+        } else {
+            HDF_LOGE("%s: i2c regWidth[%u] failed", __func__, busCfg->i2cCfg.regWidth);
+            return HDF_FAILURE;
         }
 
         msg[I2C_READ_MSG_VALUE_IDX].addr = busCfg->i2cCfg.devAddr;
@@ -58,7 +59,7 @@ int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data,
         msg[I2C_READ_MSG_VALUE_IDX].buf = data;
 
         if (I2cTransfer(busCfg->i2cCfg.handle, msg, I2C_READ_MSG_NUM) != I2C_READ_MSG_NUM) {
-            HDF_LOGE("%s: i2c[%d] read failed", __func__, busCfg->i2cCfg.busNum);
+            HDF_LOGE("%s: i2c[%u] read failed", __func__, busCfg->i2cCfg.busNum);
             return HDF_FAILURE;
         }
     }
@@ -68,16 +69,13 @@ int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data,
 
 int32_t WriteSensor(struct SensorBusCfg *busCfg, uint8_t *writeData, uint16_t dataLen)
 {
-    uint8_t busType;
     struct I2cMsg msg[I2C_WRITE_MSG_NUM];
 
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
     CHECK_NULL_PTR_RETURN_VALUE(writeData, HDF_FAILURE);
 
-    busType = busCfg->busType;
-    if (busType == SENSOR_BUS_I2C) {
+    if (busCfg->busType == SENSOR_BUS_I2C) {
         CHECK_NULL_PTR_RETURN_VALUE(busCfg->i2cCfg.handle, HDF_FAILURE);
-        (void)memset_s(msg, sizeof(msg), 0, sizeof(msg));
 
         msg[0].addr = busCfg->i2cCfg.devAddr;
         msg[0].flags = 0;
@@ -85,7 +83,7 @@ int32_t WriteSensor(struct SensorBusCfg *busCfg, uint8_t *writeData, uint16_t da
         msg[0].buf = writeData;
 
         if (I2cTransfer(busCfg->i2cCfg.handle, msg, I2C_WRITE_MSG_NUM) != I2C_WRITE_MSG_NUM) {
-            HDF_LOGE("%s: i2c[%d] write failed", __func__, busCfg->i2cCfg.busNum);
+            HDF_LOGE("%s: i2c[%u] write failed", __func__, busCfg->i2cCfg.busNum);
             return HDF_FAILURE;
         }
     }
