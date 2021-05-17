@@ -41,7 +41,7 @@ static bool DeviceResourceIfaceConstruct(struct DeviceResourceIface *instance, D
             HcsIfaceConstruct(instance);
             break;
         default:
-            HDF_LOGE("%s: Currently, this configuration type is not supported. the type is %d", __func__, type);
+            HDF_LOGE("%s: Currently, this configuration type is not supported, the type is %d", __func__, type);
             return false;
     }
     return true;

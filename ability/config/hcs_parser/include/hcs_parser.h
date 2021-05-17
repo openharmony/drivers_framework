@@ -13,4 +13,4 @@
 
 bool HcsDecompile(const char *hcsBlob, uint32_t offset, struct DeviceResourceNode **root);
 
-#endif // HCS_PARSER_H
+#endif /* HCS_PARSER_H */

@@ -53,7 +53,7 @@ static bool UpdateTreeStack(struct TreeStack **treeStack, int32_t *treeLayer, st
     uint32_t offset)
 {
     if (*treeLayer >= (TREE_STACK_MAX - 1)) {
-        HDF_LOGE("%s failed, the treeLayer error. treeLayer: %d", __func__, *treeLayer);
+        HDF_LOGE("%s failed, the treeLayer error, treeLayer: %d", __func__, *treeLayer);
         return false;
     }
     (*treeLayer)++;
@@ -83,7 +83,7 @@ static int32_t ParseByteCode(const char *treeStart, int32_t offset, char **treeM
 {
     int32_t termOffset = HcsGetNodeOrAttrLength(treeStart + offset);
     if (termOffset <= 0) {
-        HDF_LOGE("%s failed, HcsGetNodeOrAttrLength failed, errno: %d", __func__, termOffset);
+        HDF_LOGE("%s failed, HcsGetNodeOrAttrLength error, errno: %d", __func__, termOffset);
         return HDF_FAILURE;
     }
 
@@ -111,7 +111,7 @@ static int32_t ParseByteCode(const char *treeStart, int32_t offset, char **treeM
             }
             parentOrCurNode = GetParentNode(offset, *treeStack, treeLayerOrMemLen, termOffset);
             if (!AddAttrInNode(treeStart + offset, parentOrCurNode, treeMem)) {
-                HDF_LOGE("%s failed, the AddAttrInNode error", __func__);
+                HDF_LOGE("%s failed, AddAttrInNode error", __func__);
                 return HDF_FAILURE;
             }
             break;
@@ -136,14 +136,14 @@ int32_t GenerateCfgTree(const char *treeStart, int32_t length, char *treeMem, st
     while ((offset < length) && (offset >= 0)) {
         int32_t eachOffset = ParseByteCode(treeStart, offset, &treeMem, &treeStack, &treeLayerOrMemLen);
         if (eachOffset <= 0) {
-            HDF_LOGE("%s failed, the ParseByteCode error", __func__);
+            HDF_LOGE("%s failed, ParseByteCode error", __func__);
             treeLayerOrMemLen = eachOffset;
             break;
         }
         offset += eachOffset;
     }
     if ((treeMem != NULL) && (root != NULL) && (treeLayerOrMemLen > 0)) {
-        // the treeStack[1] is root
+        // The treeStack[1] is root
         *root = treeStack[1].node;
     }
     OsalMemFree(treeStack);

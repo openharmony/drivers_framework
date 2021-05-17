@@ -13,9 +13,9 @@
 
 #define TREE_STACK_MAX 64
 struct TreeStack {
-    uint32_t offset; // the offset of node in blob
-    struct DeviceResourceNode *node; // the node is the head node of every layer tree
+    uint32_t offset; // The offset of the node in the blob.
+    struct DeviceResourceNode *node; // The head node of a layer tree.
 };
 int32_t GenerateCfgTree(const char *treeStart, int32_t length, char *treeMem, struct DeviceResourceNode **root);
 
-#endif // HCS_GENERATE_TREE_H
+#endif /* HCS_GENERATE_TREE_H */
