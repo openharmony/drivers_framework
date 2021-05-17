@@ -23,7 +23,7 @@ static int HdfDeviceAttach(struct IHdfDevice *devInst, struct HdfDeviceNode *dev
     struct HdfDevice *device = (struct HdfDevice *)devInst;
     struct IDeviceNode *nodeIf = (struct IDeviceNode *)devNode;
     if (device == NULL || nodeIf == NULL || nodeIf->LaunchNode == NULL) {
-        HDF_LOGE("Device attach failed, input params is wrong");
+        HDF_LOGE("failed to attach device, input params invalid");
         return HDF_ERR_INVALID_PARAM;
     }
     HdfSListAdd(&device->services, &devNode->entry);

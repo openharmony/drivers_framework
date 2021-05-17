@@ -16,7 +16,7 @@
 struct PowerStateTokenClnt {
     struct HdfSListNode entry;
     HdfPowerState powerState;
-    struct IPowerStateToken* tokenIf;
+    struct IPowerStateToken *tokenIf;
 };
 
 struct PowerStateTokenClnt *PowerStateTokenClntNewInstance(struct IPowerStateToken *tokenIf);

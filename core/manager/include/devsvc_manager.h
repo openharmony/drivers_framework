@@ -29,4 +29,7 @@ int DevSvcManagerAddService(struct IDevSvcManager *manager, const char *svcName,
 struct HdfObject *DevSvcManagerGetService(struct IDevSvcManager *manager, const char *svcName);
 void DevSvcManagerRemoveService(struct IDevSvcManager *manager, const char *svcName);
 
+int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCallback callback);
+int DevSvcManagerClntUnsubscribeService(const char *svcName);
+
 #endif /* DEVICE_SERVICE_MANAGER_H */

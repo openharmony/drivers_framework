@@ -17,12 +17,15 @@
 #include "hdf_object_manager.h"
 #include "power_state_manager.h"
 
-
 #define HDF_LOG_TAG devmgr_service
 
 static int DevmgrServiceActiveDevice(struct DevHostServiceClnt *hostClnt, struct HdfDeviceInfo *deviceInfo, bool isLoad)
 {
     struct IDevHostService *devHostSvcIf = (struct IDevHostService *)hostClnt->hostService;
+    if (devHostSvcIf == NULL) {
+        return HDF_FAILURE;
+    }
+
     if (isLoad && (deviceInfo->preload != DEVICE_PRELOAD_ENABLE)) {
         int ret = devHostSvcIf->AddDevice(devHostSvcIf, deviceInfo);
         if (ret == HDF_SUCCESS) {
@@ -83,14 +86,13 @@ int32_t DevmgrServiceLoadLeftDriver(struct DevmgrService *devMgrSvc)
             if (deviceInfo->preload == DEVICE_PRELOAD_ENABLE_STEP2) {
                 ret = DevmgrServiceActiveDevice(hostClnt, deviceInfo, true);
                 if (ret != HDF_SUCCESS) {
-                    HDF_LOGE("%s load driver %s failed!", __func__, deviceInfo->moduleName);
+                    HDF_LOGE("%s:failed to load driver %s", __func__, deviceInfo->moduleName);
                 }
             }
         }
     }
     return HDF_SUCCESS;
 }
-
 
 int DevmgrServiceLoadDevice(const char *svcName)
 {
@@ -108,7 +110,7 @@ static struct DevHostServiceClnt *DevmgrServiceFindDeviceHost(struct IDevmgrServ
     struct DevHostServiceClnt *hostClnt = NULL;
     struct DevmgrService *dmService = (struct DevmgrService *)inst;
     if (dmService == NULL) {
-        HDF_LOGE("Find device host failed, dmService is null");
+        HDF_LOGE("failed to find device host, dmService is null");
         return NULL;
     }
     HdfSListIteratorInit(&it, &dmService->hosts);
@@ -118,29 +120,49 @@ static struct DevHostServiceClnt *DevmgrServiceFindDeviceHost(struct IDevmgrServ
             return hostClnt;
         }
     }
-    HDF_LOGE("Find host failed, host id is %u", hostId);
+    HDF_LOGE("failed to find host, host id is %u", hostId);
     return NULL;
+}
+
+static void DevmgrServiceUpdateStatus(struct DevHostServiceClnt *hostClnt, uint16_t deviceId, uint16_t status)
+{
+    struct HdfSListIterator it;
+    struct HdfDeviceInfo *deviceInfo = NULL;
+
+    HdfSListIteratorInit(&it, hostClnt->deviceInfos);
+    while (HdfSListIteratorHasNext(&it)) {
+        deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&it);
+        if (deviceInfo->deviceId == deviceId) {
+            deviceInfo->status = status;
+            HDF_LOGD("%s host:%s %u device:%s %u status:%u", __func__, hostClnt->hostName,
+                hostClnt->hostId, deviceInfo->svcName, deviceId, deviceInfo->status);
+            return;
+        }
+    }
+    HDF_LOGE("%s: not find device %u in host %u", __func__, hostClnt->hostId, deviceId);
+    return;
 }
 
 static int DevmgrServiceAttachDevice(
     struct IDevmgrService *inst, const struct HdfDeviceInfo *deviceInfo, struct IHdfDeviceToken *token)
 {
     if (deviceInfo == NULL) {
-        HDF_LOGE("deviceInfo is null");
+        HDF_LOGE("failed to attach device, deviceInfo is null");
         return HDF_FAILURE;
     }
     struct DevHostServiceClnt *hostClnt = DevmgrServiceFindDeviceHost(inst, deviceInfo->hostId);
     if (hostClnt == NULL) {
-        HDF_LOGE("hostClnt is null");
+        HDF_LOGE("failed to attach device, hostClnt is null");
         return HDF_FAILURE;
     }
     struct DeviceTokenClnt *tokenClnt = DeviceTokenClntNewInstance(token);
     if (tokenClnt == NULL) {
-        HDF_LOGE("tokenClnt is null");
+        HDF_LOGE("failed to attach device, tokenClnt is null");
         return HDF_FAILURE;
     }
 
     tokenClnt->deviceInfo = deviceInfo;
+    DevmgrServiceUpdateStatus(hostClnt, deviceInfo->deviceId, HDF_SERVICE_USABLE);
     HdfSListAdd(&hostClnt->devices, &tokenClnt->node);
     return HDF_SUCCESS;
 }
@@ -150,20 +172,21 @@ static int DevmgrServiceAttachDeviceHost(
 {
     struct DevHostServiceClnt *hostClnt = DevmgrServiceFindDeviceHost(inst, hostId);
     if (hostClnt == NULL) {
-        HDF_LOGE("Attach device host failed, hostClnt is null");
+        HDF_LOGE("failed to attach device host, hostClnt is null");
         return HDF_FAILURE;
     }
     if (hostService == NULL) {
-        HDF_LOGE("Attach device host failed, hostService is null");
+        HDF_LOGE("failed to attach device host, hostService is null");
         return HDF_FAILURE;
     }
+
+    hostClnt->hostService = hostService;
     hostClnt->deviceInfos = HdfAttributeManagerGetDeviceList(hostClnt->hostId, hostClnt->hostName);
     if (hostClnt->deviceInfos == NULL) {
-        HDF_LOGE("Get device list failed");
-        return HDF_FAILURE;
+        HDF_LOGW("failed to get device list ");
+        return HDF_SUCCESS;
     }
     hostClnt->devCount = HdfSListCount(hostClnt->deviceInfos);
-    hostClnt->hostService = hostService;
     return DevHostServiceClntInstallDriver(hostClnt);
 }
 
@@ -181,7 +204,7 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
     }
     HdfSListInit(&hostList);
     if (!HdfAttributeManagerGetHostList(&hostList)) {
-        HDF_LOGW("%s get host list is null", __func__);
+        HDF_LOGW("%s: host list is null", __func__);
         return HDF_SUCCESS;
     }
     HdfSListIteratorInit(&it, &hostList);
@@ -189,13 +212,13 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
         hostAttr = (struct HdfHostInfo *)HdfSListIteratorNext(&it);
         hostClnt = DevHostServiceClntNewInstance(hostAttr->hostId, hostAttr->hostName);
         if (hostClnt == NULL) {
-            HDF_LOGW("Create new device host client failed");
+            HDF_LOGW("failed to create new device host client");
             continue;
         }
         HdfSListAdd(&inst->hosts, &hostClnt->node);
         hostClnt->hostPid = installer->StartDeviceHost(hostAttr->hostId, hostAttr->hostName);
         if (hostClnt->hostPid == HDF_FAILURE) {
-            HDF_LOGW("Start device host failed, host id is %u", hostAttr->hostId);
+            HDF_LOGW("failed to start device host, host id is %u", hostAttr->hostId);
             HdfSListRemove(&inst->hosts, &hostClnt->node);
             DevHostServiceClntFreeInstance(hostClnt);
         }
@@ -208,7 +231,7 @@ int DevmgrServiceStartService(struct IDevmgrService *inst)
 {
     struct DevmgrService *dmService = (struct DevmgrService *)inst;
     if (dmService == NULL) {
-        HDF_LOGE("Start device manager service failed, dmService is null");
+        HDF_LOGE("failed to start device manager service, dmService is null");
         return HDF_FAILURE;
     }
     return DevmgrServiceStartDeviceHosts(dmService);
@@ -217,7 +240,7 @@ int DevmgrServiceStartService(struct IDevmgrService *inst)
 bool DevmgrServiceConstruct(struct DevmgrService *inst)
 {
     if (OsalMutexInit(&inst->devMgrMutex) != HDF_SUCCESS) {
-        HDF_LOGE("%s mutex init failed", __func__);
+        HDF_LOGE("%s:failed to mutex init ", __func__);
         return false;
     }
     struct IDevmgrService *devMgrSvcIf = (struct IDevmgrService *)inst;
@@ -228,10 +251,11 @@ bool DevmgrServiceConstruct(struct DevmgrService *inst)
         devMgrSvcIf->AcquireWakeLock = DevmgrServiceAcquireWakeLock;
         devMgrSvcIf->ReleaseWakeLock = DevmgrServiceReleaseWakeLock;
         HdfSListInit(&inst->hosts);
+        return true;
+    } else {
+        return false;
     }
-    return true;
 }
-
 
 struct HdfObject *DevmgrServiceCreate()
 {

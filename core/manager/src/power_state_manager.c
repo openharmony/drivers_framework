@@ -62,7 +62,6 @@ static void PowerStateManagerReleaseWakeLock(
 
 static void PowerStateManagerConstruct(struct PowerStateManager *inst)
 {
-    // not support system acquire and release
     static struct IHdfSRefListener wakeLockRefListener = {
         .OnFirstAcquire = NULL,
         .OnLastRelease = NULL,

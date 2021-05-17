@@ -10,7 +10,7 @@
  * @addtogroup Core
  * @{
  *
- * @brief Provides OpenHarmony Driver Foundation (HDF) APIs.
+ * @brief Provides Hardware Driver Foundation (HDF) APIs.
  *
  * The HDF implements driver framework capabilities such as driver loading, service management,
  * and driver message model. You can develop drivers based on the HDF.
@@ -175,21 +175,6 @@ struct SubscriberCallback {
      * @since 1.0
      */
     int32_t (*OnServiceConnected)(struct HdfDeviceObject *deviceObject, const struct HdfObject *service);
-};
-
-/**
- * @brief Defines the power management functions provided by the HDF for the driver.
- *
- * To use the power management mechanism provided by the HDF, implement operations of <b>IPowerEventListener</b> and
- * invoke {@linkHdfDeviceRegisterPowerListener} to register the operations with the HDF.
- *
- * @since 1.0
- */
-struct IPowerEventListener {
-    /** Wakes up the driver device. The driver developer implements the operation. */
-    void (*Resume)(struct HdfDeviceObject *deviceObject);
-    /** Hibernates the driver device. The driver developer implements the operation. */
-    void (*Suspend)(struct HdfDeviceObject *deviceObject);
 };
 
 /**

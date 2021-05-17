@@ -23,7 +23,7 @@ struct DeviceTokenClnt *DeviceTokenClntNewInstance(struct IHdfDeviceToken *token
 {
     struct DeviceTokenClnt *tokenClnt = NULL;
     if (tokenIf == NULL) {
-        HDF_LOGE("New token client failed, tokenIf is null");
+        HDF_LOGE("failed to create token client, tokenIf is null");
         return NULL;
     }
     tokenClnt = (struct DeviceTokenClnt *)OsalMemCalloc(sizeof(struct DeviceTokenClnt));

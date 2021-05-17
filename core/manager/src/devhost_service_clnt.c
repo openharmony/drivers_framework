@@ -23,7 +23,7 @@ int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt)
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct IDevHostService *devHostSvcIf = NULL;
     if (hostClnt == NULL) {
-        HDF_LOGE("Install driver failed, hostClnt is null");
+        HDF_LOGE("failed to install driver, hostClnt is null");
         return HDF_FAILURE;
     }
 
@@ -44,7 +44,7 @@ int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt)
         }
         ret = devHostSvcIf->AddDevice(devHostSvcIf, deviceInfo);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("Install %s driver failed, ret = %d", deviceInfo->svcName, ret);
+            HDF_LOGE("failed to install driver %s, ret = %d", deviceInfo->svcName, ret);
         }
     }
     return HDF_SUCCESS;
@@ -53,6 +53,12 @@ int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt)
 static void DevHostServiceClntConstruct(struct DevHostServiceClnt *hostClnt)
 {
     HdfSListInit(&hostClnt->devices);
+    hostClnt->deviceHashMap = (Map *)OsalMemCalloc(sizeof(Map));
+    if (hostClnt->deviceHashMap == NULL) {
+        HDF_LOGE("%s:failed to malloc deviceHashMap", __func__);
+        return;
+    }
+    MapInit(hostClnt->deviceHashMap);
 }
 
 struct DevHostServiceClnt *DevHostServiceClntNewInstance(uint16_t hostId, const char *hostName)
@@ -73,6 +79,7 @@ void DevHostServiceClntFreeInstance(struct DevHostServiceClnt *hostClnt)
     if (hostClnt != NULL) {
         HdfSListFlush(&hostClnt->devices, DeviceTokenClntDelete);
         HdfSListFlush(hostClnt->deviceInfos, HdfDeviceInfoDelete);
+        OsalMemFree(hostClnt->deviceHashMap);
         OsalMemFree(hostClnt);
     }
 }

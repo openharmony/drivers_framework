@@ -32,7 +32,6 @@ void HdfServiceObserverDestruct(struct HdfServiceObserver *observer)
     if (observer != NULL) {
         HdfSListFlush(&observer->services, HdfServiceObserverRecordDelete);
         OsalMutexDestroy(&observer->observerMutex);
-        observer->observerMutex.realMutex = NULL;
     }
 }
 
@@ -51,20 +50,22 @@ int HdfServiceObserverSubscribeService(struct HdfServiceObserver *observer,
     if (serviceRecord == NULL) {
         serviceRecord = HdfServiceObserverRecordObtain(serviceKey);
         if (serviceRecord == NULL) {
-            HDF_LOGE("SubscribeService failed, serviceRecord is null");
+            HDF_LOGE("failed to subscribe service, serviceRecord is null");
             return HDF_FAILURE;
         }
         subscriber = HdfServiceSubscriberObtain(callback, matchId);
         if (subscriber == NULL) {
-            HDF_LOGE("SubscribeService failed, subscriber is null");
+            HDF_LOGE("failed to subscribe service, subscriber is null");
             HdfServiceObserverRecordRecycle(serviceRecord);
             return HDF_FAILURE;
         }
+        OsalMutexLock(&observer->observerMutex);
         HdfSListAdd(&observer->services, &serviceRecord->entry);
+        OsalMutexUnlock(&observer->observerMutex);
     } else {
         subscriber = HdfServiceSubscriberObtain(callback, matchId);
         if (subscriber == NULL) {
-            HDF_LOGE("SubscribeService failed, hdf search list is null, subscriber is null");
+            HDF_LOGE("failed to subscribe service, subscriber obtain null");
             return HDF_FAILURE;
         }
     }
@@ -101,7 +102,9 @@ int HdfServiceObserverPublishService(struct HdfServiceObserver *observer,
         serviceRecord->publisher = service;
         serviceRecord->matchId = matchId;
         serviceRecord->policy = policy;
+        OsalMutexLock(&observer->observerMutex);
         HdfSListAdd(&observer->services, &serviceRecord->entry);
+        OsalMutexUnlock(&observer->observerMutex);
     } else {
         serviceRecord->publisher = service;
         HdfServiceObserverRecordNotifySubscribers(serviceRecord, matchId, policy);

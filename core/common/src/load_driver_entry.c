@@ -15,12 +15,12 @@ static struct HdfDriverEntry *HdfDriverEntryConstruct(int32_t *driverCount)
     int i;
     *driverCount = (int32_t)(((uint8_t *)(HDF_DRIVER_END()) - (uint8_t *)(HDF_DRIVER_BEGIN())) / sizeof(size_t));
     if (*driverCount <= 0) {
-        HDF_LOGE("%s hdf get device counts failed!", __func__);
+        HDF_LOGE("%s: failed to hdf get device counts", __func__);
         return NULL;
     }
     struct HdfDriverEntry *driverEntry = OsalMemCalloc(*driverCount * sizeof(struct HdfDriverEntry));
     if (driverEntry == NULL) {
-        HDF_LOGE("%s hdf alloc driver entry mem failed!", __func__);
+        HDF_LOGE("%s: failed to alloc driver entry mem", __func__);
         *driverCount = 0;
         return NULL;
     }
@@ -36,7 +36,7 @@ struct HdfDriverEntry *HdfDriverLoaderGetDriverEntry(const struct HdfDeviceInfo 
 {
     int i;
     if ((deviceInfo == NULL) || (deviceInfo->moduleName == NULL) || (deviceInfo->svcName == NULL)) {
-        HDF_LOGE("%s hdf get device entry failed, input deviceInfo is NULL!", __func__);
+        HDF_LOGE("%s: failed to get device entry, input deviceInfo is NULL", __func__);
         return NULL;
     }
     static struct HdfDriverEntry *driverEntry = NULL;
@@ -44,24 +44,24 @@ struct HdfDriverEntry *HdfDriverLoaderGetDriverEntry(const struct HdfDeviceInfo 
     if (driverEntry == NULL) {
         driverEntry = HdfDriverEntryConstruct(&driverCount);
         if (driverEntry == NULL) {
-            HDF_LOGE("%s driver entry construct failed!", __func__);
+            HDF_LOGE("%s: failed to construct driver entry", __func__);
             return NULL;
         }
     }
     for (i = 0; i < driverCount; i++) {
         if (driverEntry == NULL) {
-            HDF_LOGE("%s driver entry is null!", __func__);
+            HDF_LOGE("%s: driver entry is null", __func__);
             return NULL;
         }
         if (driverEntry[i].moduleName == NULL) {
-            HDF_LOGE("%s driver entry module name is null!", __func__);
-            return NULL;
+            HDF_LOGE("%s: driver entry module name is null", __func__);
+            continue;
         }
         if (strcmp(deviceInfo->moduleName, driverEntry[i].moduleName) == 0) {
             return &driverEntry[i];
         }
     }
-    HDF_LOGE("Hdf get %s device entry failed!", deviceInfo->svcName);
+    HDF_LOGE("failed to get device entry %s", deviceInfo->svcName);
     return NULL;
 }
 

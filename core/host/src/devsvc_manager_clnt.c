@@ -20,13 +20,13 @@ int DevSvcManagerClntAddService(const char *svcName, struct HdfDeviceObject *ser
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
     if (devSvcMgrClnt == NULL) {
-        HDF_LOGE("Get device manager client is null");
+        HDF_LOGE("failed to add service, client is null");
         return HDF_FAILURE;
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->AddService == NULL) {
-        HDF_LOGE("AddService function is not assigned");
+        HDF_LOGE("serviceManager AddService function is null");
         return HDF_FAILURE;
     }
     return serviceManager->AddService(serviceManager, svcName, service);
@@ -36,13 +36,13 @@ const struct HdfObject *DevSvcManagerClntGetService(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
     if (devSvcMgrClnt == NULL) {
-        HDF_LOGE("Get device manager client is null");
+        HDF_LOGE("failed to get service, client is null");
         return NULL;
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->GetService == NULL) {
-        HDF_LOGE("GetService function is not assigned");
+        HDF_LOGE("serviceManager GetService function is null");
         return NULL;
     }
     return serviceManager->GetService(serviceManager, svcName);
@@ -52,13 +52,13 @@ struct HdfDeviceObject *DevSvcManagerClntGetDeviceObject(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
     if (devSvcMgrClnt == NULL) {
-        HDF_LOGE("Get device manager client is null");
+        HDF_LOGE("failed to get device object, client is null");
         return NULL;
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->GetObject == NULL) {
-        HDF_LOGE("GetObject function is not assigned");
+        HDF_LOGE("failed to get device object, method not implement");
         return NULL;
     }
     return serviceManager->GetObject(serviceManager, svcName);
@@ -82,10 +82,8 @@ struct HdfDeviceObject *HdfRegisterDevice(const char *moduleName, const char *se
 
 void HdfUnregisterDevice(const char *moduleName, const char *serviceName)
 {
-    int ret;
-    ret = DevmgrServiceUnLoadDevice(serviceName);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s unload device %s failed!", __func__, serviceName);
+    if (DevmgrServiceUnLoadDevice(serviceName) != HDF_SUCCESS) {
+        HDF_LOGE("%s:failed to unload device %s !", __func__, serviceName);
     }
     HdfDeviceListDel(moduleName, serviceName);
 }
@@ -94,13 +92,13 @@ int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCall
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
     if (devSvcMgrClnt == NULL) {
-        HDF_LOGE("Get device manager client is null");
+        HDF_LOGE("failed to subscribe service, client is null");
         return HDF_FAILURE;
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->SubscribeService == NULL) {
-        HDF_LOGE("SubscribeService function is not assigned");
+        HDF_LOGE("failed to subscribe service, method not implement");
         return HDF_FAILURE;
     }
     return serviceManager->SubscribeService(serviceManager, svcName, callback);
@@ -110,13 +108,13 @@ int DevSvcManagerClntUnsubscribeService(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
     if (devSvcMgrClnt == NULL) {
-        HDF_LOGE("Get device manager client is null");
+        HDF_LOGE("failed to unsubscribe service, client is null");
         return HDF_FAILURE;
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->UnsubscribeService == NULL) {
-        HDF_LOGE("UnsubService function is not assigned");
+        HDF_LOGE("failed to unsubscribe service, method not implement");
         return HDF_FAILURE;
     }
     return serviceManager->UnsubscribeService(serviceManager, svcName);
@@ -126,13 +124,13 @@ void DevSvcManagerClntRemoveService(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
     if (devSvcMgrClnt == NULL) {
-        HDF_LOGE("Get device manager client is null");
+        HDF_LOGE("failed to remove service, devSvcMgrClnt is null");
         return;
     }
 
     struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->RemoveService == NULL) {
-        HDF_LOGE("Remove service function is not assigned");
+        HDF_LOGE("failed to remove service, method not implement");
         return;
     }
     serviceManager->RemoveService(serviceManager, svcName);
@@ -157,9 +155,7 @@ struct DevSvcManagerClnt *DevSvcManagerClntGetInstance()
 void DevSvcManagerClntFreeInstance(struct DevSvcManagerClnt *instance)
 {
     if (instance != NULL) {
-        if (instance->devSvcMgrIf != NULL) {
-            HdfObjectManagerFreeObject((struct HdfObject *)instance->devSvcMgrIf);
-        }
+        HdfObjectManagerFreeObject((struct HdfObject *)instance->devSvcMgrIf);
     }
 }
 

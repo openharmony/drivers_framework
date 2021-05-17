@@ -20,7 +20,7 @@
 #define HDF_LOG_TAG hdf_vnode
 #define VOID_DATA_SIZE 4
 #define EVENT_QUEUE_MAX 100
-#define MAX_RW_SIZE (1024*1204) // 1M
+#define MAX_RW_SIZE (1024 * 1204) // 1M
 
 enum HdfVNodeClientStatus {
     VNODE_CLIENT_RUNNING,
@@ -99,7 +99,7 @@ struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName)
     }
 
     svcMgr = DevSvcManagerClntGetInstance();
-    if (svcMgr == NULL) {
+    if (svcMgr == NULL || svcMgr->devSvcMgrIf == NULL) {
         return NULL;
     }
     deviceObject = svcMgr->devSvcMgrIf->GetObject(svcMgr->devSvcMgrIf, serviceName);
@@ -146,7 +146,7 @@ static struct HdfSBuf *HdfSbufCopyFromUser(uintptr_t data, size_t size)
         return NULL;
     }
     if (CopyFromUser((void*)kData, (void*)data, size) != 0) {
-        HDF_LOGE("%s:copy from user fail", __func__);
+        HDF_LOGE("%s:failed to copy from user", __func__);
         OsalMemFree(kData);
         return NULL;
     }
@@ -172,7 +172,7 @@ static int HdfSbufCopyToUser(const struct HdfSBuf *sbuf, void *dstUser, size_t d
     }
 
     if (CopyToUser(dstUser, HdfSbufGetData(sbuf), sbufSize) != 0) {
-        HDF_LOGE("%s: copy buff data fail", __func__);
+        HDF_LOGE("%s: failed to copy buff data", __func__);
         return HDF_ERR_IO;
     }
 
@@ -207,7 +207,7 @@ static int HdfVNodeAdapterServCall(const struct HdfVNodeAdapterClient *client, u
         return HDF_ERR_INVALID_PARAM;
     }
     if (CopyFromUser(&bwr, (void*)bwrUser, sizeof(bwr)) != 0) {
-        HDF_LOGE("Copy from user failed");
+        HDF_LOGE("copy from user failed");
         return HDF_FAILURE;
     }
     if (bwr.writeSize > MAX_RW_SIZE || bwr.readSize > MAX_RW_SIZE) {
@@ -216,12 +216,12 @@ static int HdfVNodeAdapterServCall(const struct HdfVNodeAdapterClient *client, u
 
     data = HdfSbufCopyFromUser(bwr.writeBuffer, bwr.writeSize);
     if (data == NULL) {
-        HDF_LOGE("Vnode adapter bind data is null");
+        HDF_LOGE("vnode adapter bind data is null");
         return HDF_FAILURE;
     }
     reply = HdfSBufObtainDefaultSize();
     if (reply == NULL) {
-        HDF_LOGE("%s:oom", __func__);
+        HDF_LOGE("%s: oom", __func__);
         HdfSBufRecycle(data);
         return HDF_FAILURE;
     }
@@ -235,7 +235,7 @@ static int HdfVNodeAdapterServCall(const struct HdfVNodeAdapterClient *client, u
     }
     bwr.readConsumed = HdfSbufGetDataSize(reply);
     if (CopyToUser(bwrUser, &bwr, sizeof(struct HdfWriteReadBuf)) != 0) {
-        HDF_LOGE("%s: copy bwr fail", __func__);
+        HDF_LOGE("%s: fail to copy bwr", __func__);
         ret = HDF_FAILURE;
     }
 
@@ -286,7 +286,7 @@ static int HdfVNodeAdapterReadDevEvent(struct HdfVNodeAdapterClient *client, uns
     }
 
     if (CopyToUser(bwrUser, &bwr, sizeof(struct HdfWriteReadBuf)) != 0) {
-        HDF_LOGE("%s: copy bwr fail", __func__);
+        HDF_LOGE("%s: failed to copy bwr", __func__);
         ret = HDF_ERR_IO;
     }
     if (ret == HDF_SUCCESS) {
@@ -461,7 +461,6 @@ static struct HdfVNodeAdapterClient *HdfNewVNodeAdapterClient(struct HdfVNodeAda
     client->serv = &adapter->ioService;
     client->status = VNODE_CLIENT_RUNNING;
     client->adapter = adapter;
-    client->eventQueueSize = 0;
     client->ioServiceClient.device = (struct HdfDeviceObject *)adapter->ioService.target;
     client->ioServiceClient.priv = NULL;
     client->wakeup = 0;
@@ -565,26 +564,26 @@ struct HdfIoService *HdfIoServiceAdapterPublish(const char *serviceName, uint32_
     };
 
     if ((serviceName == NULL) || (mode > MAX_MODE_SIZE)) {
-        HDF_LOGE("Input param is invalid, mode is %x", mode);
+        HDF_LOGE("input param is invalid, mode is %x", mode);
         return NULL;
     }
 
     vnodeAdapter = (struct HdfVNodeAdapter *)OsalMemCalloc(sizeof(struct HdfVNodeAdapter));
     if (vnodeAdapter == NULL) {
-        HDF_LOGE("Alloc remote service is null");
+        HDF_LOGE("alloc remote service is null");
         return NULL;
     }
 
     nodePathLength = strlen(serviceName) + strlen(DEV_NODE_PATH) + 1;
     vnodeAdapter->vNodePath = (char *)OsalMemCalloc(nodePathLength);
     if (vnodeAdapter->vNodePath == NULL) {
-        HDF_LOGE("Alloc vnode path is null");
+        HDF_LOGE("alloc vnode path is null");
         OsalMemFree(vnodeAdapter);
         return NULL;
     }
 
     if (sprintf_s(vnodeAdapter->vNodePath, nodePathLength, "%s%s", DEV_NODE_PATH, serviceName) < 0) {
-        HDF_LOGE("Get node path failed");
+        HDF_LOGE("failed to get node path");
         OsalMemFree(vnodeAdapter->vNodePath);
         OsalMemFree(vnodeAdapter);
         return NULL;
@@ -602,7 +601,7 @@ struct HdfIoService *HdfIoServiceAdapterPublish(const char *serviceName, uint32_
     }
     ret = OsalRegisterCdev(vnodeAdapter->cdev, vnodeAdapter->vNodePath, mode, vnodeAdapter);
     if (ret != 0) {
-        HDF_LOGE("register dev node %s failed, ret is: %d", vnodeAdapter->vNodePath, ret);
+        HDF_LOGE("failed to register dev node %s, ret is: %d", vnodeAdapter->vNodePath, ret);
         OsalMutexDestroy(&vnodeAdapter->mutex);
         goto error;
     }

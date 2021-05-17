@@ -10,7 +10,7 @@
  * @addtogroup Core
  * @{
  *
- * @brief Provides OpenHarmony Driver Foundation (HDF) APIs.
+ * @brief Provides Hardware Driver Foundation (HDF) APIs.
  *
  * The HDF implements driver framework capabilities such as driver loading, service management,
  * and driver message model. You can develop drivers based on the HDF.

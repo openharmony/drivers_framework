@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "osal_mem.h"
 #include "hdf_service_subscriber.h"
+#include "osal_mem.h"
 
 struct HdfServiceSubscriber *HdfServiceSubscriberObtain(struct SubscriberCallback callback, uint32_t matchId)
 {

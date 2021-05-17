@@ -27,10 +27,12 @@ struct HdfSRef {
     struct IHdfSRefListener *listener;
     void (*Acquire)(struct HdfSRef *);
     void (*Release)(struct HdfSRef *);
+    int (*Count)(const struct HdfSRef *);
 };
 
 void HdfSRefAcquire(struct HdfSRef *sref);
 void HdfSRefRelease(struct HdfSRef *sref);
+int HdfSRefCount(const struct HdfSRef *sref);
 void HdfSRefConstruct(struct HdfSRef *sref, struct IHdfSRefListener *listener);
 
 #ifdef __cplusplus

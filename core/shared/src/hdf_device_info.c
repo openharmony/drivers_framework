@@ -19,6 +19,8 @@ void HdfDeviceInfoConstruct(struct HdfDeviceInfo *deviceInfo)
     }
     deviceInfo->isDynamic = false;
     deviceInfo->hostId = 0;
+    deviceInfo->status = HDF_SERVICE_UNUSABLE;
+    deviceInfo->deviceType = HDF_DEV_LOCAL_SERVICE;
     deviceInfo->deviceId = 0;
     deviceInfo->policy = SERVICE_POLICY_INVALID;
     deviceInfo->priority = 0;
@@ -27,6 +29,7 @@ void HdfDeviceInfoConstruct(struct HdfDeviceInfo *deviceInfo)
     deviceInfo->svcName = NULL;
     deviceInfo->moduleName = NULL;
     deviceInfo->deviceMatchAttr = NULL;
+    deviceInfo->private = NULL;
 }
 
 struct HdfDeviceInfo *HdfDeviceInfoNewInstance()

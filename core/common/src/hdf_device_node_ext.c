@@ -24,29 +24,29 @@ static int DeviceNodeExtDispatch(struct HdfObject *stub, int code, struct HdfSBu
     struct HdfDeviceNode *devNode = NULL;
 
     if (stub == NULL) {
-        HDF_LOGE("input ioService null");
+        HDF_LOGE("device ext dispatch: stub is null");
         return HDF_FAILURE;
     }
     uint64_t ioClientPtr = 0;
     if (!HdfSbufReadUint64(reply, &ioClientPtr) || ioClientPtr == 0) {
-        HDF_LOGE("input ioClient null");
+        HDF_LOGE("device ext dispatch: input ioClient is null");
         return HDF_FAILURE;
     }
     HdfSbufFlush(reply);
     devNode = CONTAINER_OF(stub, struct HdfDeviceNode, deviceObject);
     deviceMethod = devNode->deviceObject.service;
     if (deviceMethod == NULL) {
-        HDF_LOGE("Device service interface is null");
+        HDF_LOGE("device ext dispatch: device service interface is null");
         return HDF_FAILURE;
     }
     deviceInfo = devNode->deviceInfo;
     if (deviceInfo == NULL) {
-        HDF_LOGE("Device deviceInfo is null");
+        HDF_LOGE("device ext dispatch: device deviceInfo is null");
         return HDF_FAILURE;
     }
     if (deviceInfo->policy == SERVICE_POLICY_CAPACITY) {
         if (deviceMethod->Dispatch == NULL) {
-            HDF_LOGE("Remote service dispatch is null");
+            HDF_LOGE("device ext dispatch: remote service dispatch method is null");
             return HDF_FAILURE;
         }
         return deviceMethod->Dispatch((struct HdfDeviceIoClient *)((uintptr_t)ioClientPtr), code, data, reply);
@@ -64,7 +64,7 @@ static int DeviceNodeExtPublishService(struct HdfDeviceNode *inst, const char *s
     }
     int ret = HdfDeviceNodePublishPublicService(inst, serviceName);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("Device publish service failed, ret is: %d", ret);
+        HDF_LOGE("failed to publish device service, ret is %d", ret);
         return HDF_FAILURE;
     }
 

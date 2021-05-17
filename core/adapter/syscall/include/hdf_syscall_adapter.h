@@ -34,8 +34,8 @@ struct HdfDevListenerThread {
     struct pollfd *pfds;
     uint16_t pfdSize;
     bool pollChanged;
-    struct DListHead *listenerListPtr;
     bool shouldStop;
+    struct DListHead *listenerListPtr;
     uint8_t status;
 };
 

@@ -88,6 +88,23 @@ struct OsalFwBlock {
 int32_t OsalRequestFirmware(struct OsalFirmware *fw, const char *fwName, void *device);
 
 /**
+ * @brief Sets the offset for reading a firmware file to implement random access to the firmware file.
+ *
+ * @param fw Indicates the pointer to the firmware file {@link OsalFirmware}.
+ * @param offset Indicates the offset where the firmware content is to read.
+ *
+ * @return Returns a value listed below: \n
+ * HDF_STATUS | Description
+ * ----------------------| -----------------------
+ * HDF_SUCCESS | The operation is successful.
+ * HDF_ERR_INVALID_PARAM | Invalid parameter.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+int32_t OsalSeekFirmware(struct OsalFirmware *fw, uint32_t offset);
+
+/**
  * @brief Reads a firmware file.
  *
  * @param fw Indicates the pointer to the firmware file {@link OsalFirmware}.
@@ -103,7 +120,7 @@ int32_t OsalRequestFirmware(struct OsalFirmware *fw, const char *fwName, void *d
  * @since 1.0
  * @version 1.0
  */
-int32_t OsalSeekFirmware(struct OsalFirmware *fw, uint32_t offset);
+int32_t OsalReadFirmware(struct OsalFirmware *fw, struct OsalFwBlock *block);
 
 /**
  * @brief Releases a firmware file.
@@ -121,15 +138,6 @@ int32_t OsalSeekFirmware(struct OsalFirmware *fw, uint32_t offset);
  *
  * @since 1.0
  * @version 1.0
- */
-int32_t OsalReadFirmware(struct OsalFirmware *fw, struct OsalFwBlock *block);
-
-/**
- * Release firmware resource
- *
- * @param : fw Firmware parameter, see detail in OsalFirmware
- *          block Firmware data block, see detail in hdf_FWBlock
- * @return : true or false
  */
 int32_t OsalReleaseFirmware(struct OsalFirmware *fw);
 
