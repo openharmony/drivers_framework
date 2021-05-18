@@ -328,15 +328,15 @@ enum MmcCsdSpecVersion {
 };
 
 enum MmcCsdCardCmdClass {
-    MMC_CSD_CCC_BASIC = (1<<0),
-    MMC_CSD_CCC_BLOCK_READ = (1<<2),
-    MMC_CSD_CCC_BLOCK_WRITE = (1<<4),
-    MMC_CSD_CCC_ERASE = (1<<5),
-    MMC_CSD_CCC_WRITE_PROT = (1<<6),
-    MMC_CSD_CCC_LOCK_CARD = (1<<7),
-    MMC_CSD_CCC_APP_SPEC = (1<<8),
-    MMC_CSD_CCC_IO_MODE = (1<<9),
-    MMC_CSD_CCC_SWITCH = (1<<10),
+    MMC_CSD_CCC_BASIC = (1 << 0),
+    MMC_CSD_CCC_BLOCK_READ = (1 << 2),
+    MMC_CSD_CCC_BLOCK_WRITE = (1 << 4),
+    MMC_CSD_CCC_ERASE = (1 << 5),
+    MMC_CSD_CCC_WRITE_PROT = (1 << 6),
+    MMC_CSD_CCC_LOCK_CARD = (1 << 7),
+    MMC_CSD_CCC_APP_SPEC = (1 << 8),
+    MMC_CSD_CCC_IO_MODE = (1 << 9),
+    MMC_CSD_CCC_SWITCH = (1 << 10),
 };
 
 enum MmcBusMode {

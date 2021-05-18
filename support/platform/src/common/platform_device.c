@@ -167,7 +167,6 @@ static void PlatformDeviceRemoveNotifier(struct PlatformDevice *device, struct P
     (void)OsalSpinUnlock(&device->spin);
 }
 
-
 void PlatformDeviceUnregNotifier(struct PlatformDevice *device, struct PlatformNotifier *notifier)
 {
     if (device == NULL || notifier == NULL) {
