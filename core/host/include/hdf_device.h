@@ -14,7 +14,7 @@
 #include "hdf_device_desc.h"
 #include "hdf_object.h"
 #include "hdf_service_observer.h"
-#include "hdf_slist.h"
+#include "hdf_dlist.h"
 #include "osal_mutex.h"
 
 struct HdfDeviceNode;
@@ -22,11 +22,12 @@ struct HdfDeviceNode;
 struct IHdfDevice {
     struct HdfObject object;
     int (*Attach)(struct IHdfDevice *, struct HdfDeviceNode *);
+    void (*Detach)(struct IHdfDevice *, struct HdfDeviceNode *);
 };
 
 struct HdfDevice {
     struct IHdfDevice super;
-    struct HdfSListNode node;
+    struct DListHead node;
     struct HdfSList services;
     uint16_t deviceId;
     uint16_t hostId;

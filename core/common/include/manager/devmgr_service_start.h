@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef DEVICE_SERVICE_START_H
-#define DEVICE_SERVICE_START_H
+#ifndef DEVMGR_SERVICE_START_H
+#define DEVMGR_SERVICE_START_H
 
 enum {
     DEV_MGR_SLOW_LOAD = 0,
@@ -19,4 +19,4 @@ int DeviceManagerStartStep2(void);
 void DeviceManagerSetQuickLoad(int isQuickLoad);
 int DeviceManagerIsQuickLoad(void);
 
-#endif /* DEVICE_SERVICE_START_H */
+#endif /* DEVMGR_SERVICE_START_H */

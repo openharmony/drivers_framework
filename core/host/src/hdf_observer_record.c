@@ -16,9 +16,7 @@
 
 uint32_t HdfMakeHardwareId(uint16_t hostId, uint16_t deviceId)
 {
-    uint32_t hardwareId = hostId;
-    hardwareId = (hardwareId << HALF_INT_LEN) | deviceId;
-    return hardwareId;
+    return ((uint32_t)hostId << HALF_INT_LEN) | deviceId;
 }
 
 struct HdfServiceObserverRecord *HdfServiceObserverRecordObtain(uint32_t serviceKey)

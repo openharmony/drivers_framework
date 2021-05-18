@@ -194,6 +194,12 @@ static inline void DListMerge(struct DListHead *list, struct DListHead *head)
         &(pos)->member != (head); \
         (pos) = CONTAINER_OF((pos)->member.next, type, member))
 
+
+#define DLIST_FOR_EACH_ENTRY_REVERSE(pos, head, type, member) \
+    for ((pos) = CONTAINER_OF((head)->prev, type, member); \
+        &(pos)->member != (head); \
+        (pos) = CONTAINER_OF((pos)->member.prev, type, member))
+
 /**
  * @brief Traverses all nodes in a doubly linked list.
  *        This function is used to delete the nodes pointed to by <b>pos</b> during traversal.

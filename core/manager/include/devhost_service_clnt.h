@@ -11,11 +11,13 @@
 
 #include "devhost_service_if.h"
 #include "hdf_slist.h"
+#include "hdf_map.h"
 
 struct DevHostServiceClnt {
     struct HdfSListNode node;
     struct HdfSList devices;
     struct HdfSList *deviceInfos;
+    Map *deviceHashMap;
     struct IDevHostService *hostService;
     uint16_t devCount;
     uint16_t hostId;
@@ -25,7 +27,7 @@ struct DevHostServiceClnt {
 
 int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt);
 struct DevHostServiceClnt *DevHostServiceClntNewInstance(uint16_t hostId, const char *hostName);
-void DevHostServiceClntFreeInstance(struct DevHostServiceClnt* hostClnt);
+void DevHostServiceClntFreeInstance(struct DevHostServiceClnt *hostClnt);
 void DevHostServiceClntDelete(struct HdfSListNode *listEntry);
 
 #endif /* DEVHOST_SERVICE_CLNT_H */

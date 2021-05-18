@@ -27,4 +27,3 @@ void DevSvcRecordDelete(struct HdfSListNode *listEntry)
         OsalMemFree(listEntry);
     }
 }
-

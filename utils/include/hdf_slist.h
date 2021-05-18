@@ -31,14 +31,14 @@ struct HdfSListIterator {
 
 typedef void (*HdfSListDeleter)(struct HdfSListNode *);
 
-typedef bool (*HdfSListSearchCompare)(struct HdfSListNode *, uint32_t);
+typedef bool (*HdfSListSearchComparer)(struct HdfSListNode *, uint32_t);
 
-typedef bool (*HdfSListAddCompare)(struct HdfSListNode *, struct HdfSListNode *);
+typedef bool (*HdfSListAddComparer)(struct HdfSListNode *, struct HdfSListNode *);
 
 /*
  * @brief Init the list
  *
- * @param[in] list :the operation list.
+ * @param[in] list the operation list.
  *
  * @return None
  */
@@ -48,13 +48,13 @@ void HdfSListInit(struct HdfSList *list);
  * @brief search to see whether specific element is attach into the list.
  *
  * @param[in] list the operation list.
- * @param[in] searchKey -search key of list node.
- * @param[in] comparer -comparer of list node.
+ * @param[in] searchKey search key of list node.
+ * @param[in] comparer comparer of list node.
  *
  * @return struct HdfSListNode of search result
  *  -# NULL if not found.
  */
-struct HdfSListNode *HdfSListSearch(struct HdfSList *list, uint32_t searchKey, HdfSListSearchCompare compare);
+struct HdfSListNode *HdfSListSearch(struct HdfSList *list, uint32_t searchKey, HdfSListSearchComparer comparer);
 
 /*
  * @brief tests if list is empty
@@ -77,8 +77,8 @@ struct HdfSListNode *HdfSListGetLast(struct HdfSList *list);
 /*
  * @brief add item to the head of the list
  *
- * @param[in] list :the operation list.
- * @param[in] p_node :the new element to add.
+ * @param[in] list the operation list.
+ * @param[in] link the new element to add.
  *
  * @return None
  */
@@ -88,7 +88,7 @@ void HdfSListAdd(struct HdfSList *list, struct HdfSListNode *link);
  * @brief add item to list as last element
  *
  * @param[in] list the operation list.
- * @param[in] p_node :the new element to add.
+ * @param[in] link the new element to add.
  *
  * @return None
  */
@@ -98,22 +98,19 @@ void HdfSListAddTail(struct HdfSList *list, struct HdfSListNode *link);
  * @brief add item to list as ordered
  *
  * @param[in] list the operation list.
- * @param[in] p_node :the new element to add.
- * @param[in] comparer :compared.
+ * @param[in] link the new element to add.
+ * @param[in] comparer comparer of list node.
  *
  * @return bool result of queue status.
  */
-bool HdfSListAddOrder(struct HdfSList *list, struct HdfSListNode *link, HdfSListAddCompare compare);
+bool HdfSListAddOrder(struct HdfSList *list, struct HdfSListNode *link, HdfSListAddComparer comparer);
 
 /*
  * @brief remove item from list
  *
- * @param[in] list :the operation list.
- * @param[in] p_node :the element to remove.
+ * @param[in] list the operation list.
+ * @param[in] link the element to remove.
  *
- * @return the result of remove node.
- *  -# HDF_SUCCESS link has been successfully removed.
- *  -# HDF_FAILURE link was not found in the list.
  */
 void HdfSListRemove(struct HdfSList *list, struct HdfSListNode *link);
 
@@ -121,7 +118,7 @@ void HdfSListRemove(struct HdfSList *list, struct HdfSListNode *link);
  * @brief flush the list and free memory
  *
  * @param[in] list the operation list.
- * @param[in] deleter :the func of free memory.
+ * @param[in] deleter the function of free memory.
  *
  * @return None
  */
@@ -130,7 +127,7 @@ void HdfSListFlush(struct HdfSList *list, HdfSListDeleter deleter);
 /*
  * @brief calculate the element count in the list.
  *
- * @param[in] list :the list to count.
+ * @param[in] list the list to count.
  *
  * @return the count of list.
  */
@@ -146,9 +143,9 @@ int HdfSListCount(struct HdfSList *list);
 struct HdfSListNode *HdfSListPeek(struct HdfSList *list);
 
 /*
- * @brief get next element of p_link;
+ * @brief get next element of link;
  *
- * @param[in] p_link: the operation link.
+ * @param[in] link the operation link.
  *
  * @return the next element of the link pass in
  */
@@ -203,7 +200,8 @@ void HdfSListIteratorRemove(struct HdfSListIterator *iterator);
 /*
  * @brief insert new node before the node that iterator point to.and hold current iterator.
  *
- * @param[in] list the operation list.
+ * @param[in] iterator the point of iterator.
+ * @param[in] link the point of operation list.
  *
  * @return None
  */

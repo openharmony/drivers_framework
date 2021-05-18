@@ -10,12 +10,12 @@
  * @addtogroup DriverConfig
  * @{
  *
- * @brief Defines an API for HDF driver developers to read driver configuration information.
+ * @brief Defines APIs for HDF driver developers to read driver configuration information.
  *
  * During version compilation of the device resource source file defined by developers, the compilation tool
  * (for example, the compilation tool of the HCS file is hc-gen) generates bytecodes. When the HDF starts,
  * it transfers the bytecode memory to the <b>DriverConfig</b> module. The <b>DriverConfig</b> module converts
- * the bytecodes into a configuration tree and provides an API for developers to query the tree.
+ * the bytecodes into a configuration tree and provides APIs for developers to query the tree.
  *
  * @since 1.0
  * @version 1.0
@@ -24,7 +24,7 @@
 /**
  * @file device_resource_if.h
  *
- * @brief Declares the API for querying the configuration tree.
+ * @brief Declares the APIs for querying the configuration tree.
  *
  * @since 1.0
  * @version 1.0
@@ -142,7 +142,7 @@ struct DeviceResourceIface {
     int32_t (*GetUint8ArrayElem)(const struct DeviceResourceNode *node, const char *attrName, uint32_t index,
         uint8_t *value, uint8_t def);
     /**
-     * @brief Obtains the values of a <b>Uint8</b> array attribute of a configuration tree node.
+     * @brief Obtains the value of a <b>Uint8</b> array attribute of a configuration tree node.
      *
      * @param node Indicates the pointer to the configuration tree node.
      * @param attrName Indicates the pointer to the name of the array attribute.
@@ -443,5 +443,5 @@ struct DeviceResourceIface *DeviceResourceGetIfaceInstance(DeviceResourceType ty
 #endif
 #endif /* __cplusplus */
 
-#endif // DEVICE_RESOURCE_IF_H
+#endif /* DEVICE_RESOURCE_IF_H */
 /** @} */

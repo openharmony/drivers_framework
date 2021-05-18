@@ -72,12 +72,12 @@ int IoServiceTest::OnDevEventReceived(struct HdfDevEventlistener *listener, stru
 {
     OsalTimespec time;
     OsalGetTime(&time);
-    HDF_LOGE("%s received event[%d] from %s at %llu.%llu", (char *)listener->priv, eventCount++, (char *)service->priv,
+    HDF_LOGE("%s: received event[%d] from %s at %llu.%llu", (char *)listener->priv, eventCount++, (char *)service->priv,
         time.sec, time.usec);
 
     const char *string = HdfSbufReadString(data);
     if (string == nullptr) {
-        HDF_LOGE("fail to read string in event data");
+        HDF_LOGE("failed to read string in event data");
         return 0;
     }
     struct Eventlistener *l = CONTAINER_OF(listener, struct Eventlistener, listener);
@@ -140,7 +140,7 @@ static int SendEvent(struct HdfIoService *serv, const char *eventData)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService001, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService001, TestSize.Level0)
 {
     struct HdfIoService *testServ = HdfIoServiceBind(testSvcName);
     ASSERT_NE(testServ, nullptr);
@@ -149,11 +149,11 @@ HWTEST_F(IoServiceTest, HdfIoService001, TestSize.Level1)
 
 /* *
  * @tc.name: HdfIoService002
- * @tc.desc: service group linten test
+ * @tc.desc: service group listen test
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService002, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService002, TestSize.Level0)
 {
     struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
     ASSERT_NE(serv, nullptr);
@@ -203,7 +203,7 @@ HWTEST_F(IoServiceTest, HdfIoService002, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService003, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService003, TestSize.Level0)
 {
     struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
     ASSERT_NE(serv, nullptr);
@@ -258,7 +258,7 @@ HWTEST_F(IoServiceTest, HdfIoService003, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService004, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService004, TestSize.Level0)
 {
     struct HdfIoService *serv1 = HdfIoServiceBind(testSvcName);
     ASSERT_NE(serv1, nullptr);
@@ -283,7 +283,7 @@ HWTEST_F(IoServiceTest, HdfIoService004, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService005, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService005, TestSize.Level0)
 {
     struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
     ASSERT_NE(serv, nullptr);
@@ -467,7 +467,7 @@ HWTEST_F(IoServiceTest, HdfIoService008, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService009, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService009, TestSize.Level0)
 {
     struct HdfIoServiceGroup *group = HdfIoServiceGroupObtain();
     ASSERT_NE(group, nullptr);
@@ -504,7 +504,7 @@ HWTEST_F(IoServiceTest, HdfIoService009, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService010, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService010, TestSize.Level0)
 {
     struct HdfIoServiceGroup *group = HdfIoServiceGroupObtain();
     ASSERT_NE(group, nullptr);
@@ -544,7 +544,7 @@ HWTEST_F(IoServiceTest, HdfIoService010, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService011, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService011, TestSize.Level0)
 {
     struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
     ASSERT_NE(serv, nullptr);
@@ -573,7 +573,7 @@ HWTEST_F(IoServiceTest, HdfIoService011, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: AR000F869B
  */
-HWTEST_F(IoServiceTest, HdfIoService012, TestSize.Level1)
+HWTEST_F(IoServiceTest, HdfIoService012, TestSize.Level0)
 {
     struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
     ASSERT_NE(serv, nullptr);
