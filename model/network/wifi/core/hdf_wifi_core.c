@@ -39,13 +39,13 @@ int32_t HdfWifiGetBusIdx(void)
  * @brief  as for now, we just support one wlan module in one board cause driver binds to wlan featere
  * due to that reason, once we detected one chip, we stop rescan.
  */
-int32_t HdfWlanSdioScan(struct HdfWlanDevice *data, struct HdfConfigWlanBus *busConfig)
+int HdfWlanSdioScan(struct HdfWlanDevice *data, struct HdfConfigWlanBus *busConfig)
 {
     /* get config vendId, deviceId and chip-name which used in detect match process */
     HdfWlanGetSdioTableByConfig();
 
     HdfWlanSdioScanTriggerByBusIndex(busConfig->busIdx);
-    int32_t ret = HdfWlanGetDetectedChip(data, busConfig);
+    int ret = HdfWlanGetDetectedChip(data, busConfig);
     HdfWlanSdioDriverUnReg();
     if (ret != HDF_SUCCESS) {
         return ret;
@@ -54,7 +54,7 @@ int32_t HdfWlanSdioScan(struct HdfWlanDevice *data, struct HdfConfigWlanBus *bus
     return HDF_SUCCESS;
 }
 
-static int32_t HdfWifiDriverBind(struct HdfDeviceObject *dev)
+static int HdfWifiDriverBind(struct HdfDeviceObject *dev)
 {
     ErrorCode errCode;
     static struct IDeviceIoService wifiService = {
@@ -179,7 +179,7 @@ static struct HdfChipDriverFactory *HdfWlanGetDriverFactory(const char *driverNa
 static int32_t HdfWlanDeinitInterface(struct HdfWlanDevice *device, const char *ifName,
     struct HdfChipDriverFactory *factory)
 {
-    int32_t ret;
+    int ret;
     struct NetDevice *netdev = NULL;
     struct HdfChipDriver *chipDriver = NULL;
 
@@ -369,7 +369,7 @@ static struct HdfWlanDevice *ProbeDevice(struct HdfConfigWlanDevInst *deviceConf
     return device;
 }
 
-int32_t HdfWifiDeinitDevice(struct HdfWlanDevice *device)
+int32_t DeinitDevice(struct HdfWlanDevice *device)
 {
     struct HdfChipDriverFactory *chipDriverFact = NULL;
     int32_t ret;
@@ -394,7 +394,7 @@ int32_t HdfWifiDeinitDevice(struct HdfWlanDevice *device)
     return HDF_SUCCESS;
 }
 
-int32_t HdfWifiInitDevice(struct HdfWlanDevice *device)
+int32_t InitDevice(struct HdfWlanDevice *device)
 {
     int32_t ret;
     struct HdfChipDriverFactory *chipDriverFact = NULL;
@@ -424,7 +424,7 @@ int32_t HdfWifiInitDevice(struct HdfWlanDevice *device)
 /* thread callback function */
 static int32_t HdfWlanInitThread(void *para)
 {
-    const uint32_t initDelaySec = 15;
+    const uint32_t initDelaySec = 5;
     struct HdfDeviceObject *device = (struct HdfDeviceObject *)para;
     struct SubscriberCallback callback = { NULL };
     struct HdfConfigWlanDeviceList *devList = NULL;
@@ -465,7 +465,7 @@ static int32_t HdfWlanInitThread(void *para)
 
         // Load chip driver
         (void)DevSvcManagerClntSubscribeService(wlanDevice->driverName, callback);
-        (void)HdfWifiInitDevice(wlanDevice);
+        (void)InitDevice(wlanDevice);
     }
 
     HDF_LOGV("%s:finished.", __func__);

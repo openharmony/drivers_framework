@@ -12,6 +12,8 @@
 #include "hdf_log.h"
 #include "osal_mem.h"
 
+#define OSAL_PTHREAD_STACK_MIN 4096
+
 #define HDF_LOG_TAG osal_thread
 
 typedef void *(*PosixEntry)(void *data);
@@ -73,7 +75,7 @@ int32_t OsalThreadCreate(struct OsalThread *thread, OsalThreadEntry threadEntry,
 
 int32_t OsalThreadDestroy(struct OsalThread *thread)
 {
-    if (thread != NULL && thread->realThread != NULL) {
+    if (thread->realThread != NULL) {
         OsalMemFree(thread->realThread);
         thread->realThread = NULL;
     }
@@ -127,7 +129,7 @@ int32_t OsalThreadStart(struct OsalThread *thread, const struct OsalThreadParam 
 
     size_t stackSize = param->stackSize;
     if (stackSize > 0) {
-        stackSize = (stackSize < PTHREAD_STACK_MIN) ? PTHREAD_STACK_MIN : stackSize;
+        stackSize = (stackSize < OSAL_PTHREAD_STACK_MIN) ? OSAL_PTHREAD_STACK_MIN : stackSize;
         resultCode = pthread_attr_setstacksize(&attribute, stackSize);
         if (resultCode != 0) {
             HDF_LOGE("pthread_attr_setstacksize errorno: %d", resultCode);

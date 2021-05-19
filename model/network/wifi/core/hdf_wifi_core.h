@@ -17,9 +17,9 @@ extern "C" {
 #endif
 int32_t HdfWifiGetBusIdx(void);
 
-int32_t HdfWifiDeinitDevice(struct HdfWlanDevice *device);
+int32_t DeinitDevice(struct HdfWlanDevice *device);
 
-int32_t HdfWifiInitDevice(struct HdfWlanDevice *device);
+int32_t InitDevice(struct HdfWlanDevice *device);
 
 #ifdef __cplusplus
 }
