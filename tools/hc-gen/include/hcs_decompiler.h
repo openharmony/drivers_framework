@@ -11,8 +11,8 @@
 
 #include "hcs_compiler.h"
 
-int32_t HcsDoDecompile();
+int32_t HcsDoDecompile(void);
 
-int32_t HcsDecompileOutput();
+int32_t HcsDecompileOutput(void);
 
 #endif // HCS_DECOMPILE_H

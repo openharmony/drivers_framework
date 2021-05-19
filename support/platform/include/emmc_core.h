@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef emmc_CORE_H
-#define emmc_CORE_H
+#ifndef EMMC_CORE_H
+#define EMMC_CORE_H
 
 #include "emmc_if.h"
 #include "hdf_base.h"
@@ -39,7 +39,7 @@ struct EmmcCntlr {
 
 /**
  * @brief emmc host device operations.
- * These methods need to be filled up by specific paltform.
+ * These methods need to be filled up by specific platform.
  */
 struct EmmcMethod {
     int32_t (*getCid)(struct EmmcCntlr *, uint8_t *, uint32_t);

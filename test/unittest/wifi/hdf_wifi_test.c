@@ -54,10 +54,15 @@ int32_t HdfWifiEntry(HdfTestMsg *msg)
 {
     int32_t result, i;
 
+    if (msg == NULL) {
+        HDF_LOGE("%s is fail: HdfTestMsg is NULL!", __func__);
+        return HDF_SUCCESS;
+    }
+
     for (i = 0; i < sizeof(g_hdfWiFiTestCaseList) / sizeof(g_hdfWiFiTestCaseList[0]); ++i) {
         if ((msg->subCmd == g_hdfWiFiTestCaseList[i].subCmd) && (g_hdfWiFiTestCaseList[i].testFunc != NULL)) {
             result = g_hdfWiFiTestCaseList[i].testFunc();
-            HDF_LOGE("HdfTest:Wifi test result[%s-%d]", ((result == 0) ? "pass" : "fail"), msg->subCmd);
+            HDF_LOGE("HdfTest:Wifi test result[%s-%u]", ((result == 0) ? "pass" : "fail"), msg->subCmd);
             msg->result = (result == 0) ? HDF_SUCCESS : HDF_FAILURE;
             return HDF_SUCCESS;
         }

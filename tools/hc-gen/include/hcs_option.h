@@ -10,20 +10,20 @@
 #define HCS_COMPILER_OPTION_H
 #include <stdbool.h>
 
-bool HcsOptShouldAlign();
+bool HcsOptShouldAlign(void);
 
 void HcsOptSetAlign(bool align);
 
-bool HcsOptShouldGenTextConfig();
+bool HcsOptShouldGenTextConfig(void);
 
-bool HcsOptShouldGenByteCodeConfig();
+bool HcsOptShouldGenByteCodeConfig(void);
 
-bool HcsOptDecompile();
+bool HcsOptDecompile(void);
 
-bool HcsOptShouldGenHexdump();
+bool HcsOptShouldGenHexdump(void);
 
-const char *HcsOptGetSymbolNamePrefix();
+const char *HcsOptGetSymbolNamePrefix(void);
 
-bool HcsVerbosePrint();
+bool HcsVerbosePrint(void);
 
 #endif // HCS_COMPILER_OPTION_H

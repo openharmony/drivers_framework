@@ -69,7 +69,7 @@ int HdfTestSendMsgToService(struct HdfTestMsg *msg)
     }
 
     if (!HdfSbufReadBuffer(g_reply, (const void **)&testReply, &len)) {
-        printf("HdfTestSendMsgToService g_reply read  failed\n\r");
+        printf("HdfTestSendMsgToService g_reply read failed\n\r");
     }
 
     if (testReply == NULL) {

@@ -60,13 +60,13 @@ static int32_t TestSdioIncrAddrReadAndWriteOtherBytes(struct SdioTester *tester)
         HDF_LOGE("%s: SdioReadBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: read, data[0]:%d\n", __func__, data[0]);
+    HDF_LOGE("%s: read, data[0]:%u\n", __func__, data[0]);
     ret = SdioWriteBytes(tester->handle, &data[0], addr, 1, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioWriteBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: write, data[0]:%d\n", __func__, data[0]);
+    HDF_LOGE("%s: write, data[0]:%u\n", __func__, data[0]);
     return HDF_SUCCESS;
 }
 
@@ -98,7 +98,7 @@ static int32_t TestSdioIncrAddrReadAndWriteOneByte(struct SdioTester *tester)
         HDF_LOGE("%s: SdioReadBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: read, val:%d.", __func__, val);
+    HDF_LOGE("%s: read, val:%u.", __func__, val);
     /* read 1 bits */
     addr++;
     ret = SdioReadBytes(tester->handle, &val, addr, 1, 0);
@@ -106,7 +106,7 @@ static int32_t TestSdioIncrAddrReadAndWriteOneByte(struct SdioTester *tester)
         HDF_LOGE("%s: SdioReadBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: read, val:%d.", __func__, val);
+    HDF_LOGE("%s: read, val:%u.", __func__, val);
     return HDF_SUCCESS;
 }
 
@@ -144,14 +144,14 @@ static int32_t TestSdioFixedAddrReadAndWriteOtherBytes(struct SdioTester *tester
         HDF_LOGE("%s: SdioReadBytesFromFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: read, data[0]:%d, data[1]:%d\n", __func__, data[0], data[1]);
+    HDF_LOGE("%s: read, data[0]:%u, data[1]:%u\n", __func__, data[0], data[1]);
     /* write bits */
     ret = SdioWriteBytes(tester->handle, &data[0], addr, 1, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioWriteBytesToFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: write, data[0]:%d, data[1]:%d.", __func__, data[0], data[1]);
+    HDF_LOGE("%s: write, data[0]:%u, data[1]:%u.", __func__, data[0], data[1]);
     return ret;
 }
 
@@ -250,7 +250,7 @@ static int32_t TestSdioFunc0ReadAndWriteBytes(struct SdioTester *tester)
     }
     SdioReleaseHost(tester->handle);
 
-    HDF_LOGE("%s: Func0 Read, val :%d.", __func__, val);
+    HDF_LOGE("%s: Func0 Read, val:%u.", __func__, val);
     return ret;
 }
 
@@ -264,7 +264,7 @@ static int32_t TestSdioSetAndGetFuncInfo(struct SdioTester *tester)
         HDF_LOGE("%s: SdioGetCommonInfo fail! ret=%d.", __func__, ret);
         return ret;
     }
-    HDF_LOGE("%s: succ! Timeout=%d.", __func__, info.funcInfo.enTimeout);
+    HDF_LOGE("%s: succ! Timeout=%u.", __func__, info.funcInfo.enTimeout);
 
     info.funcInfo.enTimeout = TEST_TIME_OUT;
     ret = SdioSetCommonInfo(tester->handle, &info, SDIO_FUNC_INFO);
@@ -278,7 +278,7 @@ static int32_t TestSdioSetAndGetFuncInfo(struct SdioTester *tester)
         HDF_LOGE("%s: SdioGetCommonInfo fail! ret=%d.", __func__, ret);
         return ret;
     }
-    HDF_LOGE("%s: again succ! Timeout=%d.", __func__, info.funcInfo.enTimeout);
+    HDF_LOGE("%s: again succ! Timeout=%u.", __func__, info.funcInfo.enTimeout);
 
     return HDF_SUCCESS;
 }
@@ -355,7 +355,7 @@ struct SdioTestFunc g_sdioTestFunc[] = {
 static int32_t SdioTestEntry(struct SdioTester *tester, int32_t cmd)
 {
     int32_t i;
-    int32_t ret;
+    int32_t ret = HDF_SUCCESS;
     bool isFind = false;
 
     if (tester == NULL) {
@@ -374,7 +374,7 @@ static int32_t SdioTestEntry(struct SdioTester *tester, int32_t cmd)
             break;
         }
     }
-    if (isFind == false) {
+    if (!isFind) {
         ret = HDF_ERR_NOT_SUPPORT;
         HDF_LOGE("%s: cmd %d not support", __func__, cmd);
     }
@@ -415,8 +415,8 @@ static int32_t SdioTestFillConfig(struct SdioTester *tester, const struct Device
         return ret;
     }
 
-    HDF_LOGE("%s: busNum:%d, funcNum:%d, vendorId:0x%x, deviceId:0x%x.", __func__,
-        tester->busNum, tester->funcNum, tester->vendorId, tester->deviceId);
+    HDF_LOGE("%s: busNum:%u, funcNum:%u, vendorId:0x%x.", __func__,
+        tester->busNum, tester->funcNum, tester->vendorId);
     return HDF_SUCCESS;
 }
 

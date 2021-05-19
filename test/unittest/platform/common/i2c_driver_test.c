@@ -24,7 +24,7 @@ static int32_t I2cTestDispatch(struct HdfDeviceIoClient *client, int cmd, struct
             return HDF_ERR_INVALID_PARAM;
         }
         if (!HdfSbufWriteBuffer(reply, &g_config, sizeof(g_config))) {
-            HDF_LOGE("%s: writ reply fail!", __func__);
+            HDF_LOGE("%s: write reply failed", __func__);
             return HDF_ERR_IO;
         }
     } else {
@@ -41,37 +41,37 @@ static int32_t I2cTestReadConfig(struct I2cTestConfig *config, const struct Devi
 
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (drsOps == NULL || drsOps->GetUint32 == NULL) {
-        HDF_LOGE("%s: invalid drs ops fail!", __func__);
+        HDF_LOGE("%s: invalid drs ops", __func__);
         return HDF_FAILURE;
     }
 
     ret = drsOps->GetUint16(node, "bus_num", &config->busNum, 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read bus num fail!", __func__);
+        HDF_LOGE("%s: read bus num failed", __func__);
         return ret;
     }
 
     ret = drsOps->GetUint16(node, "dev_addr", &config->devAddr, 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read dev addr fail!", __func__);
+        HDF_LOGE("%s: read dev addr failed", __func__);
         return ret;
     }
 
     ret = drsOps->GetUint16(node, "reg_len", &config->regLen, 1);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read reg len fail!", __func__);
+        HDF_LOGE("%s: read reg len failed", __func__);
         return ret;
     }
 
     ret = drsOps->GetUint16(node, "reg_addr", &config->regAddr, 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read reg addr fail!", __func__);
+        HDF_LOGE("%s: read reg addr failed", __func__);
         return ret;
     }
 
     ret = drsOps->GetUint16(node, "buf_size", &config->bufSize, 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read buf size fail!", __func__);
+        HDF_LOGE("%s: read buf size failed", __func__);
         return ret;
     }
 
@@ -90,7 +90,7 @@ static int32_t I2cTestBind(struct HdfDeviceObject *device)
 
     ret = I2cTestReadConfig(&g_config, device->property);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read config fail!", __func__);
+        HDF_LOGE("%s: read config failed", __func__);
         return ret;
     }
 

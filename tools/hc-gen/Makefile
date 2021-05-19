@@ -16,7 +16,7 @@ BOUNDS_CHECK_LIB := $(abspath ../../../../third_party/bounds_checking_function/)
 INCLUDE_DIR := ./include $(BOUNDS_CHECK_LIB)/include
 OUT_DIR := build
 
-TEST_CASE := $(abspath ../../../adapter/khdf/liteos/test/tools/hc-gen/test/unittest)
+TEST_CASE := $(abspath ../../../adapter/lite/khdf/test/tools/hc-gen/test/unittest)
 
 ORIGIN_SOURCES := $(wildcard src/*)
 ORIGIN_SOURCES += $(wildcard $(BOUNDS_CHECK_LIB)/src/*)

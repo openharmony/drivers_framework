@@ -38,7 +38,7 @@ struct SdioCntlr {
 
 /**
  * @brief sdio host device operations.
- * These methods need to be filled up by specific paltform.
+ * These methods need to be filled up by specific platform.
  */
 struct SdioMethod {
     int32_t (*incrAddrReadBytes)(struct SdioCntlr *, uint8_t *, uint32_t, uint32_t, uint32_t);

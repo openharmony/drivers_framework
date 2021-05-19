@@ -23,7 +23,7 @@ int32_t HdfMipiDsiEntry(HdfTestMsg *msg)
 
     test = MipiDsiTestServiceGet();
     if (test == NULL) {
-        HDF_LOGE("%s: get servie fail!\n", __func__);
+        HDF_LOGE("%s: get service fail!", __func__);
         return HDF_FAILURE;
     }
 

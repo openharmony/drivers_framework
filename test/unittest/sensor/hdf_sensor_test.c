@@ -177,7 +177,7 @@ int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
     struct SensorDeviceInfo deviceInfo = {
         .sensorInfo = {
             .sensorName = "sensor_test",
-            .vendorName = "huawei",
+            .vendorName = "default",
             .firmwareVersion = "1.0",
             .hardwareVersion = "1.0",
             .sensorTypeId = SENSOR_TAG_NONE,

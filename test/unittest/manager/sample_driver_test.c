@@ -12,11 +12,9 @@
 
 #define HDF_LOG_TAG sample_driver_test
 
-#define SAMPLE_WRITE_READ 123
 #ifndef INT32_MAX
 #define INT32_MAX 0x7fffffff
 #endif
-
 
 void HdfSampleDriverRelease(struct HdfDeviceObject *deviceObject)
 {

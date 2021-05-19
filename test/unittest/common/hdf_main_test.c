@@ -127,7 +127,7 @@ static int32_t HdfTestCaseProcess(struct HdfDeviceIoClient *client,
     replyMsg.cmd = msg->cmd;
     replyMsg.subCmd = msg->subCmd;
 
-    HDF_LOGE("%s::Hdf test receive cmd: command[%d], subCommand[%d]", __func__, msg->cmd, msg->subCmd);
+    HDF_LOGE("%s::Hdf test receive cmd: command[%u], subCommand[%u]", __func__, msg->cmd, msg->subCmd);
 
     replyMsg.result = HDF_FAILURE;
     for (i = 0; i < sizeof(g_hdfTestFuncList) / sizeof(g_hdfTestFuncList[0]); ++i) {

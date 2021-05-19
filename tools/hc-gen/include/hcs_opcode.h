@@ -27,7 +27,7 @@ typedef struct {
     const char *opStr;
 } OpCodeMapEntry;
 
-const OpCodeMapEntry *HcsGetOpCodeMap();
+const OpCodeMapEntry *HcsGetOpCodeMap(void);
 
 const OpCodeMapEntry *HcsParserObjectTypeToByteCode(uint32_t objectType);
 

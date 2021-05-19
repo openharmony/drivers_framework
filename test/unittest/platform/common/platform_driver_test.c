@@ -24,7 +24,7 @@ static void DoAllPlatformTest(void)
 
 static int32_t PlatformTestBind(struct HdfDeviceObject *device)
 {
-    struct IDeviceIoService service;
+    static struct IDeviceIoService service;
 
     if (device == NULL) {
         HDF_LOGE("%s: device is null!", __func__);

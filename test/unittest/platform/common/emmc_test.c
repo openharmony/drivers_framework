@@ -46,7 +46,7 @@ static int32_t TestEmmcGetCid(struct EmmcTester *tester)
 
     ret = EmmcGetCid(tester->handle, cid, EMMC_CID_LEN);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: EmmcGetCid fail! ret=%d.", __func__, ret);
+        HDF_LOGE("%s: EmmcGetCid failed ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
     for (i = 0; i < EMMC_CID_LEN; i++) {
@@ -62,7 +62,7 @@ struct EmmcTestFunc g_emmcTestFunc[] = {
 static int32_t EmmcTestEntry(struct EmmcTester *tester, int32_t cmd)
 {
     int32_t i;
-    int32_t ret;
+    int32_t ret = HDF_SUCCESS;
     bool isFind = false;
 
     if (tester == NULL) {
@@ -71,7 +71,7 @@ static int32_t EmmcTestEntry(struct EmmcTester *tester, int32_t cmd)
     }
     tester->handle = EmmcTestGetHandle(tester);
     if (tester->handle == NULL) {
-        HDF_LOGE("%s: emmc test get handle fail", __func__);
+        HDF_LOGE("%s: emmc test get handle failed", __func__);
         return HDF_FAILURE;
     }
     for (i = 0; i < sizeof(g_emmcTestFunc) / sizeof(g_emmcTestFunc[0]); i++) {
@@ -81,9 +81,9 @@ static int32_t EmmcTestEntry(struct EmmcTester *tester, int32_t cmd)
             break;
         }
     }
-    if (isFind == false) {
+    if (!isFind) {
         ret = HDF_ERR_NOT_SUPPORT;
-        HDF_LOGE("%s: cmd %d not support", __func__, cmd);
+        HDF_LOGE("%s: cmd %d not supported", __func__, cmd);
     }
     EmmcTestReleaseHandle(tester->handle);
     return ret;
@@ -96,19 +96,19 @@ static int32_t EmmcTestFillConfig(struct EmmcTester *tester, const struct Device
 
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (drsOps == NULL || drsOps->GetUint32 == NULL) {
-        HDF_LOGE("%s: invalid drs ops fail!", __func__);
+        HDF_LOGE("%s: invalid drs ops", __func__);
         return HDF_FAILURE;
     }
 
     ret = drsOps->GetUint32(node, "busNum", &(tester->busNum), 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fill bus num fail!", __func__);
+        HDF_LOGE("%s: fill bus num failed", __func__);
         return ret;
     }
 
     ret = drsOps->GetUint32(node, "hostId", &(tester->hostId), 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fill hostId fail!", __func__);
+        HDF_LOGE("%s: fill hostId failed", __func__);
         return ret;
     }
 
@@ -147,7 +147,7 @@ static int32_t EmmcTestInit(struct HdfDeviceObject *device)
     }
     ret = EmmcTestFillConfig(tester, device->property);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read config fail!", __func__);
+        HDF_LOGE("%s: read config failed", __func__);
         return ret;
     }
     tester->TestEntry = EmmcTestEntry;

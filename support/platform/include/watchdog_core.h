@@ -45,7 +45,7 @@ struct WatchdogMethod {
 /**
  * @brief Add a new WatchdogCntlr to HDF.
  *
- * @param cntlr The watchdog conroller to be added.
+ * @param cntlr The watchdog controller to be added.
  *
  * @return Returns 0 on success; returns a negative value otherwise.
  * @since 1.0
