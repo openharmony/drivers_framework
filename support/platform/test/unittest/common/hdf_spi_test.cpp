@@ -24,6 +24,7 @@ enum HdfTestCaseCmd {
     SPI_TRANSFER_TEST,
     SPI_WRITE_TEST,
     SPI_READ_TEST,
+    SPI_DMA_TEST,
     SPI_RELIABILITY_TEST,
     SPI_PERFORMANCE_TEST,
 };
@@ -99,6 +100,18 @@ HWTEST_F(HdfLiteSpiTest, SpiWriteTest001, TestSize.Level1)
 HWTEST_F(HdfLiteSpiTest, SpiReadTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_READ_TEST, -1};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+  * @tc.name: SpiDmaTest001
+  * @tc.desc: Spi function test
+  * @tc.type: FUNC
+  * @tc.require: NA
+  */
+HWTEST_F(HdfLiteSpiTest, SpiDmaTest001, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_DMA_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
