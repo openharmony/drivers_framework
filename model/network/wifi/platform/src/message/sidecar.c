@@ -50,7 +50,7 @@ static MessageContext *CreateMessageContext(ServiceId sender, ServiceId receiver
     context->senderId = sender;
     context->receiverId = receiver;
     context->reqData = sendData;
-    context->corssNode = false;
+    context->crossNode = false;
 
     return context;
 }
@@ -260,7 +260,7 @@ Service *InitService(struct ServiceDef *def, const ServiceCfg *cfg)
         service->privateData = NULL;
         OsalMemFree(service);
         service = NULL;
-        HDF_LOGE("Regist service failed!serviceId=%d,ret=%d", def->serviceId, errCode);
+        HDF_LOGE("Register service failed!serviceId=%d,ret=%d", def->serviceId, errCode);
         return NULL;
     }
     return service;

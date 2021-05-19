@@ -46,13 +46,13 @@ int32_t HdfWlanRegChipDriver(struct HdfChipDriverFactory *obj)
         return HDF_ERR_INVALID_PARAM;
     }
     if (HdfWlanGetChipDriverByName(obj->driverName) != NULL) {
-        HDF_LOGW("%s: chipdriver factory is already registed.name=%s", __func__, obj->driverName);
+        HDF_LOGW("%s: chipdriver factory is already registered.name=%s", __func__, obj->driverName);
         return HDF_SUCCESS;
     }
     for (index = 0; index < MAX_CHIPDRIVER_COUNT; index++) {
         if (g_wlanChipDriverManagerFactory[index] == NULL) {
             g_wlanChipDriverManagerFactory[index] = obj;
-            HDF_LOGI("%s:Chip driver %s registed.", __func__, obj->driverName);
+            HDF_LOGI("%s:Chip driver %s registered.", __func__, obj->driverName);
             return HDF_SUCCESS;
         }
     }

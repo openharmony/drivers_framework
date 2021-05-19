@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef __SIDECAR_H__
-#define __SIDECAR_H__
+#ifndef SIDECAR_H
+#define SIDECAR_H
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal/osal_sem.h"
@@ -29,7 +29,7 @@ enum MessageType {
     uint8_t senderId;          \
     uint8_t receiverId;        \
     uint8_t requestType;       \
-    bool corssNode;            \
+    bool crossNode;            \
     struct HdfDeviceIoClient *client
 
 #define RESERVED_SERVICE_ID 0

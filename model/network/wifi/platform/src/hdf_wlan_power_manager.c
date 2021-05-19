@@ -16,13 +16,13 @@
 
 /* power manager begin */
 enum PowerType {
-    PowerNotManaged = 0,
-    PowerManagedByGPIO = 1
+    POWER_NOT_MANAGED = 0,
+    POWER_MANAGED_BY_GPIO = 1
 };
 
 enum GPIOActiveLevel {
-    ActiveLow = 0,
-    ActiveHigh
+    ACTIVE_LOW = 0,
+    ACTIVE_HIGH
 };
 
 /* powerCount=1 single power source */
@@ -44,7 +44,7 @@ static int32_t HdfWlanSinglePowerActive(struct HdfConfigWlanPower* powerDate)
         HDF_LOGE("%s:powerDate is NULL", __func__);
         return HDF_FAILURE;
     }
-    if (powerDate->powerType != PowerNotManaged) {
+    if (powerDate->powerType != POWER_NOT_MANAGED) {
         HDF_LOGI("%s:power type is always on", __func__);
         return HDF_SUCCESS;
     }
@@ -64,14 +64,14 @@ static int32_t HdfWlanSinglePowerActive(struct HdfConfigWlanPower* powerDate)
 static int32_t HdfWlanSingleDeActive(struct HdfConfigWlanPower* powerDate)
 {
     int32_t ret;
-    uint8_t deActicve;
+    uint8_t deActive;
 
     if (powerDate == NULL) {
         HDF_LOGE("%s: powerDate is NULL", __func__);
         return HDF_FAILURE;
     }
-    deActicve = !powerDate->activeLevel;
-    if (powerDate->powerType == PowerNotManaged) {
+    deActive = !powerDate->activeLevel;
+    if (powerDate->powerType == POWER_NOT_MANAGED) {
         HDF_LOGE("%s:power type is not supported in current version", __func__);
         return HDF_FAILURE;
     }
@@ -80,7 +80,7 @@ static int32_t HdfWlanSingleDeActive(struct HdfConfigWlanPower* powerDate)
         HDF_LOGE("%s:set dir fail! ret:%d\n", __func__, ret);
         return ret;
     }
-    ret = GpioWrite(powerDate->gpioId, deActicve);
+    ret = GpioWrite(powerDate->gpioId, deActive);
     return HDF_SUCCESS;
 }
 
@@ -138,7 +138,7 @@ int32_t HdfWlanPowerMgrRelease(struct PowerManager* powerMgr)
     return HDF_SUCCESS;
 }
 /**
- * @brief create powers manager accoding to the powers config
+ * @brief create powers manager according to the powers config
  */
 struct PowerManager* HdfWlanCreatePowerManager(const struct HdfConfWlanPowers *configPowers)
 {

@@ -72,7 +72,7 @@ int32_t RenewNetDevice(NetDevice **netDev)
     NetDevice *result = NULL;
     struct HdfWifiNetDeviceData *data = NULL;
     int32_t ret;
-    if (netDev == NULL) {
+    if (netDev == NULL || *netDev == NULL) {
         HDF_LOGE("%s:NULL ptr!", __func__);
         return HDF_FAILURE;
     }
@@ -160,7 +160,6 @@ struct NetDevice *AllocPlatformNetDevice(struct HdfWlanDevice *device)
 
         ret = GetPlatformIfName(id, ifName, IFNAMSIZ);
         if (ret != HDF_SUCCESS) {
-            OsalMemFree(data);
             break;
         }
 #ifdef _PRE_HDF_LINUX
@@ -254,7 +253,7 @@ char *HdfWlanGetIfNames(const uint8_t chipId, uint8_t *ifNameCount)
         return NULL;
     }
 
-    if (ifNameCount == 0) {
+    if (*ifNameCount == 0) {
         return ifNames;
     }
 

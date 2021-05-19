@@ -36,7 +36,6 @@ int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data,
 
     if (busCfg->busType == SENSOR_BUS_I2C) {
         CHECK_NULL_PTR_RETURN_VALUE(busCfg->i2cCfg.handle, HDF_FAILURE);
-        (void)memset_s(msg, sizeof(msg), 0, sizeof(msg));
 
         msg[I2C_READ_MSG_ADDR_IDX].addr = busCfg->i2cCfg.devAddr;
         msg[I2C_READ_MSG_ADDR_IDX].flags = 0;

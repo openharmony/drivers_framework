@@ -67,18 +67,19 @@ static void HandleResponseMessage(const RemoteService *service, MessageContext *
         }
         ReleaseMessageContext(context);
     } else {
-        HDF_LOGE("%s:Response type not supported!type=%d", __func__, context->requestType);
+        HDF_LOGE("%s:Response type not supported!type=%u", __func__, context->requestType);
     }
 }
 
 ErrorCode SendMessageLocalNode(const RemoteService *service, MessageContext *context)
 {
+    uint8_t pri = HIGHEST_PRIORITY;
     if (service == NULL || context == NULL) {
         HDF_LOGE("%s:Input is NULL!", __func__);
         return ME_ERROR_NULL_PTR;
     }
 
-    if (!context->corssNode && context->requestType == MESSAGE_TYPE_SYNC_REQ) {
+    if (!context->crossNode && context->requestType == MESSAGE_TYPE_SYNC_REQ) {
         HandleRequestMessage(service, context);
         SetToResponse(context);
         return context->responseStatus;
@@ -103,11 +104,9 @@ ErrorCode SendMessageLocalNode(const RemoteService *service, MessageContext *con
                 return ME_ERROR_NO_SUCH_COMMAND;
             }
 
-            uint8_t pri = localService->mapper->messages[context->commandId].pri;
-            return localService->dispatcher->AppendMessage(localService->dispatcher, pri, context);
-        } else {
-            return localService->dispatcher->AppendMessage(localService->dispatcher, HIGHEST_PRIORITY, context);
+            pri = localService->mapper->messages[context->commandId].pri;
         }
+        return localService->dispatcher->AppendMessage(localService->dispatcher, pri, context);
     }
 }
 

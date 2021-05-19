@@ -36,7 +36,7 @@ void ReleaseMessageContext(MessageContext *context)
         context->rspData = NULL;
     }
 
-    if (context->corssNode ||
+    if (context->crossNode ||
         (context->requestType != MESSAGE_TYPE_SYNC_REQ && context->requestType != MESSAGE_TYPE_SYNC_RSP)) {
         // Sync request message may use stack mem.Memory is managed by user
         if (context->reqData != NULL) {
@@ -104,7 +104,7 @@ ErrorCode AppendToLocalDispatcher(MessageDispatcher *dispatcher, const uint8_t p
 void SetToResponse(MessageContext *context)
 {
     if (context->requestType != MESSAGE_TYPE_ASYNC_REQ && context->requestType != MESSAGE_TYPE_SYNC_REQ) {
-        HDF_LOGE("Only sync and async message can send response!type=%d", context->requestType);
+        HDF_LOGE("Only sync and async message can send response!type=%u", context->requestType);
         return;
     }
     ServiceId senderId = context->senderId;
@@ -124,7 +124,6 @@ static void HandleAsyncResponse(MessageContext *context)
     }
 
     ReleaseMessageContext(context);
-    context = NULL;
 }
 
 static void HandleSyncResponse(MessageContext *context)
@@ -135,7 +134,7 @@ static void HandleSyncResponse(MessageContext *context)
     }
     HDF_STATUS status = OsalSemPost(&context->rspSemaphore);
     if (status != HDF_SUCCESS) {
-        HDF_LOGE("Send semaphore failed!CMD=%d,Sender=%d,Receiver=%d", context->commandId, context->senderId,
+        HDF_LOGE("Send semaphore failed!CMD=%u,Sender=%u,Receiver=%u", context->commandId, context->senderId,
             context->receiverId);
     }
     return;
@@ -148,13 +147,13 @@ static void HandleRequestMessage(MessageContext *context)
     RemoteService *rspService = NULL;
     do {
         if (targetService == NULL) {
-            HDF_LOGE("%s:Service %d is not available!", __func__, context->receiverId);
+            HDF_LOGE("%s:Service %u is not available!", __func__, context->receiverId);
             errCode = ME_ERROR_NULL_PTR;
             break;
         }
 
         if (targetService->ExecRequestMsg == NULL) {
-            HDF_LOGE("%s:Service %d has no ExecMsg method!", __func__, context->receiverId);
+            HDF_LOGE("%s:Service %u has no ExecMsg method!", __func__, context->receiverId);
             errCode = ME_ERROR_NULL_PTR;
             break;
         }
@@ -214,7 +213,7 @@ static void HandleMessage(MessageContext *context)
                 HandleAsyncResponse(context);
                 break;
             default:
-                HDF_LOGE("Unsupported message type %d", context->requestType);
+                HDF_LOGE("Unsupported message type %u", context->requestType);
         }
     }
 }
@@ -323,12 +322,7 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
     do {
         OsalMSleep(1);
     } while (dispatcher->status == ME_STATUS_STARTTING);
-
-    if (dispatcher->status == ME_STATUS_RUNNING) {
-        return ME_SUCCESS;
-    } else {
-        return ME_ERROR_WRONG_STATUS;
-    }
+    return (dispatcher->status == ME_STATUS_RUNNING) ? ME_SUCCESS : ME_ERROR_WRONG_STATUS;
 }
 
 static void ShutdownDispatcher(MessageDispatcher *dispatcher)
