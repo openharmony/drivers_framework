@@ -6,10 +6,10 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "osal_time.h"
-#include "osal_mem.h"
-#include "hdf_log.h"
 #include "mipi_dsi_core.h"
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "osal_time.h"
 
 #define HDF_LOG_TAG mipi_dsi_core
 
@@ -36,21 +36,21 @@ int32_t MipiDsiRegisterCntlr(struct MipiDsiCntlr *cntlr)
     return HDF_FAILURE;
 }
 
-DevHandle MipiDsiOpen(uint8_t id)
+DevHandle MipiDsiOpen(uint8_t number)
 {
-    if (id >= MAX_CNTLR_CNT) {
-        HDF_LOGE("id invalid");
+    if (number >= MAX_CNTLR_CNT) {
+        HDF_LOGE("invalid number");
         return NULL;
     }
-    if (g_mipiDsihandle[id].cntlr == NULL) {
-        HDF_LOGE("no mipi_dsi %d cntlr", id);
+    if (g_mipiDsihandle[number].cntlr == NULL) {
+        HDF_LOGE("no mipi_dsi %d cntlr", number);
         return NULL;
     }
-    if (OsalMutexLock(&(g_mipiDsihandle[id].lock)) != HDF_SUCCESS) {
+    if (OsalMutexLock(&(g_mipiDsihandle[number].lock)) != HDF_SUCCESS) {
         HDF_LOGE("mutex lock fail");
         return NULL;
     }
-    return (DevHandle)(&(g_mipiDsihandle[id]));
+    return (DevHandle)(&(g_mipiDsihandle[number]));
 }
 
 void MipiDsiClose(DevHandle handle)
@@ -64,7 +64,7 @@ void MipiDsiClose(DevHandle handle)
 
 static int32_t MipiDsiSetDevCfg(struct MipiDsiCntlr *cntlr)
 {
-    /* set controler config */
+    /* set controller config */
     if (cntlr->setCntlrCfg == NULL) {
         HDF_LOGE("setCntlrCfg is NULL");
         return HDF_FAILURE;
@@ -137,6 +137,7 @@ void MipiDsiSetLpMode(DevHandle handle)
         HDF_LOGI("toLp not support!");
     }
 }
+
 void MipiDsiSetHsMode(DevHandle handle)
 {
     struct MipiDsiCntlr *cntlr = NULL;
@@ -151,6 +152,7 @@ void MipiDsiSetHsMode(DevHandle handle)
         HDF_LOGI("toHs not support!");
     }
 }
+
 void MipiDsiEnterUlps(DevHandle handle)
 {
     struct MipiDsiCntlr *cntlr = NULL;
@@ -165,6 +167,7 @@ void MipiDsiEnterUlps(DevHandle handle)
         HDF_LOGI("enterUlps not support!");
     }
 }
+
 void MipiDsiExitUlps(DevHandle handle)
 {
     struct MipiDsiCntlr *cntlr = NULL;

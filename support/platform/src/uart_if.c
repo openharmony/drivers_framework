@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "uart_if.h"
 #include "securec.h"
 #ifndef __USER__
 #include "devsvc_manager_clnt.h"
@@ -17,7 +18,6 @@
 #ifndef __USER__
 #include "uart_core.h"
 #endif
-#include "uart_if.h"
 
 #define HDF_LOG_TAG uart_if_c
 #define UART_HOST_NAME_LEN 32
