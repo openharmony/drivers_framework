@@ -12,7 +12,11 @@
 #include "hdf_log.h"
 #include "osal_mem.h"
 
+#ifndef PTHREAD_STACK_MIN
 #define OSAL_PTHREAD_STACK_MIN 4096
+#else
+#define OSAL_PTHREAD_STACK_MIN PTHREAD_STACK_MIN
+#endif
 
 #define HDF_LOG_TAG osal_thread
 
