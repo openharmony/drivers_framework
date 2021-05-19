@@ -17,12 +17,12 @@
 
 static struct NetDeviceImpl *g_netDeviceImplTable[MAX_NETDEVICE_COUNT] = {NULL};
 
-static bool FindAvailableTable(int32_t *index)
+static bool FindAvailableTable(uint32_t *index)
 {
-    int32_t i;
+    uint32_t i;
 
     if (index == NULL) {
-        HDF_LOGE("Find Available table index error!");
+        HDF_LOGE("%s Find Available table index error!", __func__);
         return false;
     }
     for (i = 0; i < MAX_NETDEVICE_COUNT; i++) {
@@ -34,7 +34,7 @@ static bool FindAvailableTable(int32_t *index)
     return false;
 }
 
-static bool AddNetDeviceImplToTable(int32_t index, struct NetDeviceImpl *netDeviceImpl)
+static bool AddNetDeviceImplToTable(uint32_t index, struct NetDeviceImpl *netDeviceImpl)
 {
     if (index >= MAX_NETDEVICE_COUNT) {
         HDF_LOGE("%s error because of not enough space!", __func__);
@@ -68,7 +68,6 @@ static struct NetDeviceImpl *InitNetDeviceImpl(NetDevice *nd, NetIfCategory ifCa
         HDF_LOGE("%s fail: OsalMemCalloc fail!", __func__);
         return NULL;
     }
-    (void)memset_s(ndImpl, sizeof(struct NetDeviceImpl), 0, sizeof(struct NetDeviceImpl));
 
     ndImpl->netDevice = nd;
     if (RegisterNetDeviceImpl(ndImpl) != HDF_SUCCESS) {
@@ -100,6 +99,7 @@ static void DeInitNetDeviceImpl(struct NetDeviceImpl *netDeviceImpl)
 
     /* last release netDeviceImpl */
     OsalMemFree(netDeviceImpl);
+    netDeviceImpl = NULL;
     HDF_LOGI("%s success!", __func__);
     return;
 }
@@ -117,7 +117,7 @@ static struct NetDeviceImpl *GetImplByNetDevice(const struct NetDevice *netDevic
             }
         }
     }
-    HDF_LOGE("Don't Get Impl by netdevice");
+    HDF_LOGE("%s Get Impl by netdevice failed", __func__);
     return ndImpl;
 }
 
@@ -125,7 +125,7 @@ struct NetDevice *NetDeviceInit(const char *ifName, uint32_t len, NetIfCategory 
 {
     NetDevice *netDevice = NULL;
     struct NetDeviceImpl *ndImpl = NULL;
-    int32_t index = 0;
+    uint32_t index = 0;
     int32_t ret;
 
     if ((ifName == NULL) || (strlen(ifName) != len) || (strlen(ifName) > IFNAMSIZ - 1)) {
@@ -137,9 +137,8 @@ struct NetDevice *NetDeviceInit(const char *ifName, uint32_t len, NetIfCategory 
         HDF_LOGE("%s fail: OsalMemCalloc fail!", __func__);
         return NULL;
     }
-    (void)memset_s(netDevice, sizeof(NetDevice), 0, sizeof(NetDevice));
-    if (memcpy_s(netDevice->name, IFNAMSIZ, ifName, len + 1) != EOK) {
-        HDF_LOGE("%s fail: memcpy_s fail!", __func__);
+    if (strcpy_s(netDevice->name, IFNAMSIZ, ifName) != EOK) {
+        HDF_LOGE("%s fail: strcpy_s fail!", __func__);
         OsalMemFree(netDevice);
         return NULL;
     }
@@ -318,7 +317,7 @@ static int32_t NetIfRxImpl(const struct NetDevice *netDevice, NetBuf *buff, Rece
     ProcessingResult ret = PROCESSING_CONTINUE;
 
     if (ndImpl == NULL || ndImpl->interFace == NULL || ndImpl->interFace->receive == NULL) {
-        HDF_LOGE("NetIfRxImpl fail : netdevice not exist!");
+        HDF_LOGE("%s: NetIfRxImpl fail : netdevice not exist!", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -333,7 +332,7 @@ static int32_t NetIfRxImpl(const struct NetDevice *netDevice, NetBuf *buff, Rece
         HDF_LOGI("NetIfRxImpl specialEtherType Process not need TCP/IP stack!");
         return HDF_SUCCESS;
     } else {
-        HDF_LOGE("NetIfRxImpl specialEtherType Process error");
+        HDF_LOGE("%s: NetIfRxImpl specialEtherType Process error", __func__);
         return HDF_FAILURE;
     }
 }

@@ -25,12 +25,12 @@ static int32_t ReadBmi160RawData(struct SensorCfgData *data, struct AccelData *r
     OsalTimespec time;
 
     (void)memset_s(&time, sizeof(time), 0, sizeof(time));
-    (void)memset_s(&reg, sizeof(reg), 0, sizeof(reg));
-
+    (void)memset_s(reg, sizeof(reg), 0, sizeof(reg));
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
+
     if (OsalGetTime(&time) != HDF_SUCCESS) {
-        HDF_LOGE("%s: Get accel system time failed", __func__);
+        HDF_LOGE("%s: Get time failed", __func__);
         return HDF_FAILURE;
     }
     *timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT; /* unit nanosecond */
@@ -120,7 +120,7 @@ static int32_t InitAccelPreConfig(void)
         return HDF_FAILURE;
     }
     if (SetSensorPinMux(SENSOR_I2C6_CLK_REG_ADDR, SENSOR_ADDR_WIDTH_4_BYTE, SENSOR_I2C_REG_CFG) != HDF_SUCCESS) {
-        HDF_LOGE("%s: ClK write mux pin failed", __func__);
+        HDF_LOGE("%s: Clk write mux pin failed", __func__);
         return HDF_FAILURE;
     }
 

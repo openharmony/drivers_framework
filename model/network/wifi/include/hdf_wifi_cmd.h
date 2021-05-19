@@ -278,7 +278,7 @@ typedef struct {
 
 typedef struct {
     void *callback;
-    void *contex;
+    void *context;
 } WifiEnableEapol;
 
 typedef struct {
