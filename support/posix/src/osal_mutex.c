@@ -106,7 +106,7 @@ int32_t OsalMutexTimedLock(struct OsalMutex *mutex, uint32_t ms)
             if (ret == ETIMEDOUT) {
                 return HDF_ERR_TIMEOUT;
             } else {
-                HDF_LOGE("%s time_out time:%d ret:%d", __func__, ms, ret);
+                HDF_LOGE("%s time_out time:%u ret:%d", __func__, ms, ret);
                 return HDF_FAILURE;
             }
         }

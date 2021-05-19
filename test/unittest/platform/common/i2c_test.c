@@ -23,7 +23,7 @@
 #define I2C_TEST_BUF_SIZE_MAX  128
 #define I2C_TEST_REG_LEN       2
 #define I2C_TEST_MLTTHD_TIMES  1000
-#define I2C_TEST_STACK_SIZE    (1024*100)
+#define I2C_TEST_STACK_SIZE    (1024 * 100)
 #define I2C_TEST_WAIT_TIMES    200
 
 static struct I2cMsg g_msgs[I2C_TEST_MSG_NUM];
@@ -84,7 +84,7 @@ struct I2cTester *I2cTesterGet(void)
     static struct I2cTester tester;
     static bool hasInit = false;
 
-    if (hasInit == true) {
+    if (hasInit) {
         return &tester;
     }
 
@@ -96,7 +96,7 @@ struct I2cTester *I2cTesterGet(void)
 
     tester.handle = I2cOpen(tester.config.busNum);
     if (tester.handle == NULL) {
-        HDF_LOGE("I2cTesterGet: open i2cBus:%u fail! handle:%p", tester.config.busNum, tester.handle);
+        HDF_LOGE("I2cTesterGet: open i2cBus:%u fail!", tester.config.busNum);
         return NULL;
     }
 
@@ -217,14 +217,14 @@ int32_t I2cTestWriteRead(void)
     return HDF_SUCCESS;
 }
 
-static int I2cTestThreadFunc(void *parm)
+static int I2cTestThreadFunc(void *param)
 {
     int32_t i, ret;
     struct I2cTester *tester = NULL;
 
     tester = I2cTesterGet();
     if (tester == NULL || tester->handle == NULL) {
-        *((int32_t *)parm) = 1;
+        *((int32_t *)param) = 1;
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -239,7 +239,7 @@ static int I2cTestThreadFunc(void *parm)
         }
     }
 
-    *((int32_t *)parm) = 1;
+    *((int32_t *)param) = 1;
     return HDF_SUCCESS;
 }
 

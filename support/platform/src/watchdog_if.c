@@ -46,7 +46,6 @@ static struct Watchdog *WatchdogGetById(int16_t wdtId)
     return service;
 }
 
-
 DevHandle WatchdogOpen(int16_t wdtId)
 {
     struct Watchdog *service = NULL;

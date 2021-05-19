@@ -195,7 +195,7 @@ static int32_t TestCaseGpioIrq(struct GpioTester *tester, uint16_t mode, bool in
     }
 #endif
     if (tester->irqCnt <= 0) {
-        HDF_LOGE("%s: mode:%x on %u fail!", __func__, mode, tester->gpioIrq);
+        HDF_LOGE("%s: set mode:%x on %u failed", __func__, mode, tester->gpioIrq);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;

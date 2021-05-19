@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 
-int32_t HcsBytecodeOutput();
-int32_t HcsTextCodeOutput();
+int32_t HcsBytecodeOutput(void);
+int32_t HcsTextCodeOutput(void);
 int32_t HcsBinaryToHexdump(const char *inputFileName);
 
 #endif // HCS_COMPILER_GENER_H

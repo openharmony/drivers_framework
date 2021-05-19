@@ -83,9 +83,9 @@ static int32_t ByteCodeWriteWalk(ParserObject *current, int32_t walkDepth)
     }
     int32_t ret = NOERR;
     switch (current->objectBase.opCode) {
-        case HCS_BYTE_OP:
-        case HCS_WORD_OP:
-        case HCS_DWORD_OP:
+        case HCS_BYTE_OP: /* fall-through */
+        case HCS_WORD_OP: /* fall-through */
+        case HCS_DWORD_OP: /* fall-through */
         case HCS_QWORD_OP: {
             const OpCodeMapEntry *byteCodeMap = HcsGetOpCodeMap();
             ret = HcsOutputWriteAlign(&current->objectBase.integerValue, byteCodeMap[current->objectBase.type].size);
@@ -103,7 +103,6 @@ static int32_t ByteCodeWriteWalk(ParserObject *current, int32_t walkDepth)
             }
             ret = HcsOutputWriteAlign(&current->objectBase.subSize, sizeof(current->objectBase.subSize));
             break;
-            /* fall-through */
         case HCS_ARRAY_OP: {
             uint16_t size = HcsCountArraySize(current);
             ret = HcsOutputWriteAlign(&size, sizeof(size));
@@ -122,20 +121,20 @@ static int32_t ByteCodeWriteWalk(ParserObject *current, int32_t walkDepth)
     return ret;
 }
 
-int32_t HcsBytecodeOutput()
+int32_t HcsBytecodeOutput(void)
 {
     ParserObject *astRoot = HcsGetParserRoot();
     if (astRoot == NULL) {
         return EFAIL;
     }
 
-    /* generate OpCode for every object on AST and calculate size for each */
+    /* generate OpCode for every object on AST and calculate size for each object */
     int32_t ret = HcsWalkAst(astRoot, AST_WALK_BACKEND, NULL, ByteCodeConvert);
     if (ret) {
         return ret;
     }
 
-    /* ast data is ready, do binder output */
+    /* ast data is ready, do bindary output */
     struct HcsFile *outputFIle = HcsOpenOutputFile(HCS_OUTPUT_FILE_SUFFIX);
 
     HbcHeader header = {
@@ -181,7 +180,7 @@ int32_t HcsBytecodeOutput()
     HcsCloseOutput(outputFIle);
     HCS_DEBUG("Total size: %u ", astRoot->objectBase.size);
     if (ret == NOERR && HcsOptShouldGenHexdump()) {
-        ret = HcsBinaryToHexdump(HcsGetOutPutFileName());
+        ret = HcsBinaryToHexdump(HcsGetOutPutFilePath());
     }
     return ret;
 }

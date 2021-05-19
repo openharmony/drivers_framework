@@ -1,1 +1,1 @@
-hc-gen compilation requires flex and bison, make sure that they are installed before compiling.
+hc-gen compilation requires flex and bison, so make sure they are installed before you get start.

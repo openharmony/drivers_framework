@@ -39,7 +39,7 @@
 
 #define HCS_OBJECT_PR(prefix, object, fmt, args...)                         \
     do {                                                                    \
-        HCS_LOG_PRINT (prefix": %s:%u\n\t" fmt"\n",                         \
+        HCS_LOG_PRINT(prefix": %s:%u\n\t" fmt"\n",                         \
                     object ? ((ParserObjectBase*)object)->src : "unknown",  \
                     object ? ((ParserObjectBase*)object)->lineno : 0,       \
                     ##args);                                                \
@@ -52,12 +52,20 @@
 #define PRINTF_CHECK_AND_RETURN(printRes)                                   \
     do {                                                                    \
         if ((printRes) < 0) {                                               \
-            HCS_ERROR("Error:%s(%d), sprintf_s fail",                       \
+            HCS_ERROR("Error:%s(%d), sprintf_s failed",                     \
                 __FUNCTION__, __LINE__);                                    \
             return EOUTPUT;                                                 \
         }                                                                   \
     } while (0)
 
-#define SPRINTF_ERROR_INFO "sprintf fail"
+#define OUTPUT_CHECK_AND_RETURN(printRes)                                   \
+    do {                                                                    \
+        if ((printRes) < 0) {                                               \
+            HCS_ERROR("Error:%s(%d), output write failed",                  \
+                __FUNCTION__, __LINE__);                                    \
+            return EOUTPUT;                                                 \
+        }                                                                   \
+    } while (0)
+
 
 #endif // HCS_COMPILER_LOG_H

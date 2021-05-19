@@ -125,7 +125,7 @@ int32_t HcsProcessInclude(char *includePath, uint32_t lineNumber)
     return NOERR;
 }
 
-int32_t HcsDoCompile()
+int32_t HcsDoCompile(void)
 {
     struct HcsFile *source = NULL;
     char *forestName = strdup("ForestRoot");

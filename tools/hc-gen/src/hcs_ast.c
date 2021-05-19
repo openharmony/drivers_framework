@@ -6,13 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hcs_ast.h"
 #include <string.h>
 #include <securec.h>
 #include "hcs_file.h"
 #include "hcs_mem.h"
 #include "hcs_log.h"
 #include "hcs_option.h"
-#include "hcs_ast.h"
 
 #define ANONYMOUS_OBJECT_NAME "|_"
 static ParserObject *g_parserRoot = NULL;
@@ -24,14 +24,14 @@ bool HcsIsAnonymousObject(const ParserObject *obj)
 
 ParserObject *HcsAllocParserObject(void)
 {
-    ParserObject *new = (ParserObject *)HcsMemZalloc(sizeof(ParserObject));
-    if (new == NULL) {
-        HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+    ParserObject *newObject = (ParserObject *)HcsMemZalloc(sizeof(ParserObject));
+    if (newObject == NULL) {
+        HCS_ERROR("%s:%d OOM", __func__, __LINE__);
         return NULL;
     }
-    new->objectBase.src = HcsGetCurrentSourceName();
-    new->objectBase.lineno = HcsGetCurrentSourceLine();
-    return new;
+    newObject->objectBase.src = HcsGetCurrentSourceName();
+    newObject->objectBase.lineno = HcsGetCurrentSourceLine();
+    return newObject;
 }
 
 void HcsAstFreeObject(ParserObject *object)
@@ -77,7 +77,7 @@ void HcsDeleteParserObjectTree(ParserObject *object)
     if (object == NULL) {
         return;
     }
-    /* delete current and subtree */
+    /* delete current tree and subtree */
     HcsAstFreeObjectAndSubtree(object);
 }
 
@@ -89,7 +89,7 @@ ParserObject *HcsGetParserRoot(void)
     HCS_DEBUG("instance root node");
     char *rootNodeName = strdup("root");
     if (rootNodeName == NULL) {
-        HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+        HCS_ERROR("%s:%d OOM", __func__, __LINE__);
         return NULL;
     }
     g_parserRoot = HcsNewConfigNode(rootNodeName, CONFIG_NODE_NOREF, NULL);
@@ -311,7 +311,7 @@ static ParserObject *HcsParserObjectClone(const ParserObject *object)
     }
     ParserObject *clone = HcsAllocParserObject();
     if (clone == NULL) {
-        HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+        HCS_ERROR("%s:%d OOM", __func__, __LINE__);
         return NULL;
     }
 
@@ -384,7 +384,7 @@ int32_t HcsAstCopyArray(const ParserObject *src, ParserObject *dst)
     while (arrayElement != NULL) {
         ParserObject *copy = HcsParserObjectClone(arrayElement);
         if (copy == NULL) {
-            HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+            HCS_ERROR("%s:%d OOM", __func__, __LINE__);
             return EOOM;
         }
         HcsAstAddChild(dst, copy);
@@ -407,7 +407,7 @@ static int32_t HcsCopyObject(const ParserObject *src, ParserObject *dst)
         HcsMemFree(dst->objectBase.stringValue);
         dst->objectBase.stringValue = strdup(src->objectBase.stringValue);
         if (dst->objectBase.stringValue == NULL) {
-            HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+            HCS_ERROR("%s:%d OOM", __func__, __LINE__);
             return EOOM;
         }
     } else if (src->objectBase.type == PARSEROP_ARRAY) {
@@ -442,7 +442,6 @@ static int32_t HcsAstCopyTree(ParserObject *src, ParserObject *dstTree, uint32_t
         }
     } else if (HcsOptShouldGenTextConfig() && HcsIsNumberObject(src) &&
         dstExistObject->objectBase.type > src->objectBase.type) {
-        /* At template case, should do type upward transformation to template */
         src->objectBase.type = dstExistObject->objectBase.type;
     }
 

@@ -6,14 +6,14 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include  <string.h>
+#include "hcs_decompiler.h"
+#include <string.h>
 #include "hcs_option.h"
 #include "hcs_file.h"
 #include "hcs_opcode.h"
 #include "hcs_parser.h"
 #include "hcs_log.h"
 #include "hcs_compiler.h"
-#include "hcs_decompiler.h"
 
 static ParserObject *RebuildObject(uint8_t opCode);
 
@@ -42,7 +42,7 @@ static bool HcsVerifyHbcFile()
     }
 
     HCS_INFO("Build by hcs compile %u.%u", header.versionMajor, header.versionMinor);
-    HCS_INFO("hcb file total size: %u\n", header.totalSize);
+    HCS_INFO("hcb file total size: %d\n", header.totalSize);
     return true;
 }
 
@@ -74,7 +74,7 @@ static char *ReadCString()
     }
     char *str = strdup(buff);
     if (str == NULL) {
-        HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+        HCS_ERROR("%s:%d OOM", __func__, __LINE__);
         return NULL;
     }
     return str;
@@ -348,7 +348,7 @@ static bool RebuildAst()
     return true;
 }
 
-int32_t HcsDoDecompile()
+int32_t HcsDoDecompile(void)
 {
     struct HcsFile *source = NULL;
     uint32_t ret = HcsOpenSourceFile(HcsGetInputFileName(), &source, "rb");

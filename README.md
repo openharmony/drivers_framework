@@ -156,9 +156,9 @@ For details, see  [WLAN Overview](https://gitee.com/openharmony/docs/blob/master
 
 drivers\_framework
 
-[drivers\_adapter\_uhdf](https://gitee.com/openharmony/drivers_adapter_uhdf/blob/master/README.md)
+[drivers\_adapter](https://gitee.com/openharmony/drivers_adapter/blob/master/README.md)
 
-[drivers\_adapter\_khdf\_linux](https://gitee.com/openharmony/drivers_adapter_uhdf/blob/master/README.md)
+[drivers\_adapter\_khdf\_linux](https://gitee.com/openharmony/drivers_adapter_khdf_linux/blob/master/README.md)
 
-[drivers\_adapter\_khdf\_liteos](https://gitee.com/openharmony/drivers_adapter_uhdf/blob/master/README.md)
+[drivers\_peripheral](https://gitee.com/openharmony/drivers_peripheral/blob/master/README.md)
 

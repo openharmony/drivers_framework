@@ -860,7 +860,7 @@ pTestCaseFunc g_hdfNetBufQueueTestCaseLists[] = {
     HdfNetBufQueueTest009,
 };
 
-// HDFNetBuf test canse Entry
+// HDFNetBuf test case Entry
 int32_t HdfNetBufTest(void)
 {
     int32_t ret, i;
@@ -879,7 +879,7 @@ int32_t HdfNetBufTest(void)
     return HDF_SUCCESS;
 }
 
-// HdfNetBufQueue test canse Entry
+// HdfNetBufQueue test case Entry
 int32_t HdfNetBufQueueTest(void)
 {
     int32_t ret, i;

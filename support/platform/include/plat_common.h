@@ -13,4 +13,4 @@
 
 bool PlatInIrqContext(void);
 
-#endif
+#endif /* PLATFORM_COMMON_H */

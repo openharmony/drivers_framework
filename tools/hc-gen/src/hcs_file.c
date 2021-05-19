@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hcs_file.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,11 +16,10 @@
 #include "hcs_parser.h"
 #include "hcs_mem.h"
 #include "hcs_log.h"
-#include "hcs_file.h"
 
-static char *g_outputFilename = NULL;
-static FILE *g_outputFIle = NULL;
-const char *g_inputFileName = NULL;
+static char *g_outputFileName = NULL;
+static FILE *g_outputFile = NULL;
+static const char *g_inputFileName = NULL;
 static bool g_dummyOutput = false;
 static uint32_t g_outputWriteCount = 0;
 static struct HcsFileQueue g_inputSourceFileQueue = { 0 };
@@ -30,20 +30,17 @@ void HcsSetInputFileName(const char *name)
     g_inputFileName = name;
 }
 
-const char *HcsGetInputFileName()
+const char *HcsGetInputFileName(void)
 {
     return g_inputFileName;
 }
 
-/*
- * Return: true - not exist, false - already exist and not overwrite
- */
 int32_t HcsSourceNameSetPush(const char *name)
 {
     if (g_sourceNameSetHead == NULL) {
         struct HcsSourceName *head = HcsMemZalloc(sizeof(*head));
         if (head == NULL) {
-            HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+            HCS_ERROR("%s:%d OOM", __func__, __LINE__);
             return EOOM;
         }
         head->name = name;
@@ -61,13 +58,13 @@ int32_t HcsSourceNameSetPush(const char *name)
         last = last->next;
     }
 
-    struct HcsSourceName *new = HcsMemZalloc(sizeof(struct HcsSourceName));
-    if (new == NULL) {
-        HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+    struct HcsSourceName *newName = HcsMemZalloc(sizeof(struct HcsSourceName));
+    if (newName == NULL) {
+        HCS_ERROR("%s:%d OOM", __func__, __LINE__);
         return EOOM;
     }
-    new->name = name;
-    pre->next = new;
+    newName->name = name;
+    pre->next = newName;
     return NOERR;
 }
 
@@ -101,6 +98,9 @@ void HcsSourceNameSetClean(void)
 
 static const char *GetFileName(const char *path)
 {
+    if (path == NULL) {
+        return NULL;
+    }
     int32_t length = (int32_t)strlen(path);
     int32_t i = length - 1;
     for (; i >= 0; --i) {
@@ -147,7 +147,7 @@ static int32_t CopyAndSaveFileName(const char *filePath, char **savedFileName, c
     }
 
     /* if no specified output file name, use input name */
-    if (HcsGetOutPutFileName() == NULL && HcsSetOutPutNameWithCurrentWorkPath(fileName)) {
+    if (HcsGetOutPutFilePath() == NULL && HcsSetOutPutNameWithCurrentWorkPath(fileName)) {
         HcsMemFree((void *)fileName);
         return EOOM;
     }
@@ -172,26 +172,25 @@ int32_t HcsOpenSourceFile(const char *path, struct HcsFile **file, const char *f
     char *realPath = realpath(path, pathBuf);
 #endif
     if (realPath == NULL) {
-        HCS_ERROR("fail to open source file: %s", path);
+        HCS_ERROR("failed to open source file: %s", path);
         return EINVALF;
     }
 
     /* push to name set and check reopen */
-    int32_t ret = HcsSourceNameSetFind(realPath);
-    if (ret == true) {
+    if (HcsSourceNameSetFind(realPath)) {
         return EREOPENF;
     }
 
     HCS_DEBUG("source file path: %s", realPath);
     FILE *f = fopen(realPath, flag ? flag : "r");
     if (f == NULL) {
-        HCS_ERROR("fail to open source file: %s", realPath);
+        HCS_ERROR("failed to open source file: %s", realPath);
         return EINVALF;
     }
 
     char *fileName = NULL;
     char *filePath = NULL;
-    ret = CopyAndSaveFileName(realPath, &fileName, &filePath);
+    int32_t ret = CopyAndSaveFileName(realPath, &fileName, &filePath);
     if (ret) {
         fclose(f);
         return EFAIL;
@@ -200,6 +199,7 @@ int32_t HcsOpenSourceFile(const char *path, struct HcsFile **file, const char *f
     struct HcsFile *sourceFile = HcsMemZalloc(sizeof(struct HcsFile));
     if (sourceFile == NULL) {
         HcsMemFree(fileName);
+        HcsMemFree(filePath);
         fclose(f);
         HCS_ERROR("oom");
         return EOOM;
@@ -272,17 +272,17 @@ int32_t HcsSetOutPutNameWithCurrentWorkPath(const char *name)
 
 int32_t HcsSetOutPutName(const char *name)
 {
-    if (g_outputFilename != NULL) {
-        HcsMemFree(g_outputFilename);
+    if (g_outputFileName != NULL) {
+        HcsMemFree(g_outputFileName);
     }
 
-    g_outputFilename = strdup(name);
-    if (g_outputFilename == NULL) {
+    g_outputFileName = strdup(name);
+    if (g_outputFileName == NULL) {
         HCS_ERROR("oom");
         return EOOM;
     }
 #ifdef OS_WIN
-    char *temp = g_outputFilename;
+    char *temp = g_outputFileName;
     while (*temp != '\0') {
         if (*temp == UNIX_SEPARATOR) {
             *temp = WIN_SEPARATOR;
@@ -296,13 +296,13 @@ int32_t HcsSetOutPutName(const char *name)
 
 bool HcsSetOutputFileSuffix(const char *suffix)
 {
-    const char *fileNameBefore = g_outputFilename;
+    const char *fileNameBefore = g_outputFileName;
     const char *fileNameWithoutSuffix = GetFileNameWithoutSuffix(fileNameBefore);
     if (fileNameWithoutSuffix == NULL) {
         return false;
     }
 
-    uint32_t newNameSize = strlen(g_outputFilename) + strlen(suffix) + 1;
+    uint32_t newNameSize = strlen(g_outputFileName) + strlen(suffix) + 1;
     char *newOutputFilename = HcsMemZalloc(newNameSize);
     if (newOutputFilename == NULL) {
         HcsMemFree((void *)fileNameWithoutSuffix);
@@ -312,37 +312,58 @@ bool HcsSetOutputFileSuffix(const char *suffix)
     int32_t ret = strcpy_s(newOutputFilename, newNameSize, fileNameWithoutSuffix);
     HcsMemFree((void *)fileNameWithoutSuffix);
     if (ret) {
-        HCS_ERROR("string copy fail");
+        HCS_ERROR("failed to copy string");
         HcsMemFree(newOutputFilename);
         return false;
     }
     ret = strcat_s(newOutputFilename, newNameSize, suffix);
     if (ret) {
-        HCS_ERROR("string copy fail");
+        HCS_ERROR("failed to copy string");
         HcsMemFree(newOutputFilename);
         return false;
     }
 
     HcsMemFree((void *)fileNameBefore);
-    g_outputFilename = newOutputFilename;
+    g_outputFileName = newOutputFilename;
     return true;
 }
 
 // return output file name only
-const char *HcsGetStripedOutputFileName()
+const char *HcsGetOutputFileName(void)
 {
-    return GetFileName(g_outputFilename);
+    return GetFileName(g_outputFileName);
 }
 
-// return full path of output file
-const char *HcsGetOutPutFileName()
+char *HcsGetOutputFileNameWithoutSuffix(void)
 {
-    return g_outputFilename;
+    const char *fileName = HcsGetOutputFileName();
+    if (fileName == NULL) {
+        return NULL;
+    }
+
+    char *retName = strdup(fileName);
+    if (retName == NULL) {
+        HCS_ERROR("oom");
+        return NULL;
+    }
+
+    char *dot = strchr(retName, '.');
+    if (dot != NULL) {
+        *dot = '\0';
+    }
+    return retName;
+}
+
+
+// return full path of output file
+const char *HcsGetOutPutFilePath(void)
+{
+    return g_outputFileName;
 }
 
 bool HcsOutputNameVerify()
 {
-    const char *fileName = g_outputFilename;
+    const char *fileName = g_outputFileName;
     char lastChar = fileName[strlen(fileName) - 1];
     if (lastChar == OS_SEPARATOR) {
         HCS_ERROR("output name is DIR");
@@ -360,10 +381,10 @@ struct HcsFile *HcsOpenOutputFile(const char *suffix)
     if (!HcsSetOutputFileSuffix(suffix)) {
         return NULL;
     }
-    const char *outputFileName = HcsGetOutPutFileName();
-    g_outputFIle = fopen(outputFileName, "wb");
-    if (g_outputFIle == NULL) {
-        HCS_ERROR("fail to open output file: %s", outputFileName);
+    const char *outputFileName = HcsGetOutPutFilePath();
+    g_outputFile = fopen(outputFileName, "wb");
+    if (g_outputFile == NULL) {
+        HCS_ERROR("failed to open output file: %s", outputFileName);
         return NULL;
     }
 
@@ -371,12 +392,12 @@ struct HcsFile *HcsOpenOutputFile(const char *suffix)
     struct HcsFile *outputFile = HcsMemZalloc(sizeof(struct HcsFile));
     if (outputFile == NULL) {
         HCS_ERROR("oom");
-        fclose(g_outputFIle);
-        g_outputFIle = NULL;
+        fclose(g_outputFile);
+        g_outputFile = NULL;
         return NULL;
     }
     outputFile->name = outputFileName;
-    outputFile->file = g_outputFIle;
+    outputFile->file = g_outputFile;
     outputFile->pos = 0;
     outputFile->fullPath = outputFileName;
     g_outputWriteCount = 0;
@@ -404,13 +425,36 @@ int32_t HcsOutputWrite(const void *buffer, uint32_t length)
         return NOERR;
     }
 
-    uint32_t writeLen = fwrite(buffer, 1, length, g_outputFIle);
+    uint32_t writeLen = fwrite(buffer, 1, length, g_outputFile);
     if (writeLen != length) {
-        HCS_ERROR("output file write fail");
+        HCS_ERROR("failed to write output file");
         return EOUTPUT;
     }
 
     return NOERR;
+}
+
+#define WRITE_MAX_PER_TIME 2048
+
+int32_t HcsFormatOutputWrite(const char *format, ...)
+{
+    if (format == NULL) {
+        return EINVALARG;
+    }
+    static char writeBuffer[WRITE_MAX_PER_TIME] = {'\0'};
+
+    va_list argList;
+
+    va_start(argList, format);
+    int length = vsprintf_s(writeBuffer, WRITE_MAX_PER_TIME, format, argList);
+    va_end(argList);
+    (void)argList;
+
+    if (length < 0) {
+        HCS_ERROR("Output too long in one time");
+        return EOUTPUT;
+    }
+    return HcsOutputWrite(writeBuffer, length);
 }
 
 int32_t HcsOutputWriteAlign(const void *buffer, uint32_t length)
@@ -460,7 +504,7 @@ void HcsSourceQueuePush(struct HcsFile *sourceFile)
     sourceQueue->count++;
 }
 
-void HcsSourceQueuePop()
+void HcsSourceQueuePop(void)
 {
     struct HcsFileQueue *sourceQueue = &g_inputSourceFileQueue;
     if (sourceQueue->head == NULL) {
@@ -470,17 +514,17 @@ void HcsSourceQueuePop()
     sourceQueue->count--;
 }
 
-struct HcsFile *HcsSourceQueueTop()
+struct HcsFile *HcsSourceQueueTop(void)
 {
     return g_inputSourceFileQueue.head;
 }
 
-uint32_t HcsSourceQueueSize()
+uint32_t HcsSourceQueueSize(void)
 {
     return g_inputSourceFileQueue.count;
 }
 
-const char *HcsGetCurrentSourceName()
+const char *HcsGetCurrentSourceName(void)
 {
     struct HcsFile *source = HcsSourceQueueTop();
     return source ? source->fullPath : "";
@@ -488,19 +532,12 @@ const char *HcsGetCurrentSourceName()
 
 bool HcsFileCopyDir(char *dst, uint32_t dstBufferSize, const char *fullPath)
 {
-    const char *c = strlen(fullPath) + fullPath;
-    while (c >= fullPath) {
-        if (*c == OS_SEPARATOR) {
-            break;
-        }
-        c--;
-    }
-    int32_t len = (int32_t)(c - fullPath) + 1;
-    if (len <= 0) {
+    const char *c = strrchr(fullPath, OS_SEPARATOR);
+    if (c == NULL) {
         HCS_ERROR("%s: path '%s' not include dir", __func__, fullPath);
         return false;
     }
-
+    int32_t len = (int32_t)(c - fullPath) + 1;
     int32_t ret = strncpy_s(dst, dstBufferSize, fullPath, len);
     if (ret) {
         HCS_ERROR("%s:string copy fail", __func__);

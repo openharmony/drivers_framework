@@ -14,15 +14,15 @@
 #define ARG_COUNT_MIN 2
 #define USAGE(option, info) HCS_PRINT("  %-12s%s\n", option, info)
 
-bool g_genTextConfigOutput = false;
-bool g_genByteCodeConfigOutput = true;
-bool g_genByteCodeHexdump = false;
-bool g_verbosePrint = false;
-bool g_decompile = false;
-bool g_shouldAlign = false;
-const char *g_symbolPrefix = NULL;
+static bool g_genTextConfigOutput = false;
+static bool g_genByteCodeConfigOutput = true;
+static bool g_genByteCodeHexdump = false;
+static bool g_verbosePrint = false;
+static bool g_decompile = false;
+static bool g_shouldAlign = false;
+static const char *g_symbolPrefix = NULL;
 
-bool HcsOptShouldAlign()
+bool HcsOptShouldAlign(void)
 {
     return g_shouldAlign;
 }
@@ -32,26 +32,27 @@ void HcsOptSetAlign(bool align)
     g_shouldAlign = align;
 }
 
-
-bool HcsOptShouldGenTextConfig()
+bool HcsOptShouldGenTextConfig(void)
 {
     return g_genTextConfigOutput;
 }
-bool HcsOptShouldGenByteCodeConfig()
+
+bool HcsOptShouldGenByteCodeConfig(void)
 {
     return g_genByteCodeConfigOutput;
 }
-bool HcsOptDecompile()
+
+bool HcsOptDecompile(void)
 {
     return g_decompile;
 }
 
-const char *HcsOptGetSymbolNamePrefix()
+const char *HcsOptGetSymbolNamePrefix(void)
 {
     return g_symbolPrefix;
 }
 
-bool HcsOptShouldGenHexdump()
+bool HcsOptShouldGenHexdump(void)
 {
     return g_genByteCodeHexdump;
 }
@@ -151,7 +152,7 @@ int32_t DoOption(int32_t argc, char *argv[])
     return 0;
 }
 
-bool HcsVerbosePrint()
+bool HcsVerbosePrint(void)
 {
     return g_verbosePrint;
 }

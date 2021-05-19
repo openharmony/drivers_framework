@@ -29,7 +29,6 @@ void HdfDeviceInfoConstruct(struct HdfDeviceInfo *deviceInfo)
     deviceInfo->svcName = NULL;
     deviceInfo->moduleName = NULL;
     deviceInfo->deviceMatchAttr = NULL;
-    deviceInfo->private = NULL;
 }
 
 struct HdfDeviceInfo *HdfDeviceInfoNewInstance()

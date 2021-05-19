@@ -29,7 +29,7 @@ int32_t HdfOsalEntry(HdfTestMsg *msg)
         return HDF_FAILURE;
     }
 
-    HDF_LOGD("HdfTest:osal test result[%s-%d %d]", ((result != 0) ? "failed" : "pass"), result, msg->subCmd);
+    HDF_LOGD("HdfTest:osal test result[%s-%d %u]", ((result != 0) ? "failed" : "pass"), result, msg->subCmd);
     msg->result = (result != 0) ? HDF_FAILURE : HDF_SUCCESS;
 
     return HDF_SUCCESS;

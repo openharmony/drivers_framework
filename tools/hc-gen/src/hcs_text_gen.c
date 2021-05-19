@@ -18,19 +18,15 @@
 
 #define TAB_SIZE 4
 #define WRITE_BUFFER_LEN 256
-#define INCLUDE_PATH_MAX_LEN 128
 #define VARIABLE_NAME_LEN 128
-#define GEN_CODE_MARGIN_SIZE 100
-#define GEN_ARRAY_SEP_SIZE 2
+#define ELEMENT_PER_LINE 16
 #define HCS_CONFIG_FILE_HEADER "/*\n"                                                      \
-        " * It's HDF config auto-gen file, do not modify it manually\n"                    \
+        " * This is an automatically generated HDF config file. Do not modify it manually.\n"                    \
         " */\n\n"
 
 #define HCS_CONFIG_INCLUDE_HEADER "#include <stdint.h>\n\n"
 
 #define DEFAULT_PREFIX "HdfConfig"
-
-#define HCS_CONFIG_INCLUDE_FUNC_DECLARATION "const struct %s%sRoot* HdfGet%sModuleConfigRoot(void);\n\n"
 
 #define HCS_CONFIG_FUNC_IMPLEMENT "\nconst struct %s%sRoot* HdfGet%sModuleConfigRoot(void)\n" \
         "{\n"                                                   \
@@ -96,7 +92,7 @@ static int32_t InitConfigVariableNames()
             return EOOM;
         }
         if (strcpy_s(g_bigHumpModuleName, strlen(moduleName) + 1, moduleName) != EOK) {
-            HCS_ERROR("string copy fail");
+            HCS_ERROR("failed to copy string");
             return EFAIL;
         }
         ToUpperCamelString(g_bigHumpModuleName, strlen(g_bigHumpModuleName));
@@ -309,14 +305,16 @@ const char *g_typeMap[PARSEROP_COUNT] = {
 static int32_t GenConfigStructName(const ParserObject *node, char *name, uint32_t nameBuffLen)
 {
     char nameBuffer[OBJECT_NAME_MAX_LEN] = {'\0'};
-    int32_t res = strcpy_s(nameBuffer, OBJECT_NAME_MAX_LEN, HcsGetModuleName());
-    PRINTF_CHECK_AND_RETURN(res);
+    if (strcpy_s(nameBuffer, OBJECT_NAME_MAX_LEN, HcsGetModuleName()) != EOK) {
+        return EOUTPUT;
+    }
     ToUpperCamelString(nameBuffer, strlen(nameBuffer));
-    res = sprintf_s(name, nameBuffLen, "%s%s", g_namePrefix, nameBuffer);
+    int32_t res = sprintf_s(name, nameBuffLen, "%s%s", g_namePrefix, nameBuffer);
     PRINTF_CHECK_AND_RETURN(res);
 
-    res = strcpy_s(nameBuffer, OBJECT_NAME_MAX_LEN, node->configNode.name);
-    PRINTF_CHECK_AND_RETURN(res);
+    if (strcpy_s(nameBuffer, OBJECT_NAME_MAX_LEN, node->configNode.name) != EOK) {
+        return EOUTPUT;
+    }
     ToUpperCamelString(nameBuffer, strlen(nameBuffer));
     res = sprintf_s(name + strlen(name), nameBuffLen - strlen(name), "%s", nameBuffer);
     PRINTF_CHECK_AND_RETURN(res);
@@ -329,7 +327,7 @@ static int32_t GenConfigArrayName(ParserObject *array, char *name, uint32_t name
     char buffer[OBJECT_NAME_MAX_LEN] = {'\0'};
 
     if (strcpy_s(buffer, sizeof(buffer), array->objectBase.name) != EOK) {
-        HCS_ERROR("%s: string copy fail", __func__);
+        HCS_ERROR("%s: failed to copy string", __func__);
         return EOUTPUT;
     }
     ToUpperCamelString(buffer, strlen(buffer));
@@ -376,32 +374,27 @@ static int32_t GetArraySize(const ParserObject *array)
     return size;
 }
 
-static int32_t HcsPrintTermDefinition(char *buffer, uint32_t bufferSize, const ParserObject *object)
+static int32_t HcsPrintTermDefinition(const ParserObject *object)
 {
     ParserObject *termContext = (ParserObject *)object->objectBase.child;
-    int32_t res;
+    int32_t res = NOERR;
     switch (termContext->objectBase.type) {
         case PARSEROP_ARRAY:
             if (HcsIsInTemplateNode(object)) {
-                res = sprintf_s(buffer, bufferSize, "const %s *%s;\n", GetArrayType(termContext),
-                    object->configTerm.name);
-                PRINTF_CHECK_AND_RETURN(res);
-                res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), "%*cuint32_t %sSize;\n", TAB_SIZE,
-                    ' ', object->configTerm.name);
+                res = HcsFormatOutputWrite("const %s *%s;\n", GetArrayType(termContext), object->configTerm.name);
+                OUTPUT_CHECK_AND_RETURN(res);
+                res = HcsFormatOutputWrite("%*cuint32_t %sSize;\n", TAB_SIZE, ' ', object->configTerm.name);
             } else {
-                res = sprintf_s(buffer, bufferSize, "%s %s[%d];\n", GetArrayType(termContext), object->configTerm.name,
+                res = HcsFormatOutputWrite("%s %s[%d];\n", GetArrayType(termContext), object->configTerm.name,
                     GetArraySize(termContext));
             }
-            PRINTF_CHECK_AND_RETURN(res);
             break;
         case PARSEROP_UINT8:
         case PARSEROP_UINT16:
         case PARSEROP_UINT32:
         case PARSEROP_UINT64:
         case PARSEROP_STRING:
-            res = sprintf_s(buffer, bufferSize - strlen(buffer), "%s %s;\n", g_typeMap[termContext->objectBase.type],
-                object->configTerm.name);
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite("%s %s;\n", g_typeMap[termContext->objectBase.type], object->configTerm.name);
             break;
         case PARSEROP_NODEREF: {
             char refType[OBJECT_NAME_MAX_LEN] = {'\0'};
@@ -409,15 +402,13 @@ static int32_t HcsPrintTermDefinition(char *buffer, uint32_t bufferSize, const P
             if (res) {
                 return res;
             }
-            res = sprintf_s(buffer, bufferSize - strlen(buffer), "const struct %s* %s;\n", refType,
-                object->configTerm.name);
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite("const struct %s* %s;\n", refType, object->configTerm.name);
         } break;
         default:
             break;
     }
 
-    return NOERR;
+    return res;
 }
 
 static int32_t HcsObjectDefinitionGen(const ParserObject *current)
@@ -426,9 +417,8 @@ static int32_t HcsObjectDefinitionGen(const ParserObject *current)
         return NOERR;
     }
 
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
-    int32_t res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "%*c", TAB_SIZE, ' ');
-    PRINTF_CHECK_AND_RETURN(res);
+    int res = NOERR;
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c", TAB_SIZE, ' '));
     switch (current->objectBase.type) {
         case PARSEROP_CONFNODE: {
             char structName[OBJECT_NAME_MAX_LEN] = {'\0'};
@@ -438,32 +428,27 @@ static int32_t HcsObjectDefinitionGen(const ParserObject *current)
             }
             if (current->configNode.nodeType == CONFIG_NODE_TEMPLATE) {
                 char nodeName[OBJECT_NAME_MAX_LEN] = {0};
-                if (strcpy_s(nodeName, sizeof(nodeName), current->configNode.name)) {
+                if (strcpy_s(nodeName, sizeof(nodeName), current->configNode.name) != EOK) {
                     return EOUTPUT;
                 }
                 ToLowerCamelString(nodeName, strlen(nodeName));
-                res = sprintf_s(writeBuffer + TAB_SIZE, WRITE_BUFFER_LEN - strlen(writeBuffer),
-                    "const struct %s* %s;\n", structName, nodeName);
-                PRINTF_CHECK_AND_RETURN(res);
-                res = sprintf_s(writeBuffer + strlen(writeBuffer), WRITE_BUFFER_LEN - strlen(writeBuffer),
-                    "%*cuint16_t %sSize;\n", TAB_SIZE, ' ', nodeName);
+                OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("const struct %s* %s;\n", structName, nodeName));
+                res = HcsFormatOutputWrite("%*cuint16_t %sSize;\n", TAB_SIZE, ' ', nodeName);
             } else if (current->configNode.nodeType == CONFIG_NODE_INHERIT) {
                 return NOERR;
             } else {
-                res = sprintf_s(writeBuffer + TAB_SIZE, WRITE_BUFFER_LEN - strlen(writeBuffer), "struct %s %s;\n",
-                    structName, current->configNode.name);
+                res = HcsFormatOutputWrite("struct %s %s;\n", structName, current->configNode.name);
             }
-            PRINTF_CHECK_AND_RETURN(res);
             break;
         }
         case PARSEROP_CONFTERM:
-            HcsPrintTermDefinition(writeBuffer + TAB_SIZE, WRITE_BUFFER_LEN - strlen(writeBuffer), current);
+            res = HcsPrintTermDefinition(current);
             break;
         default:
             break;
     }
 
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return res;
 }
 
 static int32_t HcsDuplicateCheckWalkCallBack(ParserObject *current, int32_t walkDepth)
@@ -479,7 +464,6 @@ static int32_t HcsDuplicateCheckWalkCallBack(ParserObject *current, int32_t walk
 static int32_t HcsGenNormalNodeDefinition(ParserObject *object, int32_t walkDepth)
 {
     (void)walkDepth;
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
     char structName[OBJECT_NAME_MAX_LEN] = {'\0'};
     int32_t res = GenConfigStructName(object, structName, OBJECT_NAME_MAX_LEN - 1);
     if (res) {
@@ -491,11 +475,7 @@ static int32_t HcsGenNormalNodeDefinition(ParserObject *object, int32_t walkDept
         HcsSymbolTableAdd(structName, object);
     }
 
-    res = sprintf_s(writeBuffer, (WRITE_BUFFER_LEN - 1), "struct %s {\n", structName);
-    PRINTF_CHECK_AND_RETURN(res);
-    if (HcsOutputWrite(writeBuffer, strlen(writeBuffer))) {
-        return EOUTPUT;
-    }
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("struct %s {\n", structName));
 
     ParserObject *terms = (ParserObject *)object->objectBase.child;
     while (terms != NULL) {
@@ -506,10 +486,7 @@ static int32_t HcsGenNormalNodeDefinition(ParserObject *object, int32_t walkDept
         terms = (ParserObject *)terms->objectBase.next;
     }
 
-    res = sprintf_s(writeBuffer, (WRITE_BUFFER_LEN - 1), "};\n\n");
-    PRINTF_CHECK_AND_RETURN(res);
-
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return HcsFormatOutputWrite("};\n\n");
 }
 
 static int32_t HcsGenNodeTemplateDefinition(ParserObject *object, int32_t walkDepth)
@@ -532,20 +509,18 @@ static int32_t HcsDefinitionGenWalkCallBack(ParserObject *current, int32_t walkD
     }
 }
 
-static uint32_t HcsPrintTermValue(char *buffer, uint32_t buffSize, const ParserObject *object)
+static uint32_t HcsPrintTermValue(const ParserObject *object)
 {
-    int32_t res = 0;
+    int32_t res = NOERR;
     switch (object->objectBase.type) {
         case PARSEROP_UINT8:  /* fallthrough */
         case PARSEROP_UINT16: /* fallthrough */
         case PARSEROP_UINT32: /* fallthrough */
         case PARSEROP_UINT64:
-            res = sprintf_s(buffer, buffSize, "0x%" PRIx64, object->objectBase.integerValue);
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite("0x%" PRIx64, object->objectBase.integerValue);
             break;
         case PARSEROP_STRING:
-            res = sprintf_s(buffer, buffSize, "\"%s\"", object->objectBase.stringValue);
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite("\"%s\"", object->objectBase.stringValue);
             break;
         default:
             break;
@@ -603,19 +578,15 @@ static char *HcsBuildObjectPath(const ParserObject *refObject)
     return path;
 }
 
-static int32_t HcsPrintArrayImplInSubClass(char *buffer, uint32_t bufferSize, ParserObject *object, uint8_t tabSize)
+static int32_t HcsPrintArrayImplInSubClass(ParserObject *object, uint8_t tabSize)
 {
-    int32_t size = sprintf_s(buffer, bufferSize, "%*c.%s = ", tabSize, ' ', object->objectBase.name);
-    PRINTF_CHECK_AND_RETURN(size);
-    if (GenConfigArrayName(object, buffer + size, bufferSize - size)) {
+    char arrayName[VARIABLE_NAME_LEN] = {0};
+    if (GenConfigArrayName(object, arrayName, VARIABLE_NAME_LEN)) {
         return EOUTPUT;
     }
-    size = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), ",\n");
-    PRINTF_CHECK_AND_RETURN(size);
-    size = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), "%*c.%sSize = %d,\n", tabSize, ' ',
-        object->configTerm.name, GetArraySize((ParserObject *)object->objectBase.child));
-    PRINTF_CHECK_AND_RETURN(size);
-    return HcsOutputWrite(buffer, strlen(buffer));
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite(".%s = %s,\n", object->objectBase.name, arrayName));
+    return HcsFormatOutputWrite("%*c.%sSize = %d,\n", tabSize, ' ',
+                                object->configTerm.name, GetArraySize((ParserObject *)object->objectBase.child));
 }
 
 static int32_t HcsPrintArrayContent(const ParserObject *object, int32_t tabSize)
@@ -624,59 +595,44 @@ static int32_t HcsPrintArrayContent(const ParserObject *object, int32_t tabSize)
         return NOERR;
     }
 
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
     ParserObject *element = (ParserObject *)object->objectBase.child;
-    uint32_t writeSize = 0;
+    uint32_t elementCount = 0;
     while (element != NULL) {
-        int32_t size = HcsPrintTermValue(writeBuffer + writeSize, sizeof(writeBuffer) - writeSize, element);
-        writeBuffer[writeSize + size++] = ',';
-        writeBuffer[writeSize + size++] = ' ';
-        writeSize += size;
-        if (writeSize >= GEN_CODE_MARGIN_SIZE) {
-            writeSize -= 1; /* strip space at line end */
-            size = sprintf_s(writeBuffer + writeSize, sizeof(writeBuffer) - writeSize, "\n%*c", tabSize, ' ');
-            PRINTF_CHECK_AND_RETURN(size);
-            writeSize += size;
-            if (HcsOutputWrite(writeBuffer, writeSize)) {
-                return EOUTPUT;
-            }
-            writeSize = 0;
+        if (HcsPrintTermValue(element) != NOERR) {
+            return EOUTPUT;
+        }
+        if (elementCount++ >= ELEMENT_PER_LINE) {
+            OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("\n%*c", tabSize, ' '));
         }
         element = (ParserObject *)element->configTerm.next;
+        if (element != NULL) {
+            OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite(", "));
+        }
     }
 
-    return writeSize ? HcsOutputWrite(writeBuffer, writeSize - GEN_ARRAY_SEP_SIZE) : NOERR;
+    return NOERR;
 }
 
-static int32_t HcsPrintArrayImplement(char *buffer, uint32_t bufferSize, ParserObject *object, uint8_t tabSize)
+static int32_t HcsPrintArrayImplement(ParserObject *object, uint8_t tabSize)
 {
     if (HcsIsInSubClassNode(object)) {
-        return HcsPrintArrayImplInSubClass(buffer, bufferSize, object, tabSize);
+        return HcsPrintArrayImplInSubClass(object, tabSize);
     }
 
     ParserObject *termContext = (ParserObject *)object->objectBase.child;
-    int32_t res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), "%*c.%s = { ", tabSize, ' ',
-        object->configTerm.name);
-    PRINTF_CHECK_AND_RETURN(res);
-    if (HcsOutputWrite(buffer, strlen(buffer))) {
-        return EOUTPUT;
-    }
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite(".%s = { ", object->configTerm.name));
+
     if (HcsPrintArrayContent(termContext, tabSize + TAB_SIZE)) {
         HCS_ERROR("fail to write array content");
         return EOUTPUT;
     }
-    res = sprintf_s(buffer, bufferSize, " },\n");
-    PRINTF_CHECK_AND_RETURN(res);
-    if (HcsOutputWrite(buffer, strlen(buffer))) {
-        return EOUTPUT;
-    }
-    return NOERR;
+    return HcsFormatOutputWrite(" },\n");
 }
 
-static int32_t HcsPrintTermImplement(char *buffer, uint32_t bufferSize, ParserObject *object, int32_t tabSize)
+static int32_t HcsPrintTermImplement(ParserObject *object, int32_t tabSize)
 {
-    int32_t res;
-    sprintf_s(buffer, bufferSize, "%*c", tabSize, ' ');
+    int32_t res = NOERR;
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c", tabSize, ' '));
     ParserObject *termContext = (ParserObject *)object->objectBase.child;
     switch (termContext->objectBase.type) {
         case PARSEROP_UINT8:
@@ -686,52 +642,43 @@ static int32_t HcsPrintTermImplement(char *buffer, uint32_t bufferSize, ParserOb
         case PARSEROP_UINT32:
             /* fall-through */
         case PARSEROP_UINT64:
-            res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), ".%s = ", object->configTerm.name);
-            PRINTF_CHECK_AND_RETURN(res);
-            if (!HcsPrintTermValue(buffer + strlen(buffer), bufferSize - strlen(buffer), termContext)) {
+            OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite(".%s = ", object->configTerm.name));
+            if (HcsPrintTermValue(termContext) != NOERR) {
                 return EOUTPUT;
             }
-            res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), ",\n");
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite(",\n");
             break;
         case PARSEROP_STRING:
-            res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), ".%s = ", object->configTerm.name);
-            PRINTF_CHECK_AND_RETURN(res);
-            if (!HcsPrintTermValue(buffer + strlen(buffer), bufferSize - strlen(buffer), termContext)) {
+            OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite(".%s = ", object->configTerm.name));
+            if (HcsPrintTermValue(termContext) != NOERR) {
                 return EOUTPUT;
             }
-            res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), ",\n");
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite(",\n");
             break;
         case PARSEROP_ARRAY:
-            if (HcsPrintArrayImplement(buffer + strlen(buffer), bufferSize - strlen(buffer), object, tabSize)) {
-                return EOUTPUT;
-            }
-            buffer[0] = '\0';
+            res = HcsPrintArrayImplement(object, tabSize);
             break;
         case PARSEROP_NODEREF: {
             char *refPath = HcsBuildObjectPath((ParserObject *)object->objectBase.child->value);
             if (refPath == NULL) {
                 return EOUTPUT;
             }
-            res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), ".%s = &%s,\n",
-                object->configTerm.name, refPath);
+            res = HcsFormatOutputWrite(".%s = &%s,\n", object->configTerm.name, refPath);
             HcsMemFree(refPath);
-            PRINTF_CHECK_AND_RETURN(res);
             break;
         }
         default:
             break;
     }
 
-    return NOERR;
+    return res;
 }
 
 static int32_t HcsGenTemplateVariableName(ParserObject *object, char *nameBuff, uint32_t nameBufferSize)
 {
     char tempName[OBJECT_NAME_MAX_LEN] = {'\0'};
-    if (strcpy_s(tempName, sizeof(tempName), object->objectBase.name)) {
-        HCS_ERROR("s: string copy fail");
+    if (strcpy_s(tempName, sizeof(tempName), object->objectBase.name) != EOK) {
+        HCS_ERROR("failed to copy string");
         return EOUTPUT;
     }
     ToUpperCamelString(tempName, sizeof(tempName));
@@ -756,24 +703,22 @@ static int32_t HcsGenTemplateVariableName(ParserObject *object, char *nameBuff, 
 
 static int32_t HcsTemplateNodeImplGen(ParserObject *current, int32_t tabSize)
 {
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
     char templateVariableName[VARIABLE_NAME_LEN] = {'\0'};
     if (HcsGenTemplateVariableName(current, templateVariableName, sizeof(templateVariableName))) {
         return EOUTPUT;
     }
     char nodeName[OBJECT_NAME_MAX_LEN] = {0};
-    if (strcpy_s(nodeName, sizeof(nodeName), current->configNode.name)) {
-        HCS_ERROR("%s: string copy fail", __func__);
+    if (strcpy_s(nodeName, sizeof(nodeName), current->configNode.name) != EOK) {
+        HCS_ERROR("%s: failed to copy string", __func__);
         return EOUTPUT;
     }
+
     ToLowerCamelString(nodeName, strlen(nodeName));
-    int32_t res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "%*c.%s = %s,\n", tabSize, ' ', nodeName,
-        current->configNode.inheritCount ? templateVariableName : "0");
-    PRINTF_CHECK_AND_RETURN(res);
-    res = sprintf_s(writeBuffer + strlen(writeBuffer), WRITE_BUFFER_LEN - strlen(writeBuffer), "%*c.%sSize = %d,\n",
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c.%s = %s,\n", tabSize, ' ', nodeName,
+        current->configNode.inheritCount ? templateVariableName : "0"));
+
+    return HcsFormatOutputWrite("%*c.%sSize = %d,\n",
         tabSize, ' ', nodeName, current->configNode.inheritCount);
-    PRINTF_CHECK_AND_RETURN(res);
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
 }
 
 static int32_t HcsInheritObjectImplGen(ParserObject *current, int32_t tabSize)
@@ -787,33 +732,26 @@ static int32_t HcsInheritObjectImplGen(ParserObject *current, int32_t tabSize)
 
 static int32_t HcsObjectImplementGen(ParserObject *current, int32_t tabSize)
 {
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
-    int32_t res;
+    int32_t res = NOERR;
     switch (current->objectBase.type) {
-        case PARSEROP_CONFNODE: {
+        case PARSEROP_CONFNODE:
             if (current->configNode.nodeType != CONFIG_NODE_NOREF) {
                 res = HcsInheritObjectImplGen(current, tabSize);
                 return res ? res : EASTWALKBREAK;
             }
-            res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "%*c.%s = {\n", tabSize, ' ', current->configNode.name);
-            PRINTF_CHECK_AND_RETURN(res);
+            OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c.%s = {\n", tabSize, ' ', current->configNode.name));
             if (current->objectBase.child == NULL) {
-                res = sprintf_s(writeBuffer + strlen(writeBuffer) - 1, WRITE_BUFFER_LEN - strlen(writeBuffer) + 1,
-                    "},\n");
-                PRINTF_CHECK_AND_RETURN(res);
+                res = HcsFormatOutputWrite("%*c},\n", tabSize, ' ');
             }
-        } break;
+            break;
         case PARSEROP_CONFTERM:
-            res = HcsPrintTermImplement(writeBuffer, WRITE_BUFFER_LEN, current, tabSize);
-            if (res) {
-                return res;
-            }
+            res = HcsPrintTermImplement(current, tabSize);
             break;
         default:
             return NOERR;
     }
 
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return res;
 }
 
 static int32_t HcsImplementGenWalkCallBack(ParserObject *current, int32_t walkDepth)
@@ -827,20 +765,17 @@ static int32_t HcsImplementGenWalkCallBack(ParserObject *current, int32_t walkDe
     }
 
     if (current == HcsGetParserRoot()) {
-        char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
         char structName[OBJECT_NAME_MAX_LEN] = {'\0'};
         int32_t res = GenConfigStructName(current, structName, OBJECT_NAME_MAX_LEN - 1);
         if (res) {
             return res;
         }
-        res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "static const struct %s %s = {\n", structName,
-            GetConfigRootVariableName());
-        PRINTF_CHECK_AND_RETURN(res);
+        OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("static const struct %s %s = {\n",
+            structName, GetConfigRootVariableName()));
         if (current->objectBase.child == NULL) {
-            res = sprintf_s(writeBuffer + strlen(writeBuffer), WRITE_BUFFER_LEN - strlen(writeBuffer), "};\n");
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite("};\n");
         }
-        return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+        return res;
     }
     return HcsObjectImplementGen(current, walkDepth * TAB_SIZE);
 }
@@ -856,18 +791,12 @@ static int32_t HcsImplementCloseBraceGen(ParserObject *current, int32_t walkDept
     }
 
     int32_t tabSize = walkDepth * TAB_SIZE;
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
 
-    int32_t res;
     if (current != HcsGetParserRoot()) {
-        res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "%*c},\n", tabSize, ' ');
-        PRINTF_CHECK_AND_RETURN(res);
+        return HcsFormatOutputWrite("%*c},\n", tabSize, ' ');
     } else {
-        res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "};\n");
-        PRINTF_CHECK_AND_RETURN(res);
+        return HcsFormatOutputWrite("};\n");
     }
-
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
 }
 
 static void ToUpperString(char *str, uint32_t strLen)
@@ -877,118 +806,71 @@ static void ToUpperString(char *str, uint32_t strLen)
     }
 }
 
-static void StripFileNameSuffix(char *fileName, uint32_t fileNameLen)
-{
-    for (uint32_t i = 0; i < fileNameLen; ++i) {
-        if (fileName[i] == '.') {
-            fileName[i] = '\0';
-            break;
-        }
-    }
-}
-
 #define HCS_HEADER_MACRO_MAX_LEN 150
 static char *GenHeaderProtectionMacro()
 {
-    const char *outPutFileName = HcsGetStripedOutputFileName();
-    char *headerMacro = strdup(outPutFileName);
-    if (headerMacro == NULL) {
-        HCS_ERROR("oom");
+    char *fileName = HcsGetOutputFileNameWithoutSuffix();
+    if (fileName == NULL) {
         return NULL;
     }
-    StripFileNameSuffix(headerMacro, strlen(headerMacro));
-    ToUpperString(headerMacro, strlen(headerMacro));
+    ToUpperString(fileName, strlen(fileName));
 
     char *macro = HcsMemZalloc(sizeof(char) * HCS_HEADER_MACRO_MAX_LEN);
     if (macro == NULL) {
         HCS_ERROR("oom");
-        HcsMemFree(headerMacro);
+        HcsMemFree(fileName);
         return NULL;
     }
 
-    int32_t res = sprintf_s(macro, HCS_HEADER_MACRO_MAX_LEN, "HCS_CONFIG_%s_HEADER_H", headerMacro);
+    int32_t res = sprintf_s(macro, HCS_HEADER_MACRO_MAX_LEN, "HCS_CONFIG_%s_HEADER_H", fileName);
+    HcsMemFree(fileName);
     if (res <= 0) {
-        HcsMemFree(headerMacro);
         HcsMemFree(macro);
         return NULL;
     }
-    HcsMemFree(headerMacro);
     return macro;
 }
 
 static int32_t HcsWriteHeaderFileHead()
 {
     /* Write copyright info */
-    const char *header = HCS_CONFIG_FILE_HEADER;
-    if (HcsOutputWrite(header, strlen(header))) {
-        return EOUTPUT;
-    }
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite(HCS_CONFIG_FILE_HEADER));
 
     /* Write header protection macro */
     char *headerProtectMacro = GenHeaderProtectionMacro();
     if (headerProtectMacro == NULL) {
         return EOUTPUT;
     }
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
-    int32_t ret = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "#ifndef %s\n#define %s\n\n",
-        headerProtectMacro, headerProtectMacro);
-    HcsMemFree(headerProtectMacro);
-    if (ret <= 0) {
-        return EOUTPUT;
-    }
-
-    if (HcsOutputWrite(writeBuffer, strlen(writeBuffer))) {
-        return EOUTPUT;
-    }
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("#ifndef %s\n#define %s\n\n",
+        headerProtectMacro, headerProtectMacro));
 
     /* Write include header file */
-    header = HCS_CONFIG_INCLUDE_HEADER;
-    if (HcsOutputWrite(header, strlen(header))) {
-        return EOUTPUT;
-    }
-
-    return NOERR;
+    return HcsFormatOutputWrite(HCS_CONFIG_INCLUDE_HEADER);
 }
 
 static int32_t HcsWriteHeaderFileEnd()
 {
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
     /* Write header protection macro */
     char *headerMacro = GenHeaderProtectionMacro();
     if (headerMacro == NULL) {
         return EOUTPUT;
     }
-    int32_t ret = sprintf_s(writeBuffer, (WRITE_BUFFER_LEN - 1), "#endif // %s", headerMacro);
+    int32_t ret = HcsFormatOutputWrite("\n\n#endif // %s", headerMacro);
     HcsMemFree(headerMacro);
-    if (ret <= 0) {
-        return EOUTPUT;
-    }
 
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return ret;
 }
 
 static int32_t HcsWriteFunctionDeclaration()
 {
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
-    int32_t ret = sprintf_s(writeBuffer, (WRITE_BUFFER_LEN - 1), HCS_CONFIG_INCLUDE_FUNC_DECLARATION, g_namePrefix,
+    return HcsFormatOutputWrite("const struct %s%sRoot* HdfGet%sModuleConfigRoot(void);", g_namePrefix,
         g_bigHumpModuleName, g_bigHumpModuleName);
-    if (ret <= 0) {
-        return EOUTPUT;
-    }
-
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
 }
 
 static int32_t HcsWriteFunctionImplement()
 {
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
-    int32_t ret = sprintf_s(writeBuffer, (WRITE_BUFFER_LEN - 1), HCS_CONFIG_FUNC_IMPLEMENT, g_namePrefix,
+    return HcsFormatOutputWrite(HCS_CONFIG_FUNC_IMPLEMENT, g_namePrefix,
         g_bigHumpModuleName, g_bigHumpModuleName, GetConfigRootVariableName());
-    if (ret <= 0) {
-        return EOUTPUT;
-    }
-
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
 }
 
 static int32_t HcsOutputHeaderFile()
@@ -1064,47 +946,33 @@ static int32_t HcsTemplateImplGenWalkCallBack(ParserObject *current, int32_t wal
         return NOERR;
     }
 
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
     char nameBuff[OBJECT_NAME_MAX_LEN] = {'\0'};
     int32_t res = GenConfigStructName(current, nameBuff, OBJECT_NAME_MAX_LEN - 1);
     if (res) {
         return res;
     }
 
-    res = sprintf_s(writeBuffer, sizeof(writeBuffer), "static const struct %s ", nameBuff);
-    PRINTF_CHECK_AND_RETURN(res);
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("static const struct %s ", nameBuff));
     if (HcsGenTemplateVariableName(current, nameBuff, sizeof(nameBuff))) {
         return EOUTPUT;
     }
-    res =  sprintf_s(writeBuffer + strlen(writeBuffer), sizeof(writeBuffer) - strlen(writeBuffer),
-        "%s[] = {\n", nameBuff);
-    PRINTF_CHECK_AND_RETURN(res);
-    HcsOutputWrite(writeBuffer, strlen(writeBuffer));
-    /* Generate C global variables definition file */
+    OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%s[] = {\n", nameBuff));
 
+    /* Generate C global variables definition file */
     TemplateNodeInstance *subClasses = current->configNode.subClasses;
     g_baseTabsize = TAB_SIZE + TAB_SIZE;
     while (subClasses != NULL) {
-        res = sprintf_s(writeBuffer, sizeof(writeBuffer), "%*c[%d] = {\n", TAB_SIZE, ' ',
-            subClasses->nodeObject->inheritIndex);
-        PRINTF_CHECK_AND_RETURN(res);
-        if (HcsOutputWrite(writeBuffer, res)) {
-            return EOUTPUT;
-        }
+        OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c[%d] = {\n", TAB_SIZE, ' ',
+            subClasses->nodeObject->inheritIndex));
+
         if (HcsTemplateVariableGen((ParserObject *)subClasses->nodeObject)) {
             return EOUTPUT;
         }
-        res = sprintf_s(writeBuffer, sizeof(writeBuffer), "%*c},\n", TAB_SIZE, ' ');
-        PRINTF_CHECK_AND_RETURN(res);
-        if (HcsOutputWrite(writeBuffer, strlen(writeBuffer))) {
-            return EOUTPUT;
-        }
+        OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c},\n", TAB_SIZE, ' '));
         subClasses = subClasses->next;
     }
 
-    res = sprintf_s(writeBuffer, sizeof(writeBuffer), "};\n\n");
-    PRINTF_CHECK_AND_RETURN(res);
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return HcsFormatOutputWrite("};\n\n");
 }
 
 static int32_t HcsArrayVariablesDeclareGen(ParserObject *term)
@@ -1113,26 +981,21 @@ static int32_t HcsArrayVariablesDeclareGen(ParserObject *term)
         return NOERR;
     }
 
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
     char nameBuff[OBJECT_NAME_MAX_LEN] = {'\0'};
     int32_t res = GenConfigArrayName(term, nameBuff, OBJECT_NAME_MAX_LEN - 1);
     if (res) {
         return res;
     }
     ParserObject *array = (ParserObject *)term->configTerm.child;
-    res = sprintf_s(writeBuffer, sizeof(writeBuffer), "\nstatic const %s %s[%d] = {\n%*c", GetArrayType(array),
+    res = HcsFormatOutputWrite("\nstatic const %s %s[%d] = {\n%*c", GetArrayType(array),
         nameBuff, GetArraySize(array), TAB_SIZE, ' ');
-    PRINTF_CHECK_AND_RETURN(res);
-    if (HcsOutputWrite(writeBuffer, strlen(writeBuffer))) {
-        return EOUTPUT;
-    }
+    OUTPUT_CHECK_AND_RETURN(res);
+
     if (HcsPrintArrayContent(array, TAB_SIZE)) {
         HCS_ERROR("fail to write array content");
         return EOUTPUT;
     }
-    res = sprintf_s(writeBuffer, sizeof(writeBuffer), "\n};\n");
-    PRINTF_CHECK_AND_RETURN(res);
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return HcsFormatOutputWrite("\n};\n");
 }
 
 static int32_t HcsTemplateVariablesDeclareGenWalk(ParserObject *current, int32_t walkDepth)
@@ -1174,10 +1037,8 @@ static int32_t HcsTemplateVariablesDeclareGen(ParserObject *astRoot)
         /* if no template variable generated, should not output end line */
         return NOERR;
     }
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
-    int32_t res = sprintf_s(writeBuffer, sizeof(writeBuffer), "\n");
-    PRINTF_CHECK_AND_RETURN(res);
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    const char *lineEnd = "\n";
+    return HcsOutputWrite(lineEnd, strlen(lineEnd));
 }
 
 static int32_t HcsOutputTemplateImplement(ParserObject *astRoot)
@@ -1206,32 +1067,24 @@ static int32_t HcsOutputCFile()
         return EINVALF;
     }
 
-    const char *header = HCS_CONFIG_FILE_HEADER;
-    if (HcsOutputWrite(header, strlen(header))) {
+    if (HcsFormatOutputWrite(HCS_CONFIG_FILE_HEADER)) {
         HcsCloseOutput(outputFIle);
         return EOUTPUT;
     }
 
-    char include[INCLUDE_PATH_MAX_LEN] = {'\0'};
-    int32_t res = sprintf_s(include, INCLUDE_PATH_MAX_LEN, "#include \"%s", HcsGetStripedOutputFileName());
-    if (res <= 0) {
-        HcsCloseOutput(outputFIle);
+    char *fileName = HcsGetOutputFileNameWithoutSuffix();
+    if (fileName == NULL) {
         return EOUTPUT;
     }
-
-    res = sprintf_s(include + strlen(include) - 1, WRITE_BUFFER_LEN - strlen(include), "h\"\n\n");
-    if (res <= 0) {
-        HcsCloseOutput(outputFIle);
-        return EOUTPUT;
-    }
-
-    if (HcsOutputWrite(include, strlen(include))) {
+    int32_t res = HcsFormatOutputWrite("#include \"%s.h\"\n\n", fileName);
+    HcsMemFree(fileName);
+    if (res != NOERR) {
         HcsCloseOutput(outputFIle);
         return EOUTPUT;
     }
 
     res = HcsOutputTemplateImplement(astRoot);
-    if (res) {
+    if (res != NOERR) {
         HcsCloseOutput(outputFIle);
         return EOUTPUT;
     }
@@ -1248,7 +1101,7 @@ static int32_t HcsOutputCFile()
     return res;
 }
 
-int32_t HcsTextCodeOutput()
+int32_t HcsTextCodeOutput(void)
 {
     int32_t ret = HcsSymbolTableInit();
     if (ret) {

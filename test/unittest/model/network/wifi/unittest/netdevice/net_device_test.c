@@ -21,7 +21,10 @@ static bool WiFiNetDeviceTestEnv(void)
 {
     if (g_netDevice == NULL) {
         char devName[IFNAMSIZ] = {0};
-        strncpy_s(devName, IFNAMSIZ, "wlan_test_0", strlen("wlan_test_0") + 1);
+        if (strncpy_s(devName, IFNAMSIZ, "wlan_test_0", strlen("wlan_test_0") + 1) != EOK) {
+            HDF_LOGE("%s: strcpy_s fail", __func__);
+            return false;
+        }
         g_netDevice = NetDeviceInit(devName, strlen(devName), LITE_OS);
         if (g_netDevice == NULL) {
             HDF_LOGE("%s fail ", __func__);
@@ -117,6 +120,7 @@ int32_t WiFiNetDviceTestSetAddr(void)
 int32_t WiFiNetDviceTestRx(void)
 {
     NetBuf *buff = NULL;
+
     int count = sizeof(g_filterData);
     buff = NetBufAlloc(count);
     if (buff == NULL) {

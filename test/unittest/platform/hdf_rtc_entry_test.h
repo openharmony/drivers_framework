@@ -34,4 +34,4 @@ typedef enum {
 } HdfRtcTestCaseCmd;
 
 int32_t HdfRtcEntry(HdfTestMsg *msg);
-#endif // HDF_RTC_ENTRY_TEST_H
+#endif /* HDF_RTC_ENTRY_TEST_H */

@@ -61,13 +61,14 @@ int32_t HcsBinaryToHexdump(const char *inputFileName)
 
     struct HcsFile *out = HcsOpenOutputFile(HCS_HEXDUMP_FILE_SUFFIX);
     if (out == NULL) {
-        HCS_ERROR("can not open %s", HcsGetOutPutFileName());
+        HCS_ERROR("can not open %s", HcsGetOutPutFilePath());
+        HcsCloseFile(source);
         return EINVALF;
     }
 
     int32_t ret = HcsHexdumpOutput(source->file, out->file);
     if (ret) {
-        HCS_ERROR("fail to gen bytecode hexdump in C style");
+        HCS_ERROR("failed to gen bytecode hexdump in C style");
     }
     HcsCloseFile(source);
     HcsCloseFile(out);

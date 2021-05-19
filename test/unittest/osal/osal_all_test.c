@@ -158,7 +158,7 @@ int ThreadTest2(void *arg)
         OsalGetTime(&hdfTs2);
         OsalDiffTime(&hdfTs1, &hdfTs2, &hdfTsDiff);
         if (cnt % HDF_THREAD_TEST_MUX_CNT == 0) {
-            HDF_LOGE("%s %ds %dus", __func__,
+            HDF_LOGE("%s %us %uus", __func__,
                 (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
         }
         if (g_testEndFlag) {
@@ -345,7 +345,7 @@ static void OsaFWTest(int flag)
     (void)memset_s(&fw, sizeof(fw), 0, sizeof(fw));
     ret = OsalRequestFirmware(&fw, name, NULL);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_FW_REQUEST);
-    HDF_LOGE("%s %d", name, fw.fwSize);
+    HDF_LOGE("%s %u", name, fw.fwSize);
 
     (void)memset_s(&block, sizeof(block), 0, sizeof(block));
     ret = OsalReadFirmware(&fw, &block);
@@ -355,10 +355,10 @@ static void OsaFWTest(int flag)
 #if defined(__LITEOS__)
     ret = OsalSeekFirmware(&fw, HDF_FILE_SEEK_TEST);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_FW_SEEK);
-    HDF_LOGE("%s %d %d", name, block.dataSize, block.curOffset);
+    HDF_LOGE("%s %u %d", name, block.dataSize, block.curOffset);
     ret = OsalReadFirmware(&fw, &block);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_FW_READ);
-    HDF_LOGE("%s %d %d", name, block.dataSize, block.curOffset);
+    HDF_LOGE("%s %u %d", name, block.dataSize, block.curOffset);
     fwBuf += HDF_FILE_SEEK_TEST;
     UT_TEST_CHECK_RET(memcmp(block.data, fwBuf, block.dataSize) != 0, OSAL_FW_DATA_CHECK);
 #endif
@@ -367,8 +367,6 @@ static void OsaFWTest(int flag)
     ret = OsalReadFirmware(&fw, &block);
     UT_TEST_CHECK_RET(ret == HDF_SUCCESS, OSAL_FW_READ_AFTER_RELEASE);
     HDF_LOGE("[OSAL_UT_TEST]%s end", __func__);
-
-    return;
 }
 
 #define THREAD_TEST_TIMER_RUN 20
@@ -542,8 +540,6 @@ void OsaThreadTest1(void)
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_THREAD_CREATE);
     ret = OsalThreadStart(&thread, &threadCfg);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_THREAD_CREATE);
-
-    return;
 }
 
 void OsaThreadTest(void)
@@ -601,27 +597,27 @@ static void OsaTimeTest(void)
     ret = OsalGetTime(&hdfTs2);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TIME_GETTIME);
     ret = OsalDiffTime(&hdfTs, &hdfTs2, &hdfTsDiff);
-    HDF_LOGE("%s %ds %dus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
+    HDF_LOGE("%s %us %uus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
     UT_TEST_CHECK_RET(!OsalCheckTime(&hdfTsDiff, TIME_TEST_SLEEP_S * HDF_KILO_UNIT), OSAL_TIME_DIFFTIME);
 
     OsalGetTime(&hdfTs);
     OsalUDelay(TIME_TEST_SLEEP_MS);
     (void)OsalGetTime(&hdfTs2);
     (void)OsalDiffTime(&hdfTs, &hdfTs2, &hdfTsDiff);
-    HDF_LOGE("%s %ds %dus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
+    HDF_LOGE("%s %us %uus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
 
     OsalGetTime(&hdfTs);
     OsalMDelay(TIME_TEST_SLEEP_MS);
     (void)OsalGetTime(&hdfTs2);
     (void)OsalDiffTime(&hdfTs, &hdfTs2, &hdfTsDiff);
-    HDF_LOGE("%s %ds %dus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
+    HDF_LOGE("%s %us %uus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
 
     OsalGetTime(&hdfTs);
     OsalMSleep(TIME_TEST_SLEEP_MS);
     ret = OsalGetTime(&hdfTs2);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TIME_GETTIME);
     ret = OsalDiffTime(&hdfTs, &hdfTs2, &hdfTsDiff);
-    HDF_LOGE("%s %ds %dus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
+    HDF_LOGE("%s %us %uus", __func__, (uint32_t)hdfTsDiff.sec, (uint32_t)hdfTsDiff.usec);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TIME_DIFFTIME);
     UT_TEST_CHECK_RET(!OsalCheckTime(&hdfTsDiff, TIME_TEST_SLEEP_MS), OSAL_TIME_DIFFTIME);
 }

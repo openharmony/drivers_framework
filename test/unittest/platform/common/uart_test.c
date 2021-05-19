@@ -62,7 +62,7 @@ static int32_t UartGetBaudTest(struct UartTest *test)
         HDF_LOGE("%s: error", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: baud %d", __func__, baud);
+    HDF_LOGE("%s: baud %u", __func__, baud);
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
 }
@@ -94,13 +94,13 @@ static int32_t UartGetAttributeTest(struct UartTest *test)
         HDF_LOGE("%s: error", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGE("dataBits %d", attribute.dataBits);
-    HDF_LOGE("parity %d", attribute.parity);
-    HDF_LOGE("stopBits %d", attribute.stopBits);
-    HDF_LOGE("rts %d", attribute.rts);
-    HDF_LOGE("cts %d", attribute.cts);
-    HDF_LOGE("fifoRxEn %d", attribute.fifoRxEn);
-    HDF_LOGE("fifoTxEn %d", attribute.fifoTxEn);
+    HDF_LOGE("dataBits %u", attribute.dataBits);
+    HDF_LOGE("parity %u", attribute.parity);
+    HDF_LOGE("stopBits %u", attribute.stopBits);
+    HDF_LOGE("rts %u", attribute.rts);
+    HDF_LOGE("cts %u", attribute.cts);
+    HDF_LOGE("fifoRxEn %u", attribute.fifoRxEn);
+    HDF_LOGE("fifoTxEn %u", attribute.fifoTxEn);
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
 }
