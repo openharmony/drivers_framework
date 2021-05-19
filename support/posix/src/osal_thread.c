@@ -11,7 +11,6 @@
 #include "hdf_base.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
-
 #ifndef PTHREAD_STACK_MIN
 #define OSAL_PTHREAD_STACK_MIN 4096
 #else
@@ -79,7 +78,7 @@ int32_t OsalThreadCreate(struct OsalThread *thread, OsalThreadEntry threadEntry,
 
 int32_t OsalThreadDestroy(struct OsalThread *thread)
 {
-    if (thread->realThread != NULL) {
+    if (thread != NULL && thread->realThread != NULL) {
         OsalMemFree(thread->realThread);
         thread->realThread = NULL;
     }

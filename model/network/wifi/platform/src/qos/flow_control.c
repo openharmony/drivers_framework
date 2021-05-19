@@ -101,7 +101,7 @@ static FlowControlQueueID IpProcessFunc(const void *buff, uint32_t len)
         return QUEUE_ID_COUNT;
     }
     if (len < sizeof(struct IpHeader)) {
-        HDF_LOGE("%s fail: len not right!", __func__);
+        HDF_LOGE("%s fail: IpHeader len not right!", __func__);
         return QUEUE_ID_COUNT;
     }
     ipHeader = (struct IpHeader *)buff;
@@ -116,6 +116,10 @@ static FlowControlQueueID IpProcessFunc(const void *buff, uint32_t len)
          *  ----------------------------------------------------------------------
          */
         id = TosToFcQueueId(ipHeader->tos >> IP_PRI_SHIFT);
+        if ((len - sizeof(struct IpHeader)) < sizeof(struct UdpHeader)) {
+            HDF_LOGE("%s fail: UdpHeader len not right!", __func__);
+            return QUEUE_ID_COUNT;
+        }
         udpHdr = (struct UdpHeader *)(ipHeader + 1);
         if (((ntohs(ipHeader->fragInfo) & 0x1FFF) == 0) && IsDhcpPort(udpHdr, len - sizeof(struct IpHeader))) {
             id = VIP_QUEUE_ID;
@@ -381,7 +385,7 @@ void DeInitFlowControl(struct FlowControlModule *fcm)
         return;
     }
 
-    /* 1:Detroy task. 2:Destroy osalwait. 3:free NetBuff. */
+    /* 1:Destroy task. 2:Destroy osalwait. 3:free NetBuff. */
     DestroyFlowControlTask(fcm);
     for (i = 0; i < FLOW_DIR_COUNT; i++) {
         OsalSemDestroy(&fcm->sem[i]);

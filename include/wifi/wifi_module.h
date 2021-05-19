@@ -206,7 +206,7 @@ int16_t InitWifiModule(struct WifiModule *module, const struct HdfConfigWlanModu
 
 #define RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipOps, opsName)                                     \
     do {                                                                                      \
-        if ((chipOps) == NULL ||(chipOps)->opsName == NULL) { \
+        if ((chipOps) == NULL || (chipOps)->opsName == NULL) { \
             HDF_LOGE("macOps" #opsName "not implement");                                      \
             return HDF_ERR_INVALID_OBJECT;                                                    \
         }                                                                                     \
