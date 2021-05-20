@@ -9,7 +9,7 @@
  * @addtogroup Core
  * @{
  *
- * @brief Provides functions to use the HarmonyOS Driver Foundation (HDF).
+ * @brief Provides functions to use the OpenHarmony Driver Foundation (HDF).
  *
  * The HDF implements driver framework capabilities such as driver loading, service management, driver message model,
  *  and power management.

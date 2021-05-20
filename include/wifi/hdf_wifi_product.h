@@ -113,7 +113,7 @@ struct WifiModule* HdfWlanGetModule(void);
 struct HdfWlanDevice *HdfWlanGetWlanDevice(uint8_t chipId);
 
 /**
- * @brief Send broadcast event.
+ * @brief Sends a broadcast event.
  *
  * @param id Indicates the ID of the event to send.
  * @param data Indicates the pointer to the event information.

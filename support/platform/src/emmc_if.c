@@ -6,12 +6,12 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "emmc_if.h"
 #include <securec.h>
 #ifndef __USER__
 #include "devsvc_manager_clnt.h"
 #include "emmc_core.h"
 #endif
-#include "emmc_if.h"
 #include "hdf_base.h"
 #ifdef __USER__
 #include "hdf_io_service_if.h"
@@ -96,15 +96,9 @@ static int32_t EmmcGetCidReadReplyData(struct HdfSBuf *reply, uint8_t *cid, uint
     uint32_t rLen;
     const void *rBuf = NULL;
 
-    if (HdfSbufReadBuffer(reply, &rBuf, &rLen) == false) {
+    if (!HdfSbufReadBuffer(reply, &rBuf, &rLen)) {
         HDF_LOGE("EmmcGetCidReadReplyData: read rBuf fail!");
         return HDF_ERR_IO;
-    }
-    if (size != rLen) {
-        HDF_LOGE("EmmcGetCidReadReplyData: err len:%u, rLen:%u", size, rLen);
-        if (rLen > size) {
-            rLen = size;
-        }
     }
 
     if (memcpy_s(cid, size, rBuf, rLen) != EOK) {
@@ -115,7 +109,7 @@ static int32_t EmmcGetCidReadReplyData(struct HdfSBuf *reply, uint8_t *cid, uint
     return HDF_SUCCESS;
 }
 
-int32_t EmmcServiceGetCid(struct HdfIoService *service, uint8_t *cid, uint32_t size)
+static int32_t EmmcServiceGetCid(struct HdfIoService *service, uint8_t *cid, uint32_t size)
 {
     int32_t ret;
     struct HdfSBuf *reply = NULL;
@@ -161,7 +155,7 @@ int32_t EmmcGetCid(DevHandle handle, uint8_t *cid, uint32_t size)
     }
 
     if (cid == NULL || size < EMMC_CID_LEN) {
-        HDF_LOGE("EmmcGetCid: error parms!");
+        HDF_LOGE("EmmcGetCid: error params!");
         return HDF_ERR_INVALID_PARAM;
     }
 #ifdef __USER__
@@ -176,7 +170,7 @@ void EmmcGetHuid(uint8_t *cid, uint32_t size)
     DevHandle handle = NULL;
 
     if (cid == NULL || size == 0) {
-        HDF_LOGE("EmmcGetUdid: error parms!");
+        HDF_LOGE("EmmcGetUdid: error params!");
         return;
     }
     if (memset_s(cid, sizeof(uint8_t) * size, 0, sizeof(uint8_t) * size) != EOK) {
@@ -186,11 +180,11 @@ void EmmcGetHuid(uint8_t *cid, uint32_t size)
 
     handle = EmmcOpen(0);
     if (handle == NULL) {
-        HDF_LOGD("EmmcGetUdid: open fail, use default value!");
+        HDF_LOGW("EmmcGetUdid: open fail, use default value!");
         return;
     }
     if (EmmcGetCid(handle, cid, size) != HDF_SUCCESS) {
-        HDF_LOGD("EmmcGetUdid: get fail, use default value!");
+        HDF_LOGW("EmmcGetUdid: get fail, use default value!");
     }
     EmmcClose(handle);
 }

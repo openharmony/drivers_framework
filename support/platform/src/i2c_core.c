@@ -107,7 +107,7 @@ static void I2cManagerRemoveCntlr(struct I2cCntlr *cntlr)
 }
 
 /*
- * Find an i2c cntroller by bus number, without ref count
+ * Find an i2c controller by bus number, without ref count
  */
 static struct I2cCntlr *I2cManagerFindCntlr(int16_t number)
 {
@@ -236,7 +236,7 @@ static int32_t I2cTransferRebuildMsgs(struct HdfSBuf *data, struct I2cMsg **ppms
     uint8_t *bufReply = NULL;
     struct I2cMsg *msgs = NULL;
 
-    if (!HdfSbufReadBuffer(data, (const void **)&msgs, &len)) {
+    if (!HdfSbufReadBuffer(data, (const void **)&msgs, &len) || msgs == NULL) {
         HDF_LOGE("I2cTransferRebuildMsgs: read msgs fail!");
         return HDF_ERR_IO;
     }

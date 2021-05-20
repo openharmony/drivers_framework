@@ -799,7 +799,6 @@ int32_t HdfDeviceRegisterEventListener(struct HdfIoService *target, struct HdfDe
     if (adapter->group != NULL) {
         /* Do not bind any service in a service goup to its own thread or start the group thread. */
         ret = HdfIoServiceGroupThreadStart(adapter->group);
-        DListRemove(&listener->listNode);
         OsalMutexUnlock(&adapter->mutex);
         return ret;
     }

@@ -5,16 +5,17 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "dmac_core.h"
 #include <string.h>
 #include "hdf_log.h"
 #include "osal_io.h"
 #include "osal_irq.h"
 #include "osal_mem.h"
-#include "dmac_core.h"
 
 #define HDF_LOG_TAG dmac_core
 
 #define DMA_ALIGN_SIZE 256
+#define DMA_MAX_TRANS_SIZE_DEFAULT 256
 
 static int32_t DmacCntlrCheckOps(struct DmaCntlr *cntlr)
 {
@@ -178,7 +179,7 @@ static void DmacCallbackHandle(struct DmacChanInfo *chanInfo)
 
 static int32_t DmacWaitM2mSendComplete(struct DmaCntlr *cntlr, struct DmacChanInfo *chanInfo)
 {
-    unsigned int ret;
+    uint32_t ret;
 
     if (DmacCntlrCheck(cntlr) != HDF_SUCCESS) {
         return HDF_ERR_INVALID_OBJECT;

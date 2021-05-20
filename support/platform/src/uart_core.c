@@ -154,7 +154,7 @@ static int32_t UartUserSetTransMode(struct UartHost *host, struct HdfSBuf *data)
     size_t size;
     enum UartTransMode *mode = NULL;
 
-    if (!HdfSbufReadBuffer(data, (const void **)&mode, &size)) {
+    if (!HdfSbufReadBuffer(data, (const void **)&mode, &size) || mode == NULL) {
         HDF_LOGE("%s: sbuf read buffer failed", __func__);
         return HDF_ERR_IO;
     }

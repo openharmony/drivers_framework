@@ -6,9 +6,9 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "rtc_base.h"
 #include "hdf_log.h"
 #include "plat_log.h"
-#include "rtc_base.h"
 
 #define HDF_LOG_TAG rtc_base
 
@@ -21,7 +21,7 @@ uint8_t RtcGetMonthDays(const uint8_t isLeapYear, const uint8_t month)
         return 0;
     }
 
-    if (RTC_FEBRUARY == month) {
+    if (month == RTC_FEBRUARY) {
         days = RTC_TWO_MONTH_DAY + isLeapYear;
     } else {
         oddMonth = (month >= RTC_AUGUST) ? (month - RTC_UNIT_DIFF) : month;

@@ -32,8 +32,8 @@
  * @version 1.0
  */
 
-#ifndef _WIFI_MAC80211_OPS_H_
-#define _WIFI_MAC80211_OPS_H_
+#ifndef WIFI_MAC80211_OPS_H
+#define WIFI_MAC80211_OPS_H
 
 #include "net_device.h"
 #include "hdf_wifi_cmd.h"
@@ -440,9 +440,9 @@ struct WlanAPConf {
 struct WlanHwCapability {
     void (*Release)(struct WlanHwCapability *self); /**< Function for releasing the hardware capability */
     struct WlanBand *bands[IEEE80211_NUM_BANDS];    /**< Frequency bands */
-    uint16_t htCapability;      /**< High-throughput (HT) capability */
-    uint16_t supportedRateCount;/**< Number of supported rates */
-    uint16_t *supportedRates;   /**< An array of supported rates in 100 kbit/s */
+    uint16_t htCapability;       /**< High-throughput (HT) capability */
+    uint16_t supportedRateCount; /**< Number of supported rates */
+    uint16_t *supportedRates;    /**< An array of supported rates in 100 kbit/s */
 };
 
 /**
@@ -767,5 +767,5 @@ struct HdfMac80211APOps {
     int32_t (*GetAssociatedStasInfo)(NetDevice *netDev, WifiStaInfo *staInfo, uint32_t num);
 };
 
-#endif // _WIFI_MAC80211_OPS_H_
+#endif // WIFI_MAC80211_OPS_H
 /** @} */

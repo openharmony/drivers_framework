@@ -32,8 +32,8 @@
  * @version 1.0
  */
 
-#ifndef __HDF_WIFI_EVENT_H__
-#define __HDF_WIFI_EVENT_H__
+#ifndef HDF_WIFI_EVENT_H
+#define HDF_WIFI_EVENT_H
 
 #include "hdf_wifi_cmd.h"
 #include "wifi_mac80211_ops.h"
@@ -52,7 +52,7 @@ extern "C" {
  * @version 1.0
  */
 struct RateInfo {
-    uint8_t    flags;   /**< Flag field, used to indicate a specific rate transmission type of 802.11n */
+    uint8_t    flags;   /**< Flag, used to indicate a specific rate transmission type of 802.11n */
     uint8_t    mcs;     /**< Modulation and Coding Scheme (MCS) index of the HT/VHT/HE rate */
     uint16_t   legacy;  /**< 100 kbit/s bit rate defined in 802.11a/b/g */
     uint8_t    nss;     /**< Number of streams (for VHT and HE only) */
@@ -268,7 +268,7 @@ struct Ieee80211Mgmt {
 struct ScannedBssInfo {
     int32_t                  signal;   /**< Signal strength */
     int16_t                  freq;     /**< Center frequency of the channel where the BSS is located */
-    uint8_t                  arry[2];  /**< Reserved */
+    uint8_t                  array[2];  /**< Reserved */
     uint32_t                 mgmtLen;  /**< Management frame length */
     struct Ieee80211Mgmt    *mgmt;     /**< Start address of the management frame */
 };
@@ -482,5 +482,5 @@ int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus);
 #endif
 #endif
 
-#endif /* __HDF_WIFI_EVENT_H__ */
+#endif /* HDF_WIFI_EVENT_H */
 /** @} */
