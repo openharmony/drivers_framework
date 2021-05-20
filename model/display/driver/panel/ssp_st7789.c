@@ -124,24 +124,24 @@ static int32_t LcdResetOn(void)
 
     ret = GpioSetDir(RESET_GPIO, GPIO_DIR_OUT);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("GpioSetDir failed, ret:%d", ret);
+        HDF_LOGE("set lcd reset dir failed, ret:%d", ret);
         return HDF_FAILURE;
     }
     ret = GpioWrite(RESET_GPIO, GPIO_VAL_HIGH);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("GpioWrite failed, ret:%d", ret);
+        HDF_LOGE("set lcd reset hi failed, ret:%d", ret);
         return HDF_FAILURE;
     }
     ret = GpioWrite(RESET_GPIO, GPIO_VAL_LOW);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("GpioWrite failed, ret:%d", ret);
+        HDF_LOGE("set lcd reset how failed, ret:%d", ret);
         return HDF_FAILURE;
     }
     /* delay 10ms */
     OsalMSleep(10);
     ret = GpioWrite(RESET_GPIO, GPIO_VAL_HIGH);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("GpioWrite failed, ret:%d", ret);
+        HDF_LOGE("set lcd reset hi after delay failed, ret:%d", ret);
         return HDF_FAILURE;
     }
     /* delay 120ms */

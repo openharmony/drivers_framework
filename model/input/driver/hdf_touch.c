@@ -6,13 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdf_touch.h"
 #include "gpio_if.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_io.h"
 #include "event_hub.h"
-#include "hdf_touch.h"
 
 #define I2C_TYPE 0
 #define SPI_TYPE 1
@@ -79,7 +79,10 @@ static int32_t IoctlGetChipName(TouchDriver *driver, unsigned long arg)
 
 int32_t TouchIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg)
 {
-    int32_t ret;
+    int32_t ret = HDF_FAILURE;
+    if (inputdev == NULL || inputdev->pvtData == NULL) {
+        return ret;
+    }
     ChipDevice *device = (ChipDevice *)inputdev->pvtData;
     TouchDriver *driver = device->driver;
     switch (cmd) {
@@ -104,6 +107,9 @@ int32_t TouchIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg)
 uint32_t TouchPoll(FAR struct file *filep, InputDevice *inputDev, poll_table *wait)
 {
     uint32_t pollMask = 0;
+    if (filep == NULL || filep->f_vnode == NULL) {
+        return pollMask;
+    }
     InputDevice *inputdev = (InputDevice *)((struct drv_data*)filep->f_vnode->data)->priv;
     if (inputdev == NULL) {
         HDF_LOGE("%s: inputdev is null", __func__);
@@ -124,7 +130,7 @@ uint32_t TouchPoll(FAR struct file *filep, InputDevice *inputDev, poll_table *wa
 static int32_t SetGpioDirAndLevel(int gpio, int dir, int level)
 {
     int32_t ret;
-    if (dir == GPIO_DIR_IN || dir == GPIO_DIR_OUT) {
+    if ((dir == GPIO_DIR_IN) || (dir == GPIO_DIR_OUT)) {
         ret = GpioSetDir(gpio, dir);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: set gpio%d to %d dir failed, ret %d", __func__, gpio, dir, ret);
@@ -132,7 +138,7 @@ static int32_t SetGpioDirAndLevel(int gpio, int dir, int level)
         }
     }
 
-    if (level == GPIO_VAL_LOW || level == GPIO_VAL_HIGH) {
+    if ((level == GPIO_VAL_LOW) || (level == GPIO_VAL_HIGH)) {
         ret = GpioWrite(gpio, level);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: pull gpio%d to %d level failed, ret %d", __func__, gpio, level, ret);
@@ -161,15 +167,20 @@ static int32_t SetGpio(uint16_t gpio, uint32_t dir, uint32_t status)
     return HDF_SUCCESS;
 }
 
-int32_t HandlePowerEvent(ChipDevice *chipDev, uint32_t *timing)
+static int32_t HandlePowerEvent(ChipDevice *chipDev, uint32_t *timing, uint32_t length)
 {
     int32_t ret = 0;
     uint16_t gpio;
+
+    if (length <= PWR_DELAY_INDEX) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return HDF_FAILURE;
+    }
     uint32_t type = timing[PWR_TYPE_INDEX];
     uint32_t status = timing[PWR_STATUS_INDEX];
     uint32_t dir = timing[PWR_DIR_INDEX];
     uint32_t delay = timing[PWR_DELAY_INDEX];
-    HDF_LOGD("%s: type = %d, status = %d, dir = %d, delay = %d", __func__, type, status, dir, delay);
+    HDF_LOGD("%s: type = %u, status = %u, dir = %u, delay = %u", __func__, type, status, dir, delay);
 
     switch (type) {
         case TYPE_VCC:
@@ -253,7 +264,7 @@ static int32_t SetPowerOnTiming(ChipDevice *chipDev)
     }
 
     for (i = 0; i < pwrOnTiming.count / PWR_CELL_LEN; i++) {
-        ret = HandlePowerEvent(chipDev, pwrOnTiming.buf);
+        ret = HandlePowerEvent(chipDev, pwrOnTiming.buf, PWR_CELL_LEN);
         CHECK_RETURN_VALUE(ret);
         pwrOnTiming.buf = pwrOnTiming.buf + PWR_CELL_LEN;
     }
@@ -273,12 +284,13 @@ static void EventHandle(TouchDriver *driver, ChipDevice *chipDev)
     }
 }
 
-int32_t IrqHandle(uint16_t intGpioNum, void *data)
+static int32_t IrqHandle(uint16_t intGpioNum, void *data)
 {
     TouchDriver *driver = (TouchDriver *)data;
     int ret = GpioDisableIrq(intGpioNum);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: disable irq failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
     }
 
     EventHandle(driver, driver->device);
@@ -286,6 +298,7 @@ int32_t IrqHandle(uint16_t intGpioNum, void *data)
     ret = GpioEnableIrq(intGpioNum);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: enable irq failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
@@ -302,6 +315,7 @@ static void InputFrameReport(TouchDriver *driver)
             input_report_abs(dev, ABS_MT_POSITION_X, frame->fingers[i].x);
             input_report_abs(dev, ABS_MT_POSITION_Y, frame->fingers[i].y);
             input_report_abs(dev, ABS_MT_TRACKING_ID, frame->fingers[i].trackId);
+            input_mt_sync(dev);
         }
     }
 
@@ -320,8 +334,12 @@ static int32_t SetupChipIrq(ChipDevice *chipDev)
     uint16_t intGpioNum = chipDev->boardCfg->pins.intGpio;
     uint16_t irqFlag = chipDev->chipCfg->bus.chipI2c.irqFlag;
 
+    if (chipDev->driver == NULL) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return HDF_FAILURE;
+    }
     irqFlag |= GPIO_IRQ_USING_THREAD;
-    HDF_LOGD("%s: gpioNum = %d, irqFlag = %d", __func__, intGpioNum, irqFlag);
+    HDF_LOGD("%s: gpioNum = %u, irqFlag = %u", __func__, intGpioNum, irqFlag);
     ret = GpioSetIrq(intGpioNum, irqFlag, IrqHandle, chipDev->driver);
     if (ret != 0) {
         HDF_LOGE("%s: register irq failed, ret %d", __func__, ret);
@@ -348,6 +366,10 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
     ret = chipDev->ops->Detect(chipDev);
     CHECK_RETURN_VALUE(ret);
     HDF_LOGI("%s: chipDetect succ, ret = %d ", __func__, ret);
+
+    ret = chipDev->ops->UpdateFirmware(chipDev);
+    CHECK_RETURN_VALUE(ret);
+    HDF_LOGI("%s: update firmware success", __func__);
 
     ret = SetupChipIrq(chipDev);
     CHECK_RETURN_VALUE(ret);
@@ -377,12 +399,12 @@ static int32_t ChipMatchCheck(const ChipDevice *chipDev, const TouchDriver *driv
     const struct DeviceResourceNode *boardNode = driver->boardCfg->boardNode;
     const struct DeviceResourceNode *chipNode = chipDev->chipCfg->chipNode;
 
-    if (boardNode == NULL || boardNode->parent == NULL) {
+    if ((boardNode == NULL) || (boardNode->parent == NULL)) {
         HDF_LOGE("%s: board node or upper node is null", __func__);
         return HDF_FAILURE;
     }
 
-    if (chipNode == NULL || chipNode->parent == NULL || chipNode->parent->parent == NULL) {
+    if ((chipNode == NULL) || (chipNode->parent == NULL) || (chipNode->parent->parent == NULL)) {
         HDF_LOGE("%s: chip node or upper node is null ", __func__);
         return HDF_FAILURE;
     }
@@ -410,7 +432,7 @@ static int32_t DeviceBindDriver(ChipDevice *chipDev)
         }
     }
 
-    if (ret == HDF_FAILURE || driver == NULL) {
+    if ((ret == HDF_FAILURE) || (driver == NULL)) {
         return HDF_FAILURE;
     }
 
@@ -462,7 +484,7 @@ EXIT:
 static int32_t TouchGetDevType(TouchDriver *driver, struct HdfSBuf *reply)
 {
     uint32_t devType = driver->devType;
-    HDF_LOGI("%s: enter, devType is %d", __func__, devType);
+    HDF_LOGI("%s: enter, devType is %u", __func__, devType);
     bool ret = HdfSbufWriteUint32(reply, devType);
     if (!ret) {
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
@@ -480,7 +502,7 @@ static int32_t TouchSetPowerStatus(TouchDriver *driver, struct HdfSBuf *data)
         return HDF_FAILURE;
     }
     driver->pwrStatus = pwrStatus;
-    HDF_LOGI("%s: set power status is %d", __func__, pwrStatus);
+    HDF_LOGI("%s: set power status is %u", __func__, pwrStatus);
     return HDF_SUCCESS;
 }
 
@@ -492,14 +514,14 @@ static int32_t TouchGetPowerStatus(TouchDriver *driver, struct HdfSBuf *reply)
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: get power status is %d", __func__, pwrStatus);
+    HDF_LOGI("%s: get power status is %u", __func__, pwrStatus);
     return HDF_SUCCESS;
 }
 
 static int32_t TouchGetDeviceInfo(TouchDriver *driver, int32_t cmd, struct HdfSBuf *reply)
 {
-    const char *info;
-    if (driver->device == NULL || driver->device->chipCfg == NULL) {
+    const char *info = NULL;
+    if ((driver->device == NULL) || (driver->device->chipCfg == NULL)) {
         HDF_LOGE("%s: parameter invalid", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
@@ -537,7 +559,7 @@ static int32_t TouchSetGestureMode(TouchDriver *driver, struct HdfSBuf *data)
         return HDF_FAILURE;
     }
     driver->gestureMode = gestureMode;
-    HDF_LOGD("%s: set gesture mode is %d", __func__, gestureMode);
+    HDF_LOGD("%s: set gesture mode is %u", __func__, gestureMode);
     return HDF_SUCCESS;
 }
 
@@ -560,7 +582,7 @@ static int32_t TouchSelfCapacitance(TouchDriver *driver, struct HdfSBuf *data, s
         HDF_LOGE("%s: HdfSbufWriteString failed", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGD("%s: capac test type is %d, test result is %s", __func__, capacTest.testType, capacTest.testResult);
+    HDF_LOGD("%s: capac test type is %u, test result is %s", __func__, capacTest.testType, capacTest.testResult);
     return HDF_SUCCESS;
 }
 
@@ -585,10 +607,9 @@ static int32_t TouchRunExtraCmd(TouchDriver *driver, struct HdfSBuf *data)
 static int32_t HdfTouchDispatch(struct HdfDeviceIoClient *client, int32_t cmd,
     struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    (void)cmd;
     int32_t ret;
     TouchDriver *touchDriver = NULL;
-    if (client == NULL || client->device == NULL || data == NULL || reply == NULL) {
+    if ((client == NULL) || (client->device == NULL) || (data == NULL) || (reply == NULL)) {
         HDF_LOGE("%s: param is null", __func__);
         return HDF_FAILURE;
     }
@@ -809,8 +830,7 @@ static void HdfTouchDriverRelease(struct HdfDeviceObject *device)
     }
 
     if (inputDev != NULL) {
-        (void)UnregisterInputDevice(inputDev);
-        OsalMemFree(inputDev);
+        UnregisterInputDevice(inputDev);
         driver->inputDev = NULL;
     }
 

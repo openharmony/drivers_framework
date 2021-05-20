@@ -41,7 +41,7 @@ static int32_t ChipDetect(ChipDevice *device)
     CHIP_CHECK_RETURN(ret);
     ret = InputI2cRead(i2cClient, &regAddr, 1, &regValue, 1);
     CHIP_CHECK_RETURN(ret);
-    HDF_LOGI("%s: Report rate is %d * 10", __func__, regValue);
+    HDF_LOGI("%s: Report rate is %u * 10", __func__, regValue);
 
     regAddr = FTS_REG_FW_VER;
     ret = InputI2cWrite(i2cClient, &regAddr, 1);
@@ -55,7 +55,7 @@ static int32_t ChipDetect(ChipDevice *device)
     CHIP_CHECK_RETURN(ret);
     ret = InputI2cRead(i2cClient, &regAddr, 1, &regValue, 1);
     CHIP_CHECK_RETURN(ret);
-    HDF_LOGI("%s: Chip ID is %d", __func__, regValue);
+    HDF_LOGI("%s: Chip ID is %u", __func__, regValue);
 
     (void)ChipInit(device);
     (void)ChipResume(device);

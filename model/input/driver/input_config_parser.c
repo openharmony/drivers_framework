@@ -20,6 +20,8 @@
 
 #define DEFAULT_I2C_SPEED 400
 #define DEFAULT_SPI_SPEED 10000
+#define I2C 0
+#define SPI 1
 
 int32_t ParseKeyConfig(const struct DeviceResourceNode *node, KeyChipCfg *config)
 {
@@ -71,7 +73,7 @@ static int32_t ParseBus(struct DeviceResourceIface *parser, const struct DeviceR
     ret = parser->GetUint8(busNode, "busType", &bus->busType, 0);
     CHECK_PARSER_RET(ret, "GetUint8");
 
-    if (bus->busType == 0) {
+    if (bus->busType == I2C) {
         ret = parser->GetUint8(busNode, "busNum", &bus->i2c.busNum, 0);
         CHECK_PARSER_RET(ret, "GetUint8");
         ret = parser->GetUint16(busNode, "clkGpio", &bus->i2c.clkGpio, 0);
@@ -82,7 +84,7 @@ static int32_t ParseBus(struct DeviceResourceIface *parser, const struct DeviceR
         CHECK_PARSER_RET(ret, "GetUint32Array");
         ret = parser->GetUint32Array(busNode, "i2cDataIomux", bus->i2c.i2cDataReg, REG_CONFIG_LEN, 0);
         CHECK_PARSER_RET(ret, "GetUint32Array");
-    } else if (bus->busType == 1) {
+    } else if (bus->busType == SPI) {
         ret = parser->GetUint8(busNode, "busNum", &bus->spi.busNum, 0);
         CHECK_PARSER_RET(ret, "GetUint8");
         ret = parser->GetUint16(busNode, "clkGpio", &bus->spi.clkGpio, 0);
@@ -274,7 +276,7 @@ int32_t ParseTouchChipConfig(const struct DeviceResourceNode *node, TouchChipCfg
     CHECK_PARSER_RET(ret, "GetUint16");
     ret = parser->GetUint8(node, "busType", &config->bus.busType, 0);
     CHECK_PARSER_RET(ret, "GetUint8");
-    if (config->bus.busType == 0) {
+    if (config->bus.busType == I2C) {
         ret = parser->GetUint16(node, "irqFlag", &config->bus.chipI2c.irqFlag, 0);
         CHECK_PARSER_RET(ret, "GetUint16");
         ret = parser->GetUint32(node, "deviceAddr", &config->bus.chipI2c.commAddr, 0);

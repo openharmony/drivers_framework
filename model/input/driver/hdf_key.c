@@ -14,8 +14,8 @@
 #include "event_hub.h"
 #include "hdf_key.h"
 
-#define CHECK_PARSER_RET(ret,  str) do { \
-    if (ret != HDF_SUCCESS) { \
+#define CHECK_PARSER_RET(ret, str) do { \
+    if ((ret) != HDF_SUCCESS) { \
         HDF_LOGE("%s: %s failed, ret = %d!", __func__, str, ret); \
         return HDF_FAILURE; \
     } \
@@ -40,7 +40,10 @@ static int32_t IoctlReadKeyEvent(KeyDriver *driver, unsigned long arg)
 
 int32_t KeyIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg)
 {
-    int32_t ret;
+    int32_t ret = HDF_FAILURE;
+    if (inputdev == NULL) {
+        return ret;
+    }
     KeyDriver *driver = (KeyDriver *)inputdev->pvtData;
     switch (cmd) {
         case INPUT_IOCTL_GET_EVENT_DATA:
@@ -58,7 +61,13 @@ int32_t KeyIrqHandle(uint16_t intGpioNum, void *data)
 {
     uint16_t gpioValue;
     KeyDriver *driver = (KeyDriver *)data;
+    if (driver == NULL) {
+        return HDF_FAILURE;
+    }
     KeyEventData *event = &driver->eventData;
+    if (event == NULL) {
+        return HDF_FAILURE;
+    }
     int32_t ret = GpioDisableIrq(intGpioNum);
 
     if (ret != HDF_SUCCESS) {

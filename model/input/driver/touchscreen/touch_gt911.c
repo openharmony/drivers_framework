@@ -80,6 +80,8 @@ static int ChipCleanBuffer(InputI2cClient *i2cClient)
     return ret;
 }
 
+#define X_OFFSET    1
+
 static void ParsePointData(ChipDevice *device, FrameData *frame, uint8_t *buf, uint8_t pointNum)
 {
     int32_t chipVer = device->chipCfg->chipVersion;
@@ -89,10 +91,15 @@ static void ParsePointData(ChipDevice *device, FrameData *frame, uint8_t *buf, u
 
     for (i = 0; i < pointNum; i++) {
         if (chipVer == 0) {         // chipversion  A:gt911_zsj5p5
+            frame->fingers[i].trackId = buf[GT_POINT_SIZE * i + GT_TRACK_ID];
             frame->fingers[i].y = (buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET);
             frame->fingers[i].x = (buf[GT_POINT_SIZE * i + GT_Y_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_Y_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET);
+            if (frame->fingers[i].x == 0) {
+                frame->fingers[i].x = X_OFFSET;
+            }
+            HDF_LOGD("%s: x = %d, y = %d", __func__, frame->fingers[i].x, frame->fingers[i].y);
         } else if (chipVer == 1) {  // chipversion B:gt911_zsj4p0
             frame->fingers[i].x = resX - 1 - ((buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET));
@@ -137,7 +144,7 @@ static int32_t ChipDataHandle(ChipDevice *device)
     reg[1] = GT_X_LOW_BYTE_BASE & ONE_BYTE_MASK;
     pointNum = touchStatus & GT_FINGER_NUM_MASK;
     if (pointNum == 0 || pointNum > MAX_SUPPORT_POINT) {
-        HDF_LOGE("%s: pointNum is invalid, %d", __func__, pointNum);
+        HDF_LOGE("%s: pointNum is invalid, %u", __func__, pointNum);
         (void)ChipCleanBuffer(i2cClient);
         OsalMutexUnlock(&device->driver->mutex);
         return HDF_FAILURE;
@@ -155,12 +162,25 @@ EXIT:
     return HDF_SUCCESS;
 }
 
+static int32_t UpdateFirmware(ChipDevice *device)
+{
+    int32_t ret;
+    InputI2cClient *i2cClient = &device->driver->i2cClient;
+    ret = InputI2cWrite(i2cClient, firmWareParm, FIRMWARE_LEN);
+    if (ret < 0) {
+        return HDF_FAILURE;
+    }
+    HDF_LOGI("%s: update firmware success\n", __func__);
+    return HDF_SUCCESS;
+}
+
 static struct TouchChipOps g_gt911ChipOps = {
     .Init = ChipInit,
     .Detect = ChipDetect,
     .Resume = ChipResume,
     .Suspend = ChipSuspend,
     .DataHandle = ChipDataHandle,
+    .UpdateFirmware = UpdateFirmware,
 };
 
 static TouchChipCfg *ChipConfigInstance(struct HdfDeviceObject *device)
