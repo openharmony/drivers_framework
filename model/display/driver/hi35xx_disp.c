@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hi35xx_disp.h"
 #include <securec.h>
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
@@ -14,7 +15,6 @@
 #include "lcd_abs_if.h"
 #include "osal_io.h"
 #include "pwm_if.h"
-#include "hi35xx_disp.h"
 
 #define TRANSFORM_KILO 1000
 #define TRANSFORM_MILL 1000000
@@ -186,10 +186,13 @@ static uint32_t CalcDataRate(struct PanelInfo *info)
     } else {
         bitClk = bitNum / TRANSFORM_MILL + 1;
     }
+    if (!info->mipi.lane) {
+        return HDF_FAILURE;
+    }
     if ((bitClk % info->mipi.lane) == 0) {
         return bitClk / info->mipi.lane;
     }
-    return bitClk / info->mipi.lane + 1;
+    return (bitClk / info->mipi.lane) + 1;
 }
 
 static int32_t MipiDsiInit(struct PanelInfo *info)
@@ -225,7 +228,7 @@ static int32_t MipiDsiInit(struct PanelInfo *info)
         HDF_LOGE("%s:MipiDsiSetCfg failed", __func__);
     }
     MipiDsiClose(mipiHandle);
-    HDF_LOGI("%s:pixelClk = %d, phyDataRate = %d", __func__, cfg.pixelClk, cfg.phyDataRate);
+    HDF_LOGI("%s:pixelClk = %d, phyDataRate = %u", __func__, cfg.pixelClk, cfg.phyDataRate);
     return ret;
 }
 
@@ -425,7 +428,7 @@ static int32_t Hi35xxSetBacklight(uint32_t devId, uint32_t level)
     return HDF_SUCCESS;
 }
 
-struct DispOperations g_hi35xxOps = {
+struct PlatformOps g_hi35xxOps = {
     .init = Hi35xxInit,
     .on = Hi35xxOn,
     .off = Hi35xxOff,
@@ -439,7 +442,7 @@ static int32_t Hi35xxEntryInit(struct HdfDeviceObject *object)
         HDF_LOGE("%s: param is null!", __func__);
         return HDF_FAILURE;
     }
-    return DispRegister(&g_hi35xxOps);
+    return PlatformRegister(&g_hi35xxOps);
 }
 
 struct HdfDriverEntry g_hi35xxDevEntry = {

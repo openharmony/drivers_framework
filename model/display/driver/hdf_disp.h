@@ -45,11 +45,20 @@ struct DispOperations {
     int32_t (*getDispInfo)(uint32_t devId, struct DispInfo *info);
 };
 
+struct PlatformOps {
+    int32_t (*init)(uint32_t devId);
+    int32_t (*on)(uint32_t devId);
+    int32_t (*off)(uint32_t devId);
+    int32_t (*setBacklight)(uint32_t devId, uint32_t level);
+    int32_t (*getDispInfo)(uint32_t devId, struct DispInfo *info);
+};
+
 enum PowerMode {
     DISP_ON,
     DISP_OFF,
 };
 
-int32_t DispRegister(struct DispOperations *ops);
+int32_t PlatformRegister(struct PlatformOps *ops);
 struct PanelInfo *GetPanelInfo(int32_t index);
+struct PanelStatus *GetPanelStatus(int32_t index);
 #endif /* HDF_DISP_H */

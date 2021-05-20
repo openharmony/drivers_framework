@@ -16,7 +16,6 @@
 #define BITS_PER_BYTE    8
 #define BITS_PER_WORD    9
 #define SPI_MAX_SPEED    115200
-#define SYS_WRITEL(addr, value) ((*(volatile unsigned int *)(addr)) = (value))
 
 struct LcdCmd {
     uint8_t cmd;
