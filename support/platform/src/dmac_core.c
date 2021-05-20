@@ -6,16 +6,17 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "dmac_core.h"
 #include <string.h>
 #include "hdf_log.h"
 #include "osal_io.h"
 #include "osal_irq.h"
 #include "osal_mem.h"
-#include "dmac_core.h"
 
 #define HDF_LOG_TAG dmac_core
 
 #define DMA_ALIGN_SIZE 256
+#define DMA_MAX_TRANS_SIZE_DEFAULT 256
 
 static int DmacCheck(struct DmaCntlr *cntlr)
 {
@@ -66,7 +67,7 @@ static void DmacFreeLli(struct DmacChanInfo *chanInfo)
  */
 void DmaCntlrDestroy(struct DmaCntlr *cntlr)
 {
-    int i;
+    unsigned int i;
 
     if (cntlr == NULL || cntlr->channelNum > DMAC_CHAN_NUM_MAX) {
         HDF_LOGE("%s: cntlr null or channel invalid!", __func__);
@@ -107,7 +108,7 @@ static void DmacCallbackHandle(struct DmacChanInfo *chanInfo)
 
 static int DmacWaitM2mSendComplete(struct DmaCntlr *cntlr, struct DmacChanInfo *chanInfo)
 {
-    unsigned int ret;
+    uint32_t ret;
 
     if (DmacCheck(cntlr) != HDF_SUCCESS) {
         HDF_LOGE("check fail");
@@ -130,7 +131,7 @@ static int DmacWaitM2mSendComplete(struct DmaCntlr *cntlr, struct DmacChanInfo *
 
 static int DmacAllocateChannel(struct DmaCntlr *cntlr)
 {
-    unsigned int flags;
+    uint32_t flags;
     int i;
 
     if (DmacCheck(cntlr) != HDF_SUCCESS) {
@@ -190,7 +191,7 @@ static struct DmacChanInfo *DmacRequestChannel(struct DmaCntlr *cntlr,
         HDF_LOGE("%s: get channel fail ret = %d", __func__, ret);
         return NULL;
     }
-    HDF_LOGD("channel = %d, transfer type = %d width = %u, config = 0x%x, lliflag = 0x%x",
+    HDF_LOGD("channel = %d, transfer type = %u width = %u, config = 0x%x, lliflag = 0x%x",
         ret, chanInfo->transferType, chanInfo->width, chanInfo->config, chanInfo->lliEnFlag);
     return chanInfo;
 }
@@ -220,18 +221,12 @@ static int DmacFillLli(struct DmaCntlr *cntlr, struct DmacChanInfo *chanInfo,
             plli->count = cntlr->maxTransSize;
         } else {
             plli->nextLli = 0;
-            plli->count = (length % cntlr->maxTransSize);
+            plli->count = cntlr->maxTransSize == 0 ? length : (length % cntlr->maxTransSize);
         }
 
         plli->srcAddr = (long long)srcaddr;
         plli->destAddr = (long long)dstaddr;
         plli->config = chanInfo->config;
-
-        HDF_LOGD("plli->srcAddr = 0x%llx\n", plli->srcAddr);
-        HDF_LOGD("plli->destAddr = 0x%llx\n", plli->destAddr);
-        HDF_LOGD("plli->nextLli = 0x%llx\n", plli->nextLli);
-        HDF_LOGD("plli->config = 0x%x\n", plli->config);
-        HDF_LOGD("plli->count = 0x%x\n", plli->count);
 
         if (chanInfo->transferType == TRASFER_TYPE_P2M) {
             dstaddr += plli->count;
@@ -240,6 +235,7 @@ static int DmacFillLli(struct DmaCntlr *cntlr, struct DmacChanInfo *chanInfo,
         }
         plli++;
     }
+    plli = chanInfo->lli;
     cntlr->dmacCacheFlush((UINTPTR)plli, (UINTPTR)plli + (UINTPTR)(sizeof(struct DmacLli) * lliNum));
     HDF_LOGD("alloc_addr = 0x%x, alloc_addr + (sizeof(DmacLli) * lli_num)= 0x%x\n",
         (UINTPTR)plli, (UINTPTR)plli + (UINTPTR)(sizeof(struct DmacLli) * lliNum));
@@ -369,6 +365,7 @@ static int DmacM2mTransfer(struct DmaCntlr *cntlr, struct DmacMsg *msg)
             return HDF_FAILURE;
         }
         if (dmaSize == 0) {
+            DmacFreeChannel(cntlr, chanInfo->channel);
             return HDF_FAILURE;
         }
         leftSize -= dmaSize;
@@ -403,7 +400,7 @@ int32_t DmaCntlrTransfer(struct DmaCntlr *cntlr, struct DmacMsg *msg)
     } else if (msg->direct == TRASFER_TYPE_M2M) {
         return DmacM2mTransfer(cntlr, msg);
     } else {
-        HDF_LOGE("%s: invalid direct %d", __func__, msg->direct);
+        HDF_LOGE("%s: invalid direct %u", __func__, msg->direct);
         return HDF_FAILURE;
     }
     return DmacPeriphTransfer(cntlr, msg, periphAddr);
@@ -419,7 +416,7 @@ unsigned int DmaGetCurrChanDestAddr(struct DmaCntlr *cntlr, unsigned int chan)
     return cntlr->dmacGetCurrDestAddr(cntlr, chan);
 }
 
-static uint32_t DmacIsr(int irq, void *dev)
+static uint32_t DmacIsr(uint32_t irq, void *dev)
 {
     struct DmaCntlr *cntlr = (struct DmaCntlr *)dev;
     unsigned int channelStatus;
@@ -431,9 +428,9 @@ static uint32_t DmacIsr(int irq, void *dev)
     }
 
     if (irq != cntlr->irq || cntlr->channelNum > DMAC_CHAN_NUM_MAX) {
-        HDF_LOGE("%s: cntlr parm err! irq:%d, channel:%u",
+        HDF_LOGE("%s: cntlr param err! irq:%u, channel:%u",
             __func__, cntlr->irq, cntlr->channelNum);
-        return HDF_SUCCESS;
+        return HDF_ERR_INVALID_PARAM;
     }
     for (i = 0; i < cntlr->channelNum; i++) {
         channelStatus = cntlr->dmacGetChanStatus(cntlr, i);
@@ -455,15 +452,19 @@ int DmacInit(struct DmaCntlr *cntlr)
         HDF_LOGE("check fail");
         return HDF_FAILURE;
     }
-    if (cntlr->channelNum > DMAC_CHAN_NUM_MAX) {
-        HDF_LOGE("%s: invalid channel:%d", __func__, cntlr->channelNum);
+    if (cntlr->channelNum == 0 || cntlr->channelNum > DMAC_CHAN_NUM_MAX) {
+        HDF_LOGE("%s: invalid channel:%u", __func__, cntlr->channelNum);
         return HDF_FAILURE;
     }
+    if (cntlr->maxTransSize == 0) {
+        cntlr->maxTransSize = DMA_MAX_TRANS_SIZE_DEFAULT;
+    }
     cntlr->remapBase = (char *)OsalIoRemap((unsigned long)cntlr->phyBase, (unsigned long)cntlr->regSize);
-    OsalSpinInit(&cntlr->lock);
+    (void)OsalSpinInit(&cntlr->lock);
     cntlr->channelList = (struct DmacChanInfo *)OsalMemCalloc(sizeof(struct DmacChanInfo) * cntlr->channelNum);
     if (cntlr->channelList == NULL) {
         HDF_LOGE("channel list malloc fail");
+        (void)OsalSpinDestroy(&cntlr->lock);
         OsalIoUnmap((void *)cntlr->remapBase);
         return HDF_FAILURE;
     }
@@ -474,9 +475,10 @@ int DmacInit(struct DmaCntlr *cntlr)
     }
     ret = OsalRegisterIrq(cntlr->irq, 0, (OsalIRQHandle)DmacIsr, "PlatDmac", cntlr);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("DMA Irq %d request failed, ret = %d\n", cntlr->irq, ret);
+        HDF_LOGE("DMA Irq %u request failed, ret = %d\n", cntlr->irq, ret);
         OsalMemFree(cntlr->channelList);
         cntlr->channelList = NULL;
+        (void)OsalSpinDestroy(&cntlr->lock);
         OsalIoUnmap((void *)cntlr->remapBase);
     }
     return ret;
