@@ -35,7 +35,8 @@ uint32_t TouchPoll(struct file *filep, InputDevice *inputDev, poll_table *wait);
 static int32_t InputDevIoctl(struct file *filep, int32_t cmd, unsigned long arg)
 {
     int32_t ret;
-    InputDevice *inputdev = (InputDevice *)((struct drv_data*)filep->f_vnode->data)->priv;
+    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
+    InputDevice *inputdev = (InputDevice *)drvData->priv;
     if (inputdev == NULL) {
         return HDF_FAILURE;
     }
@@ -54,7 +55,8 @@ static int32_t InputDevIoctl(struct file *filep, int32_t cmd, unsigned long arg)
 
 static int32_t InputDevOpen(struct file *filep)
 {
-    InputDevice *inputdev = (InputDevice *)((struct drv_data*)filep->f_vnode->data)->priv;
+    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
+    InputDevice *inputdev = (InputDevice *)drvData->priv;
     if (inputdev == NULL) {
         HDF_LOGE("%s: filep is null", __func__);
         return HDF_FAILURE;
@@ -64,7 +66,8 @@ static int32_t InputDevOpen(struct file *filep)
 
 static int32_t InputDevClose(struct file *filep)
 {
-    InputDevice *inputdev = (InputDevice *)((struct drv_data*)filep->f_vnode->data)->priv;
+    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
+    InputDevice *inputdev = (InputDevice *)drvData->priv;
     if (inputdev == NULL) {
         HDF_LOGE("%s: inputdev is null", __func__);
         return HDF_FAILURE;
@@ -76,7 +79,8 @@ static int32_t InputDevClose(struct file *filep)
 static int32_t InputDevPoll(struct file *filep, poll_table *wait)
 {
     uint32_t pollMask = 0;
-    InputDevice *inputdev = (InputDevice *)((struct drv_data*)filep->f_vnode->data)->priv;
+    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
+    InputDevice *inputdev = (InputDevice *)drvData->priv;
     switch (inputdev->devType) {
         case INDEV_TYPE_TOUCH:
             pollMask = TouchPoll(filep, inputdev, wait);
