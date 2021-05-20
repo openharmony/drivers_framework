@@ -56,7 +56,7 @@ static void TestUserEmmcGetCid(void)
 
     EmmcGetHuid(cid, EMMC_CID_LEN);
     for (i = 0; i < EMMC_CID_LEN; i++) {
-        printf("user interface get cid[%d] = 0x%x\n", i, cid[i]);
+        printf("user interface get cid[%u] = 0x%x\n", i, cid[i]);
     }
 }
 
