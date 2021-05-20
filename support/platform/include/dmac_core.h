@@ -151,6 +151,7 @@ struct DmaCntlr {
     void *private;
 };
 
+#ifdef LOSCFG_DRIVERS_HDF_PLATFORM_DMAC
 struct DmaCntlr *DmaCntlrCreate(struct HdfDeviceObject *dev);
 
 void DmaCntlrDestroy(struct DmaCntlr *cntlr);
@@ -162,6 +163,45 @@ void DmacCntlrRemove(struct DmaCntlr *cntlr);
 int32_t DmaCntlrTransfer(struct DmaCntlr *cntlr, struct DmacMsg *msg);
 
 uintptr_t DmaGetCurrChanDestAddr(struct DmaCntlr *cntlr, uint16_t chan);
+#else
+static inline struct DmaCntlr *DmaCntlrCreate(struct HdfDeviceObject *dev)
+{
+    (void)dev;
+    return NULL;
+}
+
+static inline void DmaCntlrDestroy(struct DmaCntlr *cntlr)
+{
+    (void)cntlr;
+    return;
+}
+
+static inline int32_t DmacCntlrAdd(struct DmaCntlr *cntlr)
+{
+    (void)cntlr;
+    return HDF_ERR_NOT_SUPPORT;
+}
+
+static inline void DmacCntlrRemove(struct DmaCntlr *cntlr)
+{
+    (void)cntlr;
+    return;
+}
+
+static inline int32_t DmaCntlrTransfer(struct DmaCntlr *cntlr, struct DmacMsg *msg)
+{
+    (void)cntlr;
+    (void)msg;
+    return HDF_ERR_NOT_SUPPORT;
+}
+
+static inline uintptr_t DmaGetCurrChanDestAddr(struct DmaCntlr *cntlr, uint16_t chan)
+{
+    (void)cntlr;
+    (void)chan;
+    return 0;
+}
+#endif
 
 #ifdef __cplusplus
 #if __cplusplus

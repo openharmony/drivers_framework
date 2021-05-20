@@ -71,7 +71,7 @@ static int32_t DmacCntlrCheckParam(struct DmaCntlr *cntlr)
         HDF_LOGE("%s: cntlr is null", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-    if (cntlr->channelNum == 0 || cntlr->channelNum > DMAC_CHAN_NUM_MAX ) {
+    if (cntlr->channelNum == 0 || cntlr->channelNum > DMAC_CHAN_NUM_MAX) {
         HDF_LOGE("%s: invalid channelNum:%u", __func__, cntlr->channelNum);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -320,11 +320,10 @@ static int32_t DmacFillLli(struct DmaCntlr *cntlr, struct DmacChanInfo *chanInfo
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    lliNum = chanInfo->lliCnt;
-    for (i = 0; i < lliNum; i++) {
+    for (i = 0, lliNum = chanInfo->lliCnt; i < lliNum; i++, plli++) {
         plli->nextLli = (uintptr_t)cntlr->dmacVaddrToPaddr((void *)plli) + (uintptr_t)sizeof(struct DmacLli);
         plli->nextLli = (i < lliNum - 1) ? (plli->nextLli + chanInfo->lliEnFlag) : 0;
-        plli->count = (i < lliNum - 1) ? alignedMax: (length % alignedMax);
+        plli->count = (i < lliNum - 1) ? alignedMax : (length % alignedMax);
 
         plli->srcAddr = srcaddr;
         plli->destAddr = dstaddr;
@@ -332,22 +331,14 @@ static int32_t DmacFillLli(struct DmaCntlr *cntlr, struct DmacChanInfo *chanInfo
 
 #ifdef DMA_CORE_DEBUG
         HDF_LOGD("plli=0x%lx, next=0x%lx, count=0x%lx, src=0x%lx, dst=0x%lx, cfg=0x%lx",
-            (uintptr_t)cntlr->dmacVaddrToPaddr(plli), plli->nextLli, plli->count, plli->srcAddr, plli->destAddr, plli->config);
+            (uintptr_t)cntlr->dmacVaddrToPaddr(plli), plli->nextLli,
+            plli->count, plli->srcAddr, plli->destAddr, plli->config);
 #endif
-
-        if (chanInfo->transType == TRASFER_TYPE_P2M && dstDummy == 0) {
-            dstaddr += plli->count;
-        } else if (chanInfo->transType == TRASFER_TYPE_M2P && srcDummy == 0) {
-            srcaddr += plli->count;
-        }
-        plli++;
+        dstaddr += (chanInfo->transType == TRASFER_TYPE_P2M && dstDummy == 0) ? plli->count : 0;
+        srcaddr += (chanInfo->transType == TRASFER_TYPE_M2P && srcDummy == 0) ? plli->count : 0;
     }
     plli = chanInfo->lli;
     cntlr->dmacCacheFlush((uintptr_t)plli, (uintptr_t)plli + (uintptr_t)(sizeof(struct DmacLli) * lliNum));
-#ifdef DMA_CORE_DEBUG
-    HDF_LOGD("alloc_addr = 0x%x, alloc_addr + (sizeof(DmacLli) * lli_num)= 0x%x\n",
-        (uintptr_t)plli, (uintptr_t)plli + (uintptr_t)(sizeof(struct DmacLli) * lliNum));
-#endif
     return ret;
 }
 

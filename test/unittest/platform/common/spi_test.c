@@ -61,20 +61,23 @@ static int32_t SpiSetCfgTest(struct SpiTest *test)
     return ret;
 }
 
+#define SPI_TEST_4BITS  4
+#define SPI_TEST_8BITS  8
+#define SPI_TEST_16BITS 16
 static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8_t bits)
 {
     int32_t i;
     uint16_t vw;
     uint16_t vr;
 
-    if (bits < 4) {
-        bits = 4;
-    } else if (bits > 16) {
-        bits = 16;
+    if (bits < SPI_TEST_4BITS) {
+        bits = SPI_TEST_4BITS;
+    } else if (bits > SPI_TEST_16BITS) {
+        bits = SPI_TEST_16BITS;
     }
 
-    for (i = 0; i < len;) {
-        if (bits <= 8) {
+    for (i = 0; i < len; ) {
+        if (bits <= SPI_TEST_8BITS) {
             vw = *((uint8_t *)(wbuf + i)) & (~(0xFFFF << bits));
             vr = *((uint8_t *)(rbuf + i)) & (~(0xFFFF << bits));
         } else {
@@ -86,7 +89,7 @@ static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8
                 __func__, i, vw, vr, bits, len);
             return HDF_FAILURE;
         }
-        i += (bits <= 8) ? 1 : 2;
+        i += (bits <= SPI_TEST_8BITS) ? 1 : 2;
     }
     HDF_LOGE("%s: mem size(%u) compare success", __func__, len);
     return HDF_SUCCESS;
@@ -138,10 +141,10 @@ static int32_t SpiReadTest(struct SpiTest *test)
 }
 
 #define DMA_TRANSFER_SINGLE_MAX   (1024 * 64 - 1)
-#define DMA_TRANSFER_SINGLE_CNT   (4)
-#define DMA_TRANSFER_SINGLE_LEFT  (254)
+#define DMA_TRANSFER_SINGLE_CNT   4
+#define DMA_TRANSFER_SINGLE_LEFT  254
 #define DMA_TRANSFER_SIZE_TOTAL   (DMA_TRANSFER_SINGLE_MAX * DMA_TRANSFER_SINGLE_CNT + DMA_TRANSFER_SINGLE_LEFT)
-#define DMA_TRANSFER_BUF_SEED     (0x5A)
+#define DMA_TRANSFER_BUF_SEED     0x5A
 
 static void SpiSetDmaMsg(struct SpiMsg *msg, uint8_t *wbuf, uint8_t *rbuf, uint32_t len)
 {
@@ -163,7 +166,7 @@ static void SpiSetDmaMsg(struct SpiMsg *msg, uint8_t *wbuf, uint8_t *rbuf, uint3
 
 static int32_t SpiDmaTest(struct SpiTest *test)
 {
-    int ret  = HDF_SUCCESS;
+    int ret;
     uint8_t *wbuf = NULL;
     uint8_t *rbuf = NULL;
     uint8_t oldMode;
