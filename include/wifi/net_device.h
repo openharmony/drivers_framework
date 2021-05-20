@@ -387,7 +387,7 @@ struct TcpHeader {
     uint16_t  sPort;   /**< Source port number */
     uint16_t  dPort;   /**< Destination port number */
     uint32_t  seqNum;  /**< Sequence number */
-    uint32_t  ackNum;  /**< Acknowledgement number */
+    uint32_t  ackNum;  /**< Acknowledgment number */
     uint8_t   offset;  /**< Header length */
     uint8_t   flags;   /**< Flags */
     uint16_t  window;  /**< Window size */
@@ -465,7 +465,7 @@ typedef struct NetDevice {
     char name[IFNAMSIZ];                      /**< Network device name {@link IFNAMSIZ} */
     NetLinkType LinkLayerType;                /**< Data link layer type */
     IfType funType;                           /**< Network port type */
-    char macAddr[MAC_ADDR_SIZE];              /**< MAC address {@link MAC_ADDR_SIZE} */
+    unsigned char macAddr[MAC_ADDR_SIZE];     /**< MAC address {@link MAC_ADDR_SIZE} */
     uint32_t flags;                           /**< Network port status */
     uint32_t mtu;                             /**< Maximum transmission unit */
     int32_t watchdogTime;                     /**< Watchdog duration */
@@ -496,12 +496,12 @@ struct NetDeviceInterFace {
     void (*deInit)(struct NetDevice *netDev);   /**< Deinitializes a network device to be delete. */
     int32_t (*open)(struct NetDevice *netDev);  /**< Opens the data link layer. */
     int32_t (*stop)(struct NetDevice *netDev);  /**< Closes the data link layer. */
-    NetDevTxResult (*xmit)(struct NetDevice *netDev, NetBuf *netBuff); /**< Sends data. */
+    NetDevTxResult (*xmit)(struct NetDevice *netDev, NetBuf *netBuff);        /**< Sends data. */
     int32_t (*ioctl)(struct NetDevice *netDev, IfReq *req, int32_t cmd);      /**< Used for the control command word. */
     int32_t (*setMacAddr)(struct NetDevice *netDev, void *addr);              /**< Sets the MAC address. */
     struct NetDevStats *(*getStats)(struct NetDevice *netDev);                /**< Obtains the statistics. */
     void (*setNetIfStatus)(struct NetDevice *netDev, NetIfStatus status);     /**< Sets the network port status. */
-    uint16_t (*selectQueue)(struct NetDevice *netDev, NetBuf *netBuff);/**< Selects a priority queue. */
+    uint16_t (*selectQueue)(struct NetDevice *netDev, NetBuf *netBuff);       /**< Selects a priority queue. */
     uint32_t (*netifNotify)(struct NetDevice *netDev, NetDevNotify *notify);  /**< Notifies the network port status. */
     int32_t (*changeMtu)(struct NetDevice *netDev, int32_t newMtu);           /**< Changes the maximum number of
                                                                                * transmission units.
@@ -658,7 +658,7 @@ int32_t NetIfSetAddr(const struct NetDevice *netDevice, const IpV4Addr *ipAddr, 
  * @brief Notifies the network layer of the network port state.
  *
  * @param netDevice Indicates the pointer to the network device obtained during initialization.
- * @paramstatus Indicates the network port state, as enumerated in {@link NetIfSatus}.
+ * @param status Indicates the network port state, as enumerated in {@link NetIfSatus}.
  * @param status Indicates the network port state, as enumerated in {@link NetIfSatus}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
