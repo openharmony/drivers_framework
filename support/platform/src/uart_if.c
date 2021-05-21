@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "uart_if.h"
 #include "securec.h"
 #ifndef __USER__
 #include "devsvc_manager_clnt.h"
@@ -17,7 +18,6 @@
 #ifndef __USER__
 #include "uart_core.h"
 #endif
-#include "uart_if.h"
 
 #define HDF_LOG_TAG uart_if_c
 #define UART_HOST_NAME_LEN 32
@@ -128,7 +128,7 @@ static int32_t UartUserReceive(DevHandle handle, void *data, uint32_t size, enum
         HDF_LOGE("%s: service is invalid", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    /* Four bits are used to store the buffer length, and four bits are used to align the memory. */
+    /* Four bytes are used to store the buffer length, and four bytes are used to align the memory. */
     reply = HdfSBufObtain(size + sizeof(uint64_t));
     if (reply == NULL) {
         HDF_LOGE("%s: failed to obtain reply", __func__);

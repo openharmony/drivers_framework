@@ -38,17 +38,14 @@ static ParserObject *HcsLookupAstObject(const ParserObject *current, const char 
     ParserObject *object = HcsGetParserRoot();
     while (nodeName != NULL) {
         object = HcsAstLookupObjectInChildren(object, nodeName);
-        if (object == NULL)
+        if (object == NULL) {
             break;
+        }
         nodeName = strtok(NULL, ".");
     }
     HcsMemFree(splitPath);
 
-    if (object != NULL) {
-        return object;
-    }
-
-    return NULL;
+    return object;
 }
 
 static int32_t HcsExpandNodeRef(ParserObject *object)
@@ -105,7 +102,7 @@ static int32_t HcsExpandNodeCopy(ParserObject *object)
         ParserObjectBase *copyChild = copyNode->objectBase.child;
         while (copyChild != NULL) {
             if (copyChild->type == PARSEROP_CONFNODE) {
-                HCS_OBJECT_ERROR(object, "Not allow copy node has child node when output text config, at %s:%d",
+                HCS_OBJECT_ERROR(object, "Not allow copy node has child node when output text config, at %s:%u",
                     copyChild->src, copyChild->lineno);
                 return EINVALARG;
             }
@@ -340,12 +337,12 @@ static bool HcsApplyDelete(ParserObject *dst, ParserObject *src)
 static int32_t HcsMergeTree(ParserObject *dst, ParserObject *src)
 {
     if (strcmp(src->objectBase.name, dst->objectBase.name) != 0) {
-        HCS_OBJECT_ERROR(src, "merge different node to %s:%d", dst->objectBase.src, dst->objectBase.lineno);
+        HCS_OBJECT_ERROR(src, "merge different node to %s:%u", dst->objectBase.src, dst->objectBase.lineno);
         return EINVALARG;
     }
 
     if (src->objectBase.type != dst->objectBase.type) {
-        HCS_OBJECT_ERROR(src, "conflict type with %s:%d", dst->objectBase.src, dst->objectBase.lineno);
+        HCS_OBJECT_ERROR(src, "conflict type with %s:%u", dst->objectBase.src, dst->objectBase.lineno);
         return EINVALARG;
     }
 
@@ -373,7 +370,7 @@ static int32_t HcsMergeTree(ParserObject *dst, ParserObject *src)
         ParserObject *childSrcNext = (ParserObject *)childSrc->objectBase.next;
         ParserObject *childDst = HcsAstLookupObjectInChildren(dst, childSrc->objectBase.name);
         if (childDst != NULL && childSrc->objectBase.type != childDst->objectBase.type) {
-            HCS_OBJECT_ERROR(childSrc, "overwrite with different type at %s:%d", childDst->objectBase.src,
+            HCS_OBJECT_ERROR(childSrc, "overwrite with different type at %s:%u", childDst->objectBase.src,
                 childDst->objectBase.lineno);
             return EINVALARG;
         }
@@ -435,7 +432,7 @@ static int32_t HcsMiddleMerge(ParserObject **mergedRoot)
     return NOERR;
 }
 
-int32_t HcsDoOptimize()
+int32_t HcsDoOptimize(void)
 {
     ParserObject *root = HcsGetParserRoot();
     if (root == NULL) {

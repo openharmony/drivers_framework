@@ -95,7 +95,7 @@ static int32_t HdfDevEventDispatchLocked(const struct HdfDevListenerThread *thre
         return HDF_DEV_ERR_NO_MEMORY;
     }
 
-    /* dispatch event to SERVICE GROUP listener */
+    /* Dispatch events to the service group listener */
     if (thread->listenerListPtr != NULL) {
         DLIST_FOR_EACH_ENTRY(listener, thread->listenerListPtr, struct HdfDevEventlistener, listNode) {
             if (listener->onReceive != NULL) {
@@ -103,21 +103,19 @@ static int32_t HdfDevEventDispatchLocked(const struct HdfDevListenerThread *thre
             } else if (listener->callBack != NULL) {
                 (void)listener->callBack(listener->priv, bwr->cmdCode, sbuf);
             }
-            HdfSbufFlush(sbuf);
-            sbuf->writePos = bwr->readConsumed;
+            HdfSbufSetDataSize(sbuf, bwr->readConsumed);
         }
     }
 
     OsalMutexLock(&adapter->mutex);
-    /* dispatch event to SERVICE(SyscallAdapter) listener */
+    /* Dispatch events to the service (SyscallAdapter) listener */
     DLIST_FOR_EACH_ENTRY(listener, &adapter->listenerList, struct HdfDevEventlistener, listNode) {
         if (listener->onReceive != NULL) {
             (void)listener->onReceive(listener, &adapter->super, bwr->cmdCode, sbuf);
         } else if (listener->callBack != NULL) {
             (void)listener->callBack(listener->priv, bwr->cmdCode, sbuf);
         }
-        HdfSbufFlush(sbuf);
-        sbuf->writePos = bwr->readConsumed;
+        HdfSbufSetDataSize(sbuf, bwr->readConsumed);
     }
     OsalMutexUnlock(&adapter->mutex);
 
@@ -131,20 +129,20 @@ static int32_t HdfDevEventReadAndDispatch(struct HdfDevListenerThread *thread, i
     int32_t ret = HDF_SUCCESS;
 
     bwr.readBuffer = (uintptr_t)OsalMemAlloc(HDF_DEFAULT_BWR_READ_SIZE);
-    bwr.cmdCode = -1;
-    bwr.readConsumed = 0;
-    bwr.readSize = HDF_DEFAULT_BWR_READ_SIZE;
     if (bwr.readBuffer == (uintptr_t)NULL) {
         HDF_LOGE("%s: oom", __func__);
         return HDF_DEV_ERR_NO_MEMORY;
     }
+    bwr.cmdCode = -1;
+    bwr.readConsumed = 0;
+    bwr.readSize = HDF_DEFAULT_BWR_READ_SIZE;
 
     OsalMutexLock(&thread->mutex);
 
     struct HdfSyscallAdapter *adapter = HdfFdToAdapterLocked(thread, fd);
     if (adapter == NULL) {
-        HDF_LOGI("%s:adapter invalid\n", __func__);
-        OsalMSleep(1);
+        HDF_LOGI("%s: invalid adapter", __func__);
+        OsalMSleep(1); // yield to sync adapter list
         goto finish;
     }
 
@@ -156,7 +154,9 @@ static int32_t HdfDevEventReadAndDispatch(struct HdfDevListenerThread *thread, i
         ret = errno;
         if (ret == -HDF_DEV_ERR_NORANGE) {
             if (HdfDevEventGrowReadBuffer(&bwr) == HDF_SUCCESS) {
-                continue;  /* read buffer may not enough, grow read buffer and try again */
+                /* read buffer may not enough, grow read buffer and try again--The read buffere is insufficient.
+                Expand the buffer and try again. */
+                continue;
             }
         }
         if (ret == -HDF_DEV_ERR_NODATA) {
@@ -209,14 +209,6 @@ static int32_t AssignPfds(struct HdfDevListenerThread *thread, struct pollfd **p
     return pfdCount;
 }
 
-static void HdfDevListenerThreadFree(struct HdfDevListenerThread *thread)
-{
-    OsalMutexDestroy(&thread->mutex);
-    OsalMemFree(thread->pfds);
-    OsalThreadDestroy(&thread->thread);
-    OsalMemFree(thread);
-}
-
 #define POLL_WAIT_TIME_MS 100
 static int32_t HdfDevEventListenTask(void *para)
 {
@@ -262,8 +254,11 @@ exit:
     OsalMemFree(pfds);
 
     if (thread->shouldStop) {
-        /* exit due to async exit call, should free thread struct */
-        HdfDevListenerThreadFree(thread);
+        /* Exit due to async call and free the thread struct. */
+        OsalMutexDestroy(&thread->mutex);
+        OsalThreadDestroy(&thread->thread);
+        OsalMemFree(thread->pfds);
+        OsalMemFree(thread);
     }
 
     return HDF_SUCCESS;
@@ -273,7 +268,7 @@ static int32_t HdfAdapterStartListenIoctl(int fd)
 {
     int32_t ret = ioctl(fd, HDF_LISTEN_EVENT_START, 0);
     if (ret) {
-        HDF_LOGE("%s: fail to tell drv(%d) start %d %s", __func__, fd, errno, strerror(errno));
+        HDF_LOGE("%s: failed to notify drv(%d) of start %d %s", __func__, fd, errno, strerror(errno));
         return HDF_ERR_IO;
     }
 
@@ -284,7 +279,7 @@ static int32_t HdfAdapterStopListenIoctl(int fd)
 {
     int32_t ret = ioctl(fd, HDF_LISTEN_EVENT_STOP, 0);
     if (ret) {
-        HDF_LOGE("%s: fail to tell drv stop %d %s", __func__, errno, strerror(errno));
+        HDF_LOGE("%s: failed to notify drv(%d) of stop %d %s", __func__, fd, errno, strerror(errno));
         return HDF_ERR_IO;
     }
 
@@ -295,7 +290,7 @@ static int32_t HdfAdapterExitListenIoctl(int fd)
 {
     int32_t ret = ioctl(fd, HDF_LISTEN_EVENT_EXIT, 0);
     if (ret) {
-        HDF_LOGE("%s: fail to tell drv report exit %d %s", __func__, errno, strerror(errno));
+        HDF_LOGE("%s: failed to notify drv(%d) of exit %d %s", __func__, fd, errno, strerror(errno));
         return HDF_ERR_IO;
     }
 
@@ -305,13 +300,13 @@ static int32_t HdfAdapterExitListenIoctl(int fd)
 static int32_t HdfDevListenerThreadDoInit(struct HdfDevListenerThread *thread)
 {
     if (OsalMutexInit(&thread->mutex) != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to create thread lock", __func__);
+        HDF_LOGE("%s: failed to create thread lock", __func__);
         return HDF_FAILURE;
     }
 
     int32_t ret = OsalThreadCreate(&thread->thread, HdfDevEventListenTask, thread);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to create thread", __func__);
+        HDF_LOGE("%s: failed to create thread", __func__);
         thread->status = LISTENER_UNINITED;
         OsalMutexDestroy(&thread->mutex);
         return HDF_ERR_THREAD_CREATE_FAIL;
@@ -499,7 +494,7 @@ static int32_t HdfIoServiceGroupThreadStart(struct HdfSyscallAdapterGroup *group
 
 static int32_t HdfListenThreadPollAdd(struct HdfDevListenerThread *thread, struct HdfSyscallAdapter *adapter)
 {
-    /* if thread is not bind to service group, not need to do poll add */
+    /* If thread is not bound to a service group, you do not need to add a poll. */
     if (thread->adapterListPtr == NULL) {
         return HDF_SUCCESS;
     }
@@ -529,7 +524,7 @@ static int32_t HdfListenThreadPollAdd(struct HdfDevListenerThread *thread, struc
 
         if (headAdapter != NULL) {
             if (ioctl(headAdapter->fd, HDF_LISTEN_EVENT_WAKEUP, 0) != 0) {
-                HDF_LOGE("%s: fail to wakeup drv to add poll %d %s", __func__, errno, strerror(errno));
+                HDF_LOGE("%s: failed to wakeup drv to add poll %d %s", __func__, errno, strerror(errno));
                 thread->pfds[index].fd = SYSCALL_INVALID_FD;
                 ret = HDF_ERR_IO;
                 break;
@@ -568,16 +563,24 @@ static void HdfListenThreadPollDel(struct HdfDevListenerThread *thread,  struct 
     }
 
     if (HdfAdapterStopListenIoctl(adapter->fd)) {
-        HDF_LOGE("%s: fail to stop device report %d %s", __func__, errno, strerror(errno));
+        HDF_LOGE("%s: failed to stop device report %d %s", __func__, errno, strerror(errno));
     }
 
     if (ioctl(adapter->fd, HDF_LISTEN_EVENT_WAKEUP, 0) != 0) {
-        HDF_LOGE("%s: fail to wakeup drv to del poll %d %s", __func__, errno, strerror(errno));
+        HDF_LOGE("%s: failed to wakeup drv to del poll %d %s", __func__, errno, strerror(errno));
     }
     DListRemove(&adapter->listNode);
     adapter->group = NULL;
     thread->pollChanged = true;
     OsalMutexUnlock(&thread->mutex);
+}
+
+static void HdfDevListenerThreadFree(struct HdfDevListenerThread *thread)
+{
+    OsalMutexDestroy(&thread->mutex);
+    OsalMemFree(thread->pfds);
+    OsalThreadDestroy(&thread->thread);
+    OsalMemFree(thread);
 }
 
 static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
@@ -648,10 +651,10 @@ static int32_t HdfSyscallAdapterDispatch(struct HdfObject *object, int32_t code,
     wrBuf.cmdCode = code;
     int32_t ret = ioctl(ioService->fd,  HDF_WRITE_READ, &wrBuf);
     if (ret < 0) {
-        HDF_LOGE("dispatch serv call ioctl fail %d", errno);
+        HDF_LOGE("Failed to dispatch serv call ioctl %d", errno);
     }
     if (reply != NULL) {
-        reply->writePos = wrBuf.readConsumed;
+        HdfSbufSetDataSize(reply, wrBuf.readConsumed);
     }
     return ret;
 }
@@ -660,41 +663,48 @@ struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName)
 {
     struct HdfSyscallAdapter *adapter = NULL;
     struct HdfIoService *ioService = NULL;
-    char devNodePath[PATH_MAX] = {0};
-    char realPath[PATH_MAX] = {0};
+    char *devNodePath = NULL;
+    char *realPath = NULL;
 
     const char *devPath = DEV_NODE_PATH;
     if (access(DEV_NODE_PATH, F_OK) != 0) {
         devPath = DEV_PATH;
     }
 
+    devNodePath = OsalMemCalloc(PATH_MAX);
+    realPath = OsalMemCalloc(PATH_MAX);
+    if (devNodePath == NULL || realPath == NULL) {
+        HDF_LOGE("%s: out of memory", __func__);
+        goto out;
+    }
+
     if (sprintf_s(devNodePath, PATH_MAX - 1, "%s%s", devPath, serviceName) < 0) {
-        HDF_LOGE("Get node path failed");
-        return NULL;
+        HDF_LOGE("Failed to get the node path");
+        goto out;
     }
 
     if (realpath(devNodePath, realPath) == NULL) {
         if (HdfLoadDriverByServiceName(serviceName) != HDF_SUCCESS) {
-            HDF_LOGE("%s load %s driver failed", __func__, serviceName);
-            return NULL;
+            HDF_LOGE("%s: load %s driver failed", __func__, serviceName);
+            goto out;
         }
         if (realpath(devNodePath, realPath) == NULL) {
-            HDF_LOGE("%s file name %s is invalid", __func__, devNodePath);
-            return NULL;
+            HDF_LOGE("%s: file name %s is invalid", __func__, devNodePath);
+            goto out;
         }
     }
 
     adapter = (struct HdfSyscallAdapter *)OsalMemCalloc(sizeof(struct HdfSyscallAdapter));
     if (adapter == NULL) {
-        HDF_LOGE("Alloc syscall adapter failed");
-        return NULL;
+        HDF_LOGE("Failed to allocate SyscallAdapter");
+        goto out;
     }
 
     DListHeadInit(&adapter->listenerList);
     if (OsalMutexInit(&adapter->mutex)) {
-        HDF_LOGE("%s: create mutex fail", __func__);
+        HDF_LOGE("%s: Failed to create mutex", __func__);
         OsalMemFree(adapter);
-        return NULL;
+        goto out;
     }
 
     adapter->fd = open(realPath, O_RDWR);
@@ -702,13 +712,16 @@ struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName)
         HDF_LOGE("Open file node %s failed, (%d)%s", realPath, errno, strerror(errno));
         OsalMutexDestroy(&adapter->mutex);
         OsalMemFree(adapter);
-        return NULL;
+        goto out;
     }
     ioService = &adapter->super;
     static struct HdfIoDispatcher dispatch = {
         .Dispatch = HdfSyscallAdapterDispatch,
     };
     ioService->dispatcher = &dispatch;
+out:
+    OsalMemFree(devNodePath);
+    OsalMemFree(realPath);
     return ioService;
 }
 
@@ -743,7 +756,7 @@ static int32_t HdfIoServiceThreadBindLocked(struct HdfSyscallAdapter *adapter)
 static int32_t HdfIoServiceStartListen(struct HdfSyscallAdapter *adapter)
 {
     if (HdfIoServiceThreadBindLocked(adapter) != HDF_SUCCESS) {
-        HDF_LOGE("%s:adapter bind thread fail", __func__);
+        HDF_LOGE("%s: Failed to bind a thread to SyscallAdapter", __func__);
         return HDF_FAILURE;
     }
 
@@ -755,7 +768,7 @@ static bool AddListenerToAdapterLocked(struct HdfSyscallAdapter *adapter, struct
     struct HdfDevEventlistener *it = NULL;
     DLIST_FOR_EACH_ENTRY(it, &adapter->listenerList, struct HdfDevEventlistener, listNode) {
         if (it == listener) {
-            HDF_LOGE("add duplicate dev-event listener");
+            HDF_LOGE("Add a listener for duplicate dev-event");
             return false;
         }
     }
@@ -770,7 +783,7 @@ int32_t HdfDeviceRegisterEventListener(struct HdfIoService *target, struct HdfDe
     }
 
     if (listener->callBack == NULL && listener->onReceive == NULL) {
-        HDF_LOGE("listenr onReceive func not implement");
+        HDF_LOGE("Listenr onReceive func not implemented");
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -784,7 +797,7 @@ int32_t HdfDeviceRegisterEventListener(struct HdfIoService *target, struct HdfDe
     }
 
     if (adapter->group != NULL) {
-        /* service in group, should not bind to self hold thread and try to start group thread */
+        /* Do not bind any service in a service goup to its own thread or start the group thread. */
         ret = HdfIoServiceGroupThreadStart(adapter->group);
         OsalMutexUnlock(&adapter->mutex);
         return ret;
@@ -806,7 +819,7 @@ int32_t HdfDeviceUnregisterEventListener(struct HdfIoService *target, struct Hdf
     }
 
     if (listener->listNode.next == NULL || listener->listNode.prev == NULL) {
-        HDF_LOGE("%s:broken listener, may double unregister", __func__);
+        HDF_LOGE("%s: broken listener, may double unregister", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -872,7 +885,7 @@ int32_t HdfIoServiceGroupRegisterListener(struct HdfIoServiceGroup *group, struc
     }
 
     if (listener->callBack == NULL && listener->onReceive == NULL) {
-        HDF_LOGE("listenr onReceive func not implement");
+        HDF_LOGE("listenr onReceive func not implemented");
         return HDF_ERR_INVALID_OBJECT;
     }
     struct HdfSyscallAdapterGroup *adapterGroup = CONTAINER_OF(group, struct HdfSyscallAdapterGroup, serviceGroup);
@@ -891,8 +904,8 @@ int32_t HdfIoServiceGroupRegisterListener(struct HdfIoServiceGroup *group, struc
     struct HdfDevEventlistener *it = NULL;
     DLIST_FOR_EACH_ENTRY(it, &adapterGroup->listenerList, struct HdfDevEventlistener, listNode) {
         if (it == listener) {
-            HDF_LOGE("add group listener failed, repeated registration");
-            ret = HDF_ERR_INVALID_OBJECT;
+            HDF_LOGE("Failed to add group listener, repeated registration");
+            ret = HDF_ERR_INVALID_PARAM;
             goto finish;
         }
     }
@@ -917,7 +930,7 @@ static int32_t GetListenerCount(struct HdfDevListenerThread *thread)
 
     OsalMutexLock(&thread->mutex);
     if (thread->listenerListPtr != NULL) {
-        DLIST_FOR_EACH_ENTRY (listener, thread->listenerListPtr, struct HdfDevEventlistener, listNode) {
+        DLIST_FOR_EACH_ENTRY(listener, thread->listenerListPtr, struct HdfDevEventlistener, listNode) {
             count++;
         }
     }

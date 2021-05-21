@@ -36,7 +36,7 @@ bool HcsGetBool(const struct DeviceResourceNode *node, const char *attrName)
     }
 
     if (!HcsSwapToUint8(&value, attr->value + HCS_PREFIX_LENGTH, HcsGetPrefix(attr->value))) {
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return false;
     }
     return value ? true : false;
@@ -44,7 +44,7 @@ bool HcsGetBool(const struct DeviceResourceNode *node, const char *attrName)
 
 #define RETURN_DEFAULT_VALUE(attr, attrName, value, def) do {                                              \
     if (((attr) == NULL) || ((attr)->value == NULL) || ((value) == NULL)) {                                \
-        HDF_LOGE("%s failed, the attr of %s is NULL, or the value is NULL, return the default value",      \
+        HDF_LOGE("%s failed, the attr of %s is NULL, or the value is NULL, the value is default value",    \
                 __func__, ((attrName) == NULL) ? "error attrName" : (attrName));                           \
         if ((value) != NULL) {                                                                             \
             *(value) = (def);                                                                              \
@@ -60,7 +60,7 @@ int32_t HcsGetUint8(const struct DeviceResourceNode *node, const char *attrName,
 
     if (!HcsSwapToUint8(value, attr->value + HCS_PREFIX_LENGTH, HcsGetPrefix(attr->value))) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -73,7 +73,7 @@ int32_t HcsGetUint16(const struct DeviceResourceNode *node, const char *attrName
 
     if (!HcsSwapToUint16(value, attr->value + HCS_PREFIX_LENGTH, HcsGetPrefix(attr->value))) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -86,7 +86,7 @@ int32_t HcsGetUint32(const struct DeviceResourceNode *node, const char *attrName
 
     if (!HcsSwapToUint32(value, attr->value + HCS_PREFIX_LENGTH, HcsGetPrefix(attr->value))) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -99,7 +99,7 @@ int32_t HcsGetUint64(const struct DeviceResourceNode *node, const char *attrName
 
     if (!HcsSwapToUint64(value, attr->value + HCS_PREFIX_LENGTH, HcsGetPrefix(attr->value))) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -116,7 +116,7 @@ static const char *GetArrayElem(const struct DeviceResourceAttr *attr, uint32_t 
         return NULL;
     }
     if (index >= count) {
-        HDF_LOGE("%s failed, the index: %u >= count: %u", __func__, index, count);
+        HDF_LOGE("%s failed, index: %u >= count: %u", __func__, index, count);
         return NULL;
     }
     for (i = 0; i < index; i++) {
@@ -144,7 +144,7 @@ int32_t HcsGetUint8ArrayElem(const struct DeviceResourceNode *node, const char *
     }
     if (!HcsSwapToUint8(value, realValue + HCS_PREFIX_LENGTH, HcsGetPrefix(realValue))) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
     return HDF_SUCCESS;
@@ -165,7 +165,7 @@ int32_t HcsGetUint16ArrayElem(const struct DeviceResourceNode *node, const char 
     }
     if (!HcsSwapToUint16(value, realValue + HCS_PREFIX_LENGTH, HcsGetPrefix(realValue))) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
     return HDF_SUCCESS;
@@ -186,7 +186,7 @@ int32_t HcsGetUint32ArrayElem(const struct DeviceResourceNode *node, const char 
     }
     if (!HcsSwapToUint32(value, realValue + HCS_PREFIX_LENGTH, HcsGetPrefix(realValue))) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
     return HDF_SUCCESS;
@@ -202,7 +202,7 @@ int32_t HcsGetUint64ArrayElem(const struct DeviceResourceNode *node, const char 
     realValue = GetArrayElem(attr, index);
     if ((realValue == NULL) || !HcsSwapToUint64(value, realValue + HCS_PREFIX_LENGTH, HcsGetPrefix(realValue))) {
         *value = def;
-        HDF_LOGE("%s failed, the realValue is NULL or incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, invalid realValue (NULL) or incorrect prefix", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -211,11 +211,11 @@ int32_t HcsGetUint64ArrayElem(const struct DeviceResourceNode *node, const char 
 #define CONTINUE_RETURN_DIFFERENT_ERRNO(ret, result) do {              \
     if ((result) == HDF_ERR_INVALID_OBJECT) {                          \
         (ret) = HDF_ERR_INVALID_OBJECT;                                \
-        HDF_LOGE("%s failed, the ret is %d", __func__, (result));      \
+        HDF_LOGE("%s failed, the result is %d", __func__, (result));   \
         continue;                                                      \
     }                                                                  \
     if ((result) != HDF_SUCCESS) {                                     \
-        HDF_LOGE("%s failed, the ret is %d", __func__, (result));      \
+        HDF_LOGE("%s failed, the result is %d", __func__, (result));   \
         return result;                                                 \
     }                                                                  \
 } while (0)
@@ -316,7 +316,7 @@ int32_t HcsGetString(const struct DeviceResourceNode *node, const char *attrName
     RETURN_DEFAULT_VALUE(attr, attrName, value, def);
     if (HcsGetPrefix(attr->value) != CONFIG_STRING) {
         *value = def;
-        HDF_LOGE("%s failed, Incorrect prefix code", __func__);
+        HDF_LOGE("%s failed, incorrect prefix", __func__);
         return HDF_FAILURE;
     }
     *value = attr->value + HCS_PREFIX_LENGTH;
@@ -366,7 +366,7 @@ const struct DeviceResourceNode *HcsGetNodeByMatchAttr(const struct DeviceResour
     const struct DeviceResourceNode *curNode = NULL;
     struct DeviceResourceIface *instance = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if ((attrValue == NULL) || (instance == NULL) || (instance->GetRootNode == NULL)) {
-        HDF_LOGE("%s failed, attrValue is NULL or DeviceResourceGetIfaceInstance error", __func__);
+        HDF_LOGE("%s failed, attrValue or instance error", __func__);
         return NULL;
     }
     curNode = (node != NULL) ? node : instance->GetRootNode();

@@ -258,7 +258,7 @@ int HcsTestGetUint8ArrayElemSuccess(void)
 {
     uint8_t data[DATA_TEST_ARRAY_LENGTH] = { 0 };
     // the test data is 0, 1, 2, 3, 4, 5, 6, 7.
-    uint8_t testData[DATA_TEST_ARRAY_LENGTH] = {0, 1, 2, 3, 4, 5, 6, 7};
+    uint8_t testData[DATA_TEST_ARRAY_LENGTH] = { 0, 1, 2, 3, 4, 5, 6, 7 };
     uint32_t i;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
@@ -272,7 +272,7 @@ int HcsTestGetUint8ArrayElemSuccess(void)
         int32_t ret = g_devResInstance->GetUint8ArrayElem(dataType, TEST_U8_ELEM_DATA, i, &data[i],
             DEFAULT_UINT8_MAX);
         if ((ret != HDF_SUCCESS) || (data[i] != testData[i])) {
-            HDF_LOGE("%s failed, line: %d, ret = %d, i = %d, data = %u", __FUNCTION__, __LINE__, ret, i, data[i]);
+            HDF_LOGE("%s failed, line: %d, ret = %d, i = %u, data = %u", __FUNCTION__, __LINE__, ret, i, data[i]);
             return HDF_FAILURE;
         }
     }
@@ -303,7 +303,7 @@ int HcsTestGetUint8ArrayElemFail(void)
     for (i = 0; i < count; i++) {
         ret = g_devResInstance->GetUint8ArrayElem(dataType, READ_FOUR_DATA_TYPE, i, &data1[i], DEFAULT_UINT8_MAX);
     }
-    // the 0~3 represents the loction in array.
+    // the 0~3 represents the location in array.
     if ((ret == HDF_SUCCESS) || (data1[0] != U8_DATA) || (data1[1] != DEFAULT_UINT8_MAX) ||
         (data1[2] != DEFAULT_UINT8_MAX) || (data1[3] != DEFAULT_UINT8_MAX)) {
         HDF_LOGE("%s failed, line: %d, ret = %d, data = %x", __FUNCTION__, __LINE__, ret, data);
@@ -321,7 +321,7 @@ int HcsTestGetUint8ArraySuccess(void)
     const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     int32_t ret = g_devResInstance->GetUint8Array(dataType, TEST_U8_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH,
         DEFAULT_UINT8_MAX);
-    // the 0~7 represents the loction in array or the value in hcs file.
+    // the 0~7 represents the location in array or the value in hcs file.
     if ((ret != HDF_SUCCESS) || (data[0] != 0) || (data[1] != 1) || (data[2] != 2) || (data[3] != 3) || (data[4] != 4)
         || (data[5] != 5) || (data[6] != 6) || (data[7] != 7)) {
         return HDF_FAILURE;
@@ -337,13 +337,13 @@ int HcsTestGetUint8ArrayFail(void)
     }
     const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     int32_t ret = g_devResInstance->GetUint8Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT8_MAX);
-    // the 0, 1, 2 represents the loction in array, the 0 of second param is defalut value.
+    // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint8Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64 + 1,
         DEFAULT_UINT8_MAX);
-    // the 0, 1, 2, 3, 4 represents the loction in array
+    // the 0, 1, 2, 3, 4 represents the location in array
     if ((ret == HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != DEFAULT_UINT8_MAX) || (data[2] != DEFAULT_UINT8_MAX)
         || (data[3] != DEFAULT_UINT8_MAX) || (data[4] != DEFAULT_UINT8_MAX)) {
         return HDF_FAILURE;
@@ -402,7 +402,7 @@ int HcsTestGetUint16ArrayElemSuccess(void)
     // the length of data is 8.
     uint16_t data[DATA_TEST_ARRAY_LENGTH] = { 0 };
     // the test data is 0, 1, 2, 3, 4, 5, 256, 257.
-    uint16_t testData[DATA_TEST_ARRAY_LENGTH] = {0, 1, 2, 3, 4, 5, 256, 257};
+    uint16_t testData[DATA_TEST_ARRAY_LENGTH] = { 0, 1, 2, 3, 4, 5, 256, 257 };
     uint32_t i;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
@@ -444,7 +444,7 @@ int HcsTestGetUint16ArrayElemFail(void)
     for (i = 0; i < count; i++) {
         ret = g_devResInstance->GetUint16ArrayElem(dataType, READ_FOUR_DATA_TYPE, i, &data1[i], DEFAULT_UINT16_MAX);
     }
-    // the 0~3 represents the loction in array.
+    // the 0~3 represents the location in array.
     if ((ret == HDF_SUCCESS) || (data1[0] != U8_DATA) || (data1[1] != U16_DATA) || (data1[2] != DEFAULT_UINT16_MAX) ||
         (data1[3] != DEFAULT_UINT16_MAX)) {
         return HDF_FAILURE;
@@ -461,7 +461,7 @@ int HcsTestGetUint16ArraySuccess(void)
     const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     int32_t ret = g_devResInstance->GetUint16Array(dataType, TEST_U16_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH,
         DEFAULT_UINT16_MAX);
-    // the data[0~7] represents the loction in array, the test data is 0, 1, 2, 3, 4, 5, 256, 257.
+    // the data[0~7] represents the location in array, the test data is 0, 1, 2, 3, 4, 5, 256, 257.
     if ((ret != HDF_SUCCESS) || (data[0] != 0) || (data[1] != 1) || (data[2] != 2) || (data[3] != 3) || (data[4] != 4)
         || (data[5] != 5) || (data[6] != 256) || (data[7] != 257)) {
         return HDF_FAILURE;
@@ -477,13 +477,13 @@ int HcsTestGetUint16ArrayFail(void)
     }
     const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     int32_t ret = g_devResInstance->GetUint16Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT16_MAX);
-    // the 0, 1, 2 represents the loction in array, the 0 of second param is defalut value.
+    // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint16Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64 + 1,
         DEFAULT_UINT16_MAX);
-    // the 0, 1, 2, 3, 4 represents the loction in array
+    // the 0, 1, 2, 3, 4 represents the location in array
     if ((ret == HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != U16_DATA) || (data[2] != DEFAULT_UINT16_MAX)
         || (data[3] != DEFAULT_UINT16_MAX) || (data[4] != DEFAULT_UINT16_MAX)) {
         return HDF_FAILURE;
@@ -537,7 +537,7 @@ int HcsTestGetUint32AttrValueFail(void)
 int HcsTestGetUint32ArrayElemSuccess(void)
 {
     uint32_t data[DATA_TYPE_NUM_U32] = { 0 };
-    uint32_t testData[DATA_TYPE_NUM_U32] = {U8_DATA, U16_DATA, U32_DATA};
+    uint32_t testData[DATA_TYPE_NUM_U32] = { U8_DATA, U16_DATA, U32_DATA };
     int32_t i;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
@@ -578,7 +578,7 @@ int HcsTestGetUint32ArraySuccess(void)
         return HDF_FAILURE;
     }
     int32_t ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, BOARDID_LENGTH, DEFAULT_UINT32_MAX);
-    // the 0, 1 represents the loction in array.
+    // the 0, 1 represents the location in array.
     if ((ret != HDF_SUCCESS) || (data[0] != U32_DATA) || (data[1] != U16_DATA)) {
         return HDF_FAILURE;
     }
@@ -592,12 +592,12 @@ int HcsTestGetUint32ArrayFail(void)
         return HDF_FAILURE;
     }
     int32_t ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, 0, DEFAULT_UINT32_MAX);
-    // the 0, 1, 2 represents the loction in array, the 0 of second param is defalut value.
+    // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, DATA_TYPE_NUM_U32, DEFAULT_UINT32_MAX);
-    // the 0, 1, 2 represents the loction in array
+    // the 0, 1, 2 represents the location in array
     if ((ret == HDF_SUCCESS) || (data[0] != U32_DATA) || (data[1] != U16_DATA) || (data[2] != DEFAULT_UINT32_MAX)) {
         return HDF_FAILURE;
     }
@@ -655,7 +655,7 @@ int HcsTestGetUint64AttrValueFail(void)
 int HcsTestGetUint64ArrayElemSuccess(void)
 {
     uint64_t data[DATA_TYPE_NUM_U64] = { 0 };
-    uint64_t testData[DATA_TYPE_NUM_U64] = {U8_DATA, U16_DATA, U32_DATA, U64_DATA};
+    uint64_t testData[DATA_TYPE_NUM_U64] = { U8_DATA, U16_DATA, U32_DATA, U64_DATA };
     uint32_t i;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
@@ -699,7 +699,7 @@ int HcsTestGetUint64ArraySuccess(void)
     const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     int32_t ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64,
         DEFAULT_UINT64_MAX);
-    // the 0, 1, 2 represents the loction in array.
+    // the 0, 1, 2 represents the location in array.
     if ((ret != HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != U16_DATA) || (data[2] != U32_DATA) ||
         (data[3] != U64_DATA)) {
         return HDF_FAILURE;
@@ -715,13 +715,13 @@ int HcsTestGetUint64ArrayFail(void)
     }
     const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     int32_t ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT64_MAX);
-    // the 0, 1, 2 represents the loction in array, the 0 of second param is defalut value.
+    // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64 + 1,
         DEFAULT_UINT64_MAX);
-    // the 0, 1, 2, 3, 4 represents the loction in array
+    // the 0, 1, 2, 3, 4 represents the location in array
     if ((ret == HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != U16_DATA) || (data[2] != U32_DATA)
         || (data[3] != U64_DATA) || (data[4] != DEFAULT_UINT64_MAX)) {
         return HDF_FAILURE;
@@ -865,7 +865,7 @@ int HcsTestTraverseAttrInNodeFail(void)
 
     const struct DeviceResourceNode *childNode = NULL;
     DEV_RES_NODE_FOR_EACH_CHILD_NODE(fingerprintNode, childNode) {
-        if (childNode == NULL) {
+        if ((childNode == NULL) || (childNode->name == NULL)) {
             break;
         }
         if ((strcmp(childNode->name, "fingerprint_one") == 0) || (strcmp(childNode->name, "fingerprint_two") == 0)) {
@@ -886,9 +886,9 @@ int HcsTestGetStringSuccess(void)
         return HDF_FAILURE;
     }
     const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    const char *ptype = NULL;
-    int32_t readString = g_devResInstance->GetString(audioNode, "cust_name", &ptype, NULL);
-    if ((readString != HDF_SUCCESS) || (ptype == NULL) || (strcmp(ptype, "audio_custom_v2") != HDF_SUCCESS)) {
+    const char *type = NULL;
+    int32_t readString = g_devResInstance->GetString(audioNode, "cust_name", &type, NULL);
+    if ((readString != HDF_SUCCESS) || (type == NULL) || (strcmp(type, "audio_custom_v2") != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -900,17 +900,17 @@ int HcsTestGetStringFail(void)
         return HDF_FAILURE;
     }
     const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    const char *ptype = NULL;
-    int32_t testReadString = g_devResInstance->GetString(audioNode, INVALID_STRING, &ptype, STRING_ATTR_VALUE);
-    if ((testReadString == HDF_SUCCESS) || (ptype == NULL) || (strcmp(ptype, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
+    const char *type = NULL;
+    int32_t testReadString = g_devResInstance->GetString(audioNode, INVALID_STRING, &type, STRING_ATTR_VALUE);
+    if ((testReadString == HDF_SUCCESS) || (type == NULL) || (strcmp(type, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
     testReadString = g_devResInstance->GetString(audioNode, INVALID_STRING, NULL, STRING_ATTR_VALUE);
-    if ((testReadString == HDF_SUCCESS) || (ptype == NULL) || (strcmp(ptype, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
+    if ((testReadString == HDF_SUCCESS) || (type == NULL) || (strcmp(type, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
-    testReadString = g_devResInstance->GetString(audioNode, INVALID_STRING, &ptype, NULL);
-    if (testReadString == HDF_SUCCESS || ptype != NULL) {
+    testReadString = g_devResInstance->GetString(audioNode, INVALID_STRING, &type, NULL);
+    if ((testReadString == HDF_SUCCESS) || (type != NULL)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -923,17 +923,17 @@ int HcsTestGetStringArrayElemSuccess(void)
     }
     const char *rawDataDts = NULL;
     const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
-    // the third param is the loction in string_list_names array.
+    // the third param(0) is the location in string_list_names array.
     int32_t ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 0, &rawDataDts, NULL);
     if ((ret != HDF_SUCCESS) || (strcmp(rawDataDts, "first") != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
-    // the third param is the loction in string_list_names array.
+    // the third param(1) is the location in string_list_names array.
     ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 1, &rawDataDts, NULL);
     if ((ret != HDF_SUCCESS) || (strcmp(rawDataDts, "second") != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
-    // the second param is 2, indicates the index, the third param is the loction in string_list_names array.
+    // the third param(2) is the location in string_list_names array.
     ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 2, &rawDataDts, NULL);
     if ((ret != HDF_SUCCESS) || (strcmp(rawDataDts, "third") != HDF_SUCCESS)) {
         return HDF_FAILURE;
@@ -948,14 +948,14 @@ int HcsTestGetStringArrayElemFail(void)
     }
     const char *rawDataDts = NULL;
     const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
-    // the third param(3) is the loction in string_list_names array.
+    // the third param(3) is the location in string_list_names array.
     int32_t ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 3, &rawDataDts,
         STRING_ATTR_VALUE);
     if ((ret == HDF_SUCCESS) || (strcmp(rawDataDts, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
 
-    // the third param(1) is the loction in string_list_names array.
+    // the third param(1) is the location in string_list_names array.
     ret = g_devResInstance->GetStringArrayElem(fingerprintNode, READ_U32_INDEX, 1, &rawDataDts, STRING_ATTR_VALUE);
     if ((ret == HDF_SUCCESS) || (strcmp(rawDataDts, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
         return HDF_FAILURE;

@@ -30,7 +30,7 @@ static char *HcsAssembleNodeRefName(char *buff, uint32_t buffSize, const char *n
     }
     char *str = strdup(buff);
     if (str == NULL) {
-        HCS_ERROR("%s %d %s OOM", __FILE__, __LINE__, __func__);
+        HCS_ERROR("%s:%d OOM", __func__, __LINE__);
         return NULL;
     }
     return str;
@@ -83,65 +83,59 @@ static char *HcsGetNodeRefPath(uint64_t hash)
     return NULL;
 }
 
-static int32_t HcsDecompilePrintBaseType(char *buffer, uint32_t bufferSize, const ParserObject *object);
+static int32_t HcsDecompilePrintBaseType(const ParserObject *object);
 
-static int32_t HcsDecompilePrintArrayType(char *buffer, uint32_t bufferSize, const ParserObject *object)
+static int32_t HcsDecompilePrintArrayType(const ParserObject *object)
 {
-    int32_t res = sprintf_s(buffer, bufferSize, "[");
-    PRINTF_CHECK_AND_RETURN(res);
+    int32_t res;
+    PRINTF_CHECK_AND_RETURN(HcsFormatOutputWrite("["));
     ParserObject *arrayElement = (ParserObject *)object->objectBase.child;
     while (arrayElement->objectBase.next) {
-        res = HcsDecompilePrintBaseType(buffer + strlen(buffer), bufferSize - strlen(buffer), arrayElement);
+        res = HcsDecompilePrintBaseType(arrayElement);
         if (res) {
             return EOUTPUT;
         }
-        res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), ", ");
-        PRINTF_CHECK_AND_RETURN(res);
+        PRINTF_CHECK_AND_RETURN(HcsFormatOutputWrite(", "));
         arrayElement = (ParserObject *)arrayElement->objectBase.next;
     }
-    res = HcsDecompilePrintBaseType(buffer + strlen(buffer), bufferSize - strlen(buffer), arrayElement);
+    res = HcsDecompilePrintBaseType(arrayElement);
     if (res) {
         return EOUTPUT;
     }
-    res = sprintf_s(buffer + strlen(buffer), bufferSize - strlen(buffer), "]");
-    PRINTF_CHECK_AND_RETURN(res);
 
-    return NOERR;
+    return HcsFormatOutputWrite("]");
 }
 
-static int32_t HcsDecompilePrintBaseType(char *buffer, uint32_t bufferSize, const ParserObject *object)
+static int32_t HcsDecompilePrintBaseType(const ParserObject *object)
 {
-    int32_t res;
+    int32_t res = NOERR;
     switch (object->objectBase.type) {
         case PARSEROP_UINT8:
         case PARSEROP_UINT16:
         case PARSEROP_UINT32:
         case PARSEROP_UINT64:
-            res = sprintf_s(buffer, bufferSize, "0x%"PRIx64, object->objectBase.integerValue);
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite("0x%"PRIx64, object->objectBase.integerValue);
             break;
         case PARSEROP_STRING:
-            res = sprintf_s(buffer, bufferSize, "\"%s\"", object->objectBase.stringValue);
-            PRINTF_CHECK_AND_RETURN(res);
+            res = HcsFormatOutputWrite("\"%s\"", object->objectBase.stringValue);
             break;
         case PARSEROP_NODEREF: {
             char *refPath = HcsGetNodeRefPath(object->objectBase.value);
             if (refPath == NULL) {
                 return EOUTPUT;
             }
-            res = sprintf_s(buffer, bufferSize, "&%s", refPath);
+            res = HcsFormatOutputWrite("&%s", refPath);
             HcsMemFree(refPath);
-            PRINTF_CHECK_AND_RETURN(res);
         }
             break;
         case PARSEROP_ARRAY:
-            return HcsDecompilePrintArrayType(buffer, bufferSize, object);
+            return HcsDecompilePrintArrayType(object);
         default:
             HCS_ERROR("unknown OpCode %u", object->objectBase.type);
             return EFAIL;
     }
 
-    return NOERR;
+    return res;
 }
 
 static int32_t HcsDecompileOutputWalk(ParserObject *current, int32_t walkDepth)
@@ -151,41 +145,31 @@ static int32_t HcsDecompileOutputWalk(ParserObject *current, int32_t walkDepth)
     }
 
     int32_t res;
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
     int32_t tabSize = walkDepth * HCS_TAB_SIZE;
     if (walkDepth) {
-        res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "%*c", tabSize, ' ');
-        PRINTF_CHECK_AND_RETURN(res);
+        PRINTF_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c", tabSize, ' '));
     }
 
     switch (current->objectBase.type) {
         case PARSEROP_CONFNODE:
-            res = sprintf_s(writeBuffer + strlen(writeBuffer), WRITE_BUFFER_LEN - strlen(writeBuffer),
-                "%s {\n", current->configNode.name);
-            PRINTF_CHECK_AND_RETURN(res);
+            OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%s {\n", current->configNode.name));
             if (current->objectBase.child == NULL) {
-                res = sprintf_s(writeBuffer + strlen(writeBuffer) - 1,
-                    WRITE_BUFFER_LEN - strlen(writeBuffer) + 1, "}\n");
-                PRINTF_CHECK_AND_RETURN(res);
+                return HcsFormatOutputWrite("%*c}\n", tabSize, ' ');
             }
             break;
         case PARSEROP_CONFTERM:
-            res = sprintf_s(writeBuffer + strlen(writeBuffer), WRITE_BUFFER_LEN - strlen(writeBuffer),
-                "%s = ", current->configNode.name);
-            PRINTF_CHECK_AND_RETURN(res);
-            res = HcsDecompilePrintBaseType(writeBuffer + strlen(writeBuffer), WRITE_BUFFER_LEN - strlen(writeBuffer),
-                (ParserObject *)current->configNode.child);
+            OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%s = ", current->configNode.name));
+            res = HcsDecompilePrintBaseType(
+                (ParserObject *) current->configNode.child);
             if (res) {
                 return res;
             }
-            res = sprintf_s(writeBuffer + strlen(writeBuffer), WRITE_BUFFER_LEN - strlen(writeBuffer), ";\n");
-            PRINTF_CHECK_AND_RETURN(res);
-            break;
+            return HcsFormatOutputWrite(";\n");
         default:
             break;
     }
 
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return NOERR;
 }
 
 static int32_t HcsDecompileCloseBraceGen(ParserObject *current, int32_t walkDepth)
@@ -193,22 +177,13 @@ static int32_t HcsDecompileCloseBraceGen(ParserObject *current, int32_t walkDept
     if (current->objectBase.type != PARSEROP_CONFNODE) {
         return NOERR;
     }
-    int32_t res;
     int32_t tabSize = walkDepth * HCS_TAB_SIZE;
-    char writeBuffer[WRITE_BUFFER_LEN] = {'\0'};
 
-    if (current != HcsGetParserRoot()) {
-        res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "%*c}\n", tabSize, ' ');
-        PRINTF_CHECK_AND_RETURN(res);
-    } else {
-        res = sprintf_s(writeBuffer, WRITE_BUFFER_LEN, "}\n");
-        PRINTF_CHECK_AND_RETURN(res);
-    }
-
-    return HcsOutputWrite(writeBuffer, strlen(writeBuffer));
+    return current != HcsGetParserRoot() ? HcsFormatOutputWrite("%*c}\n", tabSize, ' ') :
+        HcsFormatOutputWrite("}\n");
 }
 
-int32_t HcsDecompileOutput()
+int32_t HcsDecompileOutput(void)
 {
     ParserObject *astRoot = HcsGetParserRoot();
     if (astRoot == NULL) {
@@ -221,8 +196,7 @@ int32_t HcsDecompileOutput()
         goto OUT;
     }
 
-    const char *fileHeader = HCS_DECOMPILE_FILE_HEADER;
-    if (HcsOutputWrite(fileHeader, strlen(fileHeader))) {
+    if (HcsFormatOutputWrite(HCS_DECOMPILE_FILE_HEADER) != EOK) {
         goto OUT;
     }
 

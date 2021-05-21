@@ -18,8 +18,8 @@
  * @brief constant reset manage type
  */
 enum ResetType {
-    ResetAlwaysOn = 0,
-    ResetManagedByGPIO = 1
+    RESET_ALWAYS_ON = 0,
+    RESET_MANAGED_BY_GPIO = 1
 };
 
 struct HdfWlanResetData {
@@ -44,7 +44,7 @@ int32_t HdfChipReset(struct ResetManager *resetManager)
         return HDF_FAILURE;
     }
     resetMgrImpl = (struct ResetManagerImpl*)resetManager;
-    if (resetMgrImpl->resetData.resetCfg.resetType == ResetAlwaysOn) {
+    if (resetMgrImpl->resetData.resetCfg.resetType == RESET_ALWAYS_ON) {
         HDF_LOGE("%s: the reset type is not managed", __func__);
         return HDF_FAILURE;
     }
@@ -62,7 +62,7 @@ int32_t HdfChipReset(struct ResetManager *resetManager)
 
     ret = GpioWrite(resetMgrImpl->resetData.resetCfg.gpioId, !resetMgrImpl->resetData.resetCfg.activeLevel);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write deactive fail! ret=%d", __func__, ret);
+        HDF_LOGE("%s: write deactivate fail! ret=%d", __func__, ret);
         return ret;
     }
     OsalMSleep(resetMgrImpl->resetData.bootUpHoldTime);

@@ -62,7 +62,7 @@ struct BusDev;
  * @version 1.0
  */
 enum WifiMainFeatureType {
-    HDF_WIFI_FEATURE_AP,       /**< AP */
+    HDF_WIFI_FEATURE_AP,       /**< Access point (AP) */
     HDF_WIFI_FEATURE_STA,      /**< Station */
     HDF_WIFI_FEATURE_P2P,      /**< Peer-to-peer (P2P) */
     HDF_WIFI_FEATURE_NAN,      /**< Neighbor Awareness Networking (NAN) */

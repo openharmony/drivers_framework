@@ -19,13 +19,13 @@ int DevmgrServiceClntAttachDeviceHost(uint16_t hostId, struct IDevHostService *h
     struct IDevmgrService *devMgrSvcIf = NULL;
     struct DevmgrServiceClnt *inst = DevmgrServiceClntGetInstance();
     if ((inst == NULL) || (inst->devMgrSvcIf == NULL)) {
-        HDF_LOGE("Attach device host failed, get device manager service client is null");
+        HDF_LOGE("failed to attach device host, get device manager service client is null");
         return HDF_FAILURE;
     }
 
     devMgrSvcIf = inst->devMgrSvcIf;
     if (devMgrSvcIf->AttachDeviceHost == NULL) {
-        HDF_LOGE("Attach device host failed, attach device host function is null");
+        HDF_LOGE("failed to attach device host, attach device host function is null");
         return HDF_FAILURE;
     }
     return devMgrSvcIf->AttachDeviceHost(devMgrSvcIf, hostId, hostService);
@@ -36,13 +36,13 @@ int DevmgrServiceClntAttachDevice(const struct HdfDeviceInfo *deviceInfo, struct
     struct IDevmgrService *devMgrSvcIf = NULL;
     struct DevmgrServiceClnt *inst = DevmgrServiceClntGetInstance();
     if ((inst == NULL) || (inst->devMgrSvcIf == NULL)) {
-        HDF_LOGE("Device manager service client attach device failed, inst is null");
+        HDF_LOGE("devmgr client failed to attach device, inst is null");
         return HDF_FAILURE;
     }
 
     devMgrSvcIf = inst->devMgrSvcIf;
     if (devMgrSvcIf->AttachDevice == NULL) {
-        HDF_LOGE("Device manager service client attach device failed, dmsOps->AttachDevice is nul");
+        HDF_LOGE("devmgr client failed to attach device, dmsOps->AttachDevice is nul");
         return HDF_FAILURE;
     }
     return devMgrSvcIf->AttachDevice(devMgrSvcIf, deviceInfo, deviceToken);

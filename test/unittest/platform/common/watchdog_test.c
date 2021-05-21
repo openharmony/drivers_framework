@@ -186,7 +186,7 @@ static int32_t TestCaseWatchdogReliability(struct WatchdogTester *tester)
     (void)WatchdogSetTimeout(NULL, WATCHDOG_TEST_TIMEOUT);
     /* invalid device handle */
     (void)WatchdogGetTimeout(NULL, &timeout);
-    /* invalid timout pointer */
+    /* invalid timeout pointer */
     (void)WatchdogGetTimeout(tester->handle, NULL);
 
     HDF_LOGE("%s: test dfr for WatchdogFeed ...", __func__);

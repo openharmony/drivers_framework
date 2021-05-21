@@ -84,19 +84,19 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
     int32_t ret = HDF_FAILURE;
     struct HdfSBuf *data = NULL;
     struct HdfIoService *ioService = HdfIoServiceBind(SAMPLE_SERVICE);
-    ASSERT_TRUE(ioService != NULL);
+    EXPECT_TRUE(ioService != NULL);
     data = HdfSBufObtainDefaultSize();
-    ASSERT_TRUE(data != NULL);
+    EXPECT_TRUE(data != NULL);
     EXPECT_TRUE(HdfSbufWriteString(data, "sample_driver"));
     EXPECT_TRUE(HdfSbufWriteString(data, "sample_service1"));
-    int64_t timeBefore = OsalGetSysTimeMs();
+    uint64_t timeBefore = OsalGetSysTimeMs();
     ret = ioService->dispatcher->Dispatch(&ioService->object, SAMPLE_DRIVER_REGISTER_DEVICE, data, NULL);
     EXPECT_TRUE(ret == HDF_SUCCESS);
-    int64_t timeAfter = OsalGetSysTimeMs();
+    uint64_t timeAfter = OsalGetSysTimeMs();
     EXPECT_TRUE((timeAfter - timeBefore) < 100);
 
     struct HdfIoService *ioService1 = HdfIoServiceBind("sample_service1");
-    ASSERT_TRUE(ioService1 != NULL);
+    EXPECT_TRUE(ioService1 != NULL);
     HdfIoServiceRecycle(ioService1);
 
     ret = ioService->dispatcher->Dispatch(&ioService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, NULL);

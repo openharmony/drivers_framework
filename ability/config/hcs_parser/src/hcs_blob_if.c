@@ -13,7 +13,7 @@
 
 static bool g_byteAlign = false;
 
-bool HcsIsByteAlign()
+bool HcsIsByteAlign(void)
 {
     return g_byteAlign;
 }
@@ -185,7 +185,7 @@ static bool CheckHcsBlobLength(uint32_t length, struct HbcHeader *header)
         HDF_LOGI("%s: the blobLength: %u, byteAlign: %d", __func__, blobLength, g_byteAlign);
     }
     if ((length != blobLength) || (blobLength < minLength)) {
-        HDF_LOGE("%s failed, Hcsblob file length is %u, But the length of calculation is %u",
+        HDF_LOGE("%s failed, Hcsblob file length is %u,  but the calculated length is %u",
                  __func__, length, blobLength);
         return false;
     }
@@ -201,7 +201,7 @@ bool HcsCheckBlobFormat(const char *start, uint32_t length)
     }
     header = (struct HbcHeader *)start;
     if (header->magicNumber != HBC_MAGIC_NUMBER) {
-        HDF_LOGE("%s failed, the magic of HBC is %x", __func__, header->magicNumber);
+        HDF_LOGE("%s failed, the magic number of HBC is %x", __func__, header->magicNumber);
         return false;
     }
     if (!CheckHcsBlobLength(length, header)) {

@@ -17,4 +17,4 @@
 #define PLAT_LOGV(fmt, arg...) HDF_LOGV(fmt, ##arg)
 #endif
 
-#endif
+#endif /* PLATFORM_LOG_H */

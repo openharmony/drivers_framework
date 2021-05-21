@@ -23,19 +23,19 @@ bool HcsDecompile(const char *hcsBlob, uint32_t offset, struct DeviceResourceNod
 {
     int32_t nodeLength = HcsGetNodeLength(hcsBlob + offset);
     if (nodeLength < 0) {
-        HDF_LOGE("%s failed, HcsGetNodeLength failed", __func__);
+        HDF_LOGE("%s failed, HcsGetNodeLength error", __func__);
         return false;
     }
 
     int32_t treeMemLength = GetHcsTreeSize(hcsBlob + offset, nodeLength);
     if (treeMemLength <= 0) {
-        HDF_LOGE("%s failed, GetHcsTreeSize failed", __func__);
+        HDF_LOGE("%s failed, GetHcsTreeSize error, treeMemLength = %d", __func__, treeMemLength);
         return false;
     }
 
     char *treeMem = (char *)OsalMemCalloc(treeMemLength);
     if (treeMem == NULL) {
-        HDF_LOGE("%s failed, OsalMemCalloc Device tree memory failed", __func__);
+        HDF_LOGE("%s failed, OsalMemCalloc error", __func__);
         return false;
     }
     int32_t treeLayer = GenerateCfgTree(hcsBlob + offset, nodeLength, treeMem, root);

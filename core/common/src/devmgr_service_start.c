@@ -31,8 +31,7 @@ static void GetDeviceServiceNameByClass(DeviceClass deviceClass, struct HdfSBuf 
         return;
     }
 
-    reply->readPos = 0;
-    reply->writePos = 0;
+    HdfSbufFlush(reply);
     HdfSListIteratorInit(&itHost, &devMgrSvc->hosts);
     while (HdfSListIteratorHasNext(&itHost)) {
         hostClnt = (struct DevHostServiceClnt *)HdfSListIteratorNext(&itHost);
@@ -78,21 +77,21 @@ int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data
         case DEVMGR_UNLOAD_SERVICE:
             svcName = HdfSbufReadString(data);
             if (svcName == NULL) {
-                HDF_LOGE("%s: get svc name is null", __func__);
+                HDF_LOGE("%s: svc name is null", __func__);
                 break;
             }
             ret = DevSvcManagerClntUnsubscribeService(svcName);
             break;
         case DEVMGR_GET_SERVICE:
             if (!HdfSbufReadInt32(data, &deviceClass)) {
-                HDF_LOGE("%s: get deviceClass failed", __func__);
+                HDF_LOGE("%s: failed to get deviceClass", __func__);
                 break;
             }
             GetDeviceServiceNameByClass(deviceClass, reply);
             ret = HDF_SUCCESS;
             break;
         default:
-            HDF_LOGE("%s: Currently, this configuration type is not supported. the type is %d", __func__, code);
+            HDF_LOGE("%s: unsupported configuration type: %d", __func__, code);
             break;
     }
     OsalMutexUnlock(&devMgrSvc->devMgrMutex);
@@ -104,17 +103,17 @@ void DeviceManagerSetQuickLoad(int loadFlag)
     g_isQuickLoad = loadFlag;
 }
 
-int DeviceManagerIsQuickLoad()
+int DeviceManagerIsQuickLoad(void)
 {
     return g_isQuickLoad;
 }
 
-int DeviceManagerStart()
+int DeviceManagerStart(void)
 {
     struct IDevmgrService *instance = DevmgrServiceGetInstance();
 
     if (instance == NULL || instance->StartService == NULL) {
-        HDF_LOGE("Device manager start failed, service instance is null!");
+        HDF_LOGE("device manager start failed, service instance is null");
         return HDF_FAILURE;
     }
     struct HdfIoService *ioService = HdfIoServicePublish(DEV_MGR_NODE, DEV_MGR_NODE_PERM);
@@ -131,7 +130,7 @@ int DeviceManagerStart()
 int DeviceManagerStartStep2()
 {
     if (DeviceManagerIsQuickLoad() == DEV_MGR_SLOW_LOAD) {
-        HDF_LOGW("%s device manager is not set quick load!", __func__);
+        HDF_LOGW("%s: device manager is not set to QuickLoad mode", __func__);
         return HDF_SUCCESS;
     }
     struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();

@@ -16,14 +16,14 @@
 
 #define HDF_LOG_TAG devsvc_manager
 
-struct DevSvcRecord *DevSvcManagerSearchService(struct IDevSvcManager *inst, uint32_t serviceKey)
+static struct DevSvcRecord *DevSvcManagerSearchService(struct IDevSvcManager *inst, uint32_t serviceKey)
 {
     struct HdfSListIterator it;
     struct DevSvcRecord *record = NULL;
     struct DevSvcRecord *searchResult = NULL;
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     if (devSvcManager == NULL) {
-        HDF_LOGE("Search service failed, devSvcManager is null");
+        HDF_LOGE("failed to search service, devSvcManager is null");
         return NULL;
     }
 
@@ -44,13 +44,13 @@ int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *svcName, st
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     if ((devSvcManager == NULL) || (service == NULL) || (svcName == NULL)) {
-        HDF_LOGE("Add service failed, input param is null");
+        HDF_LOGE("failed to add service, input param is null");
         return HDF_FAILURE;
     }
 
     struct DevSvcRecord *record = DevSvcRecordNewInstance();
     if (record == NULL) {
-        HDF_LOGE("Add service failed, record is null");
+        HDF_LOGE("failed to add service , record is null");
         return HDF_FAILURE;
     }
 
@@ -94,6 +94,7 @@ void DevSvcManagerRemoveService(struct IDevSvcManager *inst, const char *svcName
         HdfSListRemove(&devSvcManager->services, &serviceRecord->entry);
         OsalMutexUnlock(&devSvcManager->mutex);
     }
+    DevSvcRecordFreeInstance(serviceRecord);
 }
 
 struct HdfDeviceObject *DevSvcManagerGetObject(struct IDevSvcManager *inst, const char *svcName)
@@ -134,7 +135,7 @@ bool DevSvcManagerConstruct(struct DevSvcManager *inst)
     devSvcMgrIf->GetObject = DevSvcManagerGetObject;
     HdfSListInit(&inst->services);
     if (OsalMutexInit(&inst->mutex) != HDF_SUCCESS) {
-        HDF_LOGE("Device service manager create mutex failed!");
+        HDF_LOGE("failed to create device service manager mutex");
         return false;
     }
     return true;
@@ -171,4 +172,3 @@ struct IDevSvcManager *DevSvcManagerGetInstance()
     }
     return instance;
 }
-

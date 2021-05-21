@@ -20,8 +20,8 @@ extern "C" {
 #define DEV_MGR_NODE "dev_mgr"
 #define MAX_MODE_SIZE 0777
 #define DEV_NODE_PATH_MODE 0755
-#define HDF_WRITE_READ _IOWR('b', 1, struct HdfSBuf)
-#define HDF_READ_DEV_EVENT _IOR('b', 2, struct HdfSBuf)
+#define HDF_WRITE_READ _IOWR('b', 1, struct HdfSBuf*)
+#define HDF_READ_DEV_EVENT _IOR('b', 2, struct HdfSBuf*)
 #define HDF_LISTEN_EVENT_START _IO('b', 3)
 #define HDF_LISTEN_EVENT_STOP _IO('b', 4)
 #define HDF_LISTEN_EVENT_WAKEUP _IO('b', 5)

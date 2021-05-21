@@ -11,20 +11,23 @@
 
 #include "devhost_service_if.h"
 #include "hdf_service_observer.h"
-#include "hdf_slist.h"
+#include "hdf_dlist.h"
 #include "osal_mutex.h"
+#include "osal_sysevent.h"
 
 struct DevHostService {
     struct IDevHostService super;
     uint16_t hostId;
     const char *hostName;
-    struct HdfSList devices;
+    struct DListHead devices;
     struct HdfServiceObserver observer;
+    struct HdfSysEventNotifyNode sysEventNotifyNode;
 };
 
 void DevHostServiceConstruct(struct DevHostService *service);
 void DevHostServiceDestruct(struct DevHostService *service);
 int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDeviceInfo *deviceInfo);
+int DevHostServiceDelDevice(struct IDevHostService *inst, const struct HdfDeviceInfo *deviceInfo);
 struct IDevHostService *DevHostServiceNewInstance(uint16_t hostId, const char *hostName);
 void DevHostServiceFreeInstance(struct IDevHostService *service);
 struct HdfObject *DevHostServiceCreate(void);

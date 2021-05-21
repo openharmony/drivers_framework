@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "message_router.h"
 #include "hdf_base.h"
 #ifdef USERSPACE_CLIENT_SUPPORT
 #include <signal.h>
@@ -14,7 +15,6 @@
 #include "utils/hdf_log.h"
 #include "osal/osal_mutex.h"
 #include "securec.h"
-#include "message_router.h"
 #include "message_router_inner.h"
 #include "message_dispatcher.h"
 
@@ -25,7 +25,7 @@
 #endif
 
 #ifndef UINT8_MAX
-#define UINT8_MAX 256
+#define UINT8_MAX 255
 #endif
 
 #if MESSAGE_ENGINE_MAX_DISPATCHER > UINT8_MAX
@@ -71,7 +71,7 @@ static void ReleaseRemoteService(RemoteService *service)
 static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bool requireLock)
 {
     if (dispatcherId >= MESSAGE_ENGINE_MAX_DISPATCHER) {
-        HDF_LOGE("%s:Input ID is too big.input=%d", __func__, dispatcherId);
+        HDF_LOGE("%s:Input ID is too big.input=%u", __func__, dispatcherId);
         return NULL;
     }
 
@@ -106,7 +106,7 @@ static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bo
 static ErrorCode RegDispatcher(DispatcherId dispatcherId, MessageDispatcher *dispatcher)
 {
     if (dispatcherId >= MESSAGE_ENGINE_MAX_DISPATCHER) {
-        HDF_LOGE("%s:dispatcher id is too big!id=%d", __func__, dispatcherId);
+        HDF_LOGE("%s:dispatcher id is too big!id=%u", __func__, dispatcherId);
         return ME_ERROR_PARA_WRONG;
     }
 
@@ -122,7 +122,7 @@ static ErrorCode RegDispatcher(DispatcherId dispatcherId, MessageDispatcher *dis
             break;
         }
         if (g_dispatchers[dispatcherId] != NULL) {
-            HDF_LOGE("%s:DispatcherId conflict!ID=%d", __func__, dispatcherId);
+            HDF_LOGE("%s:DispatcherId conflict!ID=%u", __func__, dispatcherId);
             errCode = ME_ERROR_DISPATCHERID_CONFLICT;
         } else {
             g_dispatchers[dispatcherId] = dispatcher;
@@ -154,7 +154,7 @@ ErrorCode AddDispatcher(DispatcherConfig *config)
         if (dispatcher->Start != NULL) {
             errCode = dispatcher->Start(dispatcher);
             if (errCode != ME_SUCCESS) {
-                HDF_LOGE("%s:Start dispatcher %d failed!errCode=%d", __func__, config->dispatcherId, errCode);
+                HDF_LOGE("%s:Start dispatcher %u failed!errCode=%d", __func__, config->dispatcherId, errCode);
                 break;
             }
         }
@@ -242,7 +242,7 @@ static ErrorCode DoRegistService(const NodeId nodeId, const DispatcherId dispatc
         return ME_ERROR_WRONG_STATUS;
     }
 
-    HDF_LOGW("%s:Regist service Node:%d;Dispatcher:%d;Service:%d", __func__, nodeId, dispatcherId,
+    HDF_LOGW("%s:Register service Node:%d;Dispatcher:%u;Service:%u", __func__, nodeId, dispatcherId,
         remoteService->serviceId);
 
     if (g_servicesIndex[remoteService->serviceId].remoteService != NULL) {
@@ -263,7 +263,7 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
     }
 
     if (mapper->serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
-        HDF_LOGE("%s:serviceId exceed max value! ServiceId=%d", __func__, mapper->serviceId);
+        HDF_LOGE("%s:serviceId exceed max value! ServiceId=%u", __func__, mapper->serviceId);
         return ME_ERROR_PARA_WRONG;
     }
     HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
@@ -275,6 +275,7 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
     MessageNode *node = RefMessageNode(nodeId, false);
     if (node == NULL) {
         HDF_LOGE("%s:Node not found!", __func__);
+        OsalMutexUnlock(&g_routerMutex);
         return ME_ERROR_NO_SUCH_NODE;
     }
     RemoteService *remoteService = NULL;
@@ -556,7 +557,7 @@ static ErrorCode DoStartMessageRouter(uint8_t nodesConfig)
         return ME_ERROR_MUTI_INIT_NOT_ALLOWED;
     }
 
-    for (i = 0; i < UINT8_MAX && i < MESSAGE_ENGINE_MAX_SERVICE; i++) {
+    for (i = 0; i < MESSAGE_ENGINE_MAX_SERVICE; i++) {
         g_servicesIndex[i].remoteService = NULL;
         g_servicesIndex[i].nodeIndex = NO_SUCH_NODE_INDEX;
         g_servicesIndex[i].dispatcherId = BAD_DISPATCHER_ID;
@@ -599,10 +600,10 @@ ErrorCode EnableDefaultDispatcher(void)
         .queueSize = DEFAULT_DISPATCHER_QUEUE_SIZE,
         .priorityLevelCount = DEFAULT_DISPATCHER_PRIORITY_COUNT
     };
-    HDF_LOGI("Regist default dispatcher...");
+    HDF_LOGI("Register default dispatcher...");
     ErrorCode errCode = AddDispatcher(&config);
     if (errCode != ME_SUCCESS) {
-        HDF_LOGE("Regist default dispatcher failed!ret=%d", errCode);
+        HDF_LOGE("Register default dispatcher failed!ret=%d", errCode);
     }
     return errCode;
 }

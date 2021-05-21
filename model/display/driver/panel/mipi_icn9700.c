@@ -28,12 +28,12 @@
 #define HORIZONTAL_BACK_PORCH     20
 #define HORIZONTAL_FRONT_PORCH    20
 #define HORIZONTAL_SYNC_WIDTH     10
-#define VERTIACL_BACK_PORCH       14
-#define VERTIACL_FRONT_PORCH      16
-#define VERTIACL_SYNC_WIDTH       2
+#define VERTICAL_BACK_PORCH       14
+#define VERTICAL_FRONT_PORCH      16
+#define VERTICAL_SYNC_WIDTH       2
 #define FRAME_RATE                60
 
-/* panel on commond payload */
+/* panel on command payload */
 static uint8_t g_payLoad0[] = { 0xF0, 0x5A, 0x5A };
 static uint8_t g_payLoad1[] = { 0xF1, 0xA5, 0xA5 };
 static uint8_t g_payLoad2[] = { 0xB3, 0x03, 0x03, 0x03, 0x07, 0x05, 0x0D, 0x0F, 0x11, 0x13, 0x09, 0x0B };
@@ -84,7 +84,7 @@ struct DsiCmdDesc g_OnCmd[] = {
     { 0x05, 120, sizeof(g_payLoad20), g_payLoad20 },
 };
 
-/* panel off commond payload */
+/* panel off command payload */
 static uint8_t g_offPayLoad0[] = { 0x28 };
 static uint8_t g_offPayLoad1[] = { 0x10 };
 struct DsiCmdDesc g_offCmd[] = {
@@ -257,12 +257,12 @@ static struct PanelInfo g_panelInfo = {
     .hbp = HORIZONTAL_BACK_PORCH,       /* horizontal back porch */
     .hfp = HORIZONTAL_FRONT_PORCH,      /* horizontal front porch */
     .hsw = HORIZONTAL_SYNC_WIDTH,       /* horizontal sync width */
-    .vbp = VERTIACL_BACK_PORCH,         /* vertiacl back porch */
-    .vfp = VERTIACL_FRONT_PORCH,        /* vertiacl front porch */
-    .vsw = VERTIACL_SYNC_WIDTH,         /* vertiacl sync width */
+    .vbp = VERTICAL_BACK_PORCH,         /* vertical back porch */
+    .vfp = VERTICAL_FRONT_PORCH,        /* vertical front porch */
+    .vsw = VERTICAL_SYNC_WIDTH,         /* vertical sync width */
     .frameRate = FRAME_RATE,            /* frame rate */
     .intfType = MIPI_DSI,               /* panel interface type */
-    .intfSync = OUTPUT_USER,            /* output timming type */
+    .intfSync = OUTPUT_USER,            /* output timing type */
     /* mipi config info */
     .mipi = { DSI_2_LANES, DSI_VIDEO_MODE, VIDEO_BURST_MODE, FORMAT_RGB_24_BIT },
     /* backlight config info */
@@ -270,8 +270,14 @@ static struct PanelInfo g_panelInfo = {
     .pwm = { BLK_PWM1, PWM_MAX_PERIOD },
 };
 
+static struct PanelStatus g_panelStatus = {
+    .powerStatus = POWER_STATUS_OFF,
+    .currLevel = MIN_LEVEL,
+};
+
 static struct PanelData g_panelData = {
     .info = &g_panelInfo,
+    .status = &g_panelStatus,
     .init = Icn9700Init,
     .on = Icn9700On,
     .off = Icn9700Off,

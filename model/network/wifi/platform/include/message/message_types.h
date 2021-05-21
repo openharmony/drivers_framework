@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef __MESSAGE_TYPES_H__
-#define __MESSAGE_TYPES_H__
+#ifndef MESSAGE_TYPES_H
+#define MESSAGE_TYPES_H
 #include "hdf_base.h"
 
 typedef uint8_t NodeId;

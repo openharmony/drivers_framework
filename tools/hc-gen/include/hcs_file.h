@@ -34,7 +34,7 @@ struct HcsSourceName {
     struct HcsSourceName *next;
 };
 
-const char *HcsGetInputFileName();
+const char *HcsGetInputFileName(void);
 
 void HcsSetInputFileName(const char *name);
 
@@ -46,15 +46,19 @@ int32_t HcsSetOutPutName(const char *name);
 
 int32_t HcsSetOutPutNameWithCurrentWorkPath(const char *name);
 
-const char *HcsGetOutPutFileName();
+const char *HcsGetOutPutFilePath(void);
 
-const char *HcsGetStripedOutputFileName();
+char *HcsGetOutputFileNameWithoutSuffix(void);
+
+const char *HcsGetOutputFileName(void);
 
 struct HcsFile *HcsOpenOutputFile(const char *suffix);
 
 void HcsCloseOutput(struct HcsFile *output);
 
 int32_t HcsOutputWrite(const void *buffer, uint32_t length);
+
+int32_t HcsFormatOutputWrite(const char *format, ...);
 
 int32_t HcsOutputWriteAlign(const void *buffer, uint32_t length);
 
@@ -66,13 +70,13 @@ void HcsResetOutputCurrentCount(void);
 
 void HcsSourceQueuePush(struct HcsFile *sourceFile);
 
-void HcsSourceQueuePop();
+void HcsSourceQueuePop(void);
 
-struct HcsFile *HcsSourceQueueTop();
+struct HcsFile *HcsSourceQueueTop(void);
 
-uint32_t HcsSourceQueueSize();
+uint32_t HcsSourceQueueSize(void);
 
-const char *HcsGetCurrentSourceName();
+const char *HcsGetCurrentSourceName(void);
 
 int32_t HcsSourceNameSetPush(const char *name);
 

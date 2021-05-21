@@ -48,7 +48,7 @@ static int32_t LcdkitInit(void)
     struct PanelConfig *panelCfg = GetPanelCfg();
 
     if (panelCfg->info.intfType != MIPI_DSI) {
-        HDF_LOGE("%s:not support intf: %d", __func__, panelCfg->info.intfType);
+        HDF_LOGE("%s:not support intf: %u", __func__, panelCfg->info.intfType);
         return HDF_FAILURE;
     }
     ret = PowerInit();
@@ -65,6 +65,8 @@ static int32_t LcdkitInit(void)
     if (panelCfg->info.blk.type == BLK_PWM) {
         panelCfg->pwmHandle = PwmOpen(panelCfg->info.pwm.dev);
         if (panelCfg->pwmHandle == NULL) {
+            MipiDsiClose(panelCfg->dsiHandle);
+            panelCfg->dsiHandle = NULL;
             HDF_LOGE("%s: PwmOpen failed", __func__);
             return HDF_FAILURE;
         }
@@ -222,8 +224,8 @@ static int32_t SetBacklightByMipi(uint32_t level)
 {
     int32_t ret;
     struct PanelConfig *panelCfg = GetPanelCfg();
-    uint8_t payLoad[] = { 0x51, 0x00 };
-    struct DsiCmdDesc bklCmd = { 0x15, 0, sizeof(payLoad), payLoad };
+    uint8_t payLoad[] = { 0x51, 0x00 }; // panel backlight cmd
+    struct DsiCmdDesc bklCmd = { 0x15, 0, sizeof(payLoad), payLoad }; // dsi backlight cmd
 
     if (panelCfg->dsiHandle == NULL) {
         HDF_LOGE("%s: dsiHandle is null", __func__);

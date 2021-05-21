@@ -28,6 +28,16 @@ void HdfSRefAcquire(struct HdfSRef *sref)
     }
 }
 
+int HdfSRefCount(const struct HdfSRef *sref)
+{
+    if (sref == NULL) {
+        HDF_LOGE("invalid sref");
+        return 0;
+    }
+
+    return OsalAtomicRead(&sref->refs);
+}
+
 void HdfSRefRelease(struct HdfSRef *sref)
 {
     int32_t lockRef;
@@ -55,5 +65,6 @@ void HdfSRefConstruct(struct HdfSRef *sref, struct IHdfSRefListener *listener)
     sref->listener = listener;
     sref->Acquire = HdfSRefAcquire;
     sref->Release = HdfSRefRelease;
+    sref->Count = HdfSRefCount;
 }
 

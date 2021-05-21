@@ -90,12 +90,15 @@ struct WifiModule *HdfWlanGetModule(void)
 
 struct HdfDeviceObject *HdfWlanGetDevice(void)
 {
+    if (g_hdfWlanProductData == NULL) {
+        return NULL;
+    }
     return g_hdfWlanProductData->device;
 }
 
 struct HdfWlanDevice *HdfWlanGetWlanDevice(uint8_t chipId)
 {
-    if (chipId >= MAX_WLAN_DEVICE) {
+    if (chipId >= MAX_WLAN_DEVICE || g_hdfWlanProductData == NULL) {
         return NULL;
     }
     return g_hdfWlanProductData->wlanDevice[chipId];

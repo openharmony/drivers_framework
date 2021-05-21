@@ -37,6 +37,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define OSAL_WAIT_FOREVER 0xFFFFFFFF
+
 /**
  * @brief Describes a semaphore.
  */

@@ -96,6 +96,7 @@ struct TouchChipOps {
     int32_t (*Resume)(ChipDevice *device);
     int32_t (*Suspend)(ChipDevice *device);
     int32_t (*DataHandle)(ChipDevice *device);
+    int32_t (*UpdateFirmware)(ChipDevice *device);
 };
 
 typedef struct {

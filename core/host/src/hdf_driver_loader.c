@@ -23,27 +23,28 @@ struct HdfDeviceNode *HdfDriverLoaderLoadNode(
     struct HdfDriverEntry *driverEntry = NULL;
     struct HdfDeviceNode *devNode = NULL;
     if ((loader == NULL) || (loader->GetDriverEntry == NULL)) {
-        HDF_LOGE("loader or loader->GetDriverEntry is null");
+        HDF_LOGE("failed to load node, loader is invalid");
         return NULL;
     }
 
     driverEntry = loader->GetDriverEntry(deviceInfo);
     if (driverEntry == NULL) {
-        HDF_LOGE("Load service failed, deviceEntry is null");
+        HDF_LOGE("failed to load node, deviceEntry is null");
         return NULL;
     }
 
     devNode = HdfDeviceNodeNewInstance();
     if (devNode == NULL) {
-        HDF_LOGE("Load service failed, device node is null");
+        HDF_LOGE("failed to load node, device node is null");
         return NULL;
     }
 
     devNode->driverEntry = driverEntry;
     devNode->deviceInfo = deviceInfo;
     devNode->deviceObject.property = HcsGetNodeByMatchAttr(HdfGetRootNode(), deviceInfo->deviceMatchAttr);
+
     if (devNode->deviceObject.property == NULL) {
-        HDF_LOGW("Get property is null, match attr is: %s", deviceInfo->deviceMatchAttr);
+        HDF_LOGW("failed to load node, property is null, match attr is: %s", deviceInfo->deviceMatchAttr);
     }
 
     if ((deviceInfo->policy == SERVICE_POLICY_PUBLIC) || (deviceInfo->policy == SERVICE_POLICY_CAPACITY)) {
@@ -61,34 +62,38 @@ struct HdfDeviceNode *HdfDriverLoaderLoadNode(
     return devNode;
 }
 
-static void HdfDriverLoaderUnLoadNode(struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo)
+void HdfDriverLoaderUnLoadNode(struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo)
 {
     struct HdfDriverEntry *driverEntry = NULL;
     struct HdfDeviceObject *deviceObject = NULL;
     if ((loader == NULL) || (loader->GetDriverEntry == NULL)) {
-        HDF_LOGE("loader or loader->GetDriverEntry is null");
+        HDF_LOGE("failed to unload service, loader invalid");
         return;
     }
 
     driverEntry = loader->GetDriverEntry(deviceInfo);
     if (driverEntry == NULL) {
-        HDF_LOGE("Load service failed, driverEntry is null");
+        HDF_LOGE("failed to unload service, driverEntry is null");
         return;
     }
     if (driverEntry->Release == NULL) {
-        HDF_LOGI("Device Release func is null");
+        HDF_LOGI("device release func is null");
         return;
     }
     deviceObject = DevSvcManagerClntGetDeviceObject(deviceInfo->svcName);
-    driverEntry->Release(deviceObject);
+    if (deviceObject != NULL) {
+        driverEntry->Release(deviceObject);
+    }
 }
 
-static void HdfDriverLoaderConstruct(struct HdfDriverLoader *inst)
+void HdfDriverLoaderConstruct(struct HdfDriverLoader *inst)
 {
-    struct IDriverLoader *driverLoaderIf = (struct IDriverLoader *)inst;
-    driverLoaderIf->LoadNode = HdfDriverLoaderLoadNode;
-    driverLoaderIf->UnLoadNode = HdfDriverLoaderUnLoadNode;
-    driverLoaderIf->GetDriverEntry = HdfDriverLoaderGetDriverEntry;
+    if (inst != NULL) {
+        struct IDriverLoader *driverLoaderIf = (struct IDriverLoader *)inst;
+        driverLoaderIf->LoadNode = HdfDriverLoaderLoadNode;
+        driverLoaderIf->UnLoadNode = HdfDriverLoaderUnLoadNode;
+        driverLoaderIf->GetDriverEntry = HdfDriverLoaderGetDriverEntry;
+    }
 }
 
 struct HdfObject *HdfDriverLoaderCreate()

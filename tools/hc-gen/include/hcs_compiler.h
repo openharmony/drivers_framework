@@ -18,7 +18,7 @@
 
 #define HBC_MAGIC_NUM 0xA00AA00A
 #define HCS_COMPILER_VERSION_MAJOR 00
-#define HCS_COMPILER_VERSION_MINOR 65
+#define HCS_COMPILER_VERSION_MINOR 66
 
 typedef struct HbcHeader {
     uint32_t magicNumber;
@@ -31,8 +31,8 @@ typedef struct HbcHeader {
 /* Parse compiler options */
 int32_t DoOption(int32_t argc, char *argv[]);
 
-int32_t HcsDoCompile();
+int32_t HcsDoCompile(void);
 
-int32_t HcsDoOptimize();
+int32_t HcsDoOptimize(void);
 
 #endif // HCS_COMPILER_H

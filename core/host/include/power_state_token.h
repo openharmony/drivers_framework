@@ -11,17 +11,19 @@
 
 #include "hdf_sref.h"
 #include "power_state_token_if.h"
+#include "hdf_pm.h"
 
 struct PowerStateToken {
     struct IPowerStateToken super;
-    struct IPowerEventListener *listener;
+    const struct IPowerEventListener *listener;
     struct HdfDeviceObject *deviceObject;
     struct HdfSRef wakeRef;
     HdfPowerState state;
+    uint32_t mode;
 };
 
 struct PowerStateToken *PowerStateTokenNewInstance(
-    struct HdfDeviceObject *deviceObject, struct IPowerEventListener *listener);
+    struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener);
 void PowerStateTokenFreeInstance(struct PowerStateToken *stateToken);
-
+int PowerStateOnSysStateChange(struct PowerStateToken *stateToken, int32_t state);
 #endif /* POWER_STATE_TOKEN_H */

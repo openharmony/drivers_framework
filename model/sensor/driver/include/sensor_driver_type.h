@@ -37,7 +37,7 @@ enum SensorWorkMode {
 };
 
 enum SensorTag {
-    SENSOR_TAG_NONE                = 0,   /**< No sensor type for sensor test*/
+    SENSOR_TAG_NONE                = 0,   /**< No sensor type for sensor test */
     SENSOR_TAG_ACCELEROMETER       = 1,   /**< Acceleration sensor */
     SENSOR_TAG_GYROSCOPE           = 2,   /**< Gyroscope sensor */
     SENSOR_TAG_PHOTOPLETHYSMOGRAPH = 3,   /**< Photoplethysmography sensor */

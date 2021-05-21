@@ -35,7 +35,7 @@ static int32_t ParseWlanStaConfig(const struct DeviceResourceNode *node, struct 
         HDF_LOGE("%s: GetUint8 fail!", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGD("%s: name=%s, mode=%d!", __func__, staConfig->name, staConfig->mode);
+    HDF_LOGD("%s: name=%s, mode=%u!", __func__, staConfig->name, staConfig->mode);
     return HDF_SUCCESS;
 }
 
@@ -73,7 +73,7 @@ static int32_t ParseWlanApConfig(const struct DeviceResourceNode *node, struct H
         HDF_LOGE("%s: get userResNum fail!", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGD("%s: name=%s, mode=%d, vapResNum=%d, userResNum=%d!", __func__, apConfig->name, apConfig->mode,
+    HDF_LOGD("%s: name=%s, mode=%u, vapResNum=%u, userResNum=%u!", __func__, apConfig->name, apConfig->mode,
         apConfig->vapResNum, apConfig->userResNum);
     return HDF_SUCCESS;
 }
@@ -102,7 +102,7 @@ static int32_t ParseWlanP2PConfig(const struct DeviceResourceNode *node, struct 
         HDF_LOGE("%s: mode fail!", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGD("%s: name=%s, mode=%d", __func__, p2pConfig->name, p2pConfig->mode);
+    HDF_LOGD("%s: name=%s, mode=%u", __func__, p2pConfig->name, p2pConfig->mode);
     return HDF_SUCCESS;
 }
 
@@ -125,7 +125,7 @@ static int32_t ParseWlanMac80211Config(const struct DeviceResourceNode *node, st
         HDF_LOGE("%s: mode fail!", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGD("%s: mode=%d", __func__, macConfig->mode);
+    HDF_LOGD("%s: mode=%u", __func__, macConfig->mode);
     return HDF_SUCCESS;
 }
 
@@ -211,10 +211,11 @@ static int32_t ParseWlanModuleConfig(const struct DeviceResourceNode *node, stru
     return HDF_SUCCESS;
 }
 /* BEGIN for WLAN2.1 : Added by hdf-wlan */
-static int32_t ParseWlanPowerConfig(const struct DeviceResourceNode *node, struct HdfConfigWlanPower *masterPowerConfig)
+static int32_t ParseWlanPowerConfig(const struct DeviceResourceNode *node,
+    struct HdfConfigWlanPower *primaryPowerConfig)
 {
     struct DeviceResourceIface *drsOps = NULL;
-    if (node == NULL || masterPowerConfig == NULL) {
+    if (node == NULL || primaryPowerConfig == NULL) {
         HDF_LOGE("%s: one of the input para is NULL!", __func__);
         return HDF_FAILURE;
     }
@@ -224,21 +225,21 @@ static int32_t ParseWlanPowerConfig(const struct DeviceResourceNode *node, struc
         return HDF_FAILURE;
     }
 
-    if (drsOps->GetUint8(node, "powerSeqDelay", &masterPowerConfig->powerSeqDelay, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint8(node, "powerSeqDelay", &primaryPowerConfig->powerSeqDelay, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: powersSeqDelay fail!", __func__);
         return HDF_FAILURE;
     }
 
-    if (drsOps->GetUint8(node, "powerType", &masterPowerConfig->powerType, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint8(node, "powerType", &primaryPowerConfig->powerType, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: powerType fail!", __func__);
         return HDF_FAILURE;
     }
 
-    if (drsOps->GetUint8(node, "gpioId", &masterPowerConfig->gpioId, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint8(node, "gpioId", &primaryPowerConfig->gpioId, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: gpioId fail!", __func__);
         return HDF_FAILURE;
     }
-    if (drsOps->GetUint8(node, "activeLevel", &masterPowerConfig->activeLevel, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint8(node, "activeLevel", &primaryPowerConfig->activeLevel, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: activeLevel fail!", __func__);
         return HDF_FAILURE;
     }
@@ -269,7 +270,7 @@ static int32_t ParseWlanPowersConfig(const struct DeviceResourceNode *node, stru
     }
 
     const struct DeviceResourceNode *secPowerNode = drsOps->GetChildNode(node, "power1");
-    if (fstPowerNode == NULL) {
+    if (secPowerNode == NULL) {
         HDF_LOGE("%s: get power1 config fail!", __func__);
         return HDF_FAILURE;
     }
@@ -451,7 +452,6 @@ static int32_t ParseWlanChipSdioConfig(const struct DeviceResourceNode *node, st
         HDF_LOGE("%s: deviceId fail!", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: SDIO vendor=%u, device=%u", __func__, sdioArgs->vendorId, sdioArgs->deviceId[0]);
 
     return HDF_SUCCESS;
 }

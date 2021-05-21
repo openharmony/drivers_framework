@@ -156,13 +156,9 @@ HDF驱动框架详细开发请参考[驱动开发指南](https://gitee.com/openh
 
 drivers\_framework
 
-[drivers\_adapter\_uhdf](https://gitee.com/openharmony/drivers_adapter_uhdf/blob/master/README_zh.md)
+[drivers\_adapter](https://gitee.com/openharmony/drivers_adapter/blob/master/README_zh.md)
 
 [drivers\_adapter\_khdf\_linux](https://gitee.com/openharmony/drivers_adapter_khdf_linux/blob/master/README_zh.md)
 
-[drivers\_adapter\_khdf\_liteos](https://gitee.com/openharmony/drivers_adapter_khdf_liteos/blob/master/README_zh.md)
-
-<a name="table19581927144220"></a>
-<table><tbody></tbody>
-</table>
+[drivers\_peripheral](https://gitee.com/openharmony/drivers_peripheral/blob/master/README_zh.md)
 

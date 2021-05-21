@@ -21,7 +21,7 @@ static const int DEFAULT_LOOP_COUNT = 500;
 static const int DEFAULT_BIG_LOOP_COUNT = 1000;
 static const int DATA_MOD = 26;
 
-class SBufTest : public ::testing::Test {
+class HdfSBufTest : public ::testing::Test {
 protected:
     void SetUp() override {}
 
@@ -243,7 +243,7 @@ protected:
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestObtain001, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestObtain001, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtain(DEFAULT_SBUF_SIZE);
     ASSERT_NE(sBuf, nullptr);
@@ -256,7 +256,7 @@ HWTEST_F(SBufTest, SbufTestObtain001, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestWriteUint64002, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestWriteUint64002, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -271,7 +271,7 @@ HWTEST_F(SBufTest, SbufTestWriteUint64002, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestWriteUint64Loop003, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestWriteUint64Loop003, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -288,7 +288,7 @@ HWTEST_F(SBufTest, SbufTestWriteUint64Loop003, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestReadUint64Loop004, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestReadUint64Loop004, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -297,7 +297,7 @@ HWTEST_F(SBufTest, SbufTestReadUint64Loop004, TestSize.Level1)
         auto ret = HdfSbufWriteInt64(sBuf, INT64_MAX);
         ASSERT_EQ(ret, true);
     }
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
     uint64_t val = 0;
     for (int j = 0; j < loop; ++j) {
@@ -318,7 +318,7 @@ HWTEST_F(SBufTest, SbufTestReadUint64Loop004, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestInt8005, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestInt8005, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -331,7 +331,7 @@ HWTEST_F(SBufTest, SbufTestInt8005, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int8_t val = 0;
@@ -351,7 +351,7 @@ HWTEST_F(SBufTest, SbufTestInt8005, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestInt16006, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestInt16006, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -364,7 +364,7 @@ HWTEST_F(SBufTest, SbufTestInt16006, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int16_t val = 0;
@@ -384,7 +384,7 @@ HWTEST_F(SBufTest, SbufTestInt16006, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestInt32007, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestInt32007, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -397,7 +397,7 @@ HWTEST_F(SBufTest, SbufTestInt32007, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int32_t val = 0;
@@ -417,7 +417,7 @@ HWTEST_F(SBufTest, SbufTestInt32007, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestInt64008, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestInt64008, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -430,7 +430,7 @@ HWTEST_F(SBufTest, SbufTestInt64008, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint64_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int64_t val = 0;
@@ -450,7 +450,7 @@ HWTEST_F(SBufTest, SbufTestInt64008, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestUInt32009, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestUInt32009, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -463,7 +463,7 @@ HWTEST_F(SBufTest, SbufTestUInt32009, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     uint32_t val = 0;
@@ -483,7 +483,7 @@ HWTEST_F(SBufTest, SbufTestUInt32009, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestUInt16010, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestUInt16010, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -496,7 +496,7 @@ HWTEST_F(SBufTest, SbufTestUInt16010, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     uint16_t val = 0;
@@ -516,7 +516,7 @@ HWTEST_F(SBufTest, SbufTestUInt16010, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestUInt8011, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestUInt8011, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -529,7 +529,7 @@ HWTEST_F(SBufTest, SbufTestUInt8011, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     uint8_t val = 0;
@@ -549,7 +549,7 @@ HWTEST_F(SBufTest, SbufTestUInt8011, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestString012, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestString012, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -561,12 +561,11 @@ HWTEST_F(SBufTest, SbufTestString012, TestSize.Level1)
         ASSERT_EQ(ret, true);
     }
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     for (int j = 0; j < loop; ++j) {
         const char *readStr = HdfSbufReadString(readBuf);
-        ASSERT_NE(readStr, nullptr);
         ASSERT_EQ(std::string(readStr), str);
     }
     HdfSBufRecycle(readBuf);
@@ -579,7 +578,7 @@ HWTEST_F(SBufTest, SbufTestString012, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestNullString013, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestNullString013, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -589,7 +588,7 @@ HWTEST_F(SBufTest, SbufTestNullString013, TestSize.Level1)
     ASSERT_EQ(true, ret);
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_NE((size_t)0, dataSize);
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
     auto val = HdfSbufReadString(readBuf);
     ASSERT_EQ(nullptr, val);
@@ -607,7 +606,7 @@ HWTEST_F(SBufTest, SbufTestNullString013, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestBuffer014, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestBuffer014, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -619,7 +618,7 @@ HWTEST_F(SBufTest, SbufTestBuffer014, TestSize.Level1)
         ASSERT_EQ(ret, true);
     }
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     for (int j = 0; j < loop; ++j) {
@@ -640,7 +639,7 @@ HWTEST_F(SBufTest, SbufTestBuffer014, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestNullBuffer015, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestNullBuffer015, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -650,7 +649,7 @@ HWTEST_F(SBufTest, SbufTestNullBuffer015, TestSize.Level1)
     ASSERT_EQ(true, ret);
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_NE((size_t)0, dataSize);
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
     const uint8_t *buffVal = nullptr;
     uint32_t buffLen = 0;
@@ -673,7 +672,7 @@ HWTEST_F(SBufTest, SbufTestNullBuffer015, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestRandomDataSeq016, TestSize.Level0)
+HWTEST_F(HdfSBufTest, SbufTestRandomDataSeq016, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -683,7 +682,7 @@ HWTEST_F(SBufTest, SbufTestRandomDataSeq016, TestSize.Level0)
     bool ret = PushDataSequence(sBuf);
     ASSERT_EQ(true, ret);
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)sBuf->data, sBuf->writePos);
+    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     ret = PullDataSequence(readBuf);
@@ -698,7 +697,7 @@ HWTEST_F(SBufTest, SbufTestRandomDataSeq016, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestRandomRWDataSeq017, TestSize.Level0)
+HWTEST_F(HdfSBufTest, SbufTestRandomRWDataSeq017, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -731,7 +730,7 @@ HWTEST_F(SBufTest, SbufTestRandomRWDataSeq017, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestSbufMove018, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestSbufMove018, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -768,7 +767,7 @@ HWTEST_F(SBufTest, SbufTestSbufMove018, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(SBufTest, SbufTestSbufMoveHalf019, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestSbufMoveHalf019, TestSize.Level1)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);

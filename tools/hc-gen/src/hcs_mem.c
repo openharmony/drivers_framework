@@ -6,11 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hcs_mem.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <securec.h>
-#include "hcs_mem.h"
-#define MEM_MAX (1024*1024)
+#define MEM_MAX (1024 * 1024)
 
 void *HcsMemAlloc(uint32_t size)
 {
@@ -18,8 +18,7 @@ void *HcsMemAlloc(uint32_t size)
         return NULL;
     }
 
-    void *newMem = malloc(size);
-    return newMem;
+    return malloc(size);
 }
 
 void *HcsMemZalloc(uint32_t size)

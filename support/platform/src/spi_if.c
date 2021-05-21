@@ -6,12 +6,12 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
+#include "spi_if.h"
 #include "devsvc_manager_clnt.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
+#include "securec.h"
 #include "spi_core.h"
-#include "spi_if.h"
 
 #define HDF_LOG_TAG spi_if
 #define HOST_NAME_LEN 32
@@ -128,17 +128,19 @@ DevHandle SpiOpen(const struct SpiDevInfo *info)
         return NULL;
     }
 
-    ret = SpiCntlrOpen(cntlr, info->csNum);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: SpiCntlrOpen error, ret is %d", __func__, ret);
-        return NULL;
-    }
-
     object = (struct SpiObject *)OsalMemCalloc(sizeof(*object));
     if (object == NULL) {
         HDF_LOGE("%s: object malloc error", __func__);
         return NULL;
     }
+
+    ret = SpiCntlrOpen(cntlr, info->csNum);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: SpiCntlrOpen error, ret is %d", __func__, ret);
+        OsalMemFree(object);
+        return NULL;
+    }
+
     object->cntlr = cntlr;
     object->csNum = info->csNum;
     return (DevHandle)object;

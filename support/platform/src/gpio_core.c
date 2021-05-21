@@ -212,7 +212,7 @@ static int32_t GpioIrqBridgeFunc(uint16_t local, void *data)
 
     (void)local;
     (void)OsalSpinLockIrqSave(&bridge->spin, &flags);
-    if (bridge->stop == false) {
+    if (!bridge->stop) {
         (void)OsalSemPost(&bridge->sem);
     }
     (void)OsalSpinUnlockIrqRestore(&bridge->spin, &flags);
@@ -230,7 +230,7 @@ static int GpioIrqThreadWorker(void *data)
         if (ret != HDF_SUCCESS) {
             continue;
         }
-        if (bridge->stop == true) {
+        if (bridge->stop) {
             break;
         }
         PLAT_LOGV("GpioIrqThreadWorker: enter! gpio:%u-%u", bridge->cntlr->start, bridge->local);
@@ -320,7 +320,7 @@ static void GpioIrqBridgeDestroy(struct GpioIrqBridge *bridge)
 #ifndef __KERNEL__
     uint32_t flags;
     (void)OsalSpinLockIrqSave(&bridge->spin, &flags);
-    if (bridge->stop == false) {
+    if (!bridge->stop) {
         bridge->stop = true;
         (void)OsalSemPost(&bridge->sem);
     }

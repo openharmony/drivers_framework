@@ -16,7 +16,7 @@
 #define EAPOL_MAX_ENQUEUE_TIME 300 /* 300 Second */
 
 struct EapolData {
-    bool regFlag;  /* is already regstered */
+    bool regFlag;  /* is already registered */
     uint16_t count; /* eapol frame count in NetBuffQueue. */
     uint16_t maxCount;
     int64_t enqueueTime;                       /* record eapol frame time for dfx. */

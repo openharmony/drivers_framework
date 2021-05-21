@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "device_resource_if.h"
 #include "emmc_core.h"
+#include "device_resource_if.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
 
@@ -16,11 +16,11 @@
 int32_t EmmcCntlrFindHost(struct EmmcCntlr *cntlr)
 {
     if (cntlr == NULL || cntlr->method == NULL || cntlr->method->findHost == NULL) {
-        HDF_LOGE("EmmcCntlrFindHost: cntlr or method or findHost is NULL!");
+        HDF_LOGE("EmmcCntlrFindHost: cntlr or method or findHost is null!");
         return HDF_ERR_INVALID_PARAM;
     }
     if (cntlr->method->findHost(cntlr, &(cntlr->configData)) != HDF_SUCCESS) {
-        HDF_LOGE("EmmcCntlrFindHost: findHost fail!");
+        HDF_LOGE("EmmcCntlrFindHost: findHost failed");
         return HDF_ERR_INVALID_OBJECT;
     }
     return HDF_SUCCESS;
@@ -42,8 +42,8 @@ int32_t EmmcCntlrGetCid(struct EmmcCntlr *cntlr, uint8_t *cid, uint32_t size)
 
 static int32_t EmmcGetCidWriteBackReply(struct HdfSBuf *reply, uint8_t *cid, uint32_t size)
 {
-    if (HdfSbufWriteBuffer(reply, cid, size) == false) {
-        HDF_LOGE("EmmcGetCidWriteBackReply: write to reply fail!");
+    if (!HdfSbufWriteBuffer(reply, cid, size)) {
+        HDF_LOGE("EmmcGetCidWriteBackReply: write to reply failed");
         return HDF_ERR_IO;
     }
     return HDF_SUCCESS;
@@ -56,7 +56,7 @@ static int32_t EmmcGetCidDispatch(struct EmmcCntlr *cntlr, struct HdfSBuf *reply
 
     ret = EmmcCntlrGetCid(cntlr, cid, EMMC_CID_LEN);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("EmmcGetCidDispatch: EmmcCntlrGetCid fail!");
+        HDF_LOGE("EmmcGetCidDispatch: EmmcCntlrGetCid failed");
         return ret;
     }
     return EmmcGetCidWriteBackReply(reply, cid, EMMC_CID_LEN);
@@ -69,23 +69,23 @@ static int32_t EmmcIoDispatch(struct HdfDeviceIoClient *client, int cmd, struct 
     (void)data;
 
     if (client == NULL || client->device == NULL) {
-        HDF_LOGE("EmmcIoDispatch: client or client->device is NULL");
+        HDF_LOGE("EmmcIoDispatch: client or client->device is null");
         return HDF_ERR_INVALID_OBJECT;
     }
 
     if (reply == NULL) {
-        HDF_LOGE("EmmcIoDispatch: reply is NULL");
+        HDF_LOGE("EmmcIoDispatch: reply is null");
         return HDF_ERR_INVALID_PARAM;
     }
 
     cntlr = (struct EmmcCntlr *)client->device->service;
     if (cntlr == NULL) {
-        HDF_LOGE("EmmcIoDispatch: service is NULL");
+        HDF_LOGE("EmmcIoDispatch: service is null");
         return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->priv == NULL) {
         if (EmmcCntlrFindHost(cntlr) != HDF_SUCCESS) {
-            HDF_LOGE("EmmcIoDispatch: find host fail!");
+            HDF_LOGE("EmmcIoDispatch: find host failed");
             return HDF_ERR_INVALID_OBJECT;
         }
     }
@@ -107,13 +107,13 @@ struct EmmcCntlr *EmmcCntlrCreateAndBind(struct HdfDeviceObject *device)
     struct EmmcCntlr *cntlr = NULL;
 
     if (device == NULL) {
-        HDF_LOGE("EmmcCntlrCreateAndBind: device is NULL!");
+        HDF_LOGE("EmmcCntlrCreateAndBind: device is null!");
         return NULL;
     }
 
     cntlr = (struct EmmcCntlr *)OsalMemCalloc(sizeof(*cntlr));
     if (cntlr == NULL) {
-        HDF_LOGE("EmmcCntlrCreateAndBind: malloc host fail!");
+        HDF_LOGE("EmmcCntlrCreateAndBind: malloc host failed");
         return NULL;
     }
     cntlr->device = device;
@@ -139,27 +139,27 @@ int32_t EmmcFillConfigData(struct HdfDeviceObject *device, struct EmmcConfigData
     int32_t ret;
 
     if (device == NULL || configData == NULL) {
-        HDF_LOGE("EmmcFillConfigData: input para is NULL.");
+        HDF_LOGE("EmmcFillConfigData: input para is null.");
         return HDF_FAILURE;
     }
 
     node = device->property;
     if (node == NULL) {
-        HDF_LOGE("EmmcFillConfigData: drs node is NULL.");
+        HDF_LOGE("EmmcFillConfigData: drs node is null.");
         return HDF_FAILURE;
     }
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (drsOps == NULL || drsOps->GetUint32 == NULL) {
-        HDF_LOGE("EmmcFillConfigData: invalid drs ops fail!");
+        HDF_LOGE("EmmcFillConfigData: invalid drs ops failed");
         return HDF_FAILURE;
     }
 
     ret = drsOps->GetUint32(node, "hostId", &(configData->hostId), 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("EmmcFillConfigData: read funcNum fail!");
+        HDF_LOGE("EmmcFillConfigData: read funcNum failed");
         return ret;
     }
 
-    HDF_LOGD("EmmcFillConfigData: Success! hostId = %d.", configData->hostId);
+    HDF_LOGD("EmmcFillConfigData: Success! hostId = %u.", configData->hostId);
     return HDF_SUCCESS;
 }

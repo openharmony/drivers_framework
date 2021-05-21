@@ -12,9 +12,21 @@
 #include "hdf_device_desc.h"
 #include "hdf_slist.h"
 
+enum {
+    HDF_SERVICE_UNUSABLE,
+    HDF_SERVICE_USABLE,
+};
+
+enum {
+    HDF_DEV_LOCAL_SERVICE,
+    HDF_DEV_REMOTE_SERVICE,
+};
+
 struct HdfDeviceInfo {
     struct HdfSListNode node;
     bool isDynamic;
+    uint16_t status;
+    uint16_t deviceType;
     uint16_t hostId;
     uint16_t deviceId;
     uint16_t policy;

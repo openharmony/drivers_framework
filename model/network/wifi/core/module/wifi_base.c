@@ -374,7 +374,7 @@ static int32_t WifiCmdEnableEapol(const RequestContext *context, struct HdfSBuf 
     }
 
     eapol.callback = (void *)HdfWifiEventEapolRecv;
-    eapol.contex = NULL;
+    eapol.context = NULL;
 
     return EnableEapol(netdev, &eapol);
 }
@@ -486,19 +486,19 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
     do {
         uint32_t loop;
         if (capability->supportedRateCount > MAX_SUPPORTED_RATE) {
-            HDF_LOGE("%s: bitrates %d out of range", __func__, capability->supportedRateCount);
+            HDF_LOGE("%s: bitrates %u out of range", __func__, capability->supportedRateCount);
             ret = HDF_FAILURE;
             break;
         }
         for (loop = 0; loop < capability->supportedRateCount; ++loop) {
-            HDF_LOGV("%s: supported rate %d", __func__, capability->supportedRates[loop]);
+            HDF_LOGV("%s: supported rate %u", __func__, capability->supportedRates[loop]);
             featureData->bitrate[loop] = capability->supportedRates[loop];
         }
 
         if (capability->bands[IEEE80211_BAND_2GHZ] != NULL) {
             struct WlanBand *band = capability->bands[IEEE80211_BAND_2GHZ];
             if (band->channelCount > WIFI_24G_CHANNEL_NUM) {
-                HDF_LOGE("%s: channels %d out of range", __func__, band->channelCount);
+                HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
                 ret = HDF_FAILURE;
                 break;
             }
@@ -630,13 +630,10 @@ static int32_t SetNetIfInfo(struct NetDevice *netdev, uint32_t type)
 
 static int32_t UnsetNetIfInfo(struct NetDevice *netdev)
 {
-    int ret;
-
     (void)netdev->netDeviceIf->stop(netdev);
     (void)NetIfDhcpStop(netdev);
     (void)NetIfDhcpsStop(netdev);
-    ret = NetIfSetStatus(netdev, NETIF_DOWN);
-    return ret;
+    return NetIfSetStatus(netdev, NETIF_DOWN);
 }
 
 static void SetNetworkAddr(struct NetDevice *netdev, uint32_t type)
@@ -646,13 +643,13 @@ static void SetNetworkAddr(struct NetDevice *netdev, uint32_t type)
     IpV4Addr gw;
 
     if (type == WIFI_IFTYPE_STATION) {
-        ip.addr = 0x00000000UL;      // 0, 0, 0, 0
-        netmask.addr = 0x00000000UL; // 0, 0, 0, 0
-        gw.addr = 0x00000000UL;      // 0, 0, 0, 0
+        ip.addr = 0x00000000UL;
+        netmask.addr = 0x00000000UL;
+        gw.addr = 0x00000000UL;
     } else {
-        ip.addr = 0x010ca8c0UL;      // 192, 168, 12, 1
-        netmask.addr = 0x00ffffffUL; // 255, 255, 255, 0
-        gw.addr = 0x010ca8c0UL;      // 192, 168, 12, 1
+        ip.addr = 0x010ca8c0UL;
+        netmask.addr = 0x00ffffffUL;
+        gw.addr = 0x010ca8c0UL;
     }
 
     if (netdev != NULL) {
@@ -662,9 +659,9 @@ static void SetNetworkAddr(struct NetDevice *netdev, uint32_t type)
 
 static void UnsetNetworkAddr(struct NetDevice *netdev)
 {
-    IpV4Addr ip = { 0x00000000UL };      // 0, 0, 0, 0
-    IpV4Addr netmask = { 0x00000000UL }; // 0, 0, 0, 0
-    IpV4Addr gw = { 0x00000000UL };      // 0, 0, 0, 0
+    IpV4Addr ip = { 0x00000000UL };
+    IpV4Addr netmask = { 0x00000000UL };
+    IpV4Addr gw = { 0x00000000UL };
 
     if (netdev != NULL) {
         NetIfSetAddr(netdev, &ip, &netmask, &gw);
@@ -1058,9 +1055,7 @@ static int32_t WifiCmdGetIfNamesByChipId(const RequestContext *context, struct H
             break;
         }
     } while (false);
-    if (ifNames != NULL) {
-        OsalMemFree(ifNames);
-    }
+    OsalMemFree(ifNames);
     return ret;
 }
 
@@ -1135,12 +1130,12 @@ static int32_t WifiCmdDoResetChip(const RequestContext *context, struct HdfSBuf 
     }
 
     wlanDevice = HdfWlanGetWlanDevice(chipId);
-    if (wlanDevice == NULL) {
-        HDF_LOGE("%s: wlanDevice is NULL, not found!", __func__);
+    if (wlanDevice == NULL || wlanDevice->reset == NULL) {
+        HDF_LOGE("%s: wlanDevice or wlanDevice->reset is NULL!", __func__);
         return HDF_FAILURE;
     }
 
-    ret = DeinitDevice(wlanDevice);
+    ret = HdfWifiDeinitDevice(wlanDevice);
     if (ret != HDF_SUCCESS) {
         return ret;
     }
@@ -1152,7 +1147,7 @@ static int32_t WifiCmdDoResetChip(const RequestContext *context, struct HdfSBuf 
         return ERR_POWER_RESET_FAIL;
     }
 
-    ret = InitDevice(wlanDevice);
+    ret = HdfWifiInitDevice(wlanDevice);
 
     return ret;
 }
@@ -1190,6 +1185,10 @@ static int32_t WifiCmdResetDriver(const RequestContext *context, struct HdfSBuf 
     }
 
     struct HdfSBuf *data = HdfSBufCopy(reqData);
+    if (data == NULL) {
+        HDF_LOGE("%s: sbuf copy fail", __func__);
+        return HDF_FAILURE;
+    }
 
     ret = g_baseService->SendAsyncMessage(g_baseService, BASE_SERVICE_ID, CMD_BASE_DO_RESET_PRIVATE, data,
         SendMessageResetDriverCallBack);

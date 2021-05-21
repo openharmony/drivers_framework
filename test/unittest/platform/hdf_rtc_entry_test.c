@@ -36,7 +36,7 @@ static int8_t g_rtcIrqCallback = HDF_FAILURE;
 int32_t RtcAlarmACallback(enum RtcAlarmIndex alarmIndex)
 {
     if (alarmIndex == RTC_ALARM_INDEX_A) {
-        HDF_LOGE("RtcAlarmACallback alarm a success");
+        HDF_LOGE("RtcAlarmACallback: alarm a callback success");
         g_rtcIrqCallback = HDF_SUCCESS;
     } else {
         g_rtcIrqCallback = HDF_FAILURE;
@@ -87,14 +87,14 @@ static int32_t RtcReadWriteTimeTest(struct RtcTime *writeTime)
     }
     ret = RtcWriteTime(g_rtcHandle, writeTime);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteTimeTest write fail");
+        HDF_LOGE("RtcReadWriteTimeTest write failed");
         return -1;
     }
 
     OsalMSleep(RTC_TEST_WR_WAIT_MS);
     ret = RtcReadTime(g_rtcHandle, &readTime);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteTimeTest read fail");
+        HDF_LOGE("RtcReadWriteTimeTest read failed");
         return -1;
     }
 
@@ -116,14 +116,14 @@ static int32_t RtcReadWriteAlarmTimeTest(struct RtcTime *writeTime)
 
     ret = RtcWriteAlarm(g_rtcHandle, RTC_ALARM_INDEX_A, writeTime);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteAlarmTimeTest write fail");
+        HDF_LOGE("RtcReadWriteAlarmTimeTest write failed");
         return -1;
     }
 
     OsalMSleep(RTC_TEST_WR_WAIT_MS);
     ret = RtcReadAlarm(g_rtcHandle, RTC_ALARM_INDEX_A, &readTime);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteAlarmTimeTest read fail");
+        HDF_LOGE("RtcReadWriteAlarmTimeTest read failed");
         return -1;
     }
 
@@ -152,7 +152,7 @@ static int32_t RtcReadWriteTime(void)
 
     ret = RtcReadWriteTimeTest(&tm);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteTime fail");
+        HDF_LOGE("RtcReadWriteTime failed");
         return -1;
     }
 
@@ -176,7 +176,7 @@ static int32_t RtcReadWriteMaxTime(void)
     tm.weekday = weekday;
     ret = RtcReadWriteTimeTest(&tm);
     if (ret == 0) {
-        HDF_LOGE("RtcReadWriteMaxTime fail");
+        HDF_LOGE("RtcReadWriteMaxTime failed");
         return -1;
     }
 
@@ -200,7 +200,7 @@ static int32_t RtcReadWriteMinTime(void)
     tm.weekday = weekday;
     ret = RtcReadWriteTimeTest(&tm);
     if (ret == 0) {
-        HDF_LOGE("RtcReadWriteMinTime fail");
+        HDF_LOGE("RtcReadWriteMinTime failed");
         return -1;
     }
 
@@ -225,7 +225,7 @@ static int32_t RtcReadWriteAlarmTime(void)
     tm.weekday = weekday;
     ret = RtcReadWriteAlarmTimeTest(&tm);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteAlarmTime read fail");
+        HDF_LOGE("RtcReadWriteAlarmTime read failed");
         return -1;
     }
 
@@ -249,7 +249,7 @@ static int32_t RtcReadWriteMaxAlarmTime(void)
     tm.weekday = weekday;
     ret = RtcReadWriteAlarmTimeTest(&tm);
     if (ret == 0) {
-        HDF_LOGE("RtcReadWriteMaxAlarmTime read fail");
+        HDF_LOGE("RtcReadWriteMaxAlarmTime read failed");
         return -1;
     }
 
@@ -273,7 +273,7 @@ static int32_t RtcReadWriteMinAlarmTime(void)
     time.weekday = weekday;
     ret = RtcReadWriteAlarmTimeTest(&time);
     if (ret == 0) {
-        HDF_LOGE("RtcReadWriteMinAlarmTime read fail");
+        HDF_LOGE("RtcReadWriteMinAlarmTime read failed");
         return -1;
     }
 
@@ -299,12 +299,12 @@ static int32_t RtcAlarmEnable(void)
     tm.weekday = weekday;
     ret = RtcReadWriteAlarmTimeTest(&tm);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteAlarmTime read fail");
+        HDF_LOGE("RtcReadWriteAlarmTime read failed");
         return -1;
     }
     ret = RtcAlarmInterruptEnable(g_rtcHandle, RTC_ALARM_INDEX_A, 1);
     if (ret != 0) {
-        HDF_LOGE("RtcAlarmInterruptEnable fail");
+        HDF_LOGE("RtcAlarmInterruptEnable failed");
         return -1;
     }
     return 0;
@@ -323,17 +323,17 @@ static int32_t RtcAlarmIrqAttachConfig(void)
 
     ret = RtcRegisterAlarmCallback(g_rtcHandle, RTC_ALARM_INDEX_A, RtcAlarmACallback);
     if (ret != 0) {
-        HDF_LOGE("RtcRegisterAlarmCallback fail");
+        HDF_LOGE("RtcRegisterAlarmCallback failed");
         return -1;
     }
     ret = RtcSetFreq(g_rtcHandle, freq);
     if (ret != 0) {
-        HDF_LOGE("RtcSetFreq fail");
+        HDF_LOGE("RtcSetFreq failed");
         return -1;
     }
     ret = RtcAlarmInterruptEnable(g_rtcHandle, RTC_ALARM_INDEX_A, 1);
     if (ret != 0) {
-        HDF_LOGE("RtcAlarmInterruptEnable fail");
+        HDF_LOGE("RtcAlarmInterruptEnable failed");
         return -1;
     }
     return 0;
@@ -361,24 +361,24 @@ static int32_t RtcAlarmIrq(void)
     time.weekday = weekday;
     ret = RtcAlarmIrqAttachConfig();
     if (ret != 0) {
-        HDF_LOGE("RtcWriteTime fail");
+        HDF_LOGE("RtcWriteTime failed");
         return -1;
     }
     ret = RtcWriteTime(g_rtcHandle, &time);
     if (ret != 0) {
-        HDF_LOGE("RtcWriteTime fail");
+        HDF_LOGE("RtcWriteTime failed");
         return -1;
     }
     /* set alarm time 2020-08-08 Saturday 08:08:09 .000 */
     time.second = RTC_TEST_TIME_SECOND + 1;
     ret = RtcWriteAlarm(g_rtcHandle, RTC_ALARM_INDEX_A, &time);
     if (ret != 0) {
-        HDF_LOGE("RtcWriteAlarm fail");
+        HDF_LOGE("RtcWriteAlarm failed");
         return -1;
     }
     OsalSleep(RTC_TEST_WAIT_TIME_S);
     if (g_rtcIrqCallback == HDF_FAILURE) {
-        HDF_LOGE("RtcWriteAlarm fail");
+        HDF_LOGE("RtcWriteAlarm failed");
         return -1;
     }
     g_rtcIrqCallback = HDF_FAILURE;
@@ -394,7 +394,7 @@ static int32_t RtcRegisterCallback(void)
     }
     ret = RtcRegisterAlarmCallback(g_rtcHandle, RTC_ALARM_INDEX_A, RtcAlarmACallback);
     if (ret != 0) {
-        HDF_LOGE("RtcRegisterCallback fail");
+        HDF_LOGE("RtcRegisterCallback failed");
         return -1;
     }
     return 0;
@@ -410,7 +410,7 @@ static int32_t RtcRegisterNullCallback(void)
 
     ret = RtcRegisterAlarmCallback(g_rtcHandle, RTC_ALARM_INDEX_A, NULL);
     if (ret == 0) {
-        HDF_LOGE("RtcRegisterCallback fail");
+        HDF_LOGE("RtcRegisterCallback failed");
         return -1;
     }
     return 0;
@@ -426,7 +426,7 @@ static int32_t RtcSetNormalFreq(void)
 
     ret = RtcSetFreq(g_rtcHandle, RTC_TEST_FREQ);
     if (ret != 0) {
-        HDF_LOGE("RtcSetNormalFreq fail");
+        HDF_LOGE("RtcSetNormalFreq failed");
         return -1;
     }
     return 0;
@@ -442,7 +442,7 @@ static int32_t RtcSetMaxFreq(void)
 
     ret = RtcSetFreq(g_rtcHandle, RTC_TEST_FREQ * RTC_TIME_UNIT);
     if (ret == 0) {
-        HDF_LOGE("RtcSetMaxFreq fail");
+        HDF_LOGE("RtcSetMaxFreq failed");
         return -1;
     }
     return 0;
@@ -458,7 +458,7 @@ static int32_t RtcSetMinFreq(void)
 
     ret = RtcSetFreq(g_rtcHandle, 0);
     if (ret == 0) {
-        HDF_LOGE("RtcSetMinFreq fail");
+        HDF_LOGE("RtcSetMinFreq failed");
         return -1;
     }
     ret = RtcSetFreq(g_rtcHandle, RTC_TEST_FREQ);
@@ -476,12 +476,12 @@ static int32_t RtcReadWriteUserReg(void)
 
     ret = RtcWriteReg(g_rtcHandle, 0, value);
     if (ret != 0) {
-        HDF_LOGE("RtcReadWriteUserReg write fail");
+        HDF_LOGE("RtcReadWriteUserReg write failed");
         return -1;
     }
     ret = RtcReadReg(g_rtcHandle, 0, &value);
     if (ret != 0) {
-        HDF_LOGE("RtcSetMinFreq read fail");
+        HDF_LOGE("RtcSetMinFreq read failed");
         return -1;
     }
     if (value != RTC_TEST_USER_VALUE) {
@@ -501,12 +501,12 @@ static int32_t RtcReadWriteMaxUserIndex(void)
 
     ret = RtcWriteReg(g_rtcHandle, RTC_TEST_USER_MAX_INDEX, value);
     if (ret == 0) {
-        HDF_LOGE("RtcReadWriteUserReg write fail");
+        HDF_LOGE("RtcReadWriteUserReg write failed");
         return -1;
     }
     ret = RtcReadReg(g_rtcHandle, RTC_TEST_USER_MAX_INDEX, &value);
     if (ret == 0) {
-        HDF_LOGE("RtcSetMinFreq read fail");
+        HDF_LOGE("RtcSetMinFreq read failed");
         return -1;
     }
     return 0;

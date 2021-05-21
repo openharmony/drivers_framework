@@ -16,22 +16,25 @@
 #include "hdf_input_device_manager.h"
 
 #define NODE_MODE            0660
-#define SERVICE_NAME_LEN     16
+#define SERVICE_NAME_LEN     24
 #define INPUT_DEV_EXIST      1
 #define INPUT_DEV_NOT_EXIST  0
-#define MOUSE_DEV_ID         2
-#define MAX_INPUT_DEV_NUM    32
 #define INPUTDEV_FIRST_ID    1
 #define FILLER_FLAG          1
+#define PLACEHOLDER_LENGTH   2
+#define PLACEHOLDER_LIMIT    10
 
-InputManager *g_inputManager;
+static InputManager *g_inputManager;
+
+InputManager* GetInputManager(void)
+{
+    return g_inputManager;
+}
 
 #ifndef __KERNEL__
 int32_t TouchIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg);
 uint32_t TouchPoll(struct file *filep, InputDevice *inputDev, poll_table *wait);
-#endif
 
-#ifndef __KERNEL__
 static int32_t InputDevIoctl(struct file *filep, int32_t cmd, unsigned long arg)
 {
     int32_t ret;
@@ -106,7 +109,7 @@ static const struct file_operations_vfs inputDevOps = {
 
 static bool IsHidDevice(uint32_t devType)
 {
-    if (devType == INDEV_TYPE_MOUSE) {
+    if ((devType > INDEV_TYPE_HID_BEGIN_POS) && (devType < INDEV_TYPE_UNKNOWN)) {
         return true;
     }
     return false;
@@ -117,7 +120,10 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
     char svcName[SERVICE_NAME_LEN] = {0};
     const char *moduleName = "HDF_HID";
     struct HdfDeviceObject *hdfDev = NULL;
-    int32_t ret = snprintf_s(svcName, SERVICE_NAME_LEN, strlen("event") + 1, "%s%u", "event", MOUSE_DEV_ID);
+
+    int32_t len = (inputDev->devId < PLACEHOLDER_LIMIT) ? 1 : PLACEHOLDER_LENGTH;
+    int32_t ret = snprintf_s(svcName, SERVICE_NAME_LEN, strlen("hdf_input_event") + len, "%s%u",
+        "hdf_input_event", inputDev->devId);
     if (ret < 0) {
         HDF_LOGE("%s: snprintf_s failed", __func__);
         return NULL;
@@ -131,6 +137,33 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
     return hdfDev;
 }
 
+static void HotPlugNotify(const InputDevice *inputDev, bool status)
+{
+    struct HdfSBuf *sbuf = NULL;
+    HotPlugEvent event = {0};
+    int32_t ret;
+
+    sbuf = HdfSBufObtain(sizeof(HotPlugEvent));
+    if (sbuf == NULL) {
+        HDF_LOGE("%s: obtain buffer failed", __func__);
+        return;
+    }
+    event.devId = inputDev->devId;
+    event.devType = inputDev->devType;
+    event.status = status;
+
+    if (!HdfSbufWriteBuffer(sbuf, &event, sizeof(HotPlugEvent))) {
+        HDF_LOGE("%s: write buffer failed", __func__);
+        goto EXIT;
+    }
+    ret = HdfDeviceSendEvent(g_inputManager->hdfDevObj, 0, sbuf);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: send event failed", __func__);
+    }
+EXIT:
+    HdfSBufRecycle(sbuf);
+}
+
 static int32_t CreateDeviceNode(InputDevice *inputDev)
 {
     if (IsHidDevice(inputDev->devType)) {
@@ -139,13 +172,14 @@ static int32_t CreateDeviceNode(InputDevice *inputDev)
         if (inputDev->hdfDevObj == NULL) {
             return HDF_DEV_ERR_NO_DEVICE;
         }
-        inputDev->devId = MOUSE_DEV_ID;
     }
 
 #ifndef __KERNEL__
-    char devNode[INPUT_DEV_PATH_LEN] = {0};
-    int32_t ret = snprintf_s(devNode, INPUT_DEV_PATH_LEN, strlen("/dev/input/event") + 1,
-        "%s%u", "/dev/input/event", inputDev->devId);
+    char *devNode = (char *)malloc(INPUT_DEV_PATH_LEN);
+    (void)memset_s(devNode, INPUT_DEV_PATH_LEN, 0, INPUT_DEV_PATH_LEN);
+
+    int32_t ret = snprintf_s(devNode, INPUT_DEV_PATH_LEN, strlen("/dev/input/hdf_input_event") + 1,
+        "%s%u", "/dev/input/hdf_input_event", inputDev->devId);
     if (ret < 0) {
         HDF_LOGE("%s: snprintf_s failed", __func__);
         return HDF_FAILURE;
@@ -168,7 +202,10 @@ static void DeleteDeviceNode(InputDevice *inputDev)
     if (IsHidDevice(inputDev->devType)) {
         char svcName[SERVICE_NAME_LEN] = {0};
         const char *moduleName = "HDF_HID";
-        int32_t ret = snprintf_s(svcName, SERVICE_NAME_LEN, strlen("event") + 1, "%s%u", "event", MOUSE_DEV_ID);
+
+        int32_t len = (inputDev->devId < PLACEHOLDER_LIMIT) ? 1 : PLACEHOLDER_LENGTH;
+        int32_t ret = snprintf_s(svcName, SERVICE_NAME_LEN, strlen("hdf_input_event") + len, "%s%u",
+            "hdf_input_event", inputDev->devId);
         if (ret < 0) {
             HDF_LOGE("%s: snprintf_s failed", __func__);
             return;
@@ -178,18 +215,12 @@ static void DeleteDeviceNode(InputDevice *inputDev)
     }
 
 #ifndef __KERNEL__
-    char devNode[INPUT_DEV_PATH_LEN] = {0};
-    int32_t ret = snprintf_s(devNode, INPUT_DEV_PATH_LEN, strlen("/dev/input/event") + 1, "%s%u",
-        "/dev/input/event", inputDev->devId);
-    if (ret < 0) {
-        HDF_LOGE("%s: snprintf_s failed", __func__);
-        return;
-    }
-    inputDev->devNode = devNode;
-    ret = unregister_driver(inputDev->devNode);
+    int32_t ret = unregister_driver(inputDev->devNode);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: delete dev node failed, ret %d", __func__, ret);
     }
+    free((void *)inputDev->devNode);
+    inputDev->devNode = NULL;
 #endif
     HDF_LOGI("%s: delete node succ, devId is %d", __func__, inputDev->devId);
 }
@@ -212,6 +243,7 @@ static void AddInputDevice(InputDevice *inputDev)
         }
     }
     g_inputManager->devCount++;
+    HotPlugNotify(inputDev, ONLINE);
 }
 
 static int32_t CheckInputDevice(InputDevice *inputDev)
@@ -258,12 +290,14 @@ static int32_t DeleteInputDevice(InputDevice *inputDev)
 
 EXIT:
     g_inputManager->devCount--;
+    HotPlugNotify(inputDev, OFFLINE);
     return HDF_SUCCESS;
 }
 
 #define DEFAULT_TOUCH_BUF_PKG_NUM      50
 #define DEFAULT_KEY_BUF_PKG_NUM        10
 #define DEFAULT_MOUSE_BUF_PKG_NUM      30
+#define DEFAULT_KEYBOARD_BUF_PKG_NUM   20
 #define DEFAULT_CROWN_BUF_PKG_NUM      20
 #define DEFAULT_ENCODER_BUF_PKG_NUM    20
 
@@ -279,6 +313,9 @@ static int32_t AllocPackageBuffer(InputDevice *inputDev)
             break;
         case INDEV_TYPE_MOUSE:
             pkgNum = DEFAULT_MOUSE_BUF_PKG_NUM;
+            break;
+        case INDEV_TYPE_KEYBOARD:
+            pkgNum = DEFAULT_KEYBOARD_BUF_PKG_NUM;
             break;
         case INDEV_TYPE_CROWN:
             pkgNum = DEFAULT_CROWN_BUF_PKG_NUM;
@@ -313,14 +350,12 @@ static uint32_t AllocDeviceID(InputDevice *inputDev)
         tmpDev = tmpDev->next;
     }
     for (id = INPUTDEV_FIRST_ID; id < MAX_INPUT_DEV_NUM + 1; id++) {
-        if (id == MOUSE_DEV_ID) {
-            continue;
-        }
         if (idList[id] == 0) {
             inputDev->devId = id;
             return HDF_SUCCESS;
         }
     }
+    HDF_LOGE("%s: alloc device id failed", __func__);
     return HDF_FAILURE;
 }
 
@@ -334,7 +369,7 @@ int32_t RegisterInputDevice(InputDevice *inputDev)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    if (g_inputManager == NULL || g_inputManager->initialized == false) {
+    if ((g_inputManager == NULL) || (g_inputManager->initialized == false)) {
         HDF_LOGE("%s: dev manager is null or initialized failed", __func__);
         return HDF_FAILURE;
     }
@@ -366,18 +401,18 @@ EXIT:
     return ret;
 }
 
-int32_t UnregisterInputDevice(InputDevice *inputDev)
+void UnregisterInputDevice(InputDevice *inputDev)
 {
-    int ret = HDF_FAILURE;
+    int32_t ret;
     HDF_LOGI("%s: enter", __func__);
     if (inputDev == NULL) {
         HDF_LOGE("%s: inputdev is null", __func__);
-        return HDF_ERR_INVALID_PARAM;
+        return;
     }
 
-    if (g_inputManager == NULL || g_inputManager->initialized == false) {
+    if ((g_inputManager == NULL) || (g_inputManager->initialized == false)) {
         HDF_LOGE("%s: dev manager is null or initialized failed", __func__);
-        return HDF_FAILURE;
+        return;
     }
 
     OsalMutexLock(&g_inputManager->mutex);
@@ -393,20 +428,55 @@ int32_t UnregisterInputDevice(InputDevice *inputDev)
     if (ret != HDF_SUCCESS) {
         goto EXIT;
     }
-
+    OsalMemFree(inputDev);
+    inputDev = NULL;
     OsalMutexUnlock(&g_inputManager->mutex);
     HDF_LOGI("%s: exit succ, devCount is %d", __func__, g_inputManager->devCount);
-    return HDF_SUCCESS;
+    return;
 
 EXIT:
     OsalMutexUnlock(&g_inputManager->mutex);
-    return ret;
+    return;
 }
 
 static uint32_t GetDeviceCount(void)
 {
     HDF_LOGI("%s: devCount = %d", __func__, g_inputManager->devCount);
     return g_inputManager->devCount;
+}
+
+static int32_t ScanAllDev(struct HdfSBuf *reply)
+{
+    DevDesc sta;
+    InputDevice *tmpDev = g_inputManager->inputDevList;
+    while (tmpDev != NULL) {
+        sta.devType = tmpDev->devType;
+        sta.devId = tmpDev->devId;
+
+        if (!HdfSbufWriteBuffer(reply, &sta, sizeof(DevDesc))) {
+            HDF_LOGE("%s: HdfSbufWriteBuffer failed", __func__);
+            return HDF_FAILURE;
+        }
+        tmpDev = tmpDev->next;
+    }
+    HdfSbufWriteBuffer(reply, NULL, 0); // end flag
+    return HDF_SUCCESS;
+}
+
+static int32_t ScanDevice(struct HdfDeviceIoClient *client, int32_t cmd,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    (void)cmd;
+    int32_t ret;
+    if ((client == NULL) || (data == NULL) || (reply == NULL)) {
+        HDF_LOGE("%s: param is null", __func__);
+        return HDF_FAILURE;
+    }
+    ret = ScanAllDev(reply);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: scan all dev failed", __func__);
+    }
+    return ret;
 }
 
 static int32_t HdfInputManagerBind(struct HdfDeviceObject *device)
@@ -418,6 +488,7 @@ static int32_t HdfInputManagerBind(struct HdfDeviceObject *device)
 
     static IInputManagerService managerService = {
         .getDeviceCount = GetDeviceCount,
+        .ioService.Dispatch = ScanDevice,
     };
 
     device->service = &managerService.ioService;

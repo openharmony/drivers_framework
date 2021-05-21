@@ -11,7 +11,7 @@
 
 int OsalGetTestResult(uint32_t cmd)
 {
-    HDF_LOGD("[OSAL_UT_TEST]%s %d start", __func__, cmd);
+    HDF_LOGD("[OSAL_UT_TEST]%s %u start", __func__, cmd);
     return OSAL_TEST_CASE_CHECK(cmd);
 }
 

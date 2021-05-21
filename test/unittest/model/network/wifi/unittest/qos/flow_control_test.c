@@ -154,7 +154,7 @@ int32_t WiFiFlowControlTestSendData(void)
         return HDF_FAILURE;
     }
     if (g_flowControlInstance->interface == NULL) {
-        HDF_LOGE("%s interface =null!", __func__);
+        HDF_LOGE("%s interface = null!", __func__);
         return HDF_FAILURE;
     }
     id = g_flowControlInstance->interface->getQueueIdByEtherBuff(buff);

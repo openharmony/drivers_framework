@@ -71,7 +71,7 @@ static inline uint32_t HcsGetPrefix(const char *start)
 #define HCS_PREFIX_LENGTH (HcsIsByteAlign() ? HCS_DWORD_LENGTH : 1)
 #define HCS_BYTE_LENGTH (HcsIsByteAlign() ? HCS_DWORD_LENGTH : 1)
 #define HCS_WORD_LENGTH (HcsIsByteAlign() ? HCS_DWORD_LENGTH : 2)
-#define HCS_STRING_LENGTH(str) (HcsIsByteAlign() ? HcsAlignSize(strlen(str) + 1) : (strlen(str) + 1)) // add the '\0'.
+#define HCS_STRING_LENGTH(str) (HcsIsByteAlign() ? HcsAlignSize(strlen(str) + 1) : (strlen(str) + 1))
 int32_t HcsGetDataTypeOffset(const char *start);
 int32_t HcsGetAttrLength(const char *start);
 int32_t HcsGetNodeOrAttrLength(const char *start);
@@ -82,4 +82,4 @@ bool HcsSwapToUint16(uint16_t *value, const char *realValue, uint32_t type);
 bool HcsSwapToUint32(uint32_t *value, const char *realValue, uint32_t type);
 bool HcsSwapToUint64(uint64_t *value, const char *realValue, uint32_t type);
 
-#endif // HCS_BLOB_IF_H
+#endif /* HCS_BLOB_IF_H */

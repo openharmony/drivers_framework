@@ -26,7 +26,7 @@ enum BacklightType {
     BLK_MIPI,
 };
 
-/* output timming */
+/* output timing */
 enum IntfSync {
     OUTPUT_USER = 0,          /* User timing */
     OUTPUT_PAL,               /* PAL standard */
@@ -85,6 +85,14 @@ struct MipiDsiDesc {
     enum DsiOutFormat format;
 };
 
+enum PowerStatus {
+    POWER_STATUS_ON,              /* The power status is on */
+    POWER_STATUS_STANDBY,         /* The power status is standby */
+    POWER_STATUS_SUSPEND,         /* The power status is suspend */
+    POWER_STATUS_OFF,             /* The power status is off */
+    POWER_STATUS_BUTT
+};
+
 struct BlkDesc {
     uint32_t type;
     uint32_t minLevel;
@@ -114,13 +122,20 @@ struct PanelInfo {
     struct PwmCfg pwm;
 };
 
+struct PanelStatus {
+    enum PowerStatus powerStatus;
+    uint32_t currLevel;
+};
 struct PanelData {
     struct PanelInfo *info;
+    struct PanelStatus *status;
     int32_t (*init)(void);
     int32_t (*on)(void);
     int32_t (*off)(void);
     int32_t (*setBacklight)(uint32_t level);
 };
+
+extern int32_t g_numRegisteredPanel;
 
 int32_t PanelDataRegister(struct PanelData *data);
 

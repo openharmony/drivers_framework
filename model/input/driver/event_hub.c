@@ -26,6 +26,12 @@ void PushOnePackage(InputDevice *inputDev, uint32_t type, uint32_t code, int32_t
 {
     OsalTimespec time;
     EventPackage package = {0};
+
+    if (inputDev == NULL) {
+        HDF_LOGE("%s: parm is null", __func__);
+        return;
+    }
+
     package.type = type;
     package.code = code;
     package.value = value;

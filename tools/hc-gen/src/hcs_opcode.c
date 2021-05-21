@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <string.h>
 #include "hcs_opcode.h"
+#include <string.h>
 
 
 OpCodeMapEntry g_byteCodeMap[PARSEROP_COUNT] = {
@@ -22,7 +22,7 @@ OpCodeMapEntry g_byteCodeMap[PARSEROP_COUNT] = {
     [PARSEROP_NODEREF]  = {HCS_NODEREF_OP,  DWORD_SIZE, "NodeRef"}, /* RefHashCode - DWORD */
 };
 
-const OpCodeMapEntry *HcsGetOpCodeMap()
+const OpCodeMapEntry *HcsGetOpCodeMap(void)
 {
     return g_byteCodeMap;
 }

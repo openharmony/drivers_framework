@@ -25,10 +25,12 @@ struct HdfDriverLoader {
 };
 
 struct HdfObject *HdfDriverLoaderCreate(void);
+void HdfDriverLoaderConstruct(struct HdfDriverLoader *inst);
 void HdfDriverLoaderRelease(struct HdfObject *object);
 struct IDriverLoader *HdfDriverLoaderGetInstance(void);
 struct HdfDriverEntry *HdfDriverLoaderGetDriverEntry(const struct HdfDeviceInfo *deviceInfo);
 struct HdfDeviceNode *HdfDriverLoaderLoadNode(
     struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo);
+void HdfDriverLoaderUnLoadNode(struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo);
 
 #endif /* HDF_DRIVER_LOADER_H */

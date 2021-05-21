@@ -12,6 +12,7 @@
 #include "hdf_device.h"
 #include "hdf_device_info.h"
 #include "hdf_device_desc.h"
+#include "hdf_pm.h"
 
 struct HdfDeviceNode;
 struct DevHostService;
@@ -34,7 +35,9 @@ struct HdfDeviceNode {
 };
 
 int HdfDeviceNodeAddPowerStateListener(
-    struct HdfDeviceNode *devNode, struct IPowerEventListener *listener);
+    struct HdfDeviceNode *devNode, const struct IPowerEventListener *listener);
+void HdfDeviceNodeRemovePowerStateListener(
+    struct HdfDeviceNode *devNode, const struct IPowerEventListener *listener);
 void HdfDeviceNodeConstruct(struct HdfDeviceNode *service);
 void HdfDeviceNodeDestruct(struct HdfDeviceNode *service);
 struct HdfDeviceNode *HdfDeviceNodeNewInstance(void);

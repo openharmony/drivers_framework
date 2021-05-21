@@ -56,4 +56,4 @@ const struct DeviceResourceNode *HcsGetNodeByRefAttr(const struct DeviceResource
 #endif
 #endif /* __cplusplus */
 
-#endif // HCS_TREE_IF_H
+#endif /* HCS_TREE_IF_H */

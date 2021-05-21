@@ -23,16 +23,16 @@ bool HdfSListIsEmpty(struct HdfSList *list)
     return ((list == NULL) || (list->root == NULL));
 }
 
-struct HdfSListNode *HdfSListSearch(struct HdfSList *list, uint32_t keyValue, HdfSListSearchCompare compare)
+struct HdfSListNode *HdfSListSearch(struct HdfSList *list, uint32_t keyValue, HdfSListSearchComparer comparer)
 {
     struct HdfSListIterator it;
-    if (compare == NULL) {
+    if (comparer == NULL) {
         return NULL;
     }
     HdfSListIteratorInit(&it, list);
     while (HdfSListIteratorHasNext(&it)) {
         struct HdfSListNode *listNode = HdfSListIteratorNext(&it);
-        if (compare(listNode, keyValue))  {
+        if (comparer(listNode, keyValue))  {
             return listNode;
         }
     }
@@ -47,27 +47,17 @@ struct HdfSListNode *HdfSListGetLast(struct HdfSList *list)
         return NULL;
     }
 
-    for (iterator = list->root; iterator; iterator = iterator->next) {
-        if (iterator != NULL) {
-            last = iterator;
-        }
+    for (iterator = list->root; iterator != NULL; iterator = iterator->next) {
+        last = iterator;
     }
     return last;
 }
 
 void HdfSListAdd(struct HdfSList *list, struct HdfSListNode *link)
 {
-    struct HdfSListNode *iterator = NULL;
     if (list == NULL || link == NULL) {
         return;
     }
-
-    for (iterator = list->root; iterator; iterator = iterator->next) {
-        if (iterator == link) {
-            return;
-        }
-    }
-
     link->next = list->root;
     list->root = link;
 }
@@ -89,10 +79,10 @@ void HdfSListAddTail(struct HdfSList *list, struct HdfSListNode *link)
     iterator->next = link;
 }
 
-bool HdfSListAddOrder(struct HdfSList *list, struct HdfSListNode *link, HdfSListAddCompare compare)
+bool HdfSListAddOrder(struct HdfSList *list, struct HdfSListNode *link, HdfSListAddComparer comparer)
 {
     struct HdfSListNode *iterator = NULL;
-    if (list == NULL || link == NULL || compare == NULL) {
+    if (list == NULL || link == NULL || comparer == NULL) {
         HDF_LOGE("input is invalid");
         return false;
     }
@@ -102,13 +92,13 @@ bool HdfSListAddOrder(struct HdfSList *list, struct HdfSListNode *link, HdfSList
             return false;
         }
     }
-    if (compare(link, list->root)) {
+    if (comparer(link, list->root)) {
         link->next = list->root;
         list->root = link;
         return true;
     }
     for (iterator = list->root; iterator && iterator->next; iterator = iterator->next) {
-        if (compare(iterator, link) && compare(link, iterator->next)) {
+        if (comparer(iterator, link) && comparer(link, iterator->next)) {
             link->next = iterator->next;
             iterator->next = link;
             return true;
