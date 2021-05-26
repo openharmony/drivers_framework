@@ -55,6 +55,9 @@ static struct SpiCfg g_spiCfg = {
     .transferMode = SPI_POLLING_TRANSFER,
 };
 
+#define SPI_TEST_ONE_BYTE 1
+#define SPI_TEST_TWO_BYTE 2
+
 static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8_t bits)
 {
     int32_t i;
@@ -67,7 +70,7 @@ static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8
         bits = SPI_TEST_16BITS;
     }
 
-    for (i = 0; i < len; ) {
+    for (i = 0; i < len;) {
         if (bits <= SPI_TEST_8BITS) {
             vw = *((uint8_t *)(wbuf + i)) & (~(0xFFFF << bits));
             vr = *((uint8_t *)(rbuf + i)) & (~(0xFFFF << bits));
@@ -80,7 +83,7 @@ static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8
                 __func__, i, vw, vr, bits, len);
             return HDF_FAILURE;
         }
-        i += (bits <= SPI_TEST_8BITS) ? 1 : 2;
+        i += (bits <= SPI_TEST_8BITS) ? SPI_TEST_ONE_BYTE : SPI_TEST_TWO_BYTE;
     }
     HDF_LOGE("%s: mem size(%u) compare success", __func__, len);
     return HDF_SUCCESS;

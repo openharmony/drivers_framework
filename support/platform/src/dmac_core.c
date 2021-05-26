@@ -1,4 +1,5 @@
-/* * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+/*
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -270,7 +271,7 @@ static uintptr_t DmacGetDummyBuf(struct DmaCntlr *cntlr, struct DmacChanInfo *ch
         chan->dummyPage = OsalMemCalloc(sizeof(cntlr->maxTransSize));
     }
 
-    return chan->dummyPage == NULL ? 0 : (uintptr_t)LOS_PaddrQuery(chan->dummyPage);
+    return (chan->dummyPage == NULL) ? 0 : (uintptr_t)LOS_PaddrQuery(chan->dummyPage);
 }
 
 static inline size_t DmacAlignedTransMax(size_t maxSize, uint8_t srcWidth, uint8_t destWidth)
