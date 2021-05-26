@@ -324,7 +324,7 @@ static int32_t DmacFillLli(struct DmaCntlr *cntlr, struct DmacChanInfo *chanInfo
     for (i = 0, lliNum = chanInfo->lliCnt; i < lliNum; i++, plli++) {
         plli->nextLli = (uintptr_t)cntlr->dmacVaddrToPaddr((void *)plli) + (uintptr_t)sizeof(struct DmacLli);
         plli->nextLli = (i < lliNum - 1) ? (plli->nextLli + chanInfo->lliEnFlag) : 0;
-        plli->count = (i < lliNum - 1) ? alignedMax : (length % alignedMax);
+        plli->count = ((i < lliNum - 1) || ((length % alignedMax) == 0)) ? alignedMax : (length % alignedMax);
 
         plli->srcAddr = srcaddr;
         plli->destAddr = dstaddr;
