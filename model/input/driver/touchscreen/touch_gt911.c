@@ -99,7 +99,6 @@ static void ParsePointData(ChipDevice *device, FrameData *frame, uint8_t *buf, u
             if (frame->fingers[i].x == 0) {
                 frame->fingers[i].x = X_OFFSET;
             }
-            HDF_LOGD("%s: x = %d, y = %d", __func__, frame->fingers[i].x, frame->fingers[i].y);
         } else if (chipVer == 1) {  // chipversion B:gt911_zsj4p0
             frame->fingers[i].x = resX - 1 - ((buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET));
