@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef SENSOR_DRIVER_TYPE_H
-#define SENSOR_DRIVER_TYPE_H
+#ifndef SENSOR_DEVICE_TYPE_H
+#define SENSOR_DEVICE_TYPE_H
 
 #include "hdf_base.h"
 
@@ -99,4 +99,4 @@ struct SensorReportEvent {
     uint32_t dataLen;  /**< Sensor data length */
 };
 
-#endif /* SENSOR_DRIVER_TYPE_H */
+#endif /* SENSOR_DEVICE_TYPE_H */

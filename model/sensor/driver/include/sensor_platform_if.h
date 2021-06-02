@@ -6,13 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef SENSOR_COMMON_H
-#define SENSOR_COMMON_H
+#ifndef SENSOR_PLATFORM_IF_H
+#define SENSOR_PLATFORM_IF_H
 
 #include "hdf_log.h"
 #include "i2c_if.h"
+#include "spi_if.h"
 #include "osal_thread.h"
-#include "sensor_parser.h"
 
 #define CHECK_NULL_PTR_RETURN_VALUE(ptr, ret) do { \
     if ((ptr) == NULL) { \
@@ -44,11 +44,38 @@
 #define SENSOR_DATA_WIDTH_8_BIT         8 // 8 bit
 #define SENSOR_CONVERT_UNIT             1000
 #define SENSOR_1K_UNIT                  1024
+#define SENSOR_SPI_MAX_SPEED             115200
 #define SENSOR_SECOND_CONVERT_NANOSECOND    (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT)
 
 #define MAX_SENSOR_EXIT_THREAD_COUNT    10
 #define MAX_SENSOR_WAIT_THREAD_TIME     100 // 100MS
-typedef int (*sensorEntry)(void *);
+
+enum SensorBusType {
+    SENSOR_BUS_I2C = 0,
+    SENSOR_BUS_SPI = 1,
+};
+
+struct SensorI2cCfg {
+    DevHandle handle;
+    uint16_t busNum;
+    uint16_t devAddr;  // Address of the I2C device
+    uint16_t regWidth; // length of the register address
+};
+
+struct SensorSpiCfg {
+    DevHandle handle;
+    uint32_t busNum;
+    uint32_t csNum;
+};
+
+struct SensorBusCfg {
+    uint8_t busType; // enum SensorBusType
+    uint8_t regBigEndian;
+    union {
+        struct SensorI2cCfg i2cCfg;
+        struct SensorSpiCfg spiCfg;
+    };
+};
 
 enum SensorThreadStatus {
     SENSOR_THREAD_NONE     = 0,
@@ -72,4 +99,4 @@ int32_t SetSensorPinMux(uint32_t regAddr, int32_t regSize, uint32_t regValue);
 int32_t CreateSensorThread(struct OsalThread *thread, OsalThreadEntry threadEntry, char *name, void *entryPara);
 void DestroySensorThread(struct OsalThread *thread, uint8_t *status);
 
-#endif /* SENSOR_COMMON_H */
+#endif /* SENSOR_PLATFORM_IF_H */

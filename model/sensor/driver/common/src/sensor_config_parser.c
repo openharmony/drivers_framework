@@ -9,8 +9,8 @@
 #include "securec.h"
 #include "device_resource_if.h"
 #include "osal_mem.h"
-#include "sensor_common.h"
-#include "sensor_parser.h"
+#include "sensor_config_parser.h"
+#include "sensor_platform_if.h"
 
 #define HDF_LOG_TAG    sensor_config_parser_c
 
@@ -201,6 +201,24 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
             HDF_LOGE("%s: sensor i2c Handle invalid", __func__);
             return HDF_FAILURE;
         }
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
+        struct SpiDevInfo spiDevinfo;
+        struct SpiCfg cfg;
+        int32_t ret;
+
+        spiDevinfo.busNum = busCfg->spiCfg.busNum;
+        spiDevinfo.csNum = busCfg->spiCfg.csNum;
+        busCfg->i2cCfg.handle = SpiOpen(&spiDevinfo);
+
+        cfg.mode = SPI_CLK_PHASE | SPI_CLK_POLARITY;
+        cfg.bitsPerWord = SENSOR_DATA_WIDTH_8_BIT;
+        cfg.maxSpeedHz = SENSOR_SPI_MAX_SPEED;
+        ret = SpiSetCfg(busCfg->i2cCfg.handle, &cfg);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: SpiSetCfg failed", __func__);
+            SpiClose(busCfg->i2cCfg.handle);
+            return ret;
+        }
     }
 
     return HDF_SUCCESS;
@@ -215,6 +233,9 @@ int32_t ReleaseSensorBusHandle(struct SensorBusCfg *busCfg)
     if (busCfg->busType == SENSOR_BUS_I2C && busCfg->i2cCfg.handle != NULL) {
         I2cClose(busCfg->i2cCfg.handle);
         busCfg->i2cCfg.handle = NULL;
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
+        SpiClose(busCfg->spiCfg.handle);
+        busCfg->spiCfg.handle = NULL;
     }
 
     return HDF_SUCCESS;

@@ -10,7 +10,7 @@
 #include "accel_bmi160.h"
 #include "osal_time.h"
 #include "sensor_accel_driver.h"
-#include "sensor_device_common.h"
+#include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 
 /* IO config for int-pin and I2C-pin */

@@ -13,9 +13,9 @@
 #include "osal_math.h"
 #include "osal_time.h"
 #include "osal_timer.h"
-#include "sensor_common.h"
+#include "sensor_platform_if.h"
 #include "sensor_device_manager.h"
-#include "sensor_driver_type.h"
+#include "sensor_device_type.h"
 
 #define HDF_LOG_TAG    hdf_sensor_test_c
 

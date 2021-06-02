@@ -10,9 +10,9 @@
 #include "osal_io.h"
 #include "osal_thread.h"
 #include "osal_time.h"
-#include "sensor_common.h"
+#include "sensor_platform_if.h"
 
-#define HDF_LOG_TAG    sensor_common_operation_c
+#define HDF_LOG_TAG    sensor_platform_if_c
 
 #define I2C_READ_MSG_NUM           2
 #define I2C_READ_MSG_ADDR_IDX      0
@@ -61,6 +61,11 @@ int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data,
             HDF_LOGE("%s: i2c[%u] read failed", __func__, busCfg->i2cCfg.busNum);
             return HDF_FAILURE;
         }
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
+        if (SpiRead(busCfg->spiCfg.handle, data, dataLen) != HDF_SUCCESS) {
+            HDF_LOGE("%s: spi read failed", __func__);
+            return HDF_FAILURE;
+        }
     }
 
     return HDF_SUCCESS;
@@ -83,6 +88,11 @@ int32_t WriteSensor(struct SensorBusCfg *busCfg, uint8_t *writeData, uint16_t da
 
         if (I2cTransfer(busCfg->i2cCfg.handle, msg, I2C_WRITE_MSG_NUM) != I2C_WRITE_MSG_NUM) {
             HDF_LOGE("%s: i2c[%u] write failed", __func__, busCfg->i2cCfg.busNum);
+            return HDF_FAILURE;
+        }
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
+        if (SpiWrite(busCfg->spiCfg.handle, writeData, dataLen) != HDF_SUCCESS) {
+            HDF_LOGE("%s: spi write failed", __func__);
             return HDF_FAILURE;
         }
     }

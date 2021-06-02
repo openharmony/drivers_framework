@@ -14,9 +14,9 @@
 #include "osal_mem.h"
 #include "osal_time.h"
 #include "sensor_accel_driver.h"
-#include "sensor_common.h"
-#include "sensor_device_common.h"
+#include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
+#include "sensor_platform_if.h"
 
 #define HDF_LOG_TAG    sensor_accel_driver_c
 
