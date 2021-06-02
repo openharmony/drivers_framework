@@ -11,8 +11,8 @@
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_mem.h"
-#include "sensor_common.h"
 #include "sensor_device_manager.h"
+#include "sensor_platform_if.h"
 
 #define HDF_LOG_TAG    sensor_device_manager_c
 
@@ -231,11 +231,11 @@ static int32_t SetOption(struct SensorDeviceInfo *deviceInfo, struct HdfSBuf *da
 }
 
 static struct SensorCmdHandleList g_sensorCmdHandle[] = {
-    {SENSOR_CMD_ENABLE, Enable},        // SENSOR_CMD_ENABLE
-    {SENSOR_CMD_DISABLE, Disable},      // SENSOR_CMD_DISABLE
-    {SENSOR_CMD_SET_BATCH, SetBatch},   // SENSOR_CMD_SET_BATCH
-    {SENSOR_CMD_SET_MODE, SetMode},     // SENSOR_CMD_SET_MODE
-    {SENSOR_CMD_SET_OPTION, SetOption}, // SENSOR_CMD_SET_OPTION
+    {SENSOR_OPS_CMD_ENABLE, Enable},        // SENSOR_CMD_ENABLE
+    {SENSOR_OPS_CMD_DISABLE, Disable},      // SENSOR_CMD_DISABLE
+    {SENSOR_OPS_CMD_SET_BATCH, SetBatch},   // SENSOR_CMD_SET_BATCH
+    {SENSOR_OPS_CMD_SET_MODE, SetMode},     // SENSOR_CMD_SET_MODE
+    {SENSOR_OPS_CMD_SET_OPTION, SetOption}, // SENSOR_CMD_SET_OPTION
 };
 
 static int32_t DispatchCmdHandle(struct SensorDeviceInfo *deviceInfo, struct HdfSBuf *data, struct HdfSBuf *reply)
@@ -251,7 +251,7 @@ static int32_t DispatchCmdHandle(struct SensorDeviceInfo *deviceInfo, struct Hdf
         return HDF_FAILURE;
     }
 
-    if (methodCmd >= SENSOR_CMD_BUTT || methodCmd <= 0) {
+    if (methodCmd >= SENSOR_OPS_CMD_BUTT || methodCmd <= 0) {
         HDF_LOGE("%s: invalid cmd = %d", __func__, methodCmd);
         return HDF_FAILURE;
     }
@@ -266,25 +266,28 @@ static int32_t DispatchCmdHandle(struct SensorDeviceInfo *deviceInfo, struct Hdf
     return HDF_FAILURE;
 }
 
-#define SENSOR_ID_CMD_INFO_LIST    0xFFFF
 static int32_t DispatchSensor(struct HdfDeviceIoClient *client,
     int32_t cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct SensorDevMgrData *manager = GetSensorDeviceManager();
     struct SensorDevInfoNode *pos = NULL;
-    struct SensorDevInfoNode *tmp = NULL;
+    int32_t sensorId;
     int32_t ret = HDF_FAILURE;
 
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(client, HDF_ERR_INVALID_PARAM);
 
-    if (cmd == SENSOR_ID_CMD_INFO_LIST) {
+    if (cmd == SENSOR_CMD_GET_INFO_LIST) {
         return GetAllSensorInfo(data, reply);
     }
 
     (void)OsalMutexLock(&manager->mutex);
-    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
-        if (cmd == pos->devInfo.sensorInfo.sensorId) {
+    DLIST_FOR_EACH_ENTRY(pos, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
+        if (!HdfSbufReadInt32(data, &sensorId)) {
+            HDF_LOGE("%s: sbuf read sensorId failed", __func__);
+            continue;
+        }
+        if (sensorId == pos->devInfo.sensorInfo.sensorId) {
             ret = DispatchCmdHandle(&pos->devInfo, data, reply);
             break;
         }
