@@ -13,10 +13,9 @@
 #include "hdf_platform.h"
 
 enum SpiTestCmd {
-    SPI_SET_CFG_TEST = 0,
     SPI_TRANSFER_TEST,
-    SPI_WRITE_TEST,
-    SPI_READ_TEST,
+    SPI_DMA_TRANSFER_TEST,
+    SPI_INT_TRANSFER_TEST,
     SPI_RELIABILITY_TEST,
     SPI_PERFORMANCE_TEST,
     SPI_TEST_ALL,

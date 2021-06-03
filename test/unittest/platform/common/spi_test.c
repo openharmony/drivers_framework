@@ -15,6 +15,11 @@
 #include "spi_test.h"
 
 #define HDF_LOG_TAG spi_test_c
+
+#define SPI_TEST_4BITS  4
+#define SPI_TEST_8BITS  8
+#define SPI_TEST_16BITS 16
+
 struct SpiTestFunc {
     enum SpiTestCmd type;
     int32_t (*Func)(struct SpiTest *test);
@@ -38,30 +43,96 @@ static void SpiTestReleaseHandle(DevHandle handle)
     SpiClose(handle);
 }
 
-#define BITS_PER_WORD 10
-#define MAX_SPEED_HZ 10000000
-static int32_t SpiSetCfgTest(struct SpiTest *test)
+#define BITS_PER_WORD_DEFAULT    8
+#define BITS_PER_WORD_8BITS      8
+#define BITS_PER_WORD_10BITS     10
+#define MAX_SPEED_HZ             10000000
+
+static struct SpiCfg g_spiCfg = {
+    .mode = SPI_CLK_PHASE | SPI_MODE_LOOP,
+    .bitsPerWord = BITS_PER_WORD_DEFAULT,
+    .maxSpeedHz = MAX_SPEED_HZ,
+    .transferMode = SPI_POLLING_TRANSFER,
+};
+
+#define SPI_TEST_ONE_BYTE 1
+#define SPI_TEST_TWO_BYTE 2
+
+static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8_t bits)
+{
+    int32_t i;
+    uint16_t vw;
+    uint16_t vr;
+
+    if (bits < SPI_TEST_4BITS) {
+        bits = SPI_TEST_4BITS;
+    } else if (bits > SPI_TEST_16BITS) {
+        bits = SPI_TEST_16BITS;
+    }
+
+    for (i = 0; i < len;) {
+        if (bits <= SPI_TEST_8BITS) {
+            vw = *((uint8_t *)(wbuf + i)) & (~(0xFFFF << bits));
+            vr = *((uint8_t *)(rbuf + i)) & (~(0xFFFF << bits));
+        } else {
+            vw = *((uint16_t *)(wbuf + i)) & (~(0xFFFF << bits));
+            vr = *((uint16_t *)(rbuf + i)) & (~(0xFFFF << bits));
+        }
+        if (vw != vr) {
+            HDF_LOGE("%s: compare mem fail(i=%d, vw=%u, vr=%u, bits = %u, len=%u)",
+                __func__, i, vw, vr, bits, len);
+            return HDF_FAILURE;
+        }
+        i += (bits <= SPI_TEST_8BITS) ? SPI_TEST_ONE_BYTE : SPI_TEST_TWO_BYTE;
+    }
+    HDF_LOGE("%s: mem size(%u) compare success", __func__, len);
+    return HDF_SUCCESS;
+}
+
+static int32_t SpiDoTransferTest(struct SpiTest *test, struct SpiCfg *cfg, struct SpiMsg *msg)
 {
     int32_t ret;
-    struct SpiCfg cfg;
 
-    cfg.mode = SPI_CLK_PHASE | SPI_MODE_LOOP;
-    cfg.bitsPerWord = BITS_PER_WORD;
-    cfg.maxSpeedHz = MAX_SPEED_HZ;
-    cfg.transferMode = SPI_INTERRUPT_TRANSFER;
-    ret = SpiSetCfg(test->handle, &cfg);
+    ret = SpiSetCfg(test->handle, cfg);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        HDF_LOGE("%s: set config fail", __func__);
+        return ret;
     }
+
+    ret = SpiTransfer(test->handle, msg, 1);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: spi transfer err", __func__);
+        return ret;
+    }
+
+    ret = SpiCmpMemByBits(msg->wbuf, msg->rbuf, msg->len, g_spiCfg.bitsPerWord);
+    if (ret != HDF_SUCCESS) {
+        return ret;
+    }
+
+    ret = SpiWrite(test->handle, msg->wbuf, msg->len);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: spi write err", __func__);
+        return ret;
+    }
+
+    ret = SpiRead(test->handle, msg->rbuf, msg->len);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: spi read err", __func__);
+        return ret;
+    }
+
     HDF_LOGE("%s: success", __func__);
-    return ret;
+    return HDF_SUCCESS;
 }
 
 static int32_t SpiTransferTest(struct SpiTest *test)
 {
-    int32_t i;
+    int32_t ret;
     struct SpiMsg msg;
+
+    g_spiCfg.bitsPerWord = BITS_PER_WORD_8BITS;
+    g_spiCfg.transferMode = SPI_POLLING_TRANSFER;
 
     msg.rbuf = test->rbuf;
     msg.wbuf = test->wbuf;
@@ -69,34 +140,129 @@ static int32_t SpiTransferTest(struct SpiTest *test)
     msg.csChange = 1; // switch off the CS after transfer
     msg.delayUs = 0;
     msg.speed = 0;    // use default speed
-    if (SpiTransfer(test->handle, &msg, 1) != HDF_SUCCESS) {
-        HDF_LOGE("%s: spi transfer err", __func__);
-        return HDF_FAILURE;
+
+    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
+        return ret;
     }
-    for (i = 0; i < test->len; i++) {
-        HDF_LOGE("%s: wbuf[%d] = 0x%x rbuff[%d] = 0x%x", __func__, i, test->wbuf[i], i, test->rbuf[i]);
+
+    g_spiCfg.bitsPerWord = BITS_PER_WORD_10BITS;
+    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
+        return ret;
     }
-    HDF_LOGE("%s: success", __func__);
+
     return HDF_SUCCESS;
 }
 
-static int32_t SpiWriteTest(struct SpiTest *test)
+#define DMA_TRANSFER_SINGLE_MAX   (1024 * 64 - 1)
+#define DMA_TRANSFER_SIZE_TOTAL   (DMA_TRANSFER_SINGLE_MAX * 2 + 65532)
+#define DMA_TRANSFER_BUF_SEED     0x5A
+#define DMA_ALIGN_SIZE            64
+
+static int32_t SpiSetDmaIntMsg(struct SpiMsg *msg, uint32_t len)
 {
-    if (SpiWrite(test->handle, test->wbuf, test->len) != HDF_SUCCESS) {
-        HDF_LOGE("%s: spi write err\n", __func__);
-        return HDF_FAILURE;
+    uint32_t i;
+    uint8_t *wbuf = NULL;
+    uint8_t *rbuf = NULL;
+
+    msg->wbuf = msg->rbuf = NULL;
+
+    wbuf = (uint8_t *)OsalMemAllocAlign(DMA_ALIGN_SIZE, len);
+    if (wbuf == NULL) {
+        return HDF_ERR_MALLOC_FAIL;
     }
-    HDF_LOGE("%s: success", __func__);
+    rbuf = (uint8_t *)OsalMemAllocAlign(DMA_ALIGN_SIZE, len);
+    if (wbuf == NULL) {
+        OsalMemFree(wbuf);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    wbuf[0] = DMA_TRANSFER_BUF_SEED;
+    for (i = 1; i < len; i++) {
+        wbuf[i] = wbuf[i - 1] + 1;
+        rbuf[i] = 0;
+    }
+    msg->wbuf = wbuf;
+    msg->rbuf = rbuf;
+    msg->len = len;
+    msg->csChange = 1;
+    msg->delayUs = 0,  // switch off the CS after transfer
+    msg->speed = 0;    // using default speed
     return HDF_SUCCESS;
 }
 
-static int32_t SpiReadTest(struct SpiTest *test)
+static void SpiUnsetDmaIntMsg(struct SpiMsg *msg)
 {
-    if (SpiRead(test->handle, test->rbuf, test->len) != HDF_SUCCESS) {
-        HDF_LOGE("%s: spi read err\n", __func__);
-        return HDF_FAILURE;
+    if (msg != NULL) {
+        OsalMemFree(msg->wbuf);
+        OsalMemFree(msg->rbuf);
+        msg->wbuf = NULL;
+        msg->rbuf = NULL;
     }
-    HDF_LOGE("%s: success", __func__);
+}
+
+static int32_t SpiDmaTransferTest(struct SpiTest *test)
+{
+    int32_t ret;
+    struct SpiMsg msg;
+
+    g_spiCfg.transferMode = SPI_DMA_TRANSFER;
+    g_spiCfg.bitsPerWord = BITS_PER_WORD_8BITS;
+
+    ret = SpiSetDmaIntMsg(&msg, DMA_TRANSFER_SIZE_TOTAL);
+    if (ret != HDF_SUCCESS) {
+        return ret;
+    }
+
+    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    if (ret != HDF_SUCCESS) {
+        SpiUnsetDmaIntMsg(&msg);
+        HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
+        return ret;
+    }
+
+    g_spiCfg.bitsPerWord = BITS_PER_WORD_10BITS;
+    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    if (ret != HDF_SUCCESS) {
+        SpiUnsetDmaIntMsg(&msg);
+        HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
+        return ret;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t SpiIntTransferTest(struct SpiTest *test)
+{
+    int32_t ret;
+    struct SpiMsg msg;
+
+    g_spiCfg.transferMode = SPI_INTERRUPT_TRANSFER;
+    g_spiCfg.bitsPerWord = BITS_PER_WORD_8BITS;
+
+    ret = SpiSetDmaIntMsg(&msg, DMA_TRANSFER_SIZE_TOTAL);
+    if (ret != HDF_SUCCESS) {
+        return ret;
+    }
+
+    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    if (ret != HDF_SUCCESS) {
+        SpiUnsetDmaIntMsg(&msg);
+        HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
+        return ret;
+    }
+
+    g_spiCfg.bitsPerWord = BITS_PER_WORD_10BITS;
+    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    if (ret != HDF_SUCCESS) {
+        SpiUnsetDmaIntMsg(&msg);
+        HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
+        return ret;
+    }
+
     return HDF_SUCCESS;
 }
 
@@ -113,6 +279,8 @@ static int32_t SpiReliabilityTest(struct SpiTest *test)
     (void)SpiWrite(test->handle, NULL, -1);
     (void)SpiRead(test->handle, test->rbuf, test->len);
     (void)SpiRead(test->handle, NULL, -1);
+
+    (void)test;
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
 }
@@ -122,35 +290,34 @@ static int32_t SpiTestAll(struct SpiTest *test)
     int32_t total = 0;
     int32_t error = 0;
 
-    if (SpiSetCfgTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
     if (SpiTransferTest(test) != HDF_SUCCESS) {
         error++;
     }
     total++;
-    if (SpiWriteTest(test) != HDF_SUCCESS) {
+
+    if (SpiDmaTransferTest(test) != HDF_SUCCESS) {
         error++;
     }
     total++;
-    if (SpiReadTest(test) != HDF_SUCCESS) {
+
+    if (SpiIntTransferTest(test) != HDF_SUCCESS) {
         error++;
     }
     total++;
+
     if (SpiReliabilityTest(test) != HDF_SUCCESS) {
         error++;
     }
     total++;
+
     HDF_LOGE("%s: Spi Test Total %d Error %d", __func__, total, error);
     return HDF_SUCCESS;
 }
 
-struct SpiTestFunc g_spiTestFunc[] = {
-    {SPI_SET_CFG_TEST, SpiSetCfgTest},
+static struct SpiTestFunc g_spiTestFunc[] = {
     {SPI_TRANSFER_TEST, SpiTransferTest},
-    {SPI_WRITE_TEST, SpiWriteTest},
-    {SPI_READ_TEST, SpiReadTest},
+    {SPI_DMA_TRANSFER_TEST, SpiDmaTransferTest},
+    {SPI_INT_TRANSFER_TEST, SpiIntTransferTest},
     {SPI_RELIABILITY_TEST, SpiReliabilityTest},
     {SPI_PERFORMANCE_TEST, NULL},
     {SPI_TEST_ALL, SpiTestAll},
@@ -161,6 +328,7 @@ static int32_t SpiTestEntry(struct SpiTest *test, int32_t cmd)
     int32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
 
+    HDF_LOGE("%s: enter cmd %d", __func__, cmd);
     if (test == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
