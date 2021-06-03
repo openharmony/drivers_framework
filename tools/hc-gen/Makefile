@@ -1,20 +1,34 @@
 Q = @
 BUILD_DIR := build
-TARGET := hc-gen
+TARGET := $(BUILD_DIR)/hc-gen
 
+CXX := c++
+CXX_FLAGS := -std=gnu++14
+
+SRCS := $(wildcard src/*.cpp)
+OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SRCS))
+
+ifeq ($(LANG),)
+  CXX_FLAGS += -DOS_MINGW
+else
+  CXX_FLAGS += -DOS_UNIX
+endif
 
 all: $(TARGET)
 
-$(TARGET):
-	$(Q)mkdir -p $(BUILD_DIR)
-	$(Q)pushd $(BUILD_DIR); cmake ../; popd
-	$(Q)make -C $(BUILD_DIR)
+$(OBJECTS): $(BUILD_DIR)/%.o : %.cpp
+	$(Q) echo CC $<
+	$(Q) mkdir -p $(dir $@)
+	$(Q) $(CXX) $(CXX_FLAGS)  $(CXX_LD_FLAGS) -c $< -o $@
+
+$(TARGET): $(OBJECTS)
+	$(Q) $(CXX) $(CXX_FLAGS) $(CXX_LD_FLAGS) $^ -o $@
 
 test: $(TARGET)
-	$(Q) python test/hcgen_test.py $(BUILD_DIR)/$(TARGET)
+	$(Q) python test/hcgen_test.py $(TARGET)
 
 update_testcase: $(TARGET)
-	$(Q) python test/update_case.py $(BUILD_DIR)/$(TARGET)
+	$(Q) python test/update_case.py $(TARGET)
 
 clean:
 	$(Q) rm -rf $(BUILD_DIR)
