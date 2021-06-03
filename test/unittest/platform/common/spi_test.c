@@ -160,6 +160,7 @@ static int32_t SpiTransferTest(struct SpiTest *test)
 #define DMA_TRANSFER_SINGLE_MAX   (1024 * 64 - 1)
 #define DMA_TRANSFER_SIZE_TOTAL   (DMA_TRANSFER_SINGLE_MAX * 2 + 65532)
 #define DMA_TRANSFER_BUF_SEED     0x5A
+#define DMA_ALIGN_SIZE            64
 
 static int32_t SpiSetDmaIntMsg(struct SpiMsg *msg, uint32_t len)
 {
@@ -169,11 +170,11 @@ static int32_t SpiSetDmaIntMsg(struct SpiMsg *msg, uint32_t len)
 
     msg->wbuf = msg->rbuf = NULL;
 
-    wbuf = (uint8_t *)OsalMemAllocAlign(CACHE_ALIGNED_SIZE, len);
+    wbuf = (uint8_t *)OsalMemAllocAlign(DMA_ALIGN_SIZE, len);
     if (wbuf == NULL) {
         return HDF_ERR_MALLOC_FAIL;
     }
-    rbuf = (uint8_t *)OsalMemAllocAlign(CACHE_ALIGNED_SIZE, len);
+    rbuf = (uint8_t *)OsalMemAllocAlign(DMA_ALIGN_SIZE, len);
     if (wbuf == NULL) {
         OsalMemFree(wbuf);
         return HDF_ERR_MALLOC_FAIL;
