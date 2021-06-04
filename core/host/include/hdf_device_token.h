@@ -13,8 +13,8 @@
 #include "hdf_slist.h"
 
 struct HdfDeviceToken {
-    struct HdfSListNode node;
     struct IHdfDeviceToken super;
+    struct HdfSListNode node;
 };
 
 struct HdfObject *HdfDeviceTokenCreate(void);
