@@ -6,10 +6,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall")
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
-    add_definitions(-D OS_LINUX)
+    add_definitions(-D OS_UNIX)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
-    add_definitions(-D OS_WIN)
-    add_definitions(-D MINGW32)
+    add_definitions(-D OS_MINGW)
 endif (CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -s")
