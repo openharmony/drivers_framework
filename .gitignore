@@ -2,3 +2,4 @@
 *.a
 *.d
 *.cmd
+tools/hc-gen/build
