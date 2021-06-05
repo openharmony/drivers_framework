@@ -434,6 +434,10 @@ private:
     bool redefineChecked_;
 };
 
+std::ostream& operator<<(std::ostream &s, const AstObject &obj);
+std::ostream& operator<<(std::ostream &s, const ConfigNode &obj);
+std::ostream& operator<<(std::ostream &s, const ConfigTerm &obj);
+
 } // Hardware
 } // OHOS
 

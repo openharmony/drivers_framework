@@ -22,6 +22,7 @@ $(OBJECTS): $(BUILD_DIR)/%.o : %.cpp
 	$(Q) $(CXX) $(CXX_FLAGS)  $(CXX_LD_FLAGS) -c $< -o $@
 
 $(TARGET): $(OBJECTS)
+	$(Q) echo built $@
 	$(Q) $(CXX) $(CXX_FLAGS) $(CXX_LD_FLAGS) $^ -o $@
 
 test: $(TARGET)
