@@ -76,6 +76,8 @@ private:
     int32_t lineLoc_;
 };
 
+std::ostream& operator<<(std::ostream &s, const Lexer &lexer);
+
 } // Hardware
 } // OHOS
 

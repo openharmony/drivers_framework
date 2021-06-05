@@ -17,6 +17,7 @@
 namespace OHOS {
 namespace Hardware {
 
+
 enum TokenType {
     NUMBER = 256,
     TEMPLATE,
@@ -41,6 +42,8 @@ struct Token {
     bool operator!=(int32_t type) const;
     friend std::ostream &operator<<(std::ostream &stream, const Token &t);
 };
+
+std::ostream& operator<<(std::ostream &s, const Token &t);
 
 std::string TokenType2String(int32_t type);
 
