@@ -125,7 +125,7 @@ int DevHostServiceDelDevice(struct IDevHostService *inst, const struct HdfDevice
         return HDF_FAILURE;
     }
 
-    device = DevHostServiceGetDevice(hostService, deviceInfo->deviceId);
+    device = DevHostServiceFindDevice(hostService, deviceInfo->deviceId);
     if (device == NULL) {
         HDF_LOGW("failed to del device, device is not exist");
         return HDF_SUCCESS;
