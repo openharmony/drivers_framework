@@ -17,7 +17,6 @@
 namespace OHOS {
 namespace Hardware {
 
-
 enum TokenType {
     NUMBER = 256,
     TEMPLATE,
