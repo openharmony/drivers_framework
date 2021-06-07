@@ -256,6 +256,8 @@ bool Lexer::LexFromNumber(Token &token)
     std::string value;
     char c;
     uint64_t v = 0;
+    errno = 0;
+
     GetChar(c, false);
     switch (c) {
         case '0':
