@@ -19,7 +19,6 @@
 #include "message/message_router.h"
 #include "hdf_wlan_chipdriver_manager.h"
 #include "hdf_wlan_sdio.h"
-#include "hdf_wlan_sdio.h"
 #include "hdf_wlan_config.h"
 #include "hdf_wlan_utils.h"
 
@@ -39,18 +38,21 @@ int32_t HdfWifiGetBusIdx(void)
  * @brief  as for now, we just support one wlan module in one board cause driver binds to wlan featere
  * due to that reason, once we detected one chip, we stop rescan.
  */
-int32_t HdfWlanSdioScan(struct HdfWlanDevice *data, struct HdfConfigWlanBus *busConfig)
+int HdfWlanBusInit(struct HdfWlanDevice *data, const struct HdfConfigWlanBus *busConfig)
 {
-    /* get config vendId, deviceId and chip-name which used in detect match process */
-    HdfWlanGetSdioTableByConfig();
-
-    HdfWlanSdioScanTriggerByBusIndex(busConfig->busIdx);
-    int32_t ret = HdfWlanGetDetectedChip(data, busConfig);
-    HdfWlanSdioDriverUnReg();
-    if (ret != HDF_SUCCESS) {
-        return ret;
+    struct BusDev *bus = NULL;
+    bus = HdfWlanCreateBusManager(busConfig);
+    if (bus == NULL) {
+        HDF_LOGE("%s:Create bus manager failed!", __func__);
+        return HDF_FAILURE;
     }
-    HDF_LOGI("driver name = %s", __func__, data->driverName);
+    data->bus = bus;
+    if (bus->priData.driverName == NULL) {
+        HDF_LOGE("%s:get driver name failed!", __func__);
+        return HDF_FAILURE;
+    }
+    data->driverName = bus->priData.driverName;
+    HDF_LOGI("%s: driver name = %s", __func__, data->driverName);
     return HDF_SUCCESS;
 }
 
@@ -324,6 +326,10 @@ inline static void ReleaseWlanDevice(struct HdfWlanDevice *device)
         device->reset->Release(device->reset);
         device->reset = NULL;
     }
+    if (device->bus != NULL && device->bus->ops.deInit != NULL) {
+        device->bus->ops.deInit(device->bus);
+        device->bus = NULL;
+    }
     OsalMemFree(device);
 }
 
@@ -355,7 +361,7 @@ static struct HdfWlanDevice *ProbeDevice(struct HdfConfigWlanDevInst *deviceConf
             break;
         }
 
-        ret = HdfWlanSdioScan(device, &deviceConfig->bus);
+        ret = HdfWlanBusInit(device, &deviceConfig->bus);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:NO Sdio Card in hdf wlan init proc", __func__);
             break;
@@ -546,3 +552,4 @@ struct HdfDriverEntry g_hdfWifiEntry = {
 };
 
 HDF_INIT(g_hdfWifiEntry);
+

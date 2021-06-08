@@ -36,6 +36,7 @@
 #include "hdf_wlan_config.h"
 #include "hdf_wlan_power_manager.h"
 #include "hdf_wlan_reset_manager.h"
+#include "hdf_ibus_intf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,6 +75,7 @@ struct HdfWlanDevice {
     struct HdfWlanManufacturer manufacturer;    /**< WLAN device manufacturer */
     struct ResetManager *reset;                 /**< Chip reset management API */
     struct PowerManager *powers;                /**< Chip power management APIs */
+    struct BusDev *bus;
 };
 
 /**
