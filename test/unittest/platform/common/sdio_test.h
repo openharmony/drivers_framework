@@ -11,6 +11,7 @@
 
 #include "hdf_device_desc.h"
 #include "hdf_platform.h"
+#include "sdio_if.h"
 
 enum SdioTestCmd {
     SDIO_DISABLE_FUNC_01 = 0,
@@ -26,10 +27,8 @@ struct SdioTester {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
     int32_t (*TestEntry)(struct SdioTester *tester, int32_t cmd);
+    struct SdioFunctionConfig config;
     uint32_t busNum;
-    uint32_t funcNum;
-    uint32_t vendorId;
-    uint32_t deviceId;
     DevHandle handle;
 };
 
