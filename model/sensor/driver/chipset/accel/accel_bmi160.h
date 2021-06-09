@@ -9,7 +9,7 @@
 #ifndef ACCEL_BMI160_H
 #define ACCEL_BMI160_H
 
-#include "sensor_parser.h"
+#include "sensor_config_parser.h"
 
 /* ACCEL DATA REGISTERS ADDR */
 #define BMI160_ACCEL_X_LSB_ADDR              0X12

@@ -6,49 +6,23 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef SENSOR_PARSER_H
-#define SENSOR_PARSER_H
+#ifndef SENSOR_CONFIG_PARSER_H
+#define SENSOR_CONFIG_PARSER_H
 
 #include "device_resource_if.h"
 #include "hdf_device_desc.h"
 #include "i2c_if.h"
-#include "sensor_driver_type.h"
+#include "sensor_device_type.h"
+#include "sensor_platform_if.h"
 #include "spi_if.h"
 
 #define SENSOR_CONFIG_MAX_ITEM 100
-
-enum SensorBusType {
-    SENSOR_BUS_I2C = 0,
-    SENSOR_BUS_SPI = 1,
-};
 
 enum SensorRegOpsType {
     SENSOR_INIT_GROUP = 0,
     SENSOR_ENABLE_GROUP,
     SENSOR_DISABLE_GROUP,
     SENSOR_GROUP_MAX,
-};
-
-struct SensorI2cCfg {
-    DevHandle handle;
-    uint16_t busNum;
-    uint16_t devAddr;  // Address of the I2C device
-    uint16_t regWidth; // length of the register address
-};
-
-struct SensorSpiCfg {
-    DevHandle handle;
-    uint32_t busNum;
-    uint32_t csNum;
-};
-
-struct SensorBusCfg {
-    uint8_t busType; // enum SensorBusType
-    uint8_t regBigEndian;
-    union {
-        struct SensorI2cCfg i2cCfg;
-        struct SensorSpiCfg spiCfg;
-    };
 };
 
 struct SensorAttr {
@@ -104,4 +78,4 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg);
 int32_t ReleaseSensorBusHandle(struct SensorBusCfg *busCfg);
 int32_t DetectSensorDevice(struct SensorCfgData *config);
 
-#endif /* SENSOR_PARSER_H */
+#endif /* SENSOR_CONFIG_PARSER_H */

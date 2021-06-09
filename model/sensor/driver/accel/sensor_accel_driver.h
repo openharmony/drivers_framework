@@ -10,8 +10,8 @@
 #define SENSOR_ACCEL_DRIVER_H
 
 #include "osal_thread.h"
-#include "sensor_common.h"
-#include "sensor_parser.h"
+#include "sensor_config_parser.h"
+#include "sensor_platform_if.h"
 
 #define ACC_DEFAULT_SAMPLING_200_MS    200000000
 #define ACCEL_CHIP_NAME_BMI160    "bmi160"
