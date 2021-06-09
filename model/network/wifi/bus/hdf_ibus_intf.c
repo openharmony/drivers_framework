@@ -47,5 +47,3 @@ struct BusDev *HdfWlanCreateBusManager(const struct HdfConfigWlanBus *busConfig)
 }
 #endif
 #endif
-~
-
