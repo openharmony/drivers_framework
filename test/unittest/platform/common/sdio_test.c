@@ -37,7 +37,7 @@ static DevHandle SdioTestGetHandle(struct SdioTester *tester)
         HDF_LOGE("%s: tester is null", __func__);
         return NULL;
     }
-    return SdioOpen(tester->busNum);
+    return SdioOpen((int16_t)(tester->busNum), &(tester->config));
 }
 
 static void SdioTestReleaseHandle(DevHandle handle)
@@ -55,13 +55,13 @@ static int32_t TestSdioIncrAddrReadAndWriteOtherBytes(struct SdioTester *tester)
     uint8_t data[TEST_DATA_LEN] = {0};
     const uint32_t addr = TEST_SDIO_BASE_ADDR * TEST_FUNC_NUM + TEST_ADDR_OFFSET + TEST_ADDR_ADD;
 
-    ret = SdioReadBytes(tester->handle, &data[0], addr, 1, 0);
+    ret = SdioReadBytes(tester->handle, &data[0], addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: read, data[0]:%u\n", __func__, data[0]);
-    ret = SdioWriteBytes(tester->handle, &data[0], addr, 1, 0);
+    HDF_LOGE("%s: read, data[0]:%d\n", __func__, data[0]);
+    ret = SdioWriteBytes(tester->handle, &data[0], addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioWriteBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -78,14 +78,14 @@ static int32_t TestSdioIncrAddrReadAndWriteOneByte(struct SdioTester *tester)
 
     addr = TEST_SDIO_BASE_ADDR * TEST_FUNC_NUM + TEST_ADDR_OFFSET;
     /* read 1 bits */
-    ret = SdioReadBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioReadBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
     HDF_LOGE("%s: read, val:%d\n", __func__, val);
     /* write 1 bits */
-    ret = SdioWriteBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioWriteBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioWriteBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -93,7 +93,7 @@ static int32_t TestSdioIncrAddrReadAndWriteOneByte(struct SdioTester *tester)
     HDF_LOGE("%s: write, val:%d\n", __func__, val);
     /* read 1 bits */
     addr++;
-    ret = SdioReadBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioReadBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -101,7 +101,7 @@ static int32_t TestSdioIncrAddrReadAndWriteOneByte(struct SdioTester *tester)
     HDF_LOGE("%s: read, val:%u.", __func__, val);
     /* read 1 bits */
     addr++;
-    ret = SdioReadBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioReadBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytes fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -139,14 +139,14 @@ static int32_t TestSdioFixedAddrReadAndWriteOtherBytes(struct SdioTester *tester
     const uint32_t addr = TEST_SDIO_BASE_ADDR * TEST_FUNC_NUM + TEST_FIXED_OFFSET + TEST_ADDR_ADD;
 
     /* read bits */
-    ret = SdioReadBytes(tester->handle, &data[0], addr, 1, 0);
+    ret = SdioReadBytes(tester->handle, &data[0], addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytesFromFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
     HDF_LOGE("%s: read, data[0]:%u, data[1]:%u\n", __func__, data[0], data[1]);
     /* write bits */
-    ret = SdioWriteBytes(tester->handle, &data[0], addr, 1, 0);
+    ret = SdioWriteBytes(tester->handle, &data[0], addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioWriteBytesToFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -163,14 +163,14 @@ static int32_t TestSdioFixedAddrReadAndWriteOneByte(struct SdioTester *tester)
 
     addr = TEST_SDIO_BASE_ADDR * TEST_FUNC_NUM + TEST_FIXED_OFFSET;
     /* read 1 bits */
-    ret = SdioReadBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioReadBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytesFromFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
     }
     HDF_LOGE("%s: read, val:%d\n", __func__, val);
     /* write 1 bits */
-    ret = SdioWriteBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioWriteBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioWriteBytesToFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -178,7 +178,7 @@ static int32_t TestSdioFixedAddrReadAndWriteOneByte(struct SdioTester *tester)
     HDF_LOGE("%s: write, val:%d.", __func__, val);
     /* read 1 bits */
     addr++;
-    ret = SdioReadBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioReadBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytesFromFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -186,7 +186,7 @@ static int32_t TestSdioFixedAddrReadAndWriteOneByte(struct SdioTester *tester)
     HDF_LOGE("%s: read, val:%d.", __func__, val);
     /* read 1 bits */
     addr++;
-    ret = SdioWriteBytes(tester->handle, &val, addr, 1, 0);
+    ret = SdioWriteBytes(tester->handle, &val, addr, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytesFromFixedAddr fail! ret=%d.", __func__, ret);
         return HDF_FAILURE;
@@ -225,7 +225,7 @@ static int32_t TestSdioFunc0ReadAndWriteBytes(struct SdioTester *tester)
 
     SdioClaimHost(tester->handle);
     /* read sdio rev */
-    ret = SdioReadBytesFromFunc0(tester->handle, &val, TEST_FUNC0_ADDR, 1, 0);
+    ret = SdioReadBytesFromFunc0(tester->handle, &val, TEST_FUNC0_ADDR, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytesFromFunc0 fail! ret=%d.", __func__, ret);
         SdioReleaseHost(tester->handle);
@@ -234,7 +234,7 @@ static int32_t TestSdioFunc0ReadAndWriteBytes(struct SdioTester *tester)
     HDF_LOGE("%s: Func0 Read, val :%d.", __func__, val);
 
     /* write sdio rev */
-    ret = SdioWriteBytesToFunc0(tester->handle, &val, TEST_FUNC0_ADDR, 1, 0);
+    ret = SdioWriteBytesToFunc0(tester->handle, &val, TEST_FUNC0_ADDR, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioWriteBytesToFunc0 fail! ret=%d.", __func__, ret);
         SdioReleaseHost(tester->handle);
@@ -242,7 +242,7 @@ static int32_t TestSdioFunc0ReadAndWriteBytes(struct SdioTester *tester)
     }
 
     /* read sdio rev again */
-    ret = SdioReadBytesFromFunc0(tester->handle, &val, TEST_FUNC0_ADDR, 1, 0);
+    ret = SdioReadBytesFromFunc0(tester->handle, &val, TEST_FUNC0_ADDR, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: SdioReadBytesFromFunc0 fail! ret=%d.", __func__, ret);
         SdioReleaseHost(tester->handle);
@@ -399,24 +399,24 @@ static int32_t SdioTestFillConfig(struct SdioTester *tester, const struct Device
         return ret;
     }
 
-    ret = drsOps->GetUint32(node, "funcNum", &(tester->funcNum), 0);
+    ret = drsOps->GetUint32(node, "funcNum", &(tester->config.funcNr), 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fill funcNum fail!", __func__);
         return ret;
     }
-    ret = drsOps->GetUint32(node, "vendorId", &(tester->vendorId), 0);
+    ret = drsOps->GetUint16(node, "vendorId", &(tester->config.vendorId), 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fill vendorId fail!", __func__);
         return ret;
     }
-    ret = drsOps->GetUint32(node, "deviceId", &(tester->deviceId), 0);
+    ret = drsOps->GetUint16(node, "deviceId", &(tester->config.deviceId), 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fill deviceId fail!", __func__);
         return ret;
     }
 
-    HDF_LOGE("%s: busNum:%u, funcNum:%u, vendorId:0x%x.", __func__,
-        tester->busNum, tester->funcNum, tester->vendorId);
+    HDF_LOGE("%s: busNum:%u, funcNum:%u, vendorId:0x%x, deviceId:0x%x.", __func__,
+        tester->busNum, tester->config.funcNr, tester->config.vendorId, tester->config.deviceId);
     return HDF_SUCCESS;
 }
 

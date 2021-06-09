@@ -29,7 +29,7 @@
 #ifndef EMMC_IF_H
 #define EMMC_IF_H
 
-#include "hdf_platform.h"
+#include "mmc_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -50,13 +50,17 @@ extern "C" {
  * Before using the EMMC interface, you can obtain the device handle of the EMMC controller
  * by calling {@link EmmcOpen}. This function is used in pair with {@link EmmcClose}.
  *
- * @param busNum Indicates the bus number.
+ * @param mmcBusNum Indicates the bus number.
  *
  * @return Returns the device handle {@link DevHandle} of the EMMC controller if the operation is successful;
  * returns <b>NULL</b> otherwise.
+ *
  * @since 1.0
  */
-DevHandle EmmcOpen(int16_t busNum);
+static inline DevHandle EmmcOpen(int16_t mmcBusNum)
+{
+    return MmcOpen(mmcBusNum);
+}
 
 /**
  * @brief Closes an EMMC controller.
@@ -64,13 +68,16 @@ DevHandle EmmcOpen(int16_t busNum);
  * After the EMMC interface is used, you can close the EMMC controller by calling {@link EmmcClose}.
  * This function is used in pair with {@link EmmcOpen}.
  *
- * @param handle Indicates the pointer to the device handle of the EMMC controller.
+ * @param handle Indicates the device handle of the EMMC controller.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
  *
  * @since 1.0
  */
-void EmmcClose(DevHandle handle);
+static inline void EmmcClose(DevHandle handle)
+{
+    MmcClose(handle);
+}
 
 /**
  * @brief Get The CID of EMMC device.
@@ -86,7 +93,7 @@ void EmmcClose(DevHandle handle);
 int32_t EmmcGetCid(DevHandle handle, uint8_t *cid, uint32_t size);
 
 /**
- * @brief Get The HUID(Hardware Unique ID, that is CID) of EMMC device,
+ * @brief Get The HUID(Hardware Unique ID, that is CID) of EMMC device.
  *
  * @param cid Indicates the pointer to the CID to read.
  * @param size Indicates the length of the CID.

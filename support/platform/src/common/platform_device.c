@@ -184,13 +184,13 @@ void PlatformDeviceClearNotifier(struct PlatformDevice *device)
 }
 
 int32_t PlatformDeviceAdd(struct PlatformDevice *device)
-{   
+{
     struct PlatformManager *manager = NULL;
-    
+
     if (device == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-    
+
     PlatformDeviceInit(device);
     manager = device->manager;
     if (manager == NULL) {

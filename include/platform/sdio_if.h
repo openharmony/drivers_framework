@@ -30,7 +30,7 @@
 #ifndef SDIO_IF_H
 #define SDIO_IF_H
 
-#include "hdf_platform.h"
+#include "mmc_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -43,6 +43,8 @@ extern "C" {
  *
  * When obtaining SDIO common information by calling {@link SdioGetCommonInfo} or setting the information
  * by calling {@link SdioSetCommonInfo}, you need to pass the information type.
+ *
+ * @since 1.0
  */
 typedef enum {
     SDIO_FUNC_INFO = 0,   /**< Functionality information */
@@ -54,6 +56,8 @@ typedef enum {
  *
  * You can obtain and set the SDIO capabilities by calling {@link SdioGetCommonInfo} and {@link SdioSetCommonInfo}
  * with {@link SdioCommonInfo} and {@link SdioCommonInfoType} passed.
+ *
+ * @since 1.0
  */
 typedef struct {
     uint32_t maxBlockNum;    /**< Maximum number of blocks in a request */
@@ -76,10 +80,26 @@ typedef struct {
  *
  * You can obtain and set common SDIO information by calling {@link SdioGetCommonInfo} and {@link SdioSetCommonInfo}
  * with {@link SdioCommonInfo} and {@link SdioCommonInfoType} passed.
+ *
+ * @since 1.0
  */
 typedef union {
     SdioFuncInfo funcInfo;   /**< Functionality information */
 } SdioCommonInfo;
+
+/**
+ * @brief Defines SDIO function config.
+ *
+ * When enabling an SDIO controller, you must specify its SDIO functionality configurations for
+ * selecting the required functionality. For details, see {@link SdioOpen}.
+ *
+ * @since 1.0
+ */
+struct SdioFunctionConfig {
+    uint32_t funcNr;        /**< Functionality number, ranging from <b>1</b> to <b>7</b>. */
+    uint16_t vendorId;      /**< Vendor ID */
+    uint16_t deviceId;      /**< Device ID */
+};
 
 /**
  * @brief Defines the function type of an SDIO IRQ.
@@ -98,13 +118,15 @@ typedef void SdioIrqHandler(void *);
  * Before using the SDIO interface, you can obtain the device handle of the SDIO controller
  * by calling {@link SdioOpen}. This function is used in pair with {@link SdioClose}.
  *
- * @param busNum Indicates the bus number.
+ * @param mmcBusNum Indicates the bus number.
+ * @param config Indicates the pointer to SDIO functionality configurations.
  *
  * @return Returns the device handle {@link DevHandle} of the SDIO controller if the operation is successful;
  * returns <b>NULL</b> otherwise.
+ *
  * @since 1.0
  */
-DevHandle SdioOpen(int16_t busNum);
+DevHandle SdioOpen(int16_t mmcBusNum, struct SdioFunctionConfig *config);
 
 /**
  * @brief Closes an SDIO controller.
@@ -128,15 +150,12 @@ void SdioClose(DevHandle handle);
  * @param data Indicates the pointer to the data to read.
  * @param addr Indicates the start address of the data to read.
  * @param size Indicates the length of the data to read.
- * @param timeOut Indicates the timeout duration for reading data, in milliseconds.
- * If the value is <b>0</b>,the default value is used. The default value varies according to the application.
- * Generally, the default value is <b>1</b> second.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
-int32_t SdioReadBytes(DevHandle handle, uint8_t *data, uint32_t addr,
-    uint32_t size, uint32_t timeOut);
+int32_t SdioReadBytes(DevHandle handle, uint8_t *data, uint32_t addr, uint32_t size);
 
 /**
  * @brief Incrementally writes a given length of data into the specified SDIO address.
@@ -148,15 +167,12 @@ int32_t SdioReadBytes(DevHandle handle, uint8_t *data, uint32_t addr,
  * @param data Indicates the pointer to the data to write.
  * @param addr Indicates the start address of the data to write.
  * @param size Indicates the length of the data to write.
- * @param timeOut Indicates the timeout duration for writing data, in milliseconds.
- * If the value is <b>0</b>, the default value is used. The default value varies according to the application.
- * Generally, the default value is <b>1</b> second.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
-int32_t SdioWriteBytes(DevHandle handle, uint8_t *data, uint32_t addr,
-    uint32_t size, uint32_t timeOut);
+int32_t SdioWriteBytes(DevHandle handle, uint8_t *data, uint32_t addr, uint32_t size);
 
 /**
  * @brief Reads a given length of data from the fixed SDIO address.
@@ -168,15 +184,15 @@ int32_t SdioWriteBytes(DevHandle handle, uint8_t *data, uint32_t addr,
  * @param data Indicates the pointer to the data to read.
  * @param addr Indicates the fixed address of the data to read.
  * @param size Indicates the length of the data to read.
- * @param timeOut Indicates the timeout duration for reading data, in milliseconds.
- * If the value is <b>0</b>, the default value is used. The default value varies according to the application.
- * Generally, the default value is <b>1</b> second.
+ * @param scatterLen Indicates the length of the scatter list. If this value is not <b>0</b>, the data is of the
+ * scatter list type.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioReadBytesFromFixedAddr(DevHandle handle, uint8_t *data,
-    uint32_t addr, uint32_t size, uint32_t timeOut);
+    uint32_t addr, uint32_t size, uint32_t scatterLen);
 
 /**
  * @brief Writes a given length of data into the fixed SDIO address.
@@ -188,15 +204,15 @@ int32_t SdioReadBytesFromFixedAddr(DevHandle handle, uint8_t *data,
  * @param data Indicates the pointer to the data to write.
  * @param addr Indicates the fixed address of the data to write.
  * @param size Indicates the length of the data to write.
- * @param timeOut Indicates the timeout duration for writing data, in milliseconds.
- * If the value is <b>0</b>, the default value is used. The default value varies according to the application.
- * Generally, the default value is <b>1</b> second.
+ * @param scatterLen Indicates the length of the scatter list. If this value is not <b>0</b>, the data is of the
+ * scatter list type.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioWriteBytesToFixedAddr(DevHandle handle, uint8_t *data,
-    uint32_t addr, uint32_t size, uint32_t timeOut);
+    uint32_t addr, uint32_t size, uint32_t scatterLen);
 
 /**
  * @brief Reads a given length of data from the address space of SDIO function 0.
@@ -207,15 +223,12 @@ int32_t SdioWriteBytesToFixedAddr(DevHandle handle, uint8_t *data,
  * @param data Indicates the pointer to the data to read.
  * @param addr Indicates the start address of the data to read.
  * @param size Indicates the length of the data to read.
- * @param timeOut Indicates the timeout duration for reading data, in milliseconds.
- * If the value is <b>0</b>, the default value is used. The default value varies according to the application.
- * Generally, the default value is <b>1</b> second.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
-int32_t SdioReadBytesFromFunc0(DevHandle handle, uint8_t *data,
-    uint32_t addr, uint32_t size, uint32_t timeOut);
+int32_t SdioReadBytesFromFunc0(DevHandle handle, uint8_t *data, uint32_t addr, uint32_t size);
 
 /**
  * @brief Writes a given length of data into the address space of SDIO function 0.
@@ -226,15 +239,12 @@ int32_t SdioReadBytesFromFunc0(DevHandle handle, uint8_t *data,
  * @param data Indicates the pointer to the data to write.
  * @param addr Indicates the start address of the data to write.
  * @param size Indicates the length of the data to write.
- * @param timeOut Indicates the timeout duration for writing data, in milliseconds.
- * If the value is <b>0</b>, the default value is used. The default value varies according to the application.
- * Generally, the default value is <b>1</b> second.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
-int32_t SdioWriteBytesToFunc0(DevHandle handle, uint8_t *data,
-    uint32_t addr, uint32_t size, uint32_t timeOut);
+int32_t SdioWriteBytesToFunc0(DevHandle handle, uint8_t *data, uint32_t addr, uint32_t size);
 
 /**
  * @brief Sets the block size.
@@ -246,6 +256,7 @@ int32_t SdioWriteBytesToFunc0(DevHandle handle, uint8_t *data,
  * The value ranges from <b>1</b> to <b>2048</b> bytes.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioSetBlockSize(DevHandle handle, uint32_t blockSize);
@@ -262,6 +273,7 @@ int32_t SdioSetBlockSize(DevHandle handle, uint32_t blockSize);
  * For details, see {@link SdioCommonInfoType}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioGetCommonInfo(DevHandle handle, SdioCommonInfo *info, SdioCommonInfoType infoType);
@@ -278,6 +290,7 @@ int32_t SdioGetCommonInfo(DevHandle handle, SdioCommonInfo *info, SdioCommonInfo
  * For details, see {@link SdioCommonInfoType}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioSetCommonInfo(DevHandle handle, SdioCommonInfo *info, SdioCommonInfoType infoType);
@@ -290,6 +303,7 @@ int32_t SdioSetCommonInfo(DevHandle handle, SdioCommonInfo *info, SdioCommonInfo
  * @param handle Indicates the pointer to the device handle of the SDIO controller obtained by {@link SdioOpen}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioFlushData(DevHandle handle);
@@ -324,6 +338,7 @@ void SdioReleaseHost(DevHandle handle);
  * @param handle Indicates the pointer to the device handle of the SDIO controller obtained by {@link SdioOpen}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioEnableFunc(DevHandle handle);
@@ -336,6 +351,7 @@ int32_t SdioEnableFunc(DevHandle handle);
  * @param handle Indicates the pointer to the device handle of the SDIO controller obtained by {@link SdioOpen}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioDisableFunc(DevHandle handle);
@@ -349,6 +365,7 @@ int32_t SdioDisableFunc(DevHandle handle);
  * @param irqHandler Indicates the pointer to the SDIO IRQ function. For details, see {@link SdioIrqHandler}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioClaimIrq(DevHandle handle, SdioIrqHandler *irqHandler);
@@ -361,6 +378,7 @@ int32_t SdioClaimIrq(DevHandle handle, SdioIrqHandler *irqHandler);
  * @param handle Indicates the pointer to the device handle of the SDIO controller obtained by {@link SdioOpen}.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value if the operation fails.
+ *
  * @since 1.0
  */
 int32_t SdioReleaseIrq(DevHandle handle);

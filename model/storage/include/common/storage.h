@@ -6,27 +6,29 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef HDF_WLAN_SDIO_ADAPT_H
-#define HDF_WLAN_SDIO_ADAPT_H
+#ifndef STORAGE_H
+#define STORAGE_H
 
 #include "hdf_base.h"
-#include "hdf_wifi_product.h"
-#include "hdf_wlan_config.h"
 
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
 #endif
-#endif
+#endif /* __cplusplus */
 
-int32_t HdfWlanConfigSDIO(uint8_t busId);
+#define STORAGE_MAX_BYTES ((size_t)(-1))
+
+enum StorageType {
+    MEDIA_MMC = 0,
+    MEDIA_MTD = 1,
+    MEDIA_ERR = 2,
+};
 
 #ifdef __cplusplus
 #if __cplusplus
 }
 #endif
-#endif
+#endif /* __cplusplus */
 
-
-#endif
-
+#endif /* STORAGE_H */
