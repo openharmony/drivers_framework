@@ -9,8 +9,8 @@
 #include "securec.h"
 #include "device_resource_if.h"
 #include "osal_mem.h"
-#include "sensor_common.h"
-#include "sensor_parser.h"
+#include "sensor_config_parser.h"
+#include "sensor_platform_if.h"
 
 #define HDF_LOG_TAG    sensor_config_parser_c
 
@@ -22,20 +22,16 @@ static char *g_sensorRegGroupName[SENSOR_GROUP_MAX] = {
 
 static uint32_t GetSensorRegGroupNameIndex(const char *name)
 {
-    uint32_t index = 0xFF;
+    uint32_t index;
 
     if (name == NULL) {
-        return index;
+        return SENSOR_GROUP_MAX;
     }
 
     for (index = 0; index < SENSOR_GROUP_MAX; ++index) {
-        if (strcmp(name, g_sensorRegGroupName[index]) == 0) {
+        if ((g_sensorRegGroupName[index] != NULL) && (strcmp(name, g_sensorRegGroupName[index]) == 0)) {
             break;
         }
-    }
-
-    if (index == SENSOR_GROUP_MAX) {
-        index = 0xFF;
     }
 
     return index;
@@ -73,6 +69,11 @@ static int32_t ParseSensorRegItem(struct DeviceResourceIface *parser, const stru
     CHECK_NULL_PTR_RETURN_VALUE(groupName, HDF_ERR_INVALID_PARAM);
 
     int32_t num = parser->GetElemNum(regNode, groupName);
+    if (num <= 0 || num > SENSOR_CONFIG_MAX_ITEM) {
+        HDF_LOGE("%s: parser %s element num failed", __func__, groupName);
+        return HDF_SUCCESS;
+    }
+
     uint16_t *buf = (uint16_t *)OsalMemCalloc(sizeof(uint16_t) * num);
     CHECK_NULL_PTR_RETURN_VALUE(buf, HDF_ERR_MALLOC_FAIL);
 
@@ -196,10 +197,27 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
     if (busCfg->busType == SENSOR_BUS_I2C) {
         int16_t busNum = busCfg->i2cCfg.busNum;
         busCfg->i2cCfg.handle = I2cOpen(busNum);
-
         if (busCfg->i2cCfg.handle == NULL) {
             HDF_LOGE("%s: sensor i2c Handle invalid", __func__);
             return HDF_FAILURE;
+        }
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
+        struct SpiDevInfo spiDevinfo;
+        struct SpiCfg cfg;
+        int32_t ret;
+
+        spiDevinfo.busNum = busCfg->spiCfg.busNum;
+        spiDevinfo.csNum = busCfg->spiCfg.csNum;
+        busCfg->i2cCfg.handle = SpiOpen(&spiDevinfo);
+
+        cfg.mode = SPI_CLK_PHASE | SPI_CLK_POLARITY;
+        cfg.bitsPerWord = SENSOR_DATA_WIDTH_8_BIT;
+        cfg.maxSpeedHz = SENSOR_SPI_MAX_SPEED;
+        ret = SpiSetCfg(busCfg->i2cCfg.handle, &cfg);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: SpiSetCfg failed", __func__);
+            SpiClose(busCfg->i2cCfg.handle);
+            return ret;
         }
     }
 
@@ -215,6 +233,9 @@ int32_t ReleaseSensorBusHandle(struct SensorBusCfg *busCfg)
     if (busCfg->busType == SENSOR_BUS_I2C && busCfg->i2cCfg.handle != NULL) {
         I2cClose(busCfg->i2cCfg.handle);
         busCfg->i2cCfg.handle = NULL;
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
+        SpiClose(busCfg->spiCfg.handle);
+        busCfg->spiCfg.handle = NULL;
     }
 
     return HDF_SUCCESS;
@@ -246,7 +267,7 @@ int32_t DetectSensorDevice(struct SensorCfgData *config)
     }
 
     if (value != chipIdValue) {
-        HDF_LOGE("%s: sensor chip[0x%x] id [0x%x] detect value[%d]", __func__, chipIdReg, chipIdValue, value);
+        HDF_LOGE("%s: sensor chip[0x%x] id [0x%x] detect value[%u]", __func__, chipIdReg, chipIdValue, value);
         (void)ReleaseSensorBusHandle(&config->busCfg);
         return HDF_FAILURE;
     }

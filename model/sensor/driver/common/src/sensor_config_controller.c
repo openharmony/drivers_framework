@@ -9,10 +9,10 @@
 #include "securec.h"
 #include "osal_mem.h"
 #include "osal_time.h"
-#include "sensor_common.h"
-#include "sensor_device_common.h"
+#include "sensor_config_controller.h"
+#include "sensor_platform_if.h"
 
-#define HDF_LOG_TAG    sensor_common_handler_c
+#define HDF_LOG_TAG    sensor_config_controller_c
 
 static int32_t SensorOpsNop(struct SensorBusCfg *busCfg, struct SensorRegCfg *cfgItem)
 {
@@ -83,6 +83,8 @@ static int32_t SensorOpsReadCheck(struct SensorBusCfg *busCfg, struct SensorRegC
     uint16_t busMask = 0xffff;
     int32_t ret;
 
+    CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
+
     if (busCfg->busType == SENSOR_BUS_I2C) {
         ret = ReadSensor(busCfg, cfgItem->regAddr, (uint8_t *)&value, sizeof(value));
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read i2c reg");
@@ -123,6 +125,7 @@ int32_t SetSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorReg
     CHECK_NULL_PTR_RETURN_VALUE(group->regCfgItem, HDF_FAILURE);
 
     count = sizeof(g_doOpsCall) / sizeof(g_doOpsCall[0]);
+
     while (num < group->itemNum) {
         cfgItem = (group->regCfgItem + num);
         if (cfgItem->opsType >= count) {
