@@ -50,7 +50,7 @@ int HdfWlanSdioScan(struct HdfWlanDevice *data, struct HdfConfigWlanBus *busConf
     if (ret != HDF_SUCCESS) {
         return ret;
     }
-    HDF_LOGI("driver name = %s", __func__, data->driverName);
+    HDF_LOGI("%s:driver name = %s", __func__, data->driverName);
     return HDF_SUCCESS;
 }
 
@@ -232,7 +232,7 @@ static int32_t HdfWlanInitInterface(struct HdfWlanDevice *device, struct HdfChip
         }
 
         if (chipDriver->init == NULL) {
-            HDF_LOGI("%s: chip driver %s not 'init' api", __func__, factory->driverName);
+            HDF_LOGI("%s:chip driver %s not 'init' api", __func__, factory->driverName);
             ret = HDF_DEV_ERR_OP;
             break;
         }
