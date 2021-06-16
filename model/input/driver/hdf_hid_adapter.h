@@ -12,7 +12,7 @@
 #ifdef DIV_ROUND_UP
 #undef DIV_ROUND_UP
 #endif
-#define DIV_ROUND_UP(nr, d) (((nr) + (d) - 1) / (d))
+#define DIV_ROUND_UP((nr), (d)) (((nr) + (d) - 1) / (d))
 
 #ifdef BYTE_HAS_BITS
 #undef BYTE_HAS_BITS
@@ -27,23 +27,23 @@
 #define INPUT_PROP_MAX    0x1f
 #define INPUT_PROP_CNT    (INPUT_PROP_MAX + 1)
 #define EV_MAX            0x1f
-#define EV_CNT            (EV_MAX+1)
+#define EV_CNT            (EV_MAX + 1)
 #define ABS_MAX           0x3f
-#define ABS_CNT           (ABS_MAX+1)
+#define ABS_CNT           (ABS_MAX + 1)
 #define REL_MAX           0x0f
-#define REL_CNT           (REL_MAX+1)
+#define REL_CNT           (REL_MAX + 1)
 #define KEY_MAX           0x2ff
-#define KEY_CNT           (KEY_MAX+1)
+#define KEY_CNT           (KEY_MAX + 1)
 #define SND_MAX           0x07
-#define SND_CNT           (SND_MAX+1)
+#define SND_CNT           (SND_MAX + 1)
 #define LED_MAX           0x0f
-#define LED_CNT           (LED_MAX+1)
+#define LED_CNT           (LED_MAX + 1)
 #define MSC_MAX           0x07
-#define MSC_CNT           (MSC_MAX+1)
+#define MSC_CNT           (MSC_MAX + 1)
 #define SW_MAX            0x0f
-#define SW_CNT            (SW_MAX+1)
+#define SW_CNT            (SW_MAX + 1)
 #define FF_MAX            0x7f
-#define FF_CNT            (FF_MAX+1)
+#define FF_CNT            (FF_MAX + 1)
 
 typedef struct HidInformation {
     uint32_t devType;
