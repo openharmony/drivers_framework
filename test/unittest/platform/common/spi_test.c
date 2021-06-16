@@ -212,6 +212,11 @@ static int32_t SpiDmaTransferTest(struct SpiTest *test)
     g_spiCfg.transferMode = SPI_DMA_TRANSFER;
     g_spiCfg.bitsPerWord = BITS_PER_WORD_8BITS;
 
+    if (test->testDma == 0) {
+        HDF_LOGI("%s: testDma not set", __func__);
+        return HDF_SUCCESS;
+    }
+
     ret = SpiSetDmaIntMsg(&msg, DMA_TRANSFER_SIZE_TOTAL);
     if (ret != HDF_SUCCESS) {
         return ret;
