@@ -12,7 +12,7 @@
 #ifdef DIV_ROUND_UP
 #undef DIV_ROUND_UP
 #endif
-#define DIV_ROUND_UP((nr), (d)) (((nr) + (d) - 1) / (d))
+#define DIV_ROUND_UP(nr, d) (((nr) + (d) - 1) / (d))
 
 #ifdef BYTE_HAS_BITS
 #undef BYTE_HAS_BITS
