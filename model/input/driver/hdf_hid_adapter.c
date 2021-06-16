@@ -124,7 +124,7 @@ void HidReportEvent(const void *inputDev, uint32_t type, uint32_t code, int32_t 
 void GetInfoFromHid(HidInfo info)
 {
 	(void)info;
-]
+}
 
 static int32_t HdfHIDDriverInit(struct HdfDeviceObject *device)
 {
