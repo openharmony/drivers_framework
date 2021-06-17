@@ -121,6 +121,11 @@ void HidReportEvent(const void *inputDev, uint32_t type, uint32_t code, int32_t 
     PushOnePackage((InputDevice *)inputDev, type, code, value);
 }
 
+void GetInfoFromHid(HidInfo info)
+{
+    (void)info;
+}
+
 static int32_t HdfHIDDriverInit(struct HdfDeviceObject *device)
 {
     (void)device;
