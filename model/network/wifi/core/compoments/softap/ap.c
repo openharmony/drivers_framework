@@ -72,7 +72,7 @@ static int32_t StartAp(struct NetDevice *netDev, WifiApSetting *apSettings)
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->apOps, ConfigAp);
     ret = chipDriver->apOps->ConfigAp(netDev, &apConf);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s:ConfigAp failed!ret=%d", ret);
+        HDF_LOGE("%s:ConfigAp failed!ret=%d", __func__, ret);
         return HDF_FAILURE;
     }
 

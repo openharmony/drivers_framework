@@ -218,7 +218,7 @@ int32_t MessageSingleNodeTest003(void)
 
         MSG_BREAK_IF_FUNCTION_FAILED(errCode, OsalDiffTime(&startTime, &endTime, &diffTime));
 
-        HDF_LOGI("Process time %ld \n", diffTime.sec);
+        HDF_LOGI("Process time %llu \n", diffTime.sec);
         MSG_BREAK_IF(errCode, diffTime.sec > SYNC_MESSAGE_TIMEOUT);
     } while (false);
 
@@ -310,7 +310,7 @@ int32_t MessageSingleNodeTest005(void)
 
         MSG_BREAK_IF_FUNCTION_FAILED(errCode, OsalDiffTime(&startTime, &endTime, &diffTime));
 
-        HDF_LOGW("Process time %ld \n", diffTime.sec);
+        HDF_LOGW("Process time %llu \n", diffTime.sec);
         MSG_BREAK_IF(errCode, diffTime.sec > ASYNC_MESSAGE_TIMEOUT);
     } while (false);
     errShutdown = errShutdown | OsalSemDestroy(&g_callBackSem);
