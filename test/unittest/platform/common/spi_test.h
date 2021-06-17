@@ -31,6 +31,7 @@ struct SpiTest {
     uint8_t *wbuf;
     uint8_t *rbuf;
     DevHandle handle;
+    uint32_t testDma;
 };
 
 static inline struct SpiTest *GetSpiTest(void)
