@@ -9,8 +9,12 @@
 #ifndef LCD_ABS_IF_H
 #define LCD_ABS_IF_H
 #include "hdf_base.h"
+#include "hdf_device_desc.h"
 #include "hdf_log.h"
 #include "mipi_dsi_if.h"
+
+/* support max panel number */
+#define PANEL_MAX 2
 
 enum LcdIntfType {
     MIPI_DSI,
@@ -126,17 +130,35 @@ struct PanelStatus {
     enum PowerStatus powerStatus;
     uint32_t currLevel;
 };
-struct PanelData {
-    struct PanelInfo *info;
-    struct PanelStatus *status;
-    int32_t (*init)(void);
-    int32_t (*on)(void);
-    int32_t (*off)(void);
-    int32_t (*setBacklight)(uint32_t level);
+
+struct PanelData;
+struct PanelEsd {
+    bool support;
+    uint32_t interval;
+    uint32_t state;
+    uint32_t recoveryNum;
+    uint32_t cmpMode;
+    int32_t (*checkFunc)(struct PanelData *panel);
+    void *expect_data;
 };
 
-extern int32_t g_numRegisteredPanel;
+struct PanelData {
+    struct HdfDeviceObject *object;
+    int32_t (*init)(struct PanelData *panel);
+    int32_t (*on)(struct PanelData *panel);
+    int32_t (*off)(struct PanelData *panel);
+    int32_t (*setBacklight)(struct PanelData *panel, uint32_t level);
+    struct PanelInfo *info;
+    struct PanelStatus status;
+    struct PanelEsd *esd;
+};
 
-int32_t PanelDataRegister(struct PanelData *data);
+struct PanelManager {
+    struct PanelData *panel[PANEL_MAX];
+    uint32_t panelNum;
+};
 
+int32_t RegisterPanel(struct PanelData *data);
+struct PanelManager *GetPanelManager(void);
+struct PanelData *GetPanel(int32_t index);
 #endif /* LCD_ABS_IF_H */

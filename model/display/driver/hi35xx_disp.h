@@ -26,6 +26,4 @@
 #define PWM_DEV0                    0
 #define PWM_DEV1                    1
 
-struct PanelData *GetPanelData(int32_t index);
-struct PanelInfo *GetPanelInfo(int32_t index);
 #endif /* HI35XX_DISP_H */

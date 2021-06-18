@@ -11,62 +11,47 @@
 #include "hdf_device_desc.h"
 #include "osal.h"
 
-/* support max panel number */
-#define PANEL_MAX 2
-static struct PanelData *g_panelData[PANEL_MAX];
-int32_t g_numRegisteredPanel;
-
-int32_t PanelDataRegister(struct PanelData *data)
+static struct PanelManager g_panelManager;
+int32_t RegisterPanel(struct PanelData *data)
 {
-    int32_t i;
+    int32_t panelNum;
 
     if (data == NULL) {
         HDF_LOGE("%s: panel data is null", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    if (g_numRegisteredPanel == PANEL_MAX) {
+    panelNum = g_panelManager.panelNum;
+    if (panelNum >= PANEL_MAX) {
+        HDF_LOGE("%s registered panel up PANEL_MAX", __func__);
         return HDF_FAILURE;
     }
-    g_numRegisteredPanel++;
-    for (i = 0; i < PANEL_MAX; i++) {
-        if (g_panelData[i] == NULL) {
-            break;
-        }
-    }
-    if (i >= PANEL_MAX) {
-        return HDF_FAILURE;
-    }
-    g_panelData[i] = data;
-    HDF_LOGI("%s: panel data register success", __func__);
+    g_panelManager.panel[panelNum] = data;
+    g_panelManager.panelNum++;
+    HDF_LOGI("%s: register success", __func__);
     return HDF_SUCCESS;
 }
 
-struct PanelData *GetPanelData(int32_t index)
+struct PanelManager *GetPanelManager(void)
 {
-    if ((index >= PANEL_MAX) || index < 0) {
+    if (g_panelManager.panelNum == 0) {
         return NULL;
+    } else {
+        return &g_panelManager;
     }
-    return g_panelData[index];
 }
 
-struct PanelInfo *GetPanelInfo(int32_t index)
+struct PanelData *GetPanel(int32_t index)
 {
-    if ((index >= PANEL_MAX) || index < 0) {
-        return NULL;
-    }
-    if (g_panelData[index] == NULL) {
-        return NULL;
-    }
-    return g_panelData[index]->info;
-}
+    struct PanelManager *panelManager = NULL;
 
-struct PanelStatus *GetPanelStatus(const int32_t index)
-{
-    if ((index >= PANEL_MAX) || index < 0) {
+    panelManager = GetPanelManager();
+    if (panelManager == NULL) {
+        HDF_LOGE("%s panelManager is null", __func__);
         return NULL;
     }
-    if (g_panelData[index] == NULL) {
+    if (index >= g_panelManager.panelNum) {
+        HDF_LOGE("%s index is greater than g_panelManager.panelNum", __func__);
         return NULL;
     }
-    return g_panelData[index]->status;
+    return panelManager->panel[index];
 }
