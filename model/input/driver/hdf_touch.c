@@ -19,113 +19,13 @@
 #define MAX_TOUCH_DEVICE 5
 #define REGISTER_BYTE_SIZE 4
 #define TOUCH_CHIP_NAME_LEN 10
+#define AXIS_X_MAX 479
+#define AXIS_X_RANGE 480
+#define AXIS_Y_MAX 959
+#define AXIS_Y_RANGE 960
 
 static TouchDriver *g_touchDriverList[MAX_TOUCH_DEVICE];
 static void InputFrameReport(TouchDriver *driver);
-
-#ifndef __KERNEL__
-static int32_t IoctlReadInputEvent(TouchDriver *driver, unsigned long arg)
-{
-    FrameData *frame = (FrameData *)(uintptr_t)arg;
-    if (frame == NULL) {
-        HDF_LOGE("%s: param is null", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-
-    int32_t ret = LOS_ArchCopyToUser(frame, &driver->frameData, sizeof(driver->frameData));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s:copy frame data failed, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-    return HDF_SUCCESS;
-}
-
-static int32_t IoctlGetDeviceType(TouchDriver *driver, unsigned long arg)
-{
-    int32_t ret;
-    uint8_t *devType = (uint8_t *)(uintptr_t)arg;
-    if (devType == NULL) {
-        HDF_LOGE("%s: param is null", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-
-    ret = LOS_ArchCopyToUser(devType, &driver->devType, sizeof(driver->devType));
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s:copy devType failed, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-
-    HDF_LOGI("%s: devType is %u", __func__, driver->devType);
-    return HDF_SUCCESS;
-}
-
-static int32_t IoctlGetChipName(TouchDriver *driver, unsigned long arg)
-{
-    char *chipInfo = (char *)(uintptr_t)arg;
-    if (chipInfo == NULL) {
-        HDF_LOGE("%s: param is null", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-
-    int32_t ret = LOS_ArchCopyToUser(chipInfo, driver->device->chipName, TOUCH_CHIP_NAME_LEN);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s:copy chipInfo failed, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-
-    HDF_LOGI("%s: chipName is %s", __func__, driver->device->chipName);
-    return HDF_SUCCESS;
-}
-
-int32_t TouchIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg)
-{
-    int32_t ret = HDF_FAILURE;
-    if (inputdev == NULL || inputdev->pvtData == NULL) {
-        return ret;
-    }
-    ChipDevice *device = (ChipDevice *)inputdev->pvtData;
-    TouchDriver *driver = device->driver;
-    switch (cmd) {
-        case INPUT_IOCTL_GET_EVENT_DATA:
-            ret = IoctlReadInputEvent(driver, arg);
-            break;
-        case INPUT_IOCTL_GET_DEVICE_TYPE:
-            ret = IoctlGetDeviceType(driver, arg);
-            break;
-        case INPUT_IOCTL_GET_CHIP_INFO:
-            ret = IoctlGetChipName(driver, arg);
-            break;
-        default:
-            ret = 0;
-            HDF_LOGE("%s: cmd unknown, cmd = 0x%x", __func__, cmd);
-            break;
-    }
-    return ret;
-}
-
-#ifndef CONFIG_DISABLE_POLL
-uint32_t TouchPoll(FAR struct file *filep, InputDevice *inputDev, poll_table *wait)
-{
-    uint32_t pollMask = 0;
-    if (filep == NULL || filep->f_vnode == NULL) {
-        return pollMask;
-    }
-    InputDevice *inputdev = (InputDevice *)((struct drv_data*)filep->f_vnode->data)->priv;
-    if (inputdev == NULL) {
-        HDF_LOGE("%s: inputdev is null", __func__);
-        return pollMask;
-    }
-    ChipDevice *device = (ChipDevice *)inputdev->pvtData;
-
-    poll_wait(filep, &device->driver->pollWait, wait);
-    if (device->driver->dataHandledFlag == true) {
-        pollMask |= POLLIN;
-    }
-    device->driver->dataHandledFlag = false;
-    return pollMask;
-}
-#endif
-#endif
 
 static int32_t SetGpioDirAndLevel(int gpio, int dir, int level)
 {
@@ -472,6 +372,7 @@ int32_t RegisterChipDevice(ChipDevice *chipDev)
         goto EXIT1;
     }
     chipDev->driver->inputDev = inputDev;
+    chipDev->ops->SetAbility(chipDev);
     return HDF_SUCCESS;
 
 EXIT1:
@@ -518,7 +419,7 @@ static int32_t TouchGetPowerStatus(TouchDriver *driver, struct HdfSBuf *reply)
     return HDF_SUCCESS;
 }
 
-static int32_t TouchGetDeviceInfo(TouchDriver *driver, int32_t cmd, struct HdfSBuf *reply)
+static int32_t TouchGetDeviceStrInfo(TouchDriver *driver, int32_t cmd, struct HdfSBuf *reply)
 {
     const char *info = NULL;
     if ((driver->device == NULL) || (driver->device->chipCfg == NULL)) {
@@ -546,7 +447,46 @@ static int32_t TouchGetDeviceInfo(TouchDriver *driver, int32_t cmd, struct HdfSB
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGD("%s: cmd is %s, the info is ", __func__, info);
+    HDF_LOGI("%s: cmd is %d, the info is %s", __func__, cmd, info);
+    return HDF_SUCCESS;
+}
+
+static int32_t TouchGetDeviceAttr(TouchDriver *driver, struct HdfSBuf *reply)
+{
+    if (driver->inputDev == NULL) {
+        return HDF_FAILURE;
+    }
+
+    HDF_LOGE("%s: enter", __func__);
+    char *tempStr = "main_touch";
+    (void)strncpy_s(driver->inputDev->attrSet.devName, DEV_NAME_LEN, tempStr, strlen(tempStr));
+    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].min = 0;
+    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].max = AXIS_X_MAX;
+    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].range = AXIS_X_RANGE;
+    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].min = 0;
+    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].max = AXIS_Y_MAX;
+    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].range = AXIS_Y_RANGE;
+
+    if (!HdfSbufWriteBuffer(reply, &driver->inputDev->attrSet, sizeof(DevAttr))) {
+        HDF_LOGE("%s: sbuf write dev attr failed", __func__);
+    }
+
+    HDF_LOGI("%s: get dev attr succ", __func__);
+    return HDF_SUCCESS;
+}
+
+static int32_t TouchGetDeviceAbility(TouchDriver *driver, struct HdfSBuf *reply)
+{
+    if (driver->inputDev == NULL) {
+        return HDF_FAILURE;
+    }
+    HDF_LOGE("%s: enter", __func__);
+
+    if (!HdfSbufWriteBuffer(reply, &driver->inputDev->abilitySet, sizeof(DevAbility))) {
+        HDF_LOGE("%s: sbuf write dev ability failed", __func__);
+    }
+
+    HDF_LOGI("%s: get dev ability succ", __func__);
     return HDF_SUCCESS;
 }
 
@@ -620,6 +560,7 @@ static int32_t HdfTouchDispatch(struct HdfDeviceIoClient *client, int32_t cmd,
         return HDF_FAILURE;
     }
 
+    HDF_LOGI("%s: cmd = %d", __func__, cmd);
     switch (cmd) {
         case GET_DEV_TYPE:
             ret = TouchGetDevType(touchDriver, reply);
@@ -633,7 +574,13 @@ static int32_t HdfTouchDispatch(struct HdfDeviceIoClient *client, int32_t cmd,
         case GET_CHIP_NAME:
         case GET_VENDOR_NAME:
         case GET_CHIP_INFO:
-            ret = TouchGetDeviceInfo(touchDriver, cmd, reply);
+            ret = TouchGetDeviceStrInfo(touchDriver, cmd, reply);
+            break;
+        case GET_DEV_ATTR:
+            ret = TouchGetDeviceAttr(touchDriver, reply);
+            break;
+        case GET_DEV_ABILITY:
+            ret = TouchGetDeviceAbility(touchDriver, reply);
             break;
         case SET_GESTURE_MODE:
             ret = TouchSetGestureMode(touchDriver, data);
@@ -693,11 +640,6 @@ static int32_t TouchInitData(TouchDriver *driver, TouchBoardCfg *config)
     driver->i2cClient.i2cCfg.busNum = config->bus.i2c.busNum;
     driver->irqStopFlag = false;
 
-#ifdef __KERNEL__
-    init_waitqueue_head(&driver->pollWait);
-#else
-    __init_waitqueue_head(&driver->pollWait);
-#endif
     return HDF_SUCCESS;
 }
 

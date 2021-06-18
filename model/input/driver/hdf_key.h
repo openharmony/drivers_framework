@@ -9,7 +9,6 @@
 #define HDF_KEY_H
 
 #include <securec.h>
-#include "osal_cdev.h"
 #include "osal_time.h"
 #include "input_config.h"
 
@@ -23,8 +22,6 @@ typedef struct KeyDriverInfo {
     uint8_t devType;
     KeyChipCfg *keyCfg;
     InputDevice *inputdev;
-    wait_queue_head_t pollWait;
-    bool dataHandledFlag;
     uint16_t preStatus;
     uint64_t timeStamp;
 } KeyDriver;
