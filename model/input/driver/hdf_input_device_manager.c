@@ -405,7 +405,6 @@ static InputManager *InputManagerInstance(void)
 static int32_t HdfInputManagerInit(struct HdfDeviceObject *device)
 {
     HDF_LOGI("%s: enter", __func__);
-    int32_t ret;
     if (device == NULL) {
         HDF_LOGE("%s: device is null", __func__);
         return HDF_ERR_INVALID_PARAM;
