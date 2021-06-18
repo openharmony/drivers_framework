@@ -414,7 +414,7 @@ static void EsdTimerHandler(uintptr_t arg)
         return;
     }
     HdfAddWork(&disp->dispWorkQueue, disp->esd->work[devId]);
-    HDF_LOGD("%s   devId[%d] add work to wq", devId, __func__);
+    HDF_LOGD("%s devId[%d] add work to wq", __func__, devId);
 }
 
 static void EsdWorkHandler(void *arg)
@@ -445,7 +445,7 @@ static void EsdWorkHandler(void *arg)
         OsalMutexUnlock(&disp->dispMutex);
         panel->esd->recoveryNum++;
     }
-    HDF_LOGD("%s devId[%d] recoveryNum = %d", devId, __func__, panel->esd->recoveryNum);
+    HDF_LOGD("%s devId[%d] recoveryNum = %d",__func__, devId, panel->esd->recoveryNum);
     if (panel->esd->recoveryNum >= ESD_MAX_RECOVERY) {
         panel->esd->recoveryNum = 0;
         OsalMutexLock(&disp->dispMutex);
@@ -475,7 +475,7 @@ static void EsdCheckStartUp(struct DispEsd *esd, uint32_t devId)
                 EsdTimerHandler, (uintptr_t)devId);
             OsalTimerStartLoop(esd->timer[devId]);
             esd->panelEsd[devId]->state = ESD_RUNNING;
-            HDF_LOGI("%s , devId[%d] enable esd check", devId, __func__);
+            HDF_LOGI("%s , devId[%d] enable esd check", __func__, devId);
         }
     }
 }
@@ -492,7 +492,7 @@ static void EsdCheckEnd(struct DispEsd *esd, uint32_t devId)
         if (esd->panelEsd[devId]->state == ESD_RUNNING) {
             OsalTimerDelete(esd->timer[devId]);
             esd->panelEsd[devId]->state = ESD_READY;
-            HDF_LOGI("%s devId[%d], disable esd check", devId, __func__);
+            HDF_LOGI("%s devId[%d], disable esd check", __func__, devId);
         }
     }
 }
