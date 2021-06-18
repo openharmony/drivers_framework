@@ -10,7 +10,6 @@
 #define HDF_TOUCH_H
 
 #include <securec.h>
-#include "osal_cdev.h"
 #include "osal_time.h"
 #include "hdf_input_device_manager.h"
 #include "input_config.h"
@@ -71,13 +70,11 @@ typedef struct TouchPlatformDriver {
     const char *devName;
     TouchBoardCfg *boardCfg;
     InputI2cClient i2cClient;
-    wait_queue_head_t pollWait;
     struct OsalMutex mutex;
     uint32_t pwrStatus;
     uint32_t gestureMode;
     bool initedFlag;
     bool irqStopFlag;
-    bool dataHandledFlag;
 } TouchDriver;
 
 struct TouchChipOps;
@@ -97,6 +94,7 @@ struct TouchChipOps {
     int32_t (*Suspend)(ChipDevice *device);
     int32_t (*DataHandle)(ChipDevice *device);
     int32_t (*UpdateFirmware)(ChipDevice *device);
+    void (*SetAbility)(ChipDevice *device);
 };
 
 typedef struct {

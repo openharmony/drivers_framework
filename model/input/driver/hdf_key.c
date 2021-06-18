@@ -21,42 +21,6 @@
     } \
 } while (0)
 
-static int32_t IoctlReadKeyEvent(KeyDriver *driver, unsigned long arg)
-{
-    KeyEventData *eventData = (KeyEventData *)(uintptr_t)arg;
-
-    if (eventData == NULL) {
-        HDF_LOGE("%s: param is null", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-#ifndef __KERNEL__
-    if (LOS_ArchCopyToUser(eventData, &driver->eventData, sizeof(driver->eventData)) != 0) {
-        HDF_LOGE("%s:copy chipInfo failed", __func__);
-        return HDF_FAILURE;
-    }
-#endif
-    return HDF_SUCCESS;
-}
-
-int32_t KeyIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg)
-{
-    int32_t ret = HDF_FAILURE;
-    if (inputdev == NULL) {
-        return ret;
-    }
-    KeyDriver *driver = (KeyDriver *)inputdev->pvtData;
-    switch (cmd) {
-        case INPUT_IOCTL_GET_EVENT_DATA:
-            ret = IoctlReadKeyEvent(driver, arg);
-            break;
-        default:
-            ret = 0;
-            HDF_LOGE("%s: cmd unknown, cmd = 0x%x", __func__, cmd);
-            break;
-    }
-    return ret;
-}
-
 int32_t KeyIrqHandle(uint16_t intGpioNum, void *data)
 {
     uint16_t gpioValue;
@@ -92,7 +56,6 @@ int32_t KeyIrqHandle(uint16_t intGpioNum, void *data)
     }
     input_sync(driver->inputdev);
 
-    driver->dataHandledFlag = true;
     GpioEnableIrq(intGpioNum);
     return HDF_SUCCESS;
 }
@@ -185,12 +148,6 @@ static int32_t RegisterKeyDevice(KeyChipCfg *keyCfg)
         HDF_LOGE("%s: instance key config failed", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
-
-#ifdef __KERNEL__
-    init_waitqueue_head(&keyDrv->pollWait);
-#else
-    __init_waitqueue_head(&keyDrv->pollWait);
-#endif
 
     int32_t ret = KeyInit(keyDrv);
     if (ret != HDF_SUCCESS) {

@@ -7,7 +7,6 @@
  */
 
 #include <securec.h>
-#include "osal_cdev.h"
 #include "osal_mem.h"
 #include "devsvc_manager_clnt.h"
 #include "hdf_base.h"
@@ -30,82 +29,6 @@ InputManager* GetInputManager(void)
 {
     return g_inputManager;
 }
-
-#ifndef __KERNEL__
-int32_t TouchIoctl(InputDevice *inputdev, int32_t cmd, unsigned long arg);
-uint32_t TouchPoll(struct file *filep, InputDevice *inputDev, poll_table *wait);
-
-static int32_t InputDevIoctl(struct file *filep, int32_t cmd, unsigned long arg)
-{
-    int32_t ret;
-    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
-    InputDevice *inputdev = (InputDevice *)drvData->priv;
-    if (inputdev == NULL) {
-        return HDF_FAILURE;
-    }
-
-    switch (inputdev->devType) {
-        case INDEV_TYPE_TOUCH:
-            ret = TouchIoctl(inputdev, cmd, arg);
-            break;
-        default:
-            ret = 0;
-            HDF_LOGE("%s: devType unknown, devType = %d", __func__, inputdev->devType);
-            break;
-    }
-    return ret;
-}
-
-static int32_t InputDevOpen(struct file *filep)
-{
-    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
-    InputDevice *inputdev = (InputDevice *)drvData->priv;
-    if (inputdev == NULL) {
-        HDF_LOGE("%s: filep is null", __func__);
-        return HDF_FAILURE;
-    }
-    return HDF_SUCCESS;
-}
-
-static int32_t InputDevClose(struct file *filep)
-{
-    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
-    InputDevice *inputdev = (InputDevice *)drvData->priv;
-    if (inputdev == NULL) {
-        HDF_LOGE("%s: inputdev is null", __func__);
-        return HDF_FAILURE;
-    }
-    return HDF_SUCCESS;
-}
-
-#ifndef CONFIG_DISABLE_POLL
-static int32_t InputDevPoll(struct file *filep, poll_table *wait)
-{
-    uint32_t pollMask = 0;
-    struct drv_data *drvData = (struct drv_data *)filep->f_vnode->data;
-    InputDevice *inputdev = (InputDevice *)drvData->priv;
-    switch (inputdev->devType) {
-        case INDEV_TYPE_TOUCH:
-            pollMask = TouchPoll(filep, inputdev, wait);
-            break;
-        default:
-            HDF_LOGE("%s: devType unknown, devType = %d", __func__, inputdev->devType);
-            break;
-    }
-    return pollMask;
-}
-#endif
-
-static const struct file_operations_vfs inputDevOps = {
-    .open = InputDevOpen,
-    .close = InputDevClose,
-    .ioctl = InputDevIoctl,
-#ifndef CONFIG_DISABLE_POLL
-    .poll = InputDevPoll,
-#endif
-};
-
-#endif
 
 static bool IsHidDevice(uint32_t devType)
 {
@@ -174,25 +97,6 @@ static int32_t CreateDeviceNode(InputDevice *inputDev)
         }
     }
 
-#ifndef __KERNEL__
-    char *devNode = (char *)malloc(INPUT_DEV_PATH_LEN);
-    (void)memset_s(devNode, INPUT_DEV_PATH_LEN, 0, INPUT_DEV_PATH_LEN);
-
-    int32_t ret = snprintf_s(devNode, INPUT_DEV_PATH_LEN, strlen("/dev/input/hdf_input_event") + 1,
-        "%s%u", "/dev/input/hdf_input_event", inputDev->devId);
-    if (ret < 0) {
-        HDF_LOGE("%s: snprintf_s failed", __func__);
-        return HDF_FAILURE;
-    }
-    inputDev->devNode = devNode;
-    ret = register_driver(inputDev->devNode, &inputDevOps, NODE_MODE, inputDev);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: register %s devnode failed, ret = %d", __func__, devNode, ret);
-        inputDev->devNode = NULL;
-        return ret;
-    }
-#endif
-
     HDF_LOGI("%s: create node succ, devId is %d ", __func__, inputDev->devId);
     return HDF_SUCCESS;
 }
@@ -214,14 +118,6 @@ static void DeleteDeviceNode(InputDevice *inputDev)
         HdfUnregisterDevice(moduleName, svcName);
     }
 
-#ifndef __KERNEL__
-    int32_t ret = unregister_driver(inputDev->devNode);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: delete dev node failed, ret %d", __func__, ret);
-    }
-    free((void *)inputDev->devNode);
-    inputDev->devNode = NULL;
-#endif
     HDF_LOGI("%s: delete node succ, devId is %d", __func__, inputDev->devId);
 }
 
@@ -509,19 +405,10 @@ static InputManager *InputManagerInstance(void)
 static int32_t HdfInputManagerInit(struct HdfDeviceObject *device)
 {
     HDF_LOGI("%s: enter", __func__);
-    int32_t ret;
     if (device == NULL) {
         HDF_LOGE("%s: device is null", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-
-#ifndef __KERNEL__
-    ret = mkdir("/dev/input", DEFAULT_DIR_MODE);
-    if ((ret < 0) && (errno != EEXIST)) {
-        HDF_LOGE("%s: mkdir fail, ret %d, error = %d\n", __func__, ret, errno);
-        return HDF_FAILURE;
-    }
-#endif
 
     g_inputManager = InputManagerInstance();
     if (g_inputManager == NULL) {

@@ -173,6 +173,15 @@ static int32_t UpdateFirmware(ChipDevice *device)
     return HDF_SUCCESS;
 }
 
+static void SetAbility(ChipDevice *device)
+{
+    device->driver->inputDev->abilitySet.devProp[0] = SET_BIT(INPUT_PROP_DIRECT);
+    device->driver->inputDev->abilitySet.eventType[0] = SET_BIT(EV_SYN) |
+        SET_BIT(EV_KEY) | SET_BIT(EV_ABS);
+    device->driver->inputDev->abilitySet.absCode[0] = SET_BIT(ABS_X) | SET_BIT(ABS_Y);
+    device->driver->inputDev->abilitySet.keyCode[3] = SET_BIT(KEY_UP) | SET_BIT(KEY_DOWN);
+}
+
 static struct TouchChipOps g_gt911ChipOps = {
     .Init = ChipInit,
     .Detect = ChipDetect,
@@ -180,6 +189,7 @@ static struct TouchChipOps g_gt911ChipOps = {
     .Suspend = ChipSuspend,
     .DataHandle = ChipDataHandle,
     .UpdateFirmware = UpdateFirmware,
+    .SetAbility = SetAbility,
 };
 
 static TouchChipCfg *ChipConfigInstance(struct HdfDeviceObject *device)

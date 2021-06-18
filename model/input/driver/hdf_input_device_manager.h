@@ -24,6 +24,20 @@
 #define ONLINE    0
 #define OFFLINE   1
 
+#ifdef DIV_ROUND_UP
+#undef DIV_ROUND_UP
+#endif
+#define DIV_ROUND_UP(nr, d) (((nr) + (d) - 1) / (d))
+
+#define BYTE_HAS_BITS 8
+#define BITS_TO_UINT64(count)    DIV_ROUND_UP(count, BYTE_HAS_BITS * sizeof(unsigned long))
+
+#define BITS_PER_LONG  32
+#define SET_BIT(nr)    (1UL << ((nr) % BITS_PER_LONG))
+
+#define FF_MAX    0x7f
+#define FF_CNT    (FF_MAX + 1)
+
 #define CHECK_RETURN_VALUE(ret) do { \
     if ((ret) != HDF_SUCCESS) { \
         return ret; \
@@ -46,17 +60,57 @@ typedef struct {
     uint32_t (*getDeviceCount)(void);
 } IInputManagerService;
 
+typedef struct {
+    unsigned long devProp[BITS_TO_UINT64(INPUT_PROP_CNT)];
+    unsigned long eventType[BITS_TO_UINT64(EV_CNT)];
+    unsigned long absCode[BITS_TO_UINT64(ABS_CNT)];
+    unsigned long relCode[BITS_TO_UINT64(REL_CNT)];
+    unsigned long keyCode[BITS_TO_UINT64(KEY_CNT)];
+    unsigned long ledCode[BITS_TO_UINT64(LED_CNT)];
+    unsigned long miscCode[BITS_TO_UINT64(MSC_CNT)];
+    unsigned long soundCode[BITS_TO_UINT64(SND_CNT)];
+    unsigned long forceCode[BITS_TO_UINT64(FF_CNT)];
+    unsigned long switchCode[BITS_TO_UINT64(SW_CNT)];
+    unsigned long keyType[BITS_TO_UINT64(KEY_CNT)];
+    unsigned long ledType[BITS_TO_UINT64(LED_CNT)];
+    unsigned long soundType[BITS_TO_UINT64(SND_CNT)];
+    unsigned long switchType[BITS_TO_UINT64(SW_CNT)];
+} DevAbility;
+
+typedef struct {
+    int32_t axis;
+    int32_t min;
+    int32_t max;
+    int32_t fuzz;
+    int32_t flat;
+    int32_t range;
+} DimensionInfo;
+
+typedef struct {
+    uint16_t busType;
+    uint16_t vendor;
+    uint16_t product;
+    uint16_t version;
+} InputDevIdentify;
+
+typedef struct {
+    char devName[DEV_NAME_LEN];
+    InputDevIdentify id;
+    DimensionInfo axisInfo[ABS_CNT];
+} DevAttr;
+
 typedef struct InputDeviceInfo {
     struct HdfDeviceObject *hdfDevObj;
     uint32_t devId;
     uint32_t devType;
-    const char *devNode;
     const char *devName;
     uint16_t pkgNum;
     uint16_t pkgCount;
     bool errFrameFlag;
     struct HdfSBuf *pkgBuf;
     void *pvtData;
+    DevAttr attrSet;
+    DevAbility abilitySet;
     struct InputDeviceInfo *next;
 } InputDevice;
 
@@ -87,6 +141,8 @@ enum InputIOsvcCmdId {
     GET_CHIP_INFO,
     GET_VENDOR_NAME,
     GET_CHIP_NAME,
+    GET_DEV_ATTR,
+    GET_DEV_ABILITY,
     SET_GESTURE_MODE,
     RUN_CAPAC_TEST,
     RUN_EXTRA_CMD,

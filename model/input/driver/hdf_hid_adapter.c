@@ -15,6 +15,7 @@
 #include "hdf_hid_adapter.h"
 
 InputDevice *cachedHid[MAX_INPUT_DEV_NUM];
+HidInfo cachedInfo[MAX_INPUT_DEV_NUM];
 
 static bool HaveHidCache(void)
 {
@@ -42,6 +43,74 @@ static void LoadCachedHid(void)
     }
 }
 
+static int cachedPosId(void)
+{
+    int32_t id = 0;
+    while (id < MAX_INPUT_DEV_NUM) {
+        if (cachedInfo[id].devName == NULL) {
+            return id;
+        }
+        id++;
+    }
+    return HDF_FAILURE;
+}
+
+void GetInfoFromHid(HidInfo info)
+{
+    int32_t id = cachedPosId();
+    if (id == HDF_FAILURE) {
+        HDF_LOGE("%s: cached hid info failed", __func__);
+        return;
+    }
+    cachedInfo[id] = info;
+}
+
+static void SetInputDevAbility(InputDevice *inputDev)
+{
+    HidInfo info;
+    int32_t id = 0;
+    uint32_t len;
+    while (id < MAX_INPUT_DEV_NUM) {
+        if(cachedInfo[id].devName != NULL && !strcmp(inputDev->devName, cachedInfo[id].devName)) {
+            info = cachedInfo[id];
+            break;
+        }
+        id++;
+    }
+    if (id == MAX_INPUT_DEV_NUM) {
+        HDF_LOGE("%s: match cached info failed", __func__);
+        return;
+    }
+    len = sizeof(unsigned long);
+    memcpy_s(inputDev->abilitySet.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT),
+        info.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT));
+    memcpy_s(inputDev->abilitySet.eventType, len * BITS_TO_LONG(EV_CNT),
+        info.eventType, len * BITS_TO_LONG(EV_CNT));
+    memcpy_s(inputDev->abilitySet.absCode, len * BITS_TO_LONG(ABS_CNT),
+        info.absCode, len * BITS_TO_LONG(ABS_CNT));
+    memcpy_s(inputDev->abilitySet.relCode, len * BITS_TO_LONG(REL_CNT),
+        info.relCode, len * BITS_TO_LONG(REL_CNT));
+    memcpy_s(inputDev->abilitySet.keyCode, len * BITS_TO_LONG(KEY_CNT),
+        info.keyCode, len * BITS_TO_LONG(KEY_CNT));
+    memcpy_s(inputDev->abilitySet.ledCode, len * BITS_TO_LONG(LED_CNT),
+        info.ledCode, len * BITS_TO_LONG(LED_CNT));
+    memcpy_s(inputDev->abilitySet.miscCode, len * BITS_TO_LONG(MSC_CNT),
+        info.miscCode, len * BITS_TO_LONG(MSC_CNT));
+    memcpy_s(inputDev->abilitySet.soundCode, len * BITS_TO_LONG(SND_CNT),
+        info.soundCode, len * BITS_TO_LONG(SND_CNT));
+    memcpy_s(inputDev->abilitySet.forceCode, len * BITS_TO_LONG(FF_CNT),
+        info.forceCode, len * BITS_TO_LONG(FF_CNT));
+    memcpy_s(inputDev->abilitySet.switchCode, len * BITS_TO_LONG(SW_CNT),
+        info.switchCode, len * BITS_TO_LONG(SW_CNT));
+
+    inputDev->attrSet.id.busType = info.bustype;
+    inputDev->attrSet.id.vendor = info.vendor;
+    inputDev->attrSet.id.product = info.product;
+    inputDev->attrSet.id.version = info.version;
+
+    cachedInfo[id].devName = NULL;
+}
+
 static InputDevice* HidConstructInputDev(HidInfo info)
 {
     InputDevice *inputDev = (InputDevice *)OsalMemAlloc(sizeof(InputDevice));
@@ -53,6 +122,8 @@ static InputDevice* HidConstructInputDev(HidInfo info)
 
     inputDev->devType = info.devType;
     inputDev->devName = info.devName;
+    SetInputDevAbility(inputDev);
+
     return inputDev;
 }
 
@@ -119,11 +190,6 @@ void HidUnregisterHdfInputDev(const void *inputDev)
 void HidReportEvent(const void *inputDev, uint32_t type, uint32_t code, int32_t value)
 {
     PushOnePackage((InputDevice *)inputDev, type, code, value);
-}
-
-void GetInfoFromHid(HidInfo info)
-{
-    (void)info;
 }
 
 static int32_t HdfHIDDriverInit(struct HdfDeviceObject *device)
