@@ -11,12 +11,18 @@
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "hdf_sbuf.h"
+#include "hdf_workqueue.h"
 #include "lcd_abs_if.h"
+#include "osal_mem.h"
+#include "osal_mutex.h"
+#include "osal_timer.h"
 
 #ifdef HDF_LOG_TAG
 #undef HDF_LOG_TAG
 #endif
 #define HDF_LOG_TAG HDF_DISP
+#define ESD_DEFAULT_INTERVAL   5000
+#define ESD_MAX_RECOVERY       10
 
 typedef int32_t (*DispCmdHandle)(struct HdfDeviceObject *device, struct HdfSBuf *reqData, struct HdfSBuf *rspData);
 
@@ -45,20 +51,42 @@ struct DispOperations {
     int32_t (*getDispInfo)(uint32_t devId, struct DispInfo *info);
 };
 
-struct PlatformOps {
-    int32_t (*init)(uint32_t devId);
-    int32_t (*on)(uint32_t devId);
-    int32_t (*off)(uint32_t devId);
-    int32_t (*setBacklight)(uint32_t devId, uint32_t level);
-    int32_t (*getDispInfo)(uint32_t devId, struct DispInfo *info);
+enum EsdState {
+    ESD_READY = 1,
+    ESD_RUNNING,
 };
 
-enum PowerMode {
-    DISP_ON,
-    DISP_OFF,
+struct DispEsd {
+    struct PanelEsd **panelEsd;
+    HdfWork **work;
+    bool *workInit;
+    OsalTimer **timer;
+    int32_t panelNum;
 };
 
-int32_t PlatformRegister(struct PlatformOps *ops);
-struct PanelInfo *GetPanelInfo(int32_t index);
-struct PanelStatus *GetPanelStatus(int32_t index);
+struct DispControl;
+struct DispControlOps {
+    int32_t (*on)(struct DispControl *dispCtrl, uint32_t devId);
+    int32_t (*off)(struct DispControl *dispCtrl, uint32_t devId);
+    int32_t (*setBacklight)(struct DispControl *dispCtrl, uint32_t devId, uint32_t level);
+    int32_t (*getDispInfo)(struct DispControl *dispCtrl, uint32_t devId);
+};
+
+struct DispControl {
+    struct HdfDeviceObject *object;
+    struct PanelManager *panelManager;
+    struct DispInfo *info;
+    struct DispControlOps ops;
+};
+
+struct DispManager {
+    struct DispControl *dispCtrl;
+    struct PanelManager *panelManager;
+    struct OsalMutex dispMutex;
+    HdfWorkQueue dispWorkQueue;
+    bool initialzed;
+    struct DispEsd *esd;
+};
+
+int32_t RegisterDispCtrl(struct DispControl *dispCtrl);
 #endif /* HDF_DISP_H */

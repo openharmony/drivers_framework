@@ -7,7 +7,6 @@
  */
 
 #include "gpio_if.h"
-#include "hdf_device_desc.h"
 #include "hdf_log.h"
 #include "lcd_abs_if.h"
 #include "mipi_dsi_if.h"
@@ -92,58 +91,65 @@ struct DsiCmdDesc g_offCmd[] = {
     { 0x05, 120, sizeof(g_offPayLoad1), g_offPayLoad1 },
 };
 
-static DevHandle g_mipiHandle = NULL;
-static DevHandle g_pwmHandle = NULL;
+struct Icn9700Dev {
+    struct PanelData panel;
+    DevHandle mipiHandle;
+    DevHandle pwmHandle;
+    uint16_t reset_gpio;
+    uint16_t reset_delay;
+};
 
-static int32_t LcdResetOn(void)
+static int32_t LcdResetOn(struct Icn9700Dev *icn9700)
 {
     int32_t ret;
 
-    ret = GpioSetDir(RESET_GPIO, GPIO_DIR_OUT);
+    ret = GpioSetDir(icn9700->reset_gpio, GPIO_DIR_OUT);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("GpioSetDir failed, ret:%d", ret);
         return HDF_FAILURE;
     }
-    ret = GpioWrite(RESET_GPIO, GPIO_VAL_HIGH);
+    ret = GpioWrite(icn9700->reset_gpio, GPIO_VAL_HIGH);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("GpioWrite failed, ret:%d", ret);
         return HDF_FAILURE;
     }
     /* delay 20ms */
-    OsalMSleep(20);
+    OsalMSleep(icn9700->reset_delay);
     return HDF_SUCCESS;
 }
 
-static int32_t LcdResetOff(void)
+static int32_t LcdResetOff(struct Icn9700Dev *icn9700)
 {
     int32_t ret;
 
-    ret = GpioSetDir(RESET_GPIO, GPIO_DIR_OUT);
+    ret = GpioSetDir(icn9700->reset_gpio, GPIO_DIR_OUT);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("GpioSetDir failed, ret:%d", ret);
         return HDF_FAILURE;
     }
-    ret = GpioWrite(RESET_GPIO, GPIO_VAL_LOW);
+    ret = GpioWrite(icn9700->reset_gpio, GPIO_VAL_LOW);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("GpioWrite failed, ret:%d", ret);
         return HDF_FAILURE;
     }
     /* delay 20ms */
-    OsalMSleep(20);
+    OsalMSleep(icn9700->reset_delay);
     return HDF_SUCCESS;
 }
 
-static int32_t PwmCfg(void)
+static int32_t PwmCfg(struct Icn9700Dev *icn9700)
 {
-    g_pwmHandle = PwmOpen(BLK_PWM1);
-    if (g_pwmHandle == NULL) {
+    DevHandle pwmHandle = NULL;
+
+    pwmHandle = PwmOpen(BLK_PWM1);
+    if (pwmHandle == NULL) {
         HDF_LOGE("%s: PwmOpen failed", __func__);
         return HDF_FAILURE;
     }
     /* pwm config */
     int32_t ret;
     struct PwmConfig config;
-    ret = PwmGetConfig(g_pwmHandle, &config);
+    ret = PwmGetConfig(pwmHandle, &config);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: PwmGetConfig fail, ret %d", __func__, ret);
         return HDF_FAILURE;
@@ -151,104 +157,163 @@ static int32_t PwmCfg(void)
     config.duty = 1;
     config.period = PWM_MAX_PERIOD;
     config.status = 1;
-    ret = PwmSetConfig(g_pwmHandle, &config);
+    ret = PwmSetConfig(pwmHandle, &config);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: PwmSetConfig fail, ret %d", __func__, ret);
         return HDF_FAILURE;
     }
+    icn9700->pwmHandle = pwmHandle;
     return HDF_SUCCESS;
 }
 
-static int32_t Icn9700Init(void)
+static struct Icn9700Dev *PanelToIcn9700Dev(const struct PanelData *panel)
 {
-    g_mipiHandle = MipiDsiOpen(MIPI_DSI0);
-    if (g_mipiHandle == NULL) {
+    struct Icn9700Dev *icn9700 = NULL;
+
+    if (panel == NULL) {
+        HDF_LOGE("%s: panel is null", __func__);
+        return NULL;
+    }
+    if (panel->object == NULL) {
+        HDF_LOGE("%s: object is null", __func__);
+        return NULL;
+    }
+    icn9700 = (struct Icn9700Dev *)panel->object->priv;
+    return icn9700;
+}
+
+static int32_t Icn9700Init(struct PanelData *panel)
+{
+    struct Icn9700Dev *icn9700 = NULL;
+
+    icn9700 = PanelToIcn9700Dev(panel);
+    if (icn9700 == NULL) {
+        HDF_LOGE("%s: icn9700 is null", __func__);
+        return HDF_FAILURE;
+    }
+    icn9700->mipiHandle = MipiDsiOpen(MIPI_DSI0);
+    if (icn9700->mipiHandle == NULL) {
         HDF_LOGE("%s: MipiDsiOpen failed", __func__);
         return HDF_FAILURE;
     }
-    if (PwmCfg() != HDF_SUCCESS) {
+    if (PwmCfg(icn9700) != HDF_SUCCESS) {
         HDF_LOGE("%s: PwmCfg failed", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
 
-static int32_t Icn9700On(void)
+static int32_t Icn9700On(struct PanelData *panel)
 {
     int32_t ret;
+    struct Icn9700Dev *icn9700 = NULL;
 
+    icn9700 = PanelToIcn9700Dev(panel);
+    if (icn9700 == NULL) {
+        HDF_LOGE("%s: icn9700 is null", __func__);
+        return HDF_FAILURE;
+    }
     /* lcd reset power on */
-    ret = LcdResetOn();
+    ret = LcdResetOn(icn9700);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: LcdResetOn failed", __func__);
         return HDF_FAILURE;
     }
-    if (g_mipiHandle == NULL) {
-        HDF_LOGE("%s: g_mipiHandle is null", __func__);
+    if (icn9700->mipiHandle == NULL) {
+        HDF_LOGE("%s: mipiHandle is null", __func__);
         return HDF_FAILURE;
     }
     /* send mipi init code */
     int32_t count = sizeof(g_OnCmd) / sizeof(g_OnCmd[0]);
     int32_t i;
     for (i = 0; i < count; i++) {
-        ret = MipiDsiTx(g_mipiHandle, &(g_OnCmd[i]));
+        ret = MipiDsiTx(icn9700->mipiHandle, &(g_OnCmd[i]));
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: MipiDsiTx failed", __func__);
             return HDF_FAILURE;
         }
     }
+    panel->status.powerStatus = POWER_STATUS_ON;
     /* set mipi to hs mode */
-    MipiDsiSetHsMode(g_mipiHandle);
+    MipiDsiSetHsMode(icn9700->mipiHandle);
     return HDF_SUCCESS;
 }
 
-static int32_t Icn9700Off(void)
+static int32_t Icn9700Off(struct PanelData *panel)
 {
     int32_t ret;
+    struct Icn9700Dev *icn9700 = NULL;
 
-    if (g_mipiHandle == NULL) {
-        HDF_LOGE("%s: g_mipiHandle is null", __func__);
+    icn9700 = PanelToIcn9700Dev(panel);
+    if (icn9700 == NULL) {
+        HDF_LOGE("%s: icn9700 is null", __func__);
+        return HDF_FAILURE;
+    }
+    if (icn9700->mipiHandle == NULL) {
+        HDF_LOGE("%s: mipiHandle is null", __func__);
         return HDF_FAILURE;
     }
     /* send mipi init code */
     int32_t count = sizeof(g_offCmd) / sizeof(g_offCmd[0]);
     int32_t i;
     for (i = 0; i < count; i++) {
-        ret = MipiDsiTx(g_mipiHandle, &(g_offCmd[i]));
+        ret = MipiDsiTx(icn9700->mipiHandle, &(g_offCmd[i]));
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: MipiDsiTx failed", __func__);
             return HDF_FAILURE;
         }
     }
     /* set mipi to lp mode */
-    MipiDsiSetLpMode(g_mipiHandle);
+    MipiDsiSetLpMode(icn9700->mipiHandle);
     /* lcd reset power off */
-    ret = LcdResetOff();
+    ret = LcdResetOff(icn9700);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: LcdResetOff failed", __func__);
         return HDF_FAILURE;
     }
+    panel->status.powerStatus = POWER_STATUS_OFF;
     return HDF_SUCCESS;
 }
 
-static int32_t Icn9700SetBacklight(uint32_t level)
+static int32_t Icn9700SetBacklight(struct PanelData *panel, uint32_t level)
 {
     int32_t ret;
     uint32_t duty;
+    struct Icn9700Dev *icn9700 = NULL;
+
+    icn9700 = PanelToIcn9700Dev(panel);
+    if (icn9700 == NULL) {
+        HDF_LOGE("%s: icn9700 is null", __func__);
+        return HDF_FAILURE;
+    }
     duty = (level * PWM_MAX_PERIOD) / MAX_LEVEL;
-    ret = PwmSetDuty(g_pwmHandle, duty);
+    ret = PwmSetDuty(icn9700->pwmHandle, duty);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: PwmSetDutyCycle failed, ret %d", __func__, ret);
         return HDF_FAILURE;
     }
     static uint32_t lastLevel = 0;
     if (level != 0 && lastLevel == 0) {
-        ret = PwmEnable(g_pwmHandle);
+        ret = PwmEnable(icn9700->pwmHandle);
     } else if (level == 0 && lastLevel != 0) {
-        ret = PwmDisable(g_pwmHandle);
+        ret = PwmDisable(icn9700->pwmHandle);
     }
     lastLevel = level;
+    panel->status.currLevel = level;
     return ret;
+}
+
+static int32_t Icn9700EsdCheckFunc(struct PanelData *panel)
+{
+    struct Icn9700Dev *icn9700 = NULL;
+
+    icn9700 = PanelToIcn9700Dev(panel);
+    if (icn9700 == NULL) {
+        HDF_LOGE("%s: icn9700 is null", __func__);
+        return HDF_FAILURE;
+    }
+    HDF_LOGE("%s: enter", __func__);
+    return HDF_SUCCESS;
 }
 
 static struct PanelInfo g_panelInfo = {
@@ -270,28 +335,43 @@ static struct PanelInfo g_panelInfo = {
     .pwm = { BLK_PWM1, PWM_MAX_PERIOD },
 };
 
-static struct PanelStatus g_panelStatus = {
-    .powerStatus = POWER_STATUS_OFF,
-    .currLevel = MIN_LEVEL,
+static struct PanelEsd g_panelEsd = {
+    .support = false,
+    .checkFunc = Icn9700EsdCheckFunc,
 };
 
-static struct PanelData g_panelData = {
-    .info = &g_panelInfo,
-    .status = &g_panelStatus,
-    .init = Icn9700Init,
-    .on = Icn9700On,
-    .off = Icn9700Off,
-    .setBacklight = Icn9700SetBacklight,
-};
+static void Icn9700PanelInit(struct PanelData *panel)
+{
+    panel->info = &g_panelInfo;
+    panel->status.powerStatus = POWER_STATUS_OFF;
+    panel->status.currLevel = MIN_LEVEL;
+    panel->esd = &g_panelEsd;
+    panel->init = Icn9700Init;
+    panel->on = Icn9700On;
+    panel->off = Icn9700Off;
+    panel->setBacklight = Icn9700SetBacklight;
+}
 
 int32_t Icn9700EntryInit(struct HdfDeviceObject *object)
 {
+    struct Icn9700Dev *icn9700 = NULL;
+
     if (object == NULL) {
-        HDF_LOGE("%s: param is null", __func__);
+        HDF_LOGE("%s: object is null", __func__);
         return HDF_FAILURE;
     }
-    if (PanelDataRegister(&g_panelData) != HDF_SUCCESS) {
-        HDF_LOGE("%s: PanelDataRegister failed", __func__);
+    icn9700 = (struct Icn9700Dev *)OsalMemCalloc(sizeof(struct Icn9700Dev));
+    if (icn9700 == NULL) {
+        HDF_LOGE("%s icn9700 malloc fail", __func__);
+        return HDF_FAILURE;
+    }
+    Icn9700PanelInit(&icn9700->panel);
+    icn9700->panel.object = object;
+    icn9700->reset_gpio = RESET_GPIO;
+    icn9700->reset_delay = 20; // delay 20ms
+    object->priv = (void *)icn9700;
+    if (RegisterPanel(&icn9700->panel) != HDF_SUCCESS) {
+        HDF_LOGE("%s: RegisterPanel failed", __func__);
         return HDF_FAILURE;
     }
     HDF_LOGI("%s: exit succ", __func__);
