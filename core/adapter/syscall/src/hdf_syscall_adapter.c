@@ -783,7 +783,7 @@ int32_t HdfDeviceRegisterEventListener(struct HdfIoService *target, struct HdfDe
     }
 
     if (listener->callBack == NULL && listener->onReceive == NULL) {
-        HDF_LOGE("Listenr onReceive func not implemented");
+        HDF_LOGE("Listener onReceive func not implemented");
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -885,7 +885,7 @@ int32_t HdfIoServiceGroupRegisterListener(struct HdfIoServiceGroup *group, struc
     }
 
     if (listener->callBack == NULL && listener->onReceive == NULL) {
-        HDF_LOGE("listenr onReceive func not implemented");
+        HDF_LOGE("Listener onReceive func not implemented");
         return HDF_ERR_INVALID_OBJECT;
     }
     struct HdfSyscallAdapterGroup *adapterGroup = CONTAINER_OF(group, struct HdfSyscallAdapterGroup, serviceGroup);
