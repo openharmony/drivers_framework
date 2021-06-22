@@ -44,6 +44,7 @@ void VibratorTimerEntry(uintptr_t para)
 {
     struct VibratorDriverData *drvData = (struct VibratorDriverData *)para;
 
+    (void)OsalMutexLock(&drvData->mutex);
     drvData->state = VIBRATOR_STATE_STOP;
     (void)OsalMutexUnlock(&drvData->mutex);
 
