@@ -4,6 +4,7 @@ TARGET := $(BUILD_DIR)/hc-gen
 
 CXX := c++
 CXX_FLAGS := -std=gnu++14
+CXX_LD_FLAGS := -lstdc++
 
 SRCS := $(wildcard src/*.cpp)
 OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SRCS))
