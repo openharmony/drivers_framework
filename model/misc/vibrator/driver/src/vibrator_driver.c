@@ -47,7 +47,6 @@ void VibratorTimerEntry(uintptr_t para)
     (void)OsalMutexLock(&drvData->mutex);
     drvData->state = VIBRATOR_STATE_STOP;
     (void)OsalMutexUnlock(&drvData->mutex);
-
     HdfAddWork(&drvData->workQueue, &drvData->work);
 }
 
@@ -59,13 +58,16 @@ int32_t StartTimeVibrator(uint32_t time)
 
     (void)OsalMutexLock(&drvData->mutex);
     drvData->state = VIBRATOR_STATE_START_TIMER;
-    if (OsalTimerSetTimeout(&drvData->timer, time) != HDF_SUCCESS) {
+
+    if (OsalTimerStartOnce(&drvData->timer) != HDF_SUCCESS) {
         HDF_LOGE("%s: set vibrator time fail!", __func__);
+        (void)OsalMutexUnlock(&drvData->mutex);
         return HDF_FAILURE;
     }
 
-    if (OsalTimerStartOnce(&drvData->timer) != HDF_FAILURE) {
-        HDF_LOGE("%s: set vibrator time fail!", __func__);
+    if (OsalTimerSetTimeout(&drvData->timer, time) != HDF_SUCCESS) {
+        HDF_LOGE("%s: set vibrator osal timeout fail!", __func__);
+        (void)OsalMutexUnlock(&drvData->mutex);
         return HDF_FAILURE;
     }
     (void)OsalMutexUnlock(&drvData->mutex);
@@ -98,6 +100,7 @@ int32_t SetEffectVibrator(uint32_t type)
         ret = drvData->ops.StartEffect(type);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: start effect fail", __func__);
+            (void)OsalMutexUnlock(&drvData->mutex);
             return HDF_FAILURE;
         }
     }
@@ -301,12 +304,12 @@ int32_t InitVibratorDriver(struct HdfDeviceObject *device)
         return HDF_FAILURE;
     }
 
-    if (HdfWorkInit(&drvData->work, VibratorWorkEntry, (void*)&drvData) != HDF_SUCCESS) {
+    if (HdfWorkInit(&drvData->work, VibratorWorkEntry, (void*)drvData) != HDF_SUCCESS) {
         HDF_LOGE("%s: init workQueue fail!", __func__);
         return HDF_FAILURE;
     }
 
-    if (OsalTimerCreate(&drvData->timer, VIBRATOR_START_TIME, VibratorTimerEntry, (uintptr_t)&drvData) != HDF_SUCCESS) {
+    if (OsalTimerCreate(&drvData->timer, VIBRATOR_START_TIME, VibratorTimerEntry, (uintptr_t)drvData) != HDF_SUCCESS) {
         HDF_LOGE("%s: create VibratorTimer fail!", __func__);
         return HDF_FAILURE;
     }

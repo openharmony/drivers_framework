@@ -156,7 +156,7 @@ static int32_t DelayTimeForEffect(struct OsalSem *sem, uint32_t time)
 static int32_t HapticThreadEntry(void *para)
 {
     int32_t count;
-    int32_t index = 1;
+    int32_t index = 0;
     uint32_t delaytime;
     uint32_t effect;
     struct VibratorHapticData *hapticData = NULL;
@@ -227,6 +227,7 @@ int32_t InitVibratorHaptic(struct HdfDeviceObject *device)
 
     // get haptic hcs
     if (ParserVibratorHapticConfig(device->property) != HDF_SUCCESS) {
+        hapticData->threadExitFlag = true;
         HDF_LOGE("%s: parser haptic config fail!", __func__);
         goto EXIT;
     }
@@ -248,8 +249,11 @@ static int32_t GetHapticSeqByEffect(struct VibratorEffectCfg *effectCfg)
 
     if (effectCfg->cfgMode == VIBRATOR_MODE_ONCE) {
         (void)OsalMutexLock(&hapticData->mutex);
-        hapticData->duration = effectCfg->duration;
+        hapticData->duration[VIBRATOR_TIME_DELAY_INDEX] = 0;
+        hapticData->duration[VIBRATOR_TIME_DURATION_INDEX] = effectCfg->duration;
         hapticData->effectType = VIBRATOR_TYPE_TIME;
+        hapticData->seqCount = VIBRATOR_TIME_INDEX_BUTT;
+        hapticData->currentEffectSeq = &hapticData->duration[0];
         (void)OsalMutexUnlock(&hapticData->mutex);
     } else if (effectCfg->cfgMode == VIBRATOR_MODE_PRESET) {
         if (effectCfg->effect == NULL) {

@@ -16,10 +16,15 @@
 #include "osal_thread.h"
 #include "vibrator_driver_type.h"
 
-
 enum VibratorEffectType {
     VIBRATOR_TYPE_EFFECT    = 0, // Preset effect in device
     VIBRATOR_TYPE_TIME      = 1, // Preset effect by time
+};
+
+enum VibratorTimeSeqIndex {
+    VIBRATOR_TIME_DELAY_INDEX    = 0,
+    VIBRATOR_TIME_DURATION_INDEX = 1,
+    VIBRATOR_TIME_INDEX_BUTT,
 };
 
 struct VibratorEffectNode {
@@ -42,7 +47,7 @@ struct VibratorHapticData {
     struct OsalSem hapticSem;
     struct OsalThread hapticThread;
     bool threadExitFlag;
-    uint32_t duration;
+    uint32_t duration[VIBRATOR_TIME_INDEX_BUTT];
     int32_t effectType;
     int32_t seqCount;
     uint32_t *currentEffectSeq;
