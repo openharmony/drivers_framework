@@ -26,7 +26,6 @@ static struct VibratorLinearDriverData *GetLinearVibratorData(void)
 
 static int32_t StartLinearVibrator()
 {
-//    int32_t ret;
     struct VibratorLinearDriverData *drvData = GetLinearVibratorData();
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(drvData, HDF_FAILURE);
 
@@ -34,14 +33,8 @@ static int32_t StartLinearVibrator()
         HDF_LOGE("%s: vibrator bus type not gpio", __func__);
         return HDF_FAILURE;
     }
-        HDF_LOGE("%s: pull gpio high", __func__);
-#if 0
-    ret = GpioWrite(drvData->gpioNum, GPIO_VAL_HIGH);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: pull gpio%d to %d level failed, ret %d", __func__, drvData->gpioNum, GPIO_VAL_HIGH, ret);
-        return HDF_FAILURE;
-    }
-#endif
+     HDF_LOGE("%s: pull gpio high", __func__);
+
     return HDF_SUCCESS;
 }
 
@@ -53,7 +46,6 @@ static int32_t StartEffectLinearVibrator(uint32_t effectType)
 
 static int32_t StopLinearVibrator()
 {
-//    int32_t ret;
     struct VibratorLinearDriverData *drvData = GetLinearVibratorData();
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(drvData, HDF_FAILURE);
 
@@ -62,13 +54,7 @@ static int32_t StopLinearVibrator()
         return HDF_FAILURE;
     }
     HDF_LOGE("%s: pull gpio low", __func__);
-#if 0
-    ret = GpioWrite(drvData->gpioNum, GPIO_VAL_LOW);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: pull gpio%d to %d level failed, ret %d", __func__, drvData->gpioNum, GPIO_VAL_LOW, ret);
-        return HDF_FAILURE;
-    }
-#endif
+
     return HDF_SUCCESS;
 }
 
