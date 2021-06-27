@@ -25,6 +25,13 @@
     } \
 } while (0)
 
+#define CHECK_VIBRATOR_NULL_PTR_RETURN(ptr) do { \
+    if ((ptr) == NULL) { \
+        HDF_LOGE("%s:line %d pointer is null and return", __func__, __LINE__); \
+        return; \
+    } \
+} while (0)
+
 enum VibratorBusType {
     VIBRATOR_BUS_I2C   = 0,
     VIBRATOR_BUS_GPIO  = 1,
