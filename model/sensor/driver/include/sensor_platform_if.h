@@ -40,7 +40,7 @@
 
 #define SENSOR_ADDR_WIDTH_1_BYTE        1 // 8 bit
 #define SENSOR_ADDR_WIDTH_2_BYTE        2 // 16 bit
-#define SENSOR_ADDR_WIDTH_4_BYTE        4 // 16 bit
+#define SENSOR_ADDR_WIDTH_4_BYTE        4 // 32 bit
 #define SENSOR_DATA_WIDTH_8_BIT         8 // 8 bit
 #define SENSOR_CONVERT_UNIT             1000
 #define SENSOR_1K_UNIT                  1024

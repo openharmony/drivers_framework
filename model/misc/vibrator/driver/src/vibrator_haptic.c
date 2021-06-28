@@ -15,7 +15,7 @@
 #include "vibrator_haptic.h"
 
 #define HDF_LOG_TAG    vibrator_haptic_c
-#define VIBRATOR_HAPTIC_STACK_SIZE    0x2000
+#define VIBRATOR_HAPTIC_STACK_SIZE    0x4000
 #define VIBRATOR_HAPTIC_SEQ_MAX       1024
 #define VIBRATOR_HAPTIC_SEQ_SIZE       4
 #define VIBRATOR_HAPTIC_SEQ_NAME_MAX    48
@@ -117,14 +117,15 @@ static int32_t ParserVibratorHapticConfig(const struct DeviceResourceNode *node)
     vibratorAttrNode = parser->GetChildNode(node, "vibratorAttr");
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(vibratorAttrNode, HDF_ERR_INVALID_PARAM);
     supportPresetFlag = parser->GetBool(vibratorAttrNode, "supportPreset");
+
+    (void)OsalMutexLock(&hapticData->mutex);
+    hapticData->supportHaptic = supportPresetFlag;
+    (void)OsalMutexUnlock(&hapticData->mutex);
+
     if (!supportPresetFlag) {
         HDF_LOGD("%s: vibrator not support effect", __func__);
         return HDF_SUCCESS;
     }
-
-    (void)OsalMutexLock(&hapticData->mutex);
-    hapticData->supportPreset = supportPresetFlag;
-    (void)OsalMutexUnlock(&hapticData->mutex);
 
     // malloc haptic resource
     vibratorHapticNode = parser->GetChildNode(node, "vibratorHapticConfig");
@@ -137,105 +138,91 @@ static int32_t ParserVibratorHapticConfig(const struct DeviceResourceNode *node)
     return HDF_SUCCESS;
 }
 
-static int32_t DelayTimeForEffect(struct OsalSem *sem, uint32_t time)
+static uint32_t ProcessHapticTime(struct VibratorHapticData *hapticData)
+{
+    uint32_t duration;
+
+    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
+    if ((hapticData->currentSeqIndex < 0) || (hapticData->currentSeqIndex >= hapticData->seqCount)) {
+        return 0;
+    }
+
+    if (hapticData->currentSeqIndex % 2 == 0) {
+        StartTimeVibrator();
+    } else {
+        StopVibrator();
+    }
+
+    hapticData->currentSeqIndex++;
+    if (hapticData->currentSeqIndex >= hapticData->seqCount) {
+        return 0;
+    }
+
+    duration = hapticData->currentEffectSeq[hapticData->currentSeqIndex] == 0 ?
+        VIBRATOR_MIN_WAIT_TIME : hapticData->currentEffectSeq[hapticData->currentSeqIndex];
+    return duration;
+}
+
+static uint32_t ProcessHapticEffect(struct VibratorHapticData *hapticData)
+{
+    uint32_t effect;
+    uint32_t duration;
+
+    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
+
+    if ((hapticData->currentSeqIndex < 0) || ((hapticData->currentSeqIndex + 1) >= hapticData->seqCount)) {
+        HDF_LOGE("%{public}s: seq index invalid para", __func__);
+        return 0;
+    }
+
+    hapticData->currentSeqIndex++;
+    effect = hapticData->currentEffectSeq[hapticData->currentSeqIndex];
+    SetEffectVibrator(effect);
+
+    hapticData->currentSeqIndex++;
+    if (hapticData->currentSeqIndex >= hapticData->seqCount) {
+        HDF_LOGE("%{public}s: seq index exceed max value", __func__);
+        return 0;
+    }
+
+    duration = hapticData->currentEffectSeq[hapticData->currentSeqIndex] == 0 ?
+        VIBRATOR_MIN_WAIT_TIME : hapticData->currentEffectSeq[hapticData->currentSeqIndex];
+    return duration;
+}
+
+void HapticTimerEntry(uintptr_t para)
 {
     int32_t ret;
-    if (time == 0) {
-        return HDF_SUCCESS;
-    }
-
-    ret = OsalSemWait(sem, time);
-    if (ret == 0) {
-        HDF_LOGD("%s: haptic need break", __func__);
-        return -1;
-    }
-
-    return HDF_SUCCESS;
-}
-
-static int32_t HapticThreadEntry(void *para)
-{
-    int32_t count;
-    int32_t index = 0;
-    uint32_t delaytime;
-    uint32_t effect;
     struct VibratorHapticData *hapticData = NULL;
+    uint32_t duration;
 
-    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(para, HDF_FAILURE);
     hapticData = (struct VibratorHapticData *)para;
-    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData->currentEffectSeq, HDF_FAILURE);
+    CHECK_VIBRATOR_NULL_PTR_RETURN(hapticData);
 
-    count = hapticData->seqCount;
-    if (count <= 1 || count > VIBRATOR_HAPTIC_SEQ_MAX) {
-        HDF_LOGE("%s: count para invalid", __func__);
-        return HDF_ERR_INVALID_PARAM;
+    if (hapticData->effectType == VIBRATOR_TYPE_TIME) {
+        duration = ProcessHapticTime(hapticData);
+        HDF_LOGE("%{public}s:ProcessHapticTime duration[%{public}d]", __func__, duration);
     }
 
-    while (!hapticData->threadExitFlag) {
-        if (index + 1 >= count) {
-            break;
-        }
+    if (hapticData->effectType == VIBRATOR_TYPE_EFFECT) {
+        duration = ProcessHapticEffect(hapticData);
+        HDF_LOGE("%{public}s:ProcessHapticEffect duration[%{public}d]", __func__, duration);
+    }
 
-        delaytime = hapticData->currentEffectSeq[index];
-        if (DelayTimeForEffect(&hapticData->hapticSem, delaytime) < 0) {
-            continue;
-        }
+    duration = ((duration > 0) && (duration < VIBRATOR_MIN_WAIT_TIME)) ? VIBRATOR_MIN_WAIT_TIME : duration;
+    if ((duration > 0) && (OsalTimerSetTimeout(&hapticData->timer, duration) == HDF_SUCCESS)) {
+        HDF_LOGD("%{public}s: modify haptic timer duration[%{public}d]", __func__, duration);
+        return;
+    }
 
-        index++;
-        effect = hapticData->currentEffectSeq[index++];
-        if (hapticData->effectType == VIBRATOR_TYPE_EFFECT) {
-            SetEffectVibrator(effect);
-        } else if (hapticData->effectType == VIBRATOR_TYPE_TIME) {
-            StartTimeVibrator(effect);
+    if (hapticData->timer.realTimer != NULL) {
+        ret = OsalTimerDelete(&hapticData->timer);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%{public}s: delete haptic timer fail!", __func__);
         }
     }
 
-    (void)OsalMutexLock(&hapticData->mutex);
-    hapticData->threadExitFlag = true;
-    (void)OsalMutexUnlock(&hapticData->mutex);
-
-    return HDF_SUCCESS;
-}
-
-int32_t InitVibratorHaptic(struct HdfDeviceObject *device)
-{
-    struct VibratorHapticData *hapticData = NULL;
-    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(device, HDF_FAILURE);
-
-    hapticData = (struct VibratorHapticData *)OsalMemCalloc(sizeof(*hapticData));
-    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_ERR_MALLOC_FAIL);
-    g_vibratorHapticData = hapticData;
-    hapticData->threadExitFlag = true;
-    hapticData->supportPreset = false;
-
-    if (OsalMutexInit(&hapticData->mutex) != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to create thread lock", __func__);
-        goto EXIT;
-    }
-
-    if (OsalSemInit(&hapticData->hapticSem, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to create thread lock", __func__);
-        goto EXIT;
-    }
-
-    // create thread
-    if (OsalThreadCreate(&hapticData->hapticThread, HapticThreadEntry, (void *)hapticData) != HDF_SUCCESS) {
-        HDF_LOGE("%s: create haptic thread fail!", __func__);
-        goto EXIT;
-    }
-    DListHeadInit(&hapticData->effectSeqHead);
-
-    // get haptic hcs
-    if (ParserVibratorHapticConfig(device->property) != HDF_SUCCESS) {
-        hapticData->threadExitFlag = true;
-        HDF_LOGE("%s: parser haptic config fail!", __func__);
-        goto EXIT;
-    }
-
-    return HDF_SUCCESS;
-EXIT:
-    OsalMemFree(hapticData);
-    return HDF_FAILURE;
+    return;
 }
 
 static int32_t GetHapticSeqByEffect(struct VibratorEffectCfg *effectCfg)
@@ -247,52 +234,55 @@ static int32_t GetHapticSeqByEffect(struct VibratorEffectCfg *effectCfg)
     hapticData = GetHapticData();
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
 
+    (void)OsalMutexLock(&hapticData->mutex);
+    hapticData->seqCount = 0;
+    hapticData->currentEffectSeq = NULL;
+    hapticData->currentSeqIndex = 0;
+
     if (effectCfg->cfgMode == VIBRATOR_MODE_ONCE) {
-        (void)OsalMutexLock(&hapticData->mutex);
-        hapticData->duration[VIBRATOR_TIME_DELAY_INDEX] = 0;
+        hapticData->duration[VIBRATOR_TIME_DELAY_INDEX] = VIBRATOR_MIN_WAIT_TIME;
         hapticData->duration[VIBRATOR_TIME_DURATION_INDEX] = effectCfg->duration;
         hapticData->effectType = VIBRATOR_TYPE_TIME;
         hapticData->seqCount = VIBRATOR_TIME_INDEX_BUTT;
-        hapticData->currentEffectSeq = &hapticData->duration[0];
+        hapticData->currentEffectSeq = &hapticData->duration[VIBRATOR_TIME_DELAY_INDEX];
         (void)OsalMutexUnlock(&hapticData->mutex);
-    } else if (effectCfg->cfgMode == VIBRATOR_MODE_PRESET) {
-        if (effectCfg->effect == NULL) {
-            HDF_LOGE("%s: effect para invalid!", __func__);
-            return HDF_FAILURE;
-        }
+        return HDF_SUCCESS;
+    }
 
-        hapticData->seqCount = 0;
-        hapticData->currentEffectSeq = NULL;
+    if ((effectCfg->cfgMode == VIBRATOR_MODE_PRESET) && (effectCfg->effect != NULL)) {
         DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &hapticData->effectSeqHead, struct VibratorEffectNode, node) {
             if (strcmp(effectCfg->effect, pos->effect) == 0 && pos->seq != NULL) {
-                (void)OsalMutexLock(&hapticData->mutex);
                 hapticData->effectType = pos->seq[0];
                 hapticData->seqCount = pos->num - 1;
                 hapticData->currentEffectSeq = &(pos->seq[1]);
-                (void)OsalMutexUnlock(&hapticData->mutex);
                 break;
             }
         }
-        if (hapticData->seqCount <= 0) {
+        if ((hapticData->seqCount <= 1) || (hapticData->seqCount > VIBRATOR_MAX_HAPTIC_SEQ)) {
             HDF_LOGE("%s: not find effect type!", __func__);
-            return HDF_FAILURE;
+            (void)OsalMutexUnlock(&hapticData->mutex);
+            return HDF_ERR_INVALID_PARAM;
         }
+        (void)OsalMutexUnlock(&hapticData->mutex);
+        return HDF_SUCCESS;
     }
 
-    return HDF_SUCCESS;
+    HDF_LOGE("%s: not support effect type!", __func__);
+    (void)OsalMutexUnlock(&hapticData->mutex);
+    return HDF_ERR_NOT_SUPPORT;
 }
 
 int32_t StartHaptic(struct VibratorEffectCfg *effectCfg)
 {
     int32_t ret;
-    struct OsalThreadParam threadCfg;
+    uint32_t duration;
     struct VibratorHapticData *hapticData = GetHapticData();
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(effectCfg, HDF_FAILURE);
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
 
-    if (!hapticData->threadExitFlag) {
-        OsalSemPost(&hapticData->hapticSem);
-        return HDF_SUCCESS;
+    if ((effectCfg->cfgMode == VIBRATOR_MODE_PRESET) && (!hapticData->supportHaptic)) {
+        HDF_LOGE("%{public}s: vibrator no support haptic!", __func__);
+        return HDF_ERR_NOT_SUPPORT;
     }
 
     ret = GetHapticSeqByEffect(effectCfg);
@@ -301,17 +291,17 @@ int32_t StartHaptic(struct VibratorEffectCfg *effectCfg)
         return ret;
     }
 
-    (void)OsalMutexLock(&hapticData->mutex);
-    hapticData->threadExitFlag = false;
-    (void)OsalMutexUnlock(&hapticData->mutex);
+    duration = hapticData->currentEffectSeq[0] < VIBRATOR_MIN_WAIT_TIME ?
+        VIBRATOR_MIN_WAIT_TIME : hapticData->currentEffectSeq[0];
 
-    threadCfg.name = "vibrator_haptic";
-    threadCfg.priority = OSAL_THREAD_PRI_DEFAULT;
-    threadCfg.stackSize = VIBRATOR_HAPTIC_STACK_SIZE;
-    ret = OsalThreadStart(&hapticData->hapticThread, &threadCfg);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: start haptic thread fail!", __func__);
-        return ret;
+    if (OsalTimerCreate(&hapticData->timer, duration, HapticTimerEntry, (uintptr_t)hapticData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: create vibrator timer fail!", __func__);
+        return HDF_FAILURE;
+    }
+
+    if (OsalTimerStartLoop(&hapticData->timer) != HDF_SUCCESS) {
+        HDF_LOGE("%s: start vibrator timer fail!", __func__);
+        return HDF_FAILURE;
     }
 
     return HDF_SUCCESS;
@@ -319,23 +309,56 @@ int32_t StartHaptic(struct VibratorEffectCfg *effectCfg)
 
 int32_t StopHaptic()
 {
+    int32_t ret;
     struct VibratorHapticData *hapticData = GetHapticData();
+
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
 
-    if (hapticData->threadExitFlag) {
-        return HDF_SUCCESS;
+    if (hapticData->timer.realTimer != NULL) {
+        HDF_LOGE("%s: delete vibrator Timer!", __func__);
+        (void)OsalMutexLock(&hapticData->mutex);
+        ret = OsalTimerDelete(&hapticData->timer);
+        (void)OsalMutexUnlock(&hapticData->mutex);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: delete vibrator timer fail!", __func__);
+            return ret;
+        }
     }
 
-    (void)OsalMutexLock(&hapticData->mutex);
-    hapticData->threadExitFlag = true;
-    (void)OsalMutexUnlock(&hapticData->mutex);
-    OsalSemPost(&hapticData->hapticSem);
     StopVibrator();
-
     return HDF_SUCCESS;
 }
 
-static void ReleaseHapticConfig()
+int32_t CreateVibratorHaptic(struct HdfDeviceObject *device)
+{
+    struct VibratorHapticData *hapticData = NULL;
+    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(device, HDF_FAILURE);
+
+    hapticData = (struct VibratorHapticData *)OsalMemCalloc(sizeof(*hapticData));
+    CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_ERR_MALLOC_FAIL);
+    g_vibratorHapticData = hapticData;
+    hapticData->supportHaptic = false;
+
+    if (OsalMutexInit(&hapticData->mutex) != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail to init mutex", __func__);
+        goto EXIT;
+    }
+
+    DListHeadInit(&hapticData->effectSeqHead);
+
+    // get haptic hcs
+    if (ParserVibratorHapticConfig(device->property) != HDF_SUCCESS) {
+        HDF_LOGE("%s: parser haptic config fail!", __func__);
+        goto EXIT;
+    }
+
+    return HDF_SUCCESS;
+EXIT:
+    OsalMemFree(hapticData);
+    return HDF_FAILURE;
+}
+
+static void FreeHapticConfig()
 {
     struct VibratorHapticData *hapticData = GetHapticData();
     struct VibratorEffectNode *pos = NULL;
@@ -358,18 +381,16 @@ static void ReleaseHapticConfig()
     (void)OsalMutexUnlock(&hapticData->mutex);
 }
 
-int32_t DestroyHaptic()
+int32_t DestroyVibratorHaptic()
 {
     struct VibratorHapticData *hapticData = GetHapticData();
-
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
-    if (hapticData->supportPreset) {
-        ReleaseHapticConfig();
+
+    if (hapticData->supportHaptic) {
+        FreeHapticConfig();
     }
 
     (void)OsalMutexDestroy(&hapticData->mutex);
-    (void)OsalSemDestroy(&hapticData->hapticSem);
-    (void)OsalThreadDestroy(&hapticData->hapticThread);
 
     return HDF_SUCCESS;
 }

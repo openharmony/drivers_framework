@@ -12,9 +12,11 @@
 #include "hdf_device_desc.h"
 #include "hdf_dlist.h"
 #include "osal_mutex.h"
-#include "osal_sem.h"
-#include "osal_thread.h"
+#include "osal_timer.h"
 #include "vibrator_driver_type.h"
+
+#define VIBRATOR_MAX_HAPTIC_SEQ    1024
+#define VIBRATOR_MIN_WAIT_TIME     50 // unit:ms
 
 enum VibratorEffectType {
     VIBRATOR_TYPE_EFFECT    = 0, // Preset effect in device
@@ -41,21 +43,20 @@ struct VibratorEffectCfg {
 };
 
 struct VibratorHapticData {
-    bool supportPreset;
+    bool supportHaptic;
     struct DListHead effectSeqHead;
     struct OsalMutex mutex;
-    struct OsalSem hapticSem;
-    struct OsalThread hapticThread;
-    bool threadExitFlag;
+    OsalTimer timer;
     uint32_t duration[VIBRATOR_TIME_INDEX_BUTT];
     int32_t effectType;
     int32_t seqCount;
     uint32_t *currentEffectSeq;
+    int32_t currentSeqIndex;
 };
 
-int32_t InitVibratorHaptic(struct HdfDeviceObject *device);
+int32_t CreateVibratorHaptic(struct HdfDeviceObject *device);
 int32_t StartHaptic(struct VibratorEffectCfg *effectCfg);
 int32_t StopHaptic(void);
-int32_t DestroyHaptic(void);
+int32_t DestroyVibratorHaptic(void);
 
 #endif /* VIBRATOR_HAPTIC_H */

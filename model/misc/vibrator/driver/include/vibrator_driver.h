@@ -10,7 +10,6 @@
 #define VIBRATOR_DRIVER_H
 
 #include "osal_mutex.h"
-#include "osal_timer.h"
 #include "hdf_device_desc.h"
 #include "hdf_workqueue.h"
 #include "vibrator_driver_type.h"
@@ -33,16 +32,15 @@ struct VibratorDriverData {
     struct HdfDeviceObject *device;
     HdfWorkQueue workQueue;
     HdfWork work;
-    OsalTimer timer;
     struct OsalMutex mutex;
     enum VibratorConfigMode mode;
     enum VibratorState state;
     struct VibratorOps ops;
 };
 
-int32_t StartTimeVibrator(uint32_t time);
-int32_t StopVibrator(void);
-int32_t SetEffectVibrator(uint32_t type);
+void StartTimeVibrator(void);
+void StopVibrator(void);
+void SetEffectVibrator(uint32_t type);
 int32_t RegisterVibrator(struct VibratorOps *ops);
 
 #endif /* VIBRATOR_DRIVER_H */
