@@ -53,7 +53,7 @@ static int32_t HdfDevEventGrowReadBuffer(struct HdfWriteReadBuf *buffer)
         return HDF_DEV_ERR_NO_MEMORY;
     }
 
-    OsalMemFree((void*)buffer->readBuffer);
+    OsalMemFree((void*)(uintptr_t)buffer->readBuffer);
     buffer->readBuffer = (uintptr_t)newBuff;
     return HDF_SUCCESS;
 }
@@ -171,7 +171,7 @@ static int32_t HdfDevEventReadAndDispatch(struct HdfDevListenerThread *thread, i
     ret = HdfDevEventDispatchLocked(thread, adapter, &bwr);
 
 finish:
-    OsalMemFree((void*)bwr.readBuffer);
+    OsalMemFree((void*)(uintptr_t)bwr.readBuffer);
     OsalMutexUnlock(&thread->mutex);
     return ret;
 }

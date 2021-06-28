@@ -228,7 +228,7 @@ static int HdfVNodeAdapterServCall(const struct HdfVNodeAdapterClient *client, u
     (void)HdfSbufWriteUint64(reply, (uintptr_t)&client->ioServiceClient);
     ret = client->adapter->ioService.dispatcher->Dispatch(client->adapter->ioService.target,
         bwr.cmdCode, data, reply);
-    if (bwr.readSize != 0 && HdfSbufCopyToUser(reply, (void*)bwr.readBuffer, bwr.readSize) != HDF_SUCCESS) {
+    if (bwr.readSize != 0 && HdfSbufCopyToUser(reply, (void*)(uintptr_t)bwr.readBuffer, bwr.readSize) != HDF_SUCCESS) {
         HdfSBufRecycle(data);
         HdfSBufRecycle(reply);
         return HDF_ERR_IO;
@@ -277,7 +277,7 @@ static int HdfVNodeAdapterReadDevEvent(struct HdfVNodeAdapterClient *client, uns
         bwr.readSize = eventSize;
         ret = HDF_DEV_ERR_NORANGE;
     } else {
-        if (HdfSbufCopyToUser(event->data, (void *)bwr.readBuffer, bwr.readSize) != HDF_SUCCESS) {
+        if (HdfSbufCopyToUser(event->data, (void *)(uintptr_t)bwr.readBuffer, bwr.readSize) != HDF_SUCCESS) {
             OsalMutexUnlock(&client->mutex);
             return HDF_ERR_IO;
         }
