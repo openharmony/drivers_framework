@@ -311,6 +311,7 @@ static void OsaTimerTest(void)
     HDF_LOGI("[OSAL_UT_TEST]%s end", __func__);
 }
 
+#define HDF_ONCE_TIMER_DEL_TIME 10
 static void OsaTimerTestStop(void)
 {
     int32_t ret;
@@ -319,6 +320,18 @@ static void OsaTimerTestStop(void)
     ret = OsalTimerDelete(&g_testTimerLoop2);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TIMER_STOP_CHECK);
     g_timerLoop2RunFlag = false;
+
+    ret = OsalTimerDelete(&g_testTimerOnce);
+    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TIMER_STOP_CHECK);
+
+    ret = OsalTimerCreate(&g_testTimerOnce, g_timerPeriod3, TimerOnceTest, (uintptr_t)&g_timerPeriod3);
+    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TIMER_CREATE_ONCE);
+
+    OsalTimerStartOnce(&g_testTimerOnce);
+    HDF_LOGI("[OSAL_UT_TEST]%s OsalTimerStartOnce", __func__);
+    OsalMSleep(HDF_ONCE_TIMER_DEL_TIME);
+    ret = OsalTimerDelete(&g_testTimerOnce);
+    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TIMER_STOP_CHECK);
 
     HDF_LOGI("[OSAL_UT_TEST]%s end", __func__);
 }
@@ -806,7 +819,7 @@ int OsaTestEnd(void)
 {
     OsalTimerDelete(&g_testTimerLoop1);
     OsalTimerDelete(&g_testTimerLoop2);
-    OsalTimerDelete(&g_testTimerLoop1);
+    OsalTimerDelete(&g_testTimerOnce);
     OsalStopThread();
     g_testEndFlag = true;
     OsalThreadDestroy(&thread1);
