@@ -12,7 +12,6 @@
 #include "hdf_device_desc.h"
 #include "osal_math.h"
 #include "osal_mem.h"
-#include "osal_time.h"
 #include "sensor_accel_driver.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
@@ -20,20 +19,17 @@
 
 #define HDF_LOG_TAG    sensor_accel_driver_c
 
+#define HDF_ACCEL_WORK_QUEUE_NAME    "hdf_accel_work_queue"
+
 static struct AccelDetectIfList g_accelDetectIfList[] = {
     {ACCEL_CHIP_NAME_BMI160, DetectAccelBim160Chip},
 };
 
+static struct AccelDrvData *g_accelDrvData = NULL;
+
 static struct AccelDrvData *AccelGetDrvData(void)
 {
-    static struct AccelDrvData accelDrvData = {
-        .threadStatus = SENSOR_THREAD_NONE,
-        .initStatus = false,
-        .detectFlag = false,
-        .interval = ACC_DEFAULT_SAMPLING_200_MS,
-    };
-
-    return &accelDrvData;
+    return g_accelDrvData;
 }
 
 static struct SensorRegCfgGroupNode *g_regCfgGroup[SENSOR_GROUP_MAX] = { NULL };
@@ -45,61 +41,62 @@ int32_t RegisterAccelChipOps(const struct AccelOpsCall *ops)
     CHECK_NULL_PTR_RETURN_VALUE(ops, HDF_ERR_INVALID_PARAM);
 
     drvData = AccelGetDrvData();
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     drvData->ops.Init = ops->Init;
     drvData->ops.ReadData = ops->ReadData;
     return HDF_SUCCESS;
 }
 
-static int32_t ReadAccelDataThreadWorker(void *arg)
+static void AccelDataWorkEntry(void *arg)
 {
-    (void)arg;
-    int64_t interval;
-    struct AccelDrvData *drvData = NULL;
+    int32_t ret;
+    struct AccelDrvData *drvData = (struct AccelDrvData *)arg;
+    CHECK_NULL_PTR_RETURN(drvData);
+    CHECK_NULL_PTR_RETURN(drvData->ops.ReadData);
 
-    drvData = AccelGetDrvData();
-    drvData->threadStatus = SENSOR_THREAD_START;
-    while (true) {
-        if (drvData->threadStatus == SENSOR_THREAD_RUNNING) {
-            if (drvData->ops.ReadData != NULL) {
-                (void)drvData->ops.ReadData(drvData->accelCfg);
-            }
-
-            interval = OsalDivS64(drvData->interval, (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT));
-            OsalMSleep(interval);
-        } else if (drvData->threadStatus == SENSOR_THREAD_STOPPING) {
-            drvData->threadStatus = SENSOR_THREAD_STOPPED;
-            break;
-        } else {
-            OsalMSleep(ACC_DEFAULT_SAMPLING_200_MS / SENSOR_CONVERT_UNIT / SENSOR_CONVERT_UNIT);
-        }
-
-        if ((!drvData->initStatus) || (drvData->interval < 0) || drvData->threadStatus != SENSOR_THREAD_RUNNING) {
-            continue;
-        }
+    ret = drvData->ops.ReadData(drvData->accelCfg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: accel read data failed", __func__);
+        return;
     }
-
-    HDF_LOGD("%s: accel thread have exited", __func__);
-    return HDF_SUCCESS;
 }
 
-static int32_t InitAccelConfig(void)
+static void AccelTimerEntry(uintptr_t arg)
+{
+    int64_t interval;
+    int32_t ret;
+    struct AccelDrvData *drvData = (struct AccelDrvData *)arg;
+    CHECK_NULL_PTR_RETURN(drvData);
+
+    if (!HdfAddWork(&drvData->accelWorkQueue, &drvData->accelWork)) {
+        HDF_LOGE("%s: accel add work queue failed", __func__);
+    }
+
+    interval = OsalDivS64(drvData->interval, (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT));
+    interval = (interval < SENSOR_TIMER_MIN_TIME) ? SENSOR_TIMER_MIN_TIME : interval;
+    ret = OsalTimerSetTimeout(&drvData->accelTimer, interval);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: accel modify time failed", __func__);
+    }
+}
+
+static int32_t InitAccelData(void)
 {
     struct AccelDrvData *drvData = AccelGetDrvData();
     int32_t ret;
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
     if (drvData->initStatus) {
         return HDF_SUCCESS;
     }
 
-    if (drvData->threadStatus != SENSOR_THREAD_NONE && drvData->threadStatus != SENSOR_THREAD_DESTROY) {
-        HDF_LOGE("%s: accel thread have created", __func__);
-        return HDF_SUCCESS;
+    if (HdfWorkQueueInit(&drvData->accelWorkQueue, HDF_ACCEL_WORK_QUEUE_NAME) != HDF_SUCCESS) {
+        HDF_LOGE("%s: accel init work queue failed", __func__);
+        return HDF_FAILURE;
     }
 
-    ret = CreateSensorThread(&drvData->thread, ReadAccelDataThreadWorker, "hdf_sensor_accel", drvData);
-    if (ret != HDF_SUCCESS) {
+    if (HdfWorkInit(&drvData->accelWork, AccelDataWorkEntry, drvData) != HDF_SUCCESS) {
         HDF_LOGE("%s: accel create thread failed", __func__);
-        drvData->threadStatus = SENSOR_THREAD_STOPPING;
         return HDF_FAILURE;
     }
 
@@ -108,17 +105,12 @@ static int32_t InitAccelConfig(void)
     ret = drvData->ops.Init(drvData->accelCfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: accel create thread failed", __func__);
-        drvData->threadStatus = SENSOR_THREAD_STOPPING;
         return HDF_FAILURE;
     }
+
+    drvData->interval = SENSOR_TIMER_MIN_TIME;
     drvData->initStatus = true;
-
-    return HDF_SUCCESS;
-}
-
-static int32_t SetAccelInfo(struct SensorBasicInfo *info)
-{
-    (void)info;
+    drvData->enable = false;
 
     return HDF_SUCCESS;
 }
@@ -128,14 +120,32 @@ static int32_t SetAccelEnable(void)
     int32_t ret;
     struct AccelDrvData *drvData = AccelGetDrvData();
 
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(drvData->accelCfg, HDF_ERR_INVALID_PARAM);
+
+    if (drvData->enable) {
+        HDF_LOGE("%s: accel sensor is enabled", __func__);
+        return HDF_SUCCESS;
+    }
+
     ret = SetSensorRegCfgArray(&drvData->accelCfg->busCfg, drvData->accelCfg->regCfgGroup[SENSOR_ENABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: accel sensor enable config failed", __func__);
-        return HDF_FAILURE;
+        return ret;
     }
 
-    drvData->threadStatus = SENSOR_THREAD_RUNNING;
+    ret = OsalTimerCreate(&drvData->accelTimer, SENSOR_TIMER_MIN_TIME, AccelTimerEntry, (uintptr_t)drvData);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: accel create timer failed[%d]", __func__, ret);
+        return ret;
+    }
+
+    ret = OsalTimerStartLoop(&drvData->accelTimer);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: accel start timer failed[%d]", __func__, ret);
+        return ret;
+    }
+    drvData->enable = true;
 
     return HDF_SUCCESS;
 }
@@ -145,16 +155,26 @@ static int32_t SetAccelDisable(void)
     int32_t ret;
     struct AccelDrvData *drvData = AccelGetDrvData();
 
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(drvData->accelCfg, HDF_ERR_INVALID_PARAM);
+
+    if (!drvData->enable) {
+        HDF_LOGE("%s: accel sensor had disable", __func__);
+        return HDF_SUCCESS;
+    }
 
     ret = SetSensorRegCfgArray(&drvData->accelCfg->busCfg, drvData->accelCfg->regCfgGroup[SENSOR_DISABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: accel sensor disable config failed", __func__);
-        return HDF_FAILURE;
+        return ret;
     }
 
-    drvData->threadStatus = SENSOR_THREAD_STOPPED;
-
+    ret = OsalTimerDelete(&drvData->accelTimer);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: accel delete timer failed", __func__);
+        return ret;
+    }
+    drvData->enable = false;
     return HDF_SUCCESS;
 }
 
@@ -165,6 +185,8 @@ static int32_t SetAccelBatch(int64_t samplingInterval, int64_t interval)
     struct AccelDrvData *drvData = NULL;
 
     drvData = AccelGetDrvData();
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+
     drvData->interval = samplingInterval;
 
     return HDF_SUCCESS;
@@ -196,12 +218,16 @@ int32_t BindAccelDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
 
-    static struct IDeviceIoService service = {
-        .object = {0},
-        .Dispatch = DispatchAccel,
-    };
-    device->service = &service;
+    struct AccelDrvData *drvData = (struct AccelDrvData *)OsalMemCalloc(sizeof(*drvData));
+    if (drvData == NULL) {
+        HDF_LOGE("%s: malloc accel drv data fail!", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
+    drvData->ioService.Dispatch = DispatchAccel;
+    drvData->device = device;
+    device->service = &drvData->ioService;
+    g_accelDrvData = drvData;
     return HDF_SUCCESS;
 }
 
@@ -209,7 +235,8 @@ static int32_t InitAccelOps(struct SensorDeviceInfo *deviceInfo)
 {
     struct AccelDrvData *drvData = AccelGetDrvData();
 
-    deviceInfo->ops.GetInfo = SetAccelInfo;
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+
     deviceInfo->ops.Enable = SetAccelEnable;
     deviceInfo->ops.Disable = SetAccelDisable;
     deviceInfo->ops.SetBatch = SetAccelBatch;
@@ -222,9 +249,6 @@ static int32_t InitAccelOps(struct SensorDeviceInfo *deviceInfo)
         return HDF_FAILURE;
     }
 
-    drvData->accelCfg->sensorInfo.sensorTypeId = SENSOR_TAG_ACCELEROMETER;
-    drvData->accelCfg->sensorInfo.sensorId = SENSOR_TAG_ACCELEROMETER;
-
     return HDF_SUCCESS;
 }
 
@@ -232,7 +256,7 @@ static int32_t InitAccelAfterConfig(void)
 {
     struct SensorDeviceInfo deviceInfo;
 
-    if (InitAccelConfig() != HDF_SUCCESS) {
+    if (InitAccelData() != HDF_SUCCESS) {
         HDF_LOGE("%s: init accel config failed", __func__);
         return HDF_FAILURE;
     }
@@ -256,6 +280,8 @@ static int32_t DetectAccelChip(void)
     int32_t ret;
     int32_t loop;
     struct AccelDrvData *drvData = AccelGetDrvData();
+
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(drvData->accelCfg, HDF_ERR_INVALID_PARAM);
 
     num = sizeof(g_accelDetectIfList) / sizeof(g_accelDetectIfList[0]);
@@ -264,29 +290,26 @@ static int32_t DetectAccelChip(void)
             ret = g_accelDetectIfList[loop].DetectChip(drvData->accelCfg);
             if (ret == HDF_SUCCESS) {
                 drvData->detectFlag = true;
-                break;
+                return HDF_SUCCESS;
             }
         }
     }
 
-    if (loop == num) {
-        HDF_LOGE("%s: detect accel device failed", __func__);
-        drvData->detectFlag = false;
-        return HDF_FAILURE;
-    }
-    return HDF_SUCCESS;
+    HDF_LOGE("%s: detect accel device failed", __func__);
+    drvData->detectFlag = false;
+    return HDF_FAILURE;
 }
 
 int32_t InitAccelDriver(struct HdfDeviceObject *device)
 {
-    struct AccelDrvData *drvData = AccelGetDrvData();
+    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
+    struct AccelDrvData *drvData = (struct AccelDrvData *)device->service;
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
     if (drvData->detectFlag) {
         HDF_LOGE("%s: accel sensor have detected", __func__);
         return HDF_SUCCESS;
     }
-
-    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
 
     drvData->accelCfg = (struct SensorCfgData *)OsalMemCalloc(sizeof(*drvData->accelCfg));
     if (drvData->accelCfg == NULL) {
@@ -322,8 +345,7 @@ int32_t InitAccelDriver(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 
 INIT_EXIT:
-    DestroySensorThread(&drvData->thread, &drvData->threadStatus);
-    (void)DeleteSensorDevice(SENSOR_TAG_ACCELEROMETER);
+    (void)DeleteSensorDevice(&drvData->accelCfg->sensorInfo);
 REG_CONFIG_EXIT:
     ReleaseSensorAllRegConfig(drvData->accelCfg);
     (void)ReleaseSensorBusHandle(&drvData->accelCfg->busCfg);
@@ -339,12 +361,12 @@ BASE_CONFIG_EXIT:
 
 void ReleaseAccelDriver(struct HdfDeviceObject *device)
 {
-    (void)device;
-    struct AccelDrvData *drvData = NULL;
+    CHECK_NULL_PTR_RETURN(device);
 
-    drvData = AccelGetDrvData();
-    (void)DestroySensorThread(&drvData->thread, &drvData->threadStatus);
-    (void)DeleteSensorDevice(SENSOR_TAG_ACCELEROMETER);
+    struct AccelDrvData *drvData = (struct AccelDrvData *)device->service;
+    CHECK_NULL_PTR_RETURN(drvData);
+
+    (void)DeleteSensorDevice(&drvData->accelCfg->sensorInfo);
     drvData->detectFlag = false;
 
     if (drvData->accelCfg != NULL) {

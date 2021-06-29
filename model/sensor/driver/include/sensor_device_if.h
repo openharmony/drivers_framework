@@ -12,7 +12,6 @@
 #include "sensor_device_type.h"
 
 struct SensorOps {
-    int32_t (*GetInfo)(struct SensorBasicInfo *sensorInfo);
     int32_t (*Enable)(void);
     int32_t (*Disable)(void);
     int32_t (*SetBatch)(int64_t samplingInterval, int64_t reportInterval);
@@ -26,7 +25,7 @@ struct SensorDeviceInfo {
 };
 
 int32_t AddSensorDevice(const struct SensorDeviceInfo *deviceInfo);
-int32_t DeleteSensorDevice(int32_t sensorId);
+int32_t DeleteSensorDevice(const struct SensorBasicInfo *sensorBaseInfo);
 int32_t ReportSensorEvent(const struct SensorReportEvent *events);
 
 #endif /* SENSOR_DEVICE_IF_H */
