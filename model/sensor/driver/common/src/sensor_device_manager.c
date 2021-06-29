@@ -28,63 +28,63 @@ static struct SensorDevMgrData *GetSensorDeviceManager(void)
 
 int32_t AddSensorDevice(const struct SensorDeviceInfo *deviceInfo)
 {
-    bool existSensor = false;
     struct SensorDevInfoNode *pos = NULL;
-    struct SensorDevInfoNode *tmp = NULL;
     struct SensorDevInfoNode *devInfoNode = NULL;
     struct SensorDevMgrData *manager = GetSensorDeviceManager();
 
     CHECK_NULL_PTR_RETURN_VALUE(deviceInfo, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_PARAM);
 
-    (void)OsalMutexLock(&manager->mutex);
-    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
-        if (deviceInfo->sensorInfo.sensorId == pos->devInfo.sensorInfo.sensorId) {
-            HDF_LOGE("%s: sensor chip[0x%x] had existed", __func__, deviceInfo->sensorInfo.sensorId);
-            existSensor = true;
-            break;
+    DLIST_FOR_EACH_ENTRY(pos, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
+        if ((deviceInfo->sensorInfo.sensorId == pos->devInfo.sensorInfo.sensorId) &&
+            (strcmp(deviceInfo->sensorInfo.sensorName, pos->devInfo.sensorInfo.sensorName) == 0)) {
+            HDF_LOGE("%{public}s: sensor id[%{public}d] had existed", __func__, deviceInfo->sensorInfo.sensorId);
+            return HDF_FAILURE;
         }
     }
 
-    if (!existSensor) {
-        devInfoNode = (struct SensorDevInfoNode*)OsalMemCalloc(sizeof(*devInfoNode));
-        if (devInfoNode == NULL) {
-            (void)OsalMutexUnlock(&manager->mutex);
-            return HDF_FAILURE;
-        }
-        if (memcpy_s(&devInfoNode->devInfo, sizeof(devInfoNode->devInfo),
-            (void *)deviceInfo, sizeof(*deviceInfo)) != EOK) {
-            HDF_LOGE("%s: copy sensor info failed", __func__);
-            OsalMemFree(devInfoNode);
-            (void)OsalMutexUnlock(&manager->mutex);
-            return HDF_FAILURE;
-        }
-        DListInsertTail(&devInfoNode->node, &manager->sensorDevInfoHead);
-        HDF_LOGI("%s: register sensor device name[%s] success", __func__, deviceInfo->sensorInfo.sensorName);
+    (void)OsalMutexLock(&manager->mutex);
+    devInfoNode = (struct SensorDevInfoNode*)OsalMemCalloc(sizeof(*devInfoNode));
+    if (devInfoNode == NULL) {
+        (void)OsalMutexUnlock(&manager->mutex);
+        return HDF_FAILURE;
     }
+    if (memcpy_s(&devInfoNode->devInfo, sizeof(devInfoNode->devInfo),
+        (void *)deviceInfo, sizeof(*deviceInfo)) != EOK) {
+        HDF_LOGE("%{public}s: copy sensor info failed", __func__);
+        OsalMemFree(devInfoNode);
+        (void)OsalMutexUnlock(&manager->mutex);
+        return HDF_FAILURE;
+    }
+    DListInsertTail(&devInfoNode->node, &manager->sensorDevInfoHead);
     (void)OsalMutexUnlock(&manager->mutex);
+    HDF_LOGI("%{public}s: register sensor name[%{private}s] success", __func__, deviceInfo->sensorInfo.sensorName);
 
     return HDF_SUCCESS;
 }
 
-int32_t DeleteSensorDevice(int32_t sensorId)
+int32_t DeleteSensorDevice(const struct SensorBasicInfo *sensorBaseInfo)
 {
     struct SensorDevInfoNode *pos = NULL;
     struct SensorDevInfoNode *tmp = NULL;
     struct SensorDevMgrData *manager = GetSensorDeviceManager();
 
+    CHECK_NULL_PTR_RETURN_VALUE(sensorBaseInfo, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_PARAM);
+
     (void)OsalMutexLock(&manager->mutex);
     DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
-        if (sensorId == pos->devInfo.sensorInfo.sensorId) {
+        if ((sensorBaseInfo->sensorId == pos->devInfo.sensorInfo.sensorId) &&
+            (strcmp(sensorBaseInfo->sensorName, pos->devInfo.sensorInfo.sensorName) == 0)) {
             DListRemove(&pos->node);
             OsalMemFree(pos);
-            break;
+            (void)OsalMutexUnlock(&manager->mutex);
+            return HDF_SUCCESS;
         }
     }
     (void)OsalMutexUnlock(&manager->mutex);
-
-    return HDF_SUCCESS;
+    HDF_LOGE("%{public}s: delete sensor id invalid para", __func__);
+    return HDF_FAILURE;
 }
 
 int32_t ReportSensorEvent(const struct SensorReportEvent *events)
@@ -132,7 +132,6 @@ static int32_t GetAllSensorInfo(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     (void)data;
     struct SensorDevInfoNode *pos = NULL;
-    struct SensorDevInfoNode *tmp = NULL;
     struct SensorBasicInfo *sensorInfo = NULL;
     struct SensorDevMgrData *manager = GetSensorDeviceManager();
     int32_t count = 0;
@@ -140,14 +139,12 @@ static int32_t GetAllSensorInfo(struct HdfSBuf *data, struct HdfSBuf *reply)
     CHECK_NULL_PTR_RETURN_VALUE(reply, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_PARAM);
 
-    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
+    DLIST_FOR_EACH_ENTRY(pos, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
         sensorInfo = &(pos->devInfo.sensorInfo);
         if (!HdfSbufWriteBuffer(reply, sensorInfo, sizeof(*sensorInfo))) {
-
             HDF_LOGE("%s: write sbuf failed", __func__);
             return HDF_FAILURE;
         }
-        pos->devInfo.ops.GetInfo(NULL);
 
         count++;
         if ((count + 1) * sizeof(*sensorInfo) > HDF_SENSOR_INFO_MAX_BUF) {
@@ -240,25 +237,25 @@ static struct SensorCmdHandleList g_sensorCmdHandle[] = {
 
 static int32_t DispatchCmdHandle(struct SensorDeviceInfo *deviceInfo, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    int32_t methodCmd;
+    int32_t opsCmd;
     int32_t loop;
     int32_t count;
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
-    if (!HdfSbufReadInt32(data, &methodCmd)) {
-        HDF_LOGE("%s: sbuf read methodCmd failed", __func__);
+    if (!HdfSbufReadInt32(data, &opsCmd)) {
+        HDF_LOGE("%s: sbuf read opsCmd failed", __func__);
         return HDF_FAILURE;
     }
 
-    if (methodCmd >= SENSOR_OPS_CMD_BUTT || methodCmd <= 0) {
-        HDF_LOGE("%s: invalid cmd = %d", __func__, methodCmd);
+    if ((opsCmd >= SENSOR_OPS_CMD_BUTT) || (opsCmd < SENSOR_OPS_CMD_ENABLE)) {
+        HDF_LOGE("%s: invalid cmd = %d", __func__, opsCmd);
         return HDF_FAILURE;
     }
 
     count = sizeof(g_sensorCmdHandle) / sizeof(g_sensorCmdHandle[0]);
     for (loop = 0; loop < count; ++loop) {
-        if ((methodCmd == g_sensorCmdHandle[loop].cmd) && (g_sensorCmdHandle[loop].func != NULL)) {
+        if ((opsCmd == g_sensorCmdHandle[loop].cmd) && (g_sensorCmdHandle[loop].func != NULL)) {
             return g_sensorCmdHandle[loop].func(deviceInfo, data, reply);
         }
     }
@@ -272,29 +269,38 @@ static int32_t DispatchSensor(struct HdfDeviceIoClient *client,
     struct SensorDevMgrData *manager = GetSensorDeviceManager();
     struct SensorDevInfoNode *pos = NULL;
     int32_t sensorId;
-    int32_t ret = HDF_FAILURE;
+    int32_t ret;
 
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(client, HDF_ERR_INVALID_PARAM);
+
+    if (cmd >= SENSOR_CMD_END) {
+        HDF_LOGE("%s: sensor cmd invalid para", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
 
     if (cmd == SENSOR_CMD_GET_INFO_LIST) {
         return GetAllSensorInfo(data, reply);
     }
 
     (void)OsalMutexLock(&manager->mutex);
+    if (!HdfSbufReadInt32(data, &sensorId)) {
+        HDF_LOGE("%s: sbuf read sensorId failed", __func__);
+        (void)OsalMutexUnlock(&manager->mutex);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
     DLIST_FOR_EACH_ENTRY(pos, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
-        if (!HdfSbufReadInt32(data, &sensorId)) {
-            HDF_LOGE("%s: sbuf read sensorId failed", __func__);
-            continue;
-        }
         if (sensorId == pos->devInfo.sensorInfo.sensorId) {
             ret = DispatchCmdHandle(&pos->devInfo, data, reply);
-            break;
+            (void)OsalMutexUnlock(&manager->mutex);
+            return ret;
         }
     }
     (void)OsalMutexUnlock(&manager->mutex);
 
-    return ret;
+    HDF_LOGE("%s: not find sensor[%d] handle function", __func__, sensorId);
+    return HDF_FAILURE;
 }
 
 int32_t BindSensorDevManager(struct HdfDeviceObject *device)

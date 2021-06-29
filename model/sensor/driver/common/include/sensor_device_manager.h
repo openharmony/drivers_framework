@@ -9,9 +9,12 @@
 #ifndef SENSOR_DEVICE_MANAGER_H
 #define SENSOR_DEVICE_MANAGER_H
 
+#include "hdf_workqueue.h"
 #include "osal_mutex.h"
 #include "sensor_device_type.h"
 #include "sensor_device_if.h"
+
+#define HDF_SENSOR_EVENT_QUEUE_NAME    "hdf_sensor_event_queue"
 
 enum SensorCmd {
     SENSOR_CMD_GET_INFO_LIST = 0,
@@ -19,11 +22,11 @@ enum SensorCmd {
     SENSOR_CMD_END,
 };
 enum SensorOpsCmd {
-    SENSOR_OPS_CMD_ENABLE        = 1,
-    SENSOR_OPS_CMD_DISABLE       = 2,
-    SENSOR_OPS_CMD_SET_BATCH     = 3,
-    SENSOR_OPS_CMD_SET_MODE      = 4,
-    SENSOR_OPS_CMD_SET_OPTION    = 5,
+    SENSOR_OPS_CMD_ENABLE        = 0,
+    SENSOR_OPS_CMD_DISABLE       = 1,
+    SENSOR_OPS_CMD_SET_BATCH     = 2,
+    SENSOR_OPS_CMD_SET_MODE      = 3,
+    SENSOR_OPS_CMD_SET_OPTION    = 4,
     SENSOR_OPS_CMD_BUTT,
 };
 

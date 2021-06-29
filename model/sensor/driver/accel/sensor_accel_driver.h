@@ -9,7 +9,9 @@
 #ifndef SENSOR_ACCEL_DRIVER_H
 #define SENSOR_ACCEL_DRIVER_H
 
-#include "osal_thread.h"
+#include "hdf_workqueue.h"
+#include "osal_mutex.h"
+#include "osal_timer.h"
 #include "sensor_config_parser.h"
 #include "sensor_platform_if.h"
 
@@ -50,12 +52,16 @@ struct AccelOpsCall {
 };
 
 struct AccelDrvData {
+    struct IDeviceIoService ioService;
+    struct HdfDeviceObject *device;
+    HdfWorkQueue accelWorkQueue;
+    HdfWork accelWork;
+    OsalTimer accelTimer;
     bool detectFlag;
-    uint8_t threadStatus;
-    uint8_t initStatus;
+    bool enable;
+    bool initStatus;
     int64_t interval;
     struct SensorCfgData *accelCfg;
-    struct OsalThread thread;
     struct AccelOpsCall ops;
 };
 

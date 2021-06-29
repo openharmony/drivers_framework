@@ -40,15 +40,14 @@
 
 #define SENSOR_ADDR_WIDTH_1_BYTE        1 // 8 bit
 #define SENSOR_ADDR_WIDTH_2_BYTE        2 // 16 bit
-#define SENSOR_ADDR_WIDTH_4_BYTE        4 // 32 bit
+#define SENSOR_ADDR_WIDTH_4_BYTE        4 // 16 bit
 #define SENSOR_DATA_WIDTH_8_BIT         8 // 8 bit
 #define SENSOR_CONVERT_UNIT             1000
 #define SENSOR_1K_UNIT                  1024
 #define SENSOR_SPI_MAX_SPEED             115200
 #define SENSOR_SECOND_CONVERT_NANOSECOND    (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT)
 
-#define MAX_SENSOR_EXIT_THREAD_COUNT    10
-#define MAX_SENSOR_WAIT_THREAD_TIME     100 // 100MS
+#define SENSOR_TIMER_MIN_TIME    20
 
 enum SensorBusType {
     SENSOR_BUS_I2C = 0,
@@ -96,7 +95,5 @@ enum SENSORConfigValueIndex {
 int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data, uint16_t dataLen);
 int32_t WriteSensor(struct SensorBusCfg *busCfg, uint8_t *writeData, uint16_t len);
 int32_t SetSensorPinMux(uint32_t regAddr, int32_t regSize, uint32_t regValue);
-int32_t CreateSensorThread(struct OsalThread *thread, OsalThreadEntry threadEntry, char *name, void *entryPara);
-void DestroySensorThread(struct OsalThread *thread, uint8_t *status);
 
 #endif /* SENSOR_PLATFORM_IF_H */
