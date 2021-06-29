@@ -12,7 +12,6 @@
 #include "hdf_sensor_test.h"
 #include "osal_math.h"
 #include "osal_time.h"
-#include "osal_timer.h"
 #include "sensor_platform_if.h"
 #include "sensor_device_manager.h"
 #include "sensor_device_type.h"
@@ -22,18 +21,19 @@
 #define HDF_SENSOR_TEST_VALUE    1024000000 // 1g = 9.8m/s^2
 #define SENSOR_TEST_MAX_RANGE    8
 #define SENSOR_TEST_MAX_POWER    230
+#define HDF_SENSOR_TEST_WORK_QUEUE_NAME    "hdf_sensor_test_work_queue"
 
 static struct SensorTestDrvData *GetSensorTestDrvData(void)
 {
     static struct SensorTestDrvData sensorTestDrvData = {
-        .threadStatus = SENSOR_THREAD_NONE,
+        .enable = false,
         .initStatus = false,
         .interval = SENSOR_TEST_SAMPLING_200_MS,
     };
 
     return &sensorTestDrvData;
 }
-static void SensorReadTestData(void)
+static void SensorTestDataWorkEntry(void *arg)
 {
     int32_t value = HDF_SENSOR_TEST_VALUE;
     struct SensorReportEvent event;
@@ -52,75 +52,89 @@ static void SensorReadTestData(void)
     ReportSensorEvent(&event);
 }
 
-static int32_t SensorReadDataThreadTestWorker(void *arg)
+static void SensorTestTimerEntry(uintptr_t arg)
 {
-    (void)arg;
     int64_t interval;
-    CHECK_NULL_PTR_RETURN_VALUE(arg, HDF_ERR_INVALID_PARAM);
-    struct SensorTestDrvData *drvData = GetSensorTestDrvData();
+    struct SensorTestDrvData *drvData = (struct SensorTestDrvData *)arg;
+    CHECK_NULL_PTR_RETURN(drvData);
 
-    drvData->threadStatus = SENSOR_THREAD_START;
-    while (true) {
-        if (drvData->threadStatus == SENSOR_THREAD_RUNNING) {
-            SensorReadTestData();
-            interval = OsalDivS64(drvData->interval, (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT));
-            OsalMSleep(interval);
-        } else if (drvData->threadStatus == SENSOR_THREAD_STOPPING) {
-            drvData->threadStatus = SENSOR_THREAD_STOPPED;
-            break;
-        } else {
-            OsalMSleep(SENSOR_TEST_SAMPLING_200_MS / SENSOR_CONVERT_UNIT / SENSOR_CONVERT_UNIT);
-        }
-
-        if ((!drvData->initStatus) || (drvData->interval < 0) || drvData->threadStatus != SENSOR_THREAD_RUNNING) {
-            continue;
-        }
+    if (!HdfAddWork(&drvData->workQueue, &drvData->work)) {
+        HDF_LOGE("%s: sensor test add work queue failed", __func__);
     }
 
-    HDF_LOGE("%s: Sensor test thread have exited", __func__);
-    return HDF_SUCCESS;
+    interval = OsalDivS64(drvData->interval, (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT));
+    interval = (interval < SENSOR_TIMER_MIN_TIME) ? SENSOR_TIMER_MIN_TIME : interval;
+
+    if (OsalTimerSetTimeout(&drvData->timer, interval) != HDF_SUCCESS) {
+        HDF_LOGE("%s: sensor test modify time failed", __func__);
+    }
 }
 
 static int32_t SensorInitTestConfig(void)
 {
     struct SensorTestDrvData *drvData = GetSensorTestDrvData();
 
-    if (drvData->threadStatus != SENSOR_THREAD_NONE && drvData->threadStatus != SENSOR_THREAD_DESTROY) {
-        HDF_LOGE("%s: Sensor test thread have created", __func__);
-        return HDF_SUCCESS;
-    }
-
-    int32_t ret = CreateSensorThread(&drvData->thread, SensorReadDataThreadTestWorker, "hdf_sensor_test", drvData);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: Sensor test create thread failed", __func__);
-        drvData->threadStatus = SENSOR_THREAD_NONE;
+    if (HdfWorkQueueInit(&drvData->workQueue, HDF_SENSOR_TEST_WORK_QUEUE_NAME) != HDF_SUCCESS) {
+        HDF_LOGE("%s: sensor test init work queue failed", __func__);
         return HDF_FAILURE;
     }
+
+    if (HdfWorkInit(&drvData->work, SensorTestDataWorkEntry, drvData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: sensor test create thread failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    drvData->enable = false;
     drvData->initStatus = true;
-
-    return HDF_SUCCESS;
-}
-
-static int32_t SensorGetInfoTest(struct SensorBasicInfo *info)
-{
-    (void)info;
 
     return HDF_SUCCESS;
 }
 
 static int32_t SensorEnableTest(void)
 {
+    int32_t ret;
     struct SensorTestDrvData *drvData = GetSensorTestDrvData();
 
-    drvData->threadStatus = SENSOR_THREAD_RUNNING;
+    if (drvData->enable) {
+        HDF_LOGE("%{public}s: sensor test had enable", __func__);
+        return HDF_SUCCESS;
+    }
+
+    ret = OsalTimerCreate(&drvData->timer, SENSOR_TIMER_MIN_TIME, SensorTestTimerEntry, (uintptr_t)drvData);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%{public}s: sensor test create timer failed[%{public}d]", __func__, ret);
+        return ret;
+    }
+
+    ret = OsalTimerStartLoop(&drvData->timer);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%{public}s: sensor test start timer failed[%{public}d]", __func__, ret);
+        return ret;
+    }
+    drvData->enable = true;
+
     return HDF_SUCCESS;
 }
 
 static int32_t SensorDisableTest(void)
 {
+    int32_t ret;
     struct SensorTestDrvData *drvData = GetSensorTestDrvData();
 
-    drvData->threadStatus = SENSOR_THREAD_STOPPED;
+    if (!drvData->enable) {
+        HDF_LOGE("%s: sensor test had disable", __func__);
+        return HDF_SUCCESS;
+    }
+
+    if (drvData->timer.realTimer != NULL) {
+        ret = OsalTimerDelete(&drvData->timer);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: sensor test delete timer failed", __func__);
+            return ret;
+        }
+    }
+
+    drvData->enable = false;
 
     return HDF_SUCCESS;
 }
@@ -172,7 +186,6 @@ int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
 {
     int32_t ret;
     (void)device;
-    struct SensorTestDrvData *drvData = GetSensorTestDrvData();
 
     struct SensorDeviceInfo deviceInfo = {
         .sensorInfo = {
@@ -187,7 +200,6 @@ int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
             .power = SENSOR_TEST_MAX_POWER,
         },
         .ops = {
-            .GetInfo = SensorGetInfoTest,
             .Enable = SensorEnableTest,
             .Disable = SensorDisableTest,
             .SetBatch = SensorSetBatchTest,
@@ -199,14 +211,13 @@ int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
     ret = SensorInitTestConfig();
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: sensor test config failed", __func__);
-        return HDF_FAILURE;
+        return ret;
     }
 
     ret = AddSensorDevice(&deviceInfo);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: sensor test register failed", __func__);
-        (void)DestroySensorThread(&drvData->thread, &drvData->threadStatus);
-        return HDF_FAILURE;
+        return ret;
     }
 
     HDF_LOGI("%s: init sensor test driver success", __func__);
@@ -216,10 +227,29 @@ int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
 void ReleaseSensorDriverTest(struct HdfDeviceObject *device)
 {
     (void)device;
+    int32_t ret;
     struct SensorTestDrvData *drvData = GetSensorTestDrvData();
+    struct SensorDeviceInfo deviceInfo = {
+        .sensorInfo = {
+            .sensorName = "sensor_test",
+            .vendorName = "default",
+            .firmwareVersion = "1.0",
+            .hardwareVersion = "1.0",
+            .sensorTypeId = SENSOR_TAG_NONE,
+            .sensorId = SENSOR_TAG_NONE,
+            .maxRange = SENSOR_TEST_MAX_RANGE,
+            .accuracy = 1,
+            .power = SENSOR_TEST_MAX_POWER,
+        }
+    };
+    (void)DeleteSensorDevice(&deviceInfo.sensorInfo);
 
-    (void)DestroySensorThread(&drvData->thread, &drvData->threadStatus);
-    (void)DeleteSensorDevice(SENSOR_TAG_NONE);
+    if (drvData->timer.realTimer != NULL) {
+        ret = OsalTimerDelete(&drvData->timer);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: sensor test delete timer failed", __func__);
+        }
+    }
 }
 
 struct HdfDriverEntry g_sensorTestDevEntry = {

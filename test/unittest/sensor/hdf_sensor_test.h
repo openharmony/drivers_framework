@@ -9,15 +9,18 @@
 #ifndef HDF_SENSOR_DRIVER_TEST_H
 #define HDF_SENSOR_DRIVER_TEST_H
 
-#include "osal_thread.h"
+#include "hdf_workqueue.h"
+#include "osal_timer.h"
 
 #define SENSOR_TEST_SAMPLING_200_MS    200000000
 
 struct SensorTestDrvData {
-    uint8_t threadStatus;
     uint8_t initStatus;
     int64_t interval;
-    struct OsalThread thread;
+    HdfWorkQueue workQueue;
+    HdfWork work;
+    OsalTimer timer;
+    bool enable;
 };
 
 #endif // HDF_SENSOR_DRIVER_TEST_H
