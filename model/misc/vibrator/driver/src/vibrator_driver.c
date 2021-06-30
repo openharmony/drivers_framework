@@ -96,7 +96,7 @@ static void VibratorWorkEntry(void *para)
     }
 
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: add vibrator work fail! device state[%d{public}]!", __func__, drvData->state);
+        HDF_LOGE("%s: add vibrator work fail! device state[%d]!", __func__, drvData->state);
     }
 }
 

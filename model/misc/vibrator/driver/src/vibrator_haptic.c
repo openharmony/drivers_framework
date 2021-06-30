@@ -171,7 +171,7 @@ static uint32_t ProcessHapticEffect(struct VibratorHapticData *hapticData)
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
 
     if ((hapticData->currentSeqIndex < 0) || ((hapticData->currentSeqIndex + 1) >= hapticData->seqCount)) {
-        HDF_LOGE("%{public}s: seq index invalid para", __func__);
+        HDF_LOGE("%{s: seq index invalid para", __func__);
         return 0;
     }
 
@@ -181,7 +181,7 @@ static uint32_t ProcessHapticEffect(struct VibratorHapticData *hapticData)
 
     hapticData->currentSeqIndex++;
     if (hapticData->currentSeqIndex >= hapticData->seqCount) {
-        HDF_LOGE("%{public}s: seq index exceed max value", __func__);
+        HDF_LOGE("%s: seq index exceed max value", __func__);
         return 0;
     }
 
@@ -201,24 +201,24 @@ void HapticTimerEntry(uintptr_t para)
 
     if (hapticData->effectType == VIBRATOR_TYPE_TIME) {
         duration = ProcessHapticTime(hapticData);
-        HDF_LOGE("%{public}s:ProcessHapticTime duration[%{public}d]", __func__, duration);
+        HDF_LOGE("%s:ProcessHapticTime duration[%d]", __func__, duration);
     }
 
     if (hapticData->effectType == VIBRATOR_TYPE_EFFECT) {
         duration = ProcessHapticEffect(hapticData);
-        HDF_LOGE("%{public}s:ProcessHapticEffect duration[%{public}d]", __func__, duration);
+        HDF_LOGE("%s:ProcessHapticEffect duration[%d]", __func__, duration);
     }
 
     duration = ((duration > 0) && (duration < VIBRATOR_MIN_WAIT_TIME)) ? VIBRATOR_MIN_WAIT_TIME : duration;
     if ((duration > 0) && (OsalTimerSetTimeout(&hapticData->timer, duration) == HDF_SUCCESS)) {
-        HDF_LOGD("%{public}s: modify haptic timer duration[%{public}d]", __func__, duration);
+        HDF_LOGD("%s: modify haptic timer duration[%d]", __func__, duration);
         return;
     }
 
     if (hapticData->timer.realTimer != NULL) {
         ret = OsalTimerDelete(&hapticData->timer);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%{public}s: delete haptic timer fail!", __func__);
+            HDF_LOGE("%s: delete haptic timer fail!", __func__);
         }
     }
 
@@ -281,7 +281,7 @@ int32_t StartHaptic(struct VibratorEffectCfg *effectCfg)
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
 
     if ((effectCfg->cfgMode == VIBRATOR_MODE_PRESET) && (!hapticData->supportHaptic)) {
-        HDF_LOGE("%{public}s: vibrator no support haptic!", __func__);
+        HDF_LOGE("%s: vibrator no support haptic!", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
 
