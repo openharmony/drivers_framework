@@ -86,24 +86,15 @@ int HdfDeviceLaunchNode(struct HdfDeviceNode *devNode, struct IHdfDevice *devIns
     }
     int ret = driverEntry->Init(&devNode->deviceObject);
     if (ret != HDF_SUCCESS) {
-        if (driverEntry->Release != NULL) {
-            driverEntry->Release(&devNode->deviceObject);
-        }
         return HDF_DEV_ERR_DEV_INIT_FAIL;
     }
     ret = HdfDeviceNodePublishService(devNode, deviceInfo, devInst);
     if (ret != HDF_SUCCESS) {
-        if (driverEntry->Release != NULL) {
-            driverEntry->Release(&devNode->deviceObject);
-        }
         return HDF_DEV_ERR_PUBLISH_FAIL;
     }
     deviceToken = devNode->token;
     ret = DevmgrServiceClntAttachDevice(deviceInfo, deviceToken);
     if (ret != HDF_SUCCESS) {
-        if (driverEntry->Release != NULL) {
-            driverEntry->Release(&devNode->deviceObject);
-        }
         return HDF_DEV_ERR_ATTACHDEV_FAIL;
     }
     return ret;
@@ -186,6 +177,9 @@ void HdfDeviceNodeDelete(struct HdfSListNode *deviceEntry)
     }
     struct HdfDeviceNode *devNode =
         HDF_SLIST_CONTAINER_OF(struct HdfSListNode, deviceEntry, struct HdfDeviceNode, entry);
+    if (devNode->driverEntry->Release != NULL) {
+        devNode->driverEntry->Release(&devNode->deviceObject);
+    }
     HdfDeviceNodeFreeInstance(devNode);
 }
 

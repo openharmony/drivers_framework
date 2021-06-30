@@ -68,7 +68,7 @@ struct HdfDevice *HdfDeviceNewInstance()
 void HdfDeviceFreeInstance(struct HdfDevice *device)
 {
     if (device != NULL) {
-        HdfObjectManagerFreeObject((struct HdfObject *)device);
+        HdfObjectManagerFreeObject(&device->super.object);
     }
 }
 
