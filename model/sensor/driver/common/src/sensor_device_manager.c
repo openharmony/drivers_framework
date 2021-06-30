@@ -38,7 +38,7 @@ int32_t AddSensorDevice(const struct SensorDeviceInfo *deviceInfo)
     DLIST_FOR_EACH_ENTRY(pos, &manager->sensorDevInfoHead, struct SensorDevInfoNode, node) {
         if ((deviceInfo->sensorInfo.sensorId == pos->devInfo.sensorInfo.sensorId) &&
             (strcmp(deviceInfo->sensorInfo.sensorName, pos->devInfo.sensorInfo.sensorName) == 0)) {
-            HDF_LOGE("%{public}s: sensor id[%{public}d] had existed", __func__, deviceInfo->sensorInfo.sensorId);
+            HDF_LOGE("%s: sensor id[%d] had existed", __func__, deviceInfo->sensorInfo.sensorId);
             return HDF_FAILURE;
         }
     }
@@ -51,14 +51,14 @@ int32_t AddSensorDevice(const struct SensorDeviceInfo *deviceInfo)
     }
     if (memcpy_s(&devInfoNode->devInfo, sizeof(devInfoNode->devInfo),
         (void *)deviceInfo, sizeof(*deviceInfo)) != EOK) {
-        HDF_LOGE("%{public}s: copy sensor info failed", __func__);
+        HDF_LOGE("%s: copy sensor info failed", __func__);
         OsalMemFree(devInfoNode);
         (void)OsalMutexUnlock(&manager->mutex);
         return HDF_FAILURE;
     }
     DListInsertTail(&devInfoNode->node, &manager->sensorDevInfoHead);
     (void)OsalMutexUnlock(&manager->mutex);
-    HDF_LOGI("%{public}s: register sensor name[%{private}s] success", __func__, deviceInfo->sensorInfo.sensorName);
+    HDF_LOGI("%s: register sensor name[%s] success", __func__, deviceInfo->sensorInfo.sensorName);
 
     return HDF_SUCCESS;
 }
@@ -83,7 +83,7 @@ int32_t DeleteSensorDevice(const struct SensorBasicInfo *sensorBaseInfo)
         }
     }
     (void)OsalMutexUnlock(&manager->mutex);
-    HDF_LOGE("%{public}s: delete sensor id invalid para", __func__);
+    HDF_LOGE("%s: delete sensor id invalid para", __func__);
     return HDF_FAILURE;
 }
 
