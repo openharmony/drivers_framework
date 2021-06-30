@@ -96,19 +96,19 @@ static int32_t SensorEnableTest(void)
     struct SensorTestDrvData *drvData = GetSensorTestDrvData();
 
     if (drvData->enable) {
-        HDF_LOGE("%{public}s: sensor test had enable", __func__);
+        HDF_LOGE("%s: sensor test had enable", __func__);
         return HDF_SUCCESS;
     }
 
     ret = OsalTimerCreate(&drvData->timer, SENSOR_TIMER_MIN_TIME, SensorTestTimerEntry, (uintptr_t)drvData);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: sensor test create timer failed[%{public}d]", __func__, ret);
+        HDF_LOGE("%s: sensor test create timer failed[%d]", __func__, ret);
         return ret;
     }
 
     ret = OsalTimerStartLoop(&drvData->timer);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: sensor test start timer failed[%{public}d]", __func__, ret);
+        HDF_LOGE("%s: sensor test start timer failed[%d]", __func__, ret);
         return ret;
     }
     drvData->enable = true;
