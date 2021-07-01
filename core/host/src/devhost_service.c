@@ -17,15 +17,15 @@
 
 #define HDF_LOG_TAG devhost_service
 
-static struct HdfDevice *DevHostServiceFindDevice(struct DevHostService *inst, uint16_t deviceId)
+static struct HdfDevice *DevHostServiceFindDevice(struct DevHostService *hostService, uint16_t deviceId)
 {
     struct HdfDevice *deviceNode = NULL;
-    if (inst == NULL) {
-        HDF_LOGE("failed to find driver, inst is null");
+    if (hostService == NULL) {
+        HDF_LOGE("failed to find driver, hostService is null");
         return NULL;
     }
 
-    DLIST_FOR_EACH_ENTRY(deviceNode, &inst->devices, struct HdfDevice, node) {
+    DLIST_FOR_EACH_ENTRY(deviceNode, &hostService->devices, struct HdfDevice, node) {
         if (deviceNode->deviceId == deviceId) {
             return deviceNode;
         }
@@ -33,12 +33,12 @@ static struct HdfDevice *DevHostServiceFindDevice(struct DevHostService *inst, u
     return NULL;
 }
 
-static void DevHostServiceFreeDevice(struct DevHostService *inst, uint16_t deviceId)
+static void DevHostServiceFreeDevice(struct DevHostService *hostService, uint16_t deviceId)
 {
-    struct HdfDevice *deviceNode = DevHostServiceFindDevice(inst, deviceId);
-    if (deviceNode != NULL) {
-        DListRemove(&deviceNode->node);
-        HdfDeviceFreeInstance(deviceNode);
+    struct HdfDevice *device = DevHostServiceFindDevice(hostService, deviceId);
+    if (device != NULL) {
+        DListRemove(&device->node);
+        HdfDeviceFreeInstance(device);
     }
 }
 
@@ -90,9 +90,7 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
     return HDF_SUCCESS;
 
 error:
-    if (DListIsEmpty(&hostService->devices)) {
-        DevHostServiceFreeDevice(hostService, hostService->hostId);
-    }
+    DevHostServiceFreeDevice(hostService, device->deviceId);
     return ret;
 }
 
