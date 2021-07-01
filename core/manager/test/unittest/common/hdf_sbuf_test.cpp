@@ -672,7 +672,7 @@ HWTEST_F(HdfSBufTest, SbufTestNullBuffer015, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(HdfSBufTest, SbufTestRandomDataSeq016, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestRandomDataSeq016, TestSize.Level0)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
@@ -697,7 +697,7 @@ HWTEST_F(HdfSBufTest, SbufTestRandomDataSeq016, TestSize.Level1)
   * @tc.type: FUNC
   * @tc.require: AR000F869B
   */
-HWTEST_F(HdfSBufTest, SbufTestRandomRWDataSeq017, TestSize.Level1)
+HWTEST_F(HdfSBufTest, SbufTestRandomRWDataSeq017, TestSize.Level0)
 {
     HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
