@@ -171,7 +171,7 @@ static uint32_t ProcessHapticEffect(struct VibratorHapticData *hapticData)
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
 
     if ((hapticData->currentSeqIndex < 0) || ((hapticData->currentSeqIndex + 1) >= hapticData->seqCount)) {
-        HDF_LOGE("%{s: seq index invalid para", __func__);
+        HDF_LOGE("%s: seq index invalid para", __func__);
         return 0;
     }
 
