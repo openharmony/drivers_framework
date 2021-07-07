@@ -203,14 +203,127 @@ static int32_t HdfHIDDriverInit(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
+static int32_t HidGetDevType(InputDevice *inputDev, struct HdfSBuf *reply)
+{
+    uint32_t devType = inputDev->devType;
+    HDF_LOGI("%s: enter, devType is %u", __func__, devType);
+    bool ret = HdfSbufWriteUint32(reply, devType);
+    if (!ret) {
+        HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t HidGetDeviceStrInfo(InputDevice *inputDev, int32_t cmd, struct HdfSBuf *reply)
+{
+    const char *info = NULL;
+    if (inputDev == NULL) {
+        HDF_LOGE("%s: parameter invalid", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    switch (cmd) {
+        case GET_CHIP_NAME:
+            info = "null";
+            break;
+        case GET_VENDOR_NAME:
+            info = "null";
+            break;
+        case GET_CHIP_INFO:
+            info = "null";
+            break;
+        default:
+            info = NULL;
+            break;
+    }
+
+    bool ret = HdfSbufWriteString(reply, info);
+    if (!ret) {
+        HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
+        return HDF_FAILURE;
+    }
+    HDF_LOGI("%s: cmd is %d, the info is %s", __func__, cmd, info);
+    return HDF_SUCCESS;
+}
+
+static int32_t HidGetDeviceAttr(InputDevice *inputDev, struct HdfSBuf *reply)
+{
+    int32_t ret;
+    if (inputDev == NULL) {
+        return HDF_FAILURE;
+    }
+
+    HDF_LOGE("%s: enter", __func__);
+    ret = strncpy_s(inputDev->attrSet.devName, DEV_NAME_LEN, inputDev->devName, strlen(inputDev->devName));
+    if (ret) {
+        HDF_LOGE("%s: copy name from inputDev failed, ret = %d", __func__, ret);
+        return HDF_FAILURE;
+    }
+
+    if (!HdfSbufWriteBuffer(reply, &inputDev->attrSet, sizeof(DevAttr))) {
+        HDF_LOGE("%s: sbuf write dev attr failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    HDF_LOGI("%s: get dev attr succ", __func__);
+    return HDF_SUCCESS;
+}
+
+static int32_t HidGetDeviceAbility(InputDevice *inputDev, struct HdfSBuf *reply)
+{
+    if (inputDev == NULL) {
+        return HDF_FAILURE;
+    }
+    HDF_LOGE("%s: enter", __func__);
+
+    if (!HdfSbufWriteBuffer(reply, &inputDev->abilitySet, sizeof(DevAbility))) {
+        HDF_LOGE("%s: sbuf write dev ability failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    HDF_LOGI("%s: get dev ability succ", __func__);
+    return HDF_SUCCESS;
+}
+
 static int32_t HdfHIDDispatch(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     (void)cmd;
+    int32_t ret;
+    InputDevice *inputDev = NULL;
     if (client == NULL || data == NULL || reply == NULL) {
         HDF_LOGE("%s: param is null", __func__);
         return HDF_FAILURE;
     }
-    return HDF_SUCCESS;
+
+    inputDev = (InputDevice *)client->device->priv;
+    if (inputDev == NULL) {
+        HDF_LOGE("%s: inputDev is null", __func__);
+        return HDF_FAILURE;
+    }
+
+    HDF_LOGI("%s: cmd = %d", __func__, cmd);
+    switch (cmd) {
+        case GET_DEV_TYPE:
+            ret = HidGetDevType(inputDev, reply);
+            break;
+        case GET_CHIP_NAME:
+        case GET_VENDOR_NAME:
+        case GET_CHIP_INFO:
+            ret = HidGetDeviceStrInfo(inputDev, cmd, reply);
+            break;
+        case GET_DEV_ATTR:
+            ret = HidGetDeviceAttr(inputDev, reply);
+            break;
+        case GET_DEV_ABILITY:
+            ret = HidGetDeviceAbility(inputDev, reply);
+            break;
+        default:
+            ret = HDF_SUCCESS;
+            HDF_LOGE("%s: cmd unknown, cmd = 0x%x", __func__, cmd);
+            break;
+    }
+    return ret;
 }
 
 static int32_t HdfHIDDriverBind(struct HdfDeviceObject *device)
