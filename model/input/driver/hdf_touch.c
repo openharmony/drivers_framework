@@ -19,10 +19,7 @@
 #define MAX_TOUCH_DEVICE 5
 #define REGISTER_BYTE_SIZE 4
 #define TOUCH_CHIP_NAME_LEN 10
-#define AXIS_X_MAX 479
-#define AXIS_X_RANGE 480
-#define AXIS_Y_MAX 959
-#define AXIS_Y_RANGE 960
+
 
 static TouchDriver *g_touchDriverList[MAX_TOUCH_DEVICE];
 static void InputFrameReport(TouchDriver *driver);
@@ -460,12 +457,6 @@ static int32_t TouchGetDeviceAttr(TouchDriver *driver, struct HdfSBuf *reply)
     HDF_LOGE("%s: enter", __func__);
     char *tempStr = "main_touch";
     (void)strncpy_s(driver->inputDev->attrSet.devName, DEV_NAME_LEN, tempStr, strlen(tempStr));
-    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].min = 0;
-    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].max = AXIS_X_MAX;
-    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].range = AXIS_X_RANGE;
-    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].min = 0;
-    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].max = AXIS_Y_MAX;
-    driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].range = AXIS_Y_RANGE;
 
     if (!HdfSbufWriteBuffer(reply, &driver->inputDev->attrSet, sizeof(DevAttr))) {
         HDF_LOGE("%s: sbuf write dev attr failed", __func__);

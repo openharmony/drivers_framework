@@ -14,6 +14,12 @@
 #include "input_i2c_ops.h"
 #include "touch_gt911.h"
 
+#define AXIS_X_MAX 479
+#define AXIS_X_RANGE 480
+#define AXIS_Y_MAX 959
+#define AXIS_Y_RANGE 960
+#define MAX_POINT 5
+
 static int32_t ChipInit(ChipDevice *device)
 {
     return HDF_SUCCESS;
@@ -179,7 +185,22 @@ static void SetAbility(ChipDevice *device)
     device->driver->inputDev->abilitySet.eventType[0] = SET_BIT(EV_SYN) |
         SET_BIT(EV_KEY) | SET_BIT(EV_ABS);
     device->driver->inputDev->abilitySet.absCode[0] = SET_BIT(ABS_X) | SET_BIT(ABS_Y);
+    device->driver->inputDev->abilitySet.absCode[1] = SET_BIT(ABS_MT_POSITION_X) |
+        SET_BIT(ABS_MT_POSITION_Y) | SET_BIT(ABS_MT_TRACKING_ID);
     device->driver->inputDev->abilitySet.keyCode[3] = SET_BIT(KEY_UP) | SET_BIT(KEY_DOWN);
+    device->driver->inputDev->attrSet.axisInfo[ABS_X].min = 0;
+    device->driver->inputDev->attrSet.axisInfo[ABS_X].max = AXIS_X_MAX;
+    device->driver->inputDev->attrSet.axisInfo[ABS_X].range = AXIS_X_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_Y].min = 0;
+    device->driver->inputDev->attrSet.axisInfo[ABS_Y].max = AXIS_Y_MAX;
+    device->driver->inputDev->attrSet.axisInfo[ABS_Y].range = AXIS_Y_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].min = 0;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].max = AXIS_X_MAX;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].range = AXIS_X_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].min = 0;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].max = AXIS_Y_MAX;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].range = AXIS_Y_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_TRACKING_ID].max = MAX_POINT;
 }
 
 static struct TouchChipOps g_gt911ChipOps = {

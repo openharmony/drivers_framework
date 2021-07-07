@@ -60,7 +60,7 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
     return hdfDev;
 }
 
-static void HotPlugNotify(const InputDevice *inputDev, bool status)
+static void HotPlugNotify(const InputDevice *inputDev, uint32_t status)
 {
     struct HdfSBuf *sbuf = NULL;
     HotPlugEvent event = {0};
@@ -71,20 +71,21 @@ static void HotPlugNotify(const InputDevice *inputDev, bool status)
         HDF_LOGE("%s: obtain buffer failed", __func__);
         return;
     }
+
     event.devId = inputDev->devId;
     event.devType = inputDev->devType;
     event.status = status;
 
     if (!HdfSbufWriteBuffer(sbuf, &event, sizeof(HotPlugEvent))) {
         HDF_LOGE("%s: write buffer failed", __func__);
-        goto EXIT;
+        HdfSbufFlush(sbuf);
+        return;
     }
     ret = HdfDeviceSendEvent(g_inputManager->hdfDevObj, 0, sbuf);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: send event failed", __func__);
     }
-EXIT:
-    HdfSBufRecycle(sbuf);
+    HdfSbufFlush(sbuf);
 }
 
 static int32_t CreateDeviceNode(InputDevice *inputDev)
@@ -92,6 +93,7 @@ static int32_t CreateDeviceNode(InputDevice *inputDev)
     if (IsHidDevice(inputDev->devType)) {
         HDF_LOGI("%s: prepare to register hdf device", __func__);
         inputDev->hdfDevObj = HidRegisterHdfDevice(inputDev);
+        inputDev->hdfDevObj->priv = (void *)inputDev;
         if (inputDev->hdfDevObj == NULL) {
             return HDF_DEV_ERR_NO_DEVICE;
         }
