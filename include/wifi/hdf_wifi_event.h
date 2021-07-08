@@ -474,7 +474,7 @@ int32_t HdfWifiEventEapolRecv(const char *name, void *context);
  * @since 1.0
  * @version 1.0
  */
-int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus);
+int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus, const char *ifName);
 
 #ifdef __cplusplus
 #if __cplusplus
