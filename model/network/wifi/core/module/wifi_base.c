@@ -1181,10 +1181,10 @@ void SendMessageResetDriverCallBack(const RequestContext *context, struct HdfSBu
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        return HDF_FAILURE;
+        return;
     }
 
-    int32_t ret = HdfWifiEventResetResult(chipId, ifName, rspCode);
+    int32_t ret = HdfWifiEventResetResult(chipId, rspCode, ifName);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: send resetDriver event fail!", __func__);
     }
