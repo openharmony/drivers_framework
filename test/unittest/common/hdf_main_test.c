@@ -49,6 +49,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_WIFI) || defined(CONFIG_DRIVERS_HDF_WIFI)
 #include "hdf_wifi_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_AUDIO_TEST) || defined(CONFIG_DRIVERS_HDF_AUDIO_TEST)
+#include "hdf_audio_test.h"
+#endif
 
 #define HDF_LOG_TAG hdf_test
 
@@ -90,7 +93,10 @@ HdfTestFuncList g_hdfTestFuncList[] = {
     { TEST_CONFIG_TYPE, HdfConfigEntry },
     { TEST_OSAL_ITEM, HdfOsalEntry },
 #if defined(LOSCFG_DRIVERS_HDF_WIFI) || defined(CONFIG_DRIVERS_HDF_WIFI)
-    {TEST_WIFI_TYPE, HdfWifiEntry}
+    {TEST_WIFI_TYPE, HdfWifiEntry},
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_AUDIO_TEST) || defined(CONFIG_DRIVERS_HDF_AUDIO_TEST)
+    {TEST_AUDIO_TYPE, HdfAudioEntry},
 #endif
 };
 
