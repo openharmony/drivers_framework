@@ -67,6 +67,7 @@ typedef enum {
     TEST_WIFI_TYPE          = TEST_WIFI_BEGIN + 1,
     TEST_WIFI_END           = 600,
     TEST_CONFIG_TYPE        = 601,
+    TEST_AUDIO_TYPE         = 701,
     TEST_HDF_FRAME_END      = 800,
 } HdfTestSubModuleCmd;
 
