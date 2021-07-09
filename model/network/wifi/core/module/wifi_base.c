@@ -1178,7 +1178,7 @@ void SendMessageResetDriverCallBack(const RequestContext *context, struct HdfSBu
         HDF_LOGE("%s: read data failed! ParamName=%s", __func__, "chipId");
         return;
     }
-    ifName = HdfSbufReadString(reqData);
+    ifName = HdfSbufReadString(rspData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
         return;
