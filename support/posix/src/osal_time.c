@@ -18,20 +18,17 @@
 
 int32_t OsalGetTime(OsalTimespec *time)
 {
-    struct timeval tv;
+    struct timespec ts;
 
     if (time == NULL) {
         HDF_LOGE("%s invalid para", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
-    (void)memset_s(&tv, sizeof(tv), 0, sizeof(tv));
-    if (gettimeofday(&tv, NULL) != 0) {
-        HDF_LOGE("%s gettimeofday failed", __func__);
-        return HDF_FAILURE;
-    }
-    time->sec = tv.tv_sec;
-    time->usec = tv.tv_usec;
+    (void)memset_s(&ts, sizeof(ts), 0, sizeof(ts));
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    time->sec = ts.tv_sec;
+    time->usec = ts.tv_nsec / HDF_KILO_UNIT;
 
     return HDF_SUCCESS;
 }
@@ -90,13 +87,10 @@ void OsalMDelay(uint32_t ms)
 
 uint64_t OsalGetSysTimeMs()
 {
-    struct timeval tv;
+    OsalTimespec time;
 
-    (void)memset_s(&tv, sizeof(tv), 0, sizeof(tv));
-    if (gettimeofday(&tv, NULL) != 0) {
-        HDF_LOGE("%s gettimeofday failed", __func__);
-        return 0;
-    }
+    (void)memset_s(&time, sizeof(time), 0, sizeof(time));
+    (void)OsalGetTime(&time);
 
-    return ((uint64_t)tv.tv_sec * HDF_KILO_UNIT + tv.tv_usec / HDF_KILO_UNIT);
+    return (time.sec * HDF_KILO_UNIT + time.usec / HDF_KILO_UNIT);
 }
