@@ -973,7 +973,6 @@ int32_t AudioSapmNewControls(struct AudioCard *audioCard)
         return HDF_FAILURE;
     }
 
-    AudioSapmSleep(audioCard);
     return HDF_SUCCESS;
 }
 
