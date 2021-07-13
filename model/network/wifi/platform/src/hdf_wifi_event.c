@@ -400,7 +400,7 @@ int32_t HdfWifiEventEapolRecv(const char *name, void *context)
     return ret;
 }
 
-int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus)
+int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus, const char *ifName)
 {
     struct HdfSBuf *data = NULL;
     int32_t ret;
@@ -408,6 +408,11 @@ int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus)
     data = HdfSBufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufWriteString(data, ifName)) {
+        HDF_LOGE("%s: Serialize failed!", __func__);
+        HdfSBufRecycle(data);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteInt32(data, resetStatus)) {

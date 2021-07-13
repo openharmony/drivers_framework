@@ -1107,6 +1107,7 @@ static int32_t WifiCmdDoResetChip(const RequestContext *context, struct HdfSBuf 
 {
     int32_t ret;
     uint8_t chipId;
+    const char *ifName = NULL;
     struct HdfWlanDevice *wlanDevice = NULL;
 
     ret = ResetParaCheck(context, reqData, rspData);
@@ -1118,9 +1119,18 @@ static int32_t WifiCmdDoResetChip(const RequestContext *context, struct HdfSBuf 
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "chipId");
         return HDF_FAILURE;
     }
+    ifName = HdfSbufReadString(reqData);
+    if (ifName == NULL) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
+        return HDF_FAILURE;
+    }
     /* callback function use chipId */
     if (!HdfSbufWriteUint8(rspData, chipId)) {
         HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufWriteString(rspData, ifName)) {
+        HDF_LOGE("%s: Serialize failed!", __func__);
         return HDF_FAILURE;
     }
 
@@ -1156,6 +1166,7 @@ void SendMessageResetDriverCallBack(const RequestContext *context, struct HdfSBu
     ErrorCode rspCode)
 {
     uint8_t chipId;
+    const char *ifName = NULL;
     (void)context;
 
     if (rspData == NULL || reqData == NULL) {
@@ -1167,8 +1178,13 @@ void SendMessageResetDriverCallBack(const RequestContext *context, struct HdfSBu
         HDF_LOGE("%s: read data failed! ParamName=%s", __func__, "chipId");
         return;
     }
+    ifName = HdfSbufReadString(rspData);
+    if (ifName == NULL) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
+        return;
+    }
 
-    int32_t ret = HdfWifiEventResetResult(chipId, rspCode);
+    int32_t ret = HdfWifiEventResetResult(chipId, rspCode, ifName);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: send resetDriver event fail!", __func__);
     }
