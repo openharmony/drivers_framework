@@ -52,6 +52,10 @@
 #if defined(LOSCFG_DRIVERS_HDF_AUDIO_TEST) || defined(CONFIG_DRIVERS_HDF_AUDIO_TEST)
 #include "hdf_audio_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_USB_DDK_DEVICE) || defined(CONFIG_DRIVERS_HDF_USB_DDK_DEVICE)
+#include "hdf_usb_device_test.h"
+#endif
+
 
 #define HDF_LOG_TAG hdf_test
 
@@ -98,6 +102,10 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #if defined(LOSCFG_DRIVERS_HDF_AUDIO_TEST) || defined(CONFIG_DRIVERS_HDF_AUDIO_TEST)
     {TEST_AUDIO_TYPE, HdfAudioEntry},
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_USB_DDK_DEVICE) || defined(CONFIG_DRIVERS_HDF_USB_DDK_DEVICE)
+    {TEST_USB_DEVICE_TYPE, HdfUsbDeviceEntry},
+#endif
+
 };
 
 static int32_t HdfTestCaseProcess(struct HdfDeviceIoClient *client,

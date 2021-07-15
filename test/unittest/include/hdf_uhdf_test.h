@@ -64,6 +64,7 @@ enum HdfTestSubModuleCmd {
     TEST_WIFI_END           = 600,
     TEST_CONFIG_TYPE        = 601,
     TEST_HDF_FRAME_END      = 800,
+    TEST_USB_DEVICE_TYPE    = 900,
 };
 
 void HdfTestOpenService(void);

@@ -42,7 +42,7 @@ struct HdfDeviceNode *HdfDriverLoaderLoadNode(
     devNode->driverEntry = driverEntry;
     devNode->deviceInfo = deviceInfo;
     devNode->deviceObject.property = HcsGetNodeByMatchAttr(HdfGetRootNode(), deviceInfo->deviceMatchAttr);
-
+    devNode->deviceObject.priv = (void *)(deviceInfo->private);
     if (devNode->deviceObject.property == NULL) {
         HDF_LOGW("failed to load node, property is null, match attr is: %s", deviceInfo->deviceMatchAttr);
     }

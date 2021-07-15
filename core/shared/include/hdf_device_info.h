@@ -36,8 +36,13 @@ struct HdfDeviceInfo {
     const char *moduleName;
     const char *svcName;
     const char *deviceMatchAttr;
+    const void *private;
 };
 
+struct HdfPrivateInfo {
+    uint32_t length;
+    const void *data;
+};
 struct HdfDeviceInfo *HdfDeviceInfoNewInstance(void);
 void HdfDeviceInfoConstruct(struct HdfDeviceInfo *deviceInfo);
 void HdfDeviceInfoFreeInstance(struct HdfDeviceInfo *deviceInfo);
