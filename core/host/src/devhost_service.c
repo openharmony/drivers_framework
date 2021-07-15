@@ -14,6 +14,7 @@
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 #include "osal_mem.h"
+#include "power_state_token.h"
 
 #define HDF_LOG_TAG devhost_service
 
@@ -63,16 +64,16 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
     int ret = HDF_FAILURE;
     struct HdfDevice *device = NULL;
     struct HdfDeviceNode *devNode = NULL;
-    struct DevHostService *hostService = (struct DevHostService *)inst;
+    struct DevHostService *hostService = CONTAINER_OF(inst, struct DevHostService, super);
     struct IDriverLoader *driverLoader = HdfDriverLoaderGetInstance();
 
-    if ((deviceInfo == NULL) || (driverLoader == NULL) || (driverLoader->LoadNode == NULL)) {
+    if (inst == NULL || deviceInfo == NULL || driverLoader == NULL || driverLoader->LoadNode == NULL) {
         HDF_LOGE("failed to add device, input param is null");
         return ret;
     }
 
     device = DevHostServiceGetDevice(hostService, deviceInfo->deviceId);
-    if ((device == NULL) || (device->super.Attach == NULL)) {
+    if (device == NULL || device->super.Attach == NULL) {
         ret = HDF_DEV_ERR_NO_DEVICE;
         goto error;
     }
@@ -94,18 +95,14 @@ error:
     return ret;
 }
 
-static struct HdfDeviceNode *DevHostServiceGetDeviceNode(struct HdfSList *deviceNodes,
+static struct HdfDeviceNode *DevHostServiceSeparateDeviceNode(struct DListHead *deviceNodes,
     const struct HdfDeviceInfo *deviceInfo)
 {
-    struct HdfSListIterator it;
     struct HdfDeviceNode *deviceNode = NULL;
-    HdfSListIteratorInit(&it, deviceNodes);
-    while (HdfSListIteratorHasNext(&it)) {
-        deviceNode = HDF_SLIST_CONTAINER_OF(
-            struct HdfSListNode, HdfSListIteratorNext(&it), struct HdfDeviceNode, entry);
+    DLIST_FOR_EACH_ENTRY(deviceNode, deviceNodes, struct HdfDeviceNode, entry) {
         if (strcmp(deviceNode->deviceInfo->svcName, deviceInfo->svcName) == 0 &&
             strcmp(deviceNode->deviceInfo->moduleName, deviceInfo->moduleName) == 0) {
-            HdfSListRemove(deviceNodes, &deviceNode->entry);
+            DListRemove(&deviceNode->entry);
             return deviceNode;
         }
     }
@@ -130,14 +127,14 @@ int DevHostServiceDelDevice(struct IDevHostService *inst, const struct HdfDevice
     }
 
     driverLoader->UnLoadNode(driverLoader, deviceInfo);
-    struct HdfDeviceNode *devNode = DevHostServiceGetDeviceNode(&device->services, deviceInfo);
+    struct HdfDeviceNode *devNode = DevHostServiceSeparateDeviceNode(&device->devNodes, deviceInfo);
     if (device->super.Detach != NULL) {
         device->super.Detach(&device->super, devNode);
     } else {
         HdfDeviceNodeFreeInstance(devNode);
     }
     DevSvcManagerClntRemoveService(deviceInfo->svcName);
-    if (HdfSListIsEmpty(&device->services)) {
+    if (DListIsEmpty(&device->devNodes)) {
         DevHostServiceFreeDevice(hostService, device->deviceId);
     }
     return HDF_SUCCESS;
@@ -153,6 +150,64 @@ static int DevHostServiceStartService(struct IDevHostService *service)
     return DevmgrServiceClntAttachDeviceHost(hostService->hostId, service);
 }
 
+static int ApplyDevicesPowerState(struct HdfDevice *device, uint32_t state)
+{
+    struct HdfDeviceNode *deviceNode = NULL;
+    int ret = HDF_SUCCESS;
+
+    /* The power management strategy is to ignore devices that fail to
+     operate and avoid more devices that fail to sleep or wake up */
+    if (IsPowerWakeState(state)) {
+        DLIST_FOR_EACH_ENTRY(deviceNode, &device->devNodes, struct HdfDeviceNode, entry) {
+            if (deviceNode->powerToken != NULL) {
+                ret = PowerStateChange(deviceNode->powerToken, state);
+                if (ret != HDF_SUCCESS) {
+                    HDF_LOGE("device %s failed to resume(%d)", deviceNode->driverEntry->moduleName, state);
+                }
+            }
+        }
+    } else {
+        DLIST_FOR_EACH_ENTRY_REVERSE(deviceNode, &device->devNodes, struct HdfDeviceNode, entry) {
+            if (deviceNode->powerToken != NULL) {
+                ret = PowerStateChange(deviceNode->powerToken, state);
+                if (ret != HDF_SUCCESS) {
+                    HDF_LOGE("device %s failed to suspend(%d)", deviceNode->driverEntry->moduleName, state);
+                }
+            }
+        }
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int DevHostServicePmNotify(struct IDevHostService *service, uint32_t state)
+{
+    struct HdfDevice *device = NULL;
+    int ret = HDF_SUCCESS;
+    struct DevHostService *hostService = CONTAINER_OF(service, struct DevHostService, super);
+    if (hostService == NULL) {
+        HDF_LOGE("failed to start device service, hostService is null");
+        return HDF_FAILURE;
+    }
+
+    HDF_LOGD("host(%s) set power state=%u", hostService->hostName, state);
+    if (IsPowerWakeState(state)) {
+        DLIST_FOR_EACH_ENTRY_REVERSE(device, &hostService->devices, struct HdfDevice, node) {
+            if (ApplyDevicesPowerState(device, state) != HDF_SUCCESS) {
+                ret = HDF_FAILURE;
+            }
+        }
+    } else {
+        DLIST_FOR_EACH_ENTRY(device, &hostService->devices, struct HdfDevice, node) {
+            if (ApplyDevicesPowerState(device, state) != HDF_SUCCESS) {
+                ret = HDF_FAILURE;
+            }
+        }
+    }
+
+    return ret;
+}
+
 void DevHostServiceConstruct(struct DevHostService *service)
 {
     struct IDevHostService *hostServiceIf = &service->super;
@@ -160,6 +215,7 @@ void DevHostServiceConstruct(struct DevHostService *service)
         hostServiceIf->AddDevice = DevHostServiceAddDevice;
         hostServiceIf->DelDevice = DevHostServiceDelDevice;
         hostServiceIf->StartService = DevHostServiceStartService;
+        hostServiceIf->PmNotify = DevHostServicePmNotify;
         DListHeadInit(&service->devices);
         HdfServiceObserverConstruct(&service->observer);
     }
@@ -214,4 +270,3 @@ void DevHostServiceFreeInstance(struct IDevHostService *service)
         HdfObjectManagerFreeObject(&service->object);
     }
 }
-

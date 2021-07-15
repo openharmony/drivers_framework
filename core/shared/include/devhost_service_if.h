@@ -14,9 +14,10 @@
 
 struct IDevHostService {
     struct HdfObject object;
-    int (*AddDevice)(struct IDevHostService *, const struct HdfDeviceInfo *);
-    int (*DelDevice)(struct IDevHostService *, const struct HdfDeviceInfo *);
-    int (*StartService)(struct IDevHostService *);
+    int (*AddDevice)(struct IDevHostService *hostService, const struct HdfDeviceInfo *devInfo);
+    int (*DelDevice)(struct IDevHostService *hostService, const struct HdfDeviceInfo *devInfo);
+    int (*StartService)(struct IDevHostService *hostService);
+    int (*PmNotify)(struct IDevHostService *service, uint32_t powerState);
 };
 
 #endif /* DEVHOST_SERVICE_IF_H */

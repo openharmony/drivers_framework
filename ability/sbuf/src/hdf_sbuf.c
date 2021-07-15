@@ -120,7 +120,7 @@ bool HdfSbufWriteUnpadBuffer(struct HdfSBuf *sbuf, const uint8_t *data, uint32_t
 
 const uint8_t *HdfSbufReadUnpadBuffer(struct HdfSBuf *sbuf, size_t length)
 {
-    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readUnpadBuffer, false);
+    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readUnpadBuffer, NULL);
     return sbuf->impl->readUnpadBuffer(sbuf->impl, length);
 }
 
@@ -240,7 +240,7 @@ bool HdfSbufReadInt8(struct HdfSBuf *sbuf, int8_t *value)
 
 const char *HdfSbufReadString(struct HdfSBuf *sbuf)
 {
-    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readString, false);
+    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readString, NULL);
     return sbuf->impl->readString(sbuf->impl);
 }
 
@@ -252,7 +252,7 @@ bool HdfSBufWriteString16(struct HdfSBuf *sbuf, const char16_t *value, uint32_t 
 
 const char16_t *HdfSBufReadString16(struct HdfSBuf *sbuf)
 {
-    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readString16, false);
+    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readString16, NULL);
     return sbuf->impl->readString16(sbuf->impl);
 }
 
@@ -264,7 +264,7 @@ int32_t HdfSBufWriteRemoteService(struct HdfSBuf *sbuf, const struct HdfRemoteSe
 
 struct HdfRemoteService *HdfSBufReadRemoteService(struct HdfSBuf *sbuf)
 {
-    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readRemoteService, false);
+    HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readRemoteService, NULL);
     return sbuf->impl->readRemoteService(sbuf->impl);
 }
 
@@ -306,6 +306,7 @@ bool HdfSbufReadFloat(struct HdfSBuf *sbuf, float *data)
 
 struct HdfSBuf *HdfSBufTypedObtainCapacity(uint32_t type, size_t capacity)
 {
+    struct HdfSBuf *sbuf = NULL;
     const struct HdfSbufConstructor *constructor = HdfSbufConstructorGet(type);
     if (constructor == NULL) {
         HDF_LOGE("sbuf constructor %d not implement", type);
@@ -316,7 +317,7 @@ struct HdfSBuf *HdfSBufTypedObtainCapacity(uint32_t type, size_t capacity)
         return NULL;
     }
 
-    struct HdfSBuf *sbuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
+    sbuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
     if (sbuf == NULL) {
         HDF_LOGE("instance sbuf failure");
         return NULL;
@@ -334,11 +335,12 @@ struct HdfSBuf *HdfSBufTypedObtainCapacity(uint32_t type, size_t capacity)
 
 struct HdfSBuf *HdfSBufTypedObtainInplace(uint32_t type, struct HdfSbufImpl *impl)
 {
+    struct HdfSBuf *sbuf = NULL;
     if (type >= SBUF_TYPE_MAX || impl == NULL) {
         return NULL;
     }
 
-    struct HdfSBuf *sbuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
+    sbuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
     if (sbuf == NULL) {
         HDF_LOGE("obtain in-place sbuf failure");
         return NULL;
@@ -356,6 +358,7 @@ struct HdfSBuf *HdfSBufTypedObtain(uint32_t type)
 
 struct HdfSBuf *HdfSBufTypedBind(uint32_t type, uintptr_t base, size_t size)
 {
+    struct HdfSBuf *sbuf = NULL;
     const struct HdfSbufConstructor *constructor = HdfSbufConstructorGet(type);
     if (constructor == NULL) {
         HDF_LOGE("sbuf constructor %d not implement", type);
@@ -367,7 +370,7 @@ struct HdfSBuf *HdfSBufTypedBind(uint32_t type, uintptr_t base, size_t size)
         return NULL;
     }
 
-    struct HdfSBuf *sbuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
+    sbuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
     if (sbuf == NULL) {
         HDF_LOGE("instance sbuf failure");
         return NULL;
@@ -400,8 +403,9 @@ struct HdfSBuf *HdfSBufBind(uintptr_t base, size_t size)
 
 struct HdfSBuf *HdfSBufCopy(const struct HdfSBuf *sbuf)
 {
+    struct HdfSBuf *newBuf = NULL;
     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, copy, NULL);
-    struct HdfSBuf *newBuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
+    newBuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
     if (newBuf == NULL) {
         return NULL;
     }
@@ -416,8 +420,9 @@ struct HdfSBuf *HdfSBufCopy(const struct HdfSBuf *sbuf)
 
 struct HdfSBuf *HdfSBufMove(struct HdfSBuf *sbuf)
 {
+    struct HdfSBuf *newBuf = NULL;
     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, move, NULL);
-    struct HdfSBuf *newBuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
+    newBuf = (struct HdfSBuf *)OsalMemAlloc(sizeof(struct HdfSBuf));
     if (newBuf == NULL) {
         return NULL;
     }

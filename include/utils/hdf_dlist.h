@@ -143,6 +143,17 @@ static inline void DListMerge(struct DListHead *list, struct DListHead *head)
     DListHeadInit(list);
 }
 
+
+static inline int DlistGetCount(const struct DListHead *head)
+{
+    struct DListHead *next = head->next;
+    int count = 0;
+    while (next != head) {
+        next = next->next;
+        count++;
+    }
+    return count;
+}
 /**
  * @brief Obtains the address of a structure variable from its member address.
  *

@@ -12,7 +12,7 @@
 static void PowerStateTokenClntConstruct(struct PowerStateTokenClnt *clnt, struct IPowerStateToken *tokenIf)
 {
     clnt->tokenIf = tokenIf;
-    clnt->powerState = POWER_STATE_INACTIVE;
+    clnt->powerState = PSM_STATE_INACTIVE;
 }
 
 struct PowerStateTokenClnt *PowerStateTokenClntNewInstance(struct IPowerStateToken *tokenIf)

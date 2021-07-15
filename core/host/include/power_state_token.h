@@ -18,12 +18,12 @@ struct PowerStateToken {
     const struct IPowerEventListener *listener;
     struct HdfDeviceObject *deviceObject;
     struct HdfSRef wakeRef;
-    HdfPowerState state;
+    HdfPsmState psmState;
     uint32_t mode;
 };
 
 struct PowerStateToken *PowerStateTokenNewInstance(
     struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener);
 void PowerStateTokenFreeInstance(struct PowerStateToken *stateToken);
-int PowerStateOnSysStateChange(struct PowerStateToken *stateToken, int32_t state);
+int PowerStateChange(struct PowerStateToken *stateToken, uint32_t pEvent);
 #endif /* POWER_STATE_TOKEN_H */

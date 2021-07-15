@@ -10,10 +10,10 @@
 #define POWER_STATE_TOKEN_IF_H
 
 typedef enum {
-    POWER_STATE_IDLE,           /* Idle state */
-    POWER_STATE_ACTIVE,         /* Activated state */
-    POWER_STATE_INACTIVE,       /* Error state */
-} HdfPowerState;
+    PSM_STATE_IDLE,           /* Idle state */
+    PSM_STATE_ACTIVE,         /* Activated state */
+    PSM_STATE_INACTIVE,       /* Error state */
+} HdfPsmState;
 
 struct IPowerStateToken {
     void (*AcquireWakeLock)(struct IPowerStateToken *);

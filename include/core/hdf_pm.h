@@ -34,11 +34,6 @@ struct IPowerEventListener {
     int (*Suspend)(struct HdfDeviceObject *deviceObject);
 };
 
-static inline bool HdfPmIsWakeEvent(int sysEvent)
-{
-    return sysEvent >= KEVENT_POWER_RESUME && sysEvent <= KEVENT_POWER_DISPLAY_ON;
-}
-
 int HdfPmRegisterPowerListener(struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener);
 void HdfPmUnregisterPowerListener(struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener);
 void HdfPmAcquireDevice(struct HdfDeviceObject *deviceObject);

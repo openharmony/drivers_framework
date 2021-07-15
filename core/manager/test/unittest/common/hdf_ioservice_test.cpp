@@ -18,6 +18,7 @@
 #include "osal_time.h"
 #include "sample_driver_test.h"
 #include "hdf_log.h"
+#include "hdf_power_state.h"
 
 using namespace testing::ext;
 
@@ -595,4 +596,39 @@ HWTEST_F(IoServiceTest, HdfIoService012, TestSize.Level0)
     EXPECT_NE(ret, HDF_SUCCESS);
 
     HdfIoServiceRecycle(serv);
+}
+
+/* *
+ * @tc.name: HdfIoService013
+ * @tc.desc: devmgr power state change test
+ * @tc.type: FUNC
+ */
+HWTEST_F(IoServiceTest, HdfIoService013, TestSize.Level0)
+{
+    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    ASSERT_NE(data, nullptr);
+
+    struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
+    ASSERT_NE(serv, nullptr);
+
+    HdfSbufWriteUint32(data, POWER_STATE_SUSPEND);
+    int ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    HdfSbufFlush(data);
+    HdfSbufWriteUint32(data, POWER_STATE_RESUME);
+    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    HdfSbufFlush(data);
+    HdfSbufWriteUint32(data, POWER_STATE_DOZE_SUSPEND);
+    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    HdfSbufFlush(data);
+    HdfSbufWriteUint32(data, POWER_STATE_DOZE_RESUME);
+    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+    HdfIoServiceRecycle(serv);
+    HdfSBufRecycle(data);
 }

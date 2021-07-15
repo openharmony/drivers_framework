@@ -84,9 +84,8 @@ void DevHostServiceClntFreeInstance(struct DevHostServiceClnt *hostClnt)
     }
 }
 
-void DevHostServiceClntDelete(struct HdfSListNode *listEntry)
+void DevHostServiceClntDelete(struct DevHostServiceClnt *hostClnt)
 {
-    struct DevHostServiceClnt *hostClnt = (struct DevHostServiceClnt *)listEntry;
     if (hostClnt != NULL) {
         DevHostServiceClntFreeInstance(hostClnt);
     }

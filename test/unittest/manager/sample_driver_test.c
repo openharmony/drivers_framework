@@ -7,8 +7,10 @@
  */
 #include "sample_driver_test.h"
 #include "devsvc_manager_clnt.h"
+#include "devmgr_service.h"
 #include "hdf_log.h"
 #include "hdf_device_desc.h"
+#include "hdf_pm.h"
 
 #define HDF_LOG_TAG sample_driver_test
 
@@ -67,12 +69,22 @@ int32_t SampleDriverSendEvent(struct HdfDeviceIoClient *client, int id, struct H
     return broadcast ? HdfDeviceSendEvent(client->device, id, data) : HdfDeviceSendEventToClient(client, id, data);
 }
 
+int32_t SampleDriverPowerStateInject(uint32_t powerState)
+{
+    struct IDevmgrService *devmgrService = DevmgrServiceGetInstance();
+    int ret = devmgrService->PowerStateChange(devmgrService, powerState);
+
+    HDF_LOGI("%s: inject power state(%d) done, ret = %d", __func__, powerState, ret);
+    return ret;
+}
+
 int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret = HDF_SUCCESS;
     if (reply == NULL || client == NULL) {
         return HDF_FAILURE;
     }
+    uint32_t powerState = 0;
     switch (cmdId) {
         case SAMPLE_DRIVER_REGISTER_DEVICE: {
             ret = SampleDriverRegisterDevice(data);
@@ -91,6 +103,9 @@ int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct
             ret = SampleDriverSendEvent(client, cmdId, data, true);
             HdfSbufWriteInt32(reply, INT32_MAX);
             break;
+        case SAMPLE_DRIVER_PM_STATE_INJECT:
+            HdfSbufReadUint32(data, &powerState);
+            return SampleDriverPowerStateInject(powerState);
         default:
             break;
     }
@@ -113,14 +128,53 @@ int HdfSampleDriverBind(struct HdfDeviceObject *deviceObject)
     return HDF_SUCCESS;
 }
 
+int HdfSampleDozeResume(struct HdfDeviceObject *deviceObject)
+{
+    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    return HDF_SUCCESS;
+}
+
+int HdfSampleDozeSuspend(struct HdfDeviceObject *deviceObject)
+{
+    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    return HDF_SUCCESS;
+}
+
+int HdfSampleResume(struct HdfDeviceObject *deviceObject)
+{
+    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    return HDF_SUCCESS;
+}
+
+int HdfSampleSuspend(struct HdfDeviceObject *deviceObject)
+{
+    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    return HDF_SUCCESS;
+}
+
+struct SampleDriverPmListener {
+    struct IPowerEventListener powerListener;
+    void *p;
+};
+
 int HdfSampleDriverInit(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGD("%s::enter!, deviceObject=%p", __func__, deviceObject);
+    HDF_LOGI("%s::enter!, deviceObject=%llx", __func__, (uint64_t)deviceObject);
     if (deviceObject == NULL) {
         HDF_LOGE("%s::ptr is null!", __func__);
         return HDF_FAILURE;
     }
     HDF_LOGD("%s:Init success", __func__);
+
+    static struct SampleDriverPmListener pmListener = {0};
+    pmListener.powerListener.DozeResume = HdfSampleDozeResume;
+    pmListener.powerListener.DozeSuspend = HdfSampleDozeSuspend;
+    pmListener.powerListener.Resume = HdfSampleResume;
+    pmListener.powerListener.Suspend = HdfSampleSuspend;
+
+    int ret = HdfPmRegisterPowerListener(deviceObject, &pmListener.powerListener);
+    HDF_LOGI("%s:register power listener, ret = %d", __func__, ret);
+
     return HDF_SUCCESS;
 }
 
