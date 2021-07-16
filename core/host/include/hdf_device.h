@@ -28,7 +28,7 @@ struct IHdfDevice {
 struct HdfDevice {
     struct IHdfDevice super;
     struct DListHead node;
-    struct HdfSList services;
+    struct DListHead devNodes;
     uint16_t deviceId;
     uint16_t hostId;
 };

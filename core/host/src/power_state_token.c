@@ -11,7 +11,7 @@
 #include "hdf_device_desc.h"
 #include "hdf_slist.h"
 #include "osal_mem.h"
-#include "osal_sysevent.h"
+#include "hdf_power_state.h"
 
 static void PowerStateTokenOnFirstAcquire(struct HdfSRef *sref)
 {
@@ -21,27 +21,17 @@ static void PowerStateTokenOnFirstAcquire(struct HdfSRef *sref)
     struct PowerStateToken *stateToken = (struct PowerStateToken *)HDF_SLIST_CONTAINER_OF(
         struct HdfSRef, sref, struct PowerStateToken, wakeRef);
 
-    if (stateToken->state == POWER_STATE_ACTIVE) {
+    if (stateToken->psmState == PSM_STATE_ACTIVE) {
         return;
     }
 
-    struct IDevmgrService *devMgrSvcIf = NULL;
-    struct DevmgrServiceClnt *inst = DevmgrServiceClntGetInstance();
-    if (inst == NULL) {
-        return;
-    }
-    devMgrSvcIf = (struct IDevmgrService *)inst->devMgrSvcIf;
-    if (devMgrSvcIf != NULL && devMgrSvcIf->AcquireWakeLock != NULL) {
-        devMgrSvcIf->AcquireWakeLock(devMgrSvcIf, &stateToken->super);
-    }
-
-    if (stateToken->state == POWER_STATE_INACTIVE || stateToken->state == POWER_STATE_IDLE) {
+    if (stateToken->psmState == PSM_STATE_INACTIVE || stateToken->psmState == PSM_STATE_IDLE) {
         const struct IPowerEventListener *listener = stateToken->listener;
         if ((listener != NULL) && (listener->Resume != NULL)) {
             listener->Resume(stateToken->deviceObject);
         }
     }
-    stateToken->state = POWER_STATE_ACTIVE;
+    stateToken->psmState = PSM_STATE_ACTIVE;
 }
 
 static void PowerStateTokenOnLastRelease(struct HdfSRef *sref)
@@ -52,53 +42,40 @@ static void PowerStateTokenOnLastRelease(struct HdfSRef *sref)
     struct PowerStateToken *stateToken = (struct PowerStateToken *)HDF_SLIST_CONTAINER_OF(
         struct HdfSRef, sref, struct PowerStateToken, wakeRef);
 
-    if (stateToken->state != POWER_STATE_ACTIVE && stateToken->state != POWER_STATE_IDLE) {
+    if (stateToken->psmState != PSM_STATE_ACTIVE && stateToken->psmState != PSM_STATE_IDLE) {
         return;
     }
 
-    struct IDevmgrService *devMgrSvcIf = NULL;
     const struct IPowerEventListener *listener = stateToken->listener;
-    struct DevmgrServiceClnt *inst = DevmgrServiceClntGetInstance();
-    if (inst == NULL) {
-        return;
-    }
-
-    if (stateToken->state == POWER_STATE_ACTIVE) {
-        devMgrSvcIf = (struct IDevmgrService *)inst->devMgrSvcIf;
-        if ((devMgrSvcIf != NULL) && (devMgrSvcIf->AcquireWakeLock != NULL)) {
-            devMgrSvcIf->ReleaseWakeLock(devMgrSvcIf, &stateToken->super);
-        }
-    }
-
     if ((listener != NULL) && (listener->Suspend != NULL)) {
         listener->Suspend(stateToken->deviceObject);
     }
-    stateToken->state = POWER_STATE_INACTIVE;
+    stateToken->psmState = PSM_STATE_INACTIVE;
 }
 
-int PowerStateOnSysStateChange(struct PowerStateToken *stateToken, int32_t state)
+int PowerStateChange(struct PowerStateToken *stateToken, uint32_t pEvent)
 {
     if (stateToken == NULL || stateToken->listener == NULL || stateToken->mode != HDF_POWER_SYS_CTRL) {
         return HDF_SUCCESS;
     }
 
-    switch (state) {
-        case KEVENT_POWER_SUSPEND:
+    switch (pEvent) {
+        case POWER_STATE_SUSPEND:
             if (stateToken->listener->Suspend != NULL) {
                 return stateToken->listener->Suspend(stateToken->deviceObject);
             }
             break;
-        case KEVENT_POWER_RESUME:
+        case POWER_STATE_RESUME:
             if (stateToken->listener->Resume != NULL) {
                 return stateToken->listener->Resume(stateToken->deviceObject);
             }
             break;
-        case KEVENT_POWER_DISPLAY_OFF:
+        case POWER_STATE_DOZE_SUSPEND:
             if (stateToken->listener->DozeSuspend != NULL) {
                 return stateToken->listener->DozeSuspend(stateToken->deviceObject);
             }
             break;
-        case KEVENT_POWER_DISPLAY_ON:
+        case POWER_STATE_DOZE_RESUME:
             if (stateToken->listener->DozeResume != NULL) {
                 return stateToken->listener->DozeResume(stateToken->deviceObject);
             }
@@ -158,7 +135,7 @@ static int32_t PowerStateTokenConstruct(struct PowerStateToken *powerStateToken,
     srefListener->OnFirstAcquire = PowerStateTokenOnFirstAcquire;
     srefListener->OnLastRelease = PowerStateTokenOnLastRelease;
 
-    powerStateToken->state = POWER_STATE_IDLE;
+    powerStateToken->psmState = PSM_STATE_IDLE;
     powerStateToken->listener = listener;
     powerStateToken->deviceObject = deviceObject;
     HdfSRefConstruct(&powerStateToken->wakeRef, srefListener);

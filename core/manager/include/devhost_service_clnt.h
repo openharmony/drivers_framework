@@ -14,7 +14,7 @@
 #include "hdf_map.h"
 
 struct DevHostServiceClnt {
-    struct HdfSListNode node;
+    struct DListHead node;
     struct HdfSList devices;
     struct HdfSList *deviceInfos;
     Map *deviceHashMap;
@@ -28,6 +28,6 @@ struct DevHostServiceClnt {
 int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt);
 struct DevHostServiceClnt *DevHostServiceClntNewInstance(uint16_t hostId, const char *hostName);
 void DevHostServiceClntFreeInstance(struct DevHostServiceClnt *hostClnt);
-void DevHostServiceClntDelete(struct HdfSListNode *listEntry);
+void DevHostServiceClntDelete(struct DevHostServiceClnt *hostClnt);
 
 #endif /* DEVHOST_SERVICE_CLNT_H */

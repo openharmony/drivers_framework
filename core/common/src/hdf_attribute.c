@@ -291,7 +291,6 @@ struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *h
 
 bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const void *privateData)
 {
-    struct HdfSListIterator itHost;
     struct HdfSListIterator itDeviceInfo;
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct DevHostServiceClnt *hostClnt = NULL;
@@ -304,9 +303,7 @@ bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const voi
     if (deviceNodeInfo == NULL) {
         return false;
     }
-    HdfSListIteratorInit(&itHost, &devMgrSvc->hosts);
-    while (HdfSListIteratorHasNext(&itHost)) {
-        hostClnt = (struct DevHostServiceClnt *)HdfSListIteratorNext(&itHost);
+    DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
         HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
         while (HdfSListIteratorHasNext(&itDeviceInfo)) {
             deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
@@ -350,7 +347,6 @@ bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const voi
 
 void HdfDeviceListDel(const char *moduleName, const char *serviceName)
 {
-    struct HdfSListIterator itHost;
     struct HdfSListIterator itDeviceInfo;
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct DevHostServiceClnt *hostClnt = NULL;
@@ -359,9 +355,7 @@ void HdfDeviceListDel(const char *moduleName, const char *serviceName)
         return;
     }
 
-    HdfSListIteratorInit(&itHost, &devMgrSvc->hosts);
-    while (HdfSListIteratorHasNext(&itHost)) {
-        hostClnt = (struct DevHostServiceClnt *)HdfSListIteratorNext(&itHost);
+    DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
         HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
         while (HdfSListIteratorHasNext(&itDeviceInfo)) {
             deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);

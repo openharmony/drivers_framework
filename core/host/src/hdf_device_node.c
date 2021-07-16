@@ -170,13 +170,12 @@ void HdfDeviceNodeFreeInstance(struct HdfDeviceNode *devNode)
     HdfObjectManagerFreeObject((struct HdfObject *) devNode);
 }
 
-void HdfDeviceNodeDelete(struct HdfSListNode *deviceEntry)
+void HdfDeviceNodeDelete(struct HdfDeviceNode *devNode)
 {
-    if (deviceEntry == NULL) {
+    if (devNode == NULL) {
         return;
     }
-    struct HdfDeviceNode *devNode =
-        HDF_SLIST_CONTAINER_OF(struct HdfSListNode, deviceEntry, struct HdfDeviceNode, entry);
+
     if (devNode->driverEntry->Release != NULL) {
         devNode->driverEntry->Release(&devNode->deviceObject);
     }

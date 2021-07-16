@@ -12,6 +12,7 @@
 #include "hdf_device.h"
 #include "hdf_device_info.h"
 #include "hdf_device_desc.h"
+#include "hdf_dlist.h"
 #include "hdf_pm.h"
 
 struct HdfDeviceNode;
@@ -25,7 +26,7 @@ struct IDeviceNode {
 
 struct HdfDeviceNode {
     struct IDeviceNode super;
-    struct HdfSListNode entry;
+    struct DListHead entry;
     struct PowerStateToken *powerToken;
     struct DevHostService *hostService;
     struct HdfDeviceObject deviceObject;
@@ -42,7 +43,7 @@ void HdfDeviceNodeConstruct(struct HdfDeviceNode *service);
 void HdfDeviceNodeDestruct(struct HdfDeviceNode *service);
 struct HdfDeviceNode *HdfDeviceNodeNewInstance(void);
 void HdfDeviceNodeFreeInstance(struct HdfDeviceNode *service);
-void HdfDeviceNodeDelete(struct HdfSListNode *deviceEntry);
+void HdfDeviceNodeDelete(struct HdfDeviceNode *devNode);
 int HdfDeviceNodePublishPublicService(struct HdfDeviceNode *service, const char *svcName);
 void HdfDeviceNodeReclaimService(const char *svcName);
 

@@ -26,19 +26,23 @@ static int HdfDeviceAttach(struct IHdfDevice *devInst, struct HdfDeviceNode *dev
         HDF_LOGE("failed to attach device, input params invalid");
         return HDF_ERR_INVALID_PARAM;
     }
-    HdfSListAdd(&device->services, &devNode->entry);
+    DListInsertTail(&devNode->entry, &device->devNodes);
     return nodeIf->LaunchNode(devNode, devInst);
 }
 
 void HdfDeviceConstruct(struct HdfDevice *device)
 {
     device->super.Attach = HdfDeviceAttach;
-    HdfSListInit(&device->services);
+    DListHeadInit(&device->devNodes);
 }
 
 void HdfDeviceDestruct(struct HdfDevice *device)
 {
-    HdfSListFlush(&device->services, HdfDeviceNodeDelete);
+    struct HdfDeviceNode *devNode = NULL;
+    DLIST_FOR_EACH_ENTRY(devNode, &device->devNodes, struct HdfDeviceNode, entry) {
+        HdfDeviceNodeDelete(devNode);
+    }
+    DListHeadInit(&device->devNodes);
 }
 
 struct HdfObject *HdfDeviceCreate()

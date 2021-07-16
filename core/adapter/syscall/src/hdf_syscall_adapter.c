@@ -1046,17 +1046,6 @@ void HdfIoServiceGroupRemoveService(struct HdfIoServiceGroup *group, struct HdfI
     adapter->group = NULL;
 }
 
-static int DlistGetCount(const struct DListHead *head)
-{
-    struct DListHead *next = head->next;
-    int count = 0;
-    while (next != head) {
-        next = next->next;
-        count++;
-    }
-    return count;
-}
-
 int HdfIoserviceGetListenerCount(const struct HdfIoService *service)
 {
     if (service == NULL) {

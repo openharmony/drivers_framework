@@ -13,6 +13,7 @@
 #include "device_token_if.h"
 #include "hdf_object.h"
 #include "power_state_token_if.h"
+#include "hdf_power_state.h"
 
 struct IDevmgrService {
     struct HdfObject base;
@@ -20,8 +21,7 @@ struct IDevmgrService {
     int (*AttachDeviceHost)(struct IDevmgrService *, uint16_t, struct IDevHostService *);
     int (*AttachDevice)(struct IDevmgrService *, const struct HdfDeviceInfo *, struct IHdfDeviceToken *);
     int (*StartService)(struct IDevmgrService *);
-    void (*AcquireWakeLock)(struct IDevmgrService *, struct IPowerStateToken *);
-    void (*ReleaseWakeLock)(struct IDevmgrService *, struct IPowerStateToken *);
+    int (*PowerStateChange)(struct IDevmgrService *, enum HdfPowerState pEvent);
 };
 
 #endif /* DEVMGR_SERVICE_IF_H */
