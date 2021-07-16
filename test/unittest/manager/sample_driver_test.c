@@ -37,7 +37,7 @@ int32_t SampleDriverRegisterDevice(struct HdfSBuf *data)
         return HDF_FAILURE;
     }
 
-    struct HdfDeviceObject *devObj = HdfRegisterDevice(moduleName, serviceName);
+    struct HdfDeviceObject *devObj = HdfRegisterDevice(moduleName, serviceName, NULL);
     if (devObj == NULL) {
         return HDF_FAILURE;
     }

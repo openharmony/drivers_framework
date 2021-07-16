@@ -64,10 +64,10 @@ struct HdfDeviceObject *DevSvcManagerClntGetDeviceObject(const char *svcName)
     return serviceManager->GetObject(serviceManager, svcName);
 }
 
-struct HdfDeviceObject *HdfRegisterDevice(const char *moduleName, const char *serviceName)
+struct HdfDeviceObject *HdfRegisterDevice(const char *moduleName, const char *serviceName, const void *privateData)
 {
     int ret;
-    if (!HdfDeviceListAdd(moduleName, serviceName)) {
+    if (!HdfDeviceListAdd(moduleName, serviceName, privateData)) {
         HDF_LOGE("%s device info add failed!", __func__);
         return NULL;
     }

@@ -52,7 +52,7 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
         return NULL;
     }
 
-    hdfDev = HdfRegisterDevice(moduleName, svcName);
+    hdfDev = HdfRegisterDevice(moduleName, svcName, NULL);
     if (hdfDev == NULL) {
         HDF_LOGE("%s: HdfRegisterDevice failed", __func__);
     }

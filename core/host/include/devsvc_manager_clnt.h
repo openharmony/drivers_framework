@@ -21,7 +21,7 @@ int DevSvcManagerClntAddService(const char *svcName, struct HdfDeviceObject *ser
 void DevSvcManagerClntRemoveService(const char *svcName);
 int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCallback callback);
 int DevSvcManagerClntUnsubscribeService(const char *svcName);
-struct HdfDeviceObject *HdfRegisterDevice(const char *moduleName, const char *serviceName);
+struct HdfDeviceObject *HdfRegisterDevice(const char *moduleName, const char *serviceName, const void *privateData);
 void HdfUnregisterDevice(const char *moduleName, const char *serviceName);
 
 #endif /* DEVSVC_MANAGER_CLNT_H */

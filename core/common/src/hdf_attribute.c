@@ -18,6 +18,9 @@
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "securec.h"
+#ifdef LOSCFG_DRIVERS_HDF_USB_PNP_NOTIFY
+#include "usb_pnp_manager.h"
+#endif
 
 #define ATTR_HOST_NAME "hostName"
 #define ATTR_DEV_POLICY "policy"
@@ -286,7 +289,7 @@ struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *h
     return deviceList;
 }
 
-bool HdfDeviceListAdd(const char *moduleName, const char *serviceName)
+bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const void *privateData)
 {
     struct HdfSListIterator itHost;
     struct HdfSListIterator itDeviceInfo;
@@ -330,6 +333,11 @@ bool HdfDeviceListAdd(const char *moduleName, const char *serviceName)
                     break;
                 }
                 deviceNodeInfo->svcName = svcName;
+#ifdef LOSCFG_DRIVERS_HDF_USB_PNP_NOTIFY
+                if (!UsbPnpManagerAddPrivateData(deviceNodeInfo, privateData)) {
+                    break;
+                }
+#endif
                 HdfSListAdd(hostClnt->deviceInfos, &deviceNodeInfo->node);
                 hostClnt->devCount++;
                 return true;
