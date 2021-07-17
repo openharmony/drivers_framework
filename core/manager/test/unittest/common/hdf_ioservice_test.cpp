@@ -39,7 +39,7 @@ public:
     static struct Eventlistener listener0;
     static struct Eventlistener listener1;
     const char *testSvcName = SAMPLE_SERVICE;
-    const int eventWaitTimeUs = (50 * 1000);
+    const int eventWaitTimeUs = (150 * 1000);
     static int eventCount;
 };
 
