@@ -361,11 +361,21 @@ static int32_t HdfHIDDriverBind(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
+static void HdfHIDDriverRelease(struct HdfDeviceObject *device)
+{
+    FreeCachedInfo();
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return;
+    }
+}
+
 struct HdfDriverEntry g_hdfHIDEntry = {
     .moduleVersion = 1,
     .moduleName = "HDF_HID",
     .Bind = HdfHIDDriverBind,
     .Init = HdfHIDDriverInit,
+    .Release = HdfHIDDriverRelease,
 };
 
 HDF_INIT(g_hdfHIDEntry);
