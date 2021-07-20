@@ -406,7 +406,7 @@ int32_t AudioBindDaiLink(struct AudioCard *audioCard, struct AudioConfigData *co
 int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec, struct AudioMixerControl *mixerControl, int32_t value)
 {
     int32_t ret;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     int32_t mixerControlMask;
     if (codec == NULL || codec->devData == NULL || codec->devData->Write == NULL || mixerControl == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
@@ -440,7 +440,7 @@ int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
     struct AudioMixerControl *mixerControl, int32_t value)
 {
     int32_t ret;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     int32_t mixerControlMask;
     if (accessory == NULL || accessory->devData == NULL ||
         accessory->devData->Write == NULL || mixerControl == NULL) {
@@ -502,7 +502,7 @@ int32_t AudioUpdateRegBits(enum AudioDeviceType deviceType, void *device,
 int32_t AudioAiaoUpdateRegBits(struct CodecDevice *codec, uint32_t reg, uint32_t mask, uint32_t shift, int32_t value)
 {
     int32_t ret;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     ADM_LOG_DEBUG("Entry to update AIAO reg bits.");
 
     if (codec == NULL || codec->devData == NULL || codec->devData->AiaoWrite == NULL) {

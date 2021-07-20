@@ -317,9 +317,9 @@ static void MuxSetPathStatus(const struct AudioSapmComponent *cpt, struct AudioS
     const struct AudioEnumKcontrol *enumKtl, int32_t i)
 {
     int32_t ret;
-    uint32_t val;
+    uint32_t val = 0;
     int32_t item;
-    uint32_t reg;
+    uint32_t reg = 0;
     uint32_t shift;
 
     if ((cpt == NULL) || (path == NULL) || (enumKtl == NULL)) {
@@ -349,7 +349,7 @@ static void MuxValueSetPathStatus(const struct AudioSapmComponent *cpt, struct A
     const struct AudioEnumKcontrol *enumKtl, int32_t i)
 {
     int32_t ret;
-    uint32_t val;
+    uint32_t val = 0;
     uint32_t item;
     uint32_t reg = 0;
     uint32_t shift;
@@ -389,7 +389,7 @@ static void MixerSetPathStatus(const struct AudioSapmComponent *cpt, struct Audi
     uint32_t mask;
     uint32_t shift;
     uint32_t invert;
-    uint32_t curValue;
+    uint32_t curValue = 0;
 
     if ((cpt == NULL) || (path == NULL) || (mixerCtrl == NULL)) {
         ADM_LOG_ERR("input params check error: cpt=%p, path=%p, mixerCtrl=%p.", cpt, path, mixerCtrl);
@@ -871,7 +871,7 @@ int32_t AudioSapmPowerComponents(struct AudioCard *audioCard)
 static void ReadInitComponentPowerStatus(struct AudioSapmComponent *cpt)
 {
     int32_t ret;
-    uint32_t regVal;
+    uint32_t regVal = 0;
 
     if (cpt == NULL) {
         ADM_LOG_ERR("input param cpt is NULL.");
@@ -1068,7 +1068,7 @@ int32_t AudioSapmPutCtrlSwSub(struct AudioKcontrol *kcontrol, struct AudioCtrlEl
     int32_t ret = HDF_FAILURE;
     void *device = NULL;
     enum AudioDeviceType deviceType;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     struct CodecDevice *codec = AudioKcontrolGetCodec(kcontrol);
     struct AccessoryDevice *accessory = AudioKcontrolGetAccessory(kcontrol);
 

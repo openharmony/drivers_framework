@@ -44,7 +44,7 @@ int32_t AudioFillConfigData(struct HdfDeviceObject *device, struct AudioConfigDa
     if (serviceRet || codecRet || platformRet || cpuRet || codeDaiRet ||
         dspRet || dspDaiRet || accessoryRet || accessoryDaiRet) {
         ADM_LOG_ERR("Read audioDeviceName fail: serviceRet=%d, codecRet=%d, platformRet=%d, cpuRet=%d, codeDaiRet=%d,"
-            "dspRet=%d, dspDaiRet=%d, accessoryRet=%d, accessoryDaiRet=%s",
+            "dspRet=%d, dspDaiRet=%d, accessoryRet=%d, accessoryDaiRet=%d",
             serviceRet, codecRet, platformRet, cpuRet, codeDaiRet, dspRet,
             dspDaiRet, accessoryRet, accessoryDaiRet);
         return HDF_FAILURE;
