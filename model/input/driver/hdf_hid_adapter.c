@@ -77,6 +77,18 @@ void SendInfoToHdf(HidInfo *info)
     }
 }
 
+static void FreeCachedInfo()
+{
+    int32_t id = 0;
+    while (id < MAX_INPUT_DEV_NUM) {
+        if (g_cachedInfo[id] != NULL) {
+            OsalMemFree(g_cachedInfo[id]);
+            g_cachedInfo[id] = NULL;
+        }
+        id++;
+    }
+}
+
 static void SetInputDevAbility(InputDevice *inputDev)
 {
     HidInfo *info = NULL;
@@ -120,8 +132,7 @@ static void SetInputDevAbility(InputDevice *inputDev)
     inputDev->attrSet.id.product = info->product;
     inputDev->attrSet.id.version = info->version;
 
-    OsalMemFree(g_cachedInfo[id]);
-    g_cachedInfo[id] = NULL;
+    FreeCachedInfo();
 }
 
 static InputDevice* HidConstructInputDev(HidInfo *info)
@@ -132,7 +143,6 @@ static InputDevice* HidConstructInputDev(HidInfo *info)
         return NULL;
     }
     (void)memset_s(inputDev, sizeof(InputDevice), 0, sizeof(InputDevice));
-
 
     inputDev->devType = info->devType;
     inputDev->devName = info->devName;
