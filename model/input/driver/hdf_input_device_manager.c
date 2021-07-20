@@ -62,13 +62,11 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
 
 static void HotPlugNotify(const InputDevice *inputDev, uint32_t status)
 {
-    struct HdfSBuf *sbuf = NULL;
     HotPlugEvent event = {0};
     int32_t ret;
 
-    sbuf = HdfSBufObtain(sizeof(HotPlugEvent));
-    if (sbuf == NULL) {
-        HDF_LOGE("%s: obtain buffer failed", __func__);
+    if (inputDev->eventBuf == NULL) {
+        HDF_LOGE("%s: event buffer is null", __func__);
         return;
     }
 
@@ -76,16 +74,16 @@ static void HotPlugNotify(const InputDevice *inputDev, uint32_t status)
     event.devType = inputDev->devType;
     event.status = status;
 
-    if (!HdfSbufWriteBuffer(sbuf, &event, sizeof(HotPlugEvent))) {
+    if (!HdfSbufWriteBuffer(inputDev->eventBuf, &event, sizeof(HotPlugEvent))) {
         HDF_LOGE("%s: write buffer failed", __func__);
-        HdfSbufFlush(sbuf);
+        HdfSbufFlush(inputDev->eventBuf);
         return;
     }
-    ret = HdfDeviceSendEvent(g_inputManager->hdfDevObj, 0, sbuf);
+    ret = HdfDeviceSendEvent(g_inputManager->hdfDevObj, 0, inputDev->eventBuf);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: send event failed", __func__);
     }
-    HdfSbufFlush(sbuf);
+    HdfSbufFlush(inputDev->eventBuf);
 }
 
 static int32_t CreateDeviceNode(InputDevice *inputDev)
@@ -230,6 +228,11 @@ static int32_t AllocPackageBuffer(InputDevice *inputDev)
         HDF_LOGE("%s: malloc sbuf failed", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
+    inputDev->eventBuf = HdfSBufObtain(sizeof(HotPlugEvent));
+    if (inputDev->eventBuf == NULL) {
+        HDF_LOGE("%s: malloc sbuf failed", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
     inputDev->pkgNum = pkgNum;
     return HDF_SUCCESS;
 }
@@ -320,12 +323,14 @@ void UnregisterInputDevice(InputDevice *inputDev)
     }
 
     DeleteDeviceNode(inputDev);
-    OsalMemFree(inputDev->pkgBuf);
+    HdfSBufRecycle(inputDev->pkgBuf);
     inputDev->pkgBuf = NULL;
     ret = DeleteInputDevice(inputDev);
     if (ret != HDF_SUCCESS) {
         goto EXIT;
     }
+    HdfSBufRecycle(inputDev->eventBuf);
+    inputDev->eventBuf = NULL;
     OsalMemFree(inputDev);
     inputDev = NULL;
     OsalMutexUnlock(&g_inputManager->mutex);

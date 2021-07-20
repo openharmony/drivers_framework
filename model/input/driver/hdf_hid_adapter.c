@@ -15,7 +15,7 @@
 #include "hdf_hid_adapter.h"
 
 InputDevice *cachedHid[MAX_INPUT_DEV_NUM];
-HidInfo cachedInfo[MAX_INPUT_DEV_NUM];
+HidInfo *g_cachedInfo[MAX_INPUT_DEV_NUM];
 
 static bool HaveHidCache(void)
 {
@@ -47,7 +47,7 @@ static int cachedPosId(void)
 {
     int32_t id = 0;
     while (id < MAX_INPUT_DEV_NUM) {
-        if (cachedInfo[id].devName == NULL) {
+        if (g_cachedInfo[id] == NULL) {
             return id;
         }
         id++;
@@ -55,24 +55,48 @@ static int cachedPosId(void)
     return HDF_FAILURE;
 }
 
-void GetInfoFromHid(HidInfo info)
+void SendInfoToHdf(HidInfo *info)
 {
+    int ret;
     int32_t id = cachedPosId();
     if (id == HDF_FAILURE) {
         HDF_LOGE("%s: cached hid info failed", __func__);
         return;
     }
-    cachedInfo[id] = info;
+    g_cachedInfo[id] = (HidInfo *)OsalMemAlloc(sizeof(HidInfo));
+    if (g_cachedInfo[id] == NULL) {
+        HDF_LOGE("%s: malloc failed", __func__);
+        return;
+    }
+    ret = memcpy_s(g_cachedInfo[id], sizeof(HidInfo), info, sizeof(HidInfo));
+    if (ret != 0) {
+        HDF_LOGE("%s: memcpy failed", __func__);
+        OsalMemFree(g_cachedInfo[id]);
+        g_cachedInfo[id] = NULL;
+        return;
+    }
+}
+
+static void FreeCachedInfo()
+{
+    int32_t id = 0;
+    while (id < MAX_INPUT_DEV_NUM) {
+        if (g_cachedInfo[id] != NULL) {
+            OsalMemFree(g_cachedInfo[id]);
+            g_cachedInfo[id] = NULL;
+        }
+        id++;
+    }
 }
 
 static void SetInputDevAbility(InputDevice *inputDev)
 {
-    HidInfo info;
+    HidInfo *info = NULL;
     int32_t id = 0;
     uint32_t len;
     while (id < MAX_INPUT_DEV_NUM) {
-        if(cachedInfo[id].devName != NULL && !strcmp(inputDev->devName, cachedInfo[id].devName)) {
-            info = cachedInfo[id];
+        if(g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
+            info = g_cachedInfo[id];
             break;
         }
         id++;
@@ -83,35 +107,35 @@ static void SetInputDevAbility(InputDevice *inputDev)
     }
     len = sizeof(unsigned long);
     memcpy_s(inputDev->abilitySet.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT),
-        info.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT));
+        info->devProp, len * BITS_TO_LONG(INPUT_PROP_CNT));
     memcpy_s(inputDev->abilitySet.eventType, len * BITS_TO_LONG(EV_CNT),
-        info.eventType, len * BITS_TO_LONG(EV_CNT));
+        info->eventType, len * BITS_TO_LONG(EV_CNT));
     memcpy_s(inputDev->abilitySet.absCode, len * BITS_TO_LONG(ABS_CNT),
-        info.absCode, len * BITS_TO_LONG(ABS_CNT));
+        info->absCode, len * BITS_TO_LONG(ABS_CNT));
     memcpy_s(inputDev->abilitySet.relCode, len * BITS_TO_LONG(REL_CNT),
-        info.relCode, len * BITS_TO_LONG(REL_CNT));
+        info->relCode, len * BITS_TO_LONG(REL_CNT));
     memcpy_s(inputDev->abilitySet.keyCode, len * BITS_TO_LONG(KEY_CNT),
-        info.keyCode, len * BITS_TO_LONG(KEY_CNT));
+        info->keyCode, len * BITS_TO_LONG(KEY_CNT));
     memcpy_s(inputDev->abilitySet.ledCode, len * BITS_TO_LONG(LED_CNT),
-        info.ledCode, len * BITS_TO_LONG(LED_CNT));
+        info->ledCode, len * BITS_TO_LONG(LED_CNT));
     memcpy_s(inputDev->abilitySet.miscCode, len * BITS_TO_LONG(MSC_CNT),
-        info.miscCode, len * BITS_TO_LONG(MSC_CNT));
+        info->miscCode, len * BITS_TO_LONG(MSC_CNT));
     memcpy_s(inputDev->abilitySet.soundCode, len * BITS_TO_LONG(SND_CNT),
-        info.soundCode, len * BITS_TO_LONG(SND_CNT));
+        info->soundCode, len * BITS_TO_LONG(SND_CNT));
     memcpy_s(inputDev->abilitySet.forceCode, len * BITS_TO_LONG(FF_CNT),
-        info.forceCode, len * BITS_TO_LONG(FF_CNT));
+        info->forceCode, len * BITS_TO_LONG(FF_CNT));
     memcpy_s(inputDev->abilitySet.switchCode, len * BITS_TO_LONG(SW_CNT),
-        info.switchCode, len * BITS_TO_LONG(SW_CNT));
+        info->switchCode, len * BITS_TO_LONG(SW_CNT));
 
-    inputDev->attrSet.id.busType = info.bustype;
-    inputDev->attrSet.id.vendor = info.vendor;
-    inputDev->attrSet.id.product = info.product;
-    inputDev->attrSet.id.version = info.version;
+    inputDev->attrSet.id.busType = info->bustype;
+    inputDev->attrSet.id.vendor = info->vendor;
+    inputDev->attrSet.id.product = info->product;
+    inputDev->attrSet.id.version = info->version;
 
-    cachedInfo[id].devName = NULL;
+    FreeCachedInfo();
 }
 
-static InputDevice* HidConstructInputDev(HidInfo info)
+static InputDevice* HidConstructInputDev(HidInfo *info)
 {
     InputDevice *inputDev = (InputDevice *)OsalMemAlloc(sizeof(InputDevice));
     if (inputDev == NULL) {
@@ -120,28 +144,25 @@ static InputDevice* HidConstructInputDev(HidInfo info)
     }
     (void)memset_s(inputDev, sizeof(InputDevice), 0, sizeof(InputDevice));
 
-    inputDev->devType = info.devType;
-    inputDev->devName = info.devName;
+    inputDev->devType = info->devType;
+    inputDev->devName = info->devName;
     SetInputDevAbility(inputDev);
 
     return inputDev;
 }
 
-static InputDevice* DoRegisterInputDev(InputDevice* inputDev)
+static void DoRegisterInputDev(InputDevice* inputDev)
 {
     int32_t ret;
-
     ret = RegisterInputDevice(inputDev);
-    if (ret == HDF_SUCCESS) {
-        return inputDev;
-    } else {
+    if (ret != HDF_SUCCESS) {
         OsalMemFree(inputDev);
         inputDev = NULL;
-        return NULL;
+        return;
     }
 }
 
-static InputDevice* CacheHid(InputDevice* inputDev)
+static void CacheHid(InputDevice* inputDev)
 {
     int32_t i = 0;
     while ((i < MAX_INPUT_DEV_NUM) && (cachedHid[i] != NULL)) {
@@ -149,9 +170,10 @@ static InputDevice* CacheHid(InputDevice* inputDev)
     }
     if (i < MAX_INPUT_DEV_NUM) {
         cachedHid[i] = inputDev;
-        return inputDev;
+        return;
+    } else {
+        HDF_LOGE("%s: cached hid device failed", __func__);
     }
-    return NULL;
 }
 
 static bool InputDriverLoaded(void)
@@ -163,7 +185,7 @@ static bool InputDriverLoaded(void)
     return false;
 }
 
-void* HidRegisterHdfInputDev(HidInfo info)
+void* HidRegisterHdfInputDev(HidInfo *info)
 {
     InputDevice* inputDev = HidConstructInputDev(info);
     if (inputDev == NULL) {
@@ -172,10 +194,11 @@ void* HidRegisterHdfInputDev(HidInfo info)
     }
 
     if (InputDriverLoaded()) {
-        return DoRegisterInputDev(inputDev);
+        DoRegisterInputDev(inputDev);
     } else {
-        return CacheHid(inputDev);
+        CacheHid(inputDev);
     }
+    return inputDev;
 }
 
 void HidUnregisterHdfInputDev(const void *inputDev)
@@ -338,11 +361,21 @@ static int32_t HdfHIDDriverBind(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
+static void HdfHIDDriverRelease(struct HdfDeviceObject *device)
+{
+    FreeCachedInfo();
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return;
+    }
+}
+
 struct HdfDriverEntry g_hdfHIDEntry = {
     .moduleVersion = 1,
     .moduleName = "HDF_HID",
     .Bind = HdfHIDDriverBind,
     .Init = HdfHIDDriverInit,
+    .Release = HdfHIDDriverRelease,
 };
 
 HDF_INIT(g_hdfHIDEntry);

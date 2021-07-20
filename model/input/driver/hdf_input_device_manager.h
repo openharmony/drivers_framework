@@ -20,7 +20,7 @@
 #define HDF_LOG_TAG HDF_INPUT_DRV
 #define INPUT_DEV_PATH_LEN 64
 #define MAX_INPUT_DEV_NUM  32
-#define DEV_NAME_LEN 32
+#define DEV_NAME_LEN 64
 #define ONLINE    0
 #define OFFLINE   1
 
@@ -108,6 +108,7 @@ typedef struct InputDeviceInfo {
     uint16_t pkgCount;
     bool errFrameFlag;
     struct HdfSBuf *pkgBuf;
+    struct HdfSBuf *eventBuf;
     void *pvtData;
     DevAttr attrSet;
     DevAbility abilitySet;

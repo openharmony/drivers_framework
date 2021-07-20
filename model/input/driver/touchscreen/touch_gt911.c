@@ -15,9 +15,9 @@
 #include "touch_gt911.h"
 
 #define AXIS_X_MAX 479
-#define AXIS_X_RANGE 480
+#define AXIS_X_RANGE 0
 #define AXIS_Y_MAX 959
-#define AXIS_Y_RANGE 960
+#define AXIS_Y_RANGE 0
 #define MAX_POINT 5
 
 static int32_t ChipInit(ChipDevice *device)
