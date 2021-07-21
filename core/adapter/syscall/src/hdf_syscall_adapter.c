@@ -217,6 +217,7 @@ static int32_t HdfDevEventListenTask(void *para)
     uint16_t pfdSize = 0;
     int32_t pollCount = 0;
 
+    thread->status = LISTENER_RUNNING;
     while (!thread->shouldStop) {
         if (thread->pollChanged) {
             pollCount = AssignPfds(thread, &pfds, &pfdSize);
@@ -322,6 +323,7 @@ static int32_t HdfDevListenerThreadDoInit(struct HdfDevListenerThread *thread)
 static int32_t HdfDevListenerThreadInit(struct HdfDevListenerThread *thread)
 {
     switch (thread->status) {
+        case LISTENER_STARTED: // fall-through
         case LISTENER_RUNNING: // fall-through
         case LISTENER_INITED: // fall-through
         case LISTENER_WAITING:
@@ -410,7 +412,7 @@ static int32_t HdfListenThreadInitPollFds(struct HdfDevListenerThread *thread)
 
 static int32_t HdfDevListenerThreadStart(struct HdfDevListenerThread *thread)
 {
-    if (thread->status == LISTENER_RUNNING) {
+    if (thread->status >= LISTENER_STARTED) {
         return HDF_SUCCESS;
     }
 
@@ -445,7 +447,7 @@ static int32_t HdfDevListenerThreadStart(struct HdfDevListenerThread *thread)
             ret = HDF_FAILURE;
             break;
         }
-        thread->status = LISTENER_RUNNING;
+        thread->status = LISTENER_STARTED;
         return HDF_SUCCESS;
     } while (0);
 
@@ -505,7 +507,7 @@ static int32_t HdfListenThreadPollAdd(struct HdfDevListenerThread *thread, struc
 
     DListInsertTail(&adapter->listNode, thread->adapterListPtr);
 
-    if (thread->status != LISTENER_RUNNING) {
+    if (thread->status < LISTENER_STARTED) {
         OsalMutexUnlock(&thread->mutex);
         return HDF_SUCCESS;
     }
@@ -613,6 +615,9 @@ static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
 
             return;
         }
+        case LISTENER_STARTED:
+            thread->shouldStop = true;
+            break;
         case LISTENER_EXITED: // fall-through
         case LISTENER_INITED:
             HdfDevListenerThreadFree(thread);
@@ -910,7 +915,7 @@ int32_t HdfIoServiceGroupRegisterListener(struct HdfIoServiceGroup *group, struc
         }
     }
     DListInsertTail(&listener->listNode, &adapterGroup->listenerList);
-    if (!DListIsEmpty(&adapterGroup->adapterList) && listenerThread->status != LISTENER_RUNNING) {
+    if (!DListIsEmpty(&adapterGroup->adapterList) && listenerThread->status < LISTENER_STARTED) {
         ret = HdfDevListenerThreadStart(listenerThread);
         if (ret != HDF_SUCCESS) {
             DListRemove(&listener->listNode);
@@ -1011,7 +1016,7 @@ int32_t HdfIoServiceGroupAddService(struct HdfIoServiceGroup *group, struct HdfI
 
     OsalMutexLock(&listenerThread->mutex);
     if ((!DListIsEmpty(&adapterGroup->listenerList) || !DListIsEmpty(&adapter->listenerList)) &&
-        listenerThread->status != LISTENER_RUNNING) {
+        listenerThread->status < LISTENER_STARTED) {
         ret = HdfDevListenerThreadStart(adapterGroup->thread);
         if (ret != HDF_SUCCESS) {
             HdfListenThreadPollDel(adapterGroup->thread, adapter);
