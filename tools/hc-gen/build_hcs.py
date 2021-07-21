@@ -31,12 +31,38 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import fcntl
 import os
 import sys
 import argparse
 import platform
 import subprocess
 import time
+
+_LOCK_FILE_NAME = "._lock"
+_BUILD_DIR = 'build'
+_LOCK_FILE = ''
+
+
+def lock():
+    global _LOCK_FILE
+    global _BUILD_DIR
+    global _LOCK_FILE_NAME
+    if not os.path.exists(_BUILD_DIR):
+        os.mkdir(_BUILD_DIR)
+    lock_file = os.path.join(_BUILD_DIR, _LOCK_FILE_NAME)
+    if not os.path.exists(lock_file):
+        with open(lock_file, 'w') as l_file:
+            l_file.write("lock")
+            l_file.close
+    print('hc-gen lock file ' + lock_file)
+    _LOCK_FILE = open(lock_file, 'r')
+    fcntl.flock(_LOCK_FILE.fileno(), fcntl.LOCK_EX)
+
+
+def unlock():
+    global _LOCK_FILE
+    _LOCK_FILE.close()
 
 
 def exec_command(cmd):
@@ -57,14 +83,20 @@ def prepare(current_dir):
 
 
 def main(argv):
+    lock()
     current_dir = os.path.split(os.path.realpath(__file__))[0]
     hc_gen = os.path.join(current_dir, 'build', 'hc-gen')
 
-    build_hcs_cmd = [hc_gen] + argv[1:]
+    host_hc_gen = argv[1]
+    if (os.path.exists(host_hc_gen)):
+        build_hcs_cmd = argv[1:]
+    else:
+        prepare(current_dir)
+        build_hcs_cmd = [hc_gen] + argv[1:]
 
     prepare(current_dir)
     exec_command(build_hcs_cmd)
-
+    unlock()
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
