@@ -95,18 +95,17 @@ uint64_t RtcTimeToTimestamp(const struct RtcTime *time)
         HDF_LOGE("RtcTimeToTimestamp: time invalid");
         return 0;
     }
-    
-   
+
     seconds = ((uint64_t)time->hour * RTC_MAX_MINUTE + time->minute) * RTC_MAX_SECOND + time->second;
     days = time->day - RTC_UNIT_DIFF;
     month = time->month;
     year = time->year;
 
-    for(month--; month >=  RTC_JANUARY; month--) {
+    for (month--; month >=  RTC_JANUARY; month--) {
         days += RtcGetMonthDays(IS_LEAP_YEAR(time->year), month);
     }
     
-    for(year--; year >= RTC_BEGIN_YEAR; year--) {
+    for (year--; year >= RTC_BEGIN_YEAR; year--) {
         days += RTC_YEAR_DAYS(year);
     }
 
