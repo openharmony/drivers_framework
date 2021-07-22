@@ -41,7 +41,7 @@ static int32_t AudioCodecDevInit(struct AudioCard *audioCard)
     }
 
     ADM_LOG_DEBUG("entry.");
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct CodecDevice *codec = NULL;
     rtd = audioCard->rtd;
     if (rtd == NULL) {
@@ -72,7 +72,7 @@ static int32_t AudioAccessoryDevInit(struct AudioCard *audioCard)
     }
 
     ADM_LOG_DEBUG("entry.");
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct AccessoryDevice *accessory = NULL;
     rtd = audioCard->rtd;
     if (rtd == NULL) {
@@ -97,11 +97,11 @@ static int32_t AudioAccessoryDevInit(struct AudioCard *audioCard)
 
 static int32_t AudioPlatformDevInit(struct AudioCard *audioCard)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
 
     if (audioCard == NULL) {
-        ADM_LOG_ERR("audioCard is NULL.");
+        ADM_LOG_ERR("input param is NULL.");
         return HDF_ERR_IO;
     }
     ADM_LOG_DEBUG("entry.");
@@ -113,7 +113,7 @@ static int32_t AudioPlatformDevInit(struct AudioCard *audioCard)
     }
     platform = rtd->platform;
     if (platform == NULL || platform->devData == NULL || platform->devData->PlatformInit == NULL) {
-        ADM_LOG_ERR("platform is NULL.");
+        ADM_LOG_ERR("audioCard is NULL.");
         return HDF_ERR_IO;
     }
     /* platform initialization */
@@ -129,7 +129,7 @@ static int32_t AudioPlatformDevInit(struct AudioCard *audioCard)
 
 static int32_t AudioCodecDaiDevInit(struct AudioCard *audioCard)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *codecDai = NULL;
 
     if (audioCard == NULL) {
@@ -161,7 +161,7 @@ static int32_t AudioCodecDaiDevInit(struct AudioCard *audioCard)
 
 static int32_t AudioAccessoryDaiDevInit(struct AudioCard *audioCard)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *accessoryDai = NULL;
 
     if (audioCard == NULL) {
@@ -193,7 +193,7 @@ static int32_t AudioAccessoryDaiDevInit(struct AudioCard *audioCard)
 
 static int32_t AudioCpuDaiDevInit(struct AudioCard *audioCard)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *cpuDai = NULL;
 
     if (audioCard == NULL) {
@@ -225,7 +225,7 @@ static int32_t AudioCpuDaiDevInit(struct AudioCard *audioCard)
 
 static int32_t AudioDspDaiDevInit(struct AudioCard *audioCard)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *dspDai = NULL;
     struct DspDevice *dsp = NULL;
     int ret;

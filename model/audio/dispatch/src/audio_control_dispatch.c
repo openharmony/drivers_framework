@@ -204,12 +204,12 @@ static int32_t ControlHostElemWrite(struct HdfDeviceIoClient *client, struct Hdf
     }
 
     kctrl = AudioGetKctrlInstance(&elemValue.id);
-    if (kctrl == NULL || kctrl->Put == NULL) {
-        ADM_LOG_ERR("Find kctrl or Put fail!");
+    if (kctrl == NULL || kctrl->Set == NULL) {
+        ADM_LOG_ERR("Find kctrl or Set fail!");
         return HDF_FAILURE;
     }
 
-    result = kctrl->Put(kctrl, &elemValue);
+    result = kctrl->Set(kctrl, &elemValue);
     if (result != HDF_SUCCESS) {
         ADM_LOG_ERR("Get control value fail result=%d", result);
         return HDF_FAILURE;

@@ -41,7 +41,7 @@ struct AudioCtrlElemValue {
 struct AudioKcontrol;
 typedef int32_t (*KconfigInfo_t)(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo);
 typedef int32_t (*KconfigGet_t)(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-typedef int32_t (*KconfigPut_t)(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+typedef int32_t (*KconfigSet_t)(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
 
 /* mixer control */
 struct AudioMixerControl {
@@ -61,7 +61,7 @@ struct AudioKcontrol {
     int32_t iface;
     KconfigInfo_t Info;
     KconfigGet_t Get;
-    KconfigPut_t Put;
+    KconfigSet_t Set;
     void *privateData;
     void *pri;
     unsigned long privateValue;
