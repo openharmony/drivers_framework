@@ -72,6 +72,9 @@ int32_t SampleDriverSendEvent(struct HdfDeviceIoClient *client, int id, struct H
 int32_t SampleDriverPowerStateInject(uint32_t powerState)
 {
     struct IDevmgrService *devmgrService = DevmgrServiceGetInstance();
+    if (devmgrService == NULL || devmgrService->PowerStateChange == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
     int ret = devmgrService->PowerStateChange(devmgrService, powerState);
 
     HDF_LOGI("%s: inject power state(%d) done, ret = %d", __func__, powerState, ret);
@@ -115,7 +118,7 @@ int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct
 
 int HdfSampleDriverBind(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGD("%s::enter!, deviceObject=%p", __func__, deviceObject);
+    HDF_LOGD("%s::enter", __func__);
     if (deviceObject == NULL) {
         return HDF_FAILURE;
     }
@@ -130,25 +133,25 @@ int HdfSampleDriverBind(struct HdfDeviceObject *deviceObject)
 
 int HdfSampleDozeResume(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfSampleDozeSuspend(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfSampleResume(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfSampleSuspend(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGI("%s:called, object = %llx", __func__, (uint64_t)deviceObject);
+    HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }
 
@@ -159,7 +162,7 @@ struct SampleDriverPmListener {
 
 int HdfSampleDriverInit(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGI("%s::enter!, deviceObject=%llx", __func__, (uint64_t)deviceObject);
+    HDF_LOGI("%s::enter!", __func__);
     if (deviceObject == NULL) {
         HDF_LOGE("%s::ptr is null!", __func__);
         return HDF_FAILURE;

@@ -11,6 +11,8 @@
 #include "osal_mem.h"
 #include "securec.h"
 
+#define CSTRING_MAX 1024
+
 uint32_t HdfStringMakeHashKey(const char *key, uint32_t mask)
 {
     uint32_t hashValue = 0;
@@ -26,6 +28,9 @@ struct HdfCString *HdfCStringObtain(const char *str)
     struct HdfCString *instance = NULL;
     if (str != NULL) {
         size_t strLen = strlen(str);
+        if (strLen > CSTRING_MAX) {
+            return NULL;
+        }
         size_t size = sizeof(struct HdfCString) + strLen + 1;
         instance = (struct HdfCString *)OsalMemCalloc(size);
         if (instance == NULL) {
