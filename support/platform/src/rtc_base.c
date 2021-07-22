@@ -95,17 +95,18 @@ uint64_t RtcTimeToTimestamp(const struct RtcTime *time)
         HDF_LOGE("RtcTimeToTimestamp: time invalid");
         return 0;
     }
-
+    
+   
     seconds = ((uint64_t)time->hour * RTC_MAX_MINUTE + time->minute) * RTC_MAX_SECOND + time->second;
     days = time->day - RTC_UNIT_DIFF;
-    month = time->month - RTC_UNIT_DIFF;
+    month = time->month;
     year = time->year;
 
-    while (--month >= 0) {
+    for(month--; month >=  RTC_JANUARY; month--) {
         days += RtcGetMonthDays(IS_LEAP_YEAR(time->year), month);
     }
-
-    while (--year >= RTC_BEGIN_YEAR) {
+    
+    for(year--; year >= RTC_BEGIN_YEAR; year--) {
         days += RTC_YEAR_DAYS(year);
     }
 
@@ -129,7 +130,7 @@ void TimestampToRtcTime(struct RtcTime *time, const uint64_t seconds)
         time->year++;
     }
 
-    time->month = 0;
+    time->month = RTC_JANUARY;
     while (days >= RtcGetMonthDays(IS_LEAP_YEAR(time->year), time->month)) {
         days -= RtcGetMonthDays(IS_LEAP_YEAR(time->year), time->month);
         time->month++;
@@ -140,7 +141,6 @@ void TimestampToRtcTime(struct RtcTime *time, const uint64_t seconds)
     time->minute = (daySeconds % RTC_HOUR_SECONDS) / RTC_MAX_MINUTE;
     time->hour = daySeconds / RTC_HOUR_SECONDS;
 
-    time->month += RTC_UNIT_DIFF;
     time->day += RTC_UNIT_DIFF;
     time->weekday = RtcGetWeekDay(time);
     PLAT_LOGV("TimestampToRtc:year-month-day weekday hour:min:second ms %04u-%02u-%02u %u %02u:%02u:%02u .%03u",
