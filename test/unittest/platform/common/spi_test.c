@@ -175,7 +175,7 @@ static int32_t SpiSetDmaIntMsg(struct SpiMsg *msg, uint32_t len)
         return HDF_ERR_MALLOC_FAIL;
     }
     rbuf = (uint8_t *)OsalMemAllocAlign(DMA_ALIGN_SIZE, len);
-    if (wbuf == NULL) {
+    if (rbuf == NULL) {
         OsalMemFree(wbuf);
         return HDF_ERR_MALLOC_FAIL;
     }
