@@ -81,11 +81,11 @@ extern int32_t AudioCodecDeviceReadReg(struct CodecDevice *codec, uint32_t reg, 
 extern int32_t AudioAccessoryDeviceReadReg(struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val);
 extern int32_t AudioAiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val);
 
-extern int32_t AudioInfoCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo);
-extern int32_t AudioGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-extern int32_t AudioPutCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-extern int32_t AiaoGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-extern int32_t AiaoPutCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+extern int32_t AudioInfoCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo);
+extern int32_t AudioGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+extern int32_t AudioSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+extern int32_t AiaoGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+extern int32_t AiaoSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
 int32_t AudioRegisterDeviceDsp(struct HdfDeviceObject *device, struct DspData *dspData, struct DaiData *DaiData);
 #ifdef __cplusplus
 #if __cplusplus

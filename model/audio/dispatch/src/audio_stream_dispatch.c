@@ -17,7 +17,7 @@ int32_t HwCpuDaiDispatch(struct AudioCard *audioCard, struct AudioPcmHwParams *p
         return HDF_FAILURE;
     }
 
-    struct AudioPcmRuntime *rtd = audioCard->rtd;
+    struct AudioRuntimeDeivces *rtd = audioCard->rtd;
     if (rtd == NULL) {
         ADM_LOG_ERR("CpuDai audioCard rtd is NULL.");
         return HDF_FAILURE;
@@ -50,7 +50,7 @@ int32_t HwCodecDaiDispatch(struct AudioCard *audioCard, struct AudioPcmHwParams 
         return HDF_FAILURE;
     }
 
-    struct AudioPcmRuntime *rtd = audioCard->rtd;
+    struct AudioRuntimeDeivces *rtd = audioCard->rtd;
     if (rtd == NULL) {
         ADM_LOG_ERR("CodecDai audioCard rtd is NULL.");
         return HDF_FAILURE;
@@ -85,7 +85,7 @@ int32_t HwPlatfromDispatch(struct AudioCard *audioCard, struct AudioPcmHwParams 
         return HDF_FAILURE;
     }
 
-    struct AudioPcmRuntime *rtd = audioCard->rtd;
+    struct AudioRuntimeDeivces *rtd = audioCard->rtd;
     if (rtd == NULL) {
         ADM_LOG_ERR("audioCard rtd is NULL.");
         return HDF_FAILURE;
@@ -290,7 +290,7 @@ static struct AudioCard *StreamHostGetCardInstance(const struct HdfDeviceIoClien
 
 int32_t StreamHostCapturePrepare(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -330,7 +330,7 @@ int32_t StreamHostCapturePrepare(struct HdfDeviceIoClient *client, struct HdfSBu
 
 int32_t StreamHostRenderPrepare(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -438,7 +438,7 @@ int32_t StreamHostWrite(struct HdfDeviceIoClient *client, struct HdfSBuf *data, 
 
 int32_t StreamHostRead(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     struct AudioRxData rxData;
@@ -492,7 +492,7 @@ int32_t StreamHostRead(struct HdfDeviceIoClient *client, struct HdfSBuf *data, s
 
 int32_t StreamHostRenderStart(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -532,7 +532,7 @@ int32_t StreamHostRenderStart(struct HdfDeviceIoClient *client, struct HdfSBuf *
 
 int32_t StreamHostCaptureStart(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -572,7 +572,7 @@ int32_t StreamHostCaptureStart(struct HdfDeviceIoClient *client, struct HdfSBuf 
 
 int32_t StreamHostRenderStop(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -612,7 +612,7 @@ int32_t StreamHostRenderStop(struct HdfDeviceIoClient *client, struct HdfSBuf *d
 
 int32_t StreamHostCaptureStop(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -652,7 +652,7 @@ int32_t StreamHostCaptureStop(struct HdfDeviceIoClient *client, struct HdfSBuf *
 
 int32_t StreamHostRenderPause(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -692,7 +692,7 @@ int32_t StreamHostRenderPause(struct HdfDeviceIoClient *client, struct HdfSBuf *
 
 int32_t StreamHostCapturePause(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -732,7 +732,7 @@ int32_t StreamHostCapturePause(struct HdfDeviceIoClient *client, struct HdfSBuf 
 
 int32_t StreamHostRenderResume(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -772,7 +772,7 @@ int32_t StreamHostRenderResume(struct HdfDeviceIoClient *client, struct HdfSBuf 
 
 int32_t StreamHostCaptureResume(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -812,7 +812,7 @@ int32_t StreamHostCaptureResume(struct HdfDeviceIoClient *client, struct HdfSBuf
 
 int32_t StreamHostDspDecode(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct DspDevice *dspDev = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -850,7 +850,7 @@ int32_t StreamHostDspDecode(struct HdfDeviceIoClient *client, struct HdfSBuf *da
 
 int32_t StreamHostDspEncode(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct DspDevice *dspDev = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -888,7 +888,7 @@ int32_t StreamHostDspEncode(struct HdfDeviceIoClient *client, struct HdfSBuf *da
 
 int32_t StreamHostDspEqualizer(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioPcmRuntime *rtd = NULL;
+    struct AudioRuntimeDeivces *rtd = NULL;
     struct DspDevice *dspDev = NULL;
     struct AudioCard *audioCard = NULL;
     int ret;

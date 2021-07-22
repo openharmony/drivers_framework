@@ -66,7 +66,7 @@ static int32_t PlatformDriverBind(struct HdfDeviceObject *device)
 
 int32_t AudioRenderBuffInit(struct PlatformHost *platformHost)
 {
-    unsigned int buffSize;
+    uint64_t buffSize;
     if (platformHost == NULL) {
         AUDIO_DRIVER_LOG_ERR("input para is NULL.");
         return HDF_FAILURE;
@@ -121,7 +121,7 @@ int32_t AudioRenderBuffFree(struct PlatformHost *platformHost)
 
 int32_t AudioCaptureBuffInit(struct PlatformHost *platformHost)
 {
-    unsigned int buffSize;
+    uint64_t buffSize;
     if (platformHost == NULL) {
         AUDIO_DRIVER_LOG_ERR("input para is NULL.");
         return HDF_FAILURE;
@@ -282,6 +282,9 @@ int32_t AiaoSysPinMux(void)
     SysWritelI2s((uintptr_t)regGpioBase + GPIO_BASE2, GPIO_BASE2_VAL);
     SysWritelI2s((uintptr_t)regGpioBase + GPIO_BASE3, GPIO_BASE3_VAL);
 
+    OsalIoUnmap(regGpioBase);
+    OsalIoUnmap(regIocfg3Base);
+    OsalIoUnmap(regIocfg2Base);
     return HDF_SUCCESS;
 }
 
@@ -650,7 +653,7 @@ static int32_t UpdateWriteBuffOffset(struct PlatformHost *platformHost,
     unsigned int wptr;
     unsigned int rptr;
     int devId;
-    if (platformHost == NULL || buffOffset == NULL || txData == NULL) {
+    if (platformHost == NULL || buffOffset == NULL || txData == NULL || txData->buf == NULL) {
         AUDIO_DRIVER_LOG_ERR("input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
@@ -734,9 +737,8 @@ static int32_t SetWriteBuffWptr(struct PlatformHost *platformHost,
 
 int32_t PlatformWrite(const struct AudioCard *card, struct AudioTxData *txData)
 {
-    int buffSize;
-
-    unsigned int startThreshold;
+    uint64_t buffSize;
+    uint64_t startThreshold;
     struct PlatformHost *platformHost = NULL;
     AUDIO_DRIVER_LOG_DEBUG("entry.");
 

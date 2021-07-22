@@ -61,7 +61,7 @@ struct AudioConfigData {
 };
 
 struct AudioCard {
-    struct AudioPcmRuntime *rtd;
+    struct AudioRuntimeDeivces *rtd;
     struct AudioConfigData configData;
 
     /* Card-specific routes and components. */
@@ -130,7 +130,7 @@ struct AudioRxData {
     unsigned long frames; /* frames number */
 };
 
-struct AudioPcmRuntime       {
+struct AudioRuntimeDeivces       {
     /* runtime devices */
     struct CodecDevice *codec;
     struct PlatformDevice *platform;

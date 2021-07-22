@@ -204,8 +204,8 @@ int32_t AudioSapmNewControls(struct AudioCard *audioCard);
 int32_t AudioSapmPowerComponents(struct AudioCard *audioCard);
 u64 AudioSapmRefreshTime(bool bRefresh);
 
-extern int32_t AudioSapmPutCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-extern int32_t AudioSapmGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+extern int32_t AudioSapmGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+extern int32_t AudioSapmSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
 
 #ifdef __cplusplus
 #if __cplusplus

@@ -104,6 +104,7 @@ int32_t AudioRegisterAccessory(struct HdfDeviceObject *device, struct AccessoryD
         return HDF_ERR_MALLOC_FAIL;
     }
 
+    OsalMutexInit(&accessory->mutex);
     accessory->devAccessoryName = data->drvAccessoryName;
     accessory->devData = data;
     accessory->device = device;
@@ -203,7 +204,7 @@ int32_t AudioSocDeviceRegister(struct HdfDeviceObject *device, void *data, enum 
     return HDF_SUCCESS;
 }
 
-void AudioSeekPlatformDevice(struct AudioPcmRuntime *rtd, const struct AudioConfigData *configData)
+void AudioSeekPlatformDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     const struct AudioConfigData *data = configData;
     struct PlatformDevice *platform = NULL;
@@ -227,7 +228,7 @@ void AudioSeekPlatformDevice(struct AudioPcmRuntime *rtd, const struct AudioConf
     return;
 }
 
-void AudioSeekCpuDaiDevice(struct AudioPcmRuntime *rtd, const struct AudioConfigData *configData)
+void AudioSeekCpuDaiDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     const struct AudioConfigData *data = configData;
     struct DaiDevice *cpuDai = NULL;
@@ -250,7 +251,7 @@ void AudioSeekCpuDaiDevice(struct AudioPcmRuntime *rtd, const struct AudioConfig
     return;
 }
 
-void AudioSeekCodecDevice(struct AudioPcmRuntime *rtd, const struct AudioConfigData *configData)
+void AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     const struct AudioConfigData *data = configData;
     struct CodecDevice *codec = NULL;
@@ -283,7 +284,7 @@ void AudioSeekCodecDevice(struct AudioPcmRuntime *rtd, const struct AudioConfigD
     return;
 }
 
-void AudioSeekAccessoryDevice(struct AudioPcmRuntime *rtd, const struct AudioConfigData *configData)
+void AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     const struct AudioConfigData *data = configData;
     struct AccessoryDevice *accessory = NULL;
@@ -316,7 +317,7 @@ void AudioSeekAccessoryDevice(struct AudioPcmRuntime *rtd, const struct AudioCon
     return;
 }
 
-void AudioSeekDspDevice(struct AudioPcmRuntime *rtd, const struct AudioConfigData *configData)
+void AudioSeekDspDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     const struct AudioConfigData *data = configData;
     struct DspDevice *dsp = NULL;
@@ -357,7 +358,7 @@ int32_t AudioBindDaiLink(struct AudioCard *audioCard, struct AudioConfigData *co
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    audioCard->rtd = (struct AudioPcmRuntime *)OsalMemCalloc(sizeof(struct AudioPcmRuntime));
+    audioCard->rtd = (struct AudioRuntimeDeivces *)OsalMemCalloc(sizeof(struct AudioRuntimeDeivces));
     if (audioCard->rtd == NULL) {
         ADM_LOG_ERR("Malloc audioCard->rtd fail!");
         return HDF_ERR_MALLOC_FAIL;
@@ -585,7 +586,7 @@ struct AudioKcontrol *AudioAddControl(const struct AudioCard *audioCard, const s
     control->iface = ctrl->iface;
     control->Info = ctrl->Info;
     control->Get = ctrl->Get;
-    control->Put = ctrl->Put;
+    control->Set = ctrl->Set;
     control->pri = (void *)audioCard;
     control->privateValue = ctrl->privateValue;
 
@@ -661,7 +662,7 @@ int32_t AudioAiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t
     return HDF_SUCCESS;
 }
 
-int32_t AudioInfoCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo)
+int32_t AudioInfoCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo)
 {
     struct AudioMixerControl *mixerCtrl = NULL;
 
@@ -683,7 +684,7 @@ int32_t AudioInfoCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo
     return HDF_SUCCESS;
 }
 
-static int32_t AudioGetCtrlSwSubRReg(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
+static int32_t AudioGetCtrlOpsSubRReg(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
     enum AudioDeviceType deviceType, void *device)
 {
     int32_t ret = HDF_FAILURE;
@@ -722,7 +723,7 @@ static int32_t AudioGetCtrlSwSubRReg(struct AudioKcontrol *kcontrol, struct Audi
     return HDF_SUCCESS;
 }
 
-static int32_t AudioGetCtrlSwSubReg(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
+static int32_t AudioGetCtrlOpsSubReg(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
     enum AudioDeviceType deviceType, void *device)
 {
     int32_t ret = HDF_FAILURE;
@@ -753,7 +754,7 @@ static int32_t AudioGetCtrlSwSubReg(struct AudioKcontrol *kcontrol, struct Audio
     return HDF_SUCCESS;
 }
 
-int32_t AudioGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+int32_t AudioGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
     enum AudioDeviceType deviceType;
     struct CodecDevice *codec = NULL;
@@ -769,15 +770,15 @@ int32_t AudioGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue
     accessory = AudioKcontrolGetAccessory(kcontrol);
     if (codec != NULL && codec->devData != NULL && codec->devData->Read != NULL) {
         deviceType = AUDIO_CODEC_DEVICE;
-        if (AudioGetCtrlSwSubReg(kcontrol, elemValue, deviceType, codec) ||
-            AudioGetCtrlSwSubRReg(kcontrol, elemValue, deviceType, codec)) {
+        if (AudioGetCtrlOpsSubReg(kcontrol, elemValue, deviceType, codec) ||
+            AudioGetCtrlOpsSubRReg(kcontrol, elemValue, deviceType, codec)) {
             ADM_LOG_ERR("Audio Codec Get Ctrl Reg fail.");
             return HDF_FAILURE;
         }
     } else {
         deviceType = AUDIO_ACCESSORY_DEVICE;
-        if (AudioGetCtrlSwSubReg(kcontrol, elemValue, deviceType, accessory) ||
-            AudioGetCtrlSwSubRReg(kcontrol, elemValue, deviceType, accessory)) {
+        if (AudioGetCtrlOpsSubReg(kcontrol, elemValue, deviceType, accessory) ||
+            AudioGetCtrlOpsSubRReg(kcontrol, elemValue, deviceType, accessory)) {
             ADM_LOG_ERR("Audio Accessory Get Ctrl Reg fail.");
             return HDF_FAILURE;
         }
@@ -787,7 +788,7 @@ int32_t AudioGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue
     return HDF_SUCCESS;
 }
 
-static int32_t AiaoGetRightCtrlSw(struct CodecDevice *codec, struct AudioMixerControl *mixerCtrl,
+static int32_t AiaoGetRightCtrlOps(struct CodecDevice *codec, struct AudioMixerControl *mixerCtrl,
     struct AudioCtrlElemValue *elemValue)
 {
     int ret;
@@ -816,7 +817,7 @@ static int32_t AiaoGetRightCtrlSw(struct CodecDevice *codec, struct AudioMixerCo
     return HDF_SUCCESS;
 }
 
-int32_t AiaoGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+int32_t AiaoGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
     int32_t ret;
     struct CodecDevice *codec = NULL;
@@ -852,7 +853,7 @@ int32_t AiaoGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue 
     }
     elemValue->value[0] = curValue;
 
-    ret = AiaoGetRightCtrlSw(codec, mixerCtrl, elemValue);
+    ret = AiaoGetRightCtrlOps(codec, mixerCtrl, elemValue);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("AIAO get right ctrl is fail");
         return HDF_FAILURE;
@@ -862,7 +863,7 @@ int32_t AiaoGetCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue 
     return HDF_SUCCESS;
 }
 
-static int32_t AudioPutCtrlSwSub(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
+static int32_t AudioPutCtrlOpsSub(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
     enum AudioDeviceType deviceType, void *device)
 {
     int32_t value;
@@ -913,7 +914,7 @@ static int32_t AudioPutCtrlSwSub(struct AudioKcontrol *kcontrol, struct AudioCtr
     return HDF_SUCCESS;
 }
 
-int32_t AudioPutCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+int32_t AudioSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
     void *device = NULL;
     enum AudioDeviceType deviceType;
@@ -930,11 +931,11 @@ int32_t AudioPutCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue
     if (codec != NULL && codec->devData != NULL && codec->devData->Write != NULL) {
         deviceType = AUDIO_CODEC_DEVICE;
         device = (void *)codec;
-        ret = AudioPutCtrlSwSub(kcontrol, elemValue, deviceType, device);
+        ret = AudioPutCtrlOpsSub(kcontrol, elemValue, deviceType, device);
     } else if (accessory != NULL && accessory->devData != NULL && accessory->devData->Write != NULL) {
         deviceType = AUDIO_ACCESSORY_DEVICE;
         device = (void *)accessory;
-        ret = AudioPutCtrlSwSub(kcontrol, elemValue, deviceType, device);
+        ret = AudioPutCtrlOpsSub(kcontrol, elemValue, deviceType, device);
     }
 
     if (ret != HDF_SUCCESS) {
@@ -946,7 +947,7 @@ int32_t AudioPutCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue
     return HDF_SUCCESS;
 }
 
-int32_t AiaoPutCtrlSw(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+int32_t AiaoSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
     struct CodecDevice *codec = NULL;
     struct AudioMixerControl *mixerCtrl = NULL;

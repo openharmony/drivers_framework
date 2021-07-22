@@ -125,72 +125,72 @@ static const struct AudioKcontrol g_audioControls[] = {
     {
         .iface = AUDIODRV_CTL_ELEM_IFACE_DAC,
         .name = "Master Playback Volume",
-        .Info = AudioInfoCtrlSw,
-        .Get = AiaoGetCtrlSw,
-        .Put = AiaoPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AiaoGetCtrlOps,
+        .Set = AiaoSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[PLAYBACK_VOLUME],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_ADC,
         .name = "Master Capture Volume",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioGetCtrlSw,
-        .Put = AudioPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioGetCtrlOps,
+        .Set = AudioSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[CAPTURE_VOLUME],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_DAC,
         .name = "Playback Mute",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioGetCtrlSw,
-        .Put = AudioPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioGetCtrlOps,
+        .Set = AudioSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[PLAYBACK_MUTE],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_ADC,
         .name = "Capture Mute",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioGetCtrlSw,
-        .Put = AudioPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioGetCtrlOps,
+        .Set = AudioSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[CAPTURE_MUTE],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_GAIN,
         .name = "Mic Left Gain",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioGetCtrlSw,
-        .Put = AudioPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioGetCtrlOps,
+        .Set = AudioSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[LEFT_GAIN],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_GAIN,
         .name = "Mic Right Gain",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioGetCtrlSw,
-        .Put = AudioPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioGetCtrlOps,
+        .Set = AudioSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[RIGHT_GAIN],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_ACODEC,
         .name = "External Codec Enable",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioGetCtrlSw,
-        .Put = AudioPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioGetCtrlOps,
+        .Set = AudioSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[EXTERNAL_CODEC_ENABLE],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_ACODEC,
         .name = "Internally Codec Enable",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioGetCtrlSw,
-        .Put = AudioPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioGetCtrlOps,
+        .Set = AudioSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[INTERNALLY_CODEC_ENABLE],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_AIAO,
         .name = "Render Channel Mode",
-        .Info = AudioInfoCtrlSw,
-        .Get = AiaoGetCtrlSw,
-        .Put = AiaoPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AiaoGetCtrlOps,
+        .Set = AiaoSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[RENDER_CHANNEL_MODE],
     }, {
         .iface = AUDIODRV_CTL_ELEM_IFACE_AIAO,
         .name = "Captrue Channel Mode",
-        .Info = AudioInfoCtrlSw,
-        .Get = AiaoGetCtrlSw,
-        .Put = AiaoPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AiaoGetCtrlOps,
+        .Set = AiaoSetCtrlOps,
         .privateValue = (unsigned long)&g_audioRegParams[CAPTRUE_CHANNEL_MODE],
     },
 };
@@ -239,9 +239,9 @@ static struct AudioKcontrol g_audioSapmDACLControls[] = {
     {
         .iface = AUDIODRV_CTL_ELEM_IFACE_DAC,
         .name = "Dacl enable",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioSapmGetCtrlSw,
-        .Put = AudioSapmPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioSapmGetCtrlOps,
+        .Set = AudioSapmSetCtrlOps,
         .privateValue = (unsigned long)&g_audioSapmRegParams[DACL2DACR],
     },
 };
@@ -250,9 +250,9 @@ static struct AudioKcontrol g_audioSapmDACRControls[] = {
     {
         .iface = AUDIODRV_CTL_ELEM_IFACE_DAC,
         .name = "Dacr enable",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioSapmGetCtrlSw,
-        .Put = AudioSapmPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioSapmGetCtrlOps,
+        .Set = AudioSapmSetCtrlOps,
         .privateValue = (unsigned long)&g_audioSapmRegParams[DACR2DACL],
     },
 };
@@ -261,9 +261,9 @@ static struct AudioKcontrol g_audioSapmLPGAControls[] = {
     {
         .iface = AUDIODRV_CTL_ELEM_IFACE_PGA,
         .name = "LPGA MIC Switch",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioSapmGetCtrlSw,
-        .Put = AudioSapmPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioSapmGetCtrlOps,
+        .Set = AudioSapmSetCtrlOps,
         .privateValue = (unsigned long)&g_audioSapmRegParams[LPGA_MIC],
     },
 };
@@ -272,9 +272,9 @@ static struct AudioKcontrol g_audioSapmRPGAControls[] = {
     {
         .iface = AUDIODRV_CTL_ELEM_IFACE_PGA,
         .name = "RPGA MIC Switch",
-        .Info = AudioInfoCtrlSw,
-        .Get = AudioSapmGetCtrlSw,
-        .Put = AudioSapmPutCtrlSw,
+        .Info = AudioInfoCtrlOps,
+        .Get = AudioSapmGetCtrlOps,
+        .Set = AudioSapmSetCtrlOps,
         .privateValue = (unsigned long)&g_audioSapmRegParams[RPGA_MIC],
     },
 };
@@ -286,7 +286,7 @@ static const struct AudioSapmComponent g_streamDomainComponents[] = {
         .reg = ACODEC_ANACTRLREG3_ADDR,
         .mask = 0x1,
         .shift = 15,
-        .invert = 0,
+        .invert = 1,
     }, {
         .sapmType = AUDIO_SAPM_ADC, /* ADCR */
         .componentName = "ADCR",
@@ -373,7 +373,8 @@ static int32_t CodecDeviceInit(struct AudioCard *audioCard, struct CodecDevice *
     void *device = NULL;
 
     AUDIO_DRIVER_LOG_DEBUG("entry.");
-    if ((audioCard == NULL) || (audioCard->rtd == NULL || audioCard->rtd->codec == NULL) || (codec == NULL)) {
+    if ((audioCard == NULL) || (audioCard->rtd == NULL || audioCard->rtd->codec == NULL) ||
+        (codec == NULL || codec->device == NULL)) {
         AUDIO_DRIVER_LOG_ERR("input para is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
