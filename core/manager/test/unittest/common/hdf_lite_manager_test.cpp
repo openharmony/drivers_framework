@@ -84,7 +84,7 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
     int32_t ret = HDF_FAILURE;
     struct HdfSBuf *data = NULL;
     struct HdfIoService *ioService = HdfIoServiceBind(SAMPLE_SERVICE);
-    EXPECT_TRUE(ioService != NULL);
+    ASSERT_TRUE(ioService != NULL);
     data = HdfSBufObtainDefaultSize();
     EXPECT_TRUE(data != NULL);
     EXPECT_TRUE(HdfSbufWriteString(data, "sample_driver"));
@@ -118,7 +118,7 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
 HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
 {
     struct HdfSBuf *data = HdfSBufObtain(1000);
-    EXPECT_TRUE(data != NULL);
+    ASSERT_TRUE(data != NULL);
     int32_t ret = HdfGetServiceNameByDeviceClass(DEVICE_CLASS_DEFAULT, data);
     EXPECT_TRUE(ret == HDF_SUCCESS);
     bool flag = false;

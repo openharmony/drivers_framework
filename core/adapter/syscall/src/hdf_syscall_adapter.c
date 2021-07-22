@@ -604,7 +604,9 @@ static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
                     continue;
                 }
                 if (HdfAdapterExitListenIoctl(thread->pfds[i].fd) == HDF_SUCCESS) {
+                    thread->shouldStop = true;
                     stopCount++;
+                    break;
                 }
             }
 
@@ -612,7 +614,6 @@ static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
                 thread->shouldStop = true;
                 HDF_LOGE("%s:failed to exit listener thread with ioctl, will go async way", __func__);
             }
-
             return;
         }
         case LISTENER_STARTED:
