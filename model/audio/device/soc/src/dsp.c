@@ -25,9 +25,9 @@ static int32_t DspDeviceWriteReg(struct DspDevice *device, uint8_t *buf, uint32_
 static int32_t DspLinkStartup(const struct AudioCard *card, const struct DaiDevice *device);
 static int32_t DspLinkHwParams(const struct AudioCard *card,
     const struct AudioPcmHwParams *param, const struct DaiDevice *device);
-static int32_t DspDecodeAudioStream(struct AudioCard *card, void *buf, struct DspDevice *device);
-static int32_t DspEncodeAudioStream(struct AudioCard *card, void *buf, struct DspDevice *device);
-static int32_t DspEqualizerActive(struct AudioCard *card, void *buf, struct DspDevice *device);
+static int32_t DspDecodeAudioStream(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device);
+static int32_t DspEncodeAudioStream(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device);
+static int32_t DspEqualizerActive(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device);
 
 struct DspData g_dspData = {
     .DspInit = DspDeviceInit,
@@ -445,7 +445,7 @@ static void DspDriverRelease(struct HdfDeviceObject *device)
     OsalMemFree(dspHost);
 }
 
-static int32_t DspEqualizerActive(struct AudioCard *card, void *buf, struct DspDevice *device)
+static int32_t DspEqualizerActive(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device)
 {
     (void)card;
     (void)buf;
@@ -454,7 +454,7 @@ static int32_t DspEqualizerActive(struct AudioCard *card, void *buf, struct DspD
     return HDF_SUCCESS;
 }
 
-static int32_t DspDecodeAudioStream(struct AudioCard *card, void *buf, struct DspDevice *device)
+static int32_t DspDecodeAudioStream(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device)
 {
     (void)card;
     (void)buf;
@@ -463,7 +463,7 @@ static int32_t DspDecodeAudioStream(struct AudioCard *card, void *buf, struct Ds
     return HDF_SUCCESS;
 }
 
-static int32_t DspEncodeAudioStream(struct AudioCard *card, void *buf, struct DspDevice *device)
+static int32_t DspEncodeAudioStream(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device)
 {
     (void)card;
     (void)buf;
