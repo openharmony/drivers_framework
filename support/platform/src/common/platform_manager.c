@@ -78,7 +78,7 @@ int32_t PlatformManagerAddDevice(struct PlatformManager *manager, struct Platfor
 
     (void)OsalSpinLock(&manager->spin);
     DLIST_FOR_EACH_ENTRY(tmp, &manager->devices, struct PlatformDevice, node) {
-        if (tmp!=NULL && tmp->magic == device->magic) {
+        if (tmp != NULL && tmp->magic == device->magic) {
             repeatId = true;
             HDF_LOGE("PlatformManagerAddDevice: repeated magic:%u!", device->magic);
             break;
@@ -130,7 +130,7 @@ struct PlatformDevice *PlatformManagerFindDevice(struct PlatformManager *manager
 
     (void)OsalSpinLock(&manager->spin);
     DLIST_FOR_EACH_ENTRY(tmp, &manager->devices, struct PlatformDevice, node) {
-        if (tmp!=NULL && match(tmp, data)) {
+        if (tmp != NULL && match(tmp, data)) {
             pdevice = PlatformDeviceGet(tmp);
         }
     }
