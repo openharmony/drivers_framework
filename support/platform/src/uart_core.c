@@ -75,6 +75,7 @@ static int32_t UartUserRead(struct UartHost *host, struct HdfSBuf *reply)
     }
     if (!HdfSbufWriteBuffer(reply, buf, len)) {
         HDF_LOGE("%s: sbuf write buffer failed", __func__);
+        OsalMemFree(buf);
         return HDF_ERR_IO;
     }
     OsalMemFree(buf);

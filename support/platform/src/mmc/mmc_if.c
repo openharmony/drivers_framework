@@ -29,7 +29,6 @@ static void *MmcCntlrObjGetByNumber(int16_t id)
     char *serviceName = NULL;
 
     if (id < 0) {
-        HDF_LOGE("MmcCntlrObjGetByNumber: invalid id:%d", id);
         return NULL;
     }
     serviceName = OsalMemCalloc(MMC_SVC_NAME_LEN + 1);

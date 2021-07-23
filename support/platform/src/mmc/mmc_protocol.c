@@ -3494,7 +3494,7 @@ static void SdioDecodeCisTplManfId(struct MmcCntlr *cntlr, struct SdioFunction *
      */
     vendorId = (tuple->tplBody[1] << BITS_PER_BYTE) | tuple->tplBody[0];
     deviceId = (tuple->tplBody[3] << BITS_PER_BYTE) | tuple->tplBody[2];
-    HDF_LOGD("Sdio vendorId = 0x%x, deviceId = 0x%x.", vendorId, deviceId);
+    
     /* function CISTPL_MANFID. */
     if (function != NULL) {
         function->deviceId = deviceId;
@@ -3838,6 +3838,7 @@ static int32_t SdioAddFunctions(struct MmcCntlr *cntlr, uint32_t funcs)
         }
         ret = SdioReadFbr(cntlr, function);
         if (ret != HDF_SUCCESS) {
+            SdioDeleteFunction(function);
             return ret;
         }
         ret = SdioReadCis(cntlr, function);

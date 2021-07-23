@@ -75,6 +75,7 @@ static int32_t I2cTestGetConfig(struct I2cTestConfig *config)
 
     HdfSBufRecycle(reply);
     HDF_LOGD("I2cTestGetConfig: exit!");
+    HdfIoServiceRecycle(service);
     return HDF_SUCCESS;
 }
 
@@ -260,6 +261,7 @@ int32_t I2cTestMultiThread(void)
 
     ret = OsalThreadCreate(&thread2, (OsalThreadEntry)I2cTestThreadFunc, (void *)&count2);
     if (ret != HDF_SUCCESS) {
+        (void)OsalThreadDestroy(&thread1);
         HDF_LOGE("create test thread1 fail:%d", ret);
         return HDF_FAILURE;
     }
@@ -271,12 +273,16 @@ int32_t I2cTestMultiThread(void)
 
     ret = OsalThreadStart(&thread1, &cfg1);
     if (ret != HDF_SUCCESS) {
+        (void)OsalThreadDestroy(&thread1);
+        (void)OsalThreadDestroy(&thread2);
         HDF_LOGE("start test thread1 fail:%d", ret);
         return HDF_FAILURE;
     }
 
     ret = OsalThreadStart(&thread2, &cfg2);
     if (ret != HDF_SUCCESS) {
+        (void)OsalThreadDestroy(&thread1);
+        (void)OsalThreadDestroy(&thread2);
         HDF_LOGE("start test thread2 fail:%d", ret);
         return HDF_FAILURE;
     }
