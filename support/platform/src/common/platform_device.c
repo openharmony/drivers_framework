@@ -155,12 +155,13 @@ static void PlatformDeviceRemoveNotifier(struct PlatformDevice *device, struct P
     DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &device->notifiers, struct PlatformNotifierNode, node) {
         if (pos->notifier != NULL) {
             /* if notifier not set, we remove all the notifier nodes. */
-            if (notifier == NULL || notifier == pos->notifier) {
+            if (notifier == pos->notifier) {
                 DListRemove(&pos->node);
                 OsalMemFree(pos);
-            }
-            if (notifier == pos->notifier) {
-                break;
+                break; 
+            } else if (notifier == NULL) {
+                DListRemove(&pos->node);
+                OsalMemFree(pos);
             }
         }
     }
