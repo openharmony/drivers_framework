@@ -91,10 +91,10 @@ static int32_t CreateDeviceNode(InputDevice *inputDev)
     if (IsHidDevice(inputDev->devType)) {
         HDF_LOGI("%s: prepare to register hdf device", __func__);
         inputDev->hdfDevObj = HidRegisterHdfDevice(inputDev);
-        inputDev->hdfDevObj->priv = (void *)inputDev;
         if (inputDev->hdfDevObj == NULL) {
             return HDF_DEV_ERR_NO_DEVICE;
         }
+        inputDev->hdfDevObj->priv = (void *)inputDev;
     }
 
     HDF_LOGI("%s: create node succ, devId is %d ", __func__, inputDev->devId);

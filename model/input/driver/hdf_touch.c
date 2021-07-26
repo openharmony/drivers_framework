@@ -393,7 +393,7 @@ static int32_t TouchGetDevType(TouchDriver *driver, struct HdfSBuf *reply)
 
 static int32_t TouchSetPowerStatus(TouchDriver *driver, struct HdfSBuf *data)
 {
-    uint32_t pwrStatus;
+    uint32_t pwrStatus = 0;
     bool ret = HdfSbufReadUint32(data, &pwrStatus);
     if (!ret) {
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
@@ -483,7 +483,7 @@ static int32_t TouchGetDeviceAbility(TouchDriver *driver, struct HdfSBuf *reply)
 
 static int32_t TouchSetGestureMode(TouchDriver *driver, struct HdfSBuf *data)
 {
-    uint32_t gestureMode;
+    uint32_t gestureMode = 0;
     bool ret = HdfSbufReadUint32(data, &gestureMode);
     if (!ret) {
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
