@@ -35,6 +35,10 @@ static int32_t UartWriteTest(struct UartTest *test)
 
 static int32_t UartReadTest(struct UartTest *test)
 {
+    if (UartSetTransMode(test->handle, UART_MODE_RD_NONBLOCK) != HDF_SUCCESS) {
+        HDF_LOGE("%s: error", __func__);
+        return HDF_FAILURE;
+    } 
     if (UartRead(test->handle, test->rbuf, test->len) != 0) {
         HDF_LOGE("%s: error", __func__);
         return HDF_FAILURE;
