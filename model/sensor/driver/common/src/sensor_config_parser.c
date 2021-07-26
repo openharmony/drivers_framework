@@ -162,7 +162,7 @@ int32_t ParseSensorRegConfig(struct SensorCfgData *config)
     parser = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     CHECK_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
 
-    regCfgNode = parser->GetChildNode(config->root, "accelRegConfig");
+    regCfgNode = parser->GetChildNode(config->root, "sensorRegConfig");
     CHECK_NULL_PTR_RETURN_VALUE(regCfgNode, HDF_ERR_INVALID_PARAM);
 
     DEV_RES_NODE_FOR_EACH_ATTR(regCfgNode, regAttr) {
@@ -386,18 +386,18 @@ int32_t GetSensorBaseConfigData(const struct DeviceResourceNode *node, struct Se
 
     config->root = node;
     CHECK_NULL_PTR_RETURN_VALUE(parser->GetChildNode, HDF_ERR_INVALID_PARAM);
-    const struct DeviceResourceNode *infoNode = parser->GetChildNode(node, "accelInfo");
+    const struct DeviceResourceNode *infoNode = parser->GetChildNode(node, "sensorInfo");
     CHECK_NULL_PTR_RETURN_VALUE(infoNode, HDF_ERR_INVALID_PARAM);
-    const struct DeviceResourceNode *busNode = parser->GetChildNode(node, "accelBusConfig");
+    const struct DeviceResourceNode *busNode = parser->GetChildNode(node, "sensorBusConfig");
     CHECK_NULL_PTR_RETURN_VALUE(busNode, HDF_ERR_INVALID_PARAM);
-    const struct DeviceResourceNode *attrNode = parser->GetChildNode(node, "accelAttr");
+    const struct DeviceResourceNode *attrNode = parser->GetChildNode(node, "sensorIdAttr");
     CHECK_NULL_PTR_RETURN_VALUE(attrNode, HDF_ERR_INVALID_PARAM);
     ret = ParseSensorInfo(parser, infoNode, config);
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "accelInfo");
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorInfo");
     ret = ParseSensorBus(parser, busNode, config);
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "accelBusConfig");
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorBusConfig");
     ret = ParseSensorAttr(parser, attrNode, config);
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "accelAttr");
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorIdAttr");
 
     return HDF_SUCCESS;
 }

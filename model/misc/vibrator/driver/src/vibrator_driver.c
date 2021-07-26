@@ -291,9 +291,16 @@ int32_t InitVibratorDriver(struct HdfDeviceObject *device)
 
 void ReleaseVibratorDriver(struct HdfDeviceObject *device)
 {
-    struct VibratorDriverData *drvData = (struct VibratorDriverData *)device->service;
-    if (device == NULL || drvData == NULL) {
-        HDF_LOGE("%s: pointer is null and return errno", __func__);
+    struct VibratorDriverData *drvData = NULL;
+
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return;
+    }
+
+    drvData = (struct VibratorDriverData *)device->service;
+    if (drvData == NULL) {
+        HDF_LOGE("%s: drvData is null", __func__);
         return;
     }
 
