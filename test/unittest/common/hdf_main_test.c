@@ -20,6 +20,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I2C) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I2C)
 #include "hdf_i2c_entry_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_ADC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_ADC)
+#include "hdf_adc_entry_test.h"
+#endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
 #include "hdf_spi_entry_test.h"
 #endif
@@ -67,6 +70,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I2C) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I2C)
     { TEST_PAL_I2C_TYPE, HdfI2cTestEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_ADC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_ADC)
+    { TEST_PAL_ADC_TYPE, HdfAdcTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
     { TEST_PAL_SPI_TYPE, HdfSpiUnitTestEntry },
