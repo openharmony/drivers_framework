@@ -74,13 +74,13 @@ static int32_t ParserHapticEffect(struct DeviceResourceIface *parser, const stru
         count = parser->GetElemNum(hapticNode, hapticAttr->name);
         // Minimum of two elements, including the type and sequence.
         if (count <= 1 || count > VIBRATOR_HAPTIC_SEQ_MAX) {
-            HDF_LOGD("%s: haptic [%s] parser seq count fail", __func__, hapticAttr->name);
+            HDF_LOGE("%s: haptic [%s] parser seq count fail", __func__, hapticAttr->name);
             continue;
         }
 
         effectNode = MallocEffectNode(count * VIBRATOR_HAPTIC_SEQ_SIZE);
         if (effectNode == NULL) {
-            HDF_LOGD("%s: malloc effect effectNode fail", __func__);
+            HDF_LOGE("%s: malloc effect effectNode fail", __func__);
             continue;
         }
         effectNode->effect = hapticAttr->name;
@@ -201,17 +201,14 @@ void HapticTimerEntry(uintptr_t para)
 
     if (hapticData->effectType == VIBRATOR_TYPE_TIME) {
         duration = ProcessHapticTime(hapticData);
-        HDF_LOGE("%s:ProcessHapticTime duration[%d]", __func__, duration);
     }
 
     if (hapticData->effectType == VIBRATOR_TYPE_EFFECT) {
         duration = ProcessHapticEffect(hapticData);
-        HDF_LOGE("%s:ProcessHapticEffect duration[%d]", __func__, duration);
     }
 
     duration = ((duration > 0) && (duration < VIBRATOR_MIN_WAIT_TIME)) ? VIBRATOR_MIN_WAIT_TIME : duration;
     if ((duration > 0) && (OsalTimerSetTimeout(&hapticData->timer, duration) == HDF_SUCCESS)) {
-        HDF_LOGD("%s: modify haptic timer duration[%d]", __func__, duration);
         return;
     }
 
