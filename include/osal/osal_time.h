@@ -68,6 +68,17 @@ void OsalSleep(uint32_t sec);
 void OsalMSleep(uint32_t ms);
 
 /**
+ * @brief Describes thread sleep, in microsecond.
+ *
+ * When a thread invokes this function, the CPU is released and the thread enters the sleep state.
+ *
+ * @param us Indicates the sleep time, in microsecond.
+ * @since 1.0
+ * @version 1.0
+ */
+void OsalUSleep(uint32_t us);
+
+/**
  * @brief Obtains the second and microsecond time.
  *
  * @param time Indicates the pointer to the time structure {@link OsalTimespec}.

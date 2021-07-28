@@ -524,7 +524,10 @@ static unsigned int HdfVNodeAdapterPoll(struct file *filep, poll_table *wait)
 {
     unsigned int mask = 0;
     struct HdfVNodeAdapterClient *client = (struct HdfVNodeAdapterClient *)OsalGetFilePriv(filep);
-
+    if (client == NULL) {
+        mask |= POLLERR;
+        return mask;
+    }
     poll_wait(filep, &client->pollWait, wait);
     OsalMutexLock(&client->mutex);
     if (client->status == VNODE_CLIENT_EXITED) {
@@ -536,6 +539,7 @@ static unsigned int HdfVNodeAdapterPoll(struct file *filep, poll_table *wait)
         client->wakeup--;
     }
     OsalMutexUnlock(&client->mutex);
+
     return mask;
 }
 
@@ -548,6 +552,7 @@ static int HdfVNodeAdapterClose(struct OsalCdev *cdev, struct file *filep)
         client->ioServiceClient.device->service->Release(&client->ioServiceClient);
     }
     HdfDestoryVNodeAdapterClient(client);
+    OsalSetFilePriv(filep, NULL);
     return HDF_SUCCESS;
 }
 
