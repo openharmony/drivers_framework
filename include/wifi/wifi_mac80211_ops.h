@@ -168,7 +168,14 @@ enum Ieee80211ChannelWidth {
  */
 enum WlanWorkMode {
     WLAN_WORKMODE_STA = 2,  /**< STA mode */
-    WLAN_WORKMODE_AP = 3    /**< AP mode */
+    WLAN_WORKMODE_AP = 3,    /**< AP mode */
+    WLAN_WORKMODE_AP_VLAN,
+    WLAN_WORKMODE_WDS,
+    WLAN_WORKMODE_MONITOR,
+    WLAN_WORKMODE_MESH_POINT,
+    WLAN_WORKMODE_P2P_CLIENT,
+    WLAN_WORKMODE_P2P_GO,
+    WLAN_WORKMODE_P2P_DEVICE,
 };
 
 /**
@@ -302,7 +309,7 @@ struct WlanScanRequest {
     uint8_t freqsCount;     /**< Number of frequencies */
     uint8_t *bssid;         /**< BSSID to scan for */
     struct WlanSSID *ssids; /**< SSIDs to scan for */
-    uint16_t *freqs;        /**< An array of frequencies */
+    uint32_t *freqs;        /**< An array of frequencies */
     uint32_t extraIEsLen;   /**< Length of an extended information element (IE) */
     uint8_t *extraIEs;      /**< Extended IEs */
 };
@@ -581,6 +588,23 @@ struct HdfMac80211BaseOps {
      * @version 1.0
      */
     int32_t (*GetHwCapability)(NetDevice *netDev, struct WlanHwCapability **capability);
+
+    int32_t (*RemainOnChannel)(NetDevice *netDev, WifiOnChannel *onChannel);
+
+    int32_t (*CancelRemainOnChannel)(NetDevice *netDev);
+
+    int32_t (*ProbeReqReport)(NetDevice *netDev, int32_t report);
+
+    int32_t (*AddIf)(NetDevice *netDev, WifiIfAdd *ifAdd);
+
+    int32_t (*RemoveIf)(NetDevice *netDev, WifiIfRemove *ifRemove);
+
+    int32_t (*SetApWpsP2pIe)(NetDevice *netDev, WifiAppIe *appIe);
+
+    int32_t (*GetDriverFlag)(struct NetDevice *netDev, WifiGetDrvFlags **params);
+
+    int32_t (*SendAction)(struct NetDevice *netDev, WifiActionData *actionData);
+
 };
 
 /**
