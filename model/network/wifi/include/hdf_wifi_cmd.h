@@ -206,9 +206,17 @@ typedef struct {
 } WifiActionData;
 
 typedef struct {
+    uint32_t freq;
+    uint32_t duration;
+} WifiOnChannel;
+
 typedef struct {
     uint8_t type;
 } WifiIfAdd;
+
+typedef struct {
+    uint8_t ifname[IFNAMSIZ];
+} WifiIfRemove;
 
 typedef struct {
     uint32_t ieLen;
@@ -216,6 +224,12 @@ typedef struct {
     uint8_t rsv[3];
     uint8_t *ie;
 } WifiAppIe;
+
+typedef struct {
+    uint64_t drvFlags;
+} WifiGetDrvFlags;
+
+typedef struct {
     int32_t mode;
     int32_t freq;
     int32_t channel;
@@ -325,16 +339,6 @@ typedef struct {
 } WifiScan;
 
 typedef struct {
-    uint32_t freq;
-    uint32_t duration;
-} WifiOnChannel;
-
-
-typedef struct {
-    uint8_t ifname[IFNAMSIZ];
-} WifiIfRemove;
-
-typedef struct {
     uint8_t type;
     uint8_t macAddr[ETH_ADDR_LEN];
     uint8_t resv;
@@ -344,10 +348,6 @@ typedef struct {
     WifiIfType iftype;
     uint8_t *macAddr;
 } WifiIftypeMacAddr;
-
-typedef struct {
-    uint64_t drvFlags;
-} WifiGetDrvFlags;
 
 typedef struct {
     int32_t freq;
