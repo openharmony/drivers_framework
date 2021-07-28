@@ -1594,7 +1594,7 @@ static int32_t WifiCmdGetDriverFlag(const RequestContext *context, struct HdfSBu
         ret = HDF_ERR_IO;
     }
 
-    HDF_LOGE("WifiCmdGetDriverFlag:%lx", params->drvFlags);    
+    HDF_LOGE("WifiCmdGetDriverFlag:%llx", params->drvFlags);    
     return ret;
 }
 
