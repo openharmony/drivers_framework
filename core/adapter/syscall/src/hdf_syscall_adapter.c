@@ -162,7 +162,7 @@ static int32_t HdfDevEventReadAndDispatch(struct HdfDevListenerThread *thread, i
         if (ret == -HDF_DEV_ERR_NODATA) {
             ret = HDF_SUCCESS;
         } else {
-            HDF_LOGE("%s:ioctl failed, errno=%d\n", __func__, ret);
+            HDF_LOGE("%s:ioctl failed, errno=%d", __func__, ret);
         }
 
         goto finish;
@@ -240,7 +240,6 @@ static int32_t HdfDevEventListenTask(void *para)
                 goto exit;
             } else if (((uint32_t)pfds[i].revents) & POLLHUP) {
                 HDF_LOGI("event listener task received exit event");
-                thread->shouldStop = true;
                 goto exit;
             } else if (((uint32_t)pfds[i].revents) & POLLNVAL) {
                 OsalMSleep(1); // polled closed fd, yield to sync
@@ -269,7 +268,7 @@ static int32_t HdfAdapterStartListenIoctl(int fd)
 {
     int32_t ret = ioctl(fd, HDF_LISTEN_EVENT_START, 0);
     if (ret) {
-        HDF_LOGE("%s: failed to notify drv(%d) of start %d %s", __func__, fd, errno, strerror(errno));
+        HDF_LOGE("%s: failed to notify drv(%d) of start %d %{public}s", __func__, fd, errno, strerror(errno));
         return HDF_ERR_IO;
     }
 
@@ -280,7 +279,7 @@ static int32_t HdfAdapterStopListenIoctl(int fd)
 {
     int32_t ret = ioctl(fd, HDF_LISTEN_EVENT_STOP, 0);
     if (ret) {
-        HDF_LOGE("%s: failed to notify drv(%d) of stop %d %s", __func__, fd, errno, strerror(errno));
+        HDF_LOGE("%s: failed to notify drv(%d) of stop %d %{public}s", __func__, fd, errno, strerror(errno));
         return HDF_ERR_IO;
     }
 
@@ -291,10 +290,10 @@ static int32_t HdfAdapterExitListenIoctl(int fd)
 {
     int32_t ret = ioctl(fd, HDF_LISTEN_EVENT_EXIT, 0);
     if (ret) {
-        HDF_LOGE("%s: failed to notify drv(%d) of exit %d %s", __func__, fd, errno, strerror(errno));
+        HDF_LOGE("%s: failed to notify drv(%d) of exit %d %{public}s", __func__, fd, errno, strerror(errno));
         return HDF_ERR_IO;
     }
-
+    HDF_LOGD("ioctl send poll thread(%d) exit event, ret=%d", fd, ret);
     return HDF_SUCCESS;
 }
 
@@ -526,7 +525,7 @@ static int32_t HdfListenThreadPollAdd(struct HdfDevListenerThread *thread, struc
 
         if (headAdapter != NULL) {
             if (ioctl(headAdapter->fd, HDF_LISTEN_EVENT_WAKEUP, 0) != 0) {
-                HDF_LOGE("%s: failed to wakeup drv to add poll %d %s", __func__, errno, strerror(errno));
+                HDF_LOGE("%s: failed to wakeup drv to add poll %d %{public}s", __func__, errno, strerror(errno));
                 thread->pfds[index].fd = SYSCALL_INVALID_FD;
                 ret = HDF_ERR_IO;
                 break;
@@ -564,10 +563,7 @@ static void HdfListenThreadPollDel(struct HdfDevListenerThread *thread,  struct 
         }
     }
 
-    if (HdfAdapterStopListenIoctl(adapter->fd)) {
-        HDF_LOGE("%s: failed to stop device report %d %s", __func__, errno, strerror(errno));
-    }
-
+    HdfAdapterStopListenIoctl(adapter->fd);
     if (ioctl(adapter->fd, HDF_LISTEN_EVENT_WAKEUP, 0) != 0) {
         HDF_LOGE("%s: failed to wakeup drv to del poll %d %s", __func__, errno, strerror(errno));
     }
@@ -600,20 +596,23 @@ static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
             thread->listenerListPtr = NULL;
             OsalMutexUnlock(&thread->mutex);
             for (int i = 0; i < thread->pfdSize; i++) {
-                if (thread->pfds[i].fd == SYSCALL_INVALID_FD) {
-                    continue;
-                }
-                if (HdfAdapterExitListenIoctl(thread->pfds[i].fd) == HDF_SUCCESS) {
-                    thread->shouldStop = true;
+                if (thread->pfds[i].fd != SYSCALL_INVALID_FD &&
+                    HdfAdapterExitListenIoctl(thread->pfds[i].fd) == HDF_SUCCESS) {
                     stopCount++;
-                    break;
                 }
+                thread->pfds[i].fd = SYSCALL_INVALID_FD;
             }
 
             if (stopCount == 0) {
                 thread->shouldStop = true;
                 HDF_LOGE("%s:failed to exit listener thread with ioctl, will go async way", __func__);
+                return;
             }
+            while (thread->status != LISTENER_EXITED) {
+                OsalUSleep(1);
+            }
+            HDF_LOGI("poll thread exited");
+            HdfDevListenerThreadFree(thread);
             return;
         }
         case LISTENER_STARTED:
@@ -691,11 +690,11 @@ struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName)
 
     if (realpath(devNodePath, realPath) == NULL) {
         if (HdfLoadDriverByServiceName(serviceName) != HDF_SUCCESS) {
-            HDF_LOGE("%s: load %s driver failed", __func__, serviceName);
+            HDF_LOGE("%s: load %{public}s driver failed", __func__, serviceName);
             goto out;
         }
         if (realpath(devNodePath, realPath) == NULL) {
-            HDF_LOGE("%s: file name %s is invalid", __func__, devNodePath);
+            HDF_LOGE("%s: file name %{public}s is invalid", __func__, devNodePath);
             goto out;
         }
     }
@@ -715,7 +714,7 @@ struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName)
 
     adapter->fd = open(realPath, O_RDWR);
     if (adapter->fd < 0) {
-        HDF_LOGE("Open file node %s failed, (%d)%s", realPath, errno, strerror(errno));
+        HDF_LOGE("Open file node %{public}s failed, (%d)%{public}s", realPath, errno, strerror(errno));
         OsalMutexDestroy(&adapter->mutex);
         OsalMemFree(adapter);
         goto out;

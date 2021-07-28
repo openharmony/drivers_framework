@@ -75,6 +75,19 @@ void OsalMSleep(uint32_t ms)
     }
 }
 
+void OsalUSleep(uint32_t us)
+{
+    int result;
+    struct timespec ts;
+
+    ts.tv_sec = us / ((long)HDF_KILO_UNIT * HDF_KILO_UNIT);
+    ts.tv_nsec = HDF_KILO_UNIT * ((long)(us % HDF_KILO_UNIT));
+    result = nanosleep(&ts, &ts);
+    if (result != 0) {
+        HDF_LOGE("%s OsalUSleep failed %d", __func__, errno);
+    }
+}
+
 void OsalUDelay(uint32_t us)
 {
     (void)us;
