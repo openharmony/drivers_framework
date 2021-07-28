@@ -319,8 +319,8 @@ void DevmgrServiceRelease(struct HdfObject *object)
     struct DevHostServiceClnt *hostClnt = NULL;
     struct DevHostServiceClnt *hostClntTmp = NULL;
     DLIST_FOR_EACH_ENTRY_SAFE(hostClnt, hostClntTmp, &devmgrService->hosts, struct DevHostServiceClnt, node) {
-        DevHostServiceClntDelete(hostClnt);
         DListRemove(&hostClnt->node);
+        DevHostServiceClntDelete(hostClnt);	
     }
 
     OsalMutexDestroy(&devmgrService->devMgrMutex);
