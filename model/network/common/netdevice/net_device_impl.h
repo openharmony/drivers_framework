@@ -27,10 +27,11 @@ typedef enum {
 struct NetDeviceImplOp {
     int32_t (*init)(struct NetDeviceImpl *netDevice);
     int32_t (*deInit)(struct NetDeviceImpl *netDevice);
-    int32_t (*add)(struct NetDeviceImpl *netDevice, Protocol80211IfType ifType);
+    int32_t (*add)(struct NetDeviceImpl *netDevice);
     int32_t (*delete)(struct NetDeviceImpl *netDevice);
     int32_t (*setStatus)(struct NetDeviceImpl *netDevice, NetIfStatus status);
     int32_t (*setLinkStatus)(struct NetDeviceImpl *netDevice, NetIfLinkStatus status);
+    int32_t (*getLinkStatus)(struct NetDeviceImpl *netDevice, NetIfLinkStatus *status);
     int32_t (*receive)(struct NetDeviceImpl *netDevice, NetBuf *buff, ReceiveFlag flag);
     int32_t (*setIpAddr)(struct NetDeviceImpl *netDevice, const IpV4Addr *ipAddr, const IpV4Addr *netMask,
         const IpV4Addr *gw);

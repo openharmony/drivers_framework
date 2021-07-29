@@ -96,9 +96,9 @@ int32_t RenewNetDevice(NetDevice **netDev)
     }
     *netDev = NULL;
 #ifdef _PRE_HDF_LINUX
-    result = NetDeviceInit(ifName, strlen(ifName), FULL_OS);
+    result = NetDeviceInit(ifName, strlen(ifName), WIFI_LINK, FULL_OS);
 #else
-    result = NetDeviceInit(ifName, strlen(ifName), LITE_OS);
+    result = NetDeviceInit(ifName, strlen(ifName), WIFI_LINK, LITE_OS);
 #endif
     if (result == NULL) {
         HDF_LOGE("%s:alloc NetDevice return NULL!", __func__);
@@ -163,9 +163,9 @@ struct NetDevice *AllocPlatformNetDevice(struct HdfWlanDevice *device)
             break;
         }
 #ifdef _PRE_HDF_LINUX
-        result = NetDeviceInit(ifName, strlen(ifName), FULL_OS);
+        result = NetDeviceInit(ifName, strlen(ifName), WIFI_LINK, FULL_OS);
 #else
-        result = NetDeviceInit(ifName, strlen(ifName), LITE_OS);
+        result = NetDeviceInit(ifName, strlen(ifName), WIFI_LINK, LITE_OS);
 #endif
     } while (false);
     if (result == NULL) {
