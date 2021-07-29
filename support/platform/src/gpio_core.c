@@ -56,9 +56,49 @@ static void GpioCntlrListPut(void)
     (void)OsalSpinUnlockIrqRestore(&g_listLock, &g_irqFlags);
 }
 
+static uint16_t GpioCntlrQueryStart(struct GpioCntlr *cntlr, struct DListHead *list)
+{
+    uint16_t freeStart;
+    uint16_t freeCount;
+    struct GpioCntlr *iterLast = NULL;
+    struct GpioCntlr *iterCur = NULL;
+    struct GpioCntlr *tmp = NULL;
+
+    DLIST_FOR_EACH_ENTRY_SAFE(iterCur, tmp, list, struct GpioCntlr, list) {
+        if (iterLast == NULL) {
+            freeStart = 0;
+            freeCount = iterCur->start;
+        } else {
+            freeStart = iterLast->start + iterLast->count;
+            freeCount = iterCur->start - freeStart;
+        }
+
+        if (cntlr->start < freeStart) {
+            HDF_LOGE("GpioCntlrQueryStart: start:%u not available(freeStart:%u, freeCount:%u)",
+                cntlr->start, freeStart, freeCount);
+            return GPIO_NUM_MAX;
+        }
+
+        if ((cntlr->start + cntlr->count) <= (freeStart + freeCount)) {
+            return freeStart;
+        }
+
+        iterLast = iterCur;
+    }
+    if (iterLast == NULL) { // empty list
+        return cntlr->start;
+    }
+    if (cntlr->start >= (iterLast->start + iterLast->count)) {
+        return iterLast->start + iterLast->count;
+    }
+    HDF_LOGE("GpioCntlrQueryStart: start:%u not available(lastStart:%u, lastCount:%u)",
+        cntlr->start, iterLast->start, iterLast->count);
+    return GPIO_NUM_MAX;
+}
+
 int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
 {
-    struct GpioCntlr *last = NULL;
+    uint16_t start;
     struct DListHead *list = NULL;
 
     if (cntlr == NULL) {
@@ -90,12 +130,12 @@ int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
     OsalSpinInit(&cntlr->spin);
 
     list = GpioCntlrListGet();
-    if (DListIsEmpty(list)) {
-        cntlr->start = 0;
-    } else {
-        last = DLIST_LAST_ENTRY(list, struct GpioCntlr, list);
-        cntlr->start = last->start + last->count;
+    if ((start = GpioCntlrQueryStart(cntlr, list)) >= GPIO_NUM_MAX) {
+        HDF_LOGE("GpioCntlrAdd: query range for start:%d fail:%d", cntlr->start, start);
+        GpioCntlrListPut();
+        return HDF_ERR_INVALID_PARAM;
     }
+    cntlr->start = start;
     DListHeadInit(&cntlr->list);
     DListInsertTail(&cntlr->list, list);
     GpioCntlrListPut();
@@ -219,7 +259,6 @@ static int32_t GpioIrqBridgeFunc(uint16_t local, void *data)
     return HDF_SUCCESS;
 }
 
-#ifndef __KERNEL__
 static int GpioIrqThreadWorker(void *data)
 {
     int32_t ret;
@@ -234,7 +273,7 @@ static int GpioIrqThreadWorker(void *data)
             break;
         }
         PLAT_LOGV("GpioIrqThreadWorker: enter! gpio:%u-%u", bridge->cntlr->start, bridge->local);
-        (void)bridge->func(bridge->local, bridge->data);
+        (void)bridge->func(bridge->local + bridge->cntlr->start, bridge->data);
     }
     /* it's the bridge struct we create before, so release it ourself */
     (void)OsalSemDestroy(&bridge->sem);
@@ -303,21 +342,9 @@ __ERR_FORMAT_NAME:
     OsalMemFree(bridge);
     return NULL;
 }
-#else
-static struct GpioIrqBridge *GpioIrqBridgeCreate(struct GpioCntlr *cntlr,
-    uint16_t local, GpioIrqFunc func, void *arg)
-{
-    (void)cntlr;
-    (void)local;
-    (void)func;
-    (void)arg;
-    return NULL;
-}
-#endif
 
 static void GpioIrqBridgeDestroy(struct GpioIrqBridge *bridge)
 {
-#ifndef __KERNEL__
     uint32_t flags;
     (void)OsalSpinLockIrqSave(&bridge->spin, &flags);
     if (!bridge->stop) {
@@ -325,9 +352,6 @@ static void GpioIrqBridgeDestroy(struct GpioIrqBridge *bridge)
         (void)OsalSemPost(&bridge->sem);
     }
     (void)OsalSpinUnlockIrqRestore(&bridge->spin, &flags);
-#else
-    (void)bridge;
-#endif
 }
 
 void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local)
@@ -342,7 +366,7 @@ void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local)
             HDF_LOGW("GpioCntlrIrqCallback: ginfo or irqFunc is NULL!");
         }
     } else {
-        HDF_LOGW("GpioCntlrIrqCallback: invalid cntlr(ginfos) or loal num!");
+        HDF_LOGW("GpioCntlrIrqCallback: invalid cntlr(ginfos) or loal num:%u!", local);
     }
 }
 
@@ -372,11 +396,9 @@ int32_t GpioCntlrSetIrq(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode, 
             theData = bridge;
             theFunc = GpioIrqBridgeFunc;
         }
-#ifndef __KERNEL__
         if (bridge == NULL) {
             return HDF_FAILURE;
         }
-#endif
     }
 
     (void)OsalSpinLockIrqSave(&cntlr->spin, &flags);
