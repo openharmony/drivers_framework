@@ -14,10 +14,6 @@
 #include "input_i2c_ops.h"
 #include "touch_gt911.h"
 
-#define AXIS_X_MAX 479
-#define AXIS_X_RANGE 0
-#define AXIS_Y_MAX 959
-#define AXIS_Y_RANGE 0
 #define MAX_POINT 5
 
 static int32_t ChipInit(ChipDevice *device)
@@ -98,10 +94,19 @@ static void ParsePointData(ChipDevice *device, FrameData *frame, uint8_t *buf, u
     for (i = 0; i < pointNum; i++) {
         if (chipVer == 0) {         // chipversion  A:gt911_zsj5p5
             frame->fingers[i].trackId = buf[GT_POINT_SIZE * i + GT_TRACK_ID];
+#if defined(CONFIG_ARCH_SPRD)
+            frame->fingers[i].y = (resY - 1 - ((buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
+                                  ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) <<
+                                  ONE_BYTE_OFFSET))) * resX / resY;
+            frame->fingers[i].x = ((buf[GT_POINT_SIZE * i + GT_Y_LOW] & ONE_BYTE_MASK) |
+                                  ((buf[GT_POINT_SIZE * i + GT_Y_HIGH] & ONE_BYTE_MASK) <<
+                                  ONE_BYTE_OFFSET)) * resY / resX;
+#else
             frame->fingers[i].y = (buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET);
             frame->fingers[i].x = (buf[GT_POINT_SIZE * i + GT_Y_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_Y_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET);
+#endif
             if (frame->fingers[i].x == 0) {
                 frame->fingers[i].x = X_OFFSET;
             }
@@ -189,17 +194,17 @@ static void SetAbility(ChipDevice *device)
         SET_BIT(ABS_MT_POSITION_Y) | SET_BIT(ABS_MT_TRACKING_ID);
     device->driver->inputDev->abilitySet.keyCode[3] = SET_BIT(KEY_UP) | SET_BIT(KEY_DOWN);
     device->driver->inputDev->attrSet.axisInfo[ABS_X].min = 0;
-    device->driver->inputDev->attrSet.axisInfo[ABS_X].max = AXIS_X_MAX;
-    device->driver->inputDev->attrSet.axisInfo[ABS_X].range = AXIS_X_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_X].max = device->boardCfg->attr.resolutionX - 1;
+    device->driver->inputDev->attrSet.axisInfo[ABS_X].range = 0;
     device->driver->inputDev->attrSet.axisInfo[ABS_Y].min = 0;
-    device->driver->inputDev->attrSet.axisInfo[ABS_Y].max = AXIS_Y_MAX;
-    device->driver->inputDev->attrSet.axisInfo[ABS_Y].range = AXIS_Y_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_Y].max = device->boardCfg->attr.resolutionY - 1;
+    device->driver->inputDev->attrSet.axisInfo[ABS_Y].range = 0;
     device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].min = 0;
-    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].max = AXIS_X_MAX;
-    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].range = AXIS_X_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].max = device->boardCfg->attr.resolutionX - 1;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_X].range = 0;
     device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].min = 0;
-    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].max = AXIS_Y_MAX;
-    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].range = AXIS_Y_RANGE;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].max = device->boardCfg->attr.resolutionY - 1;
+    device->driver->inputDev->attrSet.axisInfo[ABS_MT_POSITION_Y].range = 0;
     device->driver->inputDev->attrSet.axisInfo[ABS_MT_TRACKING_ID].max = MAX_POINT;
 }
 

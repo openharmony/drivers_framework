@@ -106,6 +106,9 @@ static int32_t HandlePowerEvent(ChipDevice *chipDev, uint32_t *timing, uint32_t 
 
 static int32_t InputPinMuxCfg(uint32_t regAddr, int32_t regSize, uint32_t regValue)
 {
+#if defined(CONFIG_ARCH_SPRD)
+    return HDF_SUCCESS;
+#endif
     uint8_t *base = NULL;
     if (regAddr == 0) {
         HDF_LOGE("%s: regAddr invalid", __func__);
@@ -264,9 +267,13 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
     CHECK_RETURN_VALUE(ret);
     HDF_LOGI("%s: chipDetect succ, ret = %d ", __func__, ret);
 
+#if defined(CONFIG_ARCH_SPRD)
+    HDF_LOGI("%s: DAYU do not update firmware", __func__);
+#else
     ret = chipDev->ops->UpdateFirmware(chipDev);
     CHECK_RETURN_VALUE(ret);
     HDF_LOGI("%s: update firmware success", __func__);
+#endif
 
     ret = SetupChipIrq(chipDev);
     CHECK_RETURN_VALUE(ret);
