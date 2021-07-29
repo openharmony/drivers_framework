@@ -106,7 +106,8 @@ static int32_t HandlePowerEvent(ChipDevice *chipDev, uint32_t *timing, uint32_t 
 
 static int32_t InputPinMuxCfg(uint32_t regAddr, int32_t regSize, uint32_t regValue)
 {
-    uint8_t *base = NULL;
+    return HDF_SUCCESS;
+/*    uint8_t *base = NULL;
     if (regAddr == 0) {
         HDF_LOGE("%s: regAddr invalid", __func__);
         return HDF_FAILURE;
@@ -120,7 +121,7 @@ static int32_t InputPinMuxCfg(uint32_t regAddr, int32_t regSize, uint32_t regVal
 
     OSAL_WRITEL(regValue, base);
     OsalIoUnmap((void *)base);
-    return HDF_SUCCESS;
+    return HDF_SUCCESS; */
 }
 
 static int32_t SetPowerOnTiming(ChipDevice *chipDev)
