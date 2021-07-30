@@ -52,7 +52,7 @@ void HdfManagerTest::TearDown()
   * @tc.type: FUNC
   * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
   */
-HWTEST_F(HdfManagerTest, HdfIoServiceBind001, TestSize.Level0)
+HWTEST_F(HdfManagerTest, HdfIoServiceBind001, TestSize.Level1)
 {
     const char *svcName = "HDF_TEST";
     struct HdfIoService *hdfSvc = HdfIoServiceBind(svcName);
@@ -66,7 +66,7 @@ HWTEST_F(HdfManagerTest, HdfIoServiceBind001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
   */
-HWTEST_F(HdfManagerTest, HdfIoServiceBind002, TestSize.Level0)
+HWTEST_F(HdfManagerTest, HdfIoServiceBind002, TestSize.Level1)
 {
     struct HdfIoService *hdfSvc = HdfIoServiceBind(DEV_MGR_NODE);
     EXPECT_TRUE(hdfSvc != NULL);
@@ -79,7 +79,7 @@ HWTEST_F(HdfManagerTest, HdfIoServiceBind002, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: SR000F8697
   */
-HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
+HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level1)
 {
     int32_t ret = HDF_FAILURE;
     struct HdfSBuf *data = NULL;
@@ -115,7 +115,7 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
   * @tc.type: FUNC
   * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
   */
-HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
+HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level1)
 {
     struct HdfSBuf *data = HdfSBufObtain(1000);
     ASSERT_TRUE(data != NULL);
