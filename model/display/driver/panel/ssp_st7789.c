@@ -9,7 +9,6 @@
 #include "gpio_if.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
-#include "lcd_abs_if.h"
 #include "osal_mem.h"
 #include "osal_time.h"
 #include "spi_if.h"
@@ -77,7 +76,7 @@ static struct LcdCmd g_offCmd[] = {
 
 static DevHandle g_spiHdl = NULL;
 
-static int32_t SpiWrite9Bits(DevHandle *spiHandle, uint8_t cmd, uint8_t data)
+static int32_t SpiWrite9Bits(DevHandle spiHandle, uint8_t cmd, uint8_t data)
 {
     int32_t ret;
     uint16_t wbuff[1] = {0};
@@ -91,10 +90,10 @@ static int32_t SpiWrite9Bits(DevHandle *spiHandle, uint8_t cmd, uint8_t data)
     return HDF_SUCCESS;
 }
 
-static DevHandle *GetSpiHandle(void)
+DevHandle GetSpiHandle(void)
 {
     int32_t ret;
-    DevHandle *spiHandle = NULL;
+    DevHandle spiHandle = NULL;
     struct SpiDevInfo spiDevinfo;
     struct SpiCfg cfg;
 
@@ -249,7 +248,7 @@ static struct PanelInfo g_panelInfo = {
     .height = HEIGHT,                 /* height */
     .frameRate = FRAME_RATE,          /* frame rate */
     .intfType = LCD_6BIT,             /* panel interface type */
-    .intfSync = OUTPUT_240X320_50,    /* output timming type */
+    .intfSync = 42,    /* Hi3559AV100: For ili9341 at 50 Hz (6bit) */
 };
 
 static struct PanelData g_panelData = {

@@ -12,19 +12,11 @@
 #include "hdf_device_desc.h"
 #include "hdf_disp.h"
 #include "hdf_log.h"
-#include "lcd_abs_if.h"
 #include "osal_io.h"
-#include "osal_mem.h"
 #include "pwm_if.h"
 
 #define TRANSFORM_KILO 1000
 #define TRANSFORM_MILL 1000000
-
-struct Hi35xxDispCtrl {
-    struct DispControl ctrl;
-    unsigned long mipiCfgBase;
-    unsigned long pwmCfgBase;
-};
 
 static void MipiMuxCfg(unsigned long ioCfgBase)
 {
@@ -107,11 +99,11 @@ void Lcd24BitMuxCfg(unsigned long ioCfgBase)
     OSAL_WRITEL(0x532, ioCfgBase + 0x0030);
 }
 
-static void LcdPinMuxCfg(const struct Hi35xxDispCtrl *hi35xxCtrl, uint32_t intf)
+static void LcdPinMuxCfg(uint32_t intf)
 {
     unsigned long ioCfgBase;
 
-    ioCfgBase = hi35xxCtrl->mipiCfgBase;
+    ioCfgBase = (unsigned long)OsalIoRemap(IO_CFG2_BASE, IO_CFG_SIZE);
     if (intf == MIPI_DSI) {
         MipiMuxCfg(ioCfgBase);
     } else if (intf == LCD_6BIT) {
@@ -125,12 +117,11 @@ static void LcdPinMuxCfg(const struct Hi35xxDispCtrl *hi35xxCtrl, uint32_t intf)
     }
 }
 
-static void PwmPinMuxCfg(const struct Hi35xxDispCtrl *hi35xxCtrl, uint32_t dev)
+static void PwmPinMuxCfg(uint32_t dev)
 {
     /* pwm pin config */
     unsigned long ioCfgBase;
-
-    ioCfgBase = hi35xxCtrl->pwmCfgBase;
+    ioCfgBase = (unsigned long)OsalIoRemap(IO_CFG1_BASE, IO_CFG_SIZE);
     switch (dev) {
         case PWM_DEV0:
             OSAL_WRITEL(0x601, ioCfgBase + 0x0024);
@@ -206,7 +197,7 @@ static uint32_t CalcDataRate(struct PanelInfo *info)
 static int32_t MipiDsiInit(struct PanelInfo *info)
 {
     int32_t ret;
-    struct DevHandle *mipiHandle = NULL;
+    DevHandle mipiHandle = NULL;
     struct MipiCfg cfg;
 
     mipiHandle = MipiDsiOpen(0);
@@ -240,18 +231,19 @@ static int32_t MipiDsiInit(struct PanelInfo *info)
     return ret;
 }
 
-static int32_t PwmInit(struct Hi35xxDispCtrl *hi35xxCtrl, struct PanelInfo *info)
+static int32_t PwmInit(struct PanelInfo *info)
 {
     int32_t ret;
 
     /* pwm pin config */
-    PwmPinMuxCfg(hi35xxCtrl, info->pwm.dev);
+    PwmPinMuxCfg(info->pwm.dev);
     /* pwm config */
-    struct DevHandle *pwmHandle = PwmOpen(info->pwm.dev);
+    DevHandle pwmHandle = PwmOpen(info->pwm.dev);
     if (pwmHandle == NULL) {
         HDF_LOGE("%s: PwmOpen failed", __func__);
         return HDF_FAILURE;
     }
+
     struct PwmConfig config;
     (void)memset_s(&config, sizeof(struct PwmConfig), 0, sizeof(struct PwmConfig));
     config.duty = 1;
@@ -265,59 +257,6 @@ static int32_t PwmInit(struct Hi35xxDispCtrl *hi35xxCtrl, struct PanelInfo *info
     }
     PwmClose(pwmHandle);
     return HDF_SUCCESS;
-}
-
-static int32_t Hi35xxHardwareInit(struct Hi35xxDispCtrl *hi35xxCtrl)
-{
-    int32_t i;
-    int32_t panelNum;
-    int32_t ret = HDF_FAILURE;
-    struct PanelData **panel = NULL;
-    struct PanelInfo *info = NULL;
-
-    if (hi35xxCtrl->ctrl.panelManager == NULL) {
-        HDF_LOGE("%s: panelManager is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (hi35xxCtrl->ctrl.panelManager->panelNum <= 0) {
-        HDF_LOGE("%s: none of panels registered", __func__);
-        return HDF_FAILURE;
-    }
-    panelNum = hi35xxCtrl->ctrl.panelManager->panelNum;
-    panel = hi35xxCtrl->ctrl.panelManager->panel;
-    for (i = 0; i < panelNum; i++) {
-        info = panel[i]->info;
-        if (info == NULL) {
-            HDF_LOGE("%s:get info failed", __func__);
-            return HDF_FAILURE;
-        }
-        if (info->blk.type == BLK_PWM) {
-            ret = PwmInit(hi35xxCtrl, info);
-            if (ret) {
-                HDF_LOGE("%s:PwmInit failed", __func__);
-                return HDF_FAILURE;
-            }
-        }
-        /* lcd pin mux config */
-        LcdPinMuxCfg(hi35xxCtrl, info->intfType);
-        if (info->intfType == MIPI_DSI) {
-            /* mipi dsi init */
-            ret = MipiDsiInit(info);
-            if (ret) {
-                HDF_LOGE("%s:MipiDsiInit failed", __func__);
-                return HDF_FAILURE;
-            }
-        }
-        if (panel[i]->init != NULL) {
-            /* panel driver init */
-            ret = panel[i]->init(panel[i]);
-            if (ret != HDF_SUCCESS) {
-                HDF_LOGE("%s: panelData->init failed", __func__);
-                return HDF_FAILURE;
-            }
-        }
-    }
-    return ret;
 }
 
 static int32_t GetLcdIntfType(enum LcdIntfType type, uint32_t *out)
@@ -351,187 +290,64 @@ static int32_t GetLcdIntfType(enum LcdIntfType type, uint32_t *out)
     return ret;
 }
 
-static int32_t Hi35xxGetDispInfo(struct DispControl *dispCtrl, uint32_t devId)
+static int32_t Hi35xxHardWareInit(void)
 {
-    struct PanelInfo *panelInfo = NULL;
-    struct DispInfo *info = NULL;
-    struct PanelData *panel = NULL;
-
-    if (dispCtrl == NULL) {
-        HDF_LOGE("%s:dispCtrl is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (dispCtrl->panelManager == NULL || (devId >= dispCtrl->panelManager->panelNum)) {
-        HDF_LOGE("%s: get panel fail", __func__);
-        return HDF_FAILURE;
-    }
-    panel = dispCtrl->panelManager->panel[devId];
-    if (panel == NULL) {
-        HDF_LOGE("%s:panel is null", __func__);
-        return HDF_FAILURE;
-    }
-    panelInfo = panel->info;
-    if (panelInfo == NULL) {
-        HDF_LOGE("%s:get info failed", __func__);
-        return HDF_FAILURE;
-    }
-    info = dispCtrl->info;
-    if (info == NULL) {
-        HDF_LOGE("%s:info is null", __func__);
-        return HDF_FAILURE;
-    }
-    info->width = panelInfo->width;
-    info->height = panelInfo->height;
-    info->hbp = panelInfo->hbp;
-    info->hfp = panelInfo->hfp;
-    info->hsw = panelInfo->hsw;
-    info->vbp = panelInfo->vbp;
-    info->vfp = panelInfo->vfp;
-    info->vsw = panelInfo->vsw;
-    if (GetLcdIntfType(panelInfo->intfType, &info->intfType) != HDF_SUCCESS) {
-        HDF_LOGE("%s:GetLcdIntfType failed", __func__);
-        return HDF_FAILURE;
-    }
-    info->intfSync = panelInfo->intfSync;
-    info->frameRate = panelInfo->frameRate;
-    info->minLevel = panelInfo->blk.minLevel;
-    info->maxLevel = panelInfo->blk.maxLevel;
-    info->defLevel = panelInfo->blk.defLevel;
-    HDF_LOGI("info->width = %d, info->height = %d", info->width, info->height);
-    HDF_LOGI("info->hbp = %d, info->hfp = %d", info->hbp, info->hfp);
-    HDF_LOGI("info->frameRate = %d, info->intfSync = %d", info->frameRate, info->intfSync);
-    return HDF_SUCCESS;
-}
-
-static int32_t Hi35xxOn(struct DispControl *dispCtrl, uint32_t devId)
-{
-    int32_t ret = HDF_FAILURE;
-    struct PanelData *panel = NULL;
-
-    if (dispCtrl == NULL) {
-        HDF_LOGE("%s: dispCtrl is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (dispCtrl->panelManager == NULL || (devId >= dispCtrl->panelManager->panelNum)) {
-        HDF_LOGE("%s: get panel fail", __func__);
-        return HDF_FAILURE;
-    }
-    panel = dispCtrl->panelManager->panel[devId];
-    if (panel == NULL) {
-        HDF_LOGE("%s: panel is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (panel->on != NULL) {
-        /* panel driver on */
-        ret = panel->on(panel);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: panel->on failed", __func__);
-            return HDF_FAILURE;
-        }
-    }
-    return ret;
-}
-
-static int32_t Hi35xxOff(struct DispControl *dispCtrl, uint32_t devId)
-{
-    int32_t ret = HDF_FAILURE;
-    struct PanelData *panel = NULL;
-
-    if (dispCtrl == NULL) {
-        HDF_LOGE("%s: dispCtrl is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (dispCtrl->panelManager == NULL || (devId >= dispCtrl->panelManager->panelNum)) {
-        HDF_LOGE("%s: get panel fail", __func__);
-        return HDF_FAILURE;
-    }
-    panel = dispCtrl->panelManager->panel[devId];
-    if (panel == NULL) {
-        HDF_LOGE("%s: panel is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (panel->off != NULL) {
-        /* panel driver off */
-        ret = panel->off(panel);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: panel->off failed", __func__);
-            return HDF_FAILURE;
-        }
-    }
-    return ret;
-}
-
-static int32_t Hi35xxSetBacklight(struct DispControl *dispCtrl, uint32_t devId, uint32_t level)
-{
-    int32_t ret = HDF_FAILURE;
-    struct PanelData *panel = NULL;
-
-    if (dispCtrl == NULL) {
-        HDF_LOGE("%s: dispCtrl is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (dispCtrl->panelManager == NULL || (devId >= dispCtrl->panelManager->panelNum)) {
-        HDF_LOGE("%s: get panel fail", __func__);
-        return HDF_FAILURE;
-    }
-    panel = dispCtrl->panelManager->panel[devId];
-    if (panel == NULL) {
-        HDF_LOGE("%s: panel is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (panel->setBacklight != NULL) {
-        /* panel driver set backlight */
-        ret = panel->setBacklight(panel, level);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: setBacklight failed", __func__);
-            return HDF_FAILURE;
-        }
-    }
-    return ret;
-}
-
-static int32_t Hi35xxResInit(struct Hi35xxDispCtrl *hi35xxCtrl, struct PanelManager *panelManager)
-{
-    hi35xxCtrl->ctrl.ops.on = Hi35xxOn;
-    hi35xxCtrl->ctrl.ops.off = Hi35xxOff;
-    hi35xxCtrl->ctrl.ops.setBacklight = Hi35xxSetBacklight;
-    hi35xxCtrl->ctrl.ops.getDispInfo = Hi35xxGetDispInfo;
-    hi35xxCtrl->ctrl.panelManager = panelManager;
-    hi35xxCtrl->mipiCfgBase = (unsigned long)OsalIoRemap(IO_CFG2_BASE, IO_CFG_SIZE);
-    hi35xxCtrl->pwmCfgBase = (unsigned long)OsalIoRemap(IO_CFG1_BASE, IO_CFG_SIZE);
-    return HDF_SUCCESS;
-}
-
-static int32_t Hi35xxEntryInit(struct HdfDeviceObject *object)
-{
+    int32_t i;
+    int32_t ret;
     struct PanelManager *panelManager = NULL;
-    struct Hi35xxDispCtrl *hi35xxCtrl = NULL;
+    struct PanelData *panel = NULL;
+    struct PanelInfo *info = NULL;
 
-    if (object == NULL) {
-        HDF_LOGE("%s: object is null!", __func__);
-        return HDF_FAILURE;
-    }
-    hi35xxCtrl = (struct Hi35xxDispCtrl *)OsalMemCalloc(sizeof(struct Hi35xxDispCtrl));
-    if (hi35xxCtrl == NULL) {
-        HDF_LOGE("%s hi35xxCtrl malloc fail", __func__);
-        return HDF_FAILURE;
-    }
     panelManager = GetPanelManager();
     if (panelManager == NULL) {
         HDF_LOGE("%s: panelManager is null", __func__);
         return HDF_FAILURE;
     }
-    if (Hi35xxResInit(hi35xxCtrl, panelManager) == HDF_FAILURE) {
-        HDF_LOGE("%s Hi35xxResInit fail", __func__);
+    for (i = 0; i < panelManager->panelNum; i++) {
+        panel = panelManager->panel[i];
+        info = panel->info;
+        if (info == NULL) {
+            HDF_LOGE("%s:GetPanelInfo failed", __func__);
+            return HDF_FAILURE;
+        }
+        if (info->blk.type == BLK_PWM) {
+            ret = PwmInit(info);
+            if (ret) {
+                HDF_LOGE("%s:PwmInit failed", __func__);
+                return HDF_FAILURE;
+            }
+        }
+        /* lcd pin mux config */
+        LcdPinMuxCfg(info->intfType);
+        if (info->intfType == MIPI_DSI) {
+            /* mipi dsi init */
+            ret = MipiDsiInit(info);
+            if (ret) {
+                HDF_LOGE("%s:MipiDsiInit failed", __func__);
+                return HDF_FAILURE;
+            }
+        }
+        if (GetLcdIntfType(info->intfType, &info->intfType) != HDF_SUCCESS) {
+            HDF_LOGE("%s:GetLcdIntfType failed", __func__);
+            return HDF_FAILURE;
+        }
+        if (panel->init != NULL) {
+            if ((panel->init(panel)) != HDF_SUCCESS) {
+                HDF_LOGE("%s:panel[%d] init failed", __func__, i);
+                return HDF_FAILURE;
+            }
+        }
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t Hi35xxEntryInit(struct HdfDeviceObject *object)
+{
+    if (object == NULL) {
+        HDF_LOGE("%s: object is null", __func__);
         return HDF_FAILURE;
     }
-    if (Hi35xxHardwareInit(hi35xxCtrl) == HDF_FAILURE) {
-        HDF_LOGE("%s Hi35xxHardwareInit fail", __func__);
-        return HDF_FAILURE;
-    }
-    hi35xxCtrl->ctrl.object = object;
-    hi35xxCtrl->ctrl.object->priv = hi35xxCtrl;
-    return RegisterDispCtrl(&hi35xxCtrl->ctrl);
+    return Hi35xxHardWareInit();
 }
 
 struct HdfDriverEntry g_hi35xxDevEntry = {

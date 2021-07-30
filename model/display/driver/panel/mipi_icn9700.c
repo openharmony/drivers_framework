@@ -7,8 +7,8 @@
  */
 
 #include "gpio_if.h"
+#include "hdf_disp.h"
 #include "hdf_log.h"
-#include "lcd_abs_if.h"
 #include "mipi_dsi_if.h"
 #include "osal.h"
 #include "pwm_if.h"
@@ -316,6 +316,7 @@ static int32_t Icn9700EsdCheckFunc(struct PanelData *panel)
     return HDF_SUCCESS;
 }
 
+#define OUTPUT_USER 0 /* output timing type */
 static struct PanelInfo g_panelInfo = {
     .width = WIDTH,                     /* width */
     .height = HEIGHT,                   /* height */
@@ -327,7 +328,7 @@ static struct PanelInfo g_panelInfo = {
     .vsw = VERTICAL_SYNC_WIDTH,         /* vertical sync width */
     .frameRate = FRAME_RATE,            /* frame rate */
     .intfType = MIPI_DSI,               /* panel interface type */
-    .intfSync = OUTPUT_USER,            /* output timing type */
+    .intfSync = OUTPUT_USER,
     /* mipi config info */
     .mipi = { DSI_2_LANES, DSI_VIDEO_MODE, VIDEO_BURST_MODE, FORMAT_RGB_24_BIT },
     /* backlight config info */

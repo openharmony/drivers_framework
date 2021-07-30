@@ -6,29 +6,24 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef LCD_ABS_IF_H
-#define LCD_ABS_IF_H
+#ifndef HI35XX_DISP_H
+#define HI35XX_DISP_H
 #include "hdf_base.h"
-#include "hdf_device_desc.h"
-#include "hdf_log.h"
-#include "mipi_dsi_if.h"
 
-/* support max panel number */
-#define PANEL_MAX 2
+#define IO_CFG1_BASE                0x111F0000
+#define IO_CFG2_BASE                0x112F0000
+#define IO_CFG_SIZE                 0x10000
 
-enum LcdIntfType {
-    MIPI_DSI,
-    LCD_6BIT,
-    LCD_8BIT,
-    LCD_16BIT,
-    LCD_18BIT,
-    LCD_24BIT,
-};
+#define PWM_DEV0                    0
+#define PWM_DEV1                    1
 
-enum BacklightType {
-    BLK_PWM,
-    BLK_MIPI,
-};
+/* output interface type */
+#define INTF_LCD_6BIT               (0x01L << 9)
+#define INTF_LCD_8BIT               (0x01L << 10)
+#define INTF_LCD_16BIT              (0x01L << 11)
+#define INTF_LCD_18BIT              (0x01L << 12)
+#define INTF_LCD_24BIT              (0x01L << 13)
+#define INTF_MIPI                   (0x01L << 14)
 
 /* output timing */
 enum IntfSync {
@@ -82,83 +77,4 @@ enum IntfSync {
     OUTPUT_7680X4320_30,      /* For HDMI2.1 at 30 Hz */
 };
 
-struct MipiDsiDesc {
-    enum DsiLane lane;
-    enum DsiMode mode;             /* output mode: DSI_VIDEO/DSI_CMD */
-    enum DsiBurstMode burstMode;
-    enum DsiOutFormat format;
-};
-
-enum PowerStatus {
-    POWER_STATUS_ON,              /* The power status is on */
-    POWER_STATUS_STANDBY,         /* The power status is standby */
-    POWER_STATUS_SUSPEND,         /* The power status is suspend */
-    POWER_STATUS_OFF,             /* The power status is off */
-    POWER_STATUS_BUTT
-};
-
-struct BlkDesc {
-    uint32_t type;
-    uint32_t minLevel;
-    uint32_t maxLevel;
-    uint32_t defLevel;
-};
-
-struct PwmCfg {
-    uint32_t dev;
-    uint32_t period;
-};
-
-struct PanelInfo {
-    uint32_t width;
-    uint32_t height;
-    uint32_t hbp;
-    uint32_t hfp;
-    uint32_t hsw;
-    uint32_t vbp;
-    uint32_t vfp;
-    uint32_t vsw;
-    uint32_t frameRate;
-    enum LcdIntfType intfType;
-    enum IntfSync intfSync;
-    struct MipiDsiDesc mipi;
-    struct BlkDesc blk;
-    struct PwmCfg pwm;
-};
-
-struct PanelStatus {
-    enum PowerStatus powerStatus;
-    uint32_t currLevel;
-};
-
-struct PanelData;
-struct PanelEsd {
-    bool support;
-    uint32_t interval;
-    uint32_t state;
-    uint32_t recoveryNum;
-    uint32_t cmpMode;
-    int32_t (*checkFunc)(struct PanelData *panel);
-    void *expect_data;
-};
-
-struct PanelData {
-    struct HdfDeviceObject *object;
-    int32_t (*init)(struct PanelData *panel);
-    int32_t (*on)(struct PanelData *panel);
-    int32_t (*off)(struct PanelData *panel);
-    int32_t (*setBacklight)(struct PanelData *panel, uint32_t level);
-    struct PanelInfo *info;
-    struct PanelStatus status;
-    struct PanelEsd *esd;
-};
-
-struct PanelManager {
-    struct PanelData *panel[PANEL_MAX];
-    uint32_t panelNum;
-};
-
-int32_t RegisterPanel(struct PanelData *data);
-struct PanelManager *GetPanelManager(void);
-struct PanelData *GetPanel(int32_t index);
-#endif /* LCD_ABS_IF_H */
+#endif /* HI35XX_DISP_H */
