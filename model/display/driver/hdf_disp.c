@@ -14,27 +14,40 @@
 
 #define OFFSET_TWO_BYTE    16
 static struct DispManager *g_dispManager = NULL;
-
-int32_t RegisterDispCtrl(struct DispControl *dispCtrl)
+static struct PanelManager g_panelManager;
+int32_t RegisterPanel(struct PanelData *data)
 {
-    if (dispCtrl == NULL) {
-        HDF_LOGE("%s: dispCtrl is null", __func__);
+    int32_t panelNum;
+
+    if (data == NULL) {
+        HDF_LOGE("%s: panel data is null", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+    if (data->info == NULL) {
+        HDF_LOGE("%s panel info is null", __func__);
         return HDF_FAILURE;
     }
-    if (g_dispManager == NULL) {
-        g_dispManager = (struct DispManager *)OsalMemCalloc(sizeof(struct DispManager));
-        if (g_dispManager == NULL) {
-            HDF_LOGE("%s g_dispManager malloc fail", __func__);
-            return HDF_FAILURE;
-        }
-        g_dispManager->dispCtrl = dispCtrl;
-        g_dispManager->panelManager = dispCtrl->panelManager;
+    panelNum = g_panelManager.panelNum;
+    if (panelNum >= PANEL_MAX) {
+        HDF_LOGE("%s registered panel up PANEL_MAX", __func__);
+        return HDF_FAILURE;
     }
-    HDF_LOGI("%s: success", __func__);
+    g_panelManager.panel[panelNum] = data;
+    g_panelManager.panelNum++;
+    HDF_LOGI("%s: register success", __func__);
     return HDF_SUCCESS;
 }
 
-static struct DispManager *GetDispManager(void)
+struct PanelManager *GetPanelManager(void)
+{
+    if (g_panelManager.panelNum == 0) {
+        return NULL;
+    } else {
+        return &g_panelManager;
+    }
+}
+
+struct DispManager *GetDispManager(void)
 {
     if (g_dispManager != NULL && g_dispManager->initialzed) {
         return g_dispManager;
@@ -87,7 +100,6 @@ static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
     int32_t ret = HDF_FAILURE;
     struct DispManager *disp = NULL;
     struct PanelInfo *info = NULL;
-    struct DispControlOps *ops = NULL;
     struct PanelData *panel = NULL;
 
     disp = GetDispManager();
@@ -104,10 +116,6 @@ static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
     } else if (level < info->blk.minLevel && level != 0) {
         level = info->blk.minLevel;
     }
-    if (disp->dispCtrl == NULL) {
-        HDF_LOGE("%s:dispCtrl is null", __func__);
-        return HDF_FAILURE;
-    }
     OsalMutexLock(&disp->dispMutex);
     if (panel->status.powerStatus != POWER_STATUS_ON) {
         HDF_LOGE("%s:devId[%d] not in power on mode", __func__, devId);
@@ -119,9 +127,8 @@ static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
         OsalMutexUnlock(&disp->dispMutex);
         return HDF_SUCCESS;
     }
-    ops = &disp->dispCtrl->ops;
-    if (ops->setBacklight) {
-        ret = ops->setBacklight(disp->dispCtrl, devId, level);
+    if (panel->setBacklight) {
+        ret = panel->setBacklight(panel, level);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:setBacklight failed", __func__);
             OsalMutexUnlock(&disp->dispMutex);
@@ -135,9 +142,8 @@ static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
 
 static int32_t GetDispInfo(uint32_t devId, struct DispInfo *info)
 {
-    int32_t ret = HDF_FAILURE;
-    struct DispControlOps *ops = NULL;
     struct DispManager *disp = NULL;
+    struct PanelData *panel = NULL;
 
     if (info == NULL) {
         HDF_LOGE("%s:info is null", __func__);
@@ -148,32 +154,37 @@ static int32_t GetDispInfo(uint32_t devId, struct DispInfo *info)
         HDF_LOGE("%s: disp is null", __func__);
         return HDF_FAILURE;
     }
-    if (disp->dispCtrl == NULL) {
-        HDF_LOGE("%s: dispCtrl is null", __func__);
+    if (devId >= disp->panelManager->panelNum) {
+        HDF_LOGE("%s: devId exceed registered panelNum", __func__);
         return HDF_FAILURE;
     }
-    disp->dispCtrl->info = info;
-    ops = &disp->dispCtrl->ops;
-    if (ops->getDispInfo != NULL) {
-        ret = ops->getDispInfo(disp->dispCtrl, devId);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: getDispInfo failed", __func__);
-            return HDF_FAILURE;
-        }
-    }
-    return ret;
+    panel = disp->panelManager->panel[devId];
+    info->width = panel->info->width;
+    info->height = panel->info->height;
+    info->hbp = panel->info->hbp;
+    info->hfp = panel->info->hfp;
+    info->hsw = panel->info->hsw;
+    info->vbp = panel->info->vbp;
+    info->vfp = panel->info->vfp;
+    info->vsw = panel->info->vsw;
+    info->intfType = panel->info->intfType;
+    info->intfSync = panel->info->intfSync;
+    info->frameRate = panel->info->frameRate;
+    info->minLevel = panel->info->blk.minLevel;
+    info->maxLevel = panel->info->blk.maxLevel;
+    info->defLevel = panel->info->blk.defLevel;
+    return HDF_SUCCESS;
 }
 
 static int32_t SetDispPower(uint32_t devId, uint32_t powerStatus)
 {
     int32_t ret = HDF_FAILURE;
-    struct DispControlOps *ops = NULL;
     struct DispManager *disp = NULL;
     struct PanelData *panel = NULL;
 
     disp = GetDispManager();
-    if (disp == NULL || disp->dispCtrl == NULL) {
-        HDF_LOGE("%s:disp or dispCtrl is null", __func__);
+    if (disp == NULL) {
+        HDF_LOGE("%s:disp is null", __func__);
         return HDF_FAILURE;
     }
     if (devId >= disp->panelManager->panelNum) {
@@ -187,19 +198,18 @@ static int32_t SetDispPower(uint32_t devId, uint32_t powerStatus)
         HDF_LOGE("%s:devId[%d] already in mode = %d", __func__, devId, powerStatus);
         return HDF_SUCCESS;
     }
-    ops = &disp->dispCtrl->ops;
     switch (powerStatus) {
         case POWER_STATUS_ON:
-            if (ops->on) {
-                ret = ops->on(disp->dispCtrl, devId);
+            if (panel->on) {
+                ret = panel->on(panel);
             }
             if (ret == HDF_SUCCESS) {
                 EsdCheckStartUp(disp->esd, devId);
             }
             break;
         case POWER_STATUS_OFF:
-            if (ops->off) {
-                ret = ops->off(disp->dispCtrl, devId);
+            if (panel->off) {
+                ret = panel->off(panel);
             }
             if (ret == HDF_SUCCESS) {
                 EsdCheckEnd(disp->esd, devId);
@@ -388,18 +398,15 @@ static int HdfDispBind(struct HdfDeviceObject *dev)
     return HDF_SUCCESS;
 }
 
-static void PanelRecovery(struct DispControl *dispCtrl, uint32_t devId)
+static void PanelRecovery(struct PanelData *panel)
 {
-    struct DispControlOps *ops = NULL;
-
     HDF_LOGI("%s enter", __func__);
-    ops = &dispCtrl->ops;
-    if (ops->off) {
-        ops->off(dispCtrl, devId);
+    if (panel->off) {
+        panel->off(panel);
     }
     OsalMSleep(150); // delay 150ms
-    if (ops->on) {
-        ops->on(dispCtrl, devId);
+    if (panel->on) {
+        panel->on(panel);
     }
 }
 
@@ -425,7 +432,7 @@ static void EsdWorkHandler(void *arg)
     struct DispManager *disp = NULL;
 
     disp = GetDispManager();
-    if ((disp->dispCtrl == NULL) || (devId >= disp->panelManager->panelNum)) {
+    if (devId >= disp->panelManager->panelNum) {
         HDF_LOGE("%s: dispCtrl is null or panel is null", __func__);
         return;
     }
@@ -436,7 +443,7 @@ static void EsdWorkHandler(void *arg)
     if (ret != HDF_SUCCESS) {
         OsalMutexLock(&disp->dispMutex);
         if (panel->esd->state == ESD_RUNNING) {
-            PanelRecovery(disp->dispCtrl, devId);
+            PanelRecovery(panel);
         } else {
             HDF_LOGI("%s: esd check has disabled", __func__);
             OsalMutexUnlock(&disp->dispMutex);
@@ -445,7 +452,7 @@ static void EsdWorkHandler(void *arg)
         OsalMutexUnlock(&disp->dispMutex);
         panel->esd->recoveryNum++;
     }
-    HDF_LOGD("%s devId[%d] recoveryNum = %d",__func__, devId, panel->esd->recoveryNum);
+    HDF_LOGD("%s devId[%d] recoveryNum = %d", __func__, devId, panel->esd->recoveryNum);
     if (panel->esd->recoveryNum >= ESD_MAX_RECOVERY) {
         panel->esd->recoveryNum = 0;
         OsalMutexLock(&disp->dispMutex);
@@ -475,7 +482,7 @@ static void EsdCheckStartUp(struct DispEsd *esd, uint32_t devId)
                 EsdTimerHandler, (uintptr_t)devId);
             OsalTimerStartLoop(esd->timer[devId]);
             esd->panelEsd[devId]->state = ESD_RUNNING;
-            HDF_LOGI("%s , devId[%d] enable esd check", __func__, devId);
+            HDF_LOGI("%s devId[%d] enable esd check", __func__, devId);
         }
     }
 }
@@ -633,18 +640,16 @@ static int32_t EsdCheckInit(struct DispManager *disp)
     return HDF_SUCCESS;
 }
 
-static int32_t HdfDispEntryInit(struct HdfDeviceObject *object)
+static int32_t DispManagerInit(struct PanelManager *panelManager)
 {
     int32_t ret;
 
-    if (object == NULL) {
-        HDF_LOGE("%s: object is null!", __func__);
-        return HDF_FAILURE;
-    }
+    g_dispManager = (struct DispManager *)OsalMemCalloc(sizeof(struct DispManager));
     if (g_dispManager == NULL) {
-        HDF_LOGE("%s: g_dispManager is null", __func__);
+        HDF_LOGE("%s g_dispManager malloc fail", __func__);
         return HDF_FAILURE;
     }
+    g_dispManager->panelManager = panelManager;
     ret = HdfWorkQueueInit(&g_dispManager->dispWorkQueue, "dispWQ");
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: HdfWorkQueueInit fail", __func__);
@@ -658,6 +663,29 @@ static int32_t HdfDispEntryInit(struct HdfDeviceObject *object)
     }
     OsalMutexInit(&g_dispManager->dispMutex);
     g_dispManager->initialzed = true;
+    return HDF_SUCCESS;
+}
+
+static int32_t HdfDispEntryInit(struct HdfDeviceObject *object)
+{
+    int32_t ret;
+    struct PanelManager *panelManager = NULL;
+
+    if (object == NULL) {
+        HDF_LOGE("%s: object is null!", __func__);
+        return HDF_FAILURE;
+    }
+    panelManager = GetPanelManager();
+    if (panelManager == NULL) {
+        HDF_LOGE("%s: panelManager is null!", __func__);
+        return HDF_FAILURE;
+    }
+    ret = DispManagerInit(panelManager);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: DispManagerInit fail", __func__);
+        return HDF_FAILURE;
+    }
+    HDF_LOGI("%s success", __func__);
     return HDF_SUCCESS;
 }
 

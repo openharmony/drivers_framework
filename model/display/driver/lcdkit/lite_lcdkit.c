@@ -10,7 +10,6 @@
 #include "gpio_if.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
-#include "lcd_abs_if.h"
 #include "mipi_dsi_if.h"
 #include "osal.h"
 #include "pwm_if.h"
@@ -62,6 +61,7 @@ static int32_t LcdkitInit(void)
         HDF_LOGE("%s:MipiDsiOpen failed", __func__);
         return HDF_FAILURE;
     }
+
     if (panelCfg->info.blk.type == BLK_PWM) {
         panelCfg->pwmHandle = PwmOpen(panelCfg->info.pwm.dev);
         if (panelCfg->pwmHandle == NULL) {

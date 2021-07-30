@@ -10,7 +10,6 @@
 #define LITE_LCDKIT_H
 #include "hdf_base.h"
 #include "device_resource_if.h"
-#include "lcd_abs_if.h"
 #include "osal_mem.h"
 #ifdef HDF_LOG_TAG
 #undef HDF_LOG_TAG
