@@ -160,7 +160,12 @@ int32_t MessageSingleNodeTest001(void)
     } while (false);
 
     MSG_RETURN_IF_FUNCTION_FAILED(errShutdown, StopEnv());
-
+    if (service != NULL) {
+        if (service->Destroy != NULL) {
+            service->Destroy(service);
+        }
+        service = NULL;
+    }
     return errCode;
 }
 
