@@ -156,7 +156,7 @@ int32_t MessageSingleNodeTest001(void)
 
         MSG_RETURN_IF_FUNCTION_FAILED(errCode, StartEnv());
 
-        Service *service = CreateService(TestServiceB, &cfgB);
+        service = CreateService(TestServiceB, &cfgB);
         MSG_BREAK_IF(errCode, service != NULL);
     } while (false);
 
