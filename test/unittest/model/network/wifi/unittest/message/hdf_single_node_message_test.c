@@ -147,6 +147,7 @@ int32_t MessageSingleNodeTest001(void)
 {
     ErrorCode errCode;
     ErrorCode errShutdown;
+    Service *service = NULL;
 
     do {
         ServiceCfg cfgB = {
