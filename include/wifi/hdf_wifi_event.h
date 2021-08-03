@@ -476,6 +476,10 @@ int32_t HdfWifiEventEapolRecv(const char *name, void *context);
  */
 int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus, const char *ifName);
 
+int32_t HdfWifiEventRemainOnChannel(const struct NetDevice *netDev, uint32_t freq, uint32_t duration);
+
+int32_t HdfWifiEventCancelRemainOnChannel(const struct NetDevice *netDev, uint32_t freq);
+
 #ifdef __cplusplus
 #if __cplusplus
 }
