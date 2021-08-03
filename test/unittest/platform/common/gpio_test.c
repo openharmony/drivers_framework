@@ -203,13 +203,8 @@ static int32_t TestCaseGpioIrq(struct GpioTester *tester, uint16_t mode, bool in
 
 static int32_t TestCaseGpioIrqLevel(struct GpioTester *tester)
 {
-    uint16_t mode;
-    uint16_t valRead = 0;
-
-    (void)GpioSetDir(tester->gpioIrq, GPIO_DIR_IN);
-    (void)GpioRead(tester->gpioIrq, &valRead);
-    mode = (valRead == GPIO_VAL_LOW) ? GPIO_IRQ_TRIGGER_LOW : GPIO_IRQ_TRIGGER_HIGH;
-    return TestCaseGpioIrq(tester, mode, false);
+    (void)tester;
+    return HDF_SUCCESS;
 }
 
 static int32_t TestCaseGpioIrqEdge(struct GpioTester *tester)
