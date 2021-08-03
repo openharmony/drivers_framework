@@ -110,6 +110,7 @@ int32_t AdcTestRead(void)
         return HDF_ERR_INVALID_OBJECT;
     }
     for (i = 0; i < TEST_ADC_VAL_NUM; i++) {
+        value[i] = 0;
         ret = AdcRead(tester->handle, tester->config.channel, &value[i]);
         if (ret != HDF_SUCCESS || value[i] >= (1 << tester->config.dataWidth)) {
             HDF_LOGE("%s: read value invalid:%u, ret:%d", __func__, value[i], ret);
