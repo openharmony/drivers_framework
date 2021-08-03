@@ -147,6 +147,7 @@ int32_t MessageSingleNodeTest001(void)
 {
     ErrorCode errCode;
     ErrorCode errShutdown;
+    Service *service = NULL;
 
     do {
         ServiceCfg cfgB = {
@@ -155,12 +156,17 @@ int32_t MessageSingleNodeTest001(void)
 
         MSG_RETURN_IF_FUNCTION_FAILED(errCode, StartEnv());
 
-        Service *service = CreateService(TestServiceB, &cfgB);
+        service = CreateService(TestServiceB, &cfgB);
         MSG_BREAK_IF(errCode, service != NULL);
     } while (false);
 
     MSG_RETURN_IF_FUNCTION_FAILED(errShutdown, StopEnv());
-
+    if (service != NULL) {
+        if (service->Destroy != NULL) {
+            service->Destroy(service);
+        }
+        service = NULL;
+    }
     return errCode;
 }
 

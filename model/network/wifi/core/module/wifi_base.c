@@ -1209,6 +1209,7 @@ static int32_t WifiCmdResetDriver(const RequestContext *context, struct HdfSBuf 
     ret = g_baseService->SendAsyncMessage(g_baseService, BASE_SERVICE_ID, CMD_BASE_DO_RESET_PRIVATE, data,
         SendMessageResetDriverCallBack);
     if (ret != HDF_SUCCESS) {
+        HdfSBufRecycle(data);
         HDF_LOGE("%s: fail to reset the driver,%d", __func__, ret);
     }
     return ret;
