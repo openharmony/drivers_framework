@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 #include "usb_device_lite_cdcacm_test.h"
+#include "usbfn_dev_mgr.h"
+#include "usbfn_cfg_mgr.h"
+#include "adapter_if.h"
 
 static struct UsbInterfaceAssocDescriptor g_acmIadDescriptor = {
     .bLength           = sizeof(g_acmIadDescriptor),
@@ -57,7 +60,7 @@ static struct UsbInterfaceDescriptor g_acmDataInterfaceDesc = {
     .bNumEndpoints      = DATA_EP_NUM,
     .bInterfaceClass    = USB_DDK_CLASS_CDC_DATA,
     .bInterfaceSubClass = 0,
-    .bInterfaceProtocol = 2,
+    .bInterfaceProtocol = 0x2,
     .iInterface         = ACM_DATA_IDX,
 };
 
@@ -760,11 +763,67 @@ void ReleaseAcmDevice(struct AcmDevice *acm)
         HDF_LOGE("%{public}s: acm is NULL", __func__);
         return;
     }
-    FreeNotifyRequest(acm);
-    FreeCtrlRequests(acm);
+    (void)FreeNotifyRequest(acm);
+    (void)FreeCtrlRequests(acm);
     (void)UsbFnCloseInterface(acm->ctrlIface.handle);
     (void)UsbFnCloseInterface(acm->dataIface.handle);
-    UsbFnStopRecvInterfaceEvent(acm->ctrlIface.fn);
+    (void)UsbFnStopRecvInterfaceEvent(acm->ctrlIface.fn);
     OsalMemFree(acm->port);
+}
+
+int remove_usb_device(void)
+{
+    struct UsbFnDevice *device = NULL;
+    struct UsbFnDeviceMgr *devMgr = NULL;
+    struct UsbFnFuncMgr *funcMgr = NULL;
+    struct UsbFnInterfaceMgr *intfMgr = NULL;
+    const char *udcName = "100e0000.hidwc3_0";
+    int i = 0;
+    int ret;
+
+    device = (struct UsbFnDevice *)UsbFnGetDevice(udcName);
+    if (device == NULL) {
+        HDF_LOGE("%s: get device fail", __func__);
+        return HDF_FAILURE;
+    }
+    devMgr = (struct UsbFnDeviceMgr *)device;
+    devMgr->running = false;
+    while (devMgr->running != true) {
+        i++;
+        OsalMSleep(WAIT_100MS);
+        if (i > WAIT_TIMES) {
+            HDF_LOGE("%s: wait thread exit timeout", __func__);
+            break;
+        }
+    }
+    dprintf("%s, i = %d, running = %d\n", __func__, i, devMgr->running ? 1 : 0);
+    for (i = 0; i < device->numInterfaces; i++) {
+        intfMgr = devMgr->interfaceMgr + i;
+        if (intfMgr) {
+            UsbFnCloseInterface((UsbFnInterfaceHandle)intfMgr->handle);
+        }
+    }
+    for (i = 0; i < devMgr->numFunc; i++) {
+        funcMgr = devMgr->funcMgr + i;
+        if (intfMgr && intfMgr->isOpen) {
+            UsbFnStopRecvInterfaceEvent(&intfMgr->interface);
+        }
+    }
+    struct UsbFnAdapterOps *fnOps = UsbFnAdapterGetOps();
+    ret = OsalThreadDestroy(&devMgr->thread);
+    if (HDF_SUCCESS != ret) {
+        HDF_LOGE("%{public}s:%{public}d OsalThreadDestroy failed, ret=%{public}d",
+            __func__, __LINE__, ret);
+        return ret;
+    }
+    ret = fnOps->delDevice(devMgr->name, devMgr->udcName, devMgr->des);
+    if (ret) {
+        HDF_LOGE("%{public}s:%{public}d UsbFnMgrDeviceRemove failed", __func__, __LINE__);
+        return ret;
+    }
+    DListRemove(&device->object.entry);
+    UsbFnCfgMgrUnRegisterAllProp();
+
+    return 0;
 }
 
