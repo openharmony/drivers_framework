@@ -65,6 +65,8 @@ enum HdfTestSubModuleCmd {
     TEST_CONFIG_TYPE        = 601,
     TEST_HDF_FRAME_END      = 800,
     TEST_USB_DEVICE_TYPE    = 900,
+    TEST_USB_HOST_TYPE      = 1000,
+    TEST_USB_HOST_RAW_TYPE  = 1100,
 };
 
 void HdfTestOpenService(void);

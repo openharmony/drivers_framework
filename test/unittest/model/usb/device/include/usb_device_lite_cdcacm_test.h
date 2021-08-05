@@ -26,7 +26,10 @@
 #include "osal_time.h"
 
 #define TEST_TIMES  10
-
+#define WAIT_TIMES  60
+#define BUFFER_LEN 64
+#define WAIT_100MS 100
+#define SYNC_5000MS 5000
 #define CDC_ACM
 #define QUEUE_SIZE              8
 #define PORT_RATE       9600
@@ -62,7 +65,6 @@ struct Serial {
     int32_t                     writeStarted;
     int32_t                     writeAllocated;
     bool                        writeBusy;
-
     bool                        suspended;
     bool                        startDelayed;
     int                         refCount;
@@ -98,12 +100,12 @@ struct AcmDevice {
     struct OsalMutex            lock;
     bool                        pending;
     bool                        connect;
-	bool                        haved_submit;
+    bool                        havedSubmit;
     uint32_t                    enableEvtCnt;
     char                        *udcName;
-    char submit;
-    char submit_exit;
-    struct Serial            *port;
+    char                        submit;
+    char                        submitExit;
+    struct Serial               *port;
     struct UsbCdcLineCoding     lineCoding;
     uint16_t                    serialState;
 #define SERIAL_STATE_DCD        (1 << 0)
@@ -129,6 +131,7 @@ struct AcmDevice *SetUpAcmDevice(void);
 void ReleaseAcmDevice(struct AcmDevice *acm);
 void AcmEventCallback(struct UsbFnEvent *event);
 void AcmDeviceRelease(struct AcmDevice *acmDevice);
+int remove_usb_device(void);
 
 int32_t UsbFnDviceTestCreate(void);
 int32_t UsbFnDviceTestCreate002(void);
@@ -141,7 +144,6 @@ int32_t UsbFnDviceTestStatus002(void);
 int32_t UsbFnDviceTestStatus003(void);
 int32_t UsbFnDviceTestStatus004(void);
 int32_t UsbFnDviceTestStatus005(void);
-int32_t UsbFnDviceTestStatus006(void);
 int32_t UsbFnDviceTestGetDevice(void);
 int32_t UsbFnDviceTestGetDevice002(void);
 int32_t UsbFnDviceTestGetDevice003(void);
@@ -172,36 +174,46 @@ int32_t UsbFnDviceTestRequestSync003(void);
 int32_t UsbFnDviceTestRequestSync004(void);
 int32_t UsbFnDviceTestRequestSync005(void);
 int32_t UsbFnDviceTestRequestSync006(void);
+int32_t UsbFnDviceTestRequestSync007(void);
 int32_t UsbFnDviceTestRegistProp(void);
 int32_t UsbFnDviceTestRegistProp002(void);
 int32_t UsbFnDviceTestRegistProp003(void);
 int32_t UsbFnDviceTestRegistProp004(void);
 int32_t UsbFnDviceTestRegistProp005(void);
 int32_t UsbFnDviceTestRegistProp006(void);
+int32_t UsbFnDviceTestRegistProp007(void);
 int32_t UsbFnDviceTestGetProp(void);
 int32_t UsbFnDviceTestGetProp002(void);
 int32_t UsbFnDviceTestGetProp003(void);
 int32_t UsbFnDviceTestGetProp004(void);
 int32_t UsbFnDviceTestGetProp005(void);
 int32_t UsbFnDviceTestGetProp006(void);
+int32_t UsbFnDviceTestGetProp007(void);
+int32_t UsbFnDviceTestGetProp008(void);
 int32_t UsbFnDviceTestSetProp(void);
 int32_t UsbFnDviceTestSetProp002(void);
 int32_t UsbFnDviceTestSetProp003(void);
 int32_t UsbFnDviceTestSetProp004(void);
 int32_t UsbFnDviceTestSetProp005(void);
 int32_t UsbFnDviceTestSetProp006(void);
+int32_t UsbFnDviceTestSetProp007(void);
 int32_t UsbFnDviceTestAllocCtrlRequest(void);
 int32_t UsbFnDviceTestAllocCtrlRequest002(void);
 int32_t UsbFnDviceTestAllocCtrlRequest003(void);
 int32_t UsbFnDviceTestAllocCtrlRequest004(void);
 int32_t UsbFnDviceTestAllocCtrlRequest005(void);
 int32_t UsbFnDviceTestAllocCtrlRequest006(void);
+int32_t UsbFnDviceTestAllocCtrlRequest007(void);
+int32_t UsbFnDviceTestAllocCtrlRequest008(void);
 int32_t UsbFnDviceTestAllocRequest(void);
 int32_t UsbFnDviceTestAllocRequest002(void);
 int32_t UsbFnDviceTestAllocRequest003(void);
 int32_t UsbFnDviceTestAllocRequest004(void);
 int32_t UsbFnDviceTestAllocRequest005(void);
 int32_t UsbFnDviceTestAllocRequest006(void);
+int32_t UsbFnDviceTestAllocRequest007(void);
+int32_t UsbFnDviceTestAllocRequest008(void);
+int32_t UsbFnDviceTestAllocRequest009(void);
 int32_t UsbFnDviceTestFreeRequest(void);
 int32_t UsbFnDviceTestFreeRequest002(void);
 int32_t UsbFnDviceTestFreeRequest003(void);
@@ -224,28 +236,23 @@ int32_t UsbFnDviceTestStopReceEvent(void);
 int32_t UsbFnDviceTestStopReceEvent002(void);
 int32_t UsbFnDviceTestStopReceEvent003(void);
 int32_t UsbFnDviceTestStopReceEvent004(void);
-int32_t UsbFnDviceTestStopReceEvent005(void);
-int32_t UsbFnDviceTestStopReceEvent006(void);
 int32_t UsbFnDviceTestStartReceEvent(void);
 int32_t UsbFnDviceTestStartReceEvent002(void);
 int32_t UsbFnDviceTestStartReceEvent003(void);
 int32_t UsbFnDviceTestStartReceEvent004(void);
 int32_t UsbFnDviceTestStartReceEvent005(void);
 int32_t UsbFnDviceTestStartReceEvent006(void);
+int32_t UsbFnDviceTestStartReceEvent007(void);
 int32_t UsbFnDviceTestCloseInterface(void);
 int32_t UsbFnDviceTestCloseInterface002(void);
 int32_t UsbFnDviceTestCloseInterface003(void);
 int32_t UsbFnDviceTestCloseInterface004(void);
-int32_t UsbFnDviceTestCloseInterface005(void);
-int32_t UsbFnDviceTestCloseInterface006(void);
 int32_t UsbFnDviceTestOpenInterface(void);
 int32_t UsbFnDviceTestOpenInterface002(void);
 int32_t UsbFnDviceTestOpenInterface003(void);
 int32_t UsbFnDviceTestOpenInterface004(void);
 int32_t UsbFnDviceTestOpenInterface005(void);
-int32_t UsbFnDviceTestOpenInterface006(void);
 int32_t UsbFnDviceTestRemove(void);
 int32_t UsbFnDviceTestRemove002(void);
-int32_t UsbFnDviceTestRemove003(void);
 
 #endif

@@ -70,6 +70,8 @@ typedef enum {
     TEST_AUDIO_TYPE         = 701,
     TEST_HDF_FRAME_END      = 800,
     TEST_USB_DEVICE_TYPE    = 900,
+    TEST_USB_HOST_TYPE      = 1000,
+    TEST_USB_HOST_RAW_TYPE  = 1100,
 } HdfTestSubModuleCmd;
 
 struct HdfDeviceObject *GetDeviceObject(void);
