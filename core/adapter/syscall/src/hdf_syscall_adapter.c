@@ -441,12 +441,12 @@ static int32_t HdfDevListenerThreadStart(struct HdfDevListenerThread *thread)
             .stackSize = 0,
         };
 
+        thread->status = LISTENER_STARTED;
         if (OsalThreadStart(&thread->thread, &config) != HDF_SUCCESS) {
             HDF_LOGE("%s:OsalThreadStart failed", __func__);
             ret = HDF_FAILURE;
             break;
         }
-        thread->status = LISTENER_STARTED;
         return HDF_SUCCESS;
     } while (0);
 
