@@ -67,9 +67,15 @@ typedef struct HidInformation {
 } HidInfo;
 
 enum HidType {
+    HID_TYPE_TOUCH,               /* Touchscreen */
+    HID_TYPE_KEY,                 /* Physical key */
+    HID_TYPE_BUTTON,              /* Virtual button */
+    HID_TYPE_CROWN,               /* Watch crown */
     HID_TYPE_BEGIN_POS = 33,    /* HID type start position */
+    HID_TYPE_ENCODER,             /* Encoder */
     HID_TYPE_MOUSE,             /* Mouse */
     HID_TYPE_KEYBOARD,          /* Keyboard */
+    HID_TYPE_ROCKER,              /* ROCKER */
     HID_TYPE_UNKNOWN,           /* Unknown input device type */
 };
 
