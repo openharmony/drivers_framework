@@ -128,10 +128,11 @@ enum InputDevType {
     INDEV_TYPE_KEY,                 /* Physical key */
     INDEV_TYPE_BUTTON,              /* Virtual button */
     INDEV_TYPE_CROWN,               /* Watch crown */
-    INDEV_TYPE_ENCODER,             /* Customized type of a specific function or event */
     INDEV_TYPE_HID_BEGIN_POS = 33,  /* HID type start position */
+    INDEV_TYPE_ENCODER,             /* Customized type of a specific function or event */
     INDEV_TYPE_MOUSE,               /* Mouse */
     INDEV_TYPE_KEYBOARD,            /* Keyboard */
+    INDEV_TYPE_ROCKER,              /* ROCKER */
     INDEV_TYPE_UNKNOWN,             /* Unknown input device type */
 };
 
