@@ -1272,6 +1272,49 @@ static int32_t WifiCmdResetDriver(const RequestContext *context, struct HdfSBuf 
     return ret;
 }
 
+static uint32_t GetIftype(struct NetDevice *netdev, uint8_t *iftype)
+{
+    struct HdfChipDriver *chipDriver = GetChipDriver(netdev);
+    if (chipDriver == NULL) {
+        HDF_LOGE("%s:bad net device found!", __func__);
+        return HDF_FAILURE;
+    }
+    RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->ops, GetIftype);
+    return chipDriver->ops->GetIftype(netdev, iftype);
+}
+
+#define MAX_NETDEVICE_COUNT 20
+static int32_t WifiCmdGetNetDevInfo(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+{
+    (void)context;
+    (void)reqData;
+    uint32_t i;
+    uint32_t netdevNum;
+    uint8_t iftype;
+    struct NetDevice *netDev = NULL;
+
+    netdevNum = NetDevGetRegisterCount();
+    if (!HdfSbufWriteUint32(rspData, netdevNum)) {
+        HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
+        return HDF_FAILURE;
+    }
+    for (i = 0; i < MAX_NETDEVICE_COUNT; i++) {
+        netDev = NetDeviceGetInstByIndex(i);
+        if (netDev != NULL) {
+            if (GetIftype(netDev, &iftype) != HDF_SUCCESS) {
+                iftype = 0;
+            }
+            if (!HdfSbufWriteUint32(rspData, i) || !HdfSbufWriteBuffer(rspData, netDev->name, strlen(netDev->name) + 1) ||
+                !HdfSbufWriteUint8(rspData, iftype) ||
+                !HdfSbufWriteBuffer(rspData, GET_NET_DEV_MAC_ADDR(netDev), ETH_ADDR_LEN)) {
+                HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
+                return HDF_FAILURE;
+            }
+        }
+    }
+    return HDF_SUCCESS;
+}
+
 static int32_t RemainOnChannel(struct NetDevice *netdev, WifiOnChannel *onChannel)
 {
     struct HdfChipDriver *chipDriver = GetChipDriver(netdev);
@@ -1624,7 +1667,7 @@ static struct MessageDef g_wifiBaseFeatureCmds[] = {
     DUEMessage(CMD_BASE_GET_CHIPID, WifiCmdGetChipId, 0),
     DUEMessage(CMD_BASE_GET_IFNAMES, WifiCmdGetIfNamesByChipId, 0),
     DUEMessage(CMD_BASE_RESET_DRIVER, WifiCmdResetDriver, 0),
-    DUEMessage(CMD_BASE_DO_RESET_PRIVATE, WifiCmdDoResetChip, 0),
+    DUEMessage(CMD_BASE_GET_NETDEV_INFO, WifiCmdGetNetDevInfo, 0),
     DUEMessage(CMD_P2P_PROBE_REQ_REPORT, WifiCmdProbeReqReport, 0),
     DUEMessage(CMD_P2P_REMAIN_ON_CHANNEL, WifiCmdRemainOnChannel, 0),
     DUEMessage(CMD_P2P_CANCEL_REMAIN_ON_CHANNEL, WifiCmdCancelRemainOnChannel, 0),
@@ -1632,6 +1675,7 @@ static struct MessageDef g_wifiBaseFeatureCmds[] = {
     DUEMessage(CMD_P2P_REMOVE_IF, WifiCmdRemoveIf, 0),
     DUEMessage(CMD_P2P_SET_AP_WPS_P2P_IE, WifiCmdSetApWpsP2pIe, 0),
     DUEMessage(CMD_P2P_GET_DRIVER_FLAGS, WifiCmdGetDriverFlag, 0),
+    DUEMessage(CMD_BASE_DO_RESET_PRIVATE, WifiCmdDoResetChip, 0),
 };
 ServiceDefine(BaseService, BASE_SERVICE_ID, g_wifiBaseFeatureCmds);
 

@@ -605,6 +605,7 @@ struct HdfMac80211BaseOps {
 
     int32_t (*SendAction)(struct NetDevice *netDev, WifiActionData *actionData);
 
+    int32_t (*GetIftype)(struct NetDevice *netDev, uint8_t *iftype);
 };
 
 /**
