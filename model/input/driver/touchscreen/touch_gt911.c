@@ -95,12 +95,12 @@ static void ParsePointData(ChipDevice *device, FrameData *frame, uint8_t *buf, u
         if (chipVer == 0) {         // chipversion  A:gt911_zsj5p5
             frame->fingers[i].trackId = buf[GT_POINT_SIZE * i + GT_TRACK_ID];
 #if defined(CONFIG_ARCH_SPRD)
-            frame->fingers[i].y = (resY - 1 - ((buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
+            frame->fingers[i].y = (resX - 1 - ((buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) <<
-                                  ONE_BYTE_OFFSET))) * resX / resY;
+                                  ONE_BYTE_OFFSET))) * resY / resX;
             frame->fingers[i].x = ((buf[GT_POINT_SIZE * i + GT_Y_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_Y_HIGH] & ONE_BYTE_MASK) <<
-                                  ONE_BYTE_OFFSET)) * resY / resX;
+                                  ONE_BYTE_OFFSET)) * resX / resY;
 #else
             frame->fingers[i].y = (buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET);
