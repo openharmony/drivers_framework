@@ -8,8 +8,7 @@
 
 #include "eth_chip_driver.h"
 #include "eth_device.h"
-#include "hdf_log.h"
-#include "osal_mem.h"
+#include "osal.h"
 
 #define HDF_LOG_TAG eth_core
 struct EthConfig *g_ethConfig = NULL;
@@ -139,7 +138,7 @@ static int32_t InitEth(struct EthDevice *ethDevice, const uint8_t isSetDefault,
         ReleaseEthDevice(ethDevice);
         return HDF_FAILURE;
     }
-    LOS_Msleep(DELAY_TIME_LONG);
+    OsalMSleep(DELAY_TIME_LONG);
 
     ethChipDriverFact->GetMacAddr(enaddr, MAC_ADDR_SIZE);
     NetIfSetMacAddr(ethDevice->netdev, enaddr, MAC_ADDR_SIZE);
@@ -147,7 +146,7 @@ static int32_t InitEth(struct EthDevice *ethDevice, const uint8_t isSetDefault,
 #if (_PRE_OS_VERSION_LITEOS == _PRE_OS_VERSION)
     ret = SetEthNetworkAddr(ethDevice->netdev);
     if (ret != HDF_SUCCESS) {
-        PRINTK("%s set eth network addr fail\n", __func__);
+        HDF_LOGE("%s set eth network addr fail", __func__);
         DeinitEth(ethDevice);
         ReleaseEthDevice(ethDevice);
         return ret;
@@ -189,7 +188,7 @@ static int32_t HdfEthDriverInit(struct HdfDeviceObject *deviceObject)
             return ret;
         }
     }
-    PRINTK("%s hdf eth driver framework init success\n", __func__);
+    HDF_LOGE("%s hdf eth driver framework init success", __func__);
     return ret;
 }
 

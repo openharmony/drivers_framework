@@ -13,6 +13,7 @@
 #include "hdf_log.h"
 #include "los_vm_zone.h"
 #include "osal_mem.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG eth_device
 
