@@ -77,7 +77,7 @@ void SendInfoToHdf(HidInfo *info)
     }
 }
 
-static void FreeCachedInfo()
+static void FreeCachedInfo(void)
 {
     int32_t id = 0;
     while (id < MAX_INPUT_DEV_NUM) {
