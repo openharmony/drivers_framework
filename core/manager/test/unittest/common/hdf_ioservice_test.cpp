@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <fcntl.h>
 #include <string>
+#include <inttypes.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
 #include "hdf_uhdf_test.h"
