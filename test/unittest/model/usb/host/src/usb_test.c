@@ -232,7 +232,7 @@ static int32_t CheckHostSdkIfInit004(void)
         if (ret) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
-         }
+        }
         ret = UsbExitHostSdk(NULL);
         if (ret) {
             HDF_LOGE("%s: error", __func__);
@@ -1090,7 +1090,7 @@ static int32_t CheckHostSdkIfFillIsoRequest001(void)
     int i;
     char sendData[] = {"abcde\0"};
     uint32_t size = strlen(sendData) + 1;
-    if (g_acm->isoPipe == NULL){
+    if (g_acm->isoPipe == NULL) {
         return HDF_FAILURE;
     }
     for (i = 0; i < 1; i++) {
@@ -1116,12 +1116,12 @@ static int32_t CheckHostSdkIfFillIsoRequest001(void)
 
 static int32_t CheckHostSdkIfFillIsoRequest002(void)
 {
-     int ret;
+    int ret;
     struct UsbRequestParams parmas;
     int i;
     char sendData[] = {"abcde\0"};
     uint32_t size = strlen(sendData) + 1;
-    if (g_acm->isoPipe == NULL){
+    if (g_acm->isoPipe == NULL) {
         return HDF_FAILURE;
     }
     for (i = 0; i < 1; i++) {
@@ -1152,7 +1152,7 @@ static int32_t CheckHostSdkIfFillIsoRequest003(void)
     int i;
     char sendData[] = {"abcde\0"};
     uint32_t size = strlen(sendData) + 1;
-    if (g_acm->isoPipe == NULL){
+    if (g_acm->isoPipe == NULL) {
         return HDF_FAILURE;
     }
     for (i = 0; i < 1; i++) {
@@ -1183,7 +1183,7 @@ static int32_t CheckHostSdkIfFillIsoRequest004(void)
     int i;
     char sendData[] = {"abcde\0"};
     uint32_t size = strlen(sendData) + 1;
-    if (g_acm->isoPipe == NULL){
+    if (g_acm->isoPipe == NULL) {
         return HDF_FAILURE;
     }
     for (i = 0; i < 1; i++) {
@@ -1214,7 +1214,7 @@ static int32_t CheckHostSdkIfFillIsoRequest005(void)
     int i;
     char sendData[] = {"abcde\0"};
     uint32_t size = strlen(sendData) + 1;
-    if (g_acm->isoPipe == NULL){
+    if (g_acm->isoPipe == NULL) {
         return HDF_FAILURE;
     }
     for (i = 0; i < 1; i++) {
@@ -1240,12 +1240,12 @@ static int32_t CheckHostSdkIfFillIsoRequest005(void)
 
 static int32_t CheckHostSdkIfFillIsoRequest006(void)
 {
-      int ret;
+    int ret;
     struct UsbRequestParams parmas;
     int i;
     char sendData[] = {"abcde\0"};
     uint32_t size = strlen(sendData) + 1;
-    if (g_acm->isoPipe == NULL){
+    if (g_acm->isoPipe == NULL) {
         return HDF_FAILURE;
     }
     for (i = 0; i < 1; i++) {
@@ -1292,7 +1292,7 @@ static int32_t CheckHostSdkIfAllocRequest009(void)
         if (g_acm->readReq[i] == NULL) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
-         }
+        }
     }
 
     g_acm->writeSize = g_acm->dataOutPipe->maxPacketSize;
@@ -1307,7 +1307,7 @@ static int32_t CheckHostSdkIfAllocRequest009(void)
         if (g_acm->wb[i].request == NULL) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
-         }
+        }
     }
     g_acm->intSize = g_acm->intPipe->maxPacketSize;
     g_acm->notifyReq = UsbAllocRequest(g_acm->int_devHandle, 0, g_acm->intSize);
@@ -1456,7 +1456,7 @@ static int32_t CheckHostSdkIfSubmitRequestSync001(void)
         if (ret) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
-         }
+        }
     }
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
@@ -1472,7 +1472,7 @@ static int32_t CheckHostSdkIfSubmitRequestSync002(void)
         if (ret) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
-         }
+        }
     }
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;

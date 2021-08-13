@@ -19,9 +19,9 @@ int32_t HdfUsbUnitTestEntry(HdfTestMsg *msg)
         return HDF_FAILURE;
     }
     dprintf("---%s::command[%u], subCommand[%u]\n", __func__, msg->cmd, msg->subCmd);
-    if (msg->cmd == TEST_USB_HOST_TYPE){
+    if (msg->cmd == TEST_USB_HOST_TYPE) {
         msg->result = UsbTestEntry(msg->subCmd);
-    }else if (msg->cmd == TEST_USB_HOST_RAW_TYPE){
+    } else if (msg->cmd == TEST_USB_HOST_RAW_TYPE) {
         msg->result = UsbRawTestEntry(msg->subCmd);
     }
     dprintf("%s::command[%u], subCommand[%u], result:%d\n", __func__, msg->cmd, msg->subCmd, msg->result);
