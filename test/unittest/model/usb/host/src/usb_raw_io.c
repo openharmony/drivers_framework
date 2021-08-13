@@ -168,7 +168,6 @@ void AcmReadBulkCallback(void *requestArg)
             if (size) {
                 uint8_t *data = req->buffer;
                 printf("rcv:%s\n", (char *)data);
-
             }
             break;
         case USB_REQUEST_CANCELLED:

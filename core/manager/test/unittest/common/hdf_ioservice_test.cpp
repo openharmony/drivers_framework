@@ -73,7 +73,7 @@ int IoServiceTest::OnDevEventReceived(struct HdfDevEventlistener *listener, stru
 {
     OsalTimespec time;
     OsalGetTime(&time);
-    HDF_LOGE("%s: received event[%d] from %s at %llu.%llu", (char *)listener->priv, eventCount++, (char *)service->priv,
+    HDF_LOGE("%s: received event[%d] from %s at %" PRIu64 ".%" PRIu64 "", (char *)listener->priv, eventCount++, (char *)service->priv,
         time.sec, time.usec);
 
     const char *string = HdfSbufReadString(data);
@@ -127,7 +127,7 @@ static int SendEvent(struct HdfIoService *serv, const char *eventData)
             HDF_LOGE("service call reply check fail, replyData=0x%x", replyData);
             ret = HDF_ERR_INVALID_OBJECT;
         }
-        HDF_LOGE("send event finish at %llu.%llu", time.sec, time.usec);
+        HDF_LOGE("send event finish at %" PRIu64 ".%" PRIu64 "", time.sec, time.usec);
     } while (0);
 
     HdfSBufRecycle(data);
