@@ -12,6 +12,7 @@
 
 using namespace testing::ext;
 
+namespace {
 class AudioParseTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -42,4 +43,5 @@ HWTEST_F(AudioParseTest, AudioParseTest_GetConfigData, TestSize.Level0)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTGETCCNFIGDATA, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
 }

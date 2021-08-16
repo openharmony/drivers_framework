@@ -10,10 +10,10 @@
 #define AUDIO_STREAM_DISP_H
 
 #include "audio_host.h"
-#include "codec_adapter.h"
-#include "platform_adapter.h"
-#include "dai_adapter.h"
-#include "dsp_adapter.h"
+#include "audio_codec_if.h"
+#include "audio_platform_if.h"
+#include "audio_dai_if.h"
+#include "audio_dsp_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -37,13 +37,18 @@ enum StreamDispMethodCmd {
     AUDIO_DRV_PCM_IOCTRL_CAPTURE_PAUSE,
     AUDIO_DRV_PCM_IOCTRL_RENDER_RESUME,
     AUDIO_DRV_PCM_IOCTRL_CAPTURE_RESUME,
+    AUDIO_DRV_PCM_IOCTL_MMAP_BUFFER,
+    AUDIO_DRV_PCM_IOCTL_MMAP_BUFFER_CAPTURE,
+    AUDIO_DRV_PCM_IOCTL_MMAP_POSITION,
+    AUDIO_DRV_PCM_IOCTL_MMAP_POSITION_CAPTURE,
     AUDIO_DRV_PCM_IOCTRL_DSP_DECODE,
     AUDIO_DRV_PCM_IOCTRL_DSP_ENCODE,
     AUDIO_DRV_PCM_IOCTRL_DSP_EQUALIZER,
     AUDIO_DRV_PCM_IOCTRL_BUTT,
 };
 
-typedef int32_t (*StreamDispCmdHandle)(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply);
+typedef int32_t (*StreamDispCmdHandle)(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply);
 
 struct StreamDispCmdHandleList {
     enum StreamDispMethodCmd cmd;
@@ -63,7 +68,6 @@ static inline struct StreamHost *StreamHostFromDevice(struct HdfDeviceObject *de
 
 int32_t StreamDispatch(struct HdfDeviceIoClient *client, int cmdId,
                        struct HdfSBuf *data, struct HdfSBuf *reply);
-void StreamHostDestroy(struct StreamHost *host);
 
 #ifdef __cplusplus
 #if __cplusplus

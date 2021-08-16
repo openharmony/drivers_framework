@@ -11,11 +11,11 @@
 
 #include "audio_host.h"
 #include "audio_control.h"
-#include "codec_adapter.h"
-#include "platform_adapter.h"
-#include "dai_adapter.h"
-#include "accessory_adapter.h"
-#include "dsp_adapter.h"
+#include "audio_codec_if.h"
+#include "audio_platform_if.h"
+#include "audio_dai_if.h"
+#include "audio_accessory_if.h"
+#include "audio_dsp_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -65,28 +65,43 @@ int32_t AudioSocRegisterDai(struct HdfDeviceObject *device, struct DaiData *data
 int32_t AudioSocRegisterPlatform(struct HdfDeviceObject *device, struct PlatformData *data);
 /* Codec registration interface */
 int32_t AudioRegisterCodec(struct HdfDeviceObject *device, struct CodecData *codecData, struct DaiData *daiData);
-int32_t AudioBindDaiLink(struct AudioCard *audioCard, struct AudioConfigData *configData);
+int32_t AudioBindDaiLink(struct AudioCard *audioCard, const struct AudioConfigData *configData);
 int32_t AudioSocDeviceRegister(struct HdfDeviceObject *device, void *data, enum AudioDeviceType deviceType);
 int32_t AudioSocRegisterDsp(struct HdfDeviceObject *device, struct DaiData *data);
 int32_t AudioRegisterAccessory(struct HdfDeviceObject *device, struct AccessoryData *data, struct DaiData *daiData);
-int32_t AudioUpdateRegBits(enum AudioDeviceType deviceType, void *device,
-    struct AudioMixerControl *mixerControl, int32_t value);
-int32_t AudioAiaoUpdateRegBits(struct CodecDevice *codec, uint32_t reg, uint32_t mask, uint32_t shift, int32_t value);
+int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec,
+    const struct AudioMixerControl *mixerControl, uint32_t value);
+int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
+    const struct AudioMixerControl *mixerControl, uint32_t value);
+int32_t AudioUpdateCodecAiaoRegBits(struct CodecDevice *codec, const struct AudioMixerControl *mixerControl,
+    uint32_t value);
+int32_t AudioUpdateAccessoryAiaoRegBits(struct AccessoryDevice *accessory,
+    const struct AudioMixerControl *mixerControl, uint32_t value);
 struct CodecDevice *AudioKcontrolGetCodec(const struct AudioKcontrol *kcontrol);
 struct AccessoryDevice *AudioKcontrolGetAccessory(const struct AudioKcontrol *kcontrol);
-extern int32_t AudioAddControls(struct AudioCard *audioCard,
+int32_t AudioAddControls(struct AudioCard *audioCard,
     const struct AudioKcontrol *controls, int32_t controlMaxNum);
-extern struct AudioKcontrol *AudioAddControl(const struct AudioCard *audioCard, const struct AudioKcontrol *ctl);
-extern int32_t AudioCodecDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val);
-extern int32_t AudioAccessoryDeviceReadReg(struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val);
-extern int32_t AudioAiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val);
+struct AudioKcontrol *AudioAddControl(const struct AudioCard *audioCard, const struct AudioKcontrol *ctl);
 
-extern int32_t AudioInfoCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo);
-extern int32_t AudioGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-extern int32_t AudioSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-extern int32_t AiaoGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-extern int32_t AiaoSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-int32_t AudioRegisterDeviceDsp(struct HdfDeviceObject *device, struct DspData *dspData, struct DaiData *DaiData);
+int32_t AudioCodecReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val);
+int32_t AudioCodecWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t val);
+int32_t AudioAccessoryReadReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val);
+int32_t AudioAccessoryWriteReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t val);
+int32_t AudioCodecAiaoReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val);
+int32_t AudioCodecAiaoWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t val);
+int32_t AudioAccessoryAiaoReadReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val);
+int32_t AudioAccessoryAiaoWriteReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t val);
+
+int32_t AudioInfoCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo);
+int32_t AudioCodecGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+int32_t AudioCodecSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue);
+int32_t AudioAccessoryGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+int32_t AudioAccessorySetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue);
+int32_t AudioCodecAiaoGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+int32_t AudioCodecAiaoSetCtrlOps(const struct AudioKcontrol *kcontrol,  const struct AudioCtrlElemValue *elemValue);
+int32_t AudioAccessoryAiaoGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+int32_t AudioAccessoryAiaoSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue);
+int32_t AudioRegisterDsp(struct HdfDeviceObject *device, struct DspData *dspData, struct DaiData *DaiData);
 #ifdef __cplusplus
 #if __cplusplus
 }

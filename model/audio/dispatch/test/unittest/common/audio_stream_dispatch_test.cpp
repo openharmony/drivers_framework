@@ -43,9 +43,3 @@ HWTEST_F(AudioStreamDispatchTest, AudioStreamDispatchTest001, TestSize.Level0)
     struct HdfTestMsg msg = {g_testAudioType, TESTSTREAMDISPATCH, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
-
-HWTEST_F(AudioStreamDispatchTest, AudioStreamDispatchTest002, TestSize.Level0)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTSTREAMDESTORY, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}

@@ -16,30 +16,6 @@ AUDIO_LIST_HEAD(codecController);
 AUDIO_LIST_HEAD(dspController);
 AUDIO_LIST_HEAD(accessoryController);
 
-int32_t AudioSocRegisterDsp(struct HdfDeviceObject *device, struct DaiData *data)
-{
-    struct DaiDevice *dsp = NULL;
-
-    if ((device == NULL) || (data == NULL)) {
-        ADM_LOG_ERR("Input params check error: device=%p, data=%p.", device, data);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    dsp = (struct DaiDevice *)OsalMemCalloc(sizeof(*dsp));
-    if (dsp == NULL) {
-        ADM_LOG_ERR("Malloc dsp device fail!");
-        return HDF_ERR_MALLOC_FAIL;
-    }
-
-    dsp->devDaiName = data->drvDaiName;
-    dsp->devData = data;
-    dsp->device = device;
-    DListInsertHead(&dsp->list, &daiController);
-    ADM_LOG_INFO("Register [%s] success.", dsp->devDaiName);
-
-    return HDF_SUCCESS;
-}
-
 int32_t AudioSocRegisterPlatform(struct HdfDeviceObject *device, struct PlatformData *data)
 {
     struct PlatformDevice *platform = NULL;
@@ -155,6 +131,39 @@ int32_t AudioRegisterCodec(struct HdfDeviceObject *device, struct CodecData *cod
     return HDF_SUCCESS;
 }
 
+int32_t AudioRegisterDsp(struct HdfDeviceObject *device, struct DspData *dspData, struct DaiData *DaiData)
+{
+    struct DspDevice *dspDev = NULL;
+    int32_t ret;
+
+    if ((device == NULL) || (dspData == NULL) || (DaiData == NULL)) {
+        ADM_LOG_ERR("Input params check error: device=%p, dspData=%p, daiData=%p.",
+            device, dspData, DaiData);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    dspDev = (struct DspDevice *)OsalMemCalloc(sizeof(*dspDev));
+    if (dspDev == NULL) {
+        ADM_LOG_ERR("Malloc codec device fail!");
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    dspDev->devDspName = dspData->drvDspName;
+    dspDev->devData = dspData;
+    dspDev->device = device;
+
+    ret = AudioSocDeviceRegister(device, (void *)DaiData, AUDIO_DAI_DEVICE);
+    if (ret != HDF_SUCCESS) {
+        OsalMemFree(dspDev);
+        ADM_LOG_ERR("Register dai device fail ret=%d", ret);
+        return HDF_ERR_IO;
+    }
+    DListInsertHead(&dspDev->list, &dspController);
+    ADM_LOG_INFO("Register [%s] success.", dspDev->devDspName);
+
+    return HDF_SUCCESS;
+}
+
 int32_t AudioSocDeviceRegister(struct HdfDeviceObject *device, void *data, enum AudioDeviceType deviceType)
 {
     struct PlatformData *platformData = NULL;
@@ -177,15 +186,6 @@ int32_t AudioSocDeviceRegister(struct HdfDeviceObject *device, void *data, enum 
             }
             break;
         }
-        case AUDIO_DSP_DEVICE: {
-            daiData = (struct DaiData *)data;
-            ret = AudioSocRegisterDsp(device, daiData);
-            if (ret != HDF_SUCCESS) {
-                ADM_LOG_ERR("Register dsp device fail ret=%d", ret);
-                return HDF_FAILURE;
-            }
-            break;
-        }
         case AUDIO_PLATFORM_DEVICE: {
             platformData = (struct PlatformData *)data;
             ret = AudioSocRegisterPlatform(device, platformData);
@@ -204,76 +204,76 @@ int32_t AudioSocDeviceRegister(struct HdfDeviceObject *device, void *data, enum 
     return HDF_SUCCESS;
 }
 
-void AudioSeekPlatformDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+int32_t AudioSeekPlatformDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
-    const struct AudioConfigData *data = configData;
     struct PlatformDevice *platform = NULL;
-
-    if (rtd == NULL || data == NULL) {
-        ADM_LOG_ERR("Input params check error: rtd=%p, data=%p.", rtd, data);
-        return;
+    if (rtd == NULL || configData == NULL) {
+        ADM_LOG_ERR("Input params check error: rtd=%p, configData=%p.", rtd, configData);
+        return HDF_ERR_INVALID_OBJECT;
     }
-    if (data->platformName == NULL) {
-        ADM_LOG_ERR("Input devicesName check error: data->platformName is NULL.");
-        return;
+    if (configData->platformName == NULL) {
+        ADM_LOG_ERR("Input devicesName check error: configData->platformName is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     DLIST_FOR_EACH_ENTRY(platform, &platformController, struct PlatformDevice, list) {
         if (platform != NULL && platform->devPlatformName != NULL &&
-                strcmp(platform->devPlatformName, data->platformName) == 0) {
+            strcmp(platform->devPlatformName, configData->platformName) == 0) {
             rtd->platform = platform;
             break;
         }
     }
-    return;
+
+    return HDF_SUCCESS;
 }
 
-void AudioSeekCpuDaiDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+int32_t AudioSeekCpuDaiDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
-    const struct AudioConfigData *data = configData;
     struct DaiDevice *cpuDai = NULL;
-
-    if (rtd == NULL || data == NULL) {
-        ADM_LOG_ERR("Input params check error: rtd=%p, data=%p.", rtd, data);
-        return;
+    if (rtd == NULL || configData == NULL) {
+        ADM_LOG_ERR("Input params check error: rtd=%p, configData=%p.", rtd, configData);
+        return HDF_ERR_INVALID_OBJECT;
     }
-    if (data->cpuDaiName == NULL) {
-        ADM_LOG_ERR("Input cpuDaiName check error: data->cpuDaiName is NULL.");
-        return;
+    if (configData->cpuDaiName == NULL) {
+        ADM_LOG_ERR("Input cpuDaiName check error: configData->cpuDaiName is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
     }
 
+    if (DListIsEmpty(&daiController)) {
+        ADM_LOG_ERR("daiController is empty.");
+        return HDF_FAILURE;
+    }
     DLIST_FOR_EACH_ENTRY(cpuDai, &daiController, struct DaiDevice, list) {
-        if (cpuDai != NULL && cpuDai->devDaiName != NULL && strcmp(cpuDai->devDaiName, data->cpuDaiName) == 0) {
+        if (cpuDai != NULL && cpuDai->devDaiName != NULL &&
+            strcmp(cpuDai->devDaiName, configData->cpuDaiName) == 0) {
             rtd->cpuDai = cpuDai;
             break;
         }
     }
-    return;
+
+    return HDF_SUCCESS;
 }
 
-void AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+int32_t AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
-    const struct AudioConfigData *data = configData;
     struct CodecDevice *codec = NULL;
     struct DaiDevice *codecDai = NULL;
-
-    if ((rtd == NULL) || (data == NULL)) {
-        ADM_LOG_ERR("Input params check error: rtd=%p, data=%p.", rtd, data);
-        return;
+    if ((rtd == NULL) || (configData == NULL)) {
+        ADM_LOG_ERR("Input params check error: rtd=%p, configData=%p.", rtd, configData);
+        return HDF_ERR_INVALID_OBJECT;
     }
-    if (data->codecName == NULL || data->codecDaiName == NULL) {
-        ADM_LOG_ERR("Input devicesName check error: data->codecName=%p, data->codecDaiName=%p.",
-                    data->codecName, data->codecDaiName);
-        return;
+    if (configData->codecName == NULL || configData->codecDaiName == NULL) {
+        ADM_LOG_ERR("Input devicesName check error: configData->codecName=%p, configData->codecDaiName=%p.",
+                    configData->codecName, configData->codecDaiName);
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     DLIST_FOR_EACH_ENTRY(codec, &codecController, struct CodecDevice, list) {
-        if (codec != NULL && codec->devCodecName != NULL && strcmp(codec->devCodecName, data->codecName) == 0) {
+        if (codec != NULL && codec->devCodecName != NULL && strcmp(codec->devCodecName, configData->codecName) == 0) {
             rtd->codec = codec;
-
             DLIST_FOR_EACH_ENTRY(codecDai, &daiController, struct DaiDevice, list) {
                 if (codecDai != NULL && codecDai->device != NULL && codec->device == codecDai->device &&
-                        strcmp(codecDai->devDaiName, data->codecDaiName) == 0) {
+                    codecDai->devDaiName != NULL && strcmp(codecDai->devDaiName, configData->codecDaiName) == 0) {
                     rtd->codecDai = codecDai;
                     break;
                 }
@@ -281,32 +281,32 @@ void AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct AudioCon
             break;
         }
     }
-    return;
+
+    return HDF_SUCCESS;
 }
 
-void AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+int32_t AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
-    const struct AudioConfigData *data = configData;
     struct AccessoryDevice *accessory = NULL;
     struct DaiDevice *accessoryDai = NULL;
-
-    if (rtd == NULL || data == NULL) {
-        ADM_LOG_ERR("Input params check error: rtd=%p, data=%p.", rtd, data);
-        return;
+    if (rtd == NULL || configData == NULL) {
+        ADM_LOG_ERR("Input params check error: rtd=%p, configData=%p.", rtd, configData);
+        return HDF_ERR_INVALID_OBJECT;
     }
-    if (data->accessoryName == NULL) {
-        ADM_LOG_ERR("Input devicesName check error: data->accessoryName is NULL.");
-        return;
+    if (configData->accessoryName == NULL || configData->accessoryDaiName == NULL) {
+        ADM_LOG_ERR("Input devicesName check error: configData->accessoryName or"
+            "configData->accessoryDaiName is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     DLIST_FOR_EACH_ENTRY(accessory, &accessoryController, struct AccessoryDevice, list) {
         if (accessory != NULL && accessory->devAccessoryName != NULL &&
-                strcmp(accessory->devAccessoryName, data->accessoryName) == 0) {
+                strcmp(accessory->devAccessoryName, configData->accessoryName) == 0) {
             rtd->accessory = accessory;
-
             DLIST_FOR_EACH_ENTRY(accessoryDai, &daiController, struct DaiDevice, list) {
-                if (accessoryDai != NULL && accessoryDai->device != NULL && accessory->device == accessoryDai->device &&
-                        strcmp(accessoryDai->devDaiName, data->accessoryDaiName) == 0) {
+                if (accessoryDai != NULL && accessoryDai->device != NULL &&
+                    accessory->device == accessoryDai->device && accessoryDai->devDaiName != NULL &&
+                    strcmp(accessoryDai->devDaiName, configData->accessoryDaiName) == 0) {
                     rtd->accessoryDai = accessoryDai;
                     break;
                 }
@@ -314,31 +314,30 @@ void AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const struct Audi
             break;
         }
     }
-    return;
+
+    return HDF_SUCCESS;
 }
 
-void AudioSeekDspDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+int32_t AudioSeekDspDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
-    const struct AudioConfigData *data = configData;
     struct DspDevice *dsp = NULL;
     struct DaiDevice *dspDai = NULL;
-
-    if ((rtd == NULL) || (data == NULL)) {
-        ADM_LOG_ERR("Input params check error: rtd=%p, data=%p.", rtd, data);
-        return;
+    if ((rtd == NULL) || (configData == NULL)) {
+        ADM_LOG_ERR("Input params check error: rtd=%p, configData=%p.", rtd, configData);
+        return HDF_ERR_INVALID_OBJECT;
     }
-    if (data->dspName == NULL || data->dspDaiName == NULL) {
-        ADM_LOG_ERR("Input devicesName check error: data->dspName=%p, data->dspDaiName=%p.",
-                    data->codecName, data->codecDaiName);
-        return;
+    if (configData->dspName == NULL || configData->dspDaiName == NULL) {
+        ADM_LOG_ERR("Input devicesName check error: configData->dspName=%p, configData->dspDaiName=%p.",
+                    configData->dspName, configData->dspDaiName);
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     DLIST_FOR_EACH_ENTRY(dsp, &dspController, struct DspDevice, list) {
-        if (dsp != NULL && dsp->devDspName != NULL && strcmp(dsp->devDspName, data->dspName) == 0) {
+        if (dsp != NULL && dsp->devDspName != NULL && strcmp(dsp->devDspName, configData->dspName) == 0) {
             rtd->dsp = dsp;
             DLIST_FOR_EACH_ENTRY(dspDai, &daiController, struct DaiDevice, list) {
                 if (dspDai != NULL && dspDai->device != NULL && dsp->device == dspDai->device &&
-                        strcmp(dspDai->devDaiName, data->dspDaiName) == 0) {
+                    dspDai->devDaiName != NULL && strcmp(dspDai->devDaiName, configData->dspDaiName) == 0) {
                     rtd->dspDai = dspDai;
                     break;
                 }
@@ -346,13 +345,12 @@ void AudioSeekDspDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfi
             break;
         }
     }
-    return;
+
+    return HDF_SUCCESS;
 }
 
-int32_t AudioBindDaiLink(struct AudioCard *audioCard, struct AudioConfigData *configData)
+int32_t AudioBindDaiLink(struct AudioCard *audioCard, const struct AudioConfigData *configData)
 {
-    int32_t ret;
-
     if ((audioCard == NULL) || (configData == NULL)) {
         ADM_LOG_ERR("Input params check error: audioCard=%p, configData=%p.", audioCard, configData);
         return HDF_ERR_INVALID_OBJECT;
@@ -365,51 +363,34 @@ int32_t AudioBindDaiLink(struct AudioCard *audioCard, struct AudioConfigData *co
     }
 
     audioCard->rtd->complete = AUDIO_DAI_LINK_UNCOMPLETE;
-
-    AudioSeekPlatformDevice(audioCard->rtd, configData);
-    AudioSeekCpuDaiDevice(audioCard->rtd, configData);
-    AudioSeekCodecDevice(audioCard->rtd, configData);
-    AudioSeekAccessoryDevice(audioCard->rtd, configData);
-    AudioSeekDspDevice(audioCard->rtd, configData);
-    if (!audioCard->rtd->codec && !audioCard->rtd->accessory) {
-        OsalMemFree(audioCard->rtd);
-        ret = HDF_FAILURE;
-        ADM_LOG_DEBUG("CODEC [%s] not registered!", configData->codecName);
-    } else if (!audioCard->rtd->codecDai && !audioCard->rtd->accessoryDai) {
-        OsalMemFree(audioCard->rtd);
-        ret = HDF_FAILURE;
-        ADM_LOG_DEBUG("CODEC DAI [%s] not registered!", configData->codecDaiName);
-    } else if (!audioCard->rtd->platform) {
-        OsalMemFree(audioCard->rtd);
-        ret = HDF_FAILURE;
-        ADM_LOG_DEBUG("Platform [%s] not registered!", configData->platformName);
-    } else if (!audioCard->rtd->cpuDai) {
-        OsalMemFree(audioCard->rtd);
-        ret = HDF_FAILURE;
-        ADM_LOG_DEBUG("CPU DAI [%s] not registered!", configData->cpuDaiName);
-    } else if (!audioCard->rtd->dsp) {
-        OsalMemFree(audioCard->rtd);
-        ret = HDF_FAILURE;
-        ADM_LOG_ERR("DSP [%s] not registered!", configData->dspName);
-    } else if (!audioCard->rtd->dspDai) {
-        OsalMemFree(audioCard->rtd);
-        ret = HDF_FAILURE;
-        ADM_LOG_ERR("DSP DAI [%s] not registered!", configData->dspDaiName);
-    } else {
-        audioCard->rtd->complete = AUDIO_DAI_LINK_COMPLETE;
-        ret = HDF_SUCCESS;
-        ADM_LOG_DEBUG("All devices register complete!");
+    if (AudioSeekPlatformDevice(audioCard->rtd, configData) == HDF_SUCCESS) {
+        ADM_LOG_DEBUG("PLATFORM [%s] is registered!", configData->platformName);
     }
+    if (AudioSeekCpuDaiDevice(audioCard->rtd, configData) == HDF_SUCCESS) {
+        ADM_LOG_DEBUG("CPU DAI [%s] is registered!", configData->cpuDaiName);
+    }
+    if (AudioSeekCodecDevice(audioCard->rtd, configData) == HDF_SUCCESS) {
+        ADM_LOG_DEBUG("CODEC [%s] is registered!", configData->codecName);
+    }
+    if (AudioSeekAccessoryDevice(audioCard->rtd, configData) == HDF_SUCCESS) {
+        ADM_LOG_DEBUG("CODEC [%s] is registered!", configData->accessoryName);
+    }
+    if (AudioSeekDspDevice(audioCard->rtd, configData) == HDF_SUCCESS) {
+        ADM_LOG_DEBUG("CODEC [%s] is registered!", configData->dspName);
+    }
+    audioCard->rtd->complete = AUDIO_DAI_LINK_COMPLETE;
+    ADM_LOG_DEBUG("All devices register complete!");
 
-    return ret;
+    return HDF_SUCCESS;
 }
 
-int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec, struct AudioMixerControl *mixerControl, int32_t value)
+int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec,
+    const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
-    uint32_t curValue = 0;
-    int32_t mixerControlMask;
-    if (codec == NULL || codec->devData == NULL || codec->devData->Write == NULL || mixerControl == NULL) {
+    uint32_t curValue;
+    uint32_t mixerControlMask;
+    if (codec == NULL || mixerControl == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -418,14 +399,15 @@ int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec, struct AudioMixerCont
     mixerControlMask = mixerControl->mask << mixerControl->shift;
 
     OsalMutexLock(&codec->mutex);
-    ret = AudioCodecDeviceReadReg(codec, mixerControl->reg, &curValue);
+    ret = AudioCodecReadReg(codec, mixerControl->reg, &curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&codec->mutex);
         ADM_LOG_ERR("Read reg fail ret=%d.", ret);
         return HDF_FAILURE;
     }
+
     curValue = (curValue & ~mixerControlMask) | (value & mixerControlMask);
-    ret = codec->devData->Write(codec, mixerControl->reg, curValue);
+    ret = AudioCodecWriteReg(codec, mixerControl->reg, curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&codec->mutex);
         ADM_LOG_ERR("Write reg fail ret=%d", ret);
@@ -438,13 +420,12 @@ int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec, struct AudioMixerCont
 }
 
 int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
-    struct AudioMixerControl *mixerControl, int32_t value)
+    const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
-    uint32_t curValue = 0;
-    int32_t mixerControlMask;
-    if (accessory == NULL || accessory->devData == NULL ||
-        accessory->devData->Write == NULL || mixerControl == NULL) {
+    uint32_t curValue;
+    uint32_t mixerControlMask;
+    if (accessory == NULL || mixerControl == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -453,14 +434,14 @@ int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
     mixerControlMask = mixerControl->mask << mixerControl->shift;
 
     OsalMutexLock(&accessory->mutex);
-    ret = AudioAccessoryDeviceReadReg(accessory, mixerControl->reg, &curValue);
+    ret = AudioAccessoryReadReg(accessory, mixerControl->reg, &curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&accessory->mutex);
         ADM_LOG_ERR("Read reg fail ret=%d", ret);
         return HDF_FAILURE;
     }
     curValue = (curValue & ~mixerControlMask) | (value & mixerControlMask);
-    ret = accessory->devData->Write(accessory, mixerControl->reg, curValue);
+    ret = AudioAccessoryWriteReg(accessory, mixerControl->reg, curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&accessory->mutex);
         ADM_LOG_ERR("Write reg fail ret=%d", ret);
@@ -472,65 +453,75 @@ int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
     return HDF_SUCCESS;
 }
 
-int32_t AudioUpdateRegBits(enum AudioDeviceType deviceType, void *device,
-    struct AudioMixerControl *mixerControl, int32_t value)
+int32_t AudioUpdateCodecAiaoRegBits(struct CodecDevice *codec,
+    const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
-    struct CodecDevice *codec = NULL;
-    struct AccessoryDevice *accessory = NULL;
-    ADM_LOG_DEBUG("Entry.");
+    uint32_t curValue;
+    uint32_t mixerControlMask;
+    ADM_LOG_DEBUG("Entry to update AIAO codec  reg bits.");
 
-    switch (deviceType) {
-        case AUDIO_CODEC_DEVICE: {
-            codec = (struct CodecDevice *)device;
-            ret = AudioUpdateCodecRegBits(codec, mixerControl, value);
-            break;
-        }
-        case AUDIO_ACCESSORY_DEVICE: {
-            accessory = (struct AccessoryDevice *)device;
-            ret = AudioUpdateAccessoryRegBits(accessory, mixerControl, value);
-            break;
-        }
-        default: {
-            ADM_LOG_ERR("Invalid device type.");
-            return HDF_FAILURE;
-        }
-    }
-
-    return ret;
-}
-
-int32_t AudioAiaoUpdateRegBits(struct CodecDevice *codec, uint32_t reg, uint32_t mask, uint32_t shift, int32_t value)
-{
-    int32_t ret;
-    uint32_t curValue = 0;
-    ADM_LOG_DEBUG("Entry to update AIAO reg bits.");
-
-    if (codec == NULL || codec->devData == NULL || codec->devData->AiaoWrite == NULL) {
+    if (codec == NULL || mixerControl == NULL) {
         ADM_LOG_ERR("Invalid AIAO codec param.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    value = value << shift;
-    mask = mask << shift;
+    value = value << mixerControl->shift;
+    mixerControlMask = mixerControl->mask << mixerControl->shift;
 
     OsalMutexLock(&codec->mutex);
-    ret = AudioAiaoDeviceReadReg(codec, reg, &curValue);
+    ret = AudioCodecAiaoReadReg(codec, mixerControl->reg, &curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&codec->mutex);
-        ADM_LOG_ERR("Read AIAO reg fail ret=%d.", ret);
+        ADM_LOG_ERR("Read AIAO codec reg fail ret=%d.", ret);
         return HDF_FAILURE;
     }
-    curValue = (curValue & ~mask) | (value & mask);
-    ret = codec->devData->AiaoWrite(codec, reg, curValue);
+    curValue = (curValue & ~mixerControlMask) | (value & mixerControlMask);
+    ret = AudioCodecAiaoWriteReg(codec, mixerControl->reg, curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&codec->mutex);
-        ADM_LOG_ERR("Write AIAO reg fail ret=%d", ret);
+        ADM_LOG_ERR("Write AIAO codec reg fail ret=%d", ret);
         return HDF_FAILURE;
     }
     OsalMutexUnlock(&codec->mutex);
 
-    ADM_LOG_DEBUG("Update AIAO reg bits successful.");
+    ADM_LOG_DEBUG("Update AIAO codec reg bits successful.");
+    return HDF_SUCCESS;
+}
+
+int32_t AudioUpdateAccessoryAiaoRegBits(struct AccessoryDevice *accessory,
+    const struct AudioMixerControl *mixerControl, uint32_t value)
+{
+    int32_t ret;
+    uint32_t curValue;
+    uint32_t mixerControlMask;
+    ADM_LOG_DEBUG("Entry to update AIAO accessory  reg bits.");
+
+    if (accessory == NULL || mixerControl == NULL) {
+        ADM_LOG_ERR("Invalid AIAO accessory param.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    value = value << mixerControl->shift;
+    mixerControlMask = mixerControl->mask << mixerControl->shift;
+
+    OsalMutexLock(&accessory->mutex);
+    ret = AudioAccessoryAiaoReadReg(accessory, mixerControl->reg, &curValue);
+    if (ret != HDF_SUCCESS) {
+        OsalMutexUnlock(&accessory->mutex);
+        ADM_LOG_ERR("Read AIAO accessory reg fail ret=%d.", ret);
+        return HDF_FAILURE;
+    }
+    curValue = (curValue & ~mixerControlMask) | (value & mixerControlMask);
+    ret = AudioAccessoryAiaoWriteReg(accessory, mixerControl->reg, curValue);
+    if (ret != HDF_SUCCESS) {
+        OsalMutexUnlock(&accessory->mutex);
+        ADM_LOG_ERR("Write AIAO accessory reg fail ret=%d", ret);
+        return HDF_FAILURE;
+    }
+    OsalMutexUnlock(&accessory->mutex);
+
+    ADM_LOG_DEBUG("Update AIAO accessory reg bits successful.");
     return HDF_SUCCESS;
 }
 
@@ -542,7 +533,7 @@ struct CodecDevice *AudioKcontrolGetCodec(const struct AudioKcontrol *kcontrol)
         return NULL;
     }
 
-    audioCard = (struct AudioCard *)(kcontrol->pri);
+    audioCard = (struct AudioCard *)((volatile uintptr_t)(kcontrol->pri));
     if (audioCard == NULL || audioCard->rtd == NULL) {
         ADM_LOG_ERR("Get codec or rtd fail.");
         return NULL;
@@ -559,7 +550,7 @@ struct AccessoryDevice *AudioKcontrolGetAccessory(const struct AudioKcontrol *kc
         return NULL;
     }
 
-    audioCard = (struct AudioCard *)(kcontrol->pri);
+    audioCard = (struct AudioCard *)((volatile uintptr_t)(kcontrol->pri));
     if (audioCard == NULL || audioCard->rtd == NULL) {
         ADM_LOG_ERR("Get accessory or rtd fail.");
         return NULL;
@@ -617,7 +608,7 @@ int32_t AudioAddControls(struct AudioCard *audioCard, const struct AudioKcontrol
     return HDF_SUCCESS;
 }
 
-int32_t AudioCodecDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val)
+int32_t AudioCodecReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
 {
     int32_t ret;
     if (codec == NULL || codec->devData == NULL || codec->devData->Read == NULL || val == NULL) {
@@ -626,13 +617,13 @@ int32_t AudioCodecDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_
     }
     ret = codec->devData->Read(codec, reg, val);
     if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("Device read fail.");
+        ADM_LOG_ERR("Codec device read fail.");
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
 
-int32_t AudioAccessoryDeviceReadReg(struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val)
+int32_t AudioAccessoryReadReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val)
 {
     int32_t ret;
     if (accessory == NULL || accessory->devData == NULL || accessory->devData->Read == NULL || val == NULL) {
@@ -641,13 +632,13 @@ int32_t AudioAccessoryDeviceReadReg(struct AccessoryDevice *accessory, uint32_t 
     }
     ret = accessory->devData->Read(accessory, reg, val);
     if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("Device read fail.");
+        ADM_LOG_ERR("Accessory device read fail.");
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
 
-int32_t AudioAiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val)
+int32_t AudioCodecAiaoReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
 {
     int32_t ret;
     if (codec == NULL || codec->devData == NULL || codec->devData->AiaoRead == NULL || val == NULL) {
@@ -662,7 +653,82 @@ int32_t AudioAiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t
     return HDF_SUCCESS;
 }
 
-int32_t AudioInfoCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo)
+int32_t AudioAccessoryAiaoReadReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val)
+{
+    int32_t ret;
+    if (accessory == NULL || accessory->devData == NULL || accessory->devData->AiaoRead == NULL || val == NULL) {
+        ADM_LOG_ERR("Input param accessory is NULL.");
+        return HDF_FAILURE;
+    }
+    ret = accessory->devData->AiaoRead(accessory, reg, val);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("Device read fail.");
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+int32_t AudioCodecWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t val)
+{
+    int32_t ret;
+    if (codec == NULL || codec->devData == NULL || codec->devData->Write == NULL) {
+        ADM_LOG_ERR("Input param codec is NULL.");
+        return HDF_FAILURE;
+    }
+    ret = codec->devData->Write(codec, reg, val);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("Codec device write fail.");
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+int32_t AudioAccessoryWriteReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t val)
+{
+    int32_t ret;
+    if (accessory == NULL || accessory->devData == NULL || accessory->devData->Write == NULL) {
+        ADM_LOG_ERR("Input param accessory is NULL.");
+        return HDF_FAILURE;
+    }
+    ret = accessory->devData->Write(accessory, reg, val);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("Accessory device write fail.");
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+int32_t AudioCodecAiaoWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t val)
+{
+    int32_t ret;
+    if (codec == NULL || codec->devData == NULL || codec->devData->AiaoWrite == NULL) {
+        ADM_LOG_ERR("Input param codec aiao is NULL.");
+        return HDF_FAILURE;
+    }
+    ret = codec->devData->AiaoWrite(codec, reg, val);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("Codec aiao device write fail.");
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+int32_t AudioAccessoryAiaoWriteReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t val)
+{
+    int32_t ret;
+    if (accessory == NULL || accessory->devData == NULL || accessory->devData->AiaoWrite == NULL) {
+        ADM_LOG_ERR("Input param accessory aiao is NULL.");
+        return HDF_FAILURE;
+    }
+    ret = accessory->devData->AiaoWrite(accessory, reg, val);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("Accessory aiao device write fail.");
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+int32_t AudioInfoCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo)
 {
     struct AudioMixerControl *mixerCtrl = NULL;
 
@@ -672,7 +738,7 @@ int32_t AudioInfoCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInf
     }
 
     elemInfo->count = CHANNEL_MIN_NUM;
-    mixerCtrl = (struct AudioMixerControl *)kcontrol->privateValue;
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)(kcontrol->privateValue));
     /* stereo */
     if (mixerCtrl->reg != mixerCtrl->rreg || mixerCtrl->shift != mixerCtrl->rshift) {
         elemInfo->count = CHANNEL_MAX_NUM;
@@ -684,27 +750,15 @@ int32_t AudioInfoCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInf
     return HDF_SUCCESS;
 }
 
-static int32_t AudioGetCtrlOpsSubRReg(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
-    enum AudioDeviceType deviceType, void *device)
+static int32_t AudioGetCtrlOpsRReg(struct AudioCtrlElemValue *elemValue,
+    const struct AudioMixerControl *mixerCtrl, uint32_t rcurValue)
 {
-    int32_t ret = HDF_FAILURE;
-    uint32_t rcurValue;
-    struct AudioMixerControl *mixerCtrl = NULL;
-    mixerCtrl = (struct AudioMixerControl *)kcontrol->privateValue;
-    struct CodecDevice *codec = (struct CodecDevice *)device;
-    struct AccessoryDevice *accessory = (struct AccessoryDevice *)device;
+    if (elemValue == NULL || mixerCtrl == NULL) {
+        ADM_LOG_ERR("Audio input param is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
 
     if (mixerCtrl->reg != mixerCtrl->rreg || mixerCtrl->shift != mixerCtrl->rshift) {
-        if (codec != NULL && codec->devData != NULL && codec->devData->Read != NULL) {
-            ret = codec->devData->Read(codec, mixerCtrl->rreg, &rcurValue);
-        } else if (accessory != NULL && accessory->devData != NULL && accessory->devData->Read != NULL) {
-            ret = accessory->devData->Read(accessory, mixerCtrl->rreg, &rcurValue);
-        }
-        if (ret != HDF_SUCCESS) {
-            ADM_LOG_ERR("Device read fail.");
-            return HDF_FAILURE;
-        }
-
         if (mixerCtrl->reg == mixerCtrl->rreg) {
             rcurValue = (rcurValue >> mixerCtrl->rshift) & mixerCtrl->mask;
         } else {
@@ -723,25 +777,14 @@ static int32_t AudioGetCtrlOpsSubRReg(struct AudioKcontrol *kcontrol, struct Aud
     return HDF_SUCCESS;
 }
 
-static int32_t AudioGetCtrlOpsSubReg(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
-    enum AudioDeviceType deviceType, void *device)
+static int32_t AudioGetCtrlOpsReg(struct AudioCtrlElemValue *elemValue,
+    const struct AudioMixerControl *mixerCtrl, uint32_t curValue)
 {
-    int32_t ret = HDF_FAILURE;
-    uint32_t curValue;
-    struct AudioMixerControl *mixerCtrl = NULL;
-    mixerCtrl = (struct AudioMixerControl *)kcontrol->privateValue;
-    struct CodecDevice *codec = (struct CodecDevice *)device;
-    struct AccessoryDevice *accessory = (struct AccessoryDevice *)device;
+    if (elemValue == NULL || mixerCtrl == NULL) {
+        ADM_LOG_ERR("Audio input param is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
 
-    if (codec != NULL && codec->devData != NULL && codec->devData->Read != NULL) {
-        ret = codec->devData->Read(codec, mixerCtrl->reg, &curValue);
-    } else if (accessory != NULL && accessory->devData != NULL && accessory->devData->Read != NULL) {
-        ret = accessory->devData->Read(accessory, mixerCtrl->reg, &curValue);
-    }
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("Device read fail.");
-        return HDF_FAILURE;
-    }
     curValue = (curValue >> mixerCtrl->shift) & mixerCtrl->mask;
     if (curValue > mixerCtrl->max || curValue < mixerCtrl->min) {
         ADM_LOG_ERR("Audio invalid curValue=%d", curValue);
@@ -751,152 +794,174 @@ static int32_t AudioGetCtrlOpsSubReg(struct AudioKcontrol *kcontrol, struct Audi
         curValue = mixerCtrl->max - curValue;
     }
     elemValue->value[0] = curValue;
+
     return HDF_SUCCESS;
 }
 
-int32_t AudioGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+int32_t AudioCodecGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
-    enum AudioDeviceType deviceType;
+    uint32_t curValue;
+    uint32_t rcurValue;
+    struct AudioMixerControl *mixerCtrl = NULL;
     struct CodecDevice *codec = NULL;
-    struct AccessoryDevice *accessory = NULL;
-    ADM_LOG_DEBUG("Entry to get audio ctrl switch.");
-
     if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {
-        ADM_LOG_ERR("Audio input param kcontrol is NULL.");
+        ADM_LOG_ERR("Audio input param is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
+    codec = AudioKcontrolGetCodec(kcontrol);
+    if (mixerCtrl == NULL || codec == NULL) {
+        ADM_LOG_ERR("mixerCtrl and codec is NULL.");
+        return HDF_FAILURE;
+    }
+    if (AudioCodecReadReg(codec, mixerCtrl->reg, &curValue) != HDF_SUCCESS ||
+        AudioCodecReadReg(codec, mixerCtrl->rreg, &rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Read Reg fail.");
+        return HDF_FAILURE;
+    }
+    if (AudioGetCtrlOpsReg(elemValue, mixerCtrl, curValue) != HDF_SUCCESS ||
+        AudioGetCtrlOpsRReg(elemValue, mixerCtrl, rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio codec get kcontrol reg and rreg fail.");
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t AudioAccessoryGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+{
+    uint32_t curValue;
+    uint32_t rcurValue;
+    struct AudioMixerControl *mixerCtrl = NULL;
+    struct AccessoryDevice *accessory = NULL;
+    if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {
+        ADM_LOG_ERR("Audio input param is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    codec = AudioKcontrolGetCodec(kcontrol);
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
     accessory = AudioKcontrolGetAccessory(kcontrol);
-    if (codec != NULL && codec->devData != NULL && codec->devData->Read != NULL) {
-        deviceType = AUDIO_CODEC_DEVICE;
-        if (AudioGetCtrlOpsSubReg(kcontrol, elemValue, deviceType, codec) ||
-            AudioGetCtrlOpsSubRReg(kcontrol, elemValue, deviceType, codec)) {
-            ADM_LOG_ERR("Audio Codec Get Ctrl Reg fail.");
-            return HDF_FAILURE;
-        }
-    } else {
-        deviceType = AUDIO_ACCESSORY_DEVICE;
-        if (AudioGetCtrlOpsSubReg(kcontrol, elemValue, deviceType, accessory) ||
-            AudioGetCtrlOpsSubRReg(kcontrol, elemValue, deviceType, accessory)) {
-            ADM_LOG_ERR("Audio Accessory Get Ctrl Reg fail.");
-            return HDF_FAILURE;
-        }
+    if (mixerCtrl == NULL || accessory == NULL) {
+        ADM_LOG_ERR("mixerCtrl and accessory is NULL.");
+        return HDF_FAILURE;
+    }
+    if (AudioAccessoryReadReg(accessory, mixerCtrl->reg, &curValue) != HDF_SUCCESS ||
+        AudioAccessoryReadReg(accessory, mixerCtrl->rreg, &rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Read Reg fail.");
+        return HDF_FAILURE;
+    }
+    if (AudioGetCtrlOpsReg(elemValue, mixerCtrl, curValue) != HDF_SUCCESS ||
+        AudioGetCtrlOpsRReg(elemValue, mixerCtrl, rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio accessory get kcontrol reg and rreg fail.");
+        return HDF_FAILURE;
     }
 
-    ADM_LOG_DEBUG("Get audio ctrl switch successful.");
     return HDF_SUCCESS;
 }
 
-static int32_t AiaoGetRightCtrlOps(struct CodecDevice *codec, struct AudioMixerControl *mixerCtrl,
-    struct AudioCtrlElemValue *elemValue)
+int32_t AudioCodecAiaoGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
-    int ret;
+    uint32_t curValue;
     uint32_t rcurValue;
-    if (mixerCtrl->reg != mixerCtrl->rreg || mixerCtrl->shift != mixerCtrl->rshift) {
-        ret = codec->devData->AiaoRead(codec, mixerCtrl->rreg, &rcurValue);
-        if (ret != HDF_SUCCESS) {
-            ADM_LOG_ERR("AIAO read rreg fail rcurValue=%d", rcurValue);
-            return HDF_FAILURE;
-        }
-        if (mixerCtrl->reg == mixerCtrl->rreg) {
-            rcurValue = (rcurValue >> mixerCtrl->rshift) & mixerCtrl->mask;
-        } else {
-            rcurValue = (rcurValue >> mixerCtrl->shift) & mixerCtrl->mask;
-        }
-        if (rcurValue > mixerCtrl->max) {
-            ADM_LOG_ERR("AIAO Invalid rcurValue=%d", rcurValue);
-            return HDF_FAILURE;
-        }
-        if (mixerCtrl->invert) {
-            rcurValue = mixerCtrl->max - rcurValue;
-        }
-        elemValue->value[1] = rcurValue;
-    }
-
-    return HDF_SUCCESS;
-}
-
-int32_t AiaoGetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
-{
-    int32_t ret;
     struct CodecDevice *codec = NULL;
     struct AudioMixerControl *mixerCtrl  = NULL;
-    uint32_t curValue;
-
-    ADM_LOG_DEBUG("Entry to get AIAO ctrl switch");
-
     if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {
-        ADM_LOG_ERR("AIAO input param is NULL.");
+        ADM_LOG_ERR("CODECAIAO input param is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
     codec = AudioKcontrolGetCodec(kcontrol);
-    if (codec == NULL || codec->devData == NULL || codec->devData->AiaoRead == NULL) {
-        ADM_LOG_ERR("AIAO codec device is NULL.");
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
+    if (mixerCtrl == NULL || codec == NULL) {
+        ADM_LOG_ERR("mixerCtrl and codec is NULL.");
         return HDF_FAILURE;
     }
-    mixerCtrl = (struct AudioMixerControl *)kcontrol->privateValue;
-    ret = codec->devData->AiaoRead(codec, mixerCtrl->reg, &curValue);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("AIAO read rreg fail rcurValue=%d", curValue);
+    if (AudioCodecAiaoReadReg(codec, mixerCtrl->reg, &curValue) != HDF_SUCCESS ||
+        AudioCodecAiaoReadReg(codec, mixerCtrl->rreg, &rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Read Reg fail.");
         return HDF_FAILURE;
     }
-    curValue = (curValue >> mixerCtrl->shift) & mixerCtrl->mask;
-    if (curValue > mixerCtrl->max) {
-        ADM_LOG_ERR("AIAO invalid curValue=%d", curValue);
-        return HDF_FAILURE;
-    }
-
-    if (mixerCtrl->invert) {
-        curValue = mixerCtrl->max - curValue;
-    }
-    elemValue->value[0] = curValue;
-
-    ret = AiaoGetRightCtrlOps(codec, mixerCtrl, elemValue);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("AIAO get right ctrl is fail");
+    if (AudioGetCtrlOpsReg(elemValue, mixerCtrl, curValue) != HDF_SUCCESS ||
+        AudioGetCtrlOpsRReg(elemValue, mixerCtrl, rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio CODECAIAO get kcontrol reg and rreg fail.");
         return HDF_FAILURE;
     }
 
-    ADM_LOG_DEBUG("Get AIAO ctrl switch successful.");
+    ADM_LOG_DEBUG("Get CODECAIAO ctrl switch successful.");
     return HDF_SUCCESS;
 }
 
-static int32_t AudioPutCtrlOpsSub(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue,
-    enum AudioDeviceType deviceType, void *device)
+int32_t AudioAccessoryAiaoGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
-    int32_t value;
-    int32_t rvalue;
-    int32_t rshift;
-    int32_t ret;
-    struct AudioMixerControl *mixerCtrl = NULL;
-    mixerCtrl = (struct AudioMixerControl *)kcontrol->privateValue;
-
-    value = elemValue->value[0];
-    if (value < mixerCtrl->min || value > mixerCtrl->max) {
-        ADM_LOG_ERR("Audio invalid value=%d", value);
+    uint32_t curValue;
+    uint32_t rcurValue;
+    struct AccessoryDevice *accessory = NULL;
+    struct AudioMixerControl *mixerCtrl  = NULL;
+    if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {
+        ADM_LOG_ERR("ACCESSORYCAIAO input param is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (mixerCtrl->invert) {
-        value = mixerCtrl->max - value;
+    accessory = AudioKcontrolGetAccessory(kcontrol);
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
+    if (mixerCtrl == NULL || accessory == NULL) {
+        ADM_LOG_ERR("mixerCtrl and accessory is NULL.");
+        return HDF_FAILURE;
     }
-
-    ret = AudioUpdateRegBits(deviceType, device, mixerCtrl, value);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("Audio update reg bits fail ret=%d", ret);
+    if (AudioAccessoryAiaoReadReg(accessory, mixerCtrl->reg, &curValue) != HDF_SUCCESS ||
+        AudioAccessoryAiaoReadReg(accessory, mixerCtrl->rreg, &rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Read Reg fail.");
+        return HDF_FAILURE;
+    }
+    if (AudioGetCtrlOpsReg(elemValue, mixerCtrl, curValue) != HDF_SUCCESS ||
+        AudioGetCtrlOpsRReg(elemValue, mixerCtrl, rcurValue) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio ACCESSORYCAIAO get kcontrol reg and rreg fail.");
         return HDF_FAILURE;
     }
 
+    ADM_LOG_DEBUG("Get ACCESSORYCAIAO ctrl switch successful.");
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioSetCtrlOpsReg(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue,
+    const struct AudioMixerControl *mixerCtrl, uint32_t *value)
+{
+    if (kcontrol == NULL || (kcontrol->privateValue <= 0) || elemValue == NULL ||
+        mixerCtrl == NULL || value == NULL) {
+        ADM_LOG_ERR("Audio input param is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    *value = elemValue->value[0];
+    if (*value < mixerCtrl->min || *value > mixerCtrl->max) {
+        ADM_LOG_ERR("Audio invalid value=%d", *value);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (mixerCtrl->invert) {
+        *value = mixerCtrl->max - *value;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioSetCtrlOpsRReg(const struct AudioCtrlElemValue *elemValue,
+    struct AudioMixerControl *mixerCtrl, uint32_t *rvalue, bool *updateRReg)
+{
+    uint32_t rshift;
+    if (elemValue == NULL || mixerCtrl == NULL || rvalue == NULL || updateRReg == NULL) {
+        ADM_LOG_ERR("Audio input param is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
     if (mixerCtrl->reg != mixerCtrl->rreg || mixerCtrl->shift != mixerCtrl->rshift) {
-        rvalue = elemValue->value[1];
-        if (rvalue < mixerCtrl->min || rvalue > mixerCtrl->max) {
-            ADM_LOG_ERR("Audio invalid rvalue=%d", rvalue);
+        *updateRReg = true;
+        *rvalue = elemValue->value[1];
+        if (*rvalue < mixerCtrl->min || *rvalue > mixerCtrl->max) {
+            ADM_LOG_ERR("Audio invalid fail.");
             return HDF_FAILURE;
         }
         if (mixerCtrl->invert) {
-            rvalue = mixerCtrl->max - rvalue;
+            *rvalue = mixerCtrl->max - *rvalue;
         }
         if (mixerCtrl->reg == mixerCtrl->rreg) {
             rshift = mixerCtrl->rshift;
@@ -904,136 +969,164 @@ static int32_t AudioPutCtrlOpsSub(struct AudioKcontrol *kcontrol, struct AudioCt
             rshift = mixerCtrl->shift;
         }
         mixerCtrl->shift = rshift;
-        ret = AudioUpdateRegBits(deviceType, device, mixerCtrl, rvalue);
-        if (ret != HDF_SUCCESS) {
-            ADM_LOG_ERR("Audio stereo update reg bits fail ret=%d", ret);
-            return HDF_FAILURE;
-        }
     }
 
     return HDF_SUCCESS;
 }
 
-int32_t AudioSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+int32_t AudioCodecSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue)
 {
-    void *device = NULL;
-    enum AudioDeviceType deviceType;
-    int32_t ret = HDF_FAILURE;
-    ADM_LOG_DEBUG("Entry to put audio ctrl switch.");
-
+    uint32_t value;
+    uint32_t rvalue;
+    bool updateRReg = false;
+    struct CodecDevice *codec = NULL;
+    struct AudioMixerControl *mixerCtrl = NULL;
     if (kcontrol == NULL || (kcontrol->privateValue <= 0) || elemValue == NULL) {
         ADM_LOG_ERR("Audio input param is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    struct CodecDevice *codec = AudioKcontrolGetCodec(kcontrol);
-    struct AccessoryDevice *accessory = AudioKcontrolGetAccessory(kcontrol);
-    if (codec != NULL && codec->devData != NULL && codec->devData->Write != NULL) {
-        deviceType = AUDIO_CODEC_DEVICE;
-        device = (void *)codec;
-        ret = AudioPutCtrlOpsSub(kcontrol, elemValue, deviceType, device);
-    } else if (accessory != NULL && accessory->devData != NULL && accessory->devData->Write != NULL) {
-        deviceType = AUDIO_ACCESSORY_DEVICE;
-        device = (void *)accessory;
-        ret = AudioPutCtrlOpsSub(kcontrol, elemValue, deviceType, device);
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
+    if (AudioSetCtrlOpsReg(kcontrol, elemValue, mixerCtrl, &value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsReg is fail.");
+        return HDF_ERR_INVALID_OBJECT;
     }
-
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("Audio update fail ret=%d", ret);
+    codec = AudioKcontrolGetCodec(kcontrol);
+    if (codec == NULL) {
+        ADM_LOG_ERR("AudioKcontrolGetCodec is fail.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (AudioUpdateCodecRegBits(codec, mixerCtrl, value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio codec stereo update reg bits fail.");
         return HDF_FAILURE;
     }
 
-    ADM_LOG_DEBUG("Put audio ctrl switch successful.");
+    if (AudioSetCtrlOpsRReg(elemValue, mixerCtrl, &rvalue, &updateRReg) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsRReg is fail.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (updateRReg) {
+        if (AudioUpdateCodecRegBits(codec, mixerCtrl, rvalue) != HDF_SUCCESS) {
+            ADM_LOG_ERR("Audio codec stereo update reg bits fail.");
+            return HDF_FAILURE;
+        }
+    }
     return HDF_SUCCESS;
 }
 
-int32_t AiaoSetCtrlOps(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
+int32_t AudioAccessorySetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue)
 {
-    struct CodecDevice *codec = NULL;
+    uint32_t value;
+    uint32_t rvalue;
+    bool updateRReg = false;
+    struct AccessoryDevice *accessory = NULL;
     struct AudioMixerControl *mixerCtrl = NULL;
-    int32_t value;
-    int32_t rvalue;
-    uint32_t rshift;
-    int32_t ret;
-    ADM_LOG_DEBUG("Entry to put AIAO ctrl switch.");
-
     if (kcontrol == NULL || (kcontrol->privateValue <= 0) || elemValue == NULL) {
-        ADM_LOG_ERR("AIAO input param is NULL.");
+        ADM_LOG_ERR("Audio input param is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    codec = AudioKcontrolGetCodec(kcontrol);
-    mixerCtrl = (struct AudioMixerControl *)kcontrol->privateValue;
-    value = elemValue->value[0];
-    if (value < mixerCtrl->min || value > mixerCtrl->max) {
-        ADM_LOG_ERR("AIAO invalid value=%d", value);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    if (mixerCtrl->invert) {
-        value = mixerCtrl->max - value;
-    }
-
-    ret = AudioAiaoUpdateRegBits(codec, mixerCtrl->reg, mixerCtrl->mask, mixerCtrl->shift, value);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("AIAO update reg bits fail ret=%d", ret);
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
+    if (AudioSetCtrlOpsReg(kcontrol, elemValue, mixerCtrl, &value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsReg fail.");
         return HDF_FAILURE;
     }
 
-    if (mixerCtrl->reg != mixerCtrl->rreg || mixerCtrl->shift != mixerCtrl->rshift) {
-        rvalue = elemValue->value[1];
-        if (rvalue < mixerCtrl->min || rvalue > mixerCtrl->max) {
-            ADM_LOG_ERR("AIAO invalid rvalue=%d", rvalue);
-            return HDF_ERR_INVALID_OBJECT;
-        }
-        if (mixerCtrl->invert) {
-            rvalue = mixerCtrl->max - rvalue;
-        }
-        if (mixerCtrl->reg == mixerCtrl->rreg) {
-            rshift = mixerCtrl->rshift;
-        } else {
-            rshift = mixerCtrl->shift;
-        }
-        ret = AudioAiaoUpdateRegBits(codec, mixerCtrl->rreg, mixerCtrl->mask, rshift, rvalue);
-        if (ret != HDF_SUCCESS) {
-            ADM_LOG_ERR("AIAO stereo update reg bits fail ret=%d", ret);
+    accessory = AudioKcontrolGetAccessory(kcontrol);
+    if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl, value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio accessory stereo update reg bits fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSetCtrlOpsRReg(elemValue, mixerCtrl, &rvalue, &updateRReg) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsRReg fail.");
+        return HDF_FAILURE;
+    }
+
+    if (updateRReg) {
+        if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl, rvalue) != HDF_SUCCESS) {
+            ADM_LOG_ERR("Audio accessory stereo update reg bits fail.");
             return HDF_FAILURE;
         }
     }
 
-    ADM_LOG_DEBUG("Put AIAO ctrl switch successful.");
     return HDF_SUCCESS;
 }
 
-int32_t AudioRegisterDeviceDsp(struct HdfDeviceObject *device, struct DspData *dspData, struct DaiData *DaiData)
+int32_t AudioCodecAiaoSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue)
 {
-    struct DspDevice *dspDev = NULL;
-    int32_t ret;
-
-    if ((device == NULL) || (dspData == NULL) || (DaiData == NULL)) {
-        ADM_LOG_ERR("Input params check error: device=%p, dspData=%p, daiData=%p.",
-            device, dspData, DaiData);
+    uint32_t value;
+    uint32_t rvalue;
+    bool updateRReg = false;
+    struct CodecDevice *codec = NULL;
+    struct AudioMixerControl *mixerCtrl = NULL;
+    if (kcontrol == NULL || (kcontrol->privateValue <= 0) || elemValue == NULL) {
+        ADM_LOG_ERR("Audio codec aiao input param is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    dspDev = (struct DspDevice *)OsalMemCalloc(sizeof(*dspDev));
-    if (dspDev == NULL) {
-        ADM_LOG_ERR("Malloc codec device fail!");
-        return HDF_ERR_MALLOC_FAIL;
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
+    if (AudioSetCtrlOpsReg(kcontrol, elemValue, mixerCtrl, &value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsReg fail.");
+        return HDF_FAILURE;
     }
 
-    dspDev->devDspName = dspData->drvDspName;
-    dspDev->devData = dspData;
-    dspDev->device = device;
-
-    ret = AudioSocDeviceRegister(device, (void *)DaiData, AUDIO_DSP_DEVICE);
-    if (ret != HDF_SUCCESS) {
-        OsalMemFree(dspDev);
-        ADM_LOG_ERR("Register dai device fail ret=%d", ret);
-        return HDF_ERR_IO;
+    codec = AudioKcontrolGetCodec(kcontrol);
+    if (AudioUpdateCodecAiaoRegBits(codec, mixerCtrl, value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio codec aiao stereo update reg bits fail.");
+        return HDF_FAILURE;
     }
-    DListInsertHead(&dspDev->list, &dspController);
-    ADM_LOG_INFO("Register [%s] success.", dspDev->devDspName);
+
+    if (AudioSetCtrlOpsRReg(elemValue, mixerCtrl, &rvalue, &updateRReg) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsRReg fail.");
+        return HDF_FAILURE;
+    }
+    if (updateRReg) {
+        if (AudioUpdateCodecAiaoRegBits(codec, mixerCtrl, rvalue) != HDF_SUCCESS) {
+            ADM_LOG_ERR("Audio codec aiao stereo update reg bits fail.");
+            return HDF_FAILURE;
+        }
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t AudioAccessoryAiaoSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue)
+{
+    uint32_t value;
+    uint32_t rvalue;
+    bool updateRReg = false;
+    struct AccessoryDevice *accessory = NULL;
+    struct AudioMixerControl *mixerCtrl = NULL;
+    if (kcontrol == NULL || (kcontrol->privateValue <= 0) || elemValue == NULL) {
+        ADM_LOG_ERR("Audio accessory aiao input param is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
+    if (AudioSetCtrlOpsReg(kcontrol, elemValue, mixerCtrl, &value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsReg fail.");
+        return HDF_FAILURE;
+    }
+
+    accessory = AudioKcontrolGetAccessory(kcontrol);
+    if (AudioUpdateAccessoryAiaoRegBits(accessory, mixerCtrl, value) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Audio accessory aiao stereo update reg bits fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSetCtrlOpsRReg(elemValue, mixerCtrl, &rvalue, &updateRReg) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSetCtrlOpsRReg fail.");
+        return HDF_FAILURE;
+    }
+
+    if (updateRReg) {
+        if (AudioUpdateAccessoryAiaoRegBits(accessory, mixerCtrl, rvalue) != HDF_SUCCESS) {
+            ADM_LOG_ERR("Audio accessory aiao stereo update reg bits fail.");
+            return HDF_FAILURE;
+        }
+    }
 
     return HDF_SUCCESS;
 }

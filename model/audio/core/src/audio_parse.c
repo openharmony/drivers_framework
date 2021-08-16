@@ -10,7 +10,7 @@
 
 #define HDF_LOG_TAG audio_parse
 
-int32_t AudioFillConfigData(struct HdfDeviceObject *device, struct AudioConfigData *configData)
+int32_t AudioFillConfigData(const struct HdfDeviceObject *device, struct AudioConfigData *configData)
 {
     const struct DeviceResourceNode *node = NULL;
     struct DeviceResourceIface *drsOps = NULL;

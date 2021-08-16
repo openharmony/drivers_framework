@@ -6,11 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "codec_core.h"
+#include "audio_codec_base.h"
 
-#define HDF_LOG_TAG codec_core
+#define HDF_LOG_TAG audio_codec_base
 
-int32_t CodecDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val)
+int32_t CodecDeviceReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
 {
     unsigned long acodecVir;
     struct VirtualAddress *virtualAdd = NULL;
@@ -20,7 +20,7 @@ int32_t CodecDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *va
         AUDIO_DRIVER_LOG_ERR("input param codec or codec->device is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
-    virtualAdd = (struct VirtualAddress *)codec->device->priv;
+    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
     if (virtualAdd == NULL) {
         AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
         return HDF_ERR_INVALID_OBJECT;
@@ -32,7 +32,7 @@ int32_t CodecDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *va
     return HDF_SUCCESS;
 }
 
-int32_t CodecDeviceWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t value)
+int32_t CodecDeviceWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t value)
 {
     unsigned long acodecVir;
     struct VirtualAddress *virtualAdd = NULL;
@@ -43,7 +43,7 @@ int32_t CodecDeviceWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t va
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    virtualAdd = (struct VirtualAddress *)codec->device->priv;
+    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
     if (virtualAdd == NULL) {
         AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
         return HDF_ERR_INVALID_OBJECT;
@@ -56,7 +56,7 @@ int32_t CodecDeviceWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t va
     return HDF_SUCCESS;
 }
 
-int32_t AiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val)
+int32_t CodecAiaoDeviceReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
 {
     unsigned long aiaoVir;
     struct VirtualAddress *virtualAdd = NULL;
@@ -67,7 +67,7 @@ int32_t AiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    virtualAdd = (struct VirtualAddress *)codec->device->priv;
+    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
     if (virtualAdd == NULL) {
         AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
         return HDF_ERR_INVALID_OBJECT;
@@ -80,7 +80,7 @@ int32_t AiaoDeviceReadReg(struct CodecDevice *codec, uint32_t reg, uint32_t *val
     return HDF_SUCCESS;
 }
 
-int32_t AiaoDeviceWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t value)
+int32_t CodecAiaoDeviceWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t value)
 {
     unsigned long aiaoVir;
     struct VirtualAddress *virtualAdd = NULL;
@@ -90,7 +90,7 @@ int32_t AiaoDeviceWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t val
         AUDIO_DRIVER_LOG_ERR("codec or codec->device is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
-    virtualAdd = (struct VirtualAddress *)codec->device->priv;
+    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
     if (virtualAdd == NULL) {
         AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
         return HDF_ERR_INVALID_OBJECT;
@@ -103,7 +103,7 @@ int32_t AiaoDeviceWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t val
     return HDF_SUCCESS;
 }
 
-int32_t CodecGetServiceName(struct HdfDeviceObject *device, const char **drvCodecName)
+int32_t CodecGetServiceName(const struct HdfDeviceObject *device, const char **drvCodecName)
 {
     const struct DeviceResourceNode *node = NULL;
     struct DeviceResourceIface *drsOps = NULL;
@@ -134,7 +134,7 @@ int32_t CodecGetServiceName(struct HdfDeviceObject *device, const char **drvCode
     return HDF_SUCCESS;
 }
 
-int32_t CodecGetDaiName(struct HdfDeviceObject *device, const char **drvDaiName)
+int32_t CodecGetDaiName(const struct HdfDeviceObject *device, const char **drvDaiName)
 {
     const struct DeviceResourceNode *node = NULL;
     struct DeviceResourceIface *drsOps = NULL;
