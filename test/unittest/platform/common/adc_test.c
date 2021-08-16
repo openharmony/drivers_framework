@@ -140,7 +140,7 @@ static int AdcTestThreadFunc(void *param)
     for (i = 0; i < ADC_TEST_WAIT_TIMES; i++) {
         ret = AdcRead(tester->handle, tester->config.channel, &val);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: read value invalid:%u, ret:%d", __func__, val, ret);
+            HDF_LOGE("%s: AdcRead failed, ret:%d", __func__, ret);
             return HDF_ERR_IO;
         }
     }
