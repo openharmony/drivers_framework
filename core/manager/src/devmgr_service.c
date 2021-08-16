@@ -139,7 +139,7 @@ static void DevmgrServiceUpdateStatus(struct DevHostServiceClnt *hostClnt, uint1
             return;
         }
     }
-    HDF_LOGE("%s: not find device %u in host %u", __func__, hostClnt->hostId, deviceId);
+    HDF_LOGE("%s: not find device %u in host %u", __func__, deviceId, hostClnt->hostId);
     return;
 }
 
