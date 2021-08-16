@@ -210,6 +210,7 @@ DevHandle MipiDsiOpen(uint8_t id);
  * @since 1.0
  */
 void MipiDsiClose(DevHandle handle);
+
 /**
  * @brief Sets configuration parameters for a MIPI DSI device.
  *
@@ -277,6 +278,18 @@ int32_t MipiDsiTx(DevHandle handle, struct DsiCmdDesc *cmd);
  * @since 1.0
  */
 int32_t MipiDsiRx(DevHandle handle, struct DsiCmdDesc *cmd, int32_t readLen, uint8_t *out);
+
+/**
+* @brief attach a DSI device to its DSI host
+ *
+ * @param handle Indicates the MIPI DSI device handle obtained via {@link MipiDsiOpen}.
+ * @param name Indicates the name of a peripheral.
+ *
+ * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
+ *
+ * @since 1.0
+ */
+int32_t MipiDsiAttach(DevHandle handle, uint8_t *name);
 
 #ifdef __cplusplus
 #if __cplusplus
