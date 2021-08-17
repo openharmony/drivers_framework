@@ -28,6 +28,7 @@
 #define EVENT_READ_BUFF_MAX (20 * 1024) // 20k
 #define SYSCALL_INVALID_FD (-1)
 #define HDF_PFD_GROW_SIZE 4
+#define TIMEOUT_US 100000 // 100ms
 
 static bool HaveOnlyOneElement(const struct DListHead *head)
 {
@@ -589,6 +590,7 @@ static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
 
     switch (thread->status) {
         case LISTENER_RUNNING: {
+            int count = 0;
             uint32_t stopCount = 0;
             OsalMutexLock(&thread->mutex);
             thread->adapter = NULL;
@@ -608,11 +610,17 @@ static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
                 HDF_LOGE("%s:failed to exit listener thread with ioctl, will go async way", __func__);
                 return;
             }
-            while (thread->status != LISTENER_EXITED) {
+            while (thread->status != LISTENER_EXITED && count <= TIMEOUT_US) {
                 OsalUSleep(1);
+                count++;
             }
-            HDF_LOGI("poll thread exited");
-            HdfDevListenerThreadFree(thread);
+            if (thread->status == LISTENER_EXITED) {
+                HDF_LOGI("poll thread exited");
+                HdfDevListenerThreadFree(thread);
+            } else {
+                thread->shouldStop = true;
+                HDF_LOGE("wait poll thread exit timeout, async exit");
+            }
             return;
         }
         case LISTENER_STARTED:
