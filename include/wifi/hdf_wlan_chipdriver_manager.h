@@ -132,7 +132,7 @@ struct HdfChipDriverFactory {
      * @brief Obtains the maximum number of interfaces of a specified <b>HdfChipDriverFactory</b> instance.
      *
      * @param factory Indicates the pointer to the <b>HdfChipDriverFactory</b> instance.
-     * @return Returns <b>0</b> if the maximum number of interfaces is obtained; returns a negative value otherwise.
+     * @return Returns the maximum number of interfaces.
      *
      * @since 1.0
      * @version 1.0
