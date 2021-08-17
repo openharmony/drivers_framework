@@ -33,27 +33,27 @@ static struct HdfSBuf *UsbDdkPnpLoaderBufCreate(const char *moduleName,
 
     pnpData = HdfSBufObtainDefaultSize();
     if (pnpData == NULL) {
-        HDF_LOGE("%{public}s: HdfSBufTypedObtain pnpData fail", __func__);
+        HDF_LOGE("%s: HdfSBufTypedObtain pnpData fail", __func__);
         return NULL;
     }
 
     if (!UsbPnpManagerWriteModuleName(pnpData, moduleName)) {
-        HDF_LOGE("%{public}s: write moduleName failed!", __func__);
+        HDF_LOGE("%s: write moduleName failed!", __func__);
         goto out;
     }
 
     if (!HdfSbufWriteString(pnpData, serviceName)) {
-        HDF_LOGE("%{public}s: write service name failed!", __func__);
+        HDF_LOGE("%s: write service name failed!", __func__);
         goto out;
     }
 
     if (!HdfSbufWriteString(pnpData, deviceMatchAttr)) {
-        HDF_LOGE("%{public}s: write deviceMatchAttr failed!", __func__);
+        HDF_LOGE("%s: write deviceMatchAttr failed!", __func__);
         goto out;
     }
 
     if (!HdfSbufWriteBuffer(pnpData, (const void *)(&serviceInfo), serviceInfo.length)) {
-        HDF_LOGE("%{public}s: write privateData failed!", __func__);
+        HDF_LOGE("%s: write privateData failed!", __func__);
         goto out;
     }
 
@@ -280,12 +280,12 @@ static int32_t UsbDdkPnpLoaderParseIdInfClass(const struct DeviceResourceNode *n
     table->interfaceClassMask = 0;
     table->interfaceClassLength = devResIface->GetElemNum(node, "interfaceClass");
     if (table->interfaceClassLength <= 0) {
-        HDF_LOGE("%{public}s: read interfaceClass length=%{public}d fail!", __func__, table->interfaceClassLength);
+        HDF_LOGE("%s: read interfaceClass length=%d fail!", __func__, table->interfaceClassLength);
         return HDF_FAILURE;
     }
     if (devResIface->GetUint8Array(node, "interfaceClass", table->interfaceClass, \
         table->interfaceClassLength, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read interfaceClass fail!", __func__);
+        HDF_LOGE("%s: read interfaceClass fail!", __func__);
         return HDF_FAILURE;
     }
     if (!(table->matchFlag & USB_PNP_NOTIFY_MATCH_INT_CLASS)) {
@@ -295,13 +295,13 @@ static int32_t UsbDdkPnpLoaderParseIdInfClass(const struct DeviceResourceNode *n
     table->interfaceSubClassMask = 0;
     table->interfaceSubClassLength = devResIface->GetElemNum(node, "interfaceSubClass");
     if (table->interfaceSubClassLength <= 0) {
-        HDF_LOGE("%{public}s: read interfaceSubClass length=%{public}d fail!",
+        HDF_LOGE("%s: read interfaceSubClass length=%d fail!",
             __func__, table->interfaceSubClassLength);
         return HDF_FAILURE;
     }
     if (devResIface->GetUint8Array(node, "interfaceSubClass", table->interfaceSubClass, \
         table->interfaceSubClassLength, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read interfaceSubClass fail!", __func__);
+        HDF_LOGE("%s: read interfaceSubClass fail!", __func__);
         return HDF_FAILURE;
     }
     if (!(table->matchFlag & USB_PNP_NOTIFY_MATCH_INT_SUBCLASS)) {
@@ -322,13 +322,13 @@ static int32_t UsbDdkPnpLoaderParseIdInferface(const struct DeviceResourceNode *
     table->interfaceProtocolMask = 0;
     table->interfaceProtocolLength = devResIface->GetElemNum(node, "interfaceProtocol");
     if (table->interfaceProtocolLength <= 0) {
-        HDF_LOGE("%{public}s: read interfaceProtocol length=%{public}d fail!",
+        HDF_LOGE("%s: read interfaceProtocol length=%d fail!",
             __func__, table->interfaceProtocolLength);
         return HDF_FAILURE;
     }
     if (devResIface->GetUint8Array(node, "interfaceProtocol", table->interfaceProtocol, \
         table->interfaceProtocolLength, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read interfaceProtocol fail!", __func__);
+        HDF_LOGE("%s: read interfaceProtocol fail!", __func__);
         return HDF_FAILURE;
     }
     if (!(table->matchFlag & USB_PNP_NOTIFY_MATCH_INT_PROTOCOL)) {
@@ -338,12 +338,12 @@ static int32_t UsbDdkPnpLoaderParseIdInferface(const struct DeviceResourceNode *
     table->interfaceMask = 0;
     table->interfaceLength = devResIface->GetElemNum(node, "interfaceNumber");
     if (table->interfaceLength <= 0) {
-        HDF_LOGE("%{public}s: read interfaceNumber length=%{public}d fail!", __func__, table->interfaceLength);
+        HDF_LOGE("%s: read interfaceNumber length=%d fail!", __func__, table->interfaceLength);
         return HDF_FAILURE;
     }
     if (devResIface->GetUint8Array(node, "interfaceNumber", table->interfaceNumber, \
         table->interfaceLength, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read interfaceNumber fail!", __func__);
+        HDF_LOGE("%s: read interfaceNumber fail!", __func__);
         return HDF_FAILURE;
     }
     if (!(table->matchFlag & USB_PNP_NOTIFY_MATCH_INT_NUMBER)) {
@@ -357,37 +357,37 @@ static int32_t UsbDdkPnpLoaderParseIdDevice(const struct DeviceResourceNode *nod
     struct DeviceResourceIface *devResIface, struct UsbPnpMatchIdTable *table)
 {
     if (devResIface->GetUint16(node, "vendorId", &table->vendorId, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read vendorId fail!", __func__);
+        HDF_LOGE("%s: read vendorId fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint16(node, "productId", &table->productId, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read productId fail!", __func__);
+        HDF_LOGE("%s: read productId fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint16(node, "bcdDeviceLow", &table->bcdDeviceLow, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read bcdDeviceLow fail!", __func__);
+        HDF_LOGE("%s: read bcdDeviceLow fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint16(node, "bcdDeviceHigh", &table->bcdDeviceHigh, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read bcdDeviceHigh fail!", __func__);
+        HDF_LOGE("%s: read bcdDeviceHigh fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint8(node, "deviceClass", &table->deviceClass, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read deviceClass fail!", __func__);
+        HDF_LOGE("%s: read deviceClass fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint8(node, "deviceSubClass", &table->deviceSubClass, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read deviceSubClass fail!", __func__);
+        HDF_LOGE("%s: read deviceSubClass fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint8(node, "deviceProtocol", &table->deviceProtocol, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read deviceProtocol fail!", __func__);
+        HDF_LOGE("%s: read deviceProtocol fail!", __func__);
         return HDF_FAILURE;
     }
 
@@ -398,32 +398,32 @@ static int32_t UsbDdkPnpLoaderParseIdTable(const struct DeviceResourceNode *node
     struct DeviceResourceIface *devResIface, struct UsbPnpMatchIdTable *table)
 {
     if (node == NULL || table == NULL || devResIface == NULL) {
-        HDF_LOGE("%{public}s: node or table or devResIface is NULL!", __func__);
+        HDF_LOGE("%s: node or table or devResIface is NULL!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetString(node, "moduleName", &table->moduleName, "") != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read moduleName fail!", __func__);
+        HDF_LOGE("%s: read moduleName fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetString(node, "serviceName", &table->serviceName, "") != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read serviceName fail!", __func__);
+        HDF_LOGE("%s: read serviceName fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetString(node, "deviceMatchAttr", &table->deviceMatchAttr, "") != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read deviceMatchAttr fail!", __func__);
+        HDF_LOGE("%s: read deviceMatchAttr fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint8(node, "length", &table->length, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read length fail!", __func__);
+        HDF_LOGE("%s: read length fail!", __func__);
         return HDF_FAILURE;
     }
 
     if (devResIface->GetUint16(node, "matchFlag", &table->matchFlag, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: read matchFlag fail!", __func__);
+        HDF_LOGE("%s: read matchFlag fail!", __func__);
         return HDF_FAILURE;
     }
 
@@ -445,14 +445,14 @@ static struct UsbPnpMatchIdTable **UsbDdkPnpLoaderParseTableList(
 
     idTable = (struct UsbPnpMatchIdTable **)OsalMemCalloc((idTabCount + 1) * sizeof(struct UsbPnpMatchIdTable *));
     if (idTable == NULL) {
-        HDF_LOGE("%{public}s: OsalMemCalloc failure!", __func__);
+        HDF_LOGE("%s: OsalMemCalloc failure!", __func__);
         return NULL;
     }
     idTable[idTabCount] = NULL;
     for (count = 0; count < idTabCount; count++) {
         idTable[count] = (struct UsbPnpMatchIdTable *)OsalMemCalloc(sizeof(struct UsbPnpMatchIdTable));
         if (idTable[count] == NULL) {
-            HDF_LOGE("%{public}s: OsalMemCalloc failure!", __func__);
+            HDF_LOGE("%s: OsalMemCalloc failure!", __func__);
             goto out;
         }
         ret = devResIface->GetStringArrayElem(node, "idTableList", count, &idTableName, NULL);
@@ -461,11 +461,11 @@ static struct UsbPnpMatchIdTable **UsbDdkPnpLoaderParseTableList(
         }
         tableNode = devResIface->GetChildNode(node, idTableName);
         if (tableNode == NULL) {
-            HDF_LOGE("%{public}s: tableNode is NULL!", __func__);
+            HDF_LOGE("%s: tableNode is NULL!", __func__);
             goto out;
         }
         if (UsbDdkPnpLoaderParseIdTable(tableNode, devResIface, idTable[count]) != HDF_SUCCESS) {
-            HDF_LOGE("%{public}s: UsbDdkPnpLoaderParseIdTable failure!", __func__);
+            HDF_LOGE("%s: UsbDdkPnpLoaderParseIdTable failure!", __func__);
             goto out;
         }
     }
@@ -487,18 +487,18 @@ static struct UsbPnpMatchIdTable **UsbDdkPnpLoaderParseTable(const struct Device
     int32_t idTabCount;
 
     if (node == NULL) {
-        HDF_LOGE("%{public}s: node is NULL!", __func__);
+        HDF_LOGE("%s: node is NULL!", __func__);
         return NULL;
     }
 
     devResIface = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (devResIface == NULL) {
-        HDF_LOGE("%{public}s: devResIface is NULL!", __func__);
+        HDF_LOGE("%s: devResIface is NULL!", __func__);
         return NULL;
     }
     idTabCount = devResIface->GetElemNum(node, "idTableList");
     if (idTabCount <= 0) {
-        HDF_LOGE("%{public}s: idTableList not found!", __func__);
+        HDF_LOGE("%s: idTableList not found!", __func__);
         return NULL;
     }
 
@@ -512,24 +512,24 @@ static struct UsbPnpMatchIdTable **UsbDdkPnpLoaderParseDeviceId(const struct Dev
     const struct DeviceResourceNode *deviceIdNode = NULL;
 
     if (node == NULL) {
-        HDF_LOGE("%{public}s: node is NULL!", __func__);
+        HDF_LOGE("%s: node is NULL!", __func__);
         return NULL;
     }
 
     devResIface = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (devResIface == NULL) {
-        HDF_LOGE("%{public}s: devResIface is NULL!", __func__);
+        HDF_LOGE("%s: devResIface is NULL!", __func__);
         return NULL;
     }
 
     if (devResIface->GetString(node, "usb_pnp_device_id", &deviceIdName, NULL) != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: get usb_pnp_device_id name failure!", __func__);
+        HDF_LOGE("%s: get usb_pnp_device_id name failure!", __func__);
         return NULL;
     }
 
     deviceIdNode = devResIface->GetChildNode(node, deviceIdName);
     if (deviceIdNode == NULL) {
-        HDF_LOGE("%{public}s: deviceIdNode is NULL!", __func__);
+        HDF_LOGE("%s: deviceIdNode is NULL!", __func__);
         return NULL;
     }
 
@@ -544,19 +544,19 @@ static struct UsbPnpMatchIdTable **UsbDdkPnpLoaderPnpMatch(void)
 
     devResInstance = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (devResInstance == NULL) {
-        HDF_LOGE("%{public}s: devResInstance is NULL!", __func__);
+        HDF_LOGE("%s: devResInstance is NULL!", __func__);
         return NULL;
     }
 
     rootNode = devResInstance->GetRootNode();
     if (rootNode == NULL) {
-        HDF_LOGE("%{public}s: devResNode is NULL!", __func__);
+        HDF_LOGE("%s: devResNode is NULL!", __func__);
         return NULL;
     }
 
     usbPnpNode = devResInstance->GetNodeByMatchAttr(rootNode, "usb_pnp_match");
     if (usbPnpNode == NULL) {
-        HDF_LOGE("%{public}s: usbPnpNode is NULL!", __func__);
+        HDF_LOGE("%s: usbPnpNode is NULL!", __func__);
         return NULL;
     }
 
@@ -585,7 +585,7 @@ static int32_t UsbDdkPnpLoaderDispatchPnpDevice(
     }
 
     if (!HdfSbufReadBuffer(data, (const void **)(&privateData), &infoSize)) {
-        HDF_LOGW("%{public}s: HdfSbufReadBuffer privateData error!", __func__);
+        HDF_LOGW("%s: HdfSbufReadBuffer privateData error!", __func__);
         privateData = NULL;
     }
 
@@ -609,7 +609,7 @@ static int UsbDdkPnpLoaderDeviceListAdd(struct UsbPnpNotifyMatchInfoTable *info,
     ptr = OsalMemAlloc(sizeof(struct UsbPnpDeviceListTable));
     if (ptr == NULL) {
         ret = HDF_ERR_MALLOC_FAIL;
-        HDF_LOGE("%{public}s:%{public}d OsalMemAlloc faile, ret=%{public}d ", __func__, __LINE__, ret);
+        HDF_LOGE("%s:%d OsalMemAlloc faile, ret=%d ", __func__, __LINE__, ret);
     } else {
         deviceTableListTemp = (struct UsbPnpDeviceListTable *)ptr;
 
@@ -640,7 +640,7 @@ static struct UsbPnpDeviceListTable *UsbDdkPnpLoaderAddInterface(
     struct UsbPnpDeviceListTable *deviceListTableTemp = NULL;
 
     if (DListIsEmpty(&g_usbPnpDeviceTableListHead)) {
-        HDF_LOGE("%{public}s:%{public}d g_usbPnpDeviceTableListHead is empty. ", __func__, __LINE__);
+        HDF_LOGE("%s:%d g_usbPnpDeviceTableListHead is empty. ", __func__, __LINE__);
         return NULL;
     }
 
@@ -656,7 +656,7 @@ static struct UsbPnpDeviceListTable *UsbDdkPnpLoaderAddInterface(
         }
     }
 
-    HDF_LOGE("%{public}s:%{public}d usbDevAddr=0x%{public}x, interface=%{public}d-%{public}d-%{public}d to \
+    HDF_LOGE("%s:%d usbDevAddr=0x%x, interface=%d-%d-%d to \
         be add but not exist. ",
         __func__, __LINE__, info->usbDevAddr, info->devNum, info->busNum, info->numInfos);
 
@@ -673,7 +673,7 @@ static int UsbDdkPnpLoaderrAddPnpDevice(struct IDevmgrService *devmgrSvc,
 
     deviceListTable = UsbDdkPnpLoaderAddInterface(infoTable, idTable);
     if ((deviceListTable != NULL) && (deviceListTable->status != USB_PNP_REMOVE_STATUS)) {
-        HDF_LOGI("%{public}s:%{public}d %{public}s-%{public}s is already exist!",
+        HDF_LOGI("%s:%d %s-%s is already exist!",
             __func__, __LINE__, idTable->moduleName, idTable->serviceName);
         return HDF_SUCCESS;
     }
@@ -689,26 +689,26 @@ static int UsbDdkPnpLoaderrAddPnpDevice(struct IDevmgrService *devmgrSvc,
         idTable->deviceMatchAttr, serviceInfo);
     if (pnpData == NULL) {
         ret = HDF_FAILURE;
-        HDF_LOGE("%{public}s: UsbDdkPnpLoaderBufCreate faile", __func__);
+        HDF_LOGE("%s: UsbDdkPnpLoaderBufCreate faile", __func__);
         goto error;
     }
 
     ret = UsbDdkPnpLoaderDispatchPnpDevice(devmgrSvc, pnpData, true);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s:%{public}d handle failed, %{public}s-%{public}s cmdId is %{public}d, ret=%{public}d",
+        HDF_LOGE("%s:%d handle failed, %s-%s cmdId is %d, ret=%d",
             __func__, __LINE__, idTable->moduleName, idTable->serviceName, cmdId, ret);
     } else {
         if (cmdId == USB_PNP_NOTIFY_ADD_INTERFACE) {
             if (deviceListTable == NULL) {
                 ret = HDF_ERR_INVALID_OBJECT;
-                HDF_LOGE("%{public}s:%{public}d UsbDdkPnpLoaderAddInterface faile", __func__, __LINE__);
+                HDF_LOGE("%s:%d UsbDdkPnpLoaderAddInterface faile", __func__, __LINE__);
                 goto error;
             }
             deviceListTable->status = USB_PNP_ADD_STATUS;
         } else {
             ret = UsbDdkPnpLoaderDeviceListAdd(infoTable, idTable);
             if (ret != HDF_SUCCESS) {
-                HDF_LOGE("%{public}s:%{public}d UsbDdkPnpLoaderDeviceListAdd faile", __func__, __LINE__);
+                HDF_LOGE("%s:%d UsbDdkPnpLoaderDeviceListAdd faile", __func__, __LINE__);
                 goto error;
             }
         }
@@ -734,8 +734,8 @@ static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, struct IDevm
             continue;
         }
 
-        HDF_LOGD("%{public}s:%{public}d matchDevice end, index=%{public}d tableCount=%{public}d is match \
-            idTable=%{public}p, moduleName=%{public}s, serviceName=%{public}s",
+        HDF_LOGD("%s:%d matchDevice end, index=%d tableCount=%d is match \
+            idTable=%p, moduleName=%s, serviceName=%s",
             __func__, __LINE__, index, tableCount, idTable, idTable->moduleName, idTable->serviceName);
 
         ret = UsbDdkPnpLoaderrAddPnpDevice(devmgrSvc, infoTable, idTable, cmdId);
@@ -744,7 +744,7 @@ static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, struct IDevm
         }
     }
 
-    HDF_LOGD("%{public}s:%{public}d AddDevice end, index=%{public}d, ret=%{public}d", __func__, __LINE__, index, ret);
+    HDF_LOGD("%s:%d AddDevice end, index=%d, ret=%d", __func__, __LINE__, index, ret);
 }
 
 static int UsbDdkPnpLoaderRemoveHandle(struct IDevmgrService *devmgrSvc,
@@ -764,14 +764,14 @@ static int UsbDdkPnpLoaderRemoveHandle(struct IDevmgrService *devmgrSvc,
     pnpData = UsbDdkPnpLoaderBufCreate(deviceListTablePos->moduleName, deviceListTablePos->serviceName, \
         deviceListTablePos->deviceMatchAttr, serviceInfo);
     if (pnpData == NULL) {
-        HDF_LOGE("%{public}s: UsbDdkPnpLoaderBufCreate faile", __func__);
+        HDF_LOGE("%s: UsbDdkPnpLoaderBufCreate faile", __func__);
         return HDF_FAILURE;
     }
 
     if (deviceListTablePos->status != USB_PNP_REMOVE_STATUS) {
         ret = UsbDdkPnpLoaderDispatchPnpDevice(devmgrSvc, pnpData, false);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%{public}s:%{public}d UsbDdkPnpLoaderDispatchPnpDevice faile ret=%{public}d",
+            HDF_LOGE("%s:%d UsbDdkPnpLoaderDispatchPnpDevice faile ret=%d",
                 __func__, __LINE__, ret);
             goto error;
         }
@@ -793,7 +793,7 @@ static int UsbDdkPnpLoaderRemoveDevice(struct IDevmgrService *devmgrSvc,
     int32_t i;
 
     if (DListIsEmpty(&g_usbPnpDeviceTableListHead)) {
-        HDF_LOGE("%{public}s:%{public}d g_usbPnpDeviceTableListHead is empty. ", __func__, __LINE__);
+        HDF_LOGE("%s:%d g_usbPnpDeviceTableListHead is empty. ", __func__, __LINE__);
         return HDF_SUCCESS;
     }
 
@@ -827,7 +827,7 @@ static int UsbDdkPnpLoaderRemoveDevice(struct IDevmgrService *devmgrSvc,
     }
 
     if (findFlag == false) {
-        HDF_LOGE("%{public}s:%{public}d removeType=%{public}d, usbDevAddr=0x%{public}x, to be remove but not exist.",
+        HDF_LOGE("%s:%d removeType=%d, usbDevAddr=0x%x, to be remove but not exist.",
             __func__, __LINE__, removeInfo.removeType, removeInfo.usbDevAddr);
         ret = HDF_FAILURE;
     }
@@ -843,7 +843,7 @@ static int UsbDdkPnpLoaderDevice(struct UsbPnpNotifyMatchInfoTable *infoTable,
     struct UsbPnpMatchIdTable *idTable = NULL;
 
     if ((infoTable == NULL) || (g_usbPnpMatchIdTable == NULL) || (g_usbPnpMatchIdTable[0] == NULL)) {
-        HDF_LOGE("%{public}s:%{public}d infoTable or super or g_usbPnpMatchIdTable is NULL!", __func__, __LINE__);
+        HDF_LOGE("%s:%d infoTable or super or g_usbPnpMatchIdTable is NULL!", __func__, __LINE__);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -884,36 +884,36 @@ static int UsbDdkPnpLoaderEventSend(struct HdfIoService *serv, char *eventData)
     data = HdfSBufObtainDefaultSize();
     if (data == NULL) {
         ret = HDF_DEV_ERR_NO_MEMORY;
-        HDF_LOGE("%{public}s: fail to obtain sbuf data", __func__);
+        HDF_LOGE("%s: fail to obtain sbuf data", __func__);
         return ret;
     }
 
     struct HdfSBuf *reply = HdfSBufObtainDefaultSize();
     if (reply == NULL) {
         ret = HDF_DEV_ERR_NO_MEMORY;
-        HDF_LOGE("%{public}s: fail to obtain sbuf reply", __func__);
+        HDF_LOGE("%s: fail to obtain sbuf reply", __func__);
         goto out;
     }
 
     if (!HdfSbufWriteString(data, eventData)) {
         ret = HDF_FAILURE;
-        HDF_LOGE("%{public}s: fail to write sbuf", __func__);
+        HDF_LOGE("%s: fail to write sbuf", __func__);
         goto out;
     }
 
     ret = serv->dispatcher->Dispatch(&serv->object, USB_PNP_NOTIFY_REPORT_INTERFACE, data, reply);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: fail to send serivice call, ret=%{public}d", __func__, ret);
+        HDF_LOGE("%s: fail to send serivice call, ret=%d", __func__, ret);
         goto out;
     }
 
     if (!HdfSbufReadInt32(reply, &replyData)) {
         ret = HDF_ERR_INVALID_OBJECT;
-        HDF_LOGE("%{public}s: fail to get service call reply", __func__);
+        HDF_LOGE("%s: fail to get service call reply", __func__);
         goto out;
     }
 
-    HDF_LOGI("%{public}s:%{public}d get reply is 0x%{public}x", __func__, __LINE__, replyData);
+    HDF_LOGI("%s:%d get reply is 0x%x", __func__, __LINE__, replyData);
 
 out:
     HdfSBufRecycle(data);
@@ -934,13 +934,13 @@ int UsbDdkPnpLoaderEventReceived(void *priv, uint32_t id, struct HdfSBuf *data)
     flag = HdfSbufReadBuffer(data, (const void **)(&infoTable), &infoSize);
     if ((flag == false) || (infoTable == NULL)) {
         ret = HDF_ERR_INVALID_PARAM;
-        HDF_LOGE("%{public}s: fail to read infoTable in event data, flag=%{public}d, infoTable=%{public}p", \
+        HDF_LOGE("%s: fail to read infoTable in event data, flag=%d, infoTable=%p", \
             __func__, flag, infoTable);
         return ret;
     }
 
-    HDF_LOGI("%{public}s:%{public}d id=%{public}d infoSize=%{public}d, usbDevAddr=0x%{public}x, devNum=%{public}d, \
-        busNum=%{public}d, infoTable=0x%{public}x-0x%{public}x success",
+    HDF_LOGI("%s:%d id=%d infoSize=%d, usbDevAddr=0x%x, devNum=%d, \
+        busNum=%d, infoTable=0x%x-0x%x success",
         __func__, __LINE__, id, infoSize, infoTable->usbDevAddr, infoTable->devNum,
         infoTable->busNum, infoTable->deviceInfo.vendorId, infoTable->deviceInfo.productId);
 
@@ -970,7 +970,7 @@ int UsbDdkPnpLoaderEventReceived(void *priv, uint32_t id, struct HdfSBuf *data)
             break;
     }
 
-    HDF_LOGI("%{public}s:%{public}d ret=%{public}d DONE", __func__, __LINE__, ret);
+    HDF_LOGI("%s:%d ret=%d DONE", __func__, __LINE__, ret);
 
     return ret;
 }
@@ -984,7 +984,7 @@ int UsbDdkPnpLoaderEventHandle(void)
     struct HdfIoService *usbPnpServ = HdfIoServiceBind(USB_PNP_NOTIFY_SERVICE_NAME);
 
     if (usbPnpServ == NULL) {
-        HDF_LOGE("%{public}s: HdfIoServiceBind faile.", __func__);
+        HDF_LOGE("%s: HdfIoServiceBind faile.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -997,13 +997,13 @@ int UsbDdkPnpLoaderEventHandle(void)
     g_usbPnpMatchIdTable = UsbDdkPnpLoaderPnpMatch();
     if ((g_usbPnpMatchIdTable == NULL) || (g_usbPnpMatchIdTable[0] == NULL)) {
         status = HDF_ERR_INVALID_PARAM;
-        HDF_LOGE("%{public}s: g_usbPnpMatchIdTable or g_usbPnpMatchIdTable[0] is NULL!", __func__);
+        HDF_LOGE("%s: g_usbPnpMatchIdTable or g_usbPnpMatchIdTable[0] is NULL!", __func__);
         return status;
     }
 
     status = UsbDdkPnpLoaderEventSend(usbPnpServ, "USB PNP Handle Info");
     if (status != HDF_SUCCESS) {
-        HDF_LOGE("UsbDdkPnpLoaderEventSend faile status=%{public}d", status);
+        HDF_LOGE("UsbDdkPnpLoaderEventSend faile status=%d", status);
         goto error;
     }
     return status;
