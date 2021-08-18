@@ -13,219 +13,342 @@
 
 #define HDF_LOG_TAG mipi_dsi_core
 
+struct MipiDsiHandle {
+    struct MipiDsiCntlr *cntlr;
+    struct OsalMutex lock;
+    void *priv;
+};
+
 static struct MipiDsiHandle g_mipiDsihandle[MAX_CNTLR_CNT];
 
-int32_t MipiDsiRegisterCntlr(struct MipiDsiCntlr *cntlr)
+int32_t MipiDsiRegisterCntlr(struct MipiDsiCntlr *cntlr, struct HdfDeviceObject *device)
 {
+    HDF_LOGI("%s: enter!", __func__);
     if (cntlr == NULL) {
+        HDF_LOGE("%s: cntlr is NULL.", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
     if (cntlr->devNo >= MAX_CNTLR_CNT) {
+        HDF_LOGE("%s: cntlr->devNo is error.", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
+
+    if (device == NULL) {
+        HDF_LOGE("%s: device is NULL.", __func__);
+        return HDF_FAILURE;
+    }
+
     if (g_mipiDsihandle[cntlr->devNo].cntlr == NULL) {
+        (void)OsalMutexInit(&g_mipiDsihandle[cntlr->devNo].lock);
+        (void)OsalMutexInit(&(cntlr->lock));
+
         g_mipiDsihandle[cntlr->devNo].cntlr = cntlr;
-        if (OsalMutexInit(&g_mipiDsihandle[cntlr->devNo].lock) != HDF_SUCCESS) {
-            HDF_LOGE("%s: init lock fail!", __func__);
-            g_mipiDsihandle[cntlr->devNo].cntlr = NULL;
-            return HDF_FAILURE;
-        }
+        g_mipiDsihandle[cntlr->devNo].priv = NULL;
+        cntlr->device = device;
+        device->service = &(cntlr->service);
+        cntlr->priv = NULL;
+        HDF_LOGI("%s: success.", __func__);
+
         return HDF_SUCCESS;
     }
-    HDF_LOGE("cntlr is not NULL");
+
+    HDF_LOGE("%s: cntlr already exists.", __func__);
     return HDF_FAILURE;
 }
 
-DevHandle MipiDsiOpen(uint8_t number)
+void MipiDsiUnregisterCntlr(struct MipiDsiCntlr *cntlr)
 {
+    if (cntlr == NULL) {
+        HDF_LOGE("%s: cntlr is NULL.", __func__);
+        return;
+    }
+
+    (void)OsalMutexDestroy(&(cntlr->lock));
+    (void)OsalMutexDestroy(&(g_mipiDsihandle[cntlr->devNo].lock));
+
+    HDF_LOGI("%s: success.", __func__);
+    return;
+}
+
+struct MipiDsiCntlr *MipiDsiCntlrFromDevice(struct HdfDeviceObject *device)
+{
+    return (device == NULL) ? NULL : (struct MipiDsiCntlr *)device->service;
+}
+
+struct MipiDsiCntlr *MipiDsiCntlrOpen(uint8_t number)
+{
+    struct MipiDsiCntlr *cntlr = NULL;
+    HDF_LOGI("%s: enter!", __func__);
+
     if (number >= MAX_CNTLR_CNT) {
-        HDF_LOGE("invalid number");
+        HDF_LOGE("%s: invalid number.", __func__);
         return NULL;
     }
+
     if (g_mipiDsihandle[number].cntlr == NULL) {
-        HDF_LOGE("no mipi_dsi %d cntlr", number);
+        HDF_LOGE("%s: g_mipiDsihandle[number].cntlr is NULL.", __func__);
         return NULL;
     }
-    if (OsalMutexLock(&(g_mipiDsihandle[number].lock)) != HDF_SUCCESS) {
-        HDF_LOGE("mutex lock fail");
-        return NULL;
-    }
-    return (DevHandle)(&(g_mipiDsihandle[number]));
+
+    (void)OsalMutexLock(&(g_mipiDsihandle[number].lock));
+    g_mipiDsihandle[number].cntlr->devNo = number;
+    cntlr = g_mipiDsihandle[number].cntlr;
+    (void)OsalMutexUnlock(&(g_mipiDsihandle[number].lock));
+
+    return cntlr;
 }
 
-void MipiDsiClose(DevHandle handle)
+void MipiDsiCntlrClose(struct MipiDsiCntlr *cntlr)
 {
-    struct MipiDsiHandle *mipiHandle = (struct MipiDsiHandle *)handle;
-
-    if (mipiHandle != NULL) {
-        (void)OsalMutexUnlock(&(mipiHandle->lock));
+    if (cntlr == NULL) {
+        HDF_LOGE("%s: cntlr is NULL.", __func__);
+        return;
     }
+
+    uint8_t number = cntlr->devNo;
+    if (number >= MAX_CNTLR_CNT) {
+        HDF_LOGE("%s: invalid number.", __func__);
+        return;
+    }
+
+    HDF_LOGI("%s: success!", __func__);
 }
 
-static int32_t MipiDsiSetDevCfg(struct MipiDsiCntlr *cntlr)
+int32_t MipiDsiCntlrSetCfg(struct MipiDsiCntlr *cntlr, struct MipiCfg *cfg)
 {
-    /* set controller config */
-    if (cntlr->setCntlrCfg == NULL) {
-        HDF_LOGE("setCntlrCfg is NULL");
+    int32_t ret;
+    HDF_LOGI("%s: enter!", __func__);
+
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
         return HDF_FAILURE;
     }
-    return cntlr->setCntlrCfg(cntlr);
-}
 
-static struct MipiDsiCntlr *GetCntlr(DevHandle handle)
-{
-    struct MipiDsiHandle *mipiHandle = (struct MipiDsiHandle *)handle;
-
-    return (mipiHandle == NULL) ? NULL : mipiHandle->cntlr;
-}
-
-int32_t MipiDsiSetCfg(DevHandle handle, struct MipiCfg *cfg)
-{
-    struct MipiDsiCntlr *cntlr = NULL;
-
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL || cfg == NULL) {
+    if (cfg == NULL) {
+        HDF_LOGE("%s: cfg is NULL.", __func__);
         return HDF_FAILURE;
     }
-    cntlr->phyDataRate = cfg->phyDataRate;
-    cntlr->pixelClk = cfg->pixelClk;
-    cntlr->timing = cfg->timing;
-    cntlr->mode = cfg->mode;
-    cntlr->burstMode = cfg->burstMode;
-    cntlr->format = cfg->format;
-    cntlr->lane = cfg->lane;
-    return MipiDsiSetDevCfg(cntlr);
+
+    if (cntlr->ops->setCntlrCfg == NULL) {
+        HDF_LOGE("%s: setCntlrCfg is NULL.", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    cntlr->cfg = *cfg;
+    ret =  cntlr->ops->setCntlrCfg(cntlr);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
+    if (ret == HDF_SUCCESS) {
+        HDF_LOGI("%s: success!", __func__);
+    } else {
+        HDF_LOGE("%s: failed!", __func__);
+    }
+
+    return ret;
 }
 
-int32_t MipiDsiGetCfg(DevHandle handle, struct MipiCfg *cfg)
+int32_t MipiDsiCntlrGetCfg(struct MipiDsiCntlr *cntlr, struct MipiCfg *cfg)
 {
-    struct MipiDsiCntlr *cntlr = NULL;
-
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL || cfg == NULL) {
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
         return HDF_FAILURE;
     }
-    cfg->phyDataRate = cntlr->phyDataRate;
-    cfg->pixelClk = cntlr->pixelClk;
-    cfg->timing.xPixels = cntlr->timing.xPixels;
-    cfg->timing.hsaPixels = cntlr->timing.hsaPixels;
-    cfg->timing.hbpPixels = cntlr->timing.hbpPixels;
-    cfg->timing.hlinePixels = cntlr->timing.hlinePixels;
-    cfg->timing.vsaLines = cntlr->timing.vsaLines;
-    cfg->timing.vbpLines = cntlr->timing.vbpLines;
-    cfg->timing.vfpLines = cntlr->timing.vfpLines;
-    cfg->timing.ylines = cntlr->timing.ylines;
-    cfg->timing.edpiCmdSize = cntlr->timing.edpiCmdSize;
-    cfg->mode = cntlr->mode;
-    cfg->burstMode = cntlr->burstMode;
-    cfg->format = cntlr->format;
-    cfg->lane = cntlr->lane;
+    if (cfg == NULL) {
+        HDF_LOGE("%s: cfg is NULL.", __func__);
+        return HDF_FAILURE;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    *cfg = cntlr->cfg;
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
     return HDF_SUCCESS;
 }
 
-void MipiDsiSetLpMode(DevHandle handle)
+void MipiDsiCntlrSetLpMode(struct MipiDsiCntlr *cntlr)
 {
-    struct MipiDsiCntlr *cntlr = NULL;
-
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL) {
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
         return;
     }
-    if (cntlr->toLp != NULL) {
-        cntlr->toLp(cntlr);
-    } else {
-        HDF_LOGI("toLp not support!");
-    }
-}
 
-void MipiDsiSetHsMode(DevHandle handle)
-{
-    struct MipiDsiCntlr *cntlr = NULL;
-
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL) {
+    if (cntlr->ops->toLp == NULL) {
+        HDF_LOGE("%s: toLp is NULL.", __func__);
         return;
     }
-    if (cntlr->toHs != NULL) {
-        cntlr->toHs(cntlr);
-    } else {
-        HDF_LOGI("toHs not support!");
-    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    cntlr->ops->toLp(cntlr);
+    (void)OsalMutexUnlock(&(cntlr->lock));
 }
 
-void MipiDsiEnterUlps(DevHandle handle)
+void MipiDsiCntlrSetHsMode(struct MipiDsiCntlr *cntlr)
 {
-    struct MipiDsiCntlr *cntlr = NULL;
-
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL) {
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
         return;
     }
-    if (cntlr->enterUlps != NULL) {
-        cntlr->enterUlps(cntlr);
-    } else {
-        HDF_LOGI("enterUlps not support!");
-    }
-}
 
-void MipiDsiExitUlps(DevHandle handle)
-{
-    struct MipiDsiCntlr *cntlr = NULL;
-
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL) {
+    if (cntlr->ops->toHs == NULL) {
+        HDF_LOGE("%s: toHs is NULL.", __func__);
         return;
     }
-    if (cntlr->exitUlps != NULL) {
-        cntlr->exitUlps(cntlr);
-    } else {
-        HDF_LOGI("exitUlps not support!");
-    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    cntlr->ops->toHs(cntlr);
+    (void)OsalMutexUnlock(&(cntlr->lock));
 }
 
-int32_t MipiDsiTx(DevHandle handle, struct DsiCmdDesc *cmd)
+void MipiDsiCntlrEnterUlps(struct MipiDsiCntlr *cntlr)
 {
-    struct MipiDsiCntlr *cntlr = NULL;
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
+        return;
+    }
+
+    if (cntlr->ops->enterUlps == NULL) {
+        HDF_LOGE("%s: enterUlps is NULL.", __func__);
+        return;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    cntlr->ops->enterUlps(cntlr);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+}
+
+void MipiDsiCntlrExitUlps(struct MipiDsiCntlr *cntlr)
+{
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr, ops or exitUlps is NULL.", __func__);
+        return;
+    }
+
+    if (cntlr->ops->exitUlps == NULL) {
+        HDF_LOGE("%s: exitUlps is NULL.", __func__);
+        return;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    cntlr->ops->exitUlps(cntlr);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+}
+
+int32_t MipiDsiCntlrTx(struct MipiDsiCntlr *cntlr, struct DsiCmdDesc *cmd)
+{
     int32_t ret;
 
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL || cmd == NULL) {
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
         return HDF_FAILURE;
     }
-    if (cntlr->setCmd != NULL) {
-        ret = cntlr->setCmd(cntlr, cmd);
-        if (cmd->delay > 0) {
-            OsalMSleep(cmd->delay);
-        }
-        return ret;
+    if (cmd == NULL) {
+        HDF_LOGE("%s: cmd is NULL.", __func__);
+        return HDF_FAILURE;
     }
-    return HDF_ERR_NOT_SUPPORT;
+
+    if (cntlr->ops->setCmd == NULL) {
+        HDF_LOGE("%s: setCmd is NULL.", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    ret = cntlr->ops->setCmd(cntlr, cmd);
+    if (cmd->delay > 0) {
+        OsalMSleep(cmd->delay);
+    }
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
+    if (ret == HDF_SUCCESS) {
+        HDF_LOGI("%s: success!", __func__);
+    } else {
+        HDF_LOGE("%s: failed!", __func__);
+    }
+
+    return ret;
 }
 
-int32_t MipiDsiRx(DevHandle handle, struct DsiCmdDesc *cmd, int32_t readLen, uint8_t *out)
+int32_t MipiDsiCntlrRx(struct MipiDsiCntlr *cntlr, struct DsiCmdDesc *cmd, int32_t readLen, uint8_t *out)
 {
-    struct MipiDsiCntlr *cntlr = NULL;
+    int32_t ret;
 
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL || cmd == NULL) {
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
         return HDF_FAILURE;
     }
-    if (cntlr->getCmd != NULL) {
-        return cntlr->getCmd(cntlr, cmd, readLen, out);
+    if ((cmd == NULL) || (out == NULL)) {
+        HDF_LOGE("%s: cmd or out is NULL.", __func__);
+        return HDF_FAILURE;
     }
-    return HDF_ERR_NOT_SUPPORT;
+
+    if (cntlr->ops->getCmd == NULL) {
+        HDF_LOGE("%s: getCmd is NULL.", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    ret = cntlr->ops->getCmd(cntlr, cmd, readLen, out);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
+    if (ret == HDF_SUCCESS) {
+        HDF_LOGI("%s: success!", __func__);
+    } else {
+        HDF_LOGE("%s: failed!", __func__);
+    }
+
+    return ret;
 }
 
-int32_t MipiDsiPowerControl(DevHandle handle, uint8_t enable)
+int32_t MipiDsiCntlrPowerControl(struct MipiDsiCntlr *cntlr, uint8_t enable)
 {
-    struct MipiDsiCntlr *cntlr = NULL;
+    int32_t ret;
 
-    cntlr = GetCntlr(handle);
-    if (cntlr == NULL) {
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
         return HDF_FAILURE;
     }
-    if (cntlr->powerControl != NULL) {
-        return cntlr->powerControl(cntlr, enable);
+
+    if (cntlr->ops->powerControl == NULL) {
+        HDF_LOGE("%s: powerControl is NULL.", __func__);
+        return HDF_ERR_NOT_SUPPORT;
     }
-    return HDF_ERR_NOT_SUPPORT;
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    ret = cntlr->ops->powerControl(cntlr, enable);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
+    if (ret == HDF_SUCCESS) {
+        HDF_LOGI("%s: success!", __func__);
+    } else {
+        HDF_LOGE("%s: failed!", __func__);
+    }
+
+    return ret;
+}
+
+int32_t MipiDsiCntlrAttach(struct MipiDsiCntlr *cntlr, uint8_t *name)
+{
+    int32_t ret;
+
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
+        return HDF_FAILURE;
+    }
+
+    if (cntlr->ops->attach == NULL) {
+        HDF_LOGE("%s: attach is NULL.", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    ret = cntlr->ops->attach(cntlr, name);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
+    if (ret == HDF_SUCCESS) {
+        HDF_LOGI("%s: success!", __func__);
+    } else {
+        HDF_LOGE("%s: failed!", __func__);
+    }
+
+    return ret;
 }
