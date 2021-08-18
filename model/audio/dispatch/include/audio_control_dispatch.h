@@ -27,7 +27,8 @@ enum ControlDispMethodCmd {
     AUDIODRV_CTRL_IOCTRL_ELEM_BUTT,
 };
 
-typedef int32_t (*ControlDispCmdHandle)(struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply);
+typedef int32_t (*ControlDispCmdHandle)(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply);
 
 struct ControlDispCmdHandleList {
     enum ControlDispMethodCmd cmd;

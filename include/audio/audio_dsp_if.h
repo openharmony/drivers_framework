@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef DSP_ADAPTER_H
-#define DSP_ADAPTER_H
+#ifndef AUDIO_DSP_IF_H
+#define AUDIO_DSP_IF_H
 #include "audio_host.h"
 #ifdef __cplusplus
 #if __cplusplus
@@ -28,6 +28,13 @@ struct AudioDspOps {
     int32_t (*Trigger)(struct AudioCard *, int, struct DspDevice *);
 };
 
+/* Dsp host is defined in dsp driver */
+struct DspHost {
+    struct IDeviceIoService service; // dsp service
+    struct HdfDeviceObject *device;  // dsp device
+    void *priv;                      // dsp private data
+};
+
 struct DspData {
     const char *drvDspName;
     /* dsp driver callbacks */
@@ -39,17 +46,9 @@ struct DspData {
     int32_t (*Equalizer)(const struct AudioCard *, const uint8_t *, const struct DspDevice *);
 };
 
-/* Dsp host is defined in dsp driver */
-struct DspHost {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    void *priv;
-};
-
 #ifdef __cplusplus
 #if __cplusplus
 }
 #endif
 #endif /* __cplusplus */
-
 #endif

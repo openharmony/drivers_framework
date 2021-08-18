@@ -75,6 +75,9 @@ struct AudioCard {
     struct DListHead components; /* all components for this card */
     struct DListHead paths; /* all paths for this card */
     struct DListHead sapmDirty; /* all dirty for this card */
+    bool sapmSleepState;
+    bool sapmStandbyState;
+    bool sapmMonitorState;
 };
 
 enum CriBuffStatus {
@@ -130,6 +133,24 @@ struct AudioRxData {
     unsigned long frames; /* frames number */
 };
 
+struct AudioTxMmapData {
+    void *memoryAddress;                 /**< Pointer to the mmap buffer */
+    int32_t memoryFd;                    /**< File descriptor of the mmap buffer */
+    int32_t totalBufferFrames;           /**< Total size of the mmap buffer (unit: frame )*/
+    int32_t transferFrameSize;           /**< Transfer size (unit: frame) */
+    int32_t isShareable;                 /**< Whether the mmap buffer can be shared among processes */
+    uint32_t offset;
+};
+
+struct AudioRxMmapData {
+    void *memoryAddress;                 /**< Pointer to the mmap buffer */
+    int32_t memoryFd;                    /**< File descriptor of the mmap buffer */
+    int32_t totalBufferFrames;           /**< Total size of the mmap buffer (unit: frame )*/
+    int32_t transferFrameSize;           /**< Transfer size (unit: frame) */
+    int32_t isShareable;                 /**< Whether the mmap buffer can be shared among processes */
+    uint32_t offset;
+};
+
 struct AudioRuntimeDeivces       {
     /* runtime devices */
     struct CodecDevice *codec;
@@ -147,7 +168,6 @@ struct AudioRuntimeDeivces       {
 };
 
 struct AudioHost *AudioHostCreateAndBind(struct HdfDeviceObject *device);
-void AudioHostDestroy(struct AudioHost *host);
 
 static inline struct HdfDeviceObject *AudioHostToDevice(struct AudioHost *host)
 {

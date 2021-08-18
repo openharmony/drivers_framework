@@ -35,13 +35,13 @@ struct AudioCtrlElemInfo {
 
 struct AudioCtrlElemValue {
     struct AudioCtrlElemId id;
-    int32_t value[2];
+    uint32_t value[2];
 };
 
 struct AudioKcontrol;
-typedef int32_t (*KconfigInfo_t)(struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo);
-typedef int32_t (*KconfigGet_t)(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-typedef int32_t (*KconfigSet_t)(struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+typedef int32_t (*KconfigInfo_t)(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemInfo *elemInfo);
+typedef int32_t (*KconfigGet_t)(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
+typedef int32_t (*KconfigSet_t)(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue);
 
 /* mixer control */
 struct AudioMixerControl {

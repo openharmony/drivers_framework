@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef ACCESSORY_ADAPTER_H
-#define ACCESSORY_ADAPTER_H
+#ifndef AUDIO_ACCESSORY_IF_H
+#define AUDIO_ACCESSORY_IF_H
 
 #include "audio_host.h"
 #include "audio_control.h"
@@ -33,34 +33,25 @@ struct AudioAccessoryOps {
     struct DListHead list;
 };
 
+/* Accessory host is defined in accessory driver */
+struct AccessoryHost {
+    struct IDeviceIoService service; // accessory service
+    struct HdfDeviceObject *device;  // accessory deovce
+    void *priv;                     // accessory private data
+};
+
 struct AccessoryData {
     const char *drvAccessoryName;
     /* Accessory driver callbacks */
-    int32_t (*AccessoryInit)(struct AudioCard *, const struct AccessoryDevice *device);
+    int32_t (*Init)(struct AudioCard *, const struct AccessoryDevice *device);
     int32_t (*Read)(const struct AccessoryDevice *, uint32_t, uint32_t *);
     int32_t (*Write)(const struct AccessoryDevice *, uint32_t, uint32_t);
+    int32_t (*AiaoRead)(const struct AccessoryDevice *, uint32_t, uint32_t *);
+    int32_t (*AiaoWrite)(const struct AccessoryDevice *, uint32_t, uint32_t);
 
     const struct AudioKcontrol *controls;
     int numControls;
 };
-
-/* Accessory host is defined in accessory driver */
-struct AccessoryHost {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    void *priv;
-};
-
-
-int32_t ExternalCodecDeviceInit(struct AudioCard *audioCard, const struct AccessoryDevice *device);
-int32_t ExternalCodecDeviceReadReg(const struct AccessoryDevice *codec, uint32_t reg, uint32_t *value);
-int32_t ExternalCodecDeviceWriteReg(const struct AccessoryDevice *codec, uint32_t reg, uint32_t value);
-
-int32_t ExternalCodecDaiStartup(const struct AudioCard *card, const struct DaiDevice *device);
-int32_t ExternalCodecDaiHwParams(const struct AudioCard *card, const struct AudioPcmHwParams *param,
-                                 const struct DaiDevice *device);
-int32_t ExternalCodecDaiDeviceInit(const struct AudioCard *card, const struct DaiDevice *device);
-
 
 #ifdef __cplusplus
 #if __cplusplus

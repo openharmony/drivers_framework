@@ -7,7 +7,7 @@
  */
 
 #include "audio_control_dispatch.h"
-#include "audio_sapm.h"
+#include "audio_control.h"
 
 #define HDF_LOG_TAG audio_control_dispatch
 
@@ -16,7 +16,7 @@ static struct AudioKcontrol *AudioGetKctrlInstance(const struct AudioCtrlElemId 
     struct AudioKcontrol *kctrl = NULL;
     struct AudioCard *audioCard = NULL;
 
-    if (ctrlElemId == NULL) {
+    if (ctrlElemId == NULL || ctrlElemId->itemName == NULL || ctrlElemId->cardServiceName == NULL) {
         ADM_LOG_ERR("input params check error: ctrlElemId is NULL.");
         return NULL;
     }
@@ -28,6 +28,9 @@ static struct AudioKcontrol *AudioGetKctrlInstance(const struct AudioCtrlElemId 
     }
 
     DLIST_FOR_EACH_ENTRY(kctrl, &audioCard->controls, struct AudioKcontrol, list) {
+        if (kctrl->name == NULL) {
+            continue;
+        }
         if (strcmp(kctrl->name, ctrlElemId->itemName) != 0) {
             continue;
         }
@@ -39,7 +42,7 @@ static struct AudioKcontrol *AudioGetKctrlInstance(const struct AudioCtrlElemId 
     return NULL;
 }
 
-static int32_t ControlHostElemInfoSub(struct HdfSBuf *rspData, struct AudioCtrlElemId id)
+static int32_t ControlHostElemInfoSub(struct HdfSBuf *rspData, const struct AudioCtrlElemId id)
 {
     int32_t result;
     struct AudioKcontrol *kctrl = NULL;
@@ -81,7 +84,8 @@ static int32_t ControlHostElemInfoSub(struct HdfSBuf *rspData, struct AudioCtrlE
     return HDF_SUCCESS;
 }
 
-static int32_t ControlHostElemInfo(struct HdfDeviceIoClient *client, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+static int32_t ControlHostElemInfo(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     struct AudioCtrlElemId id;
     ADM_LOG_DEBUG("entry.");
@@ -115,7 +119,8 @@ static int32_t ControlHostElemInfo(struct HdfDeviceIoClient *client, struct HdfS
     return HDF_SUCCESS;
 }
 
-static int32_t ControlHostElemRead(struct HdfDeviceIoClient *client, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+static int32_t ControlHostElemRead(const struct HdfDeviceIoClient *client, struct HdfSBuf *reqData,
+    struct HdfSBuf *rspData)
 {
     struct AudioKcontrol *kctrl = NULL;
     struct AudioCtrlElemValue elemValue;
@@ -169,7 +174,8 @@ static int32_t ControlHostElemRead(struct HdfDeviceIoClient *client, struct HdfS
     return HDF_SUCCESS;
 }
 
-static int32_t ControlHostElemWrite(struct HdfDeviceIoClient *client, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+static int32_t ControlHostElemWrite(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     struct AudioKcontrol *kctrl = NULL;
     struct AudioCtrlElemValue elemValue;
@@ -239,8 +245,7 @@ static int32_t ControlDispatch(struct HdfDeviceIoClient *client, int cmdId,
         return HDF_FAILURE;
     }
 
-    AudioSapmRefreshTime(true);
-    for (i = 0; i < ARRAY_SIZE(g_controlDispCmdHandle); ++i) {
+    for (i = 0; i < HDF_ARRAY_SIZE(g_controlDispCmdHandle); ++i) {
         if ((cmdId == (int)(g_controlDispCmdHandle[i].cmd)) && (g_controlDispCmdHandle[i].func != NULL)) {
             return g_controlDispCmdHandle[i].func(client, data, reply);
         }
@@ -296,15 +301,6 @@ static int32_t AudioControlInit(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-static void ControlHostDestroy(struct ControlHost *host)
-{
-    if (host == NULL) {
-        ADM_LOG_ERR("Input params check error: host is NULL.");
-        return;
-    }
-    OsalMemFree(host);
-}
-
 static void AudioControlRelease(struct HdfDeviceObject *device)
 {
     struct ControlHost *controlHost = NULL;
@@ -319,7 +315,7 @@ static void AudioControlRelease(struct HdfDeviceObject *device)
         ADM_LOG_ERR("controlHost is NULL.");
         return;
     }
-    ControlHostDestroy(controlHost);
+    OsalMemFree(controlHost);
 }
 
 /* HdfDriverEntry definitions */

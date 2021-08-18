@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef DAI_ADAPTER_H
-#define DAI_ADAPTER_H
+#ifndef AUDIO_DAI_IF_H
+#define AUDIO_DAI_IF_H
 
 #ifdef __cplusplus
 #if __cplusplus

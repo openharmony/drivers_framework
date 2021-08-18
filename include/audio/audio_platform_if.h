@@ -6,8 +6,10 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef PLATFORM_ADAPTER_H
-#define PLATFORM_ADAPTER_H
+#ifndef AUDIO_PLATFORM_IF_H
+#define AUDIO_PLATFORM_IF_H
+
+#include "audio_host.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -56,6 +58,7 @@ struct CircleBufInfo {
     uint32_t chnId;
     uint32_t enable;
     struct OsalMutex buffMutex;
+    uint64_t framesPosition;
 };
 
 struct PcmInfo {
@@ -81,16 +84,18 @@ struct AudioPlatformOps {
     uint32_t (*Pointer)(struct AudioCard *);
     int32_t (*Write)(const struct AudioCard *, struct AudioTxData *);
     int32_t (*Read)(const struct AudioCard *, struct AudioRxData *);
+    int32_t (*MmapWrite)(const struct AudioCard *, struct AudioTxMmapData *);
+    int32_t (*MmapRead)(const struct AudioCard *, struct AudioRxMmapData *);
     int32_t (*RenderPrepare)(const struct AudioCard *);
     int32_t (*CapturePrepare)(const struct AudioCard *);
-    int32_t (*RenderStart)(const struct AudioCard *);
-    int32_t (*CaptureStart)(const struct AudioCard *);
-    int32_t (*RenderStop)(const struct AudioCard *);
-    int32_t (*CaptureStop)(const struct AudioCard *);
-    int32_t (*RenderPause)(const struct AudioCard *);
-    int32_t (*CapturePause)(const struct AudioCard *);
-    int32_t (*RenderResume)(const struct AudioCard *);
-    int32_t (*CaptureResume)(const struct AudioCard *);
+    int32_t (*RenderStart)(struct AudioCard *);
+    int32_t (*CaptureStart)(struct AudioCard *);
+    int32_t (*RenderStop)(struct AudioCard *);
+    int32_t (*CaptureStop)(struct AudioCard *);
+    int32_t (*RenderPause)(struct AudioCard *);
+    int32_t (*CapturePause)(struct AudioCard *);
+    int32_t (*RenderResume)(struct AudioCard *);
+    int32_t (*CaptureResume)(struct AudioCard *);
 };
 
 struct PlatformDevice {

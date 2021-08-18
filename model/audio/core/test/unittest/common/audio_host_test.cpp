@@ -12,6 +12,7 @@
 
 using namespace testing::ext;
 
+namespace {
 class AudioHostTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -48,4 +49,5 @@ HWTEST_F(AudioHostTest, AudioHostTest_GetAudioServiceName, TestSize.Level0)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTGETCARDINSTANCE, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
 }

@@ -7,9 +7,9 @@
  */
 
 #include "audio_host.h"
+#include "audio_codec_if.h"
 #include "audio_core.h"
 #include "audio_parse.h"
-#include "codec_adapter.h"
 
 #define HDF_LOG_TAG audio_host
 
@@ -25,7 +25,17 @@ struct AudioCard *GetCardInstance(const char *serviceName)
         return NULL;
     }
 
+    if (DListIsEmpty(&cardManager)) {
+        ADM_LOG_ERR("cardManager is empty.");
+        return NULL;
+    }
+
     DLIST_FOR_EACH_ENTRY(audioCard, &cardManager, struct AudioCard, list) {
+        if (audioCard->configData.cardServiceName == NULL) {
+            ADM_LOG_ERR("cardServiceName is NULL.");
+            return NULL;
+        }
+
         if (strcmp(audioCard->configData.cardServiceName, serviceName) == 0) {
             return audioCard;
         }
@@ -49,15 +59,13 @@ static int32_t AudioCodecDevInit(struct AudioCard *audioCard)
         return HDF_ERR_IO;
     }
     codec = rtd->codec;
-    if (codec == NULL || codec->devData == NULL || codec->devData->Init == NULL) {
-        ADM_LOG_ERR("codec is NULL.");
-        return HDF_ERR_IO;
-    }
-    /* codec initialization */
-    int32_t ret = codec->devData->Init(audioCard, codec);
-    if (ret < 0) {
-        ADM_LOG_ERR("codec initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
+    if (codec != NULL && codec->devData != NULL && codec->devData->Init != NULL) {
+        /* codec initialization */
+        int32_t ret = codec->devData->Init(audioCard, codec);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("codec initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
     }
 
     ADM_LOG_INFO("success.");
@@ -80,22 +88,20 @@ static int32_t AudioAccessoryDevInit(struct AudioCard *audioCard)
         return HDF_ERR_IO;
     }
     accessory = rtd->accessory;
-    if (accessory == NULL || accessory->devData == NULL || accessory->devData->AccessoryInit == NULL) {
-        ADM_LOG_ERR("accessory is NULL.");
-        return HDF_ERR_IO;
-    }
-    /* codec initialization */
-    int32_t ret = accessory->devData->AccessoryInit(audioCard, accessory);
-    if (ret < 0) {
-        ADM_LOG_ERR("accessory initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
+    if (accessory != NULL && accessory->devData != NULL && accessory->devData->Init != NULL) {
+        /* codec initialization */
+        int32_t ret = accessory->devData->Init(audioCard, accessory);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("accessory initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
     }
 
     ADM_LOG_INFO("success.");
     return HDF_SUCCESS;
 }
 
-static int32_t AudioPlatformDevInit(struct AudioCard *audioCard)
+static int32_t AudioPlatformDevInit(const struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
@@ -112,22 +118,51 @@ static int32_t AudioPlatformDevInit(struct AudioCard *audioCard)
         return HDF_ERR_IO;
     }
     platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->PlatformInit == NULL) {
-        ADM_LOG_ERR("audioCard is NULL.");
-        return HDF_ERR_IO;
-    }
-    /* platform initialization */
-    int32_t ret = platform->devData->PlatformInit(audioCard, platform);
-    if (ret < 0) {
-        ADM_LOG_ERR("platform initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
+    if (platform != NULL && platform->devData != NULL && platform->devData->PlatformInit != NULL) {
+        /* platform initialization */
+        int32_t ret = platform->devData->PlatformInit(audioCard, platform);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("platform initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
     }
 
     ADM_LOG_INFO("success.");
     return HDF_SUCCESS;
 }
 
-static int32_t AudioCodecDaiDevInit(struct AudioCard *audioCard)
+static int32_t AudioDspDevInit(const struct AudioCard *audioCard)
+{
+    struct AudioRuntimeDeivces *rtd = NULL;
+    struct DspDevice *dsp = NULL;
+
+    if (audioCard == NULL) {
+        ADM_LOG_ERR("audioCard is NULL.");
+        return HDF_ERR_IO;
+    }
+    ADM_LOG_DEBUG("entry.");
+
+    rtd = audioCard->rtd;
+    if (rtd == NULL) {
+        ADM_LOG_ERR("audioCard rtd object is NULL.");
+        return HDF_ERR_IO;
+    }
+
+    dsp = rtd->dsp;
+    if (dsp != NULL && dsp->devData != NULL && dsp->devData->DspInit != NULL) {
+        /* dsp initialization */
+        int32_t ret = dsp->devData->DspInit(dsp);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("dsp initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
+    }
+
+    ADM_LOG_INFO("success.");
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioCodecDaiDevInit(const struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *codecDai = NULL;
@@ -144,22 +179,20 @@ static int32_t AudioCodecDaiDevInit(struct AudioCard *audioCard)
         return HDF_ERR_IO;
     }
     codecDai = rtd->codecDai;
-    if (codecDai == NULL || codecDai->devData == NULL || codecDai->devData->DaiInit == NULL) {
-        ADM_LOG_ERR("codecDai is NULL.");
-        return HDF_ERR_IO;
-    }
-    /* codec dai initialization */
-    int32_t ret = codecDai->devData->DaiInit(audioCard, codecDai);
-    if (ret < 0) {
-        ADM_LOG_ERR("codec dai initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
+    if (codecDai != NULL && codecDai->devData != NULL && codecDai->devData->DaiInit != NULL) {
+        /* codec dai initialization */
+        int32_t ret = codecDai->devData->DaiInit(audioCard, codecDai);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("codec dai initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
     }
 
     ADM_LOG_INFO("success.");
     return HDF_SUCCESS;
 }
 
-static int32_t AudioAccessoryDaiDevInit(struct AudioCard *audioCard)
+static int32_t AudioAccessoryDaiDevInit(const struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *accessoryDai = NULL;
@@ -176,22 +209,20 @@ static int32_t AudioAccessoryDaiDevInit(struct AudioCard *audioCard)
         return HDF_ERR_IO;
     }
     accessoryDai = rtd->accessoryDai;
-    if (accessoryDai == NULL || accessoryDai->devData == NULL || accessoryDai->devData->DaiInit == NULL) {
-        ADM_LOG_ERR("accessoryDai is NULL.");
-        return HDF_ERR_IO;
-    }
-    /* codec dai initialization */
-    int32_t ret = accessoryDai->devData->DaiInit(audioCard, accessoryDai);
-    if (ret < 0) {
-        ADM_LOG_ERR("accessory dai initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
+    if (accessoryDai != NULL && accessoryDai->devData != NULL && accessoryDai->devData->DaiInit != NULL) {
+        /* codec dai initialization */
+        int32_t ret = accessoryDai->devData->DaiInit(audioCard, accessoryDai);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("accessory dai initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
     }
 
     ADM_LOG_INFO("success.");
     return HDF_SUCCESS;
 }
 
-static int32_t AudioCpuDaiDevInit(struct AudioCard *audioCard)
+static int32_t AudioCpuDaiDevInit(const struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *cpuDai = NULL;
@@ -208,26 +239,23 @@ static int32_t AudioCpuDaiDevInit(struct AudioCard *audioCard)
         return HDF_ERR_IO;
     }
     cpuDai = rtd->cpuDai;
-    if (cpuDai == NULL || cpuDai->devData == NULL || cpuDai->devData->DaiInit == NULL) {
-        ADM_LOG_ERR("cpuDai is NULL.");
-        return HDF_ERR_IO;
-    }
-    /* cpu dai initialization */
-    int32_t ret = cpuDai->devData->DaiInit(audioCard, cpuDai);
-    if (ret < 0) {
-        ADM_LOG_ERR("cpu dai initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
+    if (cpuDai != NULL && cpuDai->devData != NULL && cpuDai->devData->DaiInit != NULL) {
+        /* cpu dai initialization */
+        int32_t ret = cpuDai->devData->DaiInit(audioCard, cpuDai);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("cpu dai initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
     }
 
     ADM_LOG_INFO("success.");
     return HDF_SUCCESS;
 }
 
-static int32_t AudioDspDaiDevInit(struct AudioCard *audioCard)
+static int32_t AudioDspDaiDevInit(const struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *dspDai = NULL;
-    struct DspDevice *dsp = NULL;
     int ret;
 
     if (audioCard == NULL) {
@@ -243,32 +271,18 @@ static int32_t AudioDspDaiDevInit(struct AudioCard *audioCard)
     }
 
     dspDai = rtd->dspDai;
-    if (dspDai == NULL || dspDai->devData == NULL || dspDai->devData->DaiInit == NULL) {
-        ADM_LOG_ERR("dsp is NULL.");
-        return HDF_ERR_IO;
-    }
-
-    ret = dspDai->devData->DaiInit(audioCard, dspDai);
-    if (ret < 0) {
-        ADM_LOG_ERR("dsp dai initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
-    }
-
-    dsp = rtd->dsp;
-    if (dsp == NULL || dsp->devData == NULL || dsp->devData->DspInit == NULL) {
-        ADM_LOG_ERR("dsp is NULL.");
-        return HDF_ERR_IO;
-    }
-
-    ret = dsp->devData->DspInit(dsp);
-    if (ret < 0) {
-        ADM_LOG_ERR("dsp initialization fail ret=%d", ret);
-        return HDF_ERR_IO;
+    if (dspDai != NULL && dspDai->devData != NULL && dspDai->devData->DaiInit != NULL) {
+        ret = dspDai->devData->DaiInit(audioCard, dspDai);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("dsp dai initialization fail ret=%d", ret);
+            return HDF_ERR_IO;
+        }
     }
 
     ADM_LOG_INFO("success.");
     return HDF_SUCCESS;
 }
+
 static int32_t AudioInitDaiLink(struct AudioCard *audioCard)
 {
     if (audioCard == NULL) {
@@ -278,42 +292,27 @@ static int32_t AudioInitDaiLink(struct AudioCard *audioCard)
     ADM_LOG_DEBUG("entry.");
 
     if (AudioPlatformDevInit(audioCard) || AudioCpuDaiDevInit(audioCard)) {
-        ADM_LOG_ERR("Platform and CpuDai is NULL.");
+        ADM_LOG_ERR("Platform and CpuDai init fail.");
         return HDF_ERR_IO;
     }
 
-    if ((AudioCodecDevInit(audioCard) || AudioCodecDaiDevInit(audioCard)) &&
-        (AudioAccessoryDevInit(audioCard) || AudioAccessoryDaiDevInit(audioCard))) {
-        ADM_LOG_ERR("codec is NULL.");
+    if ((AudioCodecDevInit(audioCard) || AudioCodecDaiDevInit(audioCard))) {
+        ADM_LOG_ERR("codec init fail.");
         return HDF_ERR_IO;
     }
 
-    if (AudioDspDaiDevInit(audioCard)) {
-        ADM_LOG_ERR("Dsp Dai is NULL.");
+    if (AudioAccessoryDevInit(audioCard) || AudioAccessoryDaiDevInit(audioCard)) {
+        ADM_LOG_ERR("Accessory init fail.");
+        return HDF_ERR_IO;
+    }
+
+    if (AudioDspDevInit(audioCard) || AudioDspDaiDevInit(audioCard)) {
+        ADM_LOG_ERR("Dsp Dai init fail.");
         return HDF_ERR_IO;
     }
 
     ADM_LOG_DEBUG("success.");
     return HDF_SUCCESS;
-}
-
-void AudioCardDestroy(struct AudioCard *card)
-{
-    if (card == NULL) {
-        return;
-    }
-    if (card->rtd != NULL) {
-        OsalMemFree(card->rtd);
-    }
-    OsalMemFree(card);
-}
-
-void AudioHostDestroy(struct AudioHost *host)
-{
-    if (host == NULL) {
-        return;
-    }
-    OsalMemFree(host);
 }
 
 struct AudioHost *AudioHostCreateAndBind(struct HdfDeviceObject *device)
@@ -415,6 +414,7 @@ static int32_t AudioDriverInit(struct HdfDeviceObject *device)
 static void AudioDriverRelease(struct HdfDeviceObject *device)
 {
     struct AudioHost *audioHost = NULL;
+    struct AudioCard *audioCard = NULL;
 
     ADM_LOG_DEBUG("entry.");
     if (device == NULL) {
@@ -426,8 +426,15 @@ static void AudioDriverRelease(struct HdfDeviceObject *device)
         ADM_LOG_ERR("audioHost is NULL.");
         return;
     }
-    AudioCardDestroy(audioHost->priv);
-    AudioHostDestroy(audioHost);
+
+    if (audioHost->priv != NULL) {
+        audioCard = (struct AudioCard *)audioHost->priv;
+        if (audioCard->rtd != NULL) {
+            OsalMemFree(audioCard->rtd);
+        }
+        OsalMemFree(audioHost->priv);
+    }
+    OsalMemFree(audioHost);
 
     ADM_LOG_INFO("success.");
 }

@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef CODEC_ADAPTER_H
-#define CODEC_ADAPTER_H
+#ifndef AUDIO_CODEC_IF_H
+#define AUDIO_CODEC_IF_H
 
 #include "audio_host.h"
 #include "audio_control.h"
@@ -44,10 +44,10 @@ struct CodecData {
     const char *drvCodecName;
     /* Codec driver callbacks */
     int32_t (*Init)(struct AudioCard *, struct CodecDevice *);
-    int32_t (*Read)(struct CodecDevice *, uint32_t, uint32_t *);
-    int32_t (*Write)(struct CodecDevice *, uint32_t, uint32_t);
-    int32_t (*AiaoRead)(struct CodecDevice *, uint32_t, uint32_t *);
-    int32_t (*AiaoWrite)(struct CodecDevice *, uint32_t, uint32_t);
+    int32_t (*Read)(const struct CodecDevice *, uint32_t, uint32_t *);
+    int32_t (*Write)(const struct CodecDevice *, uint32_t, uint32_t);
+    int32_t (*AiaoRead)(const struct CodecDevice *, uint32_t, uint32_t *);
+    int32_t (*AiaoWrite)(const struct CodecDevice *, uint32_t, uint32_t);
     const struct AudioKcontrol *controls;
     int numControls;
     const struct AudioSapmComponent *sapmComponents;
