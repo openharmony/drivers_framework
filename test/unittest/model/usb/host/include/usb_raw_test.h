@@ -359,15 +359,15 @@ struct UsbRawTestFunc {
 
 int UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config);
 int AcmWriteBufAlloc(struct AcmRawDevice *acm);
-void AcmNotifyReqCallback(void *requestArg);
-void AcmReadBulkCallback(void *requestArg);
-void AcmWriteIsoCallback(void *requestArg);
-void AcmWriteBulkCallback(void *requestArg);
+void AcmNotifyReqCallback(const void *requestArg);
+void AcmReadBulkCallback(const void *requestArg);
+void AcmWriteIsoCallback(const void *requestArg);
+void AcmWriteBulkCallback(const void *requestArg);
 int UsbStopIo(void);
 int UsbStartIo(void);
 int UsbIoThread(void *data);
 void AcmWriteBufFree(struct AcmRawDevice *acm);
-void AcmCtrlReqCallback(void *requestArg);
+void AcmCtrlReqCallback(const void *requestArg);
 int32_t CheckRawSdkIfInit001(void);
 int32_t CheckRawSdkIfExit001(void);
 int32_t CheckRawSdkIfInit002(void);

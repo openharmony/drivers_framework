@@ -105,18 +105,18 @@ int UsbStopIo(void)
 {
     int ret;
     g_stopIoThreadFlag = true;
-    HDF_LOGD("%{public}s:%{public}d", __func__, __LINE__);
+    HDF_LOGD("%s:%d", __func__, __LINE__);
     OsalMDelay(TEST_SLEEP_TIME);
     ret = OsalThreadDestroy(&g_acm->ioThread);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s:%{public}d OsalThreadDestroy faile, ret=%{public}d ", __func__, __LINE__, ret);
+        HDF_LOGE("%s:%d OsalThreadDestroy faile, ret=%d ", __func__, __LINE__, ret);
         return ret;
     }
     g_stopIoThreadFlag = false;
     return HDF_SUCCESS;
 }
 
-void AcmWriteBulkCallback(void *requestArg)
+void AcmWriteBulkCallback(const void *requestArg)
 {
     struct UsbRawRequest *req = (struct UsbRawRequest *)requestArg;
 
@@ -139,13 +139,13 @@ void AcmWriteBulkCallback(void *requestArg)
     wb->use = 0;
 }
 
-void AcmWriteIsoCallback(void *requestArg)
+void AcmWriteIsoCallback(const void *requestArg)
 {
     struct UsbRawRequest *req = (struct UsbRawRequest *)requestArg;
     printf("%s:%d status:%d\n", __func__, __LINE__, req->status);
 }
 
-void AcmReadBulkCallback(void *requestArg)
+void AcmReadBulkCallback(const void *requestArg)
 {
     struct UsbRawRequest *req = (struct UsbRawRequest *)requestArg;
 
@@ -164,10 +164,11 @@ void AcmReadBulkCallback(void *requestArg)
 
     switch (req->status) {
         case USB_REQUEST_COMPLETED:
-            HDF_LOGD("Bulk status: %{public}d+size:%{public}u\n", req->status, size);
+            HDF_LOGD("Bulk status: %d+size:%u\n", req->status, size);
             if (size) {
                 uint8_t *data = req->buffer;
                 printf("rcv:%s\n", (char *)data);
+
             }
             break;
         case USB_REQUEST_CANCELLED:
@@ -182,7 +183,7 @@ void AcmReadBulkCallback(void *requestArg)
         printf("%s - UsbRawSubmitRequest failed", __func__);
     }
 }
-void AcmNotifyReqCallback(void *requestArg)
+void AcmNotifyReqCallback(const void *requestArg)
 {
     struct UsbRawRequest *req = (struct UsbRawRequest *)requestArg;
 
@@ -243,7 +244,7 @@ void AcmWriteBufFree(struct AcmRawDevice *acm)
     return;
 }
 
-void AcmCtrlReqCallback(void *requestArg)
+void AcmCtrlReqCallback(const void *requestArg)
 {
     printf("%s:%d entry!", __func__, __LINE__);
 }

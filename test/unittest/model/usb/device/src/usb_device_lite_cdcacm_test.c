@@ -729,14 +729,14 @@ static int32_t FreeNotifyRequest(struct AcmDevice *acmDevice)
 
     /* allocate notification request */
     if (acmDevice->notifyReq == NULL) {
-        HDF_LOGE("%{public}s: notifyReq is NULL", __func__);
+        HDF_LOGE("%s: notifyReq is NULL", __func__);
         return -1;
     }
     acmDevice->notifyReq->complete = NULL;
     acmDevice->notifyReq->context = NULL;
     ret = UsbFnFreeRequest(acmDevice->notifyReq);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%{public}s: free notifyReq failed", __func__);
+        HDF_LOGE("%s: free notifyReq failed", __func__);
         return -1;
     }
     return HDF_SUCCESS;
@@ -760,7 +760,7 @@ static int FreeCtrlRequests(struct AcmDevice *acmDevice)
 void ReleaseAcmDevice(struct AcmDevice *acm)
 {
     if (acm == NULL) {
-        HDF_LOGE("%{public}s: acm is NULL", __func__);
+        HDF_LOGE("%s: acm is NULL", __func__);
         return;
     }
     (void)FreeNotifyRequest(acm);
@@ -812,13 +812,13 @@ int remove_usb_device(void)
     struct UsbFnAdapterOps *fnOps = UsbFnAdapterGetOps();
     ret = OsalThreadDestroy(&devMgr->thread);
     if (HDF_SUCCESS != ret) {
-        HDF_LOGE("%{public}s:%{public}d OsalThreadDestroy failed, ret=%{public}d",
+        HDF_LOGE("%s:%d OsalThreadDestroy failed, ret=%d",
             __func__, __LINE__, ret);
         return ret;
     }
     ret = fnOps->delDevice(devMgr->name, devMgr->udcName, devMgr->des);
     if (ret) {
-        HDF_LOGE("%{public}s:%{public}d UsbFnMgrDeviceRemove failed", __func__, __LINE__);
+        HDF_LOGE("%s:%d UsbFnMgrDeviceRemove failed", __func__, __LINE__);
         return ret;
     }
     DListRemove(&device->object.entry);
