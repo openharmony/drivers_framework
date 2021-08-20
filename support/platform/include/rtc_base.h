@@ -44,10 +44,10 @@ extern "C" {
 #define IS_INVALID_YEAR(year)    ((year) < RTC_BEGIN_YEAR)
 #define IS_INVALID_MONTH(m)      (((m) < RTC_JANUARY) || ((m) > RTC_MAX_MONTH))
 #define IS_INVALID_WEEKDAY(wd)   (((wd) < 1) || ((wd) > RTC_MAX_WEEKDAY))
-#define IS_INVALID_HOUR(hour)    (((hour) < 0) || ((hour) >= RTC_MAX_HOUR))
-#define IS_INVALID_MIN(min)      (((min) < 0) || ((min) >= RTC_MAX_MINUTE))
-#define IS_INVALID_SECOND(s)     (((s) < 0) || ((s) >= RTC_MAX_SECOND))
-#define IS_INVALID_MS(ms)        (((ms) < 0) || ((ms) >= RTC_MAX_MS))
+#define IS_INVALID_HOUR(hour)    ((hour) >= RTC_MAX_HOUR)
+#define IS_INVALID_MIN(min)      ((min) >= RTC_MAX_MINUTE)
+#define IS_INVALID_SECOND(s)     ((s) >= RTC_MAX_SECOND)
+#define IS_INVALID_MS(ms)        ((ms) >= RTC_MAX_MS)
 
 enum RtcMonth {
     RTC_JANUARY = 1,
