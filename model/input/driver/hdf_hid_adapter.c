@@ -13,6 +13,12 @@
 #include "event_hub.h"
 #include "hdf_input_device_manager.h"
 #include "hdf_hid_adapter.h"
+#define MEMCPY_CHECK_RETURN(ret) do { \
+    if ((ret) != 0) { \
+        HDF_LOGE("%s: memcpy failed, line %d", __func__, __LINE__); \
+        return; \
+    } \
+} while (0)
 
 InputDevice *cachedHid[MAX_INPUT_DEV_NUM];
 HidInfo *g_cachedInfo[MAX_INPUT_DEV_NUM];
@@ -89,11 +95,52 @@ static void FreeCachedInfo(void)
     }
 }
 
+static void AbilitySet(InputDevice *inputDev, const HidInfo *info)
+{
+    int32_t ret;
+    uint32_t len = sizeof(unsigned long);
+    ret = memcpy_s(inputDev->abilitySet.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT),
+        info->devProp, len * BITS_TO_LONG(INPUT_PROP_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.eventType, len * BITS_TO_LONG(EV_CNT),
+        info->eventType, len * BITS_TO_LONG(EV_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.absCode, len * BITS_TO_LONG(ABS_CNT),
+        info->absCode, len * BITS_TO_LONG(ABS_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.relCode, len * BITS_TO_LONG(REL_CNT),
+        info->relCode, len * BITS_TO_LONG(REL_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.keyCode, len * BITS_TO_LONG(KEY_CNT),
+        info->keyCode, len * BITS_TO_LONG(KEY_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.ledCode, len * BITS_TO_LONG(LED_CNT),
+        info->ledCode, len * BITS_TO_LONG(LED_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.miscCode, len * BITS_TO_LONG(MSC_CNT),
+        info->miscCode, len * BITS_TO_LONG(MSC_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.soundCode, len * BITS_TO_LONG(SND_CNT),
+        info->soundCode, len * BITS_TO_LONG(SND_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.forceCode, len * BITS_TO_LONG(FF_CNT),
+        info->forceCode, len * BITS_TO_LONG(FF_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    ret = memcpy_s(inputDev->abilitySet.switchCode, len * BITS_TO_LONG(SW_CNT),
+        info->switchCode, len * BITS_TO_LONG(SW_CNT));
+    MEMCPY_CHECK_RETURN(ret);
+    
+    inputDev->attrSet.id.busType = info->bustype;
+    inputDev->attrSet.id.vendor = info->vendor;
+    inputDev->attrSet.id.product = info->product;
+    inputDev->attrSet.id.version = info->version;
+}
+
 static void SetInputDevAbility(InputDevice *inputDev)
 {
     HidInfo *info = NULL;
     int32_t id = 0;
-    uint32_t len;
+    
     while (id < MAX_INPUT_DEV_NUM) {
         if(g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
             info = g_cachedInfo[id];
@@ -101,37 +148,12 @@ static void SetInputDevAbility(InputDevice *inputDev)
         }
         id++;
     }
-    if (id == MAX_INPUT_DEV_NUM) {
+    if (id == MAX_INPUT_DEV_NUM || info == NULL) {
         HDF_LOGE("%s: match cached info failed", __func__);
         return;
     }
-    len = sizeof(unsigned long);
-    memcpy_s(inputDev->abilitySet.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT),
-        info->devProp, len * BITS_TO_LONG(INPUT_PROP_CNT));
-    memcpy_s(inputDev->abilitySet.eventType, len * BITS_TO_LONG(EV_CNT),
-        info->eventType, len * BITS_TO_LONG(EV_CNT));
-    memcpy_s(inputDev->abilitySet.absCode, len * BITS_TO_LONG(ABS_CNT),
-        info->absCode, len * BITS_TO_LONG(ABS_CNT));
-    memcpy_s(inputDev->abilitySet.relCode, len * BITS_TO_LONG(REL_CNT),
-        info->relCode, len * BITS_TO_LONG(REL_CNT));
-    memcpy_s(inputDev->abilitySet.keyCode, len * BITS_TO_LONG(KEY_CNT),
-        info->keyCode, len * BITS_TO_LONG(KEY_CNT));
-    memcpy_s(inputDev->abilitySet.ledCode, len * BITS_TO_LONG(LED_CNT),
-        info->ledCode, len * BITS_TO_LONG(LED_CNT));
-    memcpy_s(inputDev->abilitySet.miscCode, len * BITS_TO_LONG(MSC_CNT),
-        info->miscCode, len * BITS_TO_LONG(MSC_CNT));
-    memcpy_s(inputDev->abilitySet.soundCode, len * BITS_TO_LONG(SND_CNT),
-        info->soundCode, len * BITS_TO_LONG(SND_CNT));
-    memcpy_s(inputDev->abilitySet.forceCode, len * BITS_TO_LONG(FF_CNT),
-        info->forceCode, len * BITS_TO_LONG(FF_CNT));
-    memcpy_s(inputDev->abilitySet.switchCode, len * BITS_TO_LONG(SW_CNT),
-        info->switchCode, len * BITS_TO_LONG(SW_CNT));
-
-    inputDev->attrSet.id.busType = info->bustype;
-    inputDev->attrSet.id.vendor = info->vendor;
-    inputDev->attrSet.id.product = info->product;
-    inputDev->attrSet.id.version = info->version;
-
+    
+    AbilitySet(inputDev, info);
     FreeCachedInfo();
 }
 

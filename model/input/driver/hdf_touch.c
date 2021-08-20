@@ -393,7 +393,7 @@ static int32_t TouchGetDevType(TouchDriver *driver, struct HdfSBuf *reply)
 
 static int32_t TouchSetPowerStatus(TouchDriver *driver, struct HdfSBuf *data)
 {
-    uint32_t pwrStatus;
+    uint32_t pwrStatus = 0;
     bool ret = HdfSbufReadUint32(data, &pwrStatus);
     if (!ret) {
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
@@ -455,8 +455,12 @@ static int32_t TouchGetDeviceAttr(TouchDriver *driver, struct HdfSBuf *reply)
     }
 
     HDF_LOGE("%s: enter", __func__);
-    char *tempStr = "main_touch";
-    (void)strncpy_s(driver->inputDev->attrSet.devName, DEV_NAME_LEN, tempStr, strlen(tempStr));
+    const char *tempStr = "main_touch";
+    uint32_t ret = strncpy_s(driver->inputDev->attrSet.devName, DEV_NAME_LEN, tempStr, strlen(tempStr));
+    if (ret > 0) {
+        HDF_LOGE("%s: string copy failed", __func__);
+        return HDF_FAILURE;
+    }
 
     if (!HdfSbufWriteBuffer(reply, &driver->inputDev->attrSet, sizeof(DevAttr))) {
         HDF_LOGE("%s: sbuf write dev attr failed", __func__);
@@ -483,7 +487,7 @@ static int32_t TouchGetDeviceAbility(TouchDriver *driver, struct HdfSBuf *reply)
 
 static int32_t TouchSetGestureMode(TouchDriver *driver, struct HdfSBuf *data)
 {
-    uint32_t gestureMode;
+    uint32_t gestureMode = 0;
     bool ret = HdfSbufReadUint32(data, &gestureMode);
     if (!ret) {
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
