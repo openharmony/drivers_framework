@@ -44,10 +44,10 @@
 #define SENSOR_DATA_WIDTH_8_BIT         8 // 8 bit
 #define SENSOR_CONVERT_UNIT             1000
 #define SENSOR_1K_UNIT                  1024
-#define SENSOR_SPI_MAX_SPEED             115200
+#define SENSOR_SPI_MAX_SPEED            115200
 #define SENSOR_SECOND_CONVERT_NANOSECOND    (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT)
 
-#define SENSOR_TIMER_MIN_TIME    20
+#define SENSOR_TIMER_MIN_TIME           20
 
 enum SensorBusType {
     SENSOR_BUS_I2C = 0,
@@ -74,16 +74,6 @@ struct SensorBusCfg {
         struct SensorI2cCfg i2cCfg;
         struct SensorSpiCfg spiCfg;
     };
-};
-
-enum SensorThreadStatus {
-    SENSOR_THREAD_NONE     = 0,
-    SENSOR_THREAD_START    = 1,
-    SENSOR_THREAD_RUNNING  = 2,
-    SENSOR_THREAD_STOPPING = 3,
-    SENSOR_THREAD_STOPPED  = 4,
-    SENSOR_THREAD_DESTROY  = 5,
-    SENSOR_THREAD_STATUS_BUT,
 };
 
 enum SENSORConfigValueIndex {
