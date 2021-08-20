@@ -91,13 +91,13 @@ static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
     struct PanelData *panel = NULL;
 
     disp = GetDispManager();
-    if (disp && disp->panelManager && devId < disp->panelManager->panelNum) {
+    if ((disp != NULL) && (disp->panelManager != NULL) && (devId < disp->panelManager->panelNum)) {
         panel = disp->panelManager->panel[devId];
         info = panel->info;
-        if (info == NULL) {
+    }
+    if (info == NULL) {
             HDF_LOGE("%s:get info failed", __func__);
             return HDF_FAILURE;
-        }
     }
     if (level > info->blk.maxLevel) {
         level = info->blk.maxLevel;
@@ -120,7 +120,7 @@ static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
         return HDF_SUCCESS;
     }
     ops = &disp->dispCtrl->ops;
-    if (ops->setBacklight) {
+    if (ops->setBacklight != NULL) {
         ret = ops->setBacklight(disp->dispCtrl, devId, level);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:setBacklight failed", __func__);
@@ -198,7 +198,7 @@ static int32_t SetDispPower(uint32_t devId, uint32_t powerStatus)
             }
             break;
         case POWER_STATUS_OFF:
-            if (ops->off) {
+            if (ops->off != NULL) {
                 ret = ops->off(disp->dispCtrl, devId);
             }
             if (ret == HDF_SUCCESS) {
@@ -425,7 +425,7 @@ static void EsdWorkHandler(void *arg)
     struct DispManager *disp = NULL;
 
     disp = GetDispManager();
-    if ((disp->dispCtrl == NULL) || (devId >= disp->panelManager->panelNum)) {
+    if ((disp == NULL) || (disp->dispCtrl == NULL) || (devId >= disp->panelManager->panelNum)) {
         HDF_LOGE("%s: dispCtrl is null or panel is null", __func__);
         return;
     }
