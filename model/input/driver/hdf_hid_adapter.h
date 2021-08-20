@@ -9,6 +9,8 @@
 #ifndef HDF_HID_ADAPTER_H
 #define HDF_HID_ADAPTER_H
 
+#include "hdf_input_device_manager.h"
+
 #ifdef DIV_ROUND_UP
 #undef DIV_ROUND_UP
 #endif

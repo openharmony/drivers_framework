@@ -6,14 +6,16 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <securec.h>
-#include "hdf_device_desc.h"
-#include "osal_mem.h"
-#include "hdf_log.h"
-#include "event_hub.h"
-#include "hdf_input_device_manager.h"
 #include "hdf_hid_adapter.h"
+#include <securec.h>
+#include "event_hub.h"
+#include "hdf_device_desc.h"
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "osal_timer.h"
 
+#define TIMER_INTERVAL 500
+#define REPEAT_VALUE   2
 #define MEMCPY_CHECK_RETURN(ret) do { \
     if ((ret) != 0) { \
         HDF_LOGE("%s: memcpy failed, line %d", __func__, __LINE__); \
@@ -23,6 +25,9 @@
 
 InputDevice *cachedHid[MAX_INPUT_DEV_NUM];
 HidInfo *g_cachedInfo[MAX_INPUT_DEV_NUM];
+
+uint32_t g_kbdcode = 0;
+OsalTimer g_timer;
 
 static bool HaveHidCache(void)
 {
@@ -109,7 +114,7 @@ static void SetInputDevAbility(InputDevice *inputDev)
         }
         id++;
     }
-    if (id == MAX_INPUT_DEV_NUM) {
+    if (id == MAX_INPUT_DEV_NUM || info == NULL) {
         HDF_LOGE("%s: match cached info failed", __func__);
         return;
     }
@@ -175,7 +180,6 @@ static void DoRegisterInputDev(InputDevice* inputDev)
     ret = RegisterInputDevice(inputDev);
     if (ret != HDF_SUCCESS) {
         OsalMemFree(inputDev);
-        inputDev = NULL;
         return;
     }
 }
@@ -225,12 +229,49 @@ void HidUnregisterHdfInputDev(const void *inputDev)
         HDF_LOGE("%s: inputDev is null", __func__);
     }
     UnregisterInputDevice((InputDevice *)inputDev);
-    inputDev = NULL;
+}
+
+static void TimerFunc(uintptr_t arg)
+{
+    InputDevice *device = (InputDevice *)arg;
+    PushOnePackage(device, EV_KEY, g_kbdcode, REPEAT_VALUE);
+    PushOnePackage(device, 0, 0, SYN_CONFIG);
+}
+
+static void RepateEvent(const InputDevice *device)
+{
+    int32_t ret;
+    static int32_t flag = 0;
+    if (flag == 1) {
+        (void)OsalTimerDelete(&g_timer);
+    }
+
+    ret = OsalTimerCreate(&g_timer, TIMER_INTERVAL, TimerFunc, (uintptr_t)device);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: create timer failed, ret = %d", __func__, ret);
+        return;
+    }
+    ret = OsalTimerStartLoop(&g_timer);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: start timer failed, ret = %d", __func__, ret);
+        return;
+    }
+    flag = 1;
 }
 
 void HidReportEvent(const void *inputDev, uint32_t type, uint32_t code, int32_t value)
 {
-    PushOnePackage((InputDevice *)inputDev, type, code, value);
+    InputDevice *device = (InputDevice *)inputDev;
+    PushOnePackage(device, type, code, value);
+    if (type == EV_KEY && KEY_RESERVED < code && code < KEY_MAX && value == 0 && code == g_kbdcode) {
+        OsalTimerDelete(&g_timer);
+        g_kbdcode = 0;
+    }
+    if (type == EV_KEY && KEY_RESERVED < code && code < KEY_MAX && value == 1 &&
+        device->devType == INDEV_TYPE_KEYBOARD) {
+        g_kbdcode = code;
+        RepateEvent(device);
+    }
 }
 
 static int32_t HdfHIDDriverInit(struct HdfDeviceObject *device)
