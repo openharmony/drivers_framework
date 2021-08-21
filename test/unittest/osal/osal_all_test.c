@@ -546,7 +546,7 @@ void OsaThreadTest1(void)
     int32_t ret;
 
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
-    threadCfg.name = "hdf_test";
+    threadCfg.name = "hdf_test0";
     threadCfg.priority = OSAL_THREAD_PRI_HIGH;
     threadCfg.stackSize = HDF_TEST_STACK_SIZE;
     ret = OsalThreadCreate(&thread, (OsalThreadEntry)ThreadTest, (void *)&para);
@@ -567,7 +567,7 @@ void OsaThreadTest(void)
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_SPIN_CREATE);
 
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
-    threadCfg.name = "hdf_test";
+    threadCfg.name = "hdf_test1";
     threadCfg.priority = OSAL_THREAD_PRI_HIGH;
     threadCfg.stackSize = HDF_TEST_STACK_SIZE;
     ret = OsalThreadCreate(&thread1, (OsalThreadEntry)ThreadTest1, (void *)&g_test1Para);
@@ -578,7 +578,7 @@ void OsaThreadTest(void)
     OsalMSleep(HDF_THREAD_TEST_SLEEP_S);
 
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
-    threadCfg.name = "hdf_test";
+    threadCfg.name = "hdf_test2";
     threadCfg.priority = OSAL_THREAD_PRI_DEFAULT;
     threadCfg.stackSize = HDF_TEST_STACK_SIZE;
     ret = OsalThreadCreate(&thread2, (OsalThreadEntry)ThreadTest2, (void *)&g_test2Para);

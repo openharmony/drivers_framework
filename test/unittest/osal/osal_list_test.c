@@ -274,6 +274,8 @@ static int ThreadTestPostSem(void *arg)
         cnt++;
         index++;
     }
+    OsalTestWorkEnd();
+    OsalSemPost(&g_hdfSem);
     HDF_LOGE("%s exit", __func__);
     return 0;
 }
@@ -339,14 +341,14 @@ static void OsalTestSem(void)
 
     UT_TEST_CHECK_RET(OsalSemInit(&g_hdfSem, 0) != HDF_SUCCESS, OSAL_SEM_CREATE);
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
-    threadCfg.name = "hdf_test";
+    threadCfg.name = "hdf_test_Post";
     threadCfg.priority = OSAL_THREAD_PRI_LOW;
     threadCfg.stackSize = HDF_TEST_STACK_SIZE;
     ret = OsalThreadCreate(&g_threadPostSem, (OsalThreadEntry)ThreadTestPostSem, (void *)&g_threadPara);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_THREAD_CREATE);
 
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
-    threadCfg.name = "hdf_test";
+    threadCfg.name = "hdf_test_Wait";
     threadCfg.priority = OSAL_THREAD_PRI_DEFAULT;
     threadCfg.stackSize = HDF_TEST_STACK_SIZE;
     ret = OsalThreadCreate(&g_threadWaitSem, (OsalThreadEntry)ThreadTestWaitSem, (void *)&g_threadPara);
