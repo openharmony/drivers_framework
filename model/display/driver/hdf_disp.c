@@ -15,24 +15,29 @@
 #define OFFSET_TWO_BYTE    16
 static struct DispManager *g_dispManager = NULL;
 static struct PanelManager g_panelManager;
-int32_t RegisterPanel(struct PanelData *data)
+int32_t RegisterPanel(struct PanelData *panel)
 {
     int32_t panelNum;
 
-    if (data == NULL) {
+    if (panel == NULL) {
         HDF_LOGE("%s: panel data is null", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    if (data->info == NULL) {
+    if (panel->info == NULL) {
         HDF_LOGE("%s panel info is null", __func__);
         return HDF_FAILURE;
     }
+    if ((panel->on == NULL) || (panel->off == NULL)) {
+        HDF_LOGE("%s on or off is null", __func__);
+        return HDF_FAILURE;
+    }
+    panel->powerStatus = POWER_STATUS_OFF;
     panelNum = g_panelManager.panelNum;
     if (panelNum >= PANEL_MAX) {
         HDF_LOGE("%s registered panel up PANEL_MAX", __func__);
         return HDF_FAILURE;
     }
-    g_panelManager.panel[panelNum] = data;
+    g_panelManager.panel[panelNum] = panel;
     g_panelManager.panelNum++;
     HDF_LOGI("%s: register success", __func__);
     return HDF_SUCCESS;
@@ -97,47 +102,19 @@ static int32_t DispOff(uint32_t devId)
 
 static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
 {
-    int32_t ret = HDF_FAILURE;
     struct DispManager *disp = NULL;
-    struct PanelInfo *info = NULL;
     struct PanelData *panel = NULL;
 
     disp = GetDispManager();
     if (disp && disp->panelManager && devId < disp->panelManager->panelNum) {
         panel = disp->panelManager->panel[devId];
-        info = panel->info;
-        if (info == NULL) {
-            HDF_LOGE("%s:get info failed", __func__);
-            return HDF_FAILURE;
-        }
     }
-    if (level > info->blk.maxLevel) {
-        level = info->blk.maxLevel;
-    } else if (level < info->blk.minLevel && level != 0) {
-        level = info->blk.minLevel;
-    }
-    OsalMutexLock(&disp->dispMutex);
-    if (panel->status.powerStatus != POWER_STATUS_ON) {
-        HDF_LOGE("%s:devId[%d] not in power on mode", __func__, devId);
-        OsalMutexUnlock(&disp->dispMutex);
+    if (UpdateBrightness(panel->blDev, level) != HDF_SUCCESS) {
+        HDF_LOGE("%s:UpdateBrightness failed", __func__);
         return HDF_FAILURE;
     }
-    if (panel->status.currLevel == level) {
-        HDF_LOGI("%s:devId[%d] currLevel equals : %d", __func__, devId, level);
-        OsalMutexUnlock(&disp->dispMutex);
-        return HDF_SUCCESS;
-    }
-    if (panel->setBacklight) {
-        ret = panel->setBacklight(panel, level);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s:setBacklight failed", __func__);
-            OsalMutexUnlock(&disp->dispMutex);
-            return HDF_FAILURE;
-        }
-    }
-    OsalMutexUnlock(&disp->dispMutex);
     HDF_LOGI("%s:level = %u", __func__, level);
-    return ret;
+    return HDF_SUCCESS;
 }
 
 static int32_t GetDispInfo(uint32_t devId, struct DispInfo *info)
@@ -193,25 +170,25 @@ static int32_t SetDispPower(uint32_t devId, uint32_t powerStatus)
     }
     panel = disp->panelManager->panel[devId];
     OsalMutexLock(&disp->dispMutex);
-    if (panel->status.powerStatus == powerStatus) {
+    if (panel->powerStatus == powerStatus) {
         OsalMutexUnlock(&disp->dispMutex);
         HDF_LOGE("%s:devId[%d] already in mode = %d", __func__, devId, powerStatus);
         return HDF_SUCCESS;
     }
     switch (powerStatus) {
         case POWER_STATUS_ON:
-            if (panel->on) {
-                ret = panel->on(panel);
-            }
+            ret = panel->on(panel);
             if (ret == HDF_SUCCESS) {
+                panel->powerStatus = POWER_STATUS_ON;
+                ret = UpdateBacklightState(panel->blDev, FB_POWER_ON);
                 EsdCheckStartUp(disp->esd, devId);
             }
             break;
         case POWER_STATUS_OFF:
-            if (panel->off) {
-                ret = panel->off(panel);
-            }
+            ret = panel->off(panel);
             if (ret == HDF_SUCCESS) {
+                panel->powerStatus = POWER_STATUS_OFF;
+                ret = UpdateBacklightState(panel->blDev, FB_POWER_OFF);
                 EsdCheckEnd(disp->esd, devId);
             }
             break;
@@ -263,7 +240,7 @@ static int32_t GetPowerStatus(struct HdfDeviceObject *device, struct HdfSBuf *re
     }
     OsalMutexLock(&disp->dispMutex);
     panel = disp->panelManager->panel[devId];
-    powerStatus = panel->status.powerStatus;
+    powerStatus = panel->powerStatus;
     OsalMutexUnlock(&disp->dispMutex);
     if (!HdfSbufWriteUint32(rspData, powerStatus)) {
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
@@ -312,10 +289,10 @@ static int32_t GetBacklight(struct HdfDeviceObject *device, struct HdfSBuf *reqD
         HDF_LOGE("%s: get panel failed", __func__);
         return HDF_FAILURE;
     }
-    OsalMutexLock(&disp->dispMutex);
-    panel = disp->panelManager->panel[devId];
-    currLevel = panel->status.currLevel;
-    OsalMutexUnlock(&disp->dispMutex);
+    if (GetCurrBrightness(panel->blDev, &currLevel) != HDF_SUCCESS) {
+        HDF_LOGE("%s: GetCurrBrightness failed", __func__);
+        return HDF_FAILURE;
+    }
     if (!HdfSbufWriteUint32(rspData, currLevel)) {
         HDF_LOGE("%s: HdfSbufWriteUint32 failed", __func__);
         return HDF_FAILURE;

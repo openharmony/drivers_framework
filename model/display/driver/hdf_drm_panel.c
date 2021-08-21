@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
@@ -139,18 +138,22 @@ static ssize_t BacklightStore(struct device *dev,
 {
     int32_t ret;
     unsigned long level;
-    struct PanelData *panelData = NULL;
+    struct PanelData *panel = NULL;
     struct HdfDrmPanel *hdfDrmPanel = dev_get_drvdata(dev);
 
     ret = kstrtoul(buf, 0, &level);
     if (ret != 0) {
         return ret;
     }
-    HDF_LOGI("%s line = %d\n", __func__, __LINE__);
-    panelData = hdfDrmPanel->manager->panelManager->panel[hdfDrmPanel->index];
+    HDF_LOGI("%s enter", __func__);
     OsalMutexLock(&hdfDrmPanel->manager->dispMutex);
-    panelData->setBacklight(panelData, level);
+    panel = hdfDrmPanel->manager->panelManager->panel[hdfDrmPanel->index];
     OsalMutexUnlock(&hdfDrmPanel->manager->dispMutex);
+    ret = UpdateBrightness(panel->blDev, level);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s UpdateBrightness fail", __func__);
+    }
+
     return count;
 }
 static DEVICE_ATTR(backlight, S_IWUSR, NULL, BacklightStore);
@@ -203,7 +206,6 @@ int32_t HdfDrmPanelEntryInit(struct HdfDeviceObject *object)
 {
     uint32_t ret;
     uint32_t panelNum;
-    struct PanelData *panel = NULL;
     struct HdfDrmPanel *hdfDrmPanel = NULL;
     struct mipi_dsi_device *dsiDev = NULL;
     struct DispManager *manager = NULL;
@@ -239,10 +241,7 @@ int32_t HdfDrmPanelEntryInit(struct HdfDeviceObject *object)
                 HDF_LOGE("%s line = %d device_create_file fail", __func__, __LINE__);
             }
         }
-        panel = manager->panelManager->panel[i];
-        if (panel->info->blk.type == BLK_PWM) {
-            panel->setBacklight(panel, panel->info->blk.defLevel);
-        }
+        HDF_LOGI("%s panel[%d] registered success", i, __func__);
     }
     HDF_LOGI("%s success", __func__);
     return HDF_SUCCESS;

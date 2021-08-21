@@ -8,7 +8,9 @@
 
 #ifndef HDF_DISP_H
 #define HDF_DISP_H
+
 #include "hdf_base.h"
+#include "hdf_bl.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
 #include "hdf_sbuf.h"
@@ -88,11 +90,6 @@ struct PanelInfo {
     struct PwmCfg pwm;
 };
 
-struct PanelStatus {
-    enum PowerStatus powerStatus;
-    uint32_t currLevel;
-};
-
 struct PanelData;
 struct PanelEsd {
     bool support;
@@ -109,10 +106,10 @@ struct PanelData {
     int32_t (*init)(struct PanelData *panel);
     int32_t (*on)(struct PanelData *panel);
     int32_t (*off)(struct PanelData *panel);
-    int32_t (*setBacklight)(struct PanelData *panel, uint32_t level);
     struct PanelInfo *info;
-    struct PanelStatus status;
+    enum PowerStatus powerStatus;
     struct PanelEsd *esd;
+    struct BacklightDev *blDev;
     void *priv;
 };
 
