@@ -215,3 +215,11 @@ void OsalTestWork(int flag)
     OsalTestFile(flag);
 }
 
+void OsalTestWorkEnd(void)
+{
+    HdfCancelWorkSync(&g_work);
+    HdfWorkDestroy(&g_work);
+    HdfCancelDelayedWorkSync(&g_delayWork);
+    HdfDelayedWorkDestroy(&g_delayWork);
+    HdfWorkQueueDestroy(&g_workQue);
+}

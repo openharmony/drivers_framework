@@ -15,7 +15,7 @@ extern "C" {
 
 void OsalTestWork(int flag);
 void TestAddRoute(int cnt);
-
+void OsalTestWorkEnd(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
