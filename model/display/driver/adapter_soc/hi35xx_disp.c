@@ -231,34 +231,6 @@ static int32_t MipiDsiInit(struct PanelInfo *info)
     return ret;
 }
 
-static int32_t PwmInit(struct PanelInfo *info)
-{
-    int32_t ret;
-
-    /* pwm pin config */
-    PwmPinMuxCfg(info->pwm.dev);
-    /* pwm config */
-    DevHandle pwmHandle = PwmOpen(info->pwm.dev);
-    if (pwmHandle == NULL) {
-        HDF_LOGE("%s: PwmOpen failed", __func__);
-        return HDF_FAILURE;
-    }
-
-    struct PwmConfig config;
-    (void)memset_s(&config, sizeof(struct PwmConfig), 0, sizeof(struct PwmConfig));
-    config.duty = 1;
-    config.period = info->pwm.period;
-    config.status = 0;
-    ret = PwmSetConfig(pwmHandle, &config);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmSetConfig err, ret %d", __func__, ret);
-        PwmClose(pwmHandle);
-        return HDF_FAILURE;
-    }
-    PwmClose(pwmHandle);
-    return HDF_SUCCESS;
-}
-
 static int32_t GetLcdIntfType(enum LcdIntfType type, uint32_t *out)
 {
     int32_t ret = HDF_SUCCESS;
@@ -311,11 +283,7 @@ static int32_t Hi35xxHardWareInit(void)
             return HDF_FAILURE;
         }
         if (info->blk.type == BLK_PWM) {
-            ret = PwmInit(info);
-            if (ret) {
-                HDF_LOGE("%s:PwmInit failed", __func__);
-                return HDF_FAILURE;
-            }
+            PwmPinMuxCfg(info->pwm.dev);
         }
         /* lcd pin mux config */
         LcdPinMuxCfg(info->intfType);

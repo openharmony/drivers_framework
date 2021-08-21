@@ -195,30 +195,6 @@ static int32_t Ili9881cBoeInit(struct PanelData *panel)
 #define MAX_LEVEL                 255
 #define DEFAULT_LEVEL             127
 
-static int32_t Ili9881cBoeSetBl(struct PanelData *panel, uint32_t level)
-{
-    int32_t ret;
-    uint32_t duty;
-    static uint32_t lastLevel = 0;
-    struct Ili9881cBoeDev *ili9881cBoeDev = NULL;
-
-    ili9881cBoeDev = ToIli9881cBoeDev(panel);
-    duty = (level * PWM_MAX_PERIOD) / MAX_LEVEL;
-    ret = PwmSetDuty(ili9881cBoeDev->blHandle, duty);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmSetDutyCycle failed, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-    if ((level != 0) && (lastLevel == 0)) {
-        ret = PwmEnable(ili9881cBoeDev->blHandle);
-    } else if ((level == 0) && (lastLevel != 0)) {
-        ret = PwmDisable(ili9881cBoeDev->blHandle);
-    }
-    lastLevel = level;
-    panel->status.currLevel = level;
-    return ret;
-}
-
 static struct PanelInfo g_panelInfo = {
     .width = 800,           /* width */
     .height = 1280,         /* height */
@@ -260,33 +236,7 @@ static void Ili9881cBoeResInit(struct Ili9881cBoeDev *ili9881cBoeDev)
     ili9881cBoeDev->panel.init = Ili9881cBoeInit;
     ili9881cBoeDev->panel.on = Ili9881cBoeOn;
     ili9881cBoeDev->panel.off = Ili9881cBoeOff;
-    ili9881cBoeDev->panel.setBacklight = Ili9881cBoeSetBl;
     ili9881cBoeDev->panel.priv = ili9881cBoeDev->dsiDev;
-}
-
-static int32_t Ili9881cBoeBlInit(struct Ili9881cBoeDev *ili9881cBoeDev)
-{
-    int32_t ret;
-    struct PwmConfig config;
-
-    ili9881cBoeDev->blHandle = PwmOpen(BLK_PWM_INDEX);
-    if (ili9881cBoeDev->blHandle == NULL) {
-        HDF_LOGE("%s: PwmOpen failed", __func__);
-    }
-    ret = PwmGetConfig(ili9881cBoeDev->blHandle, &config);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmGetConfig fail, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-    config.duty = 1;
-    config.period = PWM_MAX_PERIOD;
-    config.status = 1;
-    ret = PwmSetConfig(ili9881cBoeDev->blHandle, &config);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmSetConfig fail, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-    return HDF_SUCCESS;
 }
 
 int32_t Ili9881cBoeEntryInit(struct HdfDeviceObject *object)
@@ -301,12 +251,12 @@ int32_t Ili9881cBoeEntryInit(struct HdfDeviceObject *object)
     }
     panelNode = of_find_compatible_node(NULL, NULL, "sprd,generic-mipi-panel");
     if (panelNode == NULL) {
-        HDF_LOGE("%s line = %d", __func__, __LINE__);
+        HDF_LOGE("%s of_find_compatible_node fail", __func__);
         goto FAIL;
     }
     ili9881cBoeDev->dsiDev = of_find_mipi_dsi_device_by_node(panelNode);
     if (ili9881cBoeDev->dsiDev == NULL) {
-        HDF_LOGE("%s line = %d", __func__, __LINE__);
+        HDF_LOGE("%s of_find_mipi_dsi_device_by_node fail", __func__);
         goto FAIL;
     }
     ili9881cBoeDev->supply = devm_regulator_get(&ili9881cBoeDev->dsiDev->dev, "power");
@@ -315,8 +265,9 @@ int32_t Ili9881cBoeEntryInit(struct HdfDeviceObject *object)
         goto FAIL;
     }
     Ili9881cBoeResInit(ili9881cBoeDev);
-    if (Ili9881cBoeBlInit(ili9881cBoeDev) != HDF_SUCCESS) {
-        HDF_LOGE("%s Ili9881cBoeBlInit fail", __func__);
+    ili9881cBoeDev->panel.blDev = GetBacklightDev("hdf_pwm");
+    if (ili9881cBoeDev->panel.blDev == NULL) {
+        HDF_LOGE("%s GetBacklightDev fail", __func__);
         goto FAIL;
     }
     ili9881cBoeDev->panel.object = object;

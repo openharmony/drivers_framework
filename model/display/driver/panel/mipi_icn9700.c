@@ -94,7 +94,6 @@ struct DsiCmdDesc g_offCmd[] = {
 struct Icn9700Dev {
     struct PanelData panel;
     DevHandle mipiHandle;
-    DevHandle pwmHandle;
     uint16_t reset_gpio;
     uint16_t reset_delay;
 };
@@ -137,35 +136,6 @@ static int32_t LcdResetOff(struct Icn9700Dev *icn9700)
     return HDF_SUCCESS;
 }
 
-static int32_t PwmCfg(struct Icn9700Dev *icn9700)
-{
-    DevHandle pwmHandle = NULL;
-
-    pwmHandle = PwmOpen(BLK_PWM1);
-    if (pwmHandle == NULL) {
-        HDF_LOGE("%s: PwmOpen failed", __func__);
-        return HDF_FAILURE;
-    }
-    /* pwm config */
-    int32_t ret;
-    struct PwmConfig config;
-    ret = PwmGetConfig(pwmHandle, &config);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmGetConfig fail, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-    config.duty = 1;
-    config.period = PWM_MAX_PERIOD;
-    config.status = 1;
-    ret = PwmSetConfig(pwmHandle, &config);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmSetConfig fail, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-    icn9700->pwmHandle = pwmHandle;
-    return HDF_SUCCESS;
-}
-
 static struct Icn9700Dev *PanelToIcn9700Dev(const struct PanelData *panel)
 {
     struct Icn9700Dev *icn9700 = NULL;
@@ -194,10 +164,6 @@ static int32_t Icn9700Init(struct PanelData *panel)
     icn9700->mipiHandle = MipiDsiOpen(MIPI_DSI0);
     if (icn9700->mipiHandle == NULL) {
         HDF_LOGE("%s: MipiDsiOpen failed", __func__);
-        return HDF_FAILURE;
-    }
-    if (PwmCfg(icn9700) != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmCfg failed", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -233,7 +199,6 @@ static int32_t Icn9700On(struct PanelData *panel)
             return HDF_FAILURE;
         }
     }
-    panel->status.powerStatus = POWER_STATUS_ON;
     /* set mipi to hs mode */
     MipiDsiSetHsMode(icn9700->mipiHandle);
     return HDF_SUCCESS;
@@ -271,36 +236,7 @@ static int32_t Icn9700Off(struct PanelData *panel)
         HDF_LOGE("%s: LcdResetOff failed", __func__);
         return HDF_FAILURE;
     }
-    panel->status.powerStatus = POWER_STATUS_OFF;
     return HDF_SUCCESS;
-}
-
-static int32_t Icn9700SetBacklight(struct PanelData *panel, uint32_t level)
-{
-    int32_t ret;
-    uint32_t duty;
-    struct Icn9700Dev *icn9700 = NULL;
-
-    icn9700 = PanelToIcn9700Dev(panel);
-    if (icn9700 == NULL) {
-        HDF_LOGE("%s: icn9700 is null", __func__);
-        return HDF_FAILURE;
-    }
-    duty = (level * PWM_MAX_PERIOD) / MAX_LEVEL;
-    ret = PwmSetDuty(icn9700->pwmHandle, duty);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmSetDutyCycle failed, ret %d", __func__, ret);
-        return HDF_FAILURE;
-    }
-    static uint32_t lastLevel = 0;
-    if (level != 0 && lastLevel == 0) {
-        ret = PwmEnable(icn9700->pwmHandle);
-    } else if (level == 0 && lastLevel != 0) {
-        ret = PwmDisable(icn9700->pwmHandle);
-    }
-    lastLevel = level;
-    panel->status.currLevel = level;
-    return ret;
 }
 
 static int32_t Icn9700EsdCheckFunc(struct PanelData *panel)
@@ -344,13 +280,10 @@ static struct PanelEsd g_panelEsd = {
 static void Icn9700PanelInit(struct PanelData *panel)
 {
     panel->info = &g_panelInfo;
-    panel->status.powerStatus = POWER_STATUS_OFF;
-    panel->status.currLevel = MIN_LEVEL;
     panel->esd = &g_panelEsd;
     panel->init = Icn9700Init;
     panel->on = Icn9700On;
     panel->off = Icn9700Off;
-    panel->setBacklight = Icn9700SetBacklight;
 }
 
 int32_t Icn9700EntryInit(struct HdfDeviceObject *object)
@@ -371,6 +304,11 @@ int32_t Icn9700EntryInit(struct HdfDeviceObject *object)
     icn9700->reset_gpio = RESET_GPIO;
     icn9700->reset_delay = 20; // delay 20ms
     object->priv = (void *)icn9700;
+    icn9700->panel.blDev = GetBacklightDev("hdf_pwm");
+    if (icn9700->panel.blDev == NULL) {
+        HDF_LOGE("%s GetBacklightDev fail", __func__);
+        return HDF_FAILURE;
+    }
     if (RegisterPanel(&icn9700->panel) != HDF_SUCCESS) {
         HDF_LOGE("%s: RegisterPanel failed", __func__);
         return HDF_FAILURE;

@@ -13,7 +13,6 @@
 #include <linux/of.h>
 #include <linux/regulator/consumer.h>
 #include "hdf_disp.h"
-#include "pwm_if.h"
 
 #define AVDD_GPIO    179
 #define AVEE_GPIO    156
@@ -34,7 +33,6 @@ struct ResetSeq {
 struct Ili9881cBoeDev {
     struct PanelData panel;
     struct mipi_dsi_device *dsiDev;
-    DevHandle blHandle;
     struct regulator *supply;
     uint16_t avddGpio;
     uint16_t aveeGpio;
