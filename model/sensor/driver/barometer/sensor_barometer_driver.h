@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -18,33 +18,33 @@
 #define BAR_DEFAULT_SAMPLING_200_MS    200000000
 #define BAROMETER_CHIP_NAME_BMP180    "bmp180"
 
-enum BarometerEeprom{
-    BAROMETER_AC1_MSB=0,
-    BAROMETER_AC1_LSB=1,
-    BAROMETER_AC2_MSB=2,
-    BAROMETER_AC2_LSB=3,
-    BAROMETER_AC3_MSB=4,
-    BAROMETER_AC3_LSB=5,
-    BAROMETER_AC4_MSB=6,
-    BAROMETER_AC4_LSB=7,
-    BAROMETER_AC5_MSB=8,
-    BAROMETER_AC5_LSB=9,
-    BAROMETER_AC6_MSB=10,
-    BAROMETER_AC6_LSB=11,
-    BAROMETER_B1_MSB=12,
-    BAROMETER_B1_LSB=13,
-    BAROMETER_B2_MSB=14,
-    BAROMETER_B2_LSB=15,
-    BAROMETER_MB_MSB=16,
-    BAROMETER_MB_LSB=17,
-    BAROMETER_MC_MSB=18,
-    BAROMETER_MC_LSB=19,
-    BAROMETER_MD_MSB=20,
-    BAROMETER_MD_LSB=21,
+enum BarometerEeprom {
+    BAROMETER_AC1_MSB = 0,
+    BAROMETER_AC1_LSB = 1,
+    BAROMETER_AC2_MSB = 2,
+    BAROMETER_AC2_LSB = 3,
+    BAROMETER_AC3_MSB = 4,
+    BAROMETER_AC3_LSB = 5,
+    BAROMETER_AC4_MSB = 6,
+    BAROMETER_AC4_LSB = 7,
+    BAROMETER_AC5_MSB = 8,
+    BAROMETER_AC5_LSB = 9,
+    BAROMETER_AC6_MSB = 10,
+    BAROMETER_AC6_LSB = 11,
+    BAROMETER_B1_MSB  = 12,
+    BAROMETER_B1_LSB  = 13,
+    BAROMETER_B2_MSB  = 14,
+    BAROMETER_B2_LSB  = 15,
+    BAROMETER_MB_MSB  = 16,
+    BAROMETER_MB_LSB  = 17,
+    BAROMETER_MC_MSB  = 18,
+    BAROMETER_MC_LSB  = 19,
+    BAROMETER_MD_MSB  = 20,
+    BAROMETER_MD_LSB  = 21,
     BAROMETER_EEPROM_SUM,
 };
 
-struct EepromData {
+struct BarometerEepromData {
     int32_t ac1;
     int32_t ac2;
     int32_t ac3;
@@ -58,7 +58,7 @@ struct EepromData {
     uint32_t ac6;
 };
 
-struct Coefficient{
+struct Coefficient {
     int32_t b3;
     int32_t b5;
     int32_t b6;
@@ -70,31 +70,28 @@ struct Coefficient{
     uint32_t b7;
 };
 
-enum Temperature{
-    BAROMETER_TEM_MSB=0,
-    BAROMETER_TEM_LSB=1,
+enum Temperature {
+    BAROMETER_TEM_MSB = 0,
+    BAROMETER_TEM_LSB = 1,
     BAROMETER_TEM_SUM,
 };
 
-struct TempData{
-    int32_t U_Temperature;
-};
-
-enum Barometer{
-    BAROMETER_BAR_MSB=0,
-    BAROMETER_BAR_LSB=1,
-    BAROMETER_BAR_XLSB=2,
+enum Barometer {
+    BAROMETER_BAR_MSB  = 0,
+    BAROMETER_BAR_LSB  = 1,
+    BAROMETER_BAR_XLSB = 2,
     BAROMETER_BAR_SUM,
 };
 
-struct  BarData{
-    int32_t U_Pressure;
+struct  BarometerRawData {
+    int32_t unpensatePre;
+    int32_t unpensateTemp;
 };
 
-enum BarometerData{
-    BAROMETER_BAROMETER=0,
-    BAROMETER_TEMPERATURE=1,
-    BAROMETER_ALTITUDE=2,
+enum BarometerData {
+    BAROMETER_BAROMETER   = 0,
+    BAROMETER_TEMPERATURE = 1,
+    BAROMETER_ALTITUDE    = 2,
     BAROMETER_SUM,
 };
 

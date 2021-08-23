@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -16,6 +16,7 @@
 #define BMP180_ADDR				   0x77 	//i2c slave address 
 
 //Define calibration register address
+
 #define BMP180_AC1_MSB_ADDR        0xAA
 #define BMP180_AC1_LSB_ADDR        0xAB
 #define BMP180_AC2_MSB_ADDR        0xAC
@@ -39,26 +40,45 @@
 #define BMP180_MD_MSB_ADDR         0xBE
 #define BMP180_MD_LSB_ADDR         0xBf
 
-//Control register
-#define BMP180_CONTROL_REG_ADDR    0xF4    
-#define BMP180_COVERT_TEMP         0x2E    //Conversion temperature 4.5ms
-#define BMP180_COVERT_PRES_0       0x34    //Conversion atmospheric pressure 4.5ms
-#define BMP180_COVERT_PRES_1       0x74    //Conversion atmospheric pressure 7.5ms
-#define BMP180_COVERT_PRES_2       0xB4    //Conversion atmospheric pressure 13.5ms 
-#define BMP180_COVERT_PRES_3       0xF4    //Convert atmospheric pressure 25.5ms
+// Control register
 
-#define BMP180_OUT_MSB_ADDR		   0xF6    // ADC output high 8 bits
-#define BMP180_OUT_LSB_ADDR		   0xF7    // ADC output low 8 bits
-#define BMP180_OUT_XLSB_ADDR	   0xF8    // During 19 bit measurement, the ADC output is at least 3 bits
+#define BMP180_CONTROL_REG_ADDR    0xF4    
+#define BMP180_COVERT_TEMP         0x2E    
+#define BMP180_COVERT_PRES_0       0x34    
+#define BMP180_COVERT_PRES_1       0x74    
+#define BMP180_COVERT_PRES_2       0xB4    
+#define BMP180_COVERT_PRES_3       0xF4    
+
+#define BMP180_OUT_MSB_ADDR		   0xF6    
+#define BMP180_OUT_LSB_ADDR		   0xF7   
+#define BMP180_OUT_XLSB_ADDR	   0xF8    
 
 #define BMP180_STATUS_ADDR         0X20
+#define BMP180_STATUS_JUDGE        0X00
 
-#define SENSOR_DATA_WIDTH_16_BIT   16 // 8 bit
-#define OSS_TIME_MS	               26 // Time interval
-#define OSSETTING                  1	//Atmospheric pressure conversion time
-#define PRESSURE_OF_SEA			   101325.0f	// Reference sea level pressure
+#define SENSOR_DATA_WIDTH_16_BIT   16 
 
+#define OSSETTING                  1
+#define DELAY_0                    5
+#define DELAY_1                    8
+#define OSS_TIME_MS	               26   
 
+#define BMP180_CONSTANT_0          -7357
+#define BMP180_CONSTANT_1          1
+#define BMP180_CONSTANT_2          2
+#define BMP180_CONSTANT_3 	       4
+#define BMP180_CONSTANT_4 	       8
+#define BMP180_CONSTANT_5 	       11
+#define BMP180_CONSTANT_6 	       12
+#define BMP180_CONSTANT_7 	       13
+#define BMP180_CONSTANT_8 	       15
+#define BMP180_CONSTANT_9 	       16
+#define BMP180_CONSTANT_10 	       3038
+#define BMP180_CONSTANT_11 	       3791
+#define BMP180_CONSTANT_12 	       4000
+#define BMP180_CONSTANT_13	       32768
+#define BMP180_CONSTANT_14	       50000
+#define BMP180_CONSTANT_15	       0x80000000
 
 
 int32_t DetectBarometerBmp180Chip(struct SensorCfgData *data);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -129,10 +129,10 @@ static int32_t SetBarometerEnable(void)
     }
 
     ret = SetSensorRegCfgArray(&drvData->barometerCfg->busCfg, drvData->barometerCfg->regCfgGroup[SENSOR_ENABLE_GROUP]);
-   if (ret != HDF_SUCCESS) {
+    if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: barometer sensor enable config failed", __func__);
         return ret;
-   }
+    }
 
     ret = OsalTimerCreate(&drvData->barometerTimer, SENSOR_TIMER_MIN_TIME, BarometerTimerEntry, (uintptr_t)drvData);
     if (ret != HDF_SUCCESS) {

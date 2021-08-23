@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -13,17 +13,87 @@
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
-#include "sensor_config_controller.h"
-//#include <math.h>
 
 /* IO config for int-pin and I2C-pin */
 #define SENSOR_I2C6_DDATA_REG_ADDR 0x114f004c
 #define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048
 #define SENSOR_I2C_REG_CFG        0x403
 
-static struct EepromData CalibraData={0,0,0,0,0,0,0,0,0,0,0};
+static struct BarometerEepromData calibraData = {0,0,0,0,0,0,0,0,0,0,0};
 
-static int32_t ReadEepromData(struct SensorCfgData *data, struct EepromData *CalibraData)
+static int32_t ReadEepromRawData(struct SensorCfgData *data,uint8_t rfg[BAROMETER_EEPROM_SUM])
+{
+    int32_t ret;
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC1_MSB_ADDR, &rfg[BAROMETER_AC1_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC1_LSB_ADDR, &rfg[BAROMETER_AC1_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC2_MSB_ADDR, &rfg[BAROMETER_AC2_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC2_LSB_ADDR, &rfg[BAROMETER_AC2_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC3_MSB_ADDR, &rfg[BAROMETER_AC3_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC3_LSB_ADDR, &rfg[BAROMETER_AC3_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC4_MSB_ADDR, &rfg[BAROMETER_AC4_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+    
+    ret = ReadSensor(&data->busCfg, BMP180_AC4_LSB_ADDR, &rfg[BAROMETER_AC4_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC5_MSB_ADDR, &rfg[BAROMETER_AC5_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC5_LSB_ADDR, &rfg[BAROMETER_AC5_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_AC6_MSB_ADDR, &rfg[BAROMETER_AC6_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+    ret = ReadSensor(&data->busCfg, BMP180_AC6_LSB_ADDR, &rfg[BAROMETER_AC6_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_B1_MSB_ADDR, &rfg[BAROMETER_B1_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_B1_LSB_ADDR, &rfg[BAROMETER_B1_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_B2_MSB_ADDR, &rfg[BAROMETER_B2_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_B2_LSB_ADDR, &rfg[BAROMETER_B2_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_MB_MSB_ADDR, &rfg[BAROMETER_MB_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_MB_LSB_ADDR, &rfg[BAROMETER_MB_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+    
+    ret = ReadSensor(&data->busCfg, BMP180_MC_MSB_ADDR, &rfg[BAROMETER_MC_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_MC_LSB_ADDR, &rfg[BAROMETER_MC_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_MD_MSB_ADDR, &rfg[BAROMETER_MD_MSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    ret = ReadSensor(&data->busCfg, BMP180_MD_LSB_ADDR, &rfg[BAROMETER_MD_LSB], sizeof(uint8_t));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+
+    return ret;
+}
+
+static int32_t ReadEepromData(struct SensorCfgData *data, struct BarometerEepromData *calibraData)
 {
     int32_t ret;
     uint8_t reg[BAROMETER_EEPROM_SUM];
@@ -32,144 +102,84 @@ static int32_t ReadEepromData(struct SensorCfgData *data, struct EepromData *Cal
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
-    ret = ReadSensor(&data->busCfg, BMP180_AC1_MSB_ADDR, &reg[BAROMETER_AC1_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
+   ret=ReadEepromRawData(data,reg);
+   if (ret != HDF_SUCCESS) {
+    return HDF_FAILURE;
+    }
 
-    ret = ReadSensor(&data->busCfg, BMP180_AC1_LSB_ADDR, &reg[BAROMETER_AC1_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC2_MSB_ADDR, &reg[BAROMETER_AC2_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC2_LSB_ADDR, &reg[BAROMETER_AC2_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC3_MSB_ADDR, &reg[BAROMETER_AC3_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC3_LSB_ADDR, &reg[BAROMETER_AC3_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC4_MSB_ADDR, &reg[BAROMETER_AC4_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-    
-    ret = ReadSensor(&data->busCfg, BMP180_AC4_LSB_ADDR, &reg[BAROMETER_AC4_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC5_MSB_ADDR, &reg[BAROMETER_AC5_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC5_LSB_ADDR, &reg[BAROMETER_AC5_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_AC6_MSB_ADDR, &reg[BAROMETER_AC6_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-    ret = ReadSensor(&data->busCfg, BMP180_AC6_LSB_ADDR, &reg[BAROMETER_AC6_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_B1_MSB_ADDR, &reg[BAROMETER_B1_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_B1_LSB_ADDR, &reg[BAROMETER_B1_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_B2_MSB_ADDR, &reg[BAROMETER_B2_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_B2_LSB_ADDR, &reg[BAROMETER_B2_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_MB_MSB_ADDR, &reg[BAROMETER_MB_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_MB_LSB_ADDR, &reg[BAROMETER_MB_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-    
-    ret = ReadSensor(&data->busCfg, BMP180_MC_MSB_ADDR, &reg[BAROMETER_MC_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_MC_LSB_ADDR, &reg[BAROMETER_MC_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_MD_MSB_ADDR, &reg[BAROMETER_MD_MSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    ret = ReadSensor(&data->busCfg, BMP180_MD_LSB_ADDR, &reg[BAROMETER_MD_LSB], sizeof(uint8_t));
-    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-
-    CalibraData->ac1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->ac1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC1_LSB]);
-    CalibraData->ac2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->ac2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC2_LSB]);
-    CalibraData->ac3 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC3_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->ac3 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC3_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC3_LSB]);
-    CalibraData->ac4 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC4_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->ac4 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC4_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC4_LSB]);
-    CalibraData->ac5 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC5_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->ac5 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC5_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC5_LSB]);
-    CalibraData->ac6 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC6_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->ac6 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC6_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC6_LSB]);
-    CalibraData->b1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->b1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_B1_LSB]);
-    CalibraData->b2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->b2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_B2_LSB]);
-    CalibraData->mb = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MB_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->mb = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MB_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_MB_LSB]);
-    CalibraData->mc = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MC_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->mc = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MC_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_MC_LSB]);
-    CalibraData->md = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MD_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    calibraData->md = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MD_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_MD_LSB]);
 
     return ret;
 }
 
-static int32_t ReadTempData(struct SensorCfgData *data,  struct TempData *Temp)
+static int32_t ReadTempData(struct SensorCfgData *data,  struct BarometerRawData *Temp)
 {
     int32_t ret;
     uint8_t status = 0;
     uint8_t reg[BAROMETER_TEM_SUM];
     uint8_t value[SENSOR_VALUE_BUTT];
-    value[SENSOR_ADDR_INDEX] = 0xF4;
-    value[SENSOR_VALUE_INDEX] = 0x2E;
+    value[SENSOR_ADDR_INDEX] = BMP180_CONTROL_REG_ADDR;
+    value[SENSOR_VALUE_INDEX] = BMP180_COVERT_TEMP;
 
     (void)memset_s(reg, sizeof(reg), 0, sizeof(reg));
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
     ret = ReadSensor(&data->busCfg, BMP180_COVERT_PRES_3, &status, sizeof(uint8_t));
-    if ((status & BMP180_STATUS_ADDR) == 0x00) {
+    if ((status & BMP180_STATUS_ADDR) == BMP180_STATUS_JUDGE) {
         WriteSensor(&data->busCfg, value,sizeof(value));
-        OsalMDelay(5);
+        OsalMDelay(DELAY_0);
         ret = ReadSensor(&data->busCfg, BMP180_OUT_MSB_ADDR, &reg[BAROMETER_TEM_MSB], sizeof(uint8_t));
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
         ret = ReadSensor(&data->busCfg, BMP180_OUT_LSB_ADDR, &reg[BAROMETER_TEM_LSB], sizeof(uint8_t));
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
-        Temp-> U_Temperature = (int32_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_TEM_MSB], SENSOR_DATA_WIDTH_8_BIT) |
-        reg[BAROMETER_TEM_LSB]);
+        Temp->unpensateTemp = (int32_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_TEM_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+            reg[BAROMETER_TEM_LSB]);
     }
     return ret;
 }
 
-static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarData *Barom)
+static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRawData *Barom)
 {
 
     int32_t ret;
     uint8_t status = 0;
     uint8_t reg[BAROMETER_BAR_SUM];
     uint8_t value[SENSOR_VALUE_BUTT];
-    value[SENSOR_ADDR_INDEX] = 0xF4;
-    value[SENSOR_VALUE_INDEX] = 0x74;
+    value[SENSOR_ADDR_INDEX] = BMP180_CONTROL_REG_ADDR;
+    value[SENSOR_VALUE_INDEX] = BMP180_COVERT_PRES_1;
 
     (void)memset_s(reg, sizeof(reg), 0, sizeof(reg));
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
     ret = ReadSensor(&data->busCfg, BMP180_COVERT_PRES_3, &status, sizeof(uint8_t));
-    if ((status & BMP180_STATUS_ADDR) == 0x00) {
+    if ((status & BMP180_STATUS_ADDR) == BMP180_STATUS_JUDGE) {
     WriteSensor(&data->busCfg,value,sizeof(value));
-    OsalMDelay(8);
+    OsalMDelay(DELAY_1);
     ret = ReadSensor(&data->busCfg, BMP180_OUT_MSB_ADDR, &reg[BAROMETER_BAR_MSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
@@ -179,21 +189,55 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarData *Bar
     ret = ReadSensor(&data->busCfg, BMP180_OUT_XLSB_ADDR, &reg[BAROMETER_BAR_XLSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
-    Barom->U_Pressure = (int32_t)(SENSOR_DATA_SHIFT_RIGHT((SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB], SENSOR_DATA_WIDTH_16_BIT) |
-    SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB] , SENSOR_DATA_WIDTH_8_BIT) |
-    reg[BAROMETER_BAR_XLSB]),(8-OSSETTING)));
+    Barom->unpensatePre = (int32_t)(SENSOR_DATA_SHIFT_RIGHT((SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB], 
+        SENSOR_DATA_WIDTH_16_BIT) | SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB] , SENSOR_DATA_WIDTH_8_BIT) |
+        reg[BAROMETER_BAR_XLSB]),(BMP180_CONSTANT_4 - OSSETTING)));
     }
-
     return ret;
+}
+
+static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_t tnp[BAROMETER_SUM])
+{
+    struct Coefficient coefficientData = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+    // Calculated temperature 
+
+    coefficientData.x1 = ((barometerData->unpensateTemp - calibraData.ac6) * (calibraData.ac5)) >> BMP180_CONSTANT_8;
+    coefficientData.x2 = (calibraData.mc << BMP180_CONSTANT_5) / (coefficientData.x1 + calibraData.md);
+    coefficientData.b5 = coefficientData.x1 + coefficientData.x2;
+    tnp[BAROMETER_TEMPERATURE] = (coefficientData.b5 + BMP180_CONSTANT_4) >> BMP180_CONSTANT_3;
+
+    //Calculated pressure
+
+    coefficientData.b6 = coefficientData.b5 - BMP180_CONSTANT_12;
+    coefficientData.x1 = (calibraData.b2 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) >> BMP180_CONSTANT_5;
+    coefficientData.x2 = (calibraData.ac2 * coefficientData.b6) >> BMP180_CONSTANT_5;
+    coefficientData.x3 = coefficientData.x1 + coefficientData.x2;
+    coefficientData.b3 = (((((int32_t)calibraData.ac1) * BMP180_CONSTANT_3 + coefficientData.x3) << OSSETTING) + 
+        BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
+    coefficientData.x1 = (calibraData.ac3 * coefficientData.b6) >> BMP180_CONSTANT_7;
+    coefficientData.x2 = (calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) >> BMP180_CONSTANT_9;
+    coefficientData.x3 = ((coefficientData.x1 + coefficientData.x2) + BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
+    coefficientData.b4 = (calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13)) >> BMP180_CONSTANT_8;
+    coefficientData.b7 = ((uint32_t)(barometerData->unpensatePre) - (uint32_t)coefficientData.b3) * (BMP180_CONSTANT_14 >> OSSETTING);
+    if (coefficientData.b7 < BMP180_CONSTANT_15) {
+        coefficientData.p = (coefficientData.b7 << BMP180_CONSTANT_1) / coefficientData.b4;
+    }
+    else {
+        coefficientData.p = (coefficientData.b7 / coefficientData.b4) << BMP180_CONSTANT_1;
+    }
+    coefficientData.x1 = (coefficientData.p >> BMP180_CONSTANT_4) * (coefficientData.p >> BMP180_CONSTANT_4);
+    coefficientData.x1 = (coefficientData.x1 * BMP180_CONSTANT_10) >> BMP180_CONSTANT_9;
+    coefficientData.x2 = (BMP180_CONSTANT_0 * coefficientData.p) >> BMP180_CONSTANT_9;
+    tnp[BAROMETER_BAROMETER] = coefficientData.p + ((coefficientData.x1 + coefficientData.x2 + 
+        BMP180_CONSTANT_11) >> BMP180_CONSTANT_3);	
 }
 
 int32_t ReadBmp180Data(struct SensorCfgData *data)
 {
     int32_t ret;
     int32_t tmp[BAROMETER_SUM];
-    struct TempData TemperatureData={ 0 };
-    struct BarData BarometerData= { 0 };
-    struct Coefficient CoefficientData = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    struct  BarometerRawData barometerData={ 0, 0};
     OsalTimespec time;
     struct SensorReportEvent event;
 
@@ -204,14 +248,19 @@ int32_t ReadBmp180Data(struct SensorCfgData *data)
         HDF_LOGE("%s: Get time failed", __func__);
         return HDF_FAILURE;
     }
-    event.timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT; /* unit nanosecond */
+    event.timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT;
 
-    ret = ReadTempData(data, &TemperatureData);
+    ret = ReadTempData(data, &barometerData);
     if (ret != HDF_SUCCESS) {
     return HDF_FAILURE;
     }
 
-    ret = ReadBarometerData(data, &BarometerData);
+    ret = ReadBarometerData(data, &barometerData);
+    if (ret != HDF_SUCCESS) {
+    return HDF_FAILURE;
+    }
+
+    ret = CalcBarometerData(&barometerData,tmp);
     if (ret != HDF_SUCCESS) {
     return HDF_FAILURE;
     }
@@ -219,36 +268,6 @@ int32_t ReadBmp180Data(struct SensorCfgData *data)
     event.sensorId = SENSOR_TAG_BAROMETER;
     event.option = 0;
     event.mode = SENSOR_WORK_MODE_REALTIME;
-
-    // Calculated temperature 
-	CoefficientData.x1 = ((TemperatureData.U_Temperature - CalibraData.ac6)*(CalibraData.ac5)) >> 15;
-  	CoefficientData.x2 = (CalibraData.mc << 11) / (CoefficientData.x1 + CalibraData.md);
-  	CoefficientData.b5 = CoefficientData.x1 + CoefficientData.x2;
-    tmp[BAROMETER_TEMPERATURE] = (CoefficientData.b5 + 8) >> 4;
-	//Calculated pressure
-	CoefficientData.b6 = CoefficientData.b5 - 4000;
-	CoefficientData.x1 = (CalibraData.b2 * ((CoefficientData.b6 * CoefficientData.b6)>>12))>>11;
-	CoefficientData.x2 = (CalibraData.ac2 * CoefficientData.b6)>>11;
-	CoefficientData.x3 = CoefficientData.x1 + CoefficientData.x2;
-	CoefficientData.b3 = (((((int32_t)CalibraData.ac1)*4 + CoefficientData.x3)<<OSSETTING) + 2)>>2;
-	CoefficientData.x1 = (CalibraData.ac3 * CoefficientData.b6)>>13;
-	CoefficientData.x2 = (CalibraData.b1 * ((CoefficientData.b6 * CoefficientData.b6)>>12))>>16;
-	CoefficientData.x3 = ((CoefficientData.x1 + CoefficientData.x2) + 2)>>2;
-	CoefficientData.b4 = (CalibraData.ac4 * (uint32_t)(CoefficientData.x3 + 32768))>>15;
-	CoefficientData.b7 = ((uint32_t)BarometerData.U_Pressure - (uint32_t)CoefficientData.b3) * (50000>>OSSETTING);
-	if (CoefficientData.b7 < 0x80000000)
-	{
-		CoefficientData.p = (CoefficientData.b7<<1)/CoefficientData.b4;
-	}
-	else
-	{
-		CoefficientData.p = (CoefficientData.b7/CoefficientData.b4)<<1;
-	}
-	CoefficientData.x1 = (CoefficientData.p>>8) * (CoefficientData.p>>8);
-	CoefficientData.x1 = (CoefficientData.x1 * 3038)>>16;
-	CoefficientData.x2 = (-7357 * CoefficientData.p)>>16;
-	tmp[BAROMETER_BAROMETER] = CoefficientData.p+((CoefficientData.x1 + CoefficientData.x2 + 3791)>>4);	
- 
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);
@@ -263,7 +282,7 @@ static int32_t InitBmp180(struct SensorCfgData *data)
 
     (void)memset_s(&event, sizeof(event), 0, sizeof(event));
 
-    ret = ReadEepromData(data, &CalibraData);
+    ret = ReadEepromData(data, &calibraData);
     if (ret != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
