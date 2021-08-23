@@ -163,7 +163,8 @@ static int32_t SetBarometerDisable(void)
         return HDF_SUCCESS;
     }
 
-    ret = SetSensorRegCfgArray(&drvData->barometerCfg->busCfg, drvData->barometerCfg->regCfgGroup[SENSOR_DISABLE_GROUP]);
+    ret = SetSensorRegCfgArray(&drvData->barometerCfg->busCfg, 
+        drvData->barometerCfg->regCfgGroup[SENSOR_DISABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: barometer sensor disable config failed", __func__);
         return ret;
@@ -302,7 +303,6 @@ static int32_t DetectBarometerChip(void)
 
 int32_t InitBarometerDriver(struct HdfDeviceObject *device)
 {
-
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
     struct BarometerDrvData *drvData = (struct BarometerDrvData *)device->service;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
@@ -336,7 +336,7 @@ int32_t InitBarometerDriver(struct HdfDeviceObject *device)
         HDF_LOGE("%s: detect sensor device failed", __func__);
         goto REG_CONFIG_EXIT;
     }
-     HDF_LOGE("%d", drvData->barometerCfg->regCfgGroup);
+  
     if (InitBarometerAfterConfig() != HDF_SUCCESS) {
         HDF_LOGE("%s: init barometer after config failed", __func__);
         goto INIT_EXIT;

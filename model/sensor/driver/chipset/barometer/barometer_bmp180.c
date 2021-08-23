@@ -19,9 +19,9 @@
 #define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048
 #define SENSOR_I2C_REG_CFG        0x403
 
-static struct BarometerEepromData calibraData = {0,0,0,0,0,0,0,0,0,0,0};
+static struct BarometerEepromData calibraData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-static int32_t ReadEepromRawData(struct SensorCfgData *data,uint8_t rfg[BAROMETER_EEPROM_SUM])
+static int32_t ReadEepromRawData(struct SensorCfgData *data, uint8_t rfg[BAROMETER_EEPROM_SUM])
 {
     int32_t ret;
 
@@ -102,8 +102,8 @@ static int32_t ReadEepromData(struct SensorCfgData *data, struct BarometerEeprom
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
-   ret=ReadEepromRawData(data,reg);
-   if (ret != HDF_SUCCESS) {
+    ret=ReadEepromRawData(data, reg);
+    if (ret != HDF_SUCCESS) {
     return HDF_FAILURE;
     }
 
@@ -148,7 +148,7 @@ static int32_t ReadTempData(struct SensorCfgData *data,  struct BarometerRawData
 
     ret = ReadSensor(&data->busCfg, BMP180_COVERT_PRES_3, &status, sizeof(uint8_t));
     if ((status & BMP180_STATUS_ADDR) == BMP180_STATUS_JUDGE) {
-        WriteSensor(&data->busCfg, value,sizeof(value));
+        WriteSensor(&data->busCfg, value, sizeof(value));
         OsalMDelay(DELAY_0);
         ret = ReadSensor(&data->busCfg, BMP180_OUT_MSB_ADDR, &reg[BAROMETER_TEM_MSB], sizeof(uint8_t));
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
@@ -164,7 +164,6 @@ static int32_t ReadTempData(struct SensorCfgData *data,  struct BarometerRawData
 
 static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRawData *Barom)
 {
-
     int32_t ret;
     uint8_t status = 0;
     uint8_t reg[BAROMETER_BAR_SUM];
@@ -178,7 +177,7 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRaw
 
     ret = ReadSensor(&data->busCfg, BMP180_COVERT_PRES_3, &status, sizeof(uint8_t));
     if ((status & BMP180_STATUS_ADDR) == BMP180_STATUS_JUDGE) {
-    WriteSensor(&data->busCfg,value,sizeof(value));
+    WriteSensor(&data->busCfg, value, sizeof(value));
     OsalMDelay(DELAY_1);
     ret = ReadSensor(&data->busCfg, BMP180_OUT_MSB_ADDR, &reg[BAROMETER_BAR_MSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
@@ -190,8 +189,9 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRaw
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     Barom->unpensatePre = (int32_t)(SENSOR_DATA_SHIFT_RIGHT((SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB], 
-        SENSOR_DATA_WIDTH_16_BIT) | SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB] , SENSOR_DATA_WIDTH_8_BIT) |
-        reg[BAROMETER_BAR_XLSB]),(BMP180_CONSTANT_4 - OSSETTING)));
+        SENSOR_DATA_WIDTH_16_BIT) | SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB], 
+        SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]), 
+        (BMP180_CONSTANT_4 - OSSETTING)));
     }
     return ret;
 }
@@ -207,23 +207,24 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
     coefficientData.b5 = coefficientData.x1 + coefficientData.x2;
     tnp[BAROMETER_TEMPERATURE] = (coefficientData.b5 + BMP180_CONSTANT_4) >> BMP180_CONSTANT_3;
 
-    //Calculated pressure
+    // Calculated pressure
 
     coefficientData.b6 = coefficientData.b5 - BMP180_CONSTANT_12;
-    coefficientData.x1 = (calibraData.b2 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) >> BMP180_CONSTANT_5;
+    coefficientData.x1 = (calibraData.b2 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
+        >> BMP180_CONSTANT_5;
     coefficientData.x2 = (calibraData.ac2 * coefficientData.b6) >> BMP180_CONSTANT_5;
     coefficientData.x3 = coefficientData.x1 + coefficientData.x2;
     coefficientData.b3 = (((((int32_t)calibraData.ac1) * BMP180_CONSTANT_3 + coefficientData.x3) << OSSETTING) + 
         BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
     coefficientData.x1 = (calibraData.ac3 * coefficientData.b6) >> BMP180_CONSTANT_7;
-    coefficientData.x2 = (calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) >> BMP180_CONSTANT_9;
+    coefficientData.x2 = (calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
+        >> BMP180_CONSTANT_9;
     coefficientData.x3 = ((coefficientData.x1 + coefficientData.x2) + BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
     coefficientData.b4 = (calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13)) >> BMP180_CONSTANT_8;
     coefficientData.b7 = ((uint32_t)(barometerData->unpensatePre) - (uint32_t)coefficientData.b3) * (BMP180_CONSTANT_14 >> OSSETTING);
     if (coefficientData.b7 < BMP180_CONSTANT_15) {
         coefficientData.p = (coefficientData.b7 << BMP180_CONSTANT_1) / coefficientData.b4;
-    }
-    else {
+    } else {
         coefficientData.p = (coefficientData.b7 / coefficientData.b4) << BMP180_CONSTANT_1;
     }
     coefficientData.x1 = (coefficientData.p >> BMP180_CONSTANT_4) * (coefficientData.p >> BMP180_CONSTANT_4);
@@ -237,7 +238,7 @@ int32_t ReadBmp180Data(struct SensorCfgData *data)
 {
     int32_t ret;
     int32_t tmp[BAROMETER_SUM];
-    struct  BarometerRawData barometerData={ 0, 0};
+    struct  BarometerRawData barometerData = {0, 0};
     OsalTimespec time;
     struct SensorReportEvent event;
 
@@ -260,7 +261,7 @@ int32_t ReadBmp180Data(struct SensorCfgData *data)
     return HDF_FAILURE;
     }
 
-    ret = CalcBarometerData(&barometerData,tmp);
+    ret = CalcBarometerData(&barometerData, tmp);
     if (ret != HDF_SUCCESS) {
     return HDF_FAILURE;
     }

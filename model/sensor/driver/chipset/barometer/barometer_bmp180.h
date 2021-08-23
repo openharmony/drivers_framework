@@ -13,7 +13,7 @@
 
 #define BMP180_REG_CHIP_ID		   0xD0
 
-#define BMP180_ADDR				   0x77 	//i2c slave address 
+#define BMP180_ADDR				   0x77 	// i2c slave address 
 
 //Define calibration register address
 
@@ -63,7 +63,7 @@
 #define DELAY_1                    8
 #define OSS_TIME_MS	               26   
 
-#define BMP180_CONSTANT_0          -7357
+#define BMP180_CONSTANT_0          (-7357)
 #define BMP180_CONSTANT_1          1
 #define BMP180_CONSTANT_2          2
 #define BMP180_CONSTANT_3 	       4
