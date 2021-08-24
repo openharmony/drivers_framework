@@ -189,9 +189,8 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRaw
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     Barom->unpensatePre = (int32_t)(SENSOR_DATA_SHIFT_RIGHT((SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB], 
-        SENSOR_DATA_WIDTH_16_BIT) | SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB], 
-            SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]), 
-                (BMP180_CONSTANT_4 - OSSETTING)));
+        SENSOR_DATA_WIDTH_16_BIT) | SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB], SENSOR_DATA_WIDTH_8_BIT) | 
+        reg[BAROMETER_BAR_XLSB]), (BMP180_CONSTANT_4 - OSSETTING)));
     }
     return ret;
 }
@@ -202,7 +201,8 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
 
     // Calculated temperature 
 
-    coefficientData.x1 = ((barometerData->unpensateTemp - g_calibraData.ac6) * (g_calibraData.ac5)) >> BMP180_CONSTANT_8;
+    coefficientData.x1 = ((barometerData->unpensateTemp - g_calibraData.ac6) * (g_calibraData.ac5)) 
+        >> BMP180_CONSTANT_8;
     coefficientData.x2 = (g_calibraData.mc << BMP180_CONSTANT_5) / (coefficientData.x1 + g_calibraData.md);
     coefficientData.b5 = coefficientData.x1 + coefficientData.x2;
     tnp[BAROMETER_TEMPERATURE] = (coefficientData.b5 + BMP180_CONSTANT_4) >> BMP180_CONSTANT_3;
@@ -220,7 +220,8 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
     coefficientData.x2 = (g_calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
         >> BMP180_CONSTANT_9;
     coefficientData.x3 = ((coefficientData.x1 + coefficientData.x2) + BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
-    coefficientData.b4 = (g_calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13)) >> BMP180_CONSTANT_8;
+    coefficientData.b4 = (g_calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13)) 
+        >> BMP180_CONSTANT_8;
     coefficientData.b7 = ((uint32_t)(barometerData->unpensatePre) - (uint32_t)coefficientData.b3) 
         * (BMP180_CONSTANT_14 >> OSSETTING);
     if (coefficientData.b7 < BMP180_CONSTANT_15) {
