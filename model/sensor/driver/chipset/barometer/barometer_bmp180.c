@@ -19,7 +19,7 @@
 #define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048
 #define SENSOR_I2C_REG_CFG        0x403
 
-static struct BarometerEepromData calibraData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static struct BarometerEepromData g_calibraData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int32_t ReadEepromRawData(struct SensorCfgData *data, uint8_t rfg[BAROMETER_EEPROM_SUM])
 {
@@ -93,7 +93,7 @@ static int32_t ReadEepromRawData(struct SensorCfgData *data, uint8_t rfg[BAROMET
     return ret;
 }
 
-static int32_t ReadEepromData(struct SensorCfgData *data, struct BarometerEepromData *calibraData)
+static int32_t ReadEepromData(struct SensorCfgData *data, struct BarometerEepromData *g_calibraData)
 {
     int32_t ret;
     uint8_t reg[BAROMETER_EEPROM_SUM];
@@ -102,32 +102,32 @@ static int32_t ReadEepromData(struct SensorCfgData *data, struct BarometerEeprom
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
-    ret=ReadEepromRawData(data, reg);
+    ret = ReadEepromRawData(data, reg);
     if (ret != HDF_SUCCESS) {
     return HDF_FAILURE;
     }
 
-    calibraData->ac1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->ac1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC1_LSB]);
-    calibraData->ac2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->ac2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC2_LSB]);
-    calibraData->ac3 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC3_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->ac3 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC3_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC3_LSB]);
-    calibraData->ac4 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC4_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->ac4 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC4_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC4_LSB]);
-    calibraData->ac5 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC5_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->ac5 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC5_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC5_LSB]);
-    calibraData->ac6 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC6_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->ac6 = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_AC6_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_AC6_LSB]);
-    calibraData->b1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->b1 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B1_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_B1_LSB]);
-    calibraData->b2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->b2 = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_B2_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_B2_LSB]);
-    calibraData->mb = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MB_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->mb = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MB_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_MB_LSB]);
-    calibraData->mc = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MC_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->mc = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MC_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_MC_LSB]);
-    calibraData->md = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MD_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    g_calibraData->md = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_MD_MSB], SENSOR_DATA_WIDTH_8_BIT) |
     reg[BAROMETER_MD_LSB]);
 
     return ret;
@@ -190,8 +190,8 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRaw
 
     Barom->unpensatePre = (int32_t)(SENSOR_DATA_SHIFT_RIGHT((SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB], 
         SENSOR_DATA_WIDTH_16_BIT) | SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB], 
-        SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]), 
-        (BMP180_CONSTANT_4 - OSSETTING)));
+            SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]), 
+                (BMP180_CONSTANT_4 - OSSETTING)));
     }
     return ret;
 }
@@ -202,26 +202,27 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
 
     // Calculated temperature 
 
-    coefficientData.x1 = ((barometerData->unpensateTemp - calibraData.ac6) * (calibraData.ac5)) >> BMP180_CONSTANT_8;
-    coefficientData.x2 = (calibraData.mc << BMP180_CONSTANT_5) / (coefficientData.x1 + calibraData.md);
+    coefficientData.x1 = ((barometerData->unpensateTemp - g_calibraData.ac6) * (g_calibraData.ac5)) >> BMP180_CONSTANT_8;
+    coefficientData.x2 = (g_calibraData.mc << BMP180_CONSTANT_5) / (coefficientData.x1 + g_calibraData.md);
     coefficientData.b5 = coefficientData.x1 + coefficientData.x2;
     tnp[BAROMETER_TEMPERATURE] = (coefficientData.b5 + BMP180_CONSTANT_4) >> BMP180_CONSTANT_3;
 
     // Calculated pressure
 
     coefficientData.b6 = coefficientData.b5 - BMP180_CONSTANT_12;
-    coefficientData.x1 = (calibraData.b2 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
+    coefficientData.x1 = (g_calibraData.b2 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
         >> BMP180_CONSTANT_5;
-    coefficientData.x2 = (calibraData.ac2 * coefficientData.b6) >> BMP180_CONSTANT_5;
+    coefficientData.x2 = (g_calibraData.ac2 * coefficientData.b6) >> BMP180_CONSTANT_5;
     coefficientData.x3 = coefficientData.x1 + coefficientData.x2;
-    coefficientData.b3 = (((((int32_t)calibraData.ac1) * BMP180_CONSTANT_3 + coefficientData.x3) << OSSETTING) + 
-        BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
-    coefficientData.x1 = (calibraData.ac3 * coefficientData.b6) >> BMP180_CONSTANT_7;
-    coefficientData.x2 = (calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
+    coefficientData.b3 = (((((int32_t)g_calibraData.ac1) * BMP180_CONSTANT_3 + coefficientData.x3) << OSSETTING) 
+        + BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
+    coefficientData.x1 = (g_calibraData.ac3 * coefficientData.b6) >> BMP180_CONSTANT_7;
+    coefficientData.x2 = (g_calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
         >> BMP180_CONSTANT_9;
     coefficientData.x3 = ((coefficientData.x1 + coefficientData.x2) + BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
-    coefficientData.b4 = (calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13)) >> BMP180_CONSTANT_8;
-    coefficientData.b7 = ((uint32_t)(barometerData->unpensatePre) - (uint32_t)coefficientData.b3) * (BMP180_CONSTANT_14 >> OSSETTING);
+    coefficientData.b4 = (g_calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13)) >> BMP180_CONSTANT_8;
+    coefficientData.b7 = ((uint32_t)(barometerData->unpensatePre) - (uint32_t)coefficientData.b3) 
+        * (BMP180_CONSTANT_14 >> OSSETTING);
     if (coefficientData.b7 < BMP180_CONSTANT_15) {
         coefficientData.p = (coefficientData.b7 << BMP180_CONSTANT_1) / coefficientData.b4;
     } else {
@@ -230,8 +231,8 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
     coefficientData.x1 = (coefficientData.p >> BMP180_CONSTANT_4) * (coefficientData.p >> BMP180_CONSTANT_4);
     coefficientData.x1 = (coefficientData.x1 * BMP180_CONSTANT_10) >> BMP180_CONSTANT_9;
     coefficientData.x2 = (BMP180_CONSTANT_0 * coefficientData.p) >> BMP180_CONSTANT_9;
-    tnp[BAROMETER_BAROMETER] = coefficientData.p + ((coefficientData.x1 + coefficientData.x2 + 
-        BMP180_CONSTANT_11) >> BMP180_CONSTANT_3);	
+    tnp[BAROMETER_BAROMETER] = coefficientData.p + ((coefficientData.x1 + coefficientData.x2 
+        + BMP180_CONSTANT_11) >> BMP180_CONSTANT_3);	
 }
 
 int32_t ReadBmp180Data(struct SensorCfgData *data)
@@ -283,7 +284,7 @@ static int32_t InitBmp180(struct SensorCfgData *data)
 
     (void)memset_s(&event, sizeof(event), 0, sizeof(event));
 
-    ret = ReadEepromData(data, &calibraData);
+    ret = ReadEepromData(data, &g_calibraData);
     if (ret != HDF_SUCCESS) {
         return HDF_FAILURE;
     }

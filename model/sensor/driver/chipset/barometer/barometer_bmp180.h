@@ -13,9 +13,11 @@
 
 #define BMP180_REG_CHIP_ID		   0xD0
 
-#define BMP180_ADDR				   0x77 	// i2c slave address 
+// i2c slave address 
 
-//Define calibration register address
+#define BMP180_ADDR				   0x77 	
+
+// Define calibration register address
 
 #define BMP180_AC1_MSB_ADDR        0xAA
 #define BMP180_AC1_LSB_ADDR        0xAB
