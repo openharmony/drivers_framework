@@ -28,19 +28,21 @@ struct ThreadWrapper {
 };
 #ifdef _LINUX_USER_
 enum {
+    OSAL_PRIORITY_LOW      = 10,
     OSAL_PRIORITY_MIDDLE   = 50,
     OSAL_PRIORITY_HIGH     = 90,
     OSAL_PRIORITY_HIGHEST  = 99,
 };
 #else
 enum {
-    OSAL_PRIORITY_MIDDLE   = 30,
-    OSAL_PRIORITY_HIGH     = 15,
     OSAL_PRIORITY_HIGHEST  = 5,
+    OSAL_PRIORITY_HIGH     = 15,
+    OSAL_PRIORITY_MIDDLE   = 25,
+    OSAL_PRIORITY_LOW      = 30,
 };
 #endif
 
-static void OsalThreadRemapSched(int priority, struct sched_param *param, int32_t *policy)
+static void OsalThreadRemapSched(int priority, struct sched_param *param)
 {
     if (priority == OSAL_THREAD_PRI_HIGHEST) {
         param->sched_priority = OSAL_PRIORITY_HIGHEST;
@@ -49,7 +51,7 @@ static void OsalThreadRemapSched(int priority, struct sched_param *param, int32_
     } else if (priority == OSAL_THREAD_PRI_DEFAULT) {
         param->sched_priority = OSAL_PRIORITY_MIDDLE;
     } else {
-        *policy = SCHED_OTHER;
+        param->sched_priority = OSAL_PRIORITY_LOW;
     }
 }
 
@@ -109,7 +111,6 @@ int32_t OsalThreadStart(struct OsalThread *thread, const struct OsalThreadParam 
 {
     pthread_attr_t attribute;
     struct sched_param priorityHolder;
-    int32_t policy = SCHED_FIFO;
 
     if (thread == NULL || thread->realThread == NULL || param == NULL) {
         HDF_LOGE("%s invalid param", __func__);
@@ -121,12 +122,6 @@ int32_t OsalThreadStart(struct OsalThread *thread, const struct OsalThreadParam 
     int resultCode = pthread_attr_init(&attribute);
     if (resultCode != 0) {
         HDF_LOGE("pthread_attr_init errorno: %d", resultCode);
-        goto DEAL_FAIL;
-    }
-
-    resultCode = pthread_attr_setinheritsched(&attribute, PTHREAD_EXPLICIT_SCHED);
-    if (resultCode != 0) {
-        HDF_LOGE("pthread_attr_setinheritsched errorno: %d", resultCode);
         goto DEAL_FAIL;
     }
 
@@ -146,13 +141,7 @@ int32_t OsalThreadStart(struct OsalThread *thread, const struct OsalThreadParam 
         goto DEAL_FAIL;
     }
 
-    OsalThreadRemapSched(param->priority, &priorityHolder, &policy);
-
-    resultCode = pthread_attr_setschedpolicy(&attribute, policy);
-    if (resultCode != 0) {
-        HDF_LOGE("pthread_attr_setschedpolity errorno: %d", resultCode);
-        goto DEAL_FAIL;
-    }
+    OsalThreadRemapSched(param->priority, &priorityHolder);
 
     resultCode = pthread_attr_setschedparam(&attribute, &priorityHolder);
     if (resultCode != 0) {
