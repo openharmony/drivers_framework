@@ -7,10 +7,8 @@
  */
 
 #include "sensor_device_manager.h"
-#include "asm/io.h"
 #include <securec.h>
-#include "hdf_base.h"
-#include "hdf_device_desc.h"
+#include "asm/io.h"
 #include "osal_mem.h"
 #include "sensor_platform_if.h"
 

@@ -9,6 +9,8 @@
 #ifndef SENSOR_DEVICE_MANAGER_H
 #define SENSOR_DEVICE_MANAGER_H
 
+#include "hdf_base.h"
+#include "hdf_device_desc.h"
 #include "hdf_workqueue.h"
 #include "osal_mutex.h"
 #include "sensor_device_type.h"
