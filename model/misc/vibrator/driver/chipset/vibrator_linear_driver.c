@@ -6,15 +6,15 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "vibrator_linear_driver.h"
+#include <securec.h>
 #include "device_resource_if.h"
 #include "gpio_if.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_mem.h"
-#include "securec.h"
 #include "vibrator_driver.h"
 #include "vibrator_driver_type.h"
-#include "vibrator_linear_driver.h"
 
 #define HDF_LOG_TAG    vibrator_linear_driver_c
 

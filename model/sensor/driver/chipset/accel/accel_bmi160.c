@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
 #include "accel_bmi160.h"
+#include <securec.h>
 #include "osal_time.h"
 #include "sensor_accel_driver.h"
 #include "sensor_config_controller.h"

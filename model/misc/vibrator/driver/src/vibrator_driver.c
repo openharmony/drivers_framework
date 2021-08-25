@@ -6,11 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
+#include "vibrator_driver.h"
+#include <securec.h>
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_mem.h"
-#include "vibrator_driver.h"
 #include "vibrator_haptic.h"
 
 #define HDF_LOG_TAG    vibrator_driver_c
