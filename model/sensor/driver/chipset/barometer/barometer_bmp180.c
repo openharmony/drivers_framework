@@ -190,7 +190,7 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRaw
 
     Barom->unpensatePre = (int32_t)(SENSOR_DATA_SHIFT_RIGHT((SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB],
         SENSOR_DATA_WIDTH_16_BIT) | SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB],
-        SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]), (BMP180_CONSTANT_4 - OSSETTING)));
+            SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]), (BMP180_CONSTANT_4 - OSSETTING)));
     }
     return ret;
 }
