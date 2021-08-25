@@ -6,13 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
+#include "sensor_accel_driver.h"
+#include <securec.h>
 #include "accel_bmi160.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_math.h"
 #include "osal_mem.h"
-#include "sensor_accel_driver.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"

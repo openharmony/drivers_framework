@@ -6,10 +6,10 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
+#include "sensor_platform_if.h"
+#include <securec.h>
 #include "osal_io.h"
 #include "osal_time.h"
-#include "sensor_platform_if.h"
 
 #define HDF_LOG_TAG    sensor_platform_if_c
 
