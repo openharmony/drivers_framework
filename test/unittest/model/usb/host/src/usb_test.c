@@ -29,6 +29,7 @@ static UsbInterfaceHandle *g_ecmDataDevHandle = NULL;
 static UsbInterfaceHandle *g_ecmIntDevHandle = NULL;
 static bool g_initFlag;
 static bool g_writeBufFlag = 0;
+static UsbInterfaceHandle *g_acmDataDevHandle[USB_LOOP_NUM];
 
 static void AcmReadBulk(struct UsbRequest *req)
 {
@@ -498,8 +499,23 @@ static int32_t CheckHostSdkIfOpenInterface005(void)
 {
     int i;
     for (i = 0; i < USB_LOOP_NUM; i++) {
-        g_acm->data_devHandle = UsbOpenInterface(g_acm->dataIface);
-        if (g_acm->data_devHandle == NULL) {
+        g_acmDataDevHandle[i] = UsbOpenInterface(g_acm->dataIface);
+        if (g_acmDataDevHandle[i] == NULL) {
+            HDF_LOGE("%s:%d i=%d error", __func__, __LINE__, i);
+            return HDF_FAILURE;
+        }
+    }
+    HDF_LOGE("%s: success", __func__);
+    return HDF_SUCCESS;
+}
+
+static int32_t CheckHostSdkIfCloseInterface005(void)
+{
+    int i;
+    int ret;
+    for (i = 0; i < USB_LOOP_NUM; i++) {
+        ret = UsbCloseInterface(g_acmDataDevHandle[i]);
+        if (ret) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
         }
@@ -689,6 +705,9 @@ static int32_t CheckHostSdkIfGetPipe002(void)
         }
         if ((p.pipeDirection == USB_PIPE_DIRECTION_IN) && (p.pipeType == USB_PIPE_TYPE_BULK)) {
             struct UsbPipeInfo *pi = (struct UsbPipeInfo *)OsalMemCalloc(sizeof(*pi));
+            if (pi == NULL) {
+                return HDF_FAILURE;
+            }
             p.interfaceId = g_acm->dataIface->info.interfaceIndex;
             *pi = p;
             g_acm->dataInPipe = pi;
@@ -748,6 +767,9 @@ static int32_t CheckHostSdkIfGetPipe004(void)
         }
         if ((p.pipeDirection == USB_PIPE_DIRECTION_OUT) && (p.pipeType == USB_PIPE_TYPE_BULK)) {
             struct UsbPipeInfo *pi = (struct UsbPipeInfo *)OsalMemCalloc(sizeof(*pi));
+            if (pi == NULL) {
+                return HDF_FAILURE;
+            }
             p.interfaceId = g_acm->dataIface->info.interfaceIndex;
             *pi = p;
             g_acm->dataOutPipe = pi;
@@ -774,6 +796,9 @@ static int32_t CheckHostSdkIfGetPipe005(void)
         }
         if ((p.pipeDirection == USB_PIPE_DIRECTION_IN) && (p.pipeType == USB_PIPE_TYPE_INTERRUPT)) {
             struct UsbPipeInfo *pi = (struct UsbPipeInfo *)OsalMemCalloc(sizeof(*pi));
+            if (pi == NULL) {
+                return HDF_FAILURE;
+            }
             p.interfaceId = g_acm->intIface->info.interfaceIndex;
             *pi = p;
             g_acm->intPipe = pi;
@@ -803,6 +828,9 @@ static int32_t CheckHostSdkIfGetPipe006(void)
         }
         if ((p.pipeDirection == USB_PIPE_DIRECTION_IN) && (p.pipeType == USB_PIPE_TYPE_INTERRUPT)) {
             struct UsbPipeInfo *pi = (struct UsbPipeInfo *)OsalMemCalloc(sizeof(*pi));
+            if (pi == NULL) {
+                return HDF_FAILURE;
+            }
             p.interfaceId = g_acm->intIface->info.interfaceIndex;
             *pi = p;
             g_acm->intPipe = pi;
@@ -830,6 +858,9 @@ static int32_t CheckHostSdkIfGetPipe007(void)
         }
         if ((p.pipeDirection == USB_PIPE_DIRECTION_OUT) && (p.pipeType == USB_PIPE_TYPE_CONTROL)) {
             struct UsbPipeInfo *pi = (struct UsbPipeInfo *)OsalMemCalloc(sizeof(*pi));
+            if (pi == NULL) {
+                return HDF_FAILURE;
+            }
             p.interfaceId = g_acm->interfaceIndex;
             *pi = p;
             g_acm->ctrPipe = pi;
@@ -860,6 +891,9 @@ static int32_t CheckHostSdkIfGetPipe008(void)
         }
         if ((p.pipeDirection == USB_PIPE_DIRECTION_OUT) && (p.pipeType == USB_PIPE_TYPE_CONTROL)) {
             struct UsbPipeInfo *pi = (struct UsbPipeInfo *)OsalMemCalloc(sizeof(*pi));
+            if (pi == NULL) {
+                return HDF_FAILURE;
+            }
             p.interfaceId = g_acm->interfaceIndex;
             *pi = p;
             g_acm->ctrPipe = pi;
@@ -1339,7 +1373,7 @@ static int32_t CheckHostSdkIfFillRequest001(void)
         readParmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
         readParmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
         readParmas.dataReq.numIsoPackets = 0;
-        readParmas.dataReq.directon = (UsbRequestDirection)((g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET)
+        readParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET)
             & DIRECTION_MASK);
         readParmas.dataReq.length = g_acm->readSize;
         ret = UsbFillRequest(g_acm->readReq[i], g_acm->data_devHandle, &readParmas);
@@ -1401,7 +1435,7 @@ static int32_t CheckHostSdkIfFillRequest003(void)
     intParmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
     intParmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
     intParmas.dataReq.numIsoPackets = 0;
-    intParmas.dataReq.directon = (UsbRequestDirection)((g_acm->intPipe->pipeDirection >> USB_PIPE_DIR_OFFSET)
+    intParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->intPipe->pipeDirection >> USB_PIPE_DIR_OFFSET)
         & DIRECTION_MASK);
     intParmas.dataReq.length = g_acm->intSize;
     ret = UsbFillRequest(g_acm->notifyReq, g_acm->int_devHandle, &intParmas);
@@ -1517,7 +1551,7 @@ static int32_t CheckHostSdkIfFillRequest005(void)
         readParmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
         readParmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
         readParmas.dataReq.numIsoPackets = 0;
-        readParmas.dataReq.directon = (UsbRequestDirection)((g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET)
+        readParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET)
             & DIRECTION_MASK);
         readParmas.dataReq.length = g_acm->readSize;
         ret = UsbFillRequest(g_acm->readReq[i], g_acm->data_devHandle, &readParmas);
@@ -1577,7 +1611,7 @@ static int32_t CheckHostSdkIfFillRequest007(void)
     intParmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
     intParmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
     intParmas.dataReq.numIsoPackets = 0;
-    intParmas.dataReq.directon = (UsbRequestDirection)((g_acm->intPipe->pipeDirection >> USB_PIPE_DIR_OFFSET)
+    intParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->intPipe->pipeDirection >> USB_PIPE_DIR_OFFSET)
         & DIRECTION_MASK);
     intParmas.dataReq.length = g_acm->intSize;
     ret = UsbFillRequest(g_acm->notifyReq, g_acm->int_devHandle, &intParmas);
@@ -1854,6 +1888,38 @@ static int32_t CheckHostSdkIfAddInterface003(void)
     return HDF_SUCCESS;
 }
 
+static int32_t CheckHostSdkIfCloseInterface006(void)
+{
+    int ret;
+    ret = UsbCloseInterface(g_ecmIntDevHandle);
+    if (ret) {
+        HDF_LOGE("%s: error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbCloseInterface(g_ecmDataDevHandle);
+    if (ret) {
+        HDF_LOGE("%s: error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbCloseInterface(g_acm->ctrl_devHandle);
+    if (ret) {
+        HDF_LOGE("%s: error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbCloseInterface(g_acm->int_devHandle);
+    if (ret) {
+        HDF_LOGE("%s: error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbCloseInterface(g_acm->data_devHandle);
+    if (ret) {
+        HDF_LOGE("%s: error", __func__);
+        return HDF_FAILURE;
+    }
+    HDF_LOGE("%s: success", __func__);
+    return HDF_SUCCESS;
+}
+
 struct UsbTestFunc g_usbTestFunc[] = {
     { USB_HOSTSDK_INIT_001_TEST, CheckHostSdkIfInit001},
     { Usb_HOSTSDK_EXIT_001_TEST, CheckHostSdkIfExit001},
@@ -1879,6 +1945,7 @@ struct UsbTestFunc g_usbTestFunc[] = {
     { USB_HOSTSDK_CLOSE_INTERFACE_003_TEST, CheckHostSdkIfCloseInterface003},
     { USB_HOSTSDK_OPEN_INTERFACE_004_TEST, CheckHostSdkIfOpenInterface004},
     { USB_HOSTSDK_OPEN_INTERFACE_005_TEST, CheckHostSdkIfOpenInterface005},
+    { USB_HOSTSDK_CLOSE_INTERFACE_005_TEST, CheckHostSdkIfCloseInterface005},
     { USB_HOSTSDK_OPEN_INTERFACE_006_TEST, CheckHostSdkIfOpenInterface006},
     { USB_HOSTSDK_SELECT_INTERFACE_001_TEST, CheckHostSdkIfSelectInterfaceSetting001},
     { USB_HOSTSDK_SELECT_INTERFACE_002_TEST, CheckHostSdkIfSelectInterfaceSetting002},
@@ -1947,6 +2014,7 @@ struct UsbTestFunc g_usbTestFunc[] = {
     { USB_HOSTSDK_ADD_INTERFACE_002_TEST, CheckHostSdkIfAddInterface002},
     { USB_HOSTSDK_REMOVE_INTERFACE_003_TEST, CheckHostSdkIfRemoveInterface003},
     { USB_HOSTSDK_ADD_INTERFACE_003_TEST, CheckHostSdkIfAddInterface003},
+    { USB_HOSTSDK_CLOSE_INTERFACE_006_TEST, CheckHostSdkIfCloseInterface006},
 };
 
 int32_t UsbTestEntry(int32_t cmd)

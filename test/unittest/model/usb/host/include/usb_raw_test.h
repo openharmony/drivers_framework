@@ -181,6 +181,8 @@ enum UsbRawTestCmd {
 #define USB_RAW_IO_SLEEP_MS_TIME        500
 #define USB_IO_THREAD_STACK_SIZE        8192
 
+#define USB_BUFFER_MAX_SIZE     256
+
 struct AcmRawDevice;
 struct RawWb {
     struct UsbRawRequest *request;
