@@ -234,7 +234,9 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
     coefficientData.x1 = (coefficientData.x1 * BMP180_CONSTANT_10) >> BMP180_CONSTANT_9;
     coefficientData.x2 = (BMP180_CONSTANT_0 * coefficientData.p) >> BMP180_CONSTANT_9;
     tnp[BAROMETER_BAROMETER] = coefficientData.p + ((coefficientData.x1 + coefficientData.x2 
-        + BMP180_CONSTANT_11) >> BMP180_CONSTANT_3);	
+        + BMP180_CONSTANT_11) >> BMP180_CONSTANT_3);
+
+    return 0;	
 }
 
 int32_t ReadBmp180Data(struct SensorCfgData *data)
