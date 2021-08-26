@@ -25,7 +25,7 @@ struct GpioCntlr;
 struct GpioMethod;
 struct GpioInfo;
 
-#define GPIO_NUM_DEFAULT 200
+#define GPIO_NUM_MAX     0xFFFF
 
 /**
  * @brief Defines the struct which represent a hardware GPIO controller.
@@ -137,6 +137,12 @@ int32_t GpioCntlrDisableIrq(struct GpioCntlr *cntlr, uint16_t local);
 void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local);
 
 struct GpioCntlr *GpioGetCntlr(uint16_t gpio);
+
+static inline uint16_t GpioToLocal(uint16_t gpio)
+{
+    struct GpioCntlr *cntlr = GpioGetCntlr(gpio);
+    return (cntlr == NULL) ? gpio : (gpio - cntlr->start);
+}
 
 static inline uint16_t GpioGetLocalNumber(struct GpioCntlr *cntlr, uint16_t gpio)
 {

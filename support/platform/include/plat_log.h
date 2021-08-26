@@ -11,7 +11,7 @@
 
 #include "hdf_log.h"
 
-#if defined(__LITEOS__)
+#if defined(__LITEOS__) || defined(__KERNEL__)
 #define PLAT_LOGV(fmt, arg...)
 #else
 #define PLAT_LOGV(fmt, arg...) HDF_LOGV(fmt, ##arg)

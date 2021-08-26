@@ -16,40 +16,40 @@
 
 int32_t GpioRead(uint16_t gpio, uint16_t *val)
 {
-    return GpioCntlrRead(GpioGetCntlr(gpio), gpio, val);
+    return GpioCntlrRead(GpioGetCntlr(gpio), GpioToLocal(gpio), val);
 }
 
 int32_t GpioWrite(uint16_t gpio, uint16_t val)
 {
-    return GpioCntlrWrite(GpioGetCntlr(gpio), gpio, val);
+    return GpioCntlrWrite(GpioGetCntlr(gpio), GpioToLocal(gpio), val);
 }
 
 int32_t GpioSetDir(uint16_t gpio, uint16_t dir)
 {
-    return GpioCntlrSetDir(GpioGetCntlr(gpio), gpio, dir);
+    return GpioCntlrSetDir(GpioGetCntlr(gpio), GpioToLocal(gpio), dir);
 }
 
 int32_t GpioGetDir(uint16_t gpio, uint16_t *dir)
 {
-    return GpioCntlrGetDir(GpioGetCntlr(gpio), gpio, dir);
+    return GpioCntlrGetDir(GpioGetCntlr(gpio), GpioToLocal(gpio), dir);
 }
 
 int32_t GpioSetIrq(uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg)
 {
-    return GpioCntlrSetIrq(GpioGetCntlr(gpio), gpio, mode, func, arg);
+    return GpioCntlrSetIrq(GpioGetCntlr(gpio), GpioToLocal(gpio), mode, func, arg);
 }
 
 int32_t GpioUnSetIrq(uint16_t gpio)
 {
-    return GpioCntlrUnsetIrq(GpioGetCntlr(gpio), gpio);
+    return GpioCntlrUnsetIrq(GpioGetCntlr(gpio), GpioToLocal(gpio));
 }
 
 int32_t GpioEnableIrq(uint16_t gpio)
 {
-    return GpioCntlrEnableIrq(GpioGetCntlr(gpio), gpio);
+    return GpioCntlrEnableIrq(GpioGetCntlr(gpio), GpioToLocal(gpio));
 }
 
 int32_t GpioDisableIrq(uint16_t gpio)
 {
-    return GpioCntlrDisableIrq(GpioGetCntlr(gpio), gpio);
+    return GpioCntlrDisableIrq(GpioGetCntlr(gpio), GpioToLocal(gpio));
 }
