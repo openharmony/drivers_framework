@@ -9,7 +9,6 @@
 #include "i2s_core.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
-#include "i2s_if.h"
 
 #define HDF_LOG_TAG i2s_core
 
