@@ -11,11 +11,11 @@
 #include "device_resource_if.h"
 #include "hdf_base.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
-#include "osal_time.h"
-#include "osal_file.h"
-#include "osal_test_type.h"
 #include "i2s_if.h"
+#include "osal_file.h"
+#include "osal_mem.h"
+#include "osal_test_type.h"
+#include "osal_time.h"
 
 #define HDF_LOG_TAG i2s_test_c
 
@@ -35,10 +35,10 @@ static int32_t I2sSetCfgTest(struct I2sTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u], \
-    channelIfMode[%u], mclk[%u], bclk[%u], writeChannel[%u], i2slFsSel[%u]", __func__, 
-    test->sampleRate, test->type, test->channelMode, test->samplePrecision,
-    test->channelIfMode, test->mclk, test->bclk, test->writeChannel, test->i2slFsSel);
+    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u],\
+        channelIfMode[%u], mclk[%u], bclk[%u], writeChannel[%u], i2slFsSel[%u]", __func__,
+        test->sampleRate, test->type, test->channelMode, test->samplePrecision,
+        test->channelIfMode, test->mclk, test->bclk, test->writeChannel, test->i2slFsSel);
 
     struct I2sCfg cfg;
     cfg.sampleRate = test->sampleRate;
@@ -66,8 +66,8 @@ static int32_t I2sGetCfgTest(struct I2sTest *test)
     struct I2sCfg cfg;
     I2sGetCfg(test->handle, &cfg);
 
-    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u], \
-        channelIfMode[%u], mclk[%u], bclk[%u], writeChannel[%u], i2slFsSel[%u]", __func__, 
+    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u],\
+        channelIfMode[%u], mclk[%u], bclk[%u], writeChannel[%u], i2slFsSel[%u]", __func__,
         test->sampleRate, test->type, test->channelMode, test->samplePrecision,
         test->channelIfMode, test->mclk, test->bclk, test->writeChannel, test->i2slFsSel);
     return HDF_SUCCESS;
@@ -137,10 +137,6 @@ static int32_t I2sPlayTest(struct I2sTest *test)
         printf("[%s] read file size[%d]", __func__, size);
         if (size > 0) {
             totalLen += size;
-            printf("[%s] I2sPlayTest:len[0x%x] [0x%x]  wbuf[0x%x][0x%x][0x%x] [0x%x][0x%x][0x%x]\n", __func__, 
-                size, totalLen, test->wbuf[0], test->wbuf[1], test->wbuf[2],
-                test->wbuf[size - 3], test->wbuf[size - 2], test->wbuf[size - 1]);
-
             uint32_t wlen = 0;
             int ret = I2sWrite(test->handle, test->wbuf, size, &wlen);
             if (ret != HDF_SUCCESS) {
@@ -177,7 +173,7 @@ static int32_t I2sRecordTest(struct I2sTest *test)
     uint32_t totalLen = 0;
     while ((i <= READ_TEST_TIMES) && (totalLen <= READ_TEST_FILE_SIZE)) {
         test->len = I2S_DATA_BUF_SIZE;
-        memset_s( test->rbuf, I2S_DATA_BUF_SIZE, 0xee, I2S_DATA_BUF_SIZE);
+        memset_s(test->rbuf, I2S_DATA_BUF_SIZE, 0xee, I2S_DATA_BUF_SIZE);
         if (I2sRead(test->handle, test->rbuf, test->len, &test->len) != HDF_SUCCESS) {
             HDF_LOGE("%s: I2sRecordTest error \n", __func__);
             return HDF_FAILURE;
@@ -213,7 +209,11 @@ static int32_t I2sReadTest(struct I2sTest *test)
         return HDF_FAILURE;
     }
 
-    memcpy_s(test->wbuf, test->len, test->rbuf, test->len);
+    if (memcpy_s(test->wbuf, test->len, test->rbuf, test->len) != EOK) {
+        HDF_LOGE("%s: memcpy buf failed", __func__);
+        return HDF_ERR_IO;
+    }
+
     return HDF_SUCCESS;
 }
 
@@ -360,6 +360,65 @@ static int32_t I2sTestBind(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
+static int32_t I2sTestInitBuf(struct I2sTest *test)
+{
+    if (test == NULL) {
+        HDF_LOGE("%s: test is null", __func__);
+        return HDF_FAILURE;
+    }
+
+    test->len = I2S_DATA_BUF_SIZE;
+    test->wbuf = (uint8_t *)OsalMemCalloc(test->len);
+    if (test->wbuf == NULL) {
+        HDF_LOGE("%s: wbuf OsalMemCalloc error\n", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    test->rbuf = (uint8_t *)OsalMemCalloc(test->len);
+    if (test->rbuf == NULL) {
+        HDF_LOGE("%s: rbuf OsalMemCalloc error\n", __func__);
+        OsalMemFree(test->wbuf);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t I2sTestInitCodecFromHcs(struct I2sTest *test, const struct DeviceResourceNode *node)
+{
+    struct DeviceResourceIface *face = NULL;
+
+    face = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
+    if (face == NULL) {
+        HDF_LOGE("%s: face is null", __func__);
+        return HDF_FAILURE;
+    }
+    
+    int32_t ret = face->GetUint8(node, "writeChannel", &test->writeChannel, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read writeChannel fail", __func__);
+        return HDF_FAILURE;
+    }
+    ret = face->GetUint8(node, "i2slFsSel", &test->i2slFsSel, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read i2slFsSel fail", __func__);
+        return HDF_FAILURE;
+    }
+
+    ret = face->GetUint8(node, "channelMode", &test->channelMode, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read channelMode fail", __func__);
+        return HDF_FAILURE;
+    }
+    ret = face->GetUint8(node, "channelIfMode", &test->channelIfMode, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read channelIfMode fail", __func__);
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
 static int32_t I2sTestInitFromHcs(struct I2sTest *test, const struct DeviceResourceNode *node)
 {
     int32_t ret;
@@ -374,16 +433,6 @@ static int32_t I2sTestInitFromHcs(struct I2sTest *test, const struct DeviceResou
         HDF_LOGE("%s: GetUint32 or GetUint32Array not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    ret = face->GetUint8(node, "writeChannel", &test->writeChannel, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read writeChannel fail", __func__);
-        return HDF_FAILURE;
-    }
-    ret = face->GetUint8(node, "i2slFsSel", &test->i2slFsSel, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read i2slFsSel fail", __func__);
-        return HDF_FAILURE;
-    }
     ret = face->GetUint8(node, "sampleRate", &test->sampleRate, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read sampleRate fail", __func__);
@@ -392,16 +441,6 @@ static int32_t I2sTestInitFromHcs(struct I2sTest *test, const struct DeviceResou
     ret = face->GetUint8(node, "type", &test->type, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read type fail", __func__);
-        return HDF_FAILURE;
-    }
-    ret = face->GetUint8(node, "channelMode", &test->channelMode, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read channelMode fail", __func__);
-        return HDF_FAILURE;
-    }
-    ret = face->GetUint8(node, "channelIfMode", &test->channelIfMode, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read channelIfMode fail", __func__);
         return HDF_FAILURE;
     }
     ret = face->GetUint8(node, "samplePrecision", &test->samplePrecision, 0);
@@ -420,18 +459,12 @@ static int32_t I2sTestInitFromHcs(struct I2sTest *test, const struct DeviceResou
         return HDF_FAILURE;
     }
 
-    test->len = I2S_DATA_BUF_SIZE;
-    test->wbuf = (uint8_t *)OsalMemCalloc(test->len);
-    if (test->wbuf == NULL) {
-        HDF_LOGE("%s: wbuf OsalMemCalloc error\n", __func__);
-        return HDF_ERR_MALLOC_FAIL;
+    if (I2sTestInitCodecFromHcs (test, node) != HDF_SUCCESS) {
+        return HDF_FAILURE;
     }
 
-    test->rbuf = (uint8_t *)OsalMemCalloc(test->len);
-    if (test->rbuf == NULL) {
-        HDF_LOGE("%s: rbuf OsalMemCalloc error\n", __func__);
-        OsalMemFree(test->wbuf);
-        return HDF_ERR_MALLOC_FAIL;
+    if (I2sTestInitBuf (test) != HDF_SUCCESS) {
+        return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
