@@ -26,13 +26,13 @@ struct UsbPnpMatchIdTable {
     const char *deviceMatchAttr;
 
     int32_t interfaceClassLength;
-    int32_t interfaceClassMask;
+    uint32_t interfaceClassMask;
     int32_t interfaceSubClassLength;
-    int32_t interfaceSubClassMask;
+    uint32_t interfaceSubClassMask;
     int32_t interfaceProtocolLength;
-    int32_t interfaceProtocolMask;
+    uint32_t interfaceProtocolMask;
     int32_t interfaceLength;
-    int32_t interfaceMask;
+    uint32_t interfaceMask;
 
     uint8_t pnpMatchFlag;
 
@@ -63,7 +63,7 @@ struct UsbPnpDeviceListTable {
     const char *serviceName;
     const char *deviceMatchAttr;
     UsbPnpDriverStatus status;
-    uint32_t usbDevAddr;
+    uintptr_t usbDevAddr;
     int32_t devNum;
     int32_t busNum;
     int32_t interfaceLength;
@@ -72,7 +72,7 @@ struct UsbPnpDeviceListTable {
 
 struct UsbPnpRemoveInfo {
     uint8_t removeType;
-    uint32_t usbDevAddr;
+    uintptr_t usbDevAddr;
     int32_t devNum;
     int32_t busNum;
     uint8_t interfaceNum;

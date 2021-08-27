@@ -306,7 +306,7 @@ int32_t CheckRawSdkIfFillIsoRequest001(void)
         reqData.length        = size;
         ret = UsbRawFillIsoRequest(g_acm->isoReq, g_acm->devHandle, &reqData);
         if (ret) {
-            printf("%s: error++ret", __func__, ret);
+            printf("%s: error++ret=%d\n", __func__, ret);
             return HDF_FAILURE;
         }
     }
@@ -333,7 +333,7 @@ int32_t CheckRawSdkIfFillIsoRequest002(void)
         reqData.length        = size;
         ret = UsbRawFillIsoRequest(NULL, g_acm->devHandle, &reqData);
         if (ret) {
-            printf("%s: error++ret", __func__, ret);
+            printf("%s: error++ret=%d\n", __func__, ret);
             return HDF_FAILURE;
         }
     }
@@ -360,7 +360,7 @@ int32_t CheckRawSdkIfFillIsoRequest003(void)
         reqData.length        = size;
         ret = UsbRawFillIsoRequest(g_acm->isoReq, g_acm->devHandle, NULL);
         if (ret) {
-            printf("%s: error++ret", __func__, ret);
+            printf("%s: error++ret=%d\n", __func__, ret);
             return HDF_FAILURE;
         }
     }
@@ -387,7 +387,7 @@ int32_t CheckRawSdkIfFillIsoRequest004(void)
         reqData.length        = size;
         ret = UsbRawFillIsoRequest(g_acm->isoReq, NULL, &reqData);
         if (ret) {
-            printf("%s: error++ret", __func__, ret);
+            printf("%s: error++ret=%d\n", __func__, ret);
             return HDF_FAILURE;
         }
     }
@@ -414,7 +414,7 @@ int32_t CheckRawSdkIfFillIsoRequest005(void)
         reqData.length        = size;
         ret = UsbRawFillIsoRequest(NULL, NULL, &reqData);
         if (ret) {
-            printf("%s: error++ret", __func__, ret);
+            printf("%s: error++ret=%d\n", __func__, ret);
             return HDF_FAILURE;
         }
     }
@@ -441,7 +441,7 @@ int32_t CheckRawSdkIfFillIsoRequest006(void)
         reqData.length        = size;
         ret = UsbRawFillIsoRequest(NULL, NULL, NULL);
         if (ret) {
-            printf("%s: error++ret", __func__, ret);
+            printf("%s: error++ret=%d\n", __func__, ret);
             return HDF_FAILURE;
         }
     }
@@ -570,60 +570,108 @@ int32_t CheckRawSdkIfAllocRequest009(void)
 int32_t CheckRawSdkIfGetDescriptor001(void)
 {
     struct UsbRawDescriptorParam param;
-    unsigned char data[100];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawGetDescriptor(NULL, g_acm->devHandle, &param, data);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor002(void)
 {
     struct UsbRawDescriptorParam param;
-    unsigned char data[100];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawGetDescriptor(g_acm->ctrlReq, NULL, &param, data);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor003(void)
 {
     struct UsbRawDescriptorParam param;
-    unsigned char data[100];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawGetDescriptor(NULL, NULL, &param, data);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor004(void)
 {
-    unsigned char data[100];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawGetDescriptor(g_acm->ctrlReq, g_acm->devHandle, NULL, data);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor005(void)
@@ -643,34 +691,58 @@ int32_t CheckRawSdkIfGetDescriptor005(void)
 int32_t CheckRawSdkIfGetDescriptor006(void)
 {
     struct UsbRawDescriptorParam param;
-    unsigned char data[256];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     param.descType = USB_DESC_TYPE;
     param.descIndex = 0;
-    param.length = sizeof(data);
+    param.length = USB_BUFFER_MAX_SIZE;
 
     ret = UsbRawGetDescriptor(g_acm->ctrlReq, g_acm->devHandle, &param, data);
     if (ret < 0) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor007(void)
 {
-    unsigned char data[100];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawGetDescriptor(g_acm->ctrlReq, NULL, NULL, data);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor008(void)
@@ -688,16 +760,28 @@ int32_t CheckRawSdkIfGetDescriptor008(void)
 
 int32_t CheckRawSdkIfGetDescriptor009(void)
 {
-    unsigned char data[100];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawGetDescriptor(NULL, g_acm->devHandle, NULL, data);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor010(void)
@@ -740,16 +824,28 @@ int32_t CheckRawSdkIfGetDescriptor011(void)
 
 int32_t CheckRawSdkIfGetDescriptor012(void)
 {
-    unsigned char data[100];
+    unsigned char *data = NULL;
     int ret;
+
+    data = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (data == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawGetDescriptor(NULL, NULL, NULL, data);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(data);
+    data = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfGetDescriptor013(void)
@@ -841,7 +937,7 @@ int32_t CheckRawSdkIfFillBulkRequest001(void)
         printf("maxPacketSize:%d+snd->request:%p\n", g_acm->dataOutEp.maxPacketSize, snd->request);
         ret = UsbRawFillBulkRequest(snd->request, g_acm->devHandle, &reqData);
         if (ret) {
-            printf("%s: error++ret", __func__, ret);
+            printf("%s: error++ret=%d\n", __func__, ret);
             return HDF_FAILURE;
         }
     }
@@ -1143,16 +1239,28 @@ int32_t CheckRawSdkIfFillControlSetup001(void)
 
 int32_t CheckRawSdkIfFillControlSetup002(void)
 {
-    unsigned char setup[100] = {0};
+    unsigned char *setup = NULL;
     int ret;
+
+    setup = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (setup == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     ret = UsbRawFillControlSetup(setup, NULL);
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+    ret = HDF_SUCCESS;
+error:
+    OsalMemFree(setup);
+    setup = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfFillControlSetup003(void)
@@ -1171,8 +1279,9 @@ int32_t CheckRawSdkIfFillControlSetup003(void)
 int32_t CheckRawSdkIfFillControlSetup004(void)
 {
     struct UsbControlRequestData ctrlReq;
-    unsigned char setup[100] = {0};
+    unsigned char *setup = NULL;
     int ret;
+
     g_acm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
     g_acm->lineCoding.bCharFormat = CHARFORMAT;
     g_acm->lineCoding.bParityType = USB_CDC_NO_PARITY;
@@ -1186,13 +1295,25 @@ int32_t CheckRawSdkIfFillControlSetup004(void)
     ctrlReq.length      = sizeof(struct UsbCdcLineCoding);
     ctrlReq.timeout     = USB_CTRL_SET_TIMEOUT;
 
+    setup = OsalMemCalloc(USB_BUFFER_MAX_SIZE);
+    if (setup == NULL) {
+        HDF_LOGE("%s:%d OsalMemCalloc error", __func__, __LINE__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
     ret = UsbRawFillControlSetup(setup, &ctrlReq);
     if (ret) {
         HDF_LOGE("%s: error", __func__);
-        return HDF_FAILURE;
+        ret = HDF_FAILURE;
+        goto error;
     }
     HDF_LOGE("%s: success", __func__);
-    return HDF_SUCCESS;
+
+error:
+    OsalMemFree(setup);
+    setup = NULL;
+
+    return ret;
 }
 
 int32_t CheckRawSdkIfSendControlRequest001(void)

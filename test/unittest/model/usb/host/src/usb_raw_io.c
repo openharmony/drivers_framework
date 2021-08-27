@@ -78,6 +78,7 @@ int UsbStartIo(void)
     int ret;
 
     printf("%s start\n", __func__);
+    g_stopIoThreadFlag = false;
 
     /* creat Io thread */
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
@@ -106,13 +107,11 @@ int UsbStopIo(void)
     int ret;
     g_stopIoThreadFlag = true;
     HDF_LOGD("%s:%d", __func__, __LINE__);
-    OsalMDelay(TEST_SLEEP_TIME);
     ret = OsalThreadDestroy(&g_acm->ioThread);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:%d OsalThreadDestroy faile, ret=%d ", __func__, __LINE__, ret);
         return ret;
     }
-    g_stopIoThreadFlag = false;
     return HDF_SUCCESS;
 }
 
