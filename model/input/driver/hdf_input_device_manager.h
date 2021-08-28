@@ -112,6 +112,7 @@ typedef struct InputDeviceInfo {
     void *pvtData;
     DevAttr attrSet;
     DevAbility abilitySet;
+    struct OsalMutex mutex;
     struct InputDeviceInfo *next;
 } InputDevice;
 

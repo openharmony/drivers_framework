@@ -294,7 +294,12 @@ static InputDevice *InputDeviceInstance(ChipDevice *chipDev)
     inputDev->devType = chipDev->driver->boardCfg->attr.devType;
     inputDev->devName = chipDev->driver->devName;
 
-    HDF_LOGI("%s: inputDev->devName = %s", __func__, inputDev->devName);
+    int32_t ret = OsalMutexInit(&inputDev->mutex);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init mutex error", __func__);
+        OsalMemFree(inputDev);
+        return NULL;
+    }
     return inputDev;
 }
 

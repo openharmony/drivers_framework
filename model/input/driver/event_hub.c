@@ -31,7 +31,7 @@ void PushOnePackage(InputDevice *inputDev, uint32_t type, uint32_t code, int32_t
         HDF_LOGE("%s: parm is null", __func__);
         return;
     }
-
+    OsalMutexLock(&inputDev->mutex);
     package.type = type;
     package.code = code;
     package.value = value;
@@ -65,4 +65,5 @@ void PushOnePackage(InputDevice *inputDev, uint32_t type, uint32_t code, int32_t
         HdfSbufFlush(inputDev->pkgBuf);
         inputDev->errFrameFlag = false;
     }
+    OsalMutexUnlock(&inputDev->mutex);
 }

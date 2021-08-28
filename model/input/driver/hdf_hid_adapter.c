@@ -167,6 +167,13 @@ static InputDevice* HidConstructInputDev(HidInfo *info)
     }
     (void)memset_s(inputDev, sizeof(InputDevice), 0, sizeof(InputDevice));
 
+    int32_t ret = OsalMutexInit(&inputDev->mutex);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init mutex error", __func__);
+        OsalMemFree(inputDev);
+        return NULL;
+    }
+
     inputDev->devType = info->devType;
     inputDev->devName = info->devName;
     SetInputDevAbility(inputDev);
