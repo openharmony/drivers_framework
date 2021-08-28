@@ -6,18 +6,18 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
+#include "sensor_hall_driver.h"
+#include <securec.h>
+#include "gpio_if.h"
+#include "hall_ak8789.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
+#include "osal_irq.h"
 #include "osal_math.h"
 #include "osal_mem.h"
-#include "hall_ak8789.h"
-#include "sensor_hall_driver.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
-#include "osal_irq.h"
-#include "gpio_if.h"
 
 #define HDF_LOG_TAG    sensor_hall_driver_c
 #define HDF_HALL_WORK_QUEUE_NAME    "hdf_hall_work_queue"
@@ -321,19 +321,46 @@ static int32_t ParserHallPinConfigData(const struct DeviceResourceNode *node, st
     const struct DeviceResourceNode *pinNode = parser->GetChildNode(node, "hallPinConfig");
     CHECK_NULL_PTR_RETURN_VALUE(pinNode, HDF_ERR_INVALID_PARAM);
 
-    ret = parser->GetUint32(pinNode, "NorthPolarityGpio", &drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO], 0);
+    ret = parser->GetUint32(pinNode, "NorthPolarityGpio", (uint32_t *)&drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO], 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "NorthPolarityGpio");
-    ret = parser->GetUint32(pinNode, "SouthPolarityGpio", &drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO], 0);
+    ret = parser->GetUint32(pinNode, "SouthPolarityGpio", (uint32_t *)&drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO], 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "SouthPolarityGpio");
+
+    return HDF_SUCCESS;
+}
+
+static int32_t SetHallGpioPin(const struct DeviceResourceNode *node, struct HallDrvData *drvData) 
+{
+    if (ParserHallPinConfigData(node, drvData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: get hall pin config failed", __func__);
+        return HDF_FAILURE;
+    }
+    
+    if (drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO] >= 0) {
+        int ret = GpioSetDir(drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO], GPIO_DIR_IN);
+        if (ret != 0) {
+            HDF_LOGE("%s:%d set north gpio dir failed", __func__, __LINE__);
+            return HDF_FAILURE;
+        }
+    }
+    
+    if (drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO] >= 0) {
+        int ret = GpioSetDir(drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO], GPIO_DIR_IN);
+        if (ret != 0) {
+            HDF_LOGE("%s:%d south south gpio dir failed", __func__, __LINE__);
+            return HDF_FAILURE;
+        }
+    }
 
     return HDF_SUCCESS;
 }
 
 int32_t InitHallDriver(struct HdfDeviceObject *device)
 {
+    struct HallDrvData *drvData = NULL;
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
     HDF_LOGI("%s: hall sensor init success", __func__);
-    struct HallDrvData *drvData = (struct HallDrvData *)device->service;
+    drvData = (struct HallDrvData *)device->service;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
     if (drvData->detectFlag) {
@@ -352,25 +379,9 @@ int32_t InitHallDriver(struct HdfDeviceObject *device)
         goto BASE_CONFIG_EXIT;
     }
 
-    if (ParserHallPinConfigData(device->property, drvData) != HDF_SUCCESS) {
-        HDF_LOGE("%s: get hall pin config failed", __func__);
-        goto PIN_CONFIG_EXIT;
-    }
-    
-    if (drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO] >= 0) {
-        int ret = GpioSetDir(drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO], GPIO_DIR_IN);
-        if (ret != 0) {
-            HDF_LOGE("%s:%d HALL north gpio failed", __func__, __LINE__);
-            goto DETECT_CHIP_EXIT;
-        }
-    }
-    
-    if (drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO] >= 0) {
-        int ret = GpioSetDir(drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO], GPIO_DIR_IN);
-        if (ret != 0) {
-            HDF_LOGE("%s:%d HALL south gpio failed", __func__, __LINE__);
-            goto DETECT_CHIP_EXIT;
-        }
+    if (SetHallGpioPin(device->property, drvData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: set hall gpio pin  failed", __func__);
+        goto BASE_CONFIG_EXIT;
     }
 
     if (DetectHallChip() != HDF_SUCCESS) {
@@ -396,18 +407,15 @@ BASE_CONFIG_EXIT:
     OsalMemFree(drvData->hallCfg);
     drvData->hallCfg = NULL;
     return HDF_FAILURE;
-PIN_CONFIG_EXIT:
-    OsalMemFree(drvData);
-    drvData = NULL;
-    return HDF_FAILURE;
 }
 
 void ReleaseHallDriver(struct HdfDeviceObject *device)
 {
+    struct HallDrvData *drvData = NULL;
     CHECK_NULL_PTR_RETURN(device);
     HDF_LOGI("%s: hall sensor release success", __func__);
 
-    struct HallDrvData *drvData = (struct HallDrvData *)device->service;
+    drvData = (struct HallDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
     (void)DeleteSensorDevice(&drvData->hallCfg->sensorInfo);

@@ -7,12 +7,12 @@
  */
 
 #include "hall_ak8789.h"
-#include "securec.h"
-#include "osal_time.h"
+#include <securec.h>
 #include "osal_irq.h"
-#include "sensor_hall_driver.h"
+#include "osal_time.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
+#include "sensor_hall_driver.h"
 
 /* IO config for int-pin and Gpio-pin */
 #define SENSOR_HALL_DATA_REG_ADDR 0x114f0040
