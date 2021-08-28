@@ -598,8 +598,7 @@ static int32_t AudioSapmAddRoute(struct AudioCard *audioCard, const struct Audio
     struct AudioSapmComponent *sapmComponent = NULL;
     int32_t ret;
 
-    if ((audioCard == NULL || &audioCard->components == NULL) ||
-        (route == NULL || route->source == NULL || route->sink == NULL)) {
+    if ((audioCard == NULL) || (route == NULL || route->source == NULL || route->sink == NULL)) {
         ADM_LOG_ERR("input params check error: audioCard=%p, route=%p.", audioCard, route);
         return HDF_FAILURE;
     }
