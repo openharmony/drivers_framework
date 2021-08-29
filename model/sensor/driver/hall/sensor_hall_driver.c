@@ -36,6 +36,7 @@ static struct HallDrvData *HallGetDrvData(void)
 int32_t RegisterHallChipOps(const struct HallOpsCall *ops)
 {
     struct HallDrvData *drvData = NULL;
+
     CHECK_NULL_PTR_RETURN_VALUE(ops, HDF_ERR_INVALID_PARAM);
     drvData = HallGetDrvData();
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
@@ -62,8 +63,6 @@ static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
 {
     (void)gpio;
 
-    HDF_LOGE("%s: trigger north polarity irq rasing", __func__);
-
     struct HallDrvData *drvData = (struct HallDrvData *)data;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
@@ -77,8 +76,6 @@ static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
 static int32_t HallSouthPolarityIrqFunc(uint16_t gpio, void *data)
 {
     (void)gpio;
-
-    HDF_LOGE("%s: trigger south polarity irq rasing", __func__);
 
     struct HallDrvData *drvData = (struct HallDrvData *)data;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
@@ -222,7 +219,6 @@ static int32_t DispatchHall(struct HdfDeviceIoClient *client,
 int32_t BindHallDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
-    HDF_LOGI("%s: hall sensor bind success", __func__);
 
     struct HallDrvData *drvData = (struct HallDrvData *)OsalMemCalloc(sizeof(*drvData));
     if (drvData == NULL) {
@@ -358,8 +354,8 @@ static int32_t SetHallGpioPin(const struct DeviceResourceNode *node, struct Hall
 int32_t InitHallDriver(struct HdfDeviceObject *device)
 {
     struct HallDrvData *drvData = NULL;
+
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
-    HDF_LOGI("%s: hall sensor init success", __func__);
     drvData = (struct HallDrvData *)device->service;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
@@ -413,7 +409,6 @@ void ReleaseHallDriver(struct HdfDeviceObject *device)
 {
     struct HallDrvData *drvData = NULL;
     CHECK_NULL_PTR_RETURN(device);
-    HDF_LOGI("%s: hall sensor release success", __func__);
 
     drvData = (struct HallDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
@@ -439,4 +434,3 @@ struct HdfDriverEntry g_sensorHallDevEntry = {
 };
 
 HDF_INIT(g_sensorHallDevEntry);
-

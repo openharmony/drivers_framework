@@ -24,11 +24,12 @@ int32_t ReadAk8789Data(struct SensorCfgData *data)
     int32_t ret;  
     uint8_t tmp = 1;
     OsalTimespec time;
-    struct SensorReportEvent event;           
+    struct SensorReportEvent event;  
+             
+    CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
     (void)memset_s(&event, sizeof(event), 0, sizeof(event));
     (void)memset_s(&time, sizeof(time), 0, sizeof(time));
-    CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
     if (OsalGetTime(&time) != HDF_SUCCESS) {            
         HDF_LOGE("%s: Get time failed", __func__);
         return HDF_FAILURE;
@@ -56,7 +57,6 @@ static int32_t InitHallPreConfig(void)
         HDF_LOGE("%s: Clk write mux pin failed", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: Data write mux pin enter", __func__);
     return HDF_SUCCESS;
 }
 
@@ -64,6 +64,7 @@ int32_t DetectHallAk8789Chip(struct SensorCfgData *data)
 {
     int32_t ret;
     struct HallOpsCall ops;
+
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
     if (strcmp(HALL_CHIP_NAME_AK8789, data->sensorAttr.chipName) != 0) {
