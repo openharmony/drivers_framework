@@ -174,7 +174,7 @@ struct GpioCntlr *GpioGetCntlr(uint16_t gpio)
 
     list = GpioCntlrListGet();
     DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, list, struct GpioCntlr, list) {
-        if (gpio >= cntlr->start && gpio <= (cntlr->start + cntlr->count)) {
+        if (gpio >= cntlr->start && gpio < (cntlr->start + cntlr->count)) {
             GpioCntlrListPut();
             return cntlr;
         }
