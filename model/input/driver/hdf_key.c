@@ -23,7 +23,7 @@
 
 int32_t KeyIrqHandle(uint16_t intGpioNum, void *data)
 {
-    uint16_t gpioValue;
+    uint16_t gpioValue = 0;
     KeyDriver *driver = (KeyDriver *)data;
     if (driver == NULL) {
         return HDF_FAILURE;

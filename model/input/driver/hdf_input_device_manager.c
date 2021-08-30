@@ -335,8 +335,8 @@ void UnregisterInputDevice(InputDevice *inputDev)
     }
     HdfSBufRecycle(inputDev->eventBuf);
     inputDev->eventBuf = NULL;
+    OsalMutexDestroy(&inputDev->mutex);
     OsalMemFree(inputDev);
-    inputDev = NULL;
     OsalMutexUnlock(&g_inputManager->mutex);
     HDF_LOGI("%s: exit succ, devCount is %d", __func__, g_inputManager->devCount);
     return;
