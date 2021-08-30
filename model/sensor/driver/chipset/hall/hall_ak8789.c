@@ -14,6 +14,8 @@
 #include "sensor_device_manager.h"
 #include "sensor_hall_driver.h"
 
+#define HDF_LOG_TAG    hall_ak8789_c
+
 /* IO config for int-pin and Gpio-pin */
 #define SENSOR_HALL_DATA_REG_ADDR 0x114f0040
 #define SENSOR_HALL_CLK_REG_ADDR  0x114f0044
@@ -21,7 +23,7 @@
 
 int32_t ReadAk8789Data(struct SensorCfgData *data)
 {
-    int32_t ret;  
+    int32_t ret;
     uint8_t tmp = 1;
     OsalTimespec time;
     struct SensorReportEvent event;
@@ -30,20 +32,20 @@ int32_t ReadAk8789Data(struct SensorCfgData *data)
 
     (void)memset_s(&event, sizeof(event), 0, sizeof(event));
     (void)memset_s(&time, sizeof(time), 0, sizeof(time));
-    if (OsalGetTime(&time) != HDF_SUCCESS) {      
+    if (OsalGetTime(&time) != HDF_SUCCESS) {
         HDF_LOGE("%s: Get time failed", __func__);
         return HDF_FAILURE;
     }
-    
+
     event.timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec *
         SENSOR_CONVERT_UNIT; /* unit nanosecond */
     event.sensorId = SENSOR_TAG_HALL;
     event.version = 0;
-    event.option = 0;                     
+    event.option = 0;
     event.mode = SENSOR_WORK_MODE_ON_CHANGE;
-    event.dataLen = sizeof(tmp);       
-    event.data = (uint8_t *)&tmp;    
-    ret = ReportSensorEvent(&event);  
+    event.dataLen = sizeof(tmp);
+    event.data = (uint8_t *)&tmp;
+    ret = ReportSensorEvent(&event);
     return ret;
 }
 

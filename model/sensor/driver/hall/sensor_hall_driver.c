@@ -40,7 +40,7 @@ int32_t RegisterHallChipOps(const struct HallOpsCall *ops)
     CHECK_NULL_PTR_RETURN_VALUE(ops, HDF_ERR_INVALID_PARAM);
     drvData = HallGetDrvData();
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
-    drvData->ops.Init = ops->Init;                               
+    drvData->ops.Init = ops->Init;
     drvData->ops.ReadData = ops->ReadData;
     return HDF_SUCCESS;
 }
@@ -58,7 +58,7 @@ static void HallDataWorkEntry(void *arg)
         return;
     }
 }
-                                      
+
 static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
 {
     (void)gpio;
