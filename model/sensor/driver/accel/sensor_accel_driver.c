@@ -303,19 +303,18 @@ BASE_CONFIG_EXIT:
     return NULL;
 }
 
-void AccelReleaseCfgData(struct SensorCfgData *sensorCfgData)
+void AccelReleaseCfgData(struct SensorCfgData *accelCfg)
 {
-    struct AccelDrvData *drvData = AccelGetDrvData();
+    CHECK_NULL_PTR_RETURN(accelCfg);
 
-    CHECK_NULL_PTR_RETURN(drvData);
-    (void)DeleteSensorDevice(&drvData->accelCfg->sensorInfo);
-    ReleaseSensorAllRegConfig(drvData->accelCfg);
-    (void)ReleaseSensorBusHandle(&drvData->accelCfg->busCfg);
-    drvData->detectFlag = false;
-    drvData->accelCfg->root = NULL;
-    (void)memset_s(&drvData->accelCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
-    (void)memset_s(&drvData->accelCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
-    (void)memset_s(&drvData->accelCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
+    (void)DeleteSensorDevice(&accelCfg->sensorInfo);
+    ReleaseSensorAllRegConfig(accelCfg);
+    (void)ReleaseSensorBusHandle(&accelCfg->busCfg);
+
+    accelCfg->root = NULL;
+    (void)memset_s(&accelCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
+    (void)memset_s(&accelCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
+    (void)memset_s(&accelCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
 }
 
 int32_t AccelInitDriver(struct HdfDeviceObject *device)
@@ -351,6 +350,9 @@ void AccelReleaseDriver(struct HdfDeviceObject *device)
     if (drvData->detectFlag) {
         AccelReleaseCfgData(drvData->accelCfg);
     }
+
+    OsalMemFree(drvData->accelCfg);
+    drvData->accelCfg = NULL;
 
     HdfWorkDestroy(&drvData->accelWork);
     HdfWorkQueueDestroy(&drvData->accelWorkQueue);
