@@ -24,7 +24,7 @@
 
 static struct HallDetectIfList g_hallDetectIfList[] = {
     {HALL_CHIP_NAME_AK8789, DetectHallAk8789Chip},
-};   
+};
 
 static struct HallDrvData *g_hallDrvData = NULL;
 
@@ -40,7 +40,7 @@ int32_t RegisterHallChipOps(const struct HallOpsCall *ops)
     CHECK_NULL_PTR_RETURN_VALUE(ops, HDF_ERR_INVALID_PARAM);
     drvData = HallGetDrvData();
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
-    drvData->ops.Init = ops->Init;                                
+    drvData->ops.Init = ops->Init;                               
     drvData->ops.ReadData = ops->ReadData;
     return HDF_SUCCESS;
 }
@@ -58,7 +58,7 @@ static void HallDataWorkEntry(void *arg)
         return;
     }
 }
-                                            
+                                      
 static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
 {
     (void)gpio;
@@ -123,7 +123,7 @@ static int32_t SetHallEnable(void)
         HDF_LOGE("%s: hall sensor is enabled", __func__);
         return HDF_SUCCESS;
     }
-    
+
     if (drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO] >= 0) {
         ret = GpioSetIrq(drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO], OSAL_IRQF_TRIGGER_FALLING, 
             HallNorthPolarityIrqFunc, drvData);
@@ -135,7 +135,7 @@ static int32_t SetHallEnable(void)
             HDF_LOGE("gpio enable north irq failed: %d", ret);
         }
     }
-    
+
     if (drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO] >= 0) {
         ret = GpioSetIrq(drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO], OSAL_IRQF_TRIGGER_FALLING, 
             HallSouthPolarityIrqFunc, drvData);
@@ -168,17 +168,19 @@ static int32_t SetHallDisable(void)
         if (ret != 0) {
             HDF_LOGE("%s: gpio unset north irq failed", __func__);
         }
+		
         ret = GpioDisableIrq(drvData->GpioIrq[HALL_NORTH_POLARITY_GPIO]);
         if (ret != 0) {
             HDF_LOGE("%s: gpio disable north irq failed", __func__);
         }
     }
-    
+
     if (drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO] >= 0) {
         ret = GpioUnSetIrq(drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO]);
         if (ret != 0) {
             HDF_LOGE("%s: gpio unset south irq failed", __func__);
         }
+		
         ret = GpioDisableIrq(drvData->GpioIrq[HALL_SOUTH_POLARITY_GPIO]);
         if (ret != 0) {
             HDF_LOGE("%s: gpio disable south irq failed", __func__);
@@ -260,7 +262,7 @@ static int32_t InitHallAfterConfig(void)
     if (InitHallData() != HDF_SUCCESS) {
         HDF_LOGE("%s: init hall config failed", __func__);
         return HDF_FAILURE;
-    } 
+    }
 
     if (InitHallOps(&deviceInfo) != HDF_SUCCESS) {
         HDF_LOGE("%s: init hall ops failed", __func__);
@@ -384,6 +386,7 @@ int32_t InitHallDriver(struct HdfDeviceObject *device)
         HDF_LOGE("%s: hall sensor detect device no exist", __func__);
         goto DETECT_CHIP_EXIT;
     }
+	
     drvData->detectFlag = true;
 
     if (InitHallAfterConfig() != HDF_SUCCESS) {
