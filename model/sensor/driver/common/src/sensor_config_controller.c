@@ -32,9 +32,9 @@ static int32_t SensorOpsRead(struct SensorBusCfg *busCfg, struct SensorRegCfg *c
     return value;
 }
 
-static uint16_t GetSensorRegRealValueMask(struct SensorRegCfg *cfgItem, uint16_t *value, uint16_t busMask)
+static uint32_t GetSensorRegRealValueMask(struct SensorRegCfg *cfgItem, uint32_t *value, uint32_t busMask)
 {
-    uint16_t mask = cfgItem->mask & busMask;
+    uint32_t mask = cfgItem->mask & busMask;
     *value = cfgItem->value & busMask;
 
     if (cfgItem->shiftNum != 0) {
@@ -77,10 +77,10 @@ static int32_t SensorOpsWrite(struct SensorBusCfg *busCfg, struct SensorRegCfg *
 
 static int32_t SensorOpsReadCheck(struct SensorBusCfg *busCfg, struct SensorRegCfg *cfgItem)
 {
-    uint16_t value = 0;
-    uint16_t originValue;
-    uint16_t mask;
-    uint16_t busMask = 0xffff;
+    uint32_t value = 0;
+    uint32_t originValue;
+    uint32_t mask;
+    uint32_t busMask = 0xffff;
     int32_t ret;
 
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
@@ -99,10 +99,55 @@ static int32_t SensorOpsReadCheck(struct SensorBusCfg *busCfg, struct SensorRegC
     return HDF_SUCCESS;
 }
 
+static int32_t SensorBitwiseCalculate(struct SensorRegCfg *cfgItem, uint32_t *value, uint32_t valueMask)
+{
+    uint32_t originValue;
+    uint32_t mask;
+    uint32_t tmp;
+
+    mask = GetSensorRegRealValueMask(cfgItem, &originValue, valueMask);
+    switch ((enum SensorCalculateType)cfgItem->calType)
+    {
+        case SENSOR_CFG_CALC_TYPE_SET:
+            *value &= ~mask;
+            *value |= (originValue & mask);
+            break;
+        case SENSOR_CFG_CALC_TYPE_REVERT:
+            tmp = *value & (~mask);
+            *value = ~(*value & mask);
+            *value = tmp | (*value & mask);
+            break;
+        default:
+            HDF_LOGE("%s: unsupported cal type", __func__);
+            break;
+    }
+    return 0;
+}
+
 static int32_t SensorOpsUpdateBitwise(struct SensorBusCfg *busCfg, struct SensorRegCfg *cfgItem)
 {
-    (void)busCfg;
-    (void)cfgItem;
+    uint32_t value = 0;
+    uint32_t busMask = 0x000000ff;
+    int32_t ret;
+    uint8_t valueArray[SENSOR_VALUE_BUTT];
+
+    CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
+
+    if (busCfg->busType == SENSOR_BUS_I2C) {
+        ret = ReadSensor(busCfg, cfgItem->regAddr, (uint8_t *)&value, busCfg->i2cCfg.regWidth);
+        CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read i2c reg");
+        busMask = (busCfg->i2cCfg.regWidth == SENSOR_ADDR_WIDTH_1_BYTE) ? 0x000000ff : 0x0000ffff;
+    }
+
+    ret = SensorBitwiseCalculate(cfgItem, &value, busMask);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "update bitwise failed");
+
+    valueArray[SENSOR_ADDR_INDEX] = cfgItem->regAddr;
+    valueArray[SENSOR_VALUE_INDEX] = (uint8_t)value;
+
+    ret = WriteSensor(busCfg, valueArray, sizeof(valueArray));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "update bitewise write failed");
+
     return HDF_SUCCESS;
 }
 

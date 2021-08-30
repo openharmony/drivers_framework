@@ -41,11 +41,6 @@ struct AccelData {
     int32_t z;
 };
 
-struct AccelDetectIfList {
-    char *chipName;
-    int32_t (*DetectChip)(struct SensorCfgData *data);
-};
-
 struct AccelOpsCall {
     int32_t (*Init)(struct SensorCfgData *data);
     int32_t (*ReadData)(struct SensorCfgData *data);
@@ -59,12 +54,13 @@ struct AccelDrvData {
     OsalTimer accelTimer;
     bool detectFlag;
     bool enable;
-    bool initStatus;
     int64_t interval;
     struct SensorCfgData *accelCfg;
     struct AccelOpsCall ops;
 };
 
-int32_t RegisterAccelChipOps(const struct AccelOpsCall *ops);
+int32_t AccelRegisterChipOps(const struct AccelOpsCall *ops);
+struct SensorCfgData *AccelCreateCfgData(const struct DeviceResourceNode *node);
+void AccelReleaseCfgData(struct SensorCfgData *sensorCfgData);
 
 #endif /* SENSOR_ACCEL_DRIVER_H */
