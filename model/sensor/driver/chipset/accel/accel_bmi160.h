@@ -9,6 +9,7 @@
 #ifndef ACCEL_BMI160_H
 #define ACCEL_BMI160_H
 
+#include "sensor_accel_driver.h"
 #include "sensor_config_parser.h"
 
 /* ACCEL DATA REGISTERS ADDR */
@@ -59,5 +60,11 @@
 
 int32_t DetectAccelBim160Chip(struct SensorCfgData *data);
 int32_t ReadBmi160Data(struct SensorCfgData *data);
+
+struct Bmi160DrvData {
+    struct IDeviceIoService ioService;
+    struct HdfDeviceObject *device;
+    struct SensorCfgData *sensorCfg;
+};
 
 #endif /* ACCEL_BMI160_H */
