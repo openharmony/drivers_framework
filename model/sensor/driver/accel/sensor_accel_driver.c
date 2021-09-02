@@ -8,7 +8,6 @@
 
 #include "sensor_accel_driver.h"
 #include <securec.h>
-#include "accel_bmi160.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_math.h"
