@@ -7,7 +7,7 @@
  */
 #include "hdf_base.h"
 #include "hdf_log.h"
-#include "platform_common.h"
+#include "platform_core.h"
 #include "storage_block.h"
 
 #define HDF_LOG_TAG storage_block_c

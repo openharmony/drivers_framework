@@ -8,7 +8,7 @@
 
 #include "hdf_log.h"
 #include "osal_spinlock.h"
-#include "platform_common.h"
+#include "platform_core.h"
 
 static struct PlatformModuleInfo g_platformModules[] = {
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)

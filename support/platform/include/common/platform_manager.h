@@ -20,6 +20,7 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
+enum PlatformModuleType;
 struct PlatformManager {
     const char *name;          /* name of the manager */
     struct DListHead devices;  /* list to keep all it's device instances */
