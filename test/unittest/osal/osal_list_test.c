@@ -269,12 +269,15 @@ static int ThreadTestPostSem(void *arg)
             UT_TEST_CHECK_RET(g_hdfSemStatus == false, OSAL_SEM_POST_RESULT);
             UT_TEST_CHECK_RET(g_hdfListStatus == false, OSAL_LIST_STRESS);
         }
-
+#ifndef __USER__
         TestAddRoute(cnt);
+#endif
         cnt++;
         index++;
     }
+#ifndef __USER__
     OsalTestWorkEnd();
+#endif
     OsalSemPost(&g_hdfSem);
     HDF_LOGE("%s exit", __func__);
     return 0;
@@ -362,8 +365,10 @@ static void OsalTestSem(void)
 
 void OsalTestOther(int flag)
 {
-    HDF_LOGI("[OSAL_UT_TEST]%s entry", __func__);
+    HDF_LOGI("[OSAL_UT_TEST]%s entry flag:%d", __func__, flag);
+#ifndef __USER__
     OsalTestWork(flag);
+#endif
     OsalTestListInit();
     OsalTestSem();
 }
