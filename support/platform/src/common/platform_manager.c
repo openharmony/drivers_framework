@@ -9,7 +9,7 @@
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_sem.h"
-#include "platform_common.h"
+#include "platform_core.h"
 #include "platform_device.h"
 #include "platform_manager.h"
 

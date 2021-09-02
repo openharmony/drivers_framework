@@ -12,7 +12,7 @@
 #include "osal_mem.h"
 #include "osal_spinlock.h"
 #include "osal_time.h"
-#include "plat_common.h"
+#include "platform_core.h"
 #include "plat_log.h"
 
 #define HDF_LOG_TAG adc_core_c

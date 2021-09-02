@@ -11,7 +11,7 @@
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_time.h"
-#include "plat_common.h"
+#include "platform_core.h"
 #include "plat_log.h"
 
 #define HDF_LOG_TAG i2c_core

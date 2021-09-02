@@ -14,7 +14,6 @@
 #include "hdf_sref.h"
 #include "osal_sem.h"
 #include "osal_spinlock.h"
-#include "platform_common.h"
 
 #ifdef __cplusplus
 #if __cplusplus

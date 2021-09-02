@@ -17,7 +17,7 @@
 #include "osal_mem.h"
 #include "osal_mutex.h"
 #include "osal_time.h"
-#include "platform.h"
+#include "platform_core.h"
 
 #ifdef __cplusplus
 #if __cplusplus
