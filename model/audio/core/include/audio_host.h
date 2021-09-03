@@ -17,7 +17,6 @@
 #include "osal_mem.h"
 #include "osal_mutex.h"
 #include "securec.h"
-#include "audio_types.h"
 
 #ifdef __cplusplus
 #if __cplusplus
