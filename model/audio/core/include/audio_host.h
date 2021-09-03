@@ -47,6 +47,17 @@ extern "C" {
 #define AUDIO_LIST_HEAD(name) \
     struct DListHead name = AUDIO_LIST_HEAD_INIT(name)
 
+struct AudioConfigData {
+    const char *cardServiceName;
+    const char *codecName;
+    const char *platformName;
+    const char *cpuDaiName;
+    const char *codecDaiName;
+    const char *accessoryName;
+    const char *accessoryDaiName;
+    const char *dspName;
+    const char *dspDaiName;
+};
 
 enum AudioFormat {
     AUDIO_FORMAT_PCM_8_BIT  = 0x1u,       /**< 8-bit PCM */
@@ -62,18 +73,6 @@ enum AudioFormat {
     AUDIO_FORMAT_G711A      = 0x2000001u, /**< G711A */
     AUDIO_FORMAT_G711U      = 0x2000002u, /**< G711u */
     AUDIO_FORMAT_G726       = 0x2000003u, /**< G726 */
-};
-
-struct AudioConfigData {
-    const char *cardServiceName;
-    const char *codecName;
-    const char *platformName;
-    const char *cpuDaiName;
-    const char *codecDaiName;
-    const char *accessoryName;
-    const char *accessoryDaiName;
-    const char *dspName;
-    const char *dspDaiName;
 };
 
 struct AudioCard {
