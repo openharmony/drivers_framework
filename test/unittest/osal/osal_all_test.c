@@ -6,7 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <inttypes.h> 
 #include "hdf_base.h"
 #include "hdf_log.h"
 #include "osal_firmware.h"
@@ -609,7 +608,6 @@ static void OsaTimeTest(void)
     OsalTimespec hdfTs = { 0, 0 };
     OsalTimespec hdfTs2 = { 0, 0 };
     OsalTimespec hdfTsDiff = { 0, 0 };
-    HDF_LOGE("%s ms:%" PRIu64 "", __func__, OsalGetSysTimeMs());
 
     OsalGetTime(&hdfTs);
     OsalSleep(TIME_TEST_SLEEP_S);
