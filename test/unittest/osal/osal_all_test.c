@@ -18,7 +18,9 @@
 #include "osal_mem.h"
 #include "osal_mutex.h"
 #include "osal_spinlock.h"
+#ifndef __USER__
 #include "osal_test_type.h"
+#endif
 #include "osal_thread.h"
 #include "osal_time.h"
 #include "osal_timer.h"
@@ -169,6 +171,8 @@ int ThreadTest2(void *arg)
     return 0;
 }
 
+#define HDF_DBG_CNT_CTRL 10
+#ifndef __USER__
 OSAL_DECLARE_TIMER(g_testTimerLoop1);
 OSAL_DECLARE_TIMER(g_testTimerLoop2);
 OSAL_DECLARE_TIMER(g_testTimerOnce);
@@ -183,7 +187,6 @@ static int32_t g_timerPeriod2Modify = 750;
 #define HDF_TEST_TIMER_PARA 1
 #define HDF_TEST_TIMER_MODIFY 2
 #define HDF_TEST_TIMER_END 3
-#define HDF_DBG_CNT_CTRL 10
 
 static int g_timerLoop1RunFlag;
 static int g_timer1Cnt = 0;
@@ -489,6 +492,7 @@ void OsaIrqTest(void)
 #define IRQ_TEST_UNREG 30
 #define THREAD_TEST_STOP_TIMER 25
 #define THREAD_TEST_STOP_TIMER_CHECK 45
+#endif
 
 #define THREAD_TEST_DBG_CTRL 200
 #define THREAD_TEST_MUX_BEGIN 3
@@ -525,11 +529,12 @@ static int ThreadTest(void *arg)
             HDF_LOGE("%s mutex unLock", __func__);
             g_threadMuxLockFlag = false;
         }
-
+#ifndef __USER__
         if (cnt == THREAD_TEST_STOP_TIMER) {
             OsaTimerTestStop();
         }
         OsaCheckRun(cnt);
+#endif
         if (g_testEndFlag) {
             break;
         }
@@ -547,7 +552,7 @@ void OsaThreadTest1(void)
 
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
     threadCfg.name = "hdf_test0";
-    threadCfg.priority = OSAL_THREAD_PRI_HIGH;
+    threadCfg.priority = OSAL_THREAD_PRI_HIGHEST;
     threadCfg.stackSize = HDF_TEST_STACK_SIZE;
     ret = OsalThreadCreate(&thread, (OsalThreadEntry)ThreadTest, (void *)&para);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_THREAD_CREATE);
@@ -603,7 +608,6 @@ static void OsaTimeTest(void)
     OsalTimespec hdfTs = { 0, 0 };
     OsalTimespec hdfTs2 = { 0, 0 };
     OsalTimespec hdfTsDiff = { 0, 0 };
-    HDF_LOGE("%s ms:%llu", __func__, OsalGetSysTimeMs());
 
     OsalGetTime(&hdfTs);
     OsalSleep(TIME_TEST_SLEEP_S);
@@ -740,7 +744,9 @@ static void OsaMutexTest(void)
 static void OsaSpinTest(void)
 {
     int32_t ret;
+#ifndef __USER__
     uint32_t flag = 0;
+#endif
     OSAL_DECLARE_SPINLOCK(spin);
 
     HDF_LOGE("[OSAL_UT_TEST]%s start", __func__);
@@ -752,7 +758,7 @@ static void OsaSpinTest(void)
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_SPIN_LOCK);
     ret = OsalSpinUnlock(&spin);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_SPIN_UNLOCK);
-
+#ifndef __USER__
     ret = OsalSpinLockIrq(&spin);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_SPIN_LOCK_IRQ);
     ret = OsalSpinUnlockIrq(&spin);
@@ -762,7 +768,7 @@ static void OsaSpinTest(void)
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_SPIN_LOCK_IRQ_SAVE);
     ret = OsalSpinUnlockIrqRestore(&spin, &flag);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_SPIN_UNLOCK_IRQ_RESTORE);
-
+#endif
     ret = OsalSpinDestroy(&spin);
     UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_SPIN_DESTROY);
 
@@ -791,23 +797,32 @@ int OsaTestBegin(void)
     int ret;
     (void)memset_s(g_osalTestCases, sizeof(g_osalTestCases), 0, sizeof(g_osalTestCases));
     g_testEndFlag = false;
+#ifndef __USER__
     g_timer1Cnt = 0;
     g_timer2Cnt = 0;
+#endif
     OsalGetTime(&g_hdfTestBegin);
     OsaLogTest();
+#ifndef __USER__
     ret = OsalTestFileInit();
+#else
+	ret = 0;
+#endif
     OsalTestOther(ret);
     OsaTimeTest();
     OsaMutexTest();
     OsaSpinTest();
+#ifndef __USER__
     OsaIrqTest();
     OsaTimerTest();
+#endif
     OsaThreadTest();
     OsaMemoryTest();
     HDF_LOGD("%s ", __func__);
+#ifndef __USER__
     OsaFWTest(ret);
     OsalTestFileDeInit();
-
+#endif
     OsalSleep(HDF_MAIN_SLEEP_S);
     HDF_LOGI("%s", __func__);
     OsaCheckThreadRun();
@@ -817,10 +832,12 @@ int OsaTestBegin(void)
 
 int OsaTestEnd(void)
 {
+#ifndef __USER__
     OsalTimerDelete(&g_testTimerLoop1);
     OsalTimerDelete(&g_testTimerLoop2);
     OsalTimerDelete(&g_testTimerOnce);
     OsalStopThread();
+#endif
     g_testEndFlag = true;
     OsalThreadDestroy(&thread1);
     OsalThreadDestroy(&thread);
