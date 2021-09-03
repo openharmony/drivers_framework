@@ -608,7 +608,7 @@ static void OsaTimeTest(void)
     OsalTimespec hdfTs = { 0, 0 };
     OsalTimespec hdfTs2 = { 0, 0 };
     OsalTimespec hdfTsDiff = { 0, 0 };
-    HDF_LOGE("%s ms:%lu", __func__, OsalGetSysTimeMs());
+    HDF_LOGE("%s ms:%" PRIu64 "", __func__, OsalGetSysTimeMs());
 
     OsalGetTime(&hdfTs);
     OsalSleep(TIME_TEST_SLEEP_S);
