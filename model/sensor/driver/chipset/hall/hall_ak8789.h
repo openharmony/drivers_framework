@@ -10,8 +10,15 @@
 #define HALL_AK8789_H
 
 #include "sensor_config_parser.h"
+#include "sensor_hall_driver.h"
 
 int32_t DetectHallAk8789Chip(struct SensorCfgData *data);
 int32_t ReadAk8789Data(struct SensorCfgData *data);
+
+struct Ak8789DrvData {
+    struct IDeviceIoService ioService;
+    struct HdfDeviceObject *device;
+    struct SensorCfgData *sensorCfg;
+};
 
 #endif /* HALL_AK8789_H */
