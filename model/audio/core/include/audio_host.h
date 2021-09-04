@@ -17,7 +17,6 @@
 #include "osal_mem.h"
 #include "osal_mutex.h"
 #include "securec.h"
-#include "audio_types.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -58,6 +57,22 @@ struct AudioConfigData {
     const char *accessoryDaiName;
     const char *dspName;
     const char *dspDaiName;
+};
+
+enum AudioFormat {
+    AUDIO_FORMAT_PCM_8_BIT  = 0x1u,       /**< 8-bit PCM */
+    AUDIO_FORMAT_PCM_16_BIT = 0x2u,       /**< 16-bit PCM */
+    AUDIO_FORMAT_PCM_24_BIT = 0x3u,       /**< 24-bit PCM */
+    AUDIO_FORMAT_PCM_32_BIT = 0x4u,       /**< 32-bit PCM */
+    AUDIO_FORMAT_AAC_MAIN   = 0x1000001u, /**< AAC main */
+    AUDIO_FORMAT_AAC_LC     = 0x1000002u, /**< AAC LC */
+    AUDIO_FORMAT_AAC_LD     = 0x1000003u, /**< AAC LD */
+    AUDIO_FORMAT_AAC_ELD    = 0x1000004u, /**< AAC ELD */
+    AUDIO_FORMAT_AAC_HE_V1  = 0x1000005u, /**< AAC HE_V1 */
+    AUDIO_FORMAT_AAC_HE_V2  = 0x1000006u, /**< AAC HE_V2 */
+    AUDIO_FORMAT_G711A      = 0x2000001u, /**< G711A */
+    AUDIO_FORMAT_G711U      = 0x2000002u, /**< G711u */
+    AUDIO_FORMAT_G726       = 0x2000003u, /**< G726 */
 };
 
 struct AudioCard {

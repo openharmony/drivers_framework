@@ -9,7 +9,6 @@
 #ifndef AUDIO_CONTROL_H
 #define AUDIO_CONTROL_H
 
-#include "audio_types.h"
 #include "hdf_dlist.h"
 
 
