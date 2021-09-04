@@ -48,7 +48,7 @@ static void HallDataWorkEntry(void *arg)
     drvData = (struct HallDrvData *)arg;
     CHECK_NULL_PTR_RETURN(drvData);
 
-     if (drvData->ops.ReadData == NULL) {
+    if (drvData->ops.ReadData == NULL) {
         HDF_LOGI("%s: Hall ReadData function NULL", __func__);
         return;
     }
@@ -269,7 +269,7 @@ static int32_t ParserHallPinConfigData(const struct DeviceResourceNode *node, st
     return HDF_SUCCESS;
 }
 
-static int32_t InitHallAfterDetected(const struct DeviceResourceNode *node,struct HallDrvData *drvData)
+static int32_t InitHallAfterDetected(const struct DeviceResourceNode *node, struct HallDrvData *drvData)
 {
     struct SensorDeviceInfo deviceInfo;
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
