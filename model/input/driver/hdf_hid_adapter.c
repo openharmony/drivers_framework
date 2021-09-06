@@ -116,7 +116,6 @@ static int32_t SetInputDevAbsAttr(InputDevice *inputDev, HidInfo *info)
 
 static int32_t GetInfoFromCache(InputDevice *inputDev, HidInfo *info)
 {
-    int32_t ret;
     int32_t id = 0;
     while (id < MAX_INPUT_DEV_NUM) {
         if(g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
