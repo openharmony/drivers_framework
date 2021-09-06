@@ -21,11 +21,6 @@ enum HallGpioIrq {
     HALL_POLARITY_GPIO_MAX = 2,
 };
 
-struct HallDetectIfList {
-    char *chipName;
-    int32_t (*DetectChip)(struct SensorCfgData *data);
-};
-
 struct HallOpsCall {
     int32_t (*Init)(struct SensorCfgData *data);
     int32_t (*ReadData)(struct SensorCfgData *data);
@@ -38,13 +33,14 @@ struct HallDrvData {
     HdfWork hallWork;
     bool detectFlag;
     bool enable;
-    bool initStatus;
     int64_t interval;
     struct SensorCfgData *hallCfg;
     struct HallOpsCall ops;
     int32_t GpioIrq[HALL_POLARITY_GPIO_MAX];
 };
 
-int32_t RegisterHallChipOps(const struct HallOpsCall *ops);
+int32_t HallRegisterChipOps(const struct HallOpsCall *ops);
+struct SensorCfgData *HallCreateCfgData(const struct DeviceResourceNode *node);
+void HallReleaseCfgData(struct SensorCfgData *sensorCfgData);
 
 #endif /* SENSOR_HALL_DRIVER_H */
