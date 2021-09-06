@@ -107,7 +107,7 @@ static int32_t SetInputDevAbsAttr(InputDevice *inputDev, HidInfo *info)
     for (int i = 0; i < BITS_TO_LONG(ABS_CNT); i++) {
         if (inputDev->abilitySet.absCode[i] != 0) {
             ret = memcpy_s(inputDev->attrSet.axisInfo, sizeof(AbsAttr) * ABS_CNT,
-                    info->axisInfo, sizeof(AbsAttr) * ABS_CNT);
+                            info->axisInfo, sizeof(AbsAttr) * ABS_CNT);
             return ret;
         }
     }
@@ -118,7 +118,7 @@ static int32_t GetInfoFromCache(InputDevice *inputDev, HidInfo *info)
 {
     int32_t id = 0;
     while (id < MAX_INPUT_DEV_NUM) {
-        if(g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
+        if (g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
             info = g_cachedInfo[id];
             break;
         }
