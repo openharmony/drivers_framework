@@ -114,7 +114,7 @@ static int32_t SetInputDevAbsAttr(InputDevice *inputDev, HidInfo *info)
     return HDF_SUCCESS;
 }
 
-static int32_t GetInfoFromCache(HidInfo *info)
+static int32_t GetInfoFromCache(InputDevice *inputDev, HidInfo *info)
 {
     int32_t ret;
     int32_t id = 0;
@@ -138,7 +138,7 @@ static void SetInputDevAbility(InputDevice *inputDev)
     uint32_t len;
     int32_t ret;
 
-    ret = GetInfoFromCache(info);
+    ret = GetInfoFromCache(inputDev, info);
     MEMCPY_CHECK_RETURN(ret);
     len = sizeof(unsigned long);
     ret = memcpy_s(inputDev->abilitySet.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT),
