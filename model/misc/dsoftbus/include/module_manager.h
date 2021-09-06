@@ -24,7 +24,7 @@ typedef enum {
 
 typedef int32_t (*SoftbusDriverModuleInit)(struct HdfDeviceObject *device);
 typedef void (*SoftbusDriverModuleDeinit)(void);
-typedef void (*SoftbusDriverModuleProcess)(struct HdfSBuf *reqData, struct HdfSBuf *rspData);
+typedef void (*SoftbusDriverModuleProcess)(const struct HdfSBuf *reqData, struct HdfSBuf *rspData);
 
 typedef struct {
     int32_t moduleId;
