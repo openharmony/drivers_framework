@@ -47,6 +47,15 @@
 #define FF_MAX            0x7f
 #define HDF_FF_CNT            (FF_MAX + 1)
 
+typedef struct {
+    int32_t axis;
+    int32_t min;
+    int32_t max;
+    int32_t fuzz;
+    int32_t flat;
+    int32_t range;
+} AbsAttr;
+
 typedef struct HidInformation {
     uint32_t devType;
     const char *devName;
@@ -61,6 +70,7 @@ typedef struct HidInformation {
     unsigned long soundCode[BITS_TO_LONG(HDF_SND_CNT)];
     unsigned long forceCode[BITS_TO_LONG(HDF_FF_CNT)];
     unsigned long switchCode[BITS_TO_LONG(HDF_SW_CNT)];
+    AbsAttr axisInfo[HDF_ABS_CNT];
 
     uint16_t bustype;
     uint16_t vendor;
@@ -78,12 +88,13 @@ enum HidType {
     HID_TYPE_MOUSE,             /* Mouse */
     HID_TYPE_KEYBOARD,          /* Keyboard */
     HID_TYPE_ROCKER,              /* ROCKER */
+    HID_TYPE_TRACKBALL,           /* TRACKBALL */
     HID_TYPE_UNKNOWN,           /* Unknown input device type */
 };
 
-void SendInfoToHdf(HidInfo *info);
-void* HidRegisterHdfInputDev(HidInfo *dev);
-void HidUnregisterHdfInputDev(const void *inputDev);
-void HidReportEvent(const void *inputDev, uint32_t type, uint32_t code, int32_t value);
+void SendInfoToHdf(HidInfo* info);
+void* HidRegisterHdfInputDev(HidInfo* info);
+void HidUnregisterHdfInputDev(const void* inputDev);
+void HidReportEvent(const void* inputDev, uint32_t type, uint32_t code, int32_t value);
 
 #endif

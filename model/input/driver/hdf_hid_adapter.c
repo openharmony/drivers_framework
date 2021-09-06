@@ -149,6 +149,14 @@ static void SetInputDevAbility(InputDevice *inputDev)
     ret = memcpy_s(inputDev->abilitySet.switchCode, len * BITS_TO_LONG(SW_CNT),
         info->switchCode, len * BITS_TO_LONG(SW_CNT));
     MEMCPY_CHECK_RETURN(ret);
+    for (int i = 0; i < BITS_TO_LONG(ABS_CNT); i++) {
+        if (inputDev->abilitySet.absCode[i] != 0) {
+            ret = memcpy_s(inputDev->attrSet.axisInfo, sizeof(AbsAttr) * ABS_CNT,
+                    info->axisInfo, sizeof(AbsAttr) * ABS_CNT);
+            MEMCPY_CHECK_RETURN(ret);
+            break;
+        }
+    }
 
     inputDev->attrSet.id.busType = info->bustype;
     inputDev->attrSet.id.vendor = info->vendor;
@@ -345,7 +353,7 @@ static int32_t HidGetDeviceAttr(InputDevice *inputDev, struct HdfSBuf *reply)
 
     HDF_LOGE("%s: enter", __func__);
     ret = strncpy_s(inputDev->attrSet.devName, DEV_NAME_LEN, inputDev->devName, strlen(inputDev->devName));
-    if (ret) {
+    if (ret != 0) {
         HDF_LOGE("%s: copy name from inputDev failed, ret = %d", __func__, ret);
         return HDF_FAILURE;
     }
