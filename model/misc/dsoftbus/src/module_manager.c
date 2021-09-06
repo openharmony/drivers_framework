@@ -25,7 +25,7 @@ static SoftbusDriverModule g_modules[] = {
 #endif
 };
 
-void SoftbusDispatchModuleCommand(int32_t moduleId, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+void SoftbusDispatchModuleCommand(int32_t moduleId, const struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     int32_t i;
 
@@ -45,7 +45,7 @@ void SoftbusDispatchModuleCommand(int32_t moduleId, struct HdfSBuf *reqData, str
 
 int32_t SoftbusModuleManagerInit(struct HdfDeviceObject *device)
 {
-    int32_t i = 0;
+    int32_t i;
 
     for (i = 0; i < HDF_ARRAY_SIZE(g_modules); ++i) {
         if (g_modules[i].init == NULL) {
@@ -72,7 +72,7 @@ int32_t SoftbusModuleManagerInit(struct HdfDeviceObject *device)
 
 void SoftbusModuleManagerDeinit(void)
 {
-    int32_t i = 0;
+    int32_t i;
 
     for (i = 0; i < HDF_ARRAY_SIZE(g_modules); ++i) {
         if (g_modules[i].deinit == NULL) {

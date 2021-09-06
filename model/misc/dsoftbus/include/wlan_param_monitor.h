@@ -18,7 +18,7 @@ extern "C" {
 
 int32_t SoftbusWlanParamMonitorInit(struct HdfDeviceObject *device);
 void SoftbusWlanParamMonitorDeinit(void);
-void SoftbusWlanParamMonitorProcess(struct HdfSBuf *reqData, struct HdfSBuf *rspData);
+void SoftbusWlanParamMonitorProcess(const struct HdfSBuf *reqData, struct HdfSBuf *rspData);
 
 #ifdef __cplusplus
 }

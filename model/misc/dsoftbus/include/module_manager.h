@@ -35,7 +35,7 @@ typedef struct {
 
 int32_t SoftbusModuleManagerInit(struct HdfDeviceObject *device);
 void SoftbusModuleManagerDeinit(void);
-void SoftbusDispatchModuleCommand(int32_t moduleId, struct HdfSBuf *reqData, struct HdfSBuf *rspData);
+void SoftbusDispatchModuleCommand(int32_t moduleId, const struct HdfSBuf *reqData, struct HdfSBuf *rspData);
 
 #ifdef __cplusplus
 }

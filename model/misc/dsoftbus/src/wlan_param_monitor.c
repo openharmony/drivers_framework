@@ -111,7 +111,7 @@ void SoftbusWlanParamMonitorDeinit(void)
     }
 }
 
-void SoftbusWlanParamMonitorProcess(struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+void SoftbusWlanParamMonitorProcess(const struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     uint32_t cmd;
     const void *data = NULL;
@@ -121,21 +121,20 @@ void SoftbusWlanParamMonitorProcess(struct HdfSBuf *reqData, struct HdfSBuf *rsp
         HDF_LOGE("reqData is null");
         return;
     }
-    if (!HdfSbufReadBuffer(reqData, &data, &dataSize)) {
+    if (!HdfSbufReadBuffer((struct HdfSBuf *)reqData, &data, &dataSize)) {
         HDF_LOGE("read command fail");
         return;
     }
     cmd = *((uint32_t *)data);
     HDF_LOGI("process command: %d", cmd);
-    switch (cmd)
-    {
-    case CMD_START_MONITOR:
-        ProcessStartMonitor();
-        break;
-    case CMD_STOP_MONITOR:
-        ProcessStopMonitor();
-        break;
-    default:
-        break;
+    switch (cmd) {
+        case CMD_START_MONITOR:
+            ProcessStartMonitor();
+            break;
+        case CMD_STOP_MONITOR:
+            ProcessStopMonitor();
+            break;
+        default:
+            break;
     }
 }
