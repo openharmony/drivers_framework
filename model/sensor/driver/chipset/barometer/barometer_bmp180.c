@@ -6,16 +6,24 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
 #include "barometer_bmp180.h"
+#include <securec.h>
+#include "osal_mem.h"
 #include "osal_time.h"
 #include "sensor_barometer_driver.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
 
+static struct Bmp180DrvData *g_bmp180DrvData = NULL;
+
+struct Bmp180DrvData *Bmp180GetDrvData(void)
+{
+    return g_bmp180DrvData;
+}
+
 /* IO config for int-pin and I2C-pin */
-#define SENSOR_I2C6_DDATA_REG_ADDR 0x114f004c
+#define SENSOR_I2C6_DATA_REG_ADDR 0x114f004c
 #define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048
 #define SENSOR_I2C_REG_CFG        0x403
 
@@ -236,7 +244,7 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
     tnp[BAROMETER_BAROMETER] = coefficientData.p + ((coefficientData.x1 + coefficientData.x2 
         + BMP180_CONSTANT_11) >> BMP180_CONSTANT_3);
 
-    return 0;	
+    return HDF_SUCCESS;
 }
 
 int32_t ReadBmp180Data(struct SensorCfgData *data)
@@ -302,7 +310,7 @@ static int32_t InitBmp180(struct SensorCfgData *data)
 
 static int32_t InitBarometerPreConfig(void)
 {
-    if (SetSensorPinMux(SENSOR_I2C6_DDATA_REG_ADDR, SENSOR_ADDR_WIDTH_4_BYTE, SENSOR_I2C_REG_CFG) != HDF_SUCCESS) {
+    if (SetSensorPinMux(SENSOR_I2C6_DATA_REG_ADDR, SENSOR_ADDR_WIDTH_4_BYTE, SENSOR_I2C_REG_CFG) != HDF_SUCCESS) {
         HDF_LOGE("%s: Data write mux pin failed", __func__);
         return HDF_FAILURE;
     }
@@ -310,33 +318,94 @@ static int32_t InitBarometerPreConfig(void)
         HDF_LOGE("%s: Clk write mux pin failed", __func__);
         return HDF_FAILURE;
     }
+
     return HDF_SUCCESS;
 }
 
-int32_t DetectBarometerBmp180Chip(struct SensorCfgData *data)
-{ 
+static int32_t DispatchBMP180(struct HdfDeviceIoClient *client,
+    int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    (void)client;
+    (void)cmd;
+    (void)data;
+    (void)reply;
+
+    return HDF_SUCCESS;
+}
+
+int32_t Bmp180BindDriver(struct HdfDeviceObject *device)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
+
+    struct Bmp180DrvData *drvData = (struct Bmp180DrvData *)OsalMemCalloc(sizeof(*drvData));
+    if (drvData == NULL) {
+        HDF_LOGE("%s: Malloc Bmi160 drv data fail", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    drvData->ioService.Dispatch = DispatchBMP180;
+    drvData->device = device;
+    device->service = &drvData->ioService;
+    g_bmp180DrvData = drvData;
+
+    return HDF_SUCCESS;
+}
+
+int32_t Bmp180InitDriver(struct HdfDeviceObject *device)
+{
     int32_t ret;
     struct BarometerOpsCall ops;
-    CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
-    if (strcmp(BAROMETER_CHIP_NAME_BMP180, data->sensorAttr.chipName) != 0) {
-        return HDF_SUCCESS;
-    }
+    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
+    struct Bmp180DrvData *drvData = (struct Bmp180DrvData *)device->service;
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+
     ret = InitBarometerPreConfig();
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: init  bmp180 bus mux config", __func__);
+        HDF_LOGE("%s: Init  BMp180 bus mux config", __func__);
         return HDF_FAILURE;
     }
-    if (DetectSensorDevice(data) != HDF_SUCCESS) {
-        return HDF_FAILURE;
+
+    drvData->sensorCfg = BarometerCreateCfgData(device->property);
+    if (drvData->sensorCfg == NULL) {
+        return HDF_ERR_NOT_SUPPORT;
     }
-    ops.Init = InitBmp180;
+
+    ops.Init = NULL;
     ops.ReadData = ReadBmp180Data;
-    ret = RegisterBarometerChipOps(&ops);
+    ret = BarometerRegisterChipOps(&ops);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: register bmp180 barometer failed", __func__);
-        (void)ReleaseSensorBusHandle(&data->busCfg);
+        HDF_LOGE("%s: Register BMp180 barometer failed", __func__);
         return HDF_FAILURE;
     }
+
+    ret = InitBmp180(drvData->sensorCfg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init BMP180 barometer failed", __func__);
+        return HDF_FAILURE;
+    }
+
     return HDF_SUCCESS;
 }
+
+void Bmp180ReleaseDriver(struct HdfDeviceObject *device)
+{
+    CHECK_NULL_PTR_RETURN(device);
+
+    struct Bmp180DrvData *drvData = (struct Bmp180DrvData *)device->service;
+    CHECK_NULL_PTR_RETURN(drvData);
+
+    BarometerReleaseCfgData(drvData->sensorCfg);
+    drvData->sensorCfg = NULL;
+    OsalMemFree(drvData);
+}
+
+struct HdfDriverEntry g_barometerBmp180DevEntry = {
+    .moduleVersion = 1,
+    .moduleName = "HDF_SENSOR_BAROMETER_BMP180",
+    .Bind = Bmp180BindDriver,
+    .Init = Bmp180InitDriver,
+    .Release = Bmp180ReleaseDriver,
+};
+
+HDF_INIT(g_barometerBmp180DevEntry);
