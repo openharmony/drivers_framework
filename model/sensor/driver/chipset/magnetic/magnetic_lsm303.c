@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -7,9 +7,9 @@
  */
 
 #include "magnetic_lsm303.h"
+#include <securec.h>
 #include "osal_mem.h"
 #include "osal_time.h"
-#include <securec.h>
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 #include "sensor_magnetic_driver.h"
@@ -100,9 +100,9 @@ int32_t ReadLsm303Data(struct SensorCfgData *data)
     event.option = 0;
     event.mode = SENSOR_WORK_MODE_REALTIME;
 
-    tmp[MAGNETIC_X_AXIS] = rawData.x * 1000 / LSM303DLHC_M_SENSITIVITY_XY_4_7Ga;
-    tmp[MAGNETIC_Y_AXIS] = rawData.y * 1000 / LSM303DLHC_M_SENSITIVITY_XY_4_7Ga;
-    tmp[MAGNETIC_Z_AXIS] = rawData.z * 1000 / LSM303DLHC_M_SENSITIVITY_Z_4_7Ga;
+    tmp[MAGNETIC_X_AXIS] = rawData.x * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_XY47Ga;
+    tmp[MAGNETIC_Y_AXIS] = rawData.y * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_XY47Ga;
+    tmp[MAGNETIC_Z_AXIS] = rawData.z * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_Z47Ga;
 
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;

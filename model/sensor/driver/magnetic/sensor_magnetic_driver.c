@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -7,12 +7,11 @@
  */
 
 #include "sensor_magnetic_driver.h"
-#include "magnetic_lsm303.h"
+#include <securec.h>
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_math.h"
 #include "osal_mem.h"
-#include "securec.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
@@ -304,7 +303,8 @@ INIT_EXIT:
     (void)ReleaseSensorBusHandle(&drvData->magneticCfg->busCfg);
 BASE_CONFIG_EXIT:
     drvData->magneticCfg->root = NULL;
-    (void)memset_s(&drvData->magneticCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
+    (void)memset_s(&drvData->magneticCfg->sensorInfo,
+        sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&drvData->magneticCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->magneticCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
     

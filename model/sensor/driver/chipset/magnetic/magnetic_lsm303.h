@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -11,6 +11,8 @@
 
 #include "sensor_config_parser.h"
 #include "sensor_magnetic_driver.h"
+
+#define LSM303_MAGNETIC_GIN                     1000
 
 /* MAGNETIC SET RATE AND MODE ADDR */
 #define LSM303_CRA_REG_ADDR                     0X00
@@ -46,20 +48,20 @@
 #define LSM303_GAIN_RATE_6                      0XE0
 
 /* MAGNETIC GAIN SENSITIVITY RANGE */
-#define LSM303DLHC_M_SENSITIVITY_XY_1_3Ga       1100
-#define LSM303DLHC_M_SENSITIVITY_XY_1_9Ga       855
-#define LSM303DLHC_M_SENSITIVITY_XY_2_5Ga       670
-#define LSM303DLHC_M_SENSITIVITY_XY_4Ga         450
-#define LSM303DLHC_M_SENSITIVITY_XY_4_7Ga       400
-#define LSM303DLHC_M_SENSITIVITY_XY_5_6Ga       330
-#define LSM303DLHC_M_SENSITIVITY_XY_8_1Ga       230
-#define LSM303DLHC_M_SENSITIVITY_Z_1_3Ga        980
-#define LSM303DLHC_M_SENSITIVITY_Z_1_9Ga        760
-#define LSM303DLHC_M_SENSITIVITY_Z_2_5Ga        600
-#define LSM303DLHC_M_SENSITIVITY_Z_4Ga          400
-#define LSM303DLHC_M_SENSITIVITY_Z_4_7Ga        355
-#define LSM303DLHC_M_SENSITIVITY_Z_5_6Ga        295
-#define LSM303DLHC_M_SENSITIVITY_Z_8_1Ga        205
+#define LSM303DLHC_SENSITIVITY_XY13Ga           1100
+#define LSM303DLHC_SENSITIVITY_XY19Ga           855
+#define LSM303DLHC_SENSITIVITY_XY25Ga           670
+#define LSM303DLHC_SENSITIVITY_XY40Ga           450
+#define LSM303DLHC_SENSITIVITY_XY47Ga           400
+#define LSM303DLHC_SENSITIVITY_XY56Ga           330
+#define LSM303DLHC_SENSITIVITY_XY81Ga           230
+#define LSM303DLHC_SENSITIVITY_Z13Ga            980
+#define LSM303DLHC_SENSITIVITY_Z19Ga            760
+#define LSM303DLHC_SENSITIVITY_Z25Ga            600
+#define LSM303DLHC_SENSITIVITY_Z40Ga            400
+#define LSM303DLHC_SENSITIVITY_Z47Ga            355
+#define LSM303DLHC_SENSITIVITY_Z56Ga            295
+#define LSM303DLHC_SENSITIVITY_Z81Ga            205
 
 /* MAGNETIC MODE CONFIG */
 #define LSM303_OPERATING_MODE_1                 0X00
