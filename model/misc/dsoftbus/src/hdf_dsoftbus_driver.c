@@ -13,7 +13,7 @@
 
 #define HDF_LOG_TAG "hdf_dsoftbus"
 
-struct HdfDeviceObject *g_hdfDevObj = NULL;
+static struct HdfDeviceObject *g_hdfDevObj = NULL;
 
 int32_t HdfSoftbusBroadcastEvent(uint32_t moudleId, const struct HdfSBuf *data)
 {

@@ -117,6 +117,7 @@ void SoftbusWlanParamMonitorProcess(const struct HdfSBuf *reqData, struct HdfSBu
     const void *data = NULL;
     uint32_t dataSize;
 
+    (void)rspData;
     if (reqData == NULL) {
         HDF_LOGE("reqData is null");
         return;
