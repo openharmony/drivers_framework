@@ -14,6 +14,8 @@
 #include "hdf_log.h"
 #include "event_hub.h"
 
+#define TIMER_INTERVAL_ENCODER  10
+
 
 static void EncoderTimerFunc(uintptr_t arg)
 {
@@ -99,7 +101,7 @@ static int32_t EncoderInit(EncoderDriver *EncoderDrv)
     GpioSetDir(gpioData, GPIO_DIR_IN);
     GpioSetDir(gpioSW, GPIO_DIR_IN);
 
-    int32_t ret = OsalTimerCreate(&EncoderDrv->timer, 10, EncoderTimerFunc, EncoderDrv);
+    int32_t ret = OsalTimerCreate(&EncoderDrv->timer, TIMER_INTERVAL_ENCODER, EncoderTimerFunc, EncoderDrv);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: create timer failed, ret = %d\n", __func__, ret);
         return HDF_FAILURE;
