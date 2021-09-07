@@ -146,7 +146,7 @@ static InputDevice *InputDeviceInstance(EncoderDriver *encoderDrv)
     inputDev->pvtData = (void *)encoderDrv;
     inputDev->devType = encoderDrv->devType;
     inputDev->hdfDevObj = encoderDrv->encoderCfg->hdfEncoderDev;
-    encoderDrv->inputdev = inputDev;
+    encoderDrv->inputDev = inputDev;
 
     return inputDev;
 }
