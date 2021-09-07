@@ -89,7 +89,7 @@ void SendInfoToHdf(HidInfo *info)
     }
 }
 
-static void FreeCachedInfo()
+static void FreeCachedInfo(void)
 {
     int32_t id = 0;
     while (id < MAX_INPUT_DEV_NUM) {
@@ -101,14 +101,24 @@ static void FreeCachedInfo()
     }
 }
 
-static void SetInputDevAbility(InputDevice *inputDev)
+static int32_t SetInputDevAbsAttr(InputDevice *inputDev, HidInfo *info)
 {
-    HidInfo *info = NULL;
-    int32_t id = 0;
-    uint32_t len;
     int32_t ret;
+    for (int i = 0; i < BITS_TO_LONG(ABS_CNT); i++) {
+        if (inputDev->abilitySet.absCode[i] != 0) {
+            ret = memcpy_s(inputDev->attrSet.axisInfo, sizeof(AbsAttr) * ABS_CNT,
+                           info->axisInfo, sizeof(AbsAttr) * ABS_CNT);
+            return ret;
+        }
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t GetInfoFromCache(InputDevice *inputDev, HidInfo *info)
+{
+    int32_t id = 0;
     while (id < MAX_INPUT_DEV_NUM) {
-        if(g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
+        if (g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
             info = g_cachedInfo[id];
             break;
         }
@@ -116,8 +126,19 @@ static void SetInputDevAbility(InputDevice *inputDev)
     }
     if (id == MAX_INPUT_DEV_NUM || info == NULL) {
         HDF_LOGE("%s: match cached info failed", __func__);
-        return;
+        return HDF_FAILURE;
     }
+    return HDF_SUCCESS;
+}
+
+static void SetInputDevAbility(InputDevice *inputDev)
+{
+    HidInfo *info = NULL;
+    uint32_t len;
+    int32_t ret;
+
+    ret = GetInfoFromCache(inputDev, info);
+    MEMCPY_CHECK_RETURN(ret);
     len = sizeof(unsigned long);
     ret = memcpy_s(inputDev->abilitySet.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT),
         info->devProp, len * BITS_TO_LONG(INPUT_PROP_CNT));
@@ -149,12 +170,12 @@ static void SetInputDevAbility(InputDevice *inputDev)
     ret = memcpy_s(inputDev->abilitySet.switchCode, len * BITS_TO_LONG(SW_CNT),
         info->switchCode, len * BITS_TO_LONG(SW_CNT));
     MEMCPY_CHECK_RETURN(ret);
-
+    ret = SetInputDevAbsAttr(inputDev, info);
+    MEMCPY_CHECK_RETURN(ret);
     inputDev->attrSet.id.busType = info->bustype;
     inputDev->attrSet.id.vendor = info->vendor;
     inputDev->attrSet.id.product = info->product;
     inputDev->attrSet.id.version = info->version;
-
     FreeCachedInfo();
 }
 
@@ -343,9 +364,8 @@ static int32_t HidGetDeviceAttr(InputDevice *inputDev, struct HdfSBuf *reply)
         return HDF_FAILURE;
     }
 
-    HDF_LOGE("%s: enter", __func__);
     ret = strncpy_s(inputDev->attrSet.devName, DEV_NAME_LEN, inputDev->devName, strlen(inputDev->devName));
-    if (ret) {
+    if (ret != 0) {
         HDF_LOGE("%s: copy name from inputDev failed, ret = %d", __func__, ret);
         return HDF_FAILURE;
     }
@@ -355,7 +375,6 @@ static int32_t HidGetDeviceAttr(InputDevice *inputDev, struct HdfSBuf *reply)
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("%s: get dev attr succ", __func__);
     return HDF_SUCCESS;
 }
 
@@ -364,14 +383,12 @@ static int32_t HidGetDeviceAbility(InputDevice *inputDev, struct HdfSBuf *reply)
     if (inputDev == NULL) {
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: enter", __func__);
 
     if (!HdfSbufWriteBuffer(reply, &inputDev->abilitySet, sizeof(DevAbility))) {
         HDF_LOGE("%s: sbuf write dev ability failed", __func__);
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("%s: get dev ability succ", __func__);
     return HDF_SUCCESS;
 }
 

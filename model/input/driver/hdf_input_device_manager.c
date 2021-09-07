@@ -197,6 +197,7 @@ EXIT:
 #define DEFAULT_CROWN_BUF_PKG_NUM      20
 #define DEFAULT_ENCODER_BUF_PKG_NUM    20
 #define DEFAULT_ROCKER_BUF_PKG_NUM     40
+#define DEFAULT_TRACKBALL_BUF_PKG_NUM  30
 
 static int32_t AllocPackageBuffer(InputDevice *inputDev)
 {
@@ -223,6 +224,9 @@ static int32_t AllocPackageBuffer(InputDevice *inputDev)
         case INDEV_TYPE_ROCKER:
             pkgNum = DEFAULT_ROCKER_BUF_PKG_NUM;
             break;
+        case INDEV_TYPE_TRACKBALL:
+            pkgNum = DEFAULT_TRACKBALL_BUF_PKG_NUM;
+            break;
         default:
             HDF_LOGE("%s: devType not exist", __func__);
             return HDF_FAILURE;
@@ -246,8 +250,13 @@ static uint32_t AllocDeviceID(InputDevice *inputDev)
     InputDevice *tmpDev = g_inputManager->inputDevList;
     uint32_t idList[MAX_INPUT_DEV_NUM + 1];
     uint32_t id;
-    (void)memset_s(idList, (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t), 0,
-                            (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t));
+    int32_t ret;
+    ret = memset_s(idList, (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t), 0,
+                   (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t));
+    if (ret != 0) {
+        HDF_LOGE("%s: memset_s is failed", __func__);
+        return HDF_FAILURE;
+    }
     while (tmpDev != NULL) {
         if (idList[tmpDev->devId] == 0) {
             idList[tmpDev->devId] = FILLER_FLAG;

@@ -134,6 +134,7 @@ enum InputDevType {
     INDEV_TYPE_MOUSE,               /* Mouse */
     INDEV_TYPE_KEYBOARD,            /* Keyboard */
     INDEV_TYPE_ROCKER,              /* ROCKER */
+    INDEV_TYPE_TRACKBALL,           /* TRACKBALL */
     INDEV_TYPE_UNKNOWN,             /* Unknown input device type */
 };
 
@@ -165,6 +166,6 @@ enum TouchIoctlCmd {
 };
 InputManager* GetInputManager(void);
 int32_t RegisterInputDevice(InputDevice *device);
-void UnregisterInputDevice(InputDevice *device);
+void UnregisterInputDevice(InputDevice *inputDev);
 
 #endif
