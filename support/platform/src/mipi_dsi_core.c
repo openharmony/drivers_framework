@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -342,6 +342,33 @@ int32_t MipiDsiCntlrAttach(struct MipiDsiCntlr *cntlr, uint8_t *name)
 
     (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->ops->attach(cntlr, name);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
+    if (ret == HDF_SUCCESS) {
+        HDF_LOGI("%s: success!", __func__);
+    } else {
+        HDF_LOGE("%s: failed!", __func__);
+    }
+
+    return ret;
+}
+
+int32_t MipiDsiCntlrSetDrvData(struct MipiDsiCntlr *cntlr, DevHandle *panelData)
+{
+    int32_t ret;
+
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
+        return HDF_FAILURE;
+    }
+
+    if (cntlr->ops->setDrvData == NULL) {
+        HDF_LOGE("%s: setDrvData is NULL.", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    ret = cntlr->ops->setDrvData(cntlr, panelData);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {

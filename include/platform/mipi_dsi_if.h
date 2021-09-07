@@ -291,6 +291,18 @@ int32_t MipiDsiRx(DevHandle handle, struct DsiCmdDesc *cmd, int32_t readLen, uin
  */
 int32_t MipiDsiAttach(DevHandle handle, uint8_t *name);
 
+/**
+ * @brief Sets additional parameters for a MIPI DSI device.
+ *
+ * @param handle Indicates the MIPI DSI device handle obtained via {@link MipiDsiOpen}.
+ * @param panelData Indicates the pointer to the additional parameters.
+ *
+ * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
+ *
+ * @since 1.0
+ */
+int32_t MipiDsiSetDrvData(DevHandle handle, DevHandle *panelData);
+
 #ifdef __cplusplus
 #if __cplusplus
 }
