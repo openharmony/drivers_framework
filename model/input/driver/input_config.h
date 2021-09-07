@@ -140,8 +140,17 @@ typedef struct {
     uint32_t debounceTime;
 } KeyChipCfg;
 
+typedef struct {
+    struct HdfDeviceObject *hdfEncoderDev;
+    uint8_t devType;
+    uint16_t gpioClk;
+    uint16_t gpioData;
+    uint16_t gpioSW;
+} EncoderCfg;
+
 int32_t ParseTouchBoardConfig(const struct DeviceResourceNode *node, TouchBoardCfg *config);
 int32_t ParseTouchChipConfig(const struct DeviceResourceNode *node, TouchChipCfg *config);
 int32_t ParseKeyConfig(const struct DeviceResourceNode *node, KeyChipCfg *config);
+int32_t ParseEncoderConfig(const struct DeviceResourceNode *node, EncoderCfg *config);
 
 #endif

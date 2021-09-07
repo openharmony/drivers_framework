@@ -43,11 +43,38 @@ int32_t ParseKeyConfig(const struct DeviceResourceNode *node, KeyChipCfg *config
     ret = parser->GetUint8(keyNode, "inputType", &config->devType, 0);
     CHECK_PARSER_RET(ret, "GetUint8");
     ret = parser->GetUint16(keyNode, "gpioNum", &config->gpioNum, 0);
-    CHECK_PARSER_RET(ret, "GetUint32");
+    CHECK_PARSER_RET(ret, "GetUint16");
     ret = parser->GetUint16(keyNode, "irqFlag", &config->irqFlag, 0);
     CHECK_PARSER_RET(ret, "GetUint8");
     ret = parser->GetUint32(keyNode, "debounceTime", &config->debounceTime, 0);
     CHECK_PARSER_RET(ret, "GetUint32");
+
+    return HDF_SUCCESS;
+}
+
+int32_t ParseEncoderConfig(const struct DeviceResourceNode *node, EncoderCfg *config)
+{
+    if (node == NULL || config == NULL) {
+        HDF_LOGE("%s: param is null", __func__);
+        return HDF_FAILURE;
+    }
+
+    struct DeviceResourceIface *parser = NULL;
+    parser = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
+    if (parser == NULL) {
+        HDF_LOGE("%s: instance parser failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    const struct DeviceResourceNode *encoderNode = node;
+    int32_t ret = parser->GetUint8(encoderNode, "inputType", &config->devType, 0);
+    CHECK_PARSER_RET(ret, "GetUint8");
+    ret = parser->GetUint16(encoderNode, "gpioClk", &config->gpioClk, 0);
+    CHECK_PARSER_RET(ret, "GetUint16");
+    ret = parser->GetUint16(encoderNode, "gpioDT", &config->gpioData, 0);
+    CHECK_PARSER_RET(ret, "GetUint16");
+    ret = parser->GetUint16(encoderNode, "gpioSW", &config->gpioSW, 0);
+    CHECK_PARSER_RET(ret, "GetUint16");
 
     return HDF_SUCCESS;
 }
