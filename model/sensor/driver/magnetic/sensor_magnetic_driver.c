@@ -311,18 +311,18 @@ BASE_CONFIG_EXIT:
     return NULL;
 }
 
-void MagneticReleaseCfgData(struct SensorCfgData *MagneticCfg)
+void MagneticReleaseCfgData(struct SensorCfgData *magneticCfg)
 {
-    CHECK_NULL_PTR_RETURN(MagneticCfg);
+    CHECK_NULL_PTR_RETURN(magneticCfg);
 
-    (void)DeleteSensorDevice(&MagneticCfg->sensorInfo);
-    ReleaseSensorAllRegConfig(MagneticCfg);
-    (void)ReleaseSensorBusHandle(&MagneticCfg->busCfg);
+    (void)DeleteSensorDevice(&magneticCfg->sensorInfo);
+    ReleaseSensorAllRegConfig(magneticCfg);
+    (void)ReleaseSensorBusHandle(&magneticCfg->busCfg);
 
     MagneticCfg->root = NULL;
-    (void)memset_s(&MagneticCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
-    (void)memset_s(&MagneticCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
-    (void)memset_s(&MagneticCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
+    (void)memset_s(&magneticCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
+    (void)memset_s(&magneticCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
+    (void)memset_s(&magneticCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
 }
 
 int32_t MagneticInitDriver(struct HdfDeviceObject *device)
@@ -348,7 +348,8 @@ int32_t MagneticInitDriver(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-void MagneticReleaseDriver(struct HdfDeviceObject *device) {
+void MagneticReleaseDriver(struct HdfDeviceObject *device)
+{
     CHECK_NULL_PTR_RETURN(device);
 
     struct MagneticDrvData *drvData = (struct MagneticDrvData *)device->service;
