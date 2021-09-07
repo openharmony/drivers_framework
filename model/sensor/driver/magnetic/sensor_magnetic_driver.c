@@ -319,7 +319,7 @@ void MagneticReleaseCfgData(struct SensorCfgData *magneticCfg)
     ReleaseSensorAllRegConfig(magneticCfg);
     (void)ReleaseSensorBusHandle(&magneticCfg->busCfg);
 
-    MagneticCfg->root = NULL;
+    magneticCfg->root = NULL;
     (void)memset_s(&magneticCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&magneticCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&magneticCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
