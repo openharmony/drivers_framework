@@ -19,7 +19,7 @@ typedef struct EncoderDriverInfo {
     struct HdfDeviceObject *hdfEncoderDev;
     uint8_t devType;
     EncoderCfg *encoderCfg;
-    InputDevice *inputdev;
+    InputDevice *inputDev;
     OsalTimer timer;
     uint16_t encoderClkPreSta;
     uint16_t encoderClkNowSta;
