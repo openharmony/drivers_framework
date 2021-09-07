@@ -7,12 +7,13 @@
  */
 
 #include "hdf_encoder.h"
-#include "hdf_device_desc.h"
+#include "event_hub.h"
+#include "gpio_if.h"
 #include "osal_mem.h"
 #include "osal_timer.h"
-#include "gpio_if.h"
 #include "hdf_log.h"
-#include "event_hub.h"
+#include "hdf_device_desc.h"
+
 
 #define TIMER_INTERVAL_ENCODER  10
 

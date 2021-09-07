@@ -8,11 +8,11 @@
 #ifndef HDF_ENCODER_H
 #define HDF_ENCODER_H
 
-#include <securec.h>
-#include "osal_time.h"
-#include "osal_timer.h"
 #include "input_config.h"
 #include "hdf_input_device_manager.h"
+#include "osal_time.h"
+#include "osal_timer.h"
+#include <securec.h>
 
 
 typedef struct EncoderDriverInfo {
