@@ -16,7 +16,6 @@
 
 #define TIMER_INTERVAL_ENCODER  10
 
-
 static void EncoderTimerFunc(uintptr_t arg)
 {
     EncoderDriver *encoderDrv = (EncoderDriver *)arg;
@@ -26,21 +25,21 @@ static void EncoderTimerFunc(uintptr_t arg)
 
     int32_t ret = GpioRead(gpioClk, &encoderDrv->encoderClkNowSta);
     if (ret != HDF_SUCCESS) {
-         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
-         return;
+        HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
+        return;
     }
     ret = GpioRead(gpioData, &encoderDrv->encoderDataNowSta);
     if (ret != HDF_SUCCESS) {
-         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
-         return;
+        HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
+        return;
     }
 
     if (encoderDrv->encoderClkNowSta != encoderDrv->encoderClkPreSta) {
         if (encoderDrv->encoderClkNowSta == 0) {
             if (encoderDrv->encoderDataNowSta == 1) {
-                input_report_rel(encoderDrv->inputDev,REL_WHEEL, 1);
+                input_report_rel(encoderDrv->inputDev, REL_WHEEL, 1);
             } else {
-                input_report_rel(encoderDrv->inputDev,REL_WHEEL, -1);
+                input_report_rel(encoderDrv->inputDev, REL_WHEEL, -1);
             }
             input_sync(encoderDrv->inputDev);
         }
@@ -108,19 +107,19 @@ static int32_t EncoderInit(EncoderDriver *EncoderDrv)
     }
     ret = OsalTimerStartLoop(&EncoderDrv->timer);
     if (ret != HDF_SUCCESS) {
-         HDF_LOGE("%s: start timer failed, ret = %d\n", __func__, ret);
-         return HDF_FAILURE;
+        HDF_LOGE("%s: start timer failed, ret = %d\n", __func__, ret);
+        return HDF_FAILURE;
     }
 
     ret = GpioRead(gpioClk, &EncoderDrv->encoderClkNowSta);
     if (ret != HDF_SUCCESS) {
-         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
-         return HDF_FAILURE;
+        HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
     }
     ret = GpioRead(gpioData, &EncoderDrv->encoderDataNowSta);
     if (ret != HDF_SUCCESS) {
-         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
-         return HDF_FAILURE;
+        HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
     }
 
     EncoderDrv->encoderClkPreSta = EncoderDrv->encoderClkNowSta;
@@ -211,7 +210,8 @@ EXIT:
     return HDF_FAILURE;
 }
 
-static int32_t HdfEnCoderDispatch(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t HdfEnCoderDispatch(struct HdfDeviceIoClient *client, int cmd,
+                                  struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     (void)cmd;
     if (client == NULL || data == NULL || reply == NULL) {
