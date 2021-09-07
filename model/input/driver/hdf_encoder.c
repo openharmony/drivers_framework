@@ -143,6 +143,13 @@ static InputDevice *InputDeviceInstance(EncoderDriver *encoderDrv)
         return NULL;
     }
 
+    ret = OsalMutexInit(&inputDev->mutex);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init mutex error", __func__);
+        OsalMemFree(inputDev);
+        return NULL;
+    }
+
     inputDev->pvtData = (void *)encoderDrv;
     inputDev->devType = encoderDrv->devType;
     inputDev->hdfDevObj = encoderDrv->encoderCfg->hdfEncoderDev;
