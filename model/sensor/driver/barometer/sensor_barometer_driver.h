@@ -95,11 +95,6 @@ enum BarometerData {
     BAROMETER_SUM,
 };
 
-struct BarometerDetectIfList {
-    char *chipName;
-    int32_t (*DetectChip)(struct SensorCfgData *data);
-};
-
 struct BarometerOpsCall {
     int32_t (*Init)(struct SensorCfgData *data);
     int32_t (*ReadData)(struct SensorCfgData *data);
@@ -113,12 +108,13 @@ struct BarometerDrvData {
     OsalTimer barometerTimer;
     bool detectFlag;
     bool enable;
-    bool initStatus;
     int64_t interval;
     struct SensorCfgData *barometerCfg;
     struct BarometerOpsCall ops;
 };
 
-int32_t RegisterBarometerChipOps(const struct BarometerOpsCall *ops);
+int32_t BarometerRegisterChipOps(const struct BarometerOpsCall *ops);
+struct SensorCfgData *BarometerCreateCfgData(const struct DeviceResourceNode *node);
+void BarometerReleaseCfgData(struct SensorCfgData *sensorCfgData);
 
 #endif /* SENSOR_BAROMETER_DRIVER_H */

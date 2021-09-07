@@ -6,13 +6,12 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "securec.h"
-#include "barometer_bmp180.h"
+#include "sensor_barometer_driver.h"
+#include <securec.h>
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_math.h"
 #include "osal_mem.h"
-#include "sensor_barometer_driver.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
@@ -20,10 +19,6 @@
 #define HDF_LOG_TAG    sensor_barometer_driver_c
 
 #define HDF_BAROMETER_WORK_QUEUE_NAME    "hdf_barometer_work_queue"
-
-static struct BarometerDetectIfList g_barometerDetectIfList[] = {
-    {BAROMETER_CHIP_NAME_BMP180, DetectBarometerBmp180Chip},
-};
 
 static struct BarometerDrvData *g_barometerDrvData = NULL;
 
@@ -34,14 +29,13 @@ static struct BarometerDrvData *BarometerGetDrvData(void)
 
 static struct SensorRegCfgGroupNode *g_regCfgGroup[SENSOR_GROUP_MAX] = { NULL };
 
-int32_t RegisterBarometerChipOps(const struct BarometerOpsCall *ops)
+int32_t BarometerRegisterChipOps(const struct BarometerOpsCall *ops)
 {
-    struct BarometerDrvData *drvData = NULL;
+    struct BarometerDrvData *drvData = BarometerGetDrvData();
 
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(ops, HDF_ERR_INVALID_PARAM);
 
-    drvData = BarometerGetDrvData();
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     drvData->ops.Init = ops->Init;
     drvData->ops.ReadData = ops->ReadData;
     return HDF_SUCCESS;
@@ -49,15 +43,17 @@ int32_t RegisterBarometerChipOps(const struct BarometerOpsCall *ops)
 
 static void BarometerDataWorkEntry(void *arg)
 {
-    int32_t ret;
-    struct BarometerDrvData *drvData = (struct BarometerDrvData *)arg;
-    CHECK_NULL_PTR_RETURN(drvData);
-    CHECK_NULL_PTR_RETURN(drvData->ops.ReadData);
+    struct BarometerDrvData *drvData = NULL;
 
-    ret = drvData->ops.ReadData(drvData->barometerCfg);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: barometer read data failed", __func__);
+    drvData = (struct BarometerDrvData *)arg;
+    CHECK_NULL_PTR_RETURN(drvData);
+
+    if (drvData->ops.ReadData == NULL) {
+        HDF_LOGI("%s: Barometer ReadData function NULl", __func__);
         return;
+    }
+    if (drvData->ops.ReadData(drvData->barometerCfg) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Barometer read data failed", __func__);
     }
 }
 
@@ -80,16 +76,8 @@ static void BarometerTimerEntry(uintptr_t arg)
     }
 }
 
-static int32_t InitBarometerData(void)
+static int32_t InitBarometerData(struct BarometerDrvData *drvData)
 {
-    struct BarometerDrvData *drvData = BarometerGetDrvData();
-    int32_t ret;
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
-
-    if (drvData->initStatus) {
-        return HDF_SUCCESS;
-    }
-
     if (HdfWorkQueueInit(&drvData->barometerWorkQueue, HDF_BAROMETER_WORK_QUEUE_NAME) != HDF_SUCCESS) {
         HDF_LOGE("%s: barometer init work queue failed", __func__);
         return HDF_FAILURE;
@@ -100,17 +88,9 @@ static int32_t InitBarometerData(void)
         return HDF_FAILURE;
     }
 
-    CHECK_NULL_PTR_RETURN_VALUE(drvData->ops.Init, HDF_ERR_INVALID_PARAM);
-
-    ret = drvData->ops.Init(drvData->barometerCfg);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: barometer create thread failed", __func__);
-        return HDF_FAILURE;
-    }
-
     drvData->interval = SENSOR_TIMER_MIN_TIME;
-    drvData->initStatus = true;
     drvData->enable = false;
+    drvData->detectFlag = false;
 
     return HDF_SUCCESS;
 }
@@ -215,7 +195,7 @@ static int32_t DispatchBarometer(struct HdfDeviceIoClient *client,
     return HDF_SUCCESS;
 }
 
-int32_t BindBarometerDriver(struct HdfDeviceObject *device)
+int32_t BarometerBindDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
 
@@ -232,11 +212,9 @@ int32_t BindBarometerDriver(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-static int32_t InitBarometerOps(struct SensorDeviceInfo *deviceInfo)
+static int32_t InitBarometerOps(struct SensorCfgData *config, struct SensorDeviceInfo *deviceInfo)
 {
-    struct BarometerDrvData *drvData = BarometerGetDrvData();
-
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+    CHECK_NULL_PTR_RETURN_VALUE(config, HDF_ERR_INVALID_PARAM);
 
     deviceInfo->ops.Enable = SetBarometerEnable;
     deviceInfo->ops.Disable = SetBarometerDisable;
@@ -245,7 +223,7 @@ static int32_t InitBarometerOps(struct SensorDeviceInfo *deviceInfo)
     deviceInfo->ops.SetOption = SetBarometerOption;
 
     if (memcpy_s(&deviceInfo->sensorInfo, sizeof(deviceInfo->sensorInfo),
-        &drvData->barometerCfg->sensorInfo, sizeof(drvData->barometerCfg->sensorInfo)) != EOK) {
+        &config->sensorInfo, sizeof(config->sensorInfo)) != EOK) {
         HDF_LOGE("%s: copy sensor info failed", __func__);
         return HDF_FAILURE;
     }
@@ -253,141 +231,140 @@ static int32_t InitBarometerOps(struct SensorDeviceInfo *deviceInfo)
     return HDF_SUCCESS;
 }
 
-static int32_t InitBarometerAfterConfig(void)
+static int32_t InitBarometerAfterDetected(struct SensorCfgData *config)
 {
     struct SensorDeviceInfo deviceInfo;
+    CHECK_NULL_PTR_RETURN_VALUE(config, HDF_ERR_INVALID_PARAM);
 
-    if (InitBarometerData() != HDF_SUCCESS) {
-        HDF_LOGE("%s: init barometer config failed", __func__);
-        return HDF_FAILURE;
-    }
-
-    if (InitBarometerOps(&deviceInfo) != HDF_SUCCESS) {
-        HDF_LOGE("%s: init barometer ops failed", __func__);
+    if (InitBarometerOps(config, &deviceInfo) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init barometer ops failed", __func__);
         return HDF_FAILURE;
     }
 
     if (AddSensorDevice(&deviceInfo) != HDF_SUCCESS) {
-        HDF_LOGE("%s: add barometer device failed", __func__);
+        HDF_LOGE("%s: Add barometer device failed", __func__);
         return HDF_FAILURE;
     }
 
+    if (ParseSensorRegConfig(config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Parse sensor register failed", __func__);
+        (void)DeleteSensorDevice(&config->sensorInfo);
+        ReleaseSensorAllRegConfig(config);
+        return HDF_FAILURE;
+    }
     return HDF_SUCCESS;
 }
 
-static int32_t DetectBarometerChip(void)
+struct SensorCfgData *BarometerCreateCfgData(const struct DeviceResourceNode *node)
 {
-    int32_t num;
-    int32_t ret;
-    int32_t loop;
     struct BarometerDrvData *drvData = BarometerGetDrvData();
 
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
-    CHECK_NULL_PTR_RETURN_VALUE(drvData->barometerCfg, HDF_ERR_INVALID_PARAM);
-
-    num = sizeof(g_barometerDetectIfList) / sizeof(g_barometerDetectIfList[0]);
-    for (loop = 0; loop < num; ++loop) {
-        if (g_barometerDetectIfList[loop].DetectChip != NULL) {
-            ret = g_barometerDetectIfList[loop].DetectChip(drvData->barometerCfg);
-            if (ret == HDF_SUCCESS) {
-                drvData->detectFlag = true;
-                return HDF_SUCCESS;
-            }
-        }
+    if (drvData == NULL || node == NULL) {
+        HDF_LOGE("%s: Barometer node pointer NULL", __func__);
+        return NULL;
     }
 
-    HDF_LOGE("%s: detect barometer device failed", __func__);
-    drvData->detectFlag = false;
-    return HDF_FAILURE;
+    if (drvData->detectFlag) {
+        HDF_LOGE("%s: Barometer sensor have detected", __func__);
+        return NULL;
+    }
+
+    if (drvData->barometerCfg == NULL) {
+        HDF_LOGE("%s: Barometer barometerCfg pointer NULL", __func__);
+        return NULL;
+    }
+
+    if (GetSensorBaseConfigData(node, drvData->barometerCfg) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Get sensor base config failed", __func__);
+        goto BASE_CONFIG_EXIT;
+    }
+
+    if (DetectSensorDevice(drvData->barometerCfg) != HDF_SUCCESS) {
+        HDF_LOGI("%s: Barometer sensor detect device no exist", __func__);
+        drvData->detectFlag = false;
+        goto BASE_CONFIG_EXIT;
+    }
+
+    drvData->detectFlag = true;
+    if (InitBarometerAfterDetected(drvData->barometerCfg) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Barometer sensor detect device no exist", __func__);
+        goto INIT_EXIT;
+    }
+    return drvData->barometerCfg;
+
+INIT_EXIT:
+    (void)ReleaseSensorBusHandle(&drvData->barometerCfg->busCfg);
+BASE_CONFIG_EXIT:
+    drvData->barometerCfg->root = NULL;
+    (void)memset_s(&drvData->barometerCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0,
+        sizeof(struct SensorBasicInfo));
+    (void)memset_s(&drvData->barometerCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
+    (void)memset_s(&drvData->barometerCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
+    return NULL;
 }
 
-int32_t InitBarometerDriver(struct HdfDeviceObject *device)
+void BarometerReleaseCfgData(struct SensorCfgData *barometerCfg)
+{
+    CHECK_NULL_PTR_RETURN(barometerCfg);
+
+    (void)DeleteSensorDevice(&barometerCfg->sensorInfo);
+    ReleaseSensorAllRegConfig(barometerCfg);
+    (void)ReleaseSensorBusHandle(&barometerCfg->busCfg);
+
+    barometerCfg->root = NULL;
+    (void)memset_s(&barometerCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
+    (void)memset_s(&barometerCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
+    (void)memset_s(&barometerCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
+}
+
+int32_t BarometerInitDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
     struct BarometerDrvData *drvData = (struct BarometerDrvData *)device->service;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
-    if (drvData->detectFlag) {
-        HDF_LOGE("%s: barometer sensor have detected", __func__);
-        return HDF_SUCCESS;
+    if (InitBarometerData(drvData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init barometer config failed", __func__);
+        return HDF_FAILURE;
     }
 
     drvData->barometerCfg = (struct SensorCfgData *)OsalMemCalloc(sizeof(*drvData->barometerCfg));
     if (drvData->barometerCfg == NULL) {
-        HDF_LOGE("%s: malloc sensor config data failed", __func__);
+        HDF_LOGE("%s: Malloc barometer config data failed", __func__);
         return HDF_FAILURE;
     }
 
     drvData->barometerCfg->regCfgGroup = &g_regCfgGroup[0];
 
-    if (GetSensorBaseConfigData(device->property, drvData->barometerCfg) != HDF_SUCCESS) {
-        HDF_LOGE("%s: get sensor base config failed", __func__);
-        goto BASE_CONFIG_EXIT;
-    }
-   
-    // if return failure, hdf framework go to next detect sensor
-    if (DetectBarometerChip() != HDF_SUCCESS) {
-        HDF_LOGE("%s: barometer sensor detect device no exist", __func__);
-        goto DETECT_CHIP_EXIT;
-    }
-    drvData->detectFlag = true;
-
-    if (ParseSensorRegConfig(drvData->barometerCfg) != HDF_SUCCESS) {
-        HDF_LOGE("%s: detect sensor device failed", __func__);
-        goto REG_CONFIG_EXIT;
-    }
-  
-    if (InitBarometerAfterConfig() != HDF_SUCCESS) {
-        HDF_LOGE("%s: init barometer after config failed", __func__);
-        goto INIT_EXIT;
-    }
-
-    HDF_LOGI("%s: init barometer driver success", __func__);
+    HDF_LOGI("%s: Init barometer driver success", __func__);
     return HDF_SUCCESS;
-
-INIT_EXIT:
-    (void)DeleteSensorDevice(&drvData->barometerCfg->sensorInfo);
-REG_CONFIG_EXIT:
-    ReleaseSensorAllRegConfig(drvData->barometerCfg);
-    (void)ReleaseSensorBusHandle(&drvData->barometerCfg->busCfg);
-DETECT_CHIP_EXIT:
-    drvData->detectFlag = false;
-BASE_CONFIG_EXIT:
-    drvData->barometerCfg->root = NULL;
-    drvData->barometerCfg->regCfgGroup = NULL;
-    OsalMemFree(drvData->barometerCfg);
-    drvData->barometerCfg = NULL;
-    return HDF_FAILURE;
 }
 
-void ReleaseBarometerDriver(struct HdfDeviceObject *device)
+void BarometerReleaseDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN(device);
 
     struct BarometerDrvData *drvData = (struct BarometerDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    (void)DeleteSensorDevice(&drvData->barometerCfg->sensorInfo);
-    drvData->detectFlag = false;
-
-    if (drvData->barometerCfg != NULL) {
-        drvData->barometerCfg->root = NULL;
-        drvData->barometerCfg->regCfgGroup = NULL;
-        ReleaseSensorAllRegConfig(drvData->barometerCfg);
-        (void)ReleaseSensorBusHandle(&drvData->barometerCfg->busCfg);
-        OsalMemFree(drvData->barometerCfg);
-        drvData->barometerCfg = NULL;
+    if (drvData->detectFlag) {
+        BarometerReleaseCfgData(drvData->barometerCfg);
     }
 
-    drvData->initStatus = false;
+    OsalMemFree(drvData->barometerCfg);
+    drvData->barometerCfg = NULL;
+
+    HdfWorkDestroy(&drvData->barometerWork);
+    HdfWorkQueueDestroy(&drvData->barometerWorkQueue);
+    OsalMemFree(drvData);
 }
 
 struct HdfDriverEntry g_sensorBarometerDevEntry = {
     .moduleVersion = 1,
     .moduleName = "HDF_SENSOR_BAROMETER",
-    .Bind = BindBarometerDriver,
-    .Init = InitBarometerDriver,
-    .Release = ReleaseBarometerDriver,
+    .Bind = BarometerBindDriver,
+    .Init = BarometerInitDriver,
+    .Release = BarometerReleaseDriver,
 };
 
 HDF_INIT(g_sensorBarometerDevEntry);

@@ -9,13 +9,14 @@
 #ifndef BAROMETER_BMP180_H
 #define BAROMETER_BMP180_H
 
+#include "sensor_barometer_driver.h"
 #include "sensor_config_parser.h"
 
-#define BMP180_REG_CHIP_ID		   0xD0
+#define BMP180_REG_CHIP_ID         0xD0
 
 // i2c slave address 
 
-#define BMP180_ADDR				   0x77 	
+#define BMP180_ADDR                0x77
 
 // Define calibration register address
 
@@ -33,7 +34,7 @@
 #define BMP180_AC6_LSB_ADDR        0xB5
 #define BMP180_B1_MSB_ADDR         0xB6
 #define BMP180_B1_LSB_ADDR         0xB7
-#define BMP180_B2_MSB_ADDR         0xB8 
+#define BMP180_B2_MSB_ADDR         0xB8
 #define BMP180_B2_LSB_ADDR         0xB9
 #define BMP180_MB_MSB_ADDR         0xBA
 #define BMP180_MB_LSB_ADDR         0xBB
@@ -44,26 +45,26 @@
 
 // Control register
 
-#define BMP180_CONTROL_REG_ADDR    0xF4    
-#define BMP180_COVERT_TEMP         0x2E    
-#define BMP180_COVERT_PRES_0       0x34    
-#define BMP180_COVERT_PRES_1       0x74    
-#define BMP180_COVERT_PRES_2       0xB4    
-#define BMP180_COVERT_PRES_3       0xF4    
+#define BMP180_CONTROL_REG_ADDR    0xF4
+#define BMP180_COVERT_TEMP         0x2E
+#define BMP180_COVERT_PRES_0       0x34
+#define BMP180_COVERT_PRES_1       0x74
+#define BMP180_COVERT_PRES_2       0xB4
+#define BMP180_COVERT_PRES_3       0xF4
 
-#define BMP180_OUT_MSB_ADDR		   0xF6    
-#define BMP180_OUT_LSB_ADDR		   0xF7   
-#define BMP180_OUT_XLSB_ADDR	   0xF8    
+#define BMP180_OUT_MSB_ADDR        0xF6
+#define BMP180_OUT_LSB_ADDR        0xF7
+#define BMP180_OUT_XLSB_ADDR       0xF8
 
 #define BMP180_STATUS_ADDR         0X20
 #define BMP180_STATUS_JUDGE        0X00
 
-#define SENSOR_DATA_WIDTH_16_BIT   16 
+#define SENSOR_DATA_WIDTH_16_BIT   16
 
 #define OSSETTING                  1
 #define DELAY_0                    5
 #define DELAY_1                    8
-#define OSS_TIME_MS	               26   
+#define OSS_TIME_MS	               26
 
 #define BMP180_CONSTANT_0          (-7357)
 #define BMP180_CONSTANT_1          1
@@ -85,5 +86,11 @@
 
 int32_t DetectBarometerBmp180Chip(struct SensorCfgData *data);
 int32_t ReadBmp180Data(struct SensorCfgData *data);
+
+struct Bmp180DrvData {
+    struct IDeviceIoService ioService;
+    struct HdfDeviceObject *device;
+    struct SensorCfgData *sensorCfg;
+};
 
 #endif /*  BAROMETER_BMP180_H */
