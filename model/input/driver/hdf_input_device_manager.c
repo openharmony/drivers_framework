@@ -250,8 +250,13 @@ static uint32_t AllocDeviceID(InputDevice *inputDev)
     InputDevice *tmpDev = g_inputManager->inputDevList;
     uint32_t idList[MAX_INPUT_DEV_NUM + 1];
     uint32_t id;
-    (void)memset_s(idList, (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t), 0,
-        (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t));
+    int32_t ret;
+    ret = memset_s(idList, (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t), 0,
+                  (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t));
+    if (ret != 0) {
+        HDF_LOGE("%s: memset_s is failed", __func__);
+        return HDF_FAILURE;
+    }
     while (tmpDev != NULL) {
         if (idList[tmpDev->devId] == 0) {
             idList[tmpDev->devId] = FILLER_FLAG;
