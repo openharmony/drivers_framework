@@ -100,9 +100,9 @@ int32_t ReadLsm303Data(struct SensorCfgData *data)
     event.option = 0;
     event.mode = SENSOR_WORK_MODE_REALTIME;
 
-    tmp[MAGNETIC_X_AXIS] = rawData.x * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_XY47Ga;
-    tmp[MAGNETIC_Y_AXIS] = rawData.y * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_XY47Ga;
-    tmp[MAGNETIC_Z_AXIS] = rawData.z * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_Z47Ga;
+    tmp[MAGNETIC_X_AXIS] = rawData.x * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_XY47GA;
+    tmp[MAGNETIC_Y_AXIS] = rawData.y * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_XY47GA;
+    tmp[MAGNETIC_Z_AXIS] = rawData.z * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_Z47GA;
 
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
@@ -121,7 +121,6 @@ static int32_t InitLsm303(struct SensorCfgData *data)
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
     ret = SetSensorRegCfgArray(&data->busCfg, data->regCfgGroup[SENSOR_INIT_GROUP]);
-
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: Lsm303 sensor init config failed", __func__);
         return HDF_FAILURE;
