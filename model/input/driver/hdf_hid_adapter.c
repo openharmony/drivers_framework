@@ -89,7 +89,7 @@ void SendInfoToHdf(HidInfo *info)
     }
 }
 
-static void FreeCachedInfo()
+static void FreeCachedInfo(void)
 {
     int32_t id = 0;
     while (id < MAX_INPUT_DEV_NUM) {
@@ -364,7 +364,6 @@ static int32_t HidGetDeviceAttr(InputDevice *inputDev, struct HdfSBuf *reply)
         return HDF_FAILURE;
     }
 
-    HDF_LOGE("%s: enter", __func__);
     ret = strncpy_s(inputDev->attrSet.devName, DEV_NAME_LEN, inputDev->devName, strlen(inputDev->devName));
     if (ret != 0) {
         HDF_LOGE("%s: copy name from inputDev failed, ret = %d", __func__, ret);
@@ -376,7 +375,6 @@ static int32_t HidGetDeviceAttr(InputDevice *inputDev, struct HdfSBuf *reply)
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("%s: get dev attr succ", __func__);
     return HDF_SUCCESS;
 }
 
@@ -385,14 +383,12 @@ static int32_t HidGetDeviceAbility(InputDevice *inputDev, struct HdfSBuf *reply)
     if (inputDev == NULL) {
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: enter", __func__);
 
     if (!HdfSbufWriteBuffer(reply, &inputDev->abilitySet, sizeof(DevAbility))) {
         HDF_LOGE("%s: sbuf write dev ability failed", __func__);
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("%s: get dev ability succ", __func__);
     return HDF_SUCCESS;
 }
 

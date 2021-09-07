@@ -252,7 +252,7 @@ static uint32_t AllocDeviceID(InputDevice *inputDev)
     uint32_t id;
     int32_t ret;
     ret = memset_s(idList, (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t), 0,
-                  (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t));
+                   (MAX_INPUT_DEV_NUM + 1) * sizeof(uint32_t));
     if (ret != 0) {
         HDF_LOGE("%s: memset_s is failed", __func__);
         return HDF_FAILURE;
