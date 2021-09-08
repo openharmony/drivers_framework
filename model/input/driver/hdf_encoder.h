@@ -8,8 +8,8 @@
 #ifndef HDF_ENCODER_H
 #define HDF_ENCODER_H
 
-#include "input_config.h"
 #include "hdf_input_device_manager.h"
+#include "input_config.h"
 #include "osal_time.h"
 #include "osal_timer.h"
 #include <securec.h>

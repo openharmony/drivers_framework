@@ -158,13 +158,14 @@ static InputDevice *InputDeviceInstance(EncoderDriver *encoderDrv)
     return inputDev;
 }
 
-static int32_t RegisterEncoderDevice(EncoderCfg *encoderCfg)
+static int32_t RegisterEncoderDevice(EncoderCfg *encoderCfg, struct HdfDeviceObject *device)
 {
     EncoderDriver *EncoderDrv = EncoderDriverInstance(encoderCfg);
     if (EncoderDrv == NULL) {
         HDF_LOGE("%s: instance encoder driver failed", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
+    device->priv = (void *)EncoderDrv;
 
     int32_t ret = EncoderInit(EncoderDrv);
     if (ret != HDF_SUCCESS) {
@@ -205,7 +206,7 @@ static int32_t HdfEnCoderDriverInit(struct HdfDeviceObject *device)
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    int32_t ret = RegisterEncoderDevice(encoderCfg);
+    int32_t ret = RegisterEncoderDevice(encoderCfg, device);
     if (ret != HDF_SUCCESS) {
         goto EXIT;
     }
@@ -231,7 +232,20 @@ static int32_t HdfEnCoderDispatch(struct HdfDeviceIoClient *client, int cmd,
 
 static void HdfEncoderDriverRelease(struct HdfDeviceObject *device)
 {
-    (void)device;
+    EncoderDriver *driver = NULL;
+    InputDevice *inputDev = NULL;
+
+    if (device == NULL || device->priv == NULL) {
+        HDF_LOGE("%s: param is null", __func__);
+        return;
+    }
+    driver = (EncoderDriver *)device->priv;
+    inputDev = driver->inputDev;
+    if (inputDev != NULL) {
+        UnregisterInputDevice(inputDev);
+        driver->inputDev = NULL;
+    }
+    OsalMemFree(driver);
 }
 
 static int32_t HdfEnCoderDriverBind(struct HdfDeviceObject *device)
