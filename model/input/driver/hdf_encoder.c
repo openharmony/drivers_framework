@@ -33,7 +33,7 @@ static void EncoderTimerFunc(uintptr_t arg)
         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
         return;
     }
-    ret = GpioRead(gpioSW, &encoderDrv->encoderSW);
+    ret = GpioRead(gpioSW, &encoderDrv->encoderSWNowSta);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
         return;
@@ -51,8 +51,13 @@ static void EncoderTimerFunc(uintptr_t arg)
         encoderDrv->encoderClkPreSta = encoderDrv->encoderClkNowSta;
         encoderDrv->encoderDataPreSta  = encoderDrv->encoderDataNowSta;
     }
-    if (encoderDrv->encoderSW == 0) {
-        input_report_key(encoderDrv->inputDev, KEY_OK, 0);
+    if (encoderDrv->encoderSWPreSta != encoderDrv->encoderSWNowSta) {
+        if (encoderDrv->encoderSWNowSta == 0) {
+            input_report_key(encoderDrv->inputDev, KEY_OK, 0);
+        } else {
+            input_report_key(encoderDrv->inputDev, KEY_OK, 1);
+        }
+        encoderDrv->encoderSWPreSta = encoderDrv->encoderSWNowSta;
         input_sync(encoderDrv->inputDev);
     }
 }
@@ -126,6 +131,11 @@ static int32_t EncoderInit(EncoderDriver *EncoderDrv)
         return HDF_FAILURE;
     }
     ret = GpioRead(gpioData, &EncoderDrv->encoderDataNowSta);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
+    }
+    ret = GpioRead(gpioSW, &EncoderDrv->encoderSWNowSta);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
         return HDF_FAILURE;
