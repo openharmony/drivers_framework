@@ -15,7 +15,7 @@
 #include "hdf_device_desc.h"
 
 
-#define TIMER_INTERVAL_ENCODER  10
+#define TIMER_INTERVAL_ENCODER  5
 
 static void EncoderTimerFunc(uintptr_t arg)
 {
@@ -34,6 +34,11 @@ static void EncoderTimerFunc(uintptr_t arg)
         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
         return;
     }
+    ret = GpioRead(gpioSW, &encoderDrv->encoderSW);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
+        return;
+    }
 
     if (encoderDrv->encoderClkNowSta != encoderDrv->encoderClkPreSta) {
         if (encoderDrv->encoderClkNowSta == 0) {
@@ -46,6 +51,10 @@ static void EncoderTimerFunc(uintptr_t arg)
         }
         encoderDrv->encoderClkPreSta = encoderDrv->encoderClkNowSta;
         encoderDrv->encoderDataPreSta  = encoderDrv->encoderDataNowSta;
+    }
+    if (encoderDrv->encoderSW == 0) {
+        input_report_key(encoderDrv->inputDev, KEY_OK, 0);
+        input_sync(encoderDrv->inputDev);
     }
 }
 

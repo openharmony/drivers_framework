@@ -25,6 +25,7 @@ typedef struct EncoderDriverInfo {
     uint16_t encoderClkNowSta;
     uint16_t encoderDataPreSta;
     uint16_t encoderDataNowSta;
+    uint16_t encoderSW;
 } EncoderDriver;
 
 #endif
