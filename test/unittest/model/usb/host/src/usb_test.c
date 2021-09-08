@@ -1107,6 +1107,10 @@ static int32_t CheckHostSdkIfFreeRequest006(void)
 {
     int ret;
 
+    if (g_acm->isoReq == NULL) {
+        HDF_LOGE("%s: isoReq is NULL", __func__);
+        return HDF_FAILURE;
+    }
     ret = UsbFreeRequest(g_acm->isoReq);
     if (ret) {
         HDF_LOGE("%s: error", __func__);
@@ -1132,6 +1136,7 @@ static int32_t CheckHostSdkIfFillIsoRequest001(void)
         parmas.pipeAddress = g_acm->isoPipe->pipeAddress;
         parmas.pipeId = g_acm->isoPipe->pipeId;
         parmas.callback = AcmWriteIsoCallback;
+        parmas.userData = NULL;
         parmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
         parmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
         parmas.dataReq.numIsoPackets = USB_ISO_PACKAT_CNT;
@@ -1438,6 +1443,7 @@ static int32_t CheckHostSdkIfFillRequest003(void)
     intParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->intPipe->pipeDirection >> USB_PIPE_DIR_OFFSET)
         & DIRECTION_MASK);
     intParmas.dataReq.length = g_acm->intSize;
+    intParmas.dataReq.buffer = NULL;
     ret = UsbFillRequest(g_acm->notifyReq, g_acm->int_devHandle, &intParmas);
     if (ret) {
         HDF_LOGE("%s: error", __func__);
@@ -1471,6 +1477,7 @@ static int32_t CheckHostSdkIfFillRequest004(void)
     msgData.data = &g_acm->lineCoding;
     msgData.size = sizeof(struct UsbCdcLineCoding);
     parmas.ctrlReq = UsbControlMsg(msgData);
+    parmas.userData = NULL;
     ret = UsbFillRequest(g_acm->ctrlReq, g_acm->ctrl_devHandle, &parmas);
     if (ret) {
         HDF_LOGE("%s: error", __func__);
@@ -1610,6 +1617,7 @@ static int32_t CheckHostSdkIfFillRequest007(void)
     intParmas.callback = AcmCtrlIrq;
     intParmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
     intParmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
+    intParmas.dataReq.buffer = NULL;
     intParmas.dataReq.numIsoPackets = 0;
     intParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->intPipe->pipeDirection >> USB_PIPE_DIR_OFFSET)
         & DIRECTION_MASK);
@@ -1648,6 +1656,7 @@ static int32_t CheckHostSdkIfFillRequest008(void)
     msgData.data = &g_acm->lineCoding;
     msgData.size = sizeof(struct UsbCdcLineCoding);
     parmas.ctrlReq = UsbControlMsg(msgData);
+    parmas.userData = NULL;
     ret = UsbFillRequest(g_acm->ctrlReq, g_acm->ctrl_devHandle, &parmas);
     if (ret) {
         HDF_LOGE("%s: error", __func__);

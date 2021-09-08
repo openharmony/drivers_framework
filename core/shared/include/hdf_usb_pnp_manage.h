@@ -78,7 +78,7 @@ struct UsbPnpNotifyDeviceInfo {
 };
 
 struct UsbPnpNotifyMatchInfoTable {
-    uint32_t usbDevAddr;
+    uintptr_t usbDevAddr;
     int32_t devNum;
     int32_t busNum;
 
