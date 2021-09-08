@@ -45,6 +45,7 @@ struct MipiDsiCntlrMethod {
     void (*exitUlps)(struct MipiDsiCntlr *cntlr);
     int32_t (*powerControl)(struct MipiDsiCntlr *cntlr, uint8_t enable);
     int32_t (*attach)(struct MipiDsiCntlr *cntlr, uint8_t *name);
+    int32_t (*setDrvData)(struct MipiDsiCntlr *cntlr, DevHandle *panelData);
 };
 
 int32_t MipiDsiRegisterCntlr(struct MipiDsiCntlr *cntlr, struct HdfDeviceObject *device);
@@ -159,6 +160,18 @@ int32_t MipiDsiCntlrRx(struct MipiDsiCntlr *cntlr, struct DsiCmdDesc *cmd, int32
  * @since 1.0
  */
 int32_t MipiDsiCntlrAttach(struct MipiDsiCntlr *cntlr, uint8_t *name);
+
+/**
+ * @brief Sets additional parameters for a MIPI DSI device.
+ *
+ * @param cntlr Indicates the MIPI DSI device obtained via {@link MipiDsiOpen}.
+ * @param panelData Indicates the pointer to the additional parameters.
+ *
+ * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
+ *
+ * @since 1.0
+ */
+int32_t MipiDsiCntlrSetDrvData(struct MipiDsiCntlr *cntlr, DevHandle *panelData);
 
 #ifdef __cplusplus
 #if __cplusplus
