@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -8,12 +8,11 @@
 #ifndef HDF_ENCODER_H
 #define HDF_ENCODER_H
 
+#include <securec.h>
 #include "hdf_input_device_manager.h"
 #include "input_config.h"
 #include "osal_time.h"
 #include "osal_timer.h"
-#include <securec.h>
-
 
 typedef struct EncoderDriverInfo {
     struct HdfDeviceObject *hdfEncoderDev;

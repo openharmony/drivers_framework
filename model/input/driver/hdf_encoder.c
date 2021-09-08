@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -13,7 +13,6 @@
 #include "osal_timer.h"
 #include "hdf_log.h"
 #include "hdf_device_desc.h"
-
 
 #define TIMER_INTERVAL_ENCODER  5
 
