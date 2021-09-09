@@ -289,6 +289,7 @@ static int32_t GetBacklight(struct HdfDeviceObject *device, struct HdfSBuf *reqD
         HDF_LOGE("%s: get panel failed", __func__);
         return HDF_FAILURE;
     }
+    panel = disp->panelManager->panel[devId];
     if (GetCurrBrightness(panel->blDev, &currLevel) != HDF_SUCCESS) {
         HDF_LOGE("%s: GetCurrBrightness failed", __func__);
         return HDF_FAILURE;
