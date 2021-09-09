@@ -34,8 +34,8 @@ public:
     void SetUp();
     void TearDown();
 private:
-    const int OSAL_TEST_TIME = 30;
-    const int OSAL_WAIT_END_TIME = 5;
+    static const int OSAL_TEST_TIME = 30;
+    static const int OSAL_WAIT_END_TIME = 5;
 };
 
 static void OsalCreateDir(bool flag)
