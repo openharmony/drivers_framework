@@ -6,7 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_log.h"
 #include "osal_case_cmd_test.h"
 
 int OsalGetTestResult(uint32_t cmd)

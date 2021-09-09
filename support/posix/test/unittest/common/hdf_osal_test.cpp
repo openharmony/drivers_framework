@@ -13,14 +13,12 @@
 #include <string>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include "osal_test_case_def.h"
-#include "hdf_uhdf_test.h"
 #include "hdf_io_service_if.h"
+#include "hdf_uhdf_test.h"
+#include "osal_test_case_def.h"
 
 using namespace testing::ext;
 
-static const int OSAL_TEST_TIME = 30;
-static const int OSAL_WAIT_END_TIME = 5;
 static const char *OSAL_FW_PATH = "/lib/firmware";
 static const int OSAL_FW_PATH_MODE = 0x777;
 #define OSAL_TEST_FUNC_DEFINE(subCmd) do { \
@@ -35,6 +33,9 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
+private:
+    const int OSAL_TEST_TIME = 30;
+    const int OSAL_WAIT_END_TIME = 5;
 };
 
 static void OsalCreateDir(bool flag)

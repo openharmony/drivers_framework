@@ -13,9 +13,9 @@
 #include <string>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include "osal_test_case_def.h"
 #include "hdf_uhdf_test.h"
 #include "osal_get_case_test.h"
+#include "osal_test_case_def.h"
 
 int32_t HdfOsalUserEntry(enum HdfOsalTestCaseCmd cmd)
 {
@@ -41,9 +41,6 @@ int32_t HdfOsalUserEntry(enum HdfOsalTestCaseCmd cmd)
 
 using namespace testing::ext;
 
-static const int OSAL_TEST_TIME = 30;
-static const int OSAL_WAIT_END_TIME = 5;
-
 #define OSAL_TEST_FUNC_DEFINE(subCmd) do { \
     printf("OSAL test enter cmd:%d\n\r", subCmd); \
     EXPECT_EQ(0, HdfOsalUserEntry(subCmd)); \
@@ -55,6 +52,9 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
+private:
+    const int OSAL_TEST_TIME = 30;
+    const int OSAL_WAIT_END_TIME = 5;
 };
 
 void OsalTest::SetUpTestCase()
