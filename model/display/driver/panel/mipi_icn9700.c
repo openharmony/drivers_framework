@@ -192,6 +192,8 @@ static int32_t Icn9700On(struct PanelData *panel)
     /* send mipi init code */
     int32_t count = sizeof(g_OnCmd) / sizeof(g_OnCmd[0]);
     int32_t i;
+    /* set mipi to lp mode */
+    MipiDsiSetLpMode(icn9700->mipiHandle);
     for (i = 0; i < count; i++) {
         ret = MipiDsiTx(icn9700->mipiHandle, &(g_OnCmd[i]));
         if (ret != HDF_SUCCESS) {
@@ -221,6 +223,8 @@ static int32_t Icn9700Off(struct PanelData *panel)
     /* send mipi init code */
     int32_t count = sizeof(g_offCmd) / sizeof(g_offCmd[0]);
     int32_t i;
+    /* set mipi to lp mode */
+    MipiDsiSetLpMode(icn9700->mipiHandle);
     for (i = 0; i < count; i++) {
         ret = MipiDsiTx(icn9700->mipiHandle, &(g_offCmd[i]));
         if (ret != HDF_SUCCESS) {
@@ -228,8 +232,6 @@ static int32_t Icn9700Off(struct PanelData *panel)
             return HDF_FAILURE;
         }
     }
-    /* set mipi to lp mode */
-    MipiDsiSetLpMode(icn9700->mipiHandle);
     /* lcd reset power off */
     ret = LcdResetOff(icn9700);
     if (ret != HDF_SUCCESS) {
