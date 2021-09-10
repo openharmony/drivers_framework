@@ -806,7 +806,7 @@ int OsaTestBegin(void)
 #ifndef __USER__
     ret = OsalTestFileInit();
 #else
-	ret = 0;
+    ret = 0;
 #endif
     OsalTestOther(ret);
     OsaTimeTest();
