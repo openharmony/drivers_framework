@@ -84,8 +84,8 @@ struct AudioPlatformOps {
     uint32_t (*Pointer)(struct AudioCard *);
     int32_t (*Write)(const struct AudioCard *, struct AudioTxData *);
     int32_t (*Read)(const struct AudioCard *, struct AudioRxData *);
-    int32_t (*MmapWrite)(const struct AudioCard *, struct AudioTxMmapData *);
-    int32_t (*MmapRead)(const struct AudioCard *, struct AudioRxMmapData *);
+    int32_t (*MmapWrite)(const struct AudioCard *, const struct AudioTxMmapData *);
+    int32_t (*MmapRead)(const struct AudioCard *, const struct AudioRxMmapData *);
     int32_t (*RenderPrepare)(const struct AudioCard *);
     int32_t (*CapturePrepare)(const struct AudioCard *);
     int32_t (*RenderStart)(struct AudioCard *);

@@ -24,6 +24,15 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
+#ifdef __LITEOS__
+#define ADM_LOG_DEBUG(fmt, arg...) do { \
+    } while (0)
+#else
+#define ADM_LOG_DEBUG(fmt, arg...) do { \
+    HDF_LOGD("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
+    } while (0)
+#endif
+
 #define ADM_LOG_ERR(fmt, arg...) do { \
     HDF_LOGE("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
     } while (0)
@@ -36,16 +45,28 @@ extern "C" {
     HDF_LOGW("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
     } while (0)
 
-#define ADM_LOG_DEBUG(fmt, arg...) do { \
-    HDF_LOGD("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
-    } while (0)
-
 #define BUFF_SIZE_MAX 64
 
 #define AUDIO_LIST_HEAD_INIT(name) { &(name), &(name) }
 
 #define AUDIO_LIST_HEAD(name) \
     struct DListHead name = AUDIO_LIST_HEAD_INIT(name)
+
+enum AudioFormat {
+    AUDIO_FORMAT_PCM_8_BIT  = 0x1u,       /**< audio 8-bit PCM */
+    AUDIO_FORMAT_PCM_16_BIT = 0x2u,       /**< audio16-bit PCM */
+    AUDIO_FORMAT_PCM_24_BIT = 0x3u,       /**< audio 24-bit PCM */
+    AUDIO_FORMAT_PCM_32_BIT = 0x4u,       /**< audio 32-bit PCM */
+    AUDIO_FORMAT_AAC_MAIN   = 0x1000001u, /**< audio AAC main */
+    AUDIO_FORMAT_AAC_LC     = 0x1000002u, /**< audio AAC LC */
+    AUDIO_FORMAT_AAC_LD     = 0x1000003u, /**< audio AAC LD */
+    AUDIO_FORMAT_AAC_ELD    = 0x1000004u, /**< audio AAC ELD */
+    AUDIO_FORMAT_AAC_HE_V1  = 0x1000005u, /**< audio AAC HE_V1 */
+    AUDIO_FORMAT_AAC_HE_V2  = 0x1000006u, /**< audio AAC HE_V2 */
+    AUDIO_FORMAT_G711A      = 0x2000001u, /**< audio G711A */
+    AUDIO_FORMAT_G711U      = 0x2000002u, /**< audio G711u */
+    AUDIO_FORMAT_G726       = 0x2000003u, /**< audio G726 */
+};
 
 struct AudioConfigData {
     const char *cardServiceName;
@@ -57,22 +78,6 @@ struct AudioConfigData {
     const char *accessoryDaiName;
     const char *dspName;
     const char *dspDaiName;
-};
-
-enum AudioFormat {
-    AUDIO_FORMAT_PCM_8_BIT  = 0x1u,       /**< 8-bit PCM */
-    AUDIO_FORMAT_PCM_16_BIT = 0x2u,       /**< 16-bit PCM */
-    AUDIO_FORMAT_PCM_24_BIT = 0x3u,       /**< 24-bit PCM */
-    AUDIO_FORMAT_PCM_32_BIT = 0x4u,       /**< 32-bit PCM */
-    AUDIO_FORMAT_AAC_MAIN   = 0x1000001u, /**< AAC main */
-    AUDIO_FORMAT_AAC_LC     = 0x1000002u, /**< AAC LC */
-    AUDIO_FORMAT_AAC_LD     = 0x1000003u, /**< AAC LD */
-    AUDIO_FORMAT_AAC_ELD    = 0x1000004u, /**< AAC ELD */
-    AUDIO_FORMAT_AAC_HE_V1  = 0x1000005u, /**< AAC HE_V1 */
-    AUDIO_FORMAT_AAC_HE_V2  = 0x1000006u, /**< AAC HE_V2 */
-    AUDIO_FORMAT_G711A      = 0x2000001u, /**< G711A */
-    AUDIO_FORMAT_G711U      = 0x2000002u, /**< G711u */
-    AUDIO_FORMAT_G726       = 0x2000003u, /**< G726 */
 };
 
 struct AudioCard {

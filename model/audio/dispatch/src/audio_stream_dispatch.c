@@ -208,7 +208,7 @@ int32_t StreamHostHwParams(const struct HdfDeviceIoClient *client, struct HdfSBu
     struct StreamHost *streamHost = NULL;
     struct AudioCard *audioCard = NULL;
     char *cardName = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if ((client == NULL || client->device == NULL) || (data == NULL)) {
@@ -295,7 +295,7 @@ int32_t StreamHostCapturePrepare(const struct HdfDeviceIoClient *client, struct 
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -336,7 +336,7 @@ int32_t StreamHostRenderPrepare(const struct HdfDeviceIoClient *client, struct H
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -374,7 +374,7 @@ int32_t StreamHostRenderPrepare(const struct HdfDeviceIoClient *client, struct H
 static int32_t StreamTransferWrite(const struct AudioCard *audioCard, struct AudioTxData *transfer)
 {
     struct PlatformDevice *platform = NULL;
-    int32_t ret;
+    int32_t ret = HDF_SUCCESS;
 
     if (audioCard == NULL || audioCard->rtd == NULL || transfer == NULL) {
         ADM_LOG_ERR("input param is NULL.");
@@ -400,7 +400,7 @@ static int32_t StreamTransferWrite(const struct AudioCard *audioCard, struct Aud
 static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, struct AudioTxMmapData *txMmapData)
 {
     struct PlatformDevice *platform = NULL;
-    int32_t ret;
+    int32_t ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (audioCard == NULL || audioCard->rtd == NULL || txMmapData == NULL) {
@@ -428,7 +428,7 @@ static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, struct
 static int32_t StreamTransferMmapRead(const struct AudioCard *audioCard, struct AudioRxMmapData *rxMmapData)
 {
     struct PlatformDevice *platform = NULL;
-    int32_t ret;
+    int32_t ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (audioCard == NULL || audioCard->rtd == NULL || rxMmapData == NULL) {
@@ -457,7 +457,7 @@ int32_t StreamHostWrite(const struct HdfDeviceIoClient *client, struct HdfSBuf *
 {
     struct AudioTxData transfer;
     struct AudioCard *audioCard = NULL;
-    int32_t ret;
+    int32_t ret = HDF_SUCCESS;
     uint32_t dataSize = 0;
     ADM_LOG_DEBUG("entry.");
 
@@ -501,7 +501,7 @@ int32_t StreamHostRead(const struct HdfDeviceIoClient *client, struct HdfSBuf *d
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     struct AudioRxData rxData;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL || reply == NULL) {
@@ -696,7 +696,7 @@ int32_t StreamHostRenderStart(const struct HdfDeviceIoClient *client, struct Hdf
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -736,7 +736,7 @@ int32_t StreamHostCaptureStart(const struct HdfDeviceIoClient *client, struct Hd
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -777,7 +777,7 @@ int32_t StreamHostRenderStop(const struct HdfDeviceIoClient *client, struct HdfS
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -817,7 +817,7 @@ int32_t StreamHostCaptureStop(const struct HdfDeviceIoClient *client, struct Hdf
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -857,7 +857,7 @@ int32_t StreamHostRenderPause(const struct HdfDeviceIoClient *client, struct Hdf
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -898,7 +898,7 @@ int32_t StreamHostCapturePause(const struct HdfDeviceIoClient *client, struct Hd
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -939,7 +939,7 @@ int32_t StreamHostRenderResume(const struct HdfDeviceIoClient *client, struct Hd
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -980,7 +980,7 @@ int32_t StreamHostCaptureResume(const struct HdfDeviceIoClient *client, struct H
     struct AudioRuntimeDeivces *rtd = NULL;
     struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -1021,7 +1021,7 @@ int32_t StreamHostDspDecode(const struct HdfDeviceIoClient *client, struct HdfSB
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DspDevice *dspDev = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("Dsp Decode Entry.");
 
     if (client == NULL) {
@@ -1060,7 +1060,7 @@ int32_t StreamHostDspEncode(const struct HdfDeviceIoClient *client, struct HdfSB
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DspDevice *dspDev = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("Dsp Encode Entry.");
 
     if (client == NULL) {
@@ -1099,7 +1099,7 @@ int32_t StreamHostDspEqualizer(const struct HdfDeviceIoClient *client, struct Hd
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DspDevice *dspDev = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("Dsp Equalizer Entry.");
 
     if (client == NULL) {
@@ -1158,7 +1158,7 @@ static struct StreamDispCmdHandleList g_streamDispCmdHandle[] = {
 int32_t StreamDispatch(struct HdfDeviceIoClient *client, int cmdId,
                        struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    unsigned int i;
+    unsigned int i = 0;
 
     if ((client == NULL) || (data == NULL) || (reply == NULL)) {
         return HDF_ERR_INVALID_PARAM;

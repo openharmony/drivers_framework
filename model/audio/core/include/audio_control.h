@@ -11,7 +11,6 @@
 
 #include "hdf_dlist.h"
 
-
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
