@@ -8,14 +8,14 @@
 
 #include <iostream>
 #include <thread>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include <hdf_log.h>
-#include <osal_mem.h>
-#include <securec.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "securec.h"
 #include "test/cpp_test/list_test/v1_0/client/list_test_proxy.h"
 
 using namespace OHOS;
@@ -25,7 +25,7 @@ using namespace test::cpp_test::types::v1_0;
 
 static sptr<IListTest> g_testClient = nullptr;
 
-class ListTest : public testing::Test {
+class CppListTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase(){}
@@ -33,20 +33,20 @@ public:
     void TearDown(){}
 };
 
-void ListTest::SetUpTestCase()
+void CppListTest::SetUpTestCase()
 {
     g_testClient = IListTest::Get();
     if (g_testClient == nullptr) {
-        printf("ListTest: get g_testClient failed.\n");
+        printf("CppListTest: get g_testClient failed.\n");
     }
 }
 
-HWTEST_F(ListTest, ListTest_001, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_001, TestSize.Level1)
 {
     ASSERT_NE(nullptr, g_testClient);
 }
 
-HWTEST_F(ListTest, ListTest_002, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_002, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<bool> inParam;
@@ -70,7 +70,7 @@ HWTEST_F(ListTest, ListTest_002, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_003, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_003, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int8_t> inParam;
@@ -90,7 +90,7 @@ HWTEST_F(ListTest, ListTest_003, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_004, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_004, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int16_t> inParam;
@@ -110,7 +110,7 @@ HWTEST_F(ListTest, ListTest_004, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_005, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_005, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int32_t> inParam;
@@ -130,7 +130,7 @@ HWTEST_F(ListTest, ListTest_005, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_006, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_006, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int64_t> inParam;
@@ -150,7 +150,7 @@ HWTEST_F(ListTest, ListTest_006, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_007, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_007, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint8_t> inParam;
@@ -170,7 +170,7 @@ HWTEST_F(ListTest, ListTest_007, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_008, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_008, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint16_t> inParam;
@@ -190,7 +190,7 @@ HWTEST_F(ListTest, ListTest_008, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_009, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_009, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint32_t> inParam;
@@ -210,7 +210,7 @@ HWTEST_F(ListTest, ListTest_009, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_010, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_010, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint64_t> inParam;
@@ -230,7 +230,7 @@ HWTEST_F(ListTest, ListTest_010, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_011, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_011, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<float> inParam;
@@ -250,7 +250,7 @@ HWTEST_F(ListTest, ListTest_011, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_012, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_012, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<double> inParam;
@@ -270,7 +270,7 @@ HWTEST_F(ListTest, ListTest_012, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_013, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_013, TestSize.Level1)
 {
     uint32_t len = 2;
     std::vector<std::string> inParam;
@@ -290,10 +290,10 @@ HWTEST_F(ListTest, ListTest_013, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_014, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_014, TestSize.Level1)
 {
-    int fd1 = open("/ListTest_014_0.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
-    int fd2 = open("/ListTest_014_1.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
+    int fd1 = open("/CppListTest_014_0.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
+    int fd2 = open("/CppListTest_014_1.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
     ASSERT_NE(fd1, -1);
     ASSERT_NE(fd2, -1);
 
@@ -314,7 +314,7 @@ HWTEST_F(ListTest, ListTest_014, TestSize.Level0)
     close(fd2);
 }
 
-HWTEST_F(ListTest, ListTest_015, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_015, TestSize.Level1)
 {
     uint32_t len = 2;
     std::vector<ESample> inParam;
@@ -334,7 +334,7 @@ HWTEST_F(ListTest, ListTest_015, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_016, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_016, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<SSample> inParam;
@@ -362,7 +362,7 @@ HWTEST_F(ListTest, ListTest_016, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_017, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_017, TestSize.Level1)
 {
     uint32_t len = 2;
     std::vector<USample> inParam;
@@ -385,7 +385,7 @@ HWTEST_F(ListTest, ListTest_017, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ListTest_018, TestSize.Level0)
+HWTEST_F(CppListTest, CppListTest_018, TestSize.Level1)
 {
     std::vector<sptr<SequenceData>> inParam = {
         sptr<SequenceData>(new SequenceData(1, 1.2, "hello")),

@@ -82,56 +82,28 @@ String ASTListType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return String::Format("List<%s>", elementType_->EmitJavaType(mode, true).string());
 }
 
-void ASTListType::EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+void ASTListType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
     StringBuilder& sb, const String& prefix) const
 {
     String lenName = String::Format("%sLen", name.string());
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUint32(%s, %s)) {\n",
         parcelName.string(), lenName.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
     sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
 
-    String elementName;
-    String elementReadName;
-
+    String elementName = "";
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT
         || elementType_->GetTypeKind() == TypeKind::TYPE_UNION) {
-        elementName = String::Format("%s[i]", name.string());
-        elementReadName = "&" + elementName;
+        elementName = String::Format("&%s[i]", name.string());
     } else {
         elementName = String::Format("%s[i]", name.string());
-        elementReadName = elementName;
     }
 
-    elementType_->EmitCProxyWriteVar(parcelName, elementReadName, gotoLabel, sb, prefix + TAB);
-    sb.Append(prefix).Append("}\n");
-}
-
-void ASTListType::EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
-{
-    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUint32(%s, %sLen)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
-    sb.Append(prefix).Append("}\n");
-    sb.Append("\n");
-    sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string(), name.string());
-
-    String element;
-    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT
-        || elementType_->GetTypeKind() == TypeKind::TYPE_UNION) {
-        element = String::Format("&%s[i]", name.string());
-    } else {
-        element = String::Format("%s[i]", name.string());
-    }
-    elementType_->EmitCStubWriteVar(parcelName, element, sb, prefix + TAB);
+    elementType_->EmitCWriteVar(parcelName, elementName, gotoLabel, sb, prefix + g_tab);
     sb.Append(prefix).Append("}\n");
 }
 
@@ -141,51 +113,51 @@ void ASTListType::EmitCProxyReadVar(const String& parcelName, const String& name
 String lenName = String::Format("%sLen", name.string());
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(%s, %s)) {\n",
         parcelName.string(), lenName.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s size failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
-    sb.Append(prefix).Append("}\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n\n");
 
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemAlloc(sizeof(%s) * (*%s));\n",
+        sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemCalloc(sizeof(%s) * (*%s));\n",
             name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
             lenName.string());
         sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", name.string());
-        sb.Append(prefix + TAB).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
-        sb.Append(prefix).AppendFormat("}\n");
+        sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+        sb.Append(prefix).AppendFormat("}\n\n");
     } else {
         sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemCalloc(sizeof(%s) * (*%s));\n",
             name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
             lenName.string());
         sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", name.string());
-        sb.Append(prefix + TAB).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
-        sb.Append(prefix).AppendFormat("}\n");
+        sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+        sb.Append(prefix).AppendFormat("}\n\n");
     }
     sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String cpName = String::Format("%sCp", name.string());
-        elementType_->EmitCProxyReadVar(parcelName, cpName, true, gotoLabel, sb, prefix + TAB);
-        sb.Append(prefix).Append(TAB).AppendFormat("(*%s)[i] = strdup(%sCp);\n",
+        elementType_->EmitCProxyReadVar(parcelName, cpName, true, gotoLabel, sb, prefix + g_tab);
+        sb.Append(prefix).Append(g_tab).AppendFormat("(*%s)[i] = strdup(%sCp);\n",
             name.string(), name.string());
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String element = String::Format("&(*%s)[i]", name.string());
-        elementType_->EmitCProxyReadVar(parcelName, element, true, gotoLabel, sb, prefix + TAB);
+        elementType_->EmitCProxyReadVar(parcelName, element, true, gotoLabel, sb, prefix + g_tab);
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_UNION) {
         String element = String::Format("&(*%s)[i]", name.string());
         String elementCp = String::Format("%sElementCp", name.string());
-        elementType_->EmitCProxyReadVar(parcelName, elementCp, true, gotoLabel, sb, prefix + TAB);
-        sb.Append(prefix + TAB).AppendFormat("(void)memcpy_s(%s, sizeof(%s), %s, sizeof(%s));\n",
+        elementType_->EmitCProxyReadVar(parcelName, elementCp, true, gotoLabel, sb, prefix + g_tab);
+        sb.Append(prefix + g_tab).AppendFormat("(void)memcpy_s(%s, sizeof(%s), %s, sizeof(%s));\n",
             element.string(), elementType_->EmitCType().string(), elementCp.string(),
             elementType_->EmitCType().string());
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_FILEDESCRIPTOR) {
         String element = String::Format("(*%s)[i]", name.string());
-        elementType_->EmitCProxyReadVar(parcelName, element, true, gotoLabel, sb, prefix + TAB);
+        elementType_->EmitCProxyReadVar(parcelName, element, true, gotoLabel, sb, prefix + g_tab);
     } else {
         String element = String::Format("&(*%s)[i]", name.string());
-        elementType_->EmitCProxyReadVar(parcelName, element, true, gotoLabel, sb, prefix + TAB);
+        elementType_->EmitCProxyReadVar(parcelName, element, true, gotoLabel, sb, prefix + g_tab);
     }
     sb.Append(prefix).Append("}\n");
 }
@@ -196,54 +168,54 @@ void ASTListType::EmitCStubReadVar(const String& parcelName, const String& name,
     String lenName = String::Format("%sLen", name.string());
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(%s, &%s)) {\n",
         parcelName.string(), lenName.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s size failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
-    sb.Append(prefix).Append("}\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
+    sb.Append(prefix).Append("}\n\n");
 
     sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        sb.Append(prefix + TAB).AppendFormat("%s = (%s*)OsalMemAlloc(sizeof(%s) * (%s));\n", name.string(),
+        sb.Append(prefix + g_tab).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n", name.string(),
             elementType_->EmitCType().string(), elementType_->EmitCType().string(), lenName.string());
-        sb.Append(prefix + TAB).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + TAB + TAB).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + TAB + TAB).AppendFormat("goto errors;\n");
-        sb.Append(prefix + TAB).AppendFormat("}\n");
+        sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto errors;\n");
+        sb.Append(prefix + g_tab).AppendFormat("}\n\n");
     } else {
-        sb.Append(prefix + TAB).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n",
+        sb.Append(prefix + g_tab).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n",
             name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
             lenName.string());
-        sb.Append(prefix + TAB).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + TAB + TAB).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + TAB + TAB).AppendFormat("goto errors;\n");
-        sb.Append(prefix + TAB).AppendFormat("}\n");
+        sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto errors;\n");
+        sb.Append(prefix + g_tab).AppendFormat("}\n\n");
     }
 
-    sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+    sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
 
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String element = String::Format("%sCp", name.string());
-        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + TAB + TAB);
-        sb.Append(prefix + TAB + TAB).AppendFormat("%s[i] = strdup(%sCp);\n", name.string(), name.string());
+        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("%s[i] = strdup(%sCp);\n", name.string(), name.string());
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String element = String::Format("&%s[i]", name.string());
-        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + TAB + TAB);
+        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_UNION) {
         String element = String::Format("%s[i]", name.string());
         String elementCp = String::Format("%sElementCp", name.string());
-        elementType_->EmitCStubReadVar(parcelName, elementCp, sb, prefix + TAB + TAB);
-        sb.Append(prefix + TAB + TAB).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
+        elementType_->EmitCStubReadVar(parcelName, elementCp, sb, prefix + g_tab + g_tab);
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
             element.string(), elementType_->EmitCType().string(), elementCp.string(),
             elementType_->EmitCType().string());
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_FILEDESCRIPTOR) {
         String element = String::Format("%s[i]", name.string());
-        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + TAB + TAB);
+        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
     } else {
         String element = String::Format("&%s[i]", name.string());
-        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + TAB + TAB);
+        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
     }
-    sb.Append(prefix + TAB).Append("}\n");
+    sb.Append(prefix + g_tab).Append("}\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -251,14 +223,14 @@ void ASTListType::EmitCppWriteVar(const String& parcelName, const String& name, 
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteUint32(%s.size())) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s.size() failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
     String elementName = String::Format("it%d", innerLevel++);
     sb.Append(prefix).AppendFormat("for (auto %s : %s) {\n", elementName.string(), name.string());
 
-    elementType_->EmitCppWriteVar(parcelName, elementName, sb, prefix + TAB, innerLevel);
+    elementType_->EmitCppWriteVar(parcelName, elementName, sb, prefix + g_tab, innerLevel);
     sb.Append(prefix).Append("}\n");
 }
 
@@ -273,22 +245,22 @@ void ASTListType::EmitCppReadVar(const String& parcelName, const String& name, S
         innerLevel, innerLevel, name.string(), innerLevel);
 
     String valueName = String::Format("value%d", innerLevel++);
-    elementType_->EmitCppReadVar(parcelName, valueName, sb, prefix + TAB, true, innerLevel);
-    sb.Append(prefix + TAB).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
+    elementType_->EmitCppReadVar(parcelName, valueName, sb, prefix + g_tab, true, innerLevel);
+    sb.Append(prefix + g_tab).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
     sb.Append(prefix).Append("}\n");
 }
 
 void ASTListType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUint32(data, %sLen)) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %sLen failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
     sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
 
     String elementName = String::Format("(%s)[i]", name.string());
-    elementType_->EmitCMarshalling(elementName, sb, prefix + TAB);
+    elementType_->EmitCMarshalling(elementName, sb, prefix + g_tab);
     sb.Append(prefix).Append("}\n");
 }
 
@@ -297,40 +269,40 @@ void ASTListType::EmitCUnMarshalling(const String& name, StringBuilder& sb, cons
 {
     String lenName = String::Format("%sLen", name.string());
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(data, &%s)) {\n", lenName.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", lenName.string());
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 
     sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
-    String newPrefix = prefix + TAB;
+    String newPrefix = prefix + g_tab;
 
     sb.Append(newPrefix).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * %s);\n",
         name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(), lenName.string());
     sb.Append(newPrefix).AppendFormat("if (%s == NULL) {\n", name.string());
-    sb.Append(newPrefix + TAB).AppendFormat("goto errors;\n");
+    sb.Append(newPrefix + g_tab).AppendFormat("goto errors;\n");
     sb.Append(newPrefix).Append("}\n");
 
     freeObjStatements.push_back(String::Format("OsalMemFree(%s);\n", name.string()));
     sb.Append(newPrefix).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String element = String::Format("%sElement", name.string());
-        elementType_->EmitCUnMarshalling(element, sb, newPrefix + TAB, freeObjStatements);
-        sb.Append(newPrefix).Append(TAB).AppendFormat("%s[i] = strdup(%s);\n",
+        elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
+        sb.Append(newPrefix).Append(g_tab).AppendFormat("%s[i] = strdup(%s);\n",
             name.string(), element.string());
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String element = String::Format("&%s[i]", name.string());
-        elementType_->EmitCUnMarshalling(element, sb, newPrefix + TAB, freeObjStatements);
+        elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_UNION) {
         String element = String::Format("%s[i]", name.string());
         String elementCp = String::Format("%sElementCp", name.string());
-        elementType_->EmitCUnMarshalling(elementCp, sb, newPrefix + TAB, freeObjStatements);
-        sb.Append(newPrefix + TAB).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
+        elementType_->EmitCUnMarshalling(elementCp, sb, newPrefix + g_tab, freeObjStatements);
+        sb.Append(newPrefix + g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
             element.string(), elementType_->EmitCType().string(), elementCp.string(),
             elementType_->EmitCType().string());
     } else {
         String element = String::Format("%s[i]", name.string());
-        elementType_->EmitCUnMarshalling(element, sb, newPrefix + TAB, freeObjStatements);
+        elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
     }
     sb.Append(newPrefix).Append("}\n");
     sb.Append(prefix).Append("}\n");
@@ -341,14 +313,14 @@ void ASTListType::EmitCppMarshalling(const String& parcelName, const String& nam
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteUint32(%s.size())) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s.size failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
     String elementName = String::Format("it%d", innerLevel++);
     sb.Append(prefix).AppendFormat("for (auto %s : %s) {\n", elementName.string(), name.string());
 
-    elementType_->EmitCppMarshalling(parcelName, elementName, sb, prefix + TAB, innerLevel);
+    elementType_->EmitCppMarshalling(parcelName, elementName, sb, prefix + g_tab, innerLevel);
     sb.Append(prefix).Append("}\n");
 }
 
@@ -367,22 +339,22 @@ void ASTListType::EmitCppUnMarshalling(const String& parcelName, const String& n
 
     String valueName = String::Format("value%d", innerLevel++);
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-        sb.Append(prefix + TAB).AppendFormat("%s %s;\n",
+        sb.Append(prefix + g_tab).AppendFormat("%s %s;\n",
             elementType_->EmitCppType().string(), valueName.string());
-        elementType_->EmitCppUnMarshalling(parcelName, valueName, sb, prefix + TAB, true, innerLevel);
-        sb.Append(prefix + TAB).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
+        elementType_->EmitCppUnMarshalling(parcelName, valueName, sb, prefix + g_tab, true, innerLevel);
+        sb.Append(prefix + g_tab).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_UNION) {
-        sb.Append(prefix + TAB).AppendFormat("%s %s;\n",
+        sb.Append(prefix + g_tab).AppendFormat("%s %s;\n",
             elementType_->EmitCppType().string(), valueName.string());
         String cpName = String::Format("%sCp", valueName.string());
-        elementType_->EmitCppUnMarshalling(parcelName, cpName, sb, prefix + TAB, true, innerLevel);
-        sb.Append(prefix + TAB).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
+        elementType_->EmitCppUnMarshalling(parcelName, cpName, sb, prefix + g_tab, true, innerLevel);
+        sb.Append(prefix + g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
             valueName.string(), elementType_->EmitCppType().string(), cpName.string(),
             elementType_->EmitCppType().string());
-        sb.Append(prefix + TAB).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
+        sb.Append(prefix + g_tab).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
     } else {
-        elementType_->EmitCppUnMarshalling(parcelName, valueName, sb, prefix + TAB, true, innerLevel);
-        sb.Append(prefix + TAB).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
+        elementType_->EmitCppUnMarshalling(parcelName, valueName, sb, prefix + g_tab, true, innerLevel);
+        sb.Append(prefix + g_tab).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
     }
     sb.Append(prefix).Append("}\n");
 }

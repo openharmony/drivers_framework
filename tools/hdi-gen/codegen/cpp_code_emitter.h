@@ -83,8 +83,6 @@ protected:
 
     String SpecificationParam(StringBuilder& sb, const String& prefix);
 
-    static const char* TAB;
-
     AutoPtr<AST> ast_;
     AutoPtr<ASTInterfaceType> interface_;
 

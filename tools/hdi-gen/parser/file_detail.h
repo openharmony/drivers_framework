@@ -10,8 +10,7 @@
 #define OHOS_HDI_FILE_DETAIL_H
 
 #include <unordered_set>
-#include "util/string_builder.h"
-#include "util/logger.h"
+#include "util/string.h"
 
 namespace OHOS {
 namespace HDI {

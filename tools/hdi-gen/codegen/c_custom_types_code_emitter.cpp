@@ -200,11 +200,11 @@ void CCustomTypesCodeEmitter::EmitCustomTypeMarshallingImpl(StringBuilder& sb, c
         String memberName = type->GetMemberName(i);
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
         String name = String::Format("%s->%s", objName.string(), memberName.string());
-        memberType->EmitCMarshalling(name, sb, TAB);
+        memberType->EmitCMarshalling(name, sb, g_tab);
         sb.Append("\n");
     }
 
-    sb.Append(TAB).Append("return true;\n");
+    sb.Append(g_tab).Append("return true;\n");
     sb.Append("}\n");
 }
 
@@ -217,9 +217,9 @@ void CCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& sb,
         type->GetName().string(), type->EmitCType().string(), objName.string());
     sb.Append("{\n");
 
-    sb.Append(TAB).AppendFormat("if (%s == NULL) {\n", objName.string());
-    sb.Append(TAB).Append(TAB).Append("return false;\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return false;\n");
+    sb.Append(g_tab).Append("}\n");
 
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
@@ -228,20 +228,20 @@ void CCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& sb,
 
         if (memberType->GetTypeKind() == TypeKind::TYPE_STRING) {
             String tmpName = String::Format("%sCp", memberName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, TAB, freeObjStatements_);
-            sb.Append(TAB).AppendFormat("%s = strdup(%s);\n", name.string(), tmpName.string());
-            sb.Append(TAB).AppendFormat("if (%s == NULL) {\n", name.string());
-            sb.Append(TAB).Append(TAB).Append("goto errors;\n");
-            sb.Append(TAB).Append("}\n");
+            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            sb.Append(g_tab).AppendFormat("%s = strdup(%s);\n", name.string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
+            sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
+            sb.Append(g_tab).Append("}\n");
             sb.Append("\n");
         } else if (memberType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
             String paramName = String::Format("&%s", name.string());
-            memberType->EmitCUnMarshalling(paramName, sb, TAB, freeObjStatements_);
+            memberType->EmitCUnMarshalling(paramName, sb, g_tab, freeObjStatements_);
             sb.Append("\n");
         } else if (memberType->GetTypeKind() == TypeKind::TYPE_UNION) {
             String tmpName = String::Format("%sCp", memberName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, TAB, freeObjStatements_);
-            sb.Append(TAB).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
+            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            sb.Append(g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
                 name.string(), memberType->EmitCType().string(),
                 tmpName.string(), memberType->EmitCType().string());
             sb.Append("\n");
@@ -249,38 +249,38 @@ void CCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& sb,
             String tmpName = String::Format("%sCp", memberName.string());
             AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(memberType.Get());
             AutoPtr<ASTType> elementType = arrayType->GetElementType();
-            sb.Append(TAB).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
-            sb.Append(TAB).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, TAB, freeObjStatements_);
-            sb.Append(TAB).AppendFormat("%s = %s;\n", name.string(), tmpName.string());
-            sb.Append(TAB).AppendFormat("%sLen = %sLen;\n", name.string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
+            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            sb.Append(g_tab).AppendFormat("%s = %s;\n", name.string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("%sLen = %sLen;\n", name.string(), tmpName.string());
             sb.Append("\n");
         } else if (memberType->GetTypeKind() == TypeKind::TYPE_LIST) {
             String tmpName = String::Format("%sCp", memberName.string());
             AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(memberType.Get());
             AutoPtr<ASTType> elementType = listType->GetElementType();
-            sb.Append(TAB).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
-            sb.Append(TAB).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, TAB, freeObjStatements_);
-            sb.Append(TAB).AppendFormat("%s = %s;\n", name.string(), tmpName.string());
-            sb.Append(TAB).AppendFormat("%sLen = %sLen;\n", name.string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
+            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            sb.Append(g_tab).AppendFormat("%s = %s;\n", name.string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("%sLen = %sLen;\n", name.string(), tmpName.string());
             sb.Append("\n");
         } else {
-            memberType->EmitCUnMarshalling(name, sb, TAB, freeObjStatements_);
+            memberType->EmitCUnMarshalling(name, sb, g_tab, freeObjStatements_);
             sb.Append("\n");
         }
     }
 
-    sb.Append(TAB).AppendFormat("return true;\n");
+    sb.Append(g_tab).AppendFormat("return true;\n");
     sb.Append("errors:\n");
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
         String memberName = type->GetMemberName(i);
         String name = String::Format("%s->%s", objName.string(), memberName.string());
-        EmitError(name, memberType, sb, TAB);
+        EmitError(name, memberType, sb, g_tab);
     }
 
-    sb.Append(TAB).Append("return false;\n");
+    sb.Append(g_tab).Append("return false;\n");
     sb.Append("}\n");
 }
 
@@ -291,7 +291,7 @@ void CCustomTypesCodeEmitter::EmitError(const String& name, const AutoPtr<ASTTyp
     switch (type->GetTypeKind()) {
         case TypeKind::TYPE_STRING: {
             sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", name.string());
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
             sb.Append(prefix).Append("}\n\n");
             break;
         }
@@ -303,22 +303,22 @@ void CCustomTypesCodeEmitter::EmitError(const String& name, const AutoPtr<ASTTyp
             sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n", lenName.string(), name.string());
             if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
                 || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
                 String elementName = String::Format("(%s)[i]", name.string());
 
                 if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB + TAB).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB).Append("}\n");
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
                 } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("%sFree(&(%s), false);\n",
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&(%s), false);\n",
                         elementType->GetName().string(), elementName.string());
                 }
 
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).Append("}\n");
             }
 
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
             sb.Append(prefix).Append("}\n");
             sb.Append("\n");
             break;
@@ -331,22 +331,22 @@ void CCustomTypesCodeEmitter::EmitError(const String& name, const AutoPtr<ASTTyp
             sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n", lenName.string(), name.string());
             if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
                 || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
                 String elementName = String::Format("(%s)[i]", name.string());
 
                 if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB + TAB).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB).Append("}\n");
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
                 } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("%sFree(&(%s), false);\n",
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&(%s), false);\n",
                         elementType->GetName().string(), elementName.string());
                 }
 
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).Append("}\n");
             }
 
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
             sb.Append(prefix).Append("}\n");
             sb.Append("\n");
             break;
@@ -367,21 +367,21 @@ void CCustomTypesCodeEmitter::EmitCustomTypeFreeImpl(StringBuilder& sb, const Au
     sb.AppendFormat("void %sFree(%s *%s, bool freeSelf)\n",
         type->GetName().string(), type->EmitCType().string(), objName.string());
     sb.Append("{\n");
-    sb.Append(TAB).AppendFormat("if (%s == NULL) {\n", objName.string());
-    sb.Append(TAB).Append(TAB).Append("return;\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return;\n");
+    sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
 
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
         String memberName = type->GetMemberName(i);
         String name = String::Format("%s->%s", objName.string(), memberName.string());
-        EmitCustomTypeMemberFree(sb, name, memberType, TAB);
+        EmitCustomTypeMemberFree(sb, name, memberType, g_tab);
     }
 
-    sb.Append(TAB).Append("if (freeSelf) {\n");
-    sb.Append(TAB).Append(TAB).Append("OsalMemFree(dataBlock);\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(g_tab).Append("if (freeSelf) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("OsalMemFree(dataBlock);\n");
+    sb.Append(g_tab).Append("}\n");
 
     sb.Append("}\n");
 }
@@ -392,7 +392,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypeMemberFree(StringBuilder& sb, const 
     switch (type->GetTypeKind()) {
         case TypeKind::TYPE_STRING: {
             sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", name.string());
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
             sb.Append(prefix).Append("}\n\n");
             break;
         }
@@ -402,16 +402,16 @@ void CCustomTypesCodeEmitter::EmitCustomTypeMemberFree(StringBuilder& sb, const 
 
             sb.Append(prefix).AppendFormat("if (%sLen > 0 && %s != NULL) {\n", name.string(), name.string());
             if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + TAB + TAB).AppendFormat("OsalMemFree(%s[i]);\n", name.string());
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
+                sb.Append(prefix + g_tab + g_tab).AppendFormat("OsalMemFree(%s[i]);\n", name.string());
+                sb.Append(prefix + g_tab).Append("}\n");
             } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + TAB + TAB).AppendFormat("%sFree(%s, false);\n",
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
+                sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(%s, false);\n",
                     elementType->GetName().string(), name.string());
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).Append("}\n");
             }
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
             sb.Append(prefix).Append("}\n\n");
             break;
         }
@@ -421,16 +421,16 @@ void CCustomTypesCodeEmitter::EmitCustomTypeMemberFree(StringBuilder& sb, const 
 
             sb.Append(prefix).AppendFormat("if (%sLen > 0 && %s != NULL) {\n", name.string(), name.string());
             if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + TAB + TAB).AppendFormat("OsalMemFree(%s[i]);\n", name.string());
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
+                sb.Append(prefix + g_tab + g_tab).AppendFormat("OsalMemFree(%s[i]);\n", name.string());
+                sb.Append(prefix + g_tab).Append("}\n");
             } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + TAB + TAB).AppendFormat("%sFree(%s, false);\n",
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
+                sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(%s, false);\n",
                     elementType->GetName().string(), name.string());
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).Append("}\n");
             }
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
             sb.Append(prefix).Append("}\n\n");
             break;
         }

@@ -96,7 +96,7 @@ void JavaClientInterfaceCodeEmitter::EmitInterfaceSelfDefinedTypeImports(StringB
 void JavaClientInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
 {
     sb.AppendFormat("public interface %s extends IRemoteBroker {\n", interface_->GetName().string());
-    EmitInterfaceMethods(sb, TAB);
+    EmitInterfaceMethods(sb, g_tab);
     sb.Append("}");
 }
 
@@ -128,7 +128,7 @@ void JavaClientInterfaceCodeEmitter::EmitInterfaceMethod(const AutoPtr<ASTMethod
         }
 
         paramStr.Append(") throws RemoteException;");
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 }

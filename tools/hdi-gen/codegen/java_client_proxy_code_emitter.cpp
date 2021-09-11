@@ -98,17 +98,17 @@ void JavaClientProxyCodeEmitter::EmitProxyDBinderImports(StringBuilder& sb)
 void JavaClientProxyCodeEmitter::EmitProxyImpl(StringBuilder& sb)
 {
     sb.AppendFormat("public class %s implements %s {\n", proxyName_.string(), interfaceName_.string());
-    EmitProxyConstants(sb, TAB);
+    EmitProxyConstants(sb, g_tab);
     sb.Append("\n");
-    sb.Append(TAB).AppendFormat(
+    sb.Append(g_tab).AppendFormat(
         "private static final HiLogLabel TAG = new HiLogLabel(HiLog.LOG_CORE, 0xD001510, \"%s\");\n",
         interfaceFullName_.string());
-    sb.Append(TAB).Append("private final IRemoteObject remote;\n");
-    sb.Append(TAB).Append("private static final int ERR_OK = 0;\n");
+    sb.Append(g_tab).Append("private final IRemoteObject remote;\n");
+    sb.Append(g_tab).Append("private static final int ERR_OK = 0;\n");
     sb.Append("\n");
-    EmitProxyConstructor(sb, TAB);
+    EmitProxyConstructor(sb, g_tab);
     sb.Append("\n");
-    EmitProxyMethodImpls(sb, TAB);
+    EmitProxyMethodImpls(sb, g_tab);
     sb.Append("};");
 }
 
@@ -122,12 +122,12 @@ void JavaClientProxyCodeEmitter::EmitProxyConstants(StringBuilder& sb, const Str
 void JavaClientProxyCodeEmitter::EmitProxyConstructor(StringBuilder& sb, const String& prefix)
 {
     sb.Append(prefix).AppendFormat("public %s(IRemoteObject remote) {\n", proxyName_.string());
-    sb.Append(prefix + TAB).Append("this.remote = remote;\n");
+    sb.Append(prefix + g_tab).Append("this.remote = remote;\n");
     sb.Append(prefix).Append("}\n");
     sb.Append("\n");
     sb.Append(prefix).AppendFormat("@Override\n");
     sb.Append(prefix).Append("public IRemoteObject asObject() {\n");
-    sb.Append(prefix + TAB).Append("return remote;\n");
+    sb.Append(prefix + g_tab).Append("return remote;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -161,7 +161,7 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& m
         }
         paramStr.Append(") throws RemoteException");
 
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
     EmitProxyMethodBody(method, sb, prefix);
@@ -177,9 +177,9 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& m
     const String& prefix)
 {
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).Append("MessageParcel data = MessageParcel.obtain();\n");
-    sb.Append(prefix + TAB).Append("MessageParcel reply = MessageParcel.obtain();\n");
-    sb.Append(prefix + TAB).AppendFormat("MessageOption option = new MessageOption(MessageOption.TF_SYNC);\n");
+    sb.Append(prefix + g_tab).Append("MessageParcel data = MessageParcel.obtain();\n");
+    sb.Append(prefix + g_tab).Append("MessageParcel reply = MessageParcel.obtain();\n");
+    sb.Append(prefix + g_tab).AppendFormat("MessageOption option = new MessageOption(MessageOption.TF_SYNC);\n");
     sb.Append("\n");
     sb.Append(prefix).AppendFormat("    data.writeInterfaceToken(DESCRIPTOR);\n");
 
@@ -187,12 +187,12 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& m
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            EmitWriteMethodParameter(param, "data", sb, prefix + TAB);
+            EmitWriteMethodParameter(param, "data", sb, prefix + g_tab);
             needBlankLine = true;
         } else {
             AutoPtr<ASTType> type = param->GetType();
             if (type->GetTypeKind() == TypeKind::TYPE_ARRAY) {
-                EmitWriteOutArrayVariable("data", param->GetName(), type, sb, prefix + TAB);
+                EmitWriteOutArrayVariable("data", param->GetName(), type, sb, prefix + g_tab);
             }
         }
     }
@@ -200,24 +200,24 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& m
         sb.Append("\n");
     }
 
-    sb.Append(prefix + TAB).Append("try {\n");
-    sb.Append(prefix + TAB + TAB).AppendFormat("if (remote.sendRequest(COMMAND_%s, data, reply, option)) {\n",
+    sb.Append(prefix + g_tab).Append("try {\n");
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (remote.sendRequest(COMMAND_%s, data, reply, option)) {\n",
         ConstantName(method->GetName()).string());
-    sb.Append(prefix + TAB + TAB + TAB).Append("return 1;\n");
-    sb.Append(prefix + TAB + TAB).Append("}\n");
-    sb.Append(prefix + TAB).Append("    reply.readException();\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append("return 1;\n");
+    sb.Append(prefix + g_tab + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).Append("    reply.readException();\n");
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-            EmitReadMethodParameter(param, "reply", sb, prefix + TAB + TAB);
+            EmitReadMethodParameter(param, "reply", sb, prefix + g_tab + g_tab);
         }
     }
 
-    sb.Append(prefix + TAB).Append("} finally {\n");
-    sb.Append(prefix + TAB + TAB).Append("data.reclaim();\n");
-    sb.Append(prefix + TAB + TAB).Append("reply.reclaim();\n");
-    sb.Append(prefix + TAB).Append("}\n");
-    sb.Append(prefix + TAB).Append("return 0;\n");
+    sb.Append(prefix + g_tab).Append("} finally {\n");
+    sb.Append(prefix + g_tab + g_tab).Append("data.reclaim();\n");
+    sb.Append(prefix + g_tab + g_tab).Append("reply.reclaim();\n");
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).Append("return 0;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -282,7 +282,7 @@ void JavaClientProxyCodeEmitter::EmitWriteVariable(const String& parcelName, con
             sb.Append(prefix).AppendFormat("%s.writeInt(%s.size());\n", parcelName.string(), name.string());
             sb.Append(prefix).AppendFormat("for (%s element : %s) {\n",
                 elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string());
-            EmitWriteVariable(parcelName, "element", elementType, sb, prefix + TAB);
+            EmitWriteVariable(parcelName, "element", elementType, sb, prefix + g_tab);
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -295,8 +295,8 @@ void JavaClientProxyCodeEmitter::EmitWriteVariable(const String& parcelName, con
             sb.Append(prefix).AppendFormat("for (Map.Entry<%s, %s> entry : %s.entrySet()) {\n",
                 keyType->EmitJavaType(TypeMode::NO_MODE, true).string(),
                 valueType->EmitJavaType(TypeMode::NO_MODE, true).string(), name.string());
-            EmitWriteVariable(parcelName, "entry.getKey()", keyType, sb, prefix + TAB);
-            EmitWriteVariable(parcelName, "entry.getValue()", valueType, sb, prefix + TAB);
+            EmitWriteVariable(parcelName, "entry.getKey()", keyType, sb, prefix + g_tab);
+            EmitWriteVariable(parcelName, "entry.getValue()", valueType, sb, prefix + g_tab);
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -307,7 +307,7 @@ void JavaClientProxyCodeEmitter::EmitWriteVariable(const String& parcelName, con
             sb.Append(prefix).AppendFormat("if (%s == null) {\n", name.string());
             sb.Append(prefix).AppendFormat("    %s.writeInt(-1);\n", parcelName.string());
             sb.Append(prefix).Append("} else { \n");
-            EmitWriteArrayVariable(parcelName, name, elementType, sb, prefix + TAB);
+            EmitWriteArrayVariable(parcelName, name, elementType, sb, prefix + g_tab);
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -427,8 +427,8 @@ void JavaClientProxyCodeEmitter::EmitReadVariable(const String& parcelName, cons
             sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
             AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
             AutoPtr<ASTType> elementType = listType->GetElementType();
-            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_IN, sb, prefix + TAB);
-            sb.Append(prefix + TAB).AppendFormat("%s.add(value);\n", name.string());
+            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
+            sb.Append(prefix + g_tab).AppendFormat("%s.add(value);\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -443,9 +443,9 @@ void JavaClientProxyCodeEmitter::EmitReadVariable(const String& parcelName, cons
             AutoPtr<ASTType> keyType = mapType->GetKeyType();
             AutoPtr<ASTType> valueType = mapType->GetValueType();
 
-            EmitReadVariable(parcelName, "key", keyType, ParamAttr::PARAM_IN, sb, prefix + TAB);
-            EmitReadVariable(parcelName, "value", valueType, ParamAttr::PARAM_IN, sb, prefix + TAB);
-            sb.Append(prefix + TAB).AppendFormat("%s.put(key, value);\n", name.string());
+            EmitReadVariable(parcelName, "key", keyType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
+            EmitReadVariable(parcelName, "value", valueType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
+            sb.Append(prefix + g_tab).AppendFormat("%s.put(key, value);\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -507,8 +507,8 @@ void JavaClientProxyCodeEmitter::EmitReadArrayVariable(const String& parcelName,
                 elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
                 elementType->EmitJavaType(TypeMode::NO_MODE).string());
             sb.Append(prefix).AppendFormat("for (int i = 0; i < size; ++i) {\n");
-            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_IN, sb, prefix + TAB);
-            sb.Append(prefix + TAB).AppendFormat("%s[i] = value;\n", name.string());
+            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
+            sb.Append(prefix + g_tab).AppendFormat("%s[i] = value;\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         default:
@@ -609,8 +609,8 @@ void JavaClientProxyCodeEmitter::EmitReadOutVariable(const String& parcelName, c
             AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
             AutoPtr<ASTType> elementType = listType->GetElementType();
 
-            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_OUT, sb, prefix + TAB);
-            sb.Append(prefix + TAB).AppendFormat("%s.add(value);\n", name.string());
+            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_OUT, sb, prefix + g_tab);
+            sb.Append(prefix + g_tab).AppendFormat("%s.add(value);\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -622,9 +622,9 @@ void JavaClientProxyCodeEmitter::EmitReadOutVariable(const String& parcelName, c
             AutoPtr<ASTType> keyType = mapType->GetKeyType();
             AutoPtr<ASTType> valueType = mapType->GetValueType();
 
-            EmitReadVariable(parcelName, "key", keyType, ParamAttr::PARAM_OUT, sb, prefix + TAB);
-            EmitReadVariable(parcelName, "value", valueType, ParamAttr::PARAM_OUT, sb, prefix + TAB);
-            sb.Append(prefix + TAB).AppendFormat("%s.put(key, value);\n", name.string());
+            EmitReadVariable(parcelName, "key", keyType, ParamAttr::PARAM_OUT, sb, prefix + g_tab);
+            EmitReadVariable(parcelName, "value", valueType, ParamAttr::PARAM_OUT, sb, prefix + g_tab);
+            sb.Append(prefix + g_tab).AppendFormat("%s.put(key, value);\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }

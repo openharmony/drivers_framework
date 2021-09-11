@@ -129,14 +129,14 @@ String ASTInterfaceType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return name_;
 }
 
-void ASTInterfaceType::EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+void ASTInterfaceType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
     StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (HdfSBufWriteRemoteService(data, %s->remote) != 0) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -149,10 +149,10 @@ void ASTInterfaceType::EmitCStubReadVar(const String& parcelName, const String& 
     sb.Append(prefix).AppendFormat("struct HdfRemoteService *%s = HdfSBufReadRemoteService(data);\n",
         remoteName.string());
     sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", remoteName.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", remoteName.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
     sb.Append(prefix).AppendFormat("%s = %sProxyObtain(%s);\n",
         name.string(), miName.string(), remoteName.string());
@@ -163,9 +163,9 @@ void ASTInterfaceType::EmitCppWriteVar(const String& parcelName, const String& n
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteRemoteObject(%s->AsObject())) {\n",
         parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 

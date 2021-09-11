@@ -15,8 +15,6 @@
 
 namespace OHOS {
 namespace HDI {
-const char* CCodeEmitter::TAB = "    ";
-
 CCodeEmitter::CCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
     :LightRefCountBase(), ast_(ast), directory_(targetDirectory)
 {
@@ -70,7 +68,7 @@ void CCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb)
     sb.Append("enum {\n");
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(TAB).AppendFormat("CMD_%s,\n", ConstantName(method->GetName()).string());
+        sb.Append(g_tab).AppendFormat("CMD_%s,\n", ConstantName(method->GetName()).string());
     }
     sb.Append("};\n");
 }

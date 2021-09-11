@@ -205,5 +205,16 @@ String ASTParameter::EmitJavaLocalVar()
 {
     return "";
 }
+
+void ASTParameter::EmitCWriteVar(const String& parcelName, const String& gotoLabel, StringBuilder& sb,
+    const String& prefix) const
+{
+    if (type_ == nullptr) {
+        return;
+    }
+
+    type_->EmitCWriteVar(parcelName, name_, gotoLabel, sb, prefix);
+}
+
 } // namespace HDI
 } // namespace OHOS

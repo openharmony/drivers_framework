@@ -85,7 +85,7 @@ void CppServiceStubCodeEmitter::EmitStubDecl(StringBuilder& sb)
     sb.Append("\n");
     sb.AppendFormat("class %s {\n", stubName_.string());
     sb.Append("public:\n");
-    EmitStubBody(sb, TAB);
+    EmitStubBody(sb, g_tab);
     sb.Append("};\n");
 
     sb.Append("\n");
@@ -102,7 +102,7 @@ void CppServiceStubCodeEmitter::EmitCbStubDecl(StringBuilder& sb)
     EmitStubUsingNamespace(sb);
     sb.Append("\n");
     sb.AppendFormat("class %s : public IRemoteStub<%s> {\n", stubName_.string(), interfaceName_.string());
-    EmitCbStubBody(sb, TAB);
+    EmitCbStubBody(sb, g_tab);
     sb.Append("};\n");
     sb.Append("\n");
     EmitEndNamespace(sb);
@@ -143,7 +143,7 @@ void CppServiceStubCodeEmitter::EmitStubDestruction(StringBuilder& sb, const Str
 void CppServiceStubCodeEmitter::EmitCbStubOnRequestDecl(StringBuilder& sb, const String& prefix)
 {
     sb.Append(prefix).Append("int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,\n");
-    sb.Append(prefix + TAB).Append("MessageOption &option) override;\n");
+    sb.Append(prefix + g_tab).Append("MessageOption &option) override;\n");
 }
 
 void CppServiceStubCodeEmitter::EmitStubMethodDecls(StringBuilder& sb, const String& prefix)
@@ -174,7 +174,7 @@ void CppServiceStubCodeEmitter::EmitStubOnRequestMethodDecl(StringBuilder& sb, c
 {
     sb.Append(prefix).AppendFormat("int32_t %sOnRemoteRequest(int cmdId, MessageParcel& data, MessageParcel& reply,\n",
         stubName_.string());
-    sb.Append(prefix).Append(TAB).Append("MessageOption& option);\n");
+    sb.Append(prefix).Append(g_tab).Append("MessageOption& option);\n");
 }
 
 void CppServiceStubCodeEmitter::EmitStubMembers(StringBuilder& sb, const String& prefix)
@@ -282,25 +282,25 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            EmitReadMethodParameter(param, "data", true, sb, prefix + TAB);
+            EmitReadMethodParameter(param, "data", true, sb, prefix + g_tab);
             sb.Append("\n");
         } else {
-            EmitLocalVariable(param, sb, prefix + TAB);
+            EmitLocalVariable(param, sb, prefix + g_tab);
             sb.Append("\n");
         }
     }
 
     if (method->GetParameterNumber() == 0) {
         if (!isCallbackInterface()) {
-            sb.Append(prefix + TAB).AppendFormat("int32_t ec = service.%s();\n", method->GetName().string());
+            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = service.%s();\n", method->GetName().string());
         } else {
-            sb.Append(prefix + TAB).AppendFormat("int32_t ec = %s();\n", method->GetName().string());
+            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = %s();\n", method->GetName().string());
         }
     } else {
         if (!isCallbackInterface()) {
-            sb.Append(prefix + TAB).AppendFormat("int32_t ec = service.%s(", method->GetName().string());
+            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = service.%s(", method->GetName().string());
         } else {
-            sb.Append(prefix + TAB).AppendFormat("int32_t ec = %s(", method->GetName().string());
+            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = %s(", method->GetName().string());
         }
 
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
@@ -313,23 +313,23 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
         sb.Append(");\n");
     }
 
-    sb.Append(prefix + TAB).Append("if (ec != HDF_SUCCESS) {\n");
-    sb.Append(prefix + TAB + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s failed, error code is %%d\", ec);\n", method->GetName().string());
-    sb.Append(prefix + TAB + TAB).Append("return ec;\n");
-    sb.Append(prefix + TAB).Append("}\n\n");
+    sb.Append(prefix + g_tab + g_tab).Append("return ec;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
 
     if (!method->IsOneWay()) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-                EmitWriteMethodParameter(param, "reply", sb, prefix + TAB);
+                EmitWriteMethodParameter(param, "reply", sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }
     }
 
-    sb.Append(prefix + TAB).Append("return HDF_SUCCESS;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append("}\n");
 }
 
@@ -337,47 +337,47 @@ void CppServiceStubCodeEmitter::EmitStubOnRequestMethodImpl(StringBuilder& sb, c
 {
     sb.Append(prefix).AppendFormat("int32_t %s::%sOnRemoteRequest(int cmdId,\n",
         stubName_.string(), stubName_.string());
-    sb.Append(prefix + TAB).Append("MessageParcel& data, MessageParcel& reply, MessageOption& option)\n");
+    sb.Append(prefix + g_tab).Append("MessageParcel& data, MessageParcel& reply, MessageOption& option)\n");
     sb.Append(prefix).Append("{\n");
 
-    sb.Append(prefix + TAB).Append("switch (cmdId) {\n");
+    sb.Append(prefix + g_tab).Append("switch (cmdId) {\n");
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(prefix + TAB + TAB).AppendFormat("case CMD_%s:\n", ConstantName(method->GetName()).string());
-        sb.Append(prefix + TAB + TAB + TAB).AppendFormat("return %sStub%s(data, reply, option);\n",
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("case CMD_%s:\n", ConstantName(method->GetName()).string());
+        sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return %sStub%s(data, reply, option);\n",
             infName_.string(), method->GetName().string());
     }
 
-    sb.Append(prefix + TAB + TAB).Append("default: {\n");
-    sb.Append(prefix + TAB + TAB + TAB).Append(
+    sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append(
         "HDF_LOGE(\"%{public}s: not support cmd %{public}d\", __func__, cmdId);\n");
-    sb.Append(prefix + TAB + TAB + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB + TAB).Append("}\n");
-    sb.Append(prefix + TAB).Append("}\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).Append("}\n");
     sb.Append("}\n");
 }
 
 void CppServiceStubCodeEmitter::EmitCbStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix)
 {
     sb.Append(prefix).AppendFormat("int32_t %s::OnRemoteRequest(uint32_t code,\n", stubName_.string());
-    sb.Append(prefix + TAB).Append("MessageParcel& data, MessageParcel& reply, MessageOption& option)\n");
+    sb.Append(prefix + g_tab).Append("MessageParcel& data, MessageParcel& reply, MessageOption& option)\n");
     sb.Append(prefix).Append("{\n");
 
-    sb.Append(prefix + TAB).Append("switch (code) {\n");
+    sb.Append(prefix + g_tab).Append("switch (code) {\n");
 
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(prefix + TAB + TAB).AppendFormat("case CMD_%s:\n", ConstantName(method->GetName()).string());
-        sb.Append(prefix + TAB + TAB + TAB).AppendFormat("return %sStub%s(data, reply, option);\n",
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("case CMD_%s:\n", ConstantName(method->GetName()).string());
+        sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return %sStub%s(data, reply, option);\n",
             infName_.string(), method->GetName().string());
     }
 
-    sb.Append(prefix + TAB + TAB).Append("default: {\n");
-    sb.Append(prefix + TAB + TAB + TAB).Append(
+    sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append(
         "HDF_LOGE(\"%{public}s: not support cmd %{public}d\", __func__, code);\n");
-    sb.Append(prefix + TAB + TAB + TAB).Append("return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n");
-    sb.Append(prefix + TAB + TAB).Append("}\n");
-    sb.Append(prefix + TAB).Append("}\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append("return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n");
+    sb.Append(prefix + g_tab + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).Append("}\n");
     sb.Append("}\n");
 }
 
@@ -394,9 +394,9 @@ void CppServiceStubCodeEmitter::EmitStubInstanceMethodImpl(StringBuilder& sb, co
 {
     sb.Append(prefix).AppendFormat("void *%sInstance()\n", stubName_.string());
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).AppendFormat("using namespace %s;\n",
+    sb.Append(prefix + g_tab).AppendFormat("using namespace %s;\n",
         EmitStubServiceUsings(interface_->GetNamespace()->ToString()).string());
-    sb.Append(prefix + TAB).AppendFormat("return reinterpret_cast<void *>(new %s());\n", stubName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("return reinterpret_cast<void *>(new %s());\n", stubName_.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -404,9 +404,9 @@ void CppServiceStubCodeEmitter::EmitStubReleaseMethodImpl(StringBuilder& sb, con
 {
     sb.Append(prefix).AppendFormat("void %sRelease(void *obj)\n", stubName_.string());
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).AppendFormat("using namespace %s;\n",
+    sb.Append(prefix + g_tab).AppendFormat("using namespace %s;\n",
         EmitStubServiceUsings(interface_->GetNamespace()->ToString()).string());
-    sb.Append(prefix + TAB).AppendFormat("delete reinterpret_cast<%s *>(obj);\n", stubName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("delete reinterpret_cast<%s *>(obj);\n", stubName_.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -417,22 +417,22 @@ void CppServiceStubCodeEmitter::EmitServiceOnRemoteRequest(StringBuilder& sb, co
         "int32_t %sServiceOnRemoteRequest(void *stub, int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply)\n",
         infName_.string());
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).AppendFormat("using namespace %s;\n",
+    sb.Append(prefix + g_tab).AppendFormat("using namespace %s;\n",
         EmitStubServiceUsings(interface_->GetNamespace()->ToString()).string());
-    sb.Append(prefix + TAB).AppendFormat("%s *%s = reinterpret_cast<%s *>(stub);\n",
+    sb.Append(prefix + g_tab).AppendFormat("%s *%s = reinterpret_cast<%s *>(stub);\n",
         stubName_.string(), stubObjName.string(), stubName_.string());
-    sb.Append(prefix + TAB).Append("OHOS::MessageParcel *dataParcel = nullptr;\n");
-    sb.Append(prefix + TAB).Append("OHOS::MessageParcel *replyParcel = nullptr;\n");
+    sb.Append(prefix + g_tab).Append("OHOS::MessageParcel *dataParcel = nullptr;\n");
+    sb.Append(prefix + g_tab).Append("OHOS::MessageParcel *replyParcel = nullptr;\n");
     sb.Append("\n");
 
-    sb.Append(prefix + TAB).Append("(void)SbufToParcel(reply, &replyParcel);\n");
-    sb.Append(prefix + TAB).Append("if (SbufToParcel(data, &dataParcel) != HDF_SUCCESS) {\n");
-    sb.Append(prefix + TAB + TAB).Append(
+    sb.Append(prefix + g_tab).Append("(void)SbufToParcel(reply, &replyParcel);\n");
+    sb.Append(prefix + g_tab).Append("if (SbufToParcel(data, &dataParcel) != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append(
         "HDF_LOGE(\"%{public}s:invalid data sbuf object to dispatch\", __func__);\n");
-    sb.Append(prefix + TAB + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("}\n\n");
-    sb.Append(prefix + TAB).Append("OHOS::MessageOption option;\n");
-    sb.Append(prefix + TAB).AppendFormat("return %s->%sOnRemoteRequest(cmdId, *dataParcel, *replyParcel, option);\n",
+    sb.Append(prefix + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
+    sb.Append(prefix + g_tab).Append("OHOS::MessageOption option;\n");
+    sb.Append(prefix + g_tab).AppendFormat("return %s->%sOnRemoteRequest(cmdId, *dataParcel, *replyParcel, option);\n",
         stubObjName.string(), stubName_.string());
     sb.Append(prefix).Append("}\n");
 }

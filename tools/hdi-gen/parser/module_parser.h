@@ -10,9 +10,10 @@
 #define OHOS_HDI_MODULE_PARSER_H
 
 #include <set>
+#include <memory>
+#include "ast/ast_module.h"
 #include "parser/file_detail.h"
-#include "parser/parser.h"
-#include "util/logger.h"
+#include "util/options.h"
 
 namespace OHOS {
 namespace HDI {

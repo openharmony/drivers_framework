@@ -16,7 +16,7 @@
 
 namespace OHOS {
 namespace HDI {
-const char* Options::OPT_SUPPORT_ARGS = "c:d:";
+const char* Options::optSupportArgs = "c:d:";
 static struct option g_longOpts[] = {
     {"help", no_argument, nullptr, 'h'},
     {"version", no_argument, nullptr, 'v'},
@@ -34,14 +34,14 @@ Options& Options::GetInstance()
     return option;
 }
 
-Options& Options::Parse(int argc, char** argv)
+Options& Options::Parse(int argc, char* const argv[])
 {
     program_ = argv[0];
     opterr = 1;
     int op = 0;
     int optIndex = 0;
 
-    while ((op = getopt_long(argc, argv, OPT_SUPPORT_ARGS, g_longOpts, &optIndex)) != OPT_END) {
+    while ((op = getopt_long(argc, argv, optSupportArgs, g_longOpts, &optIndex)) != OPT_END) {
         switch (op) {
             case 'c':
                 doCompile_ = true;

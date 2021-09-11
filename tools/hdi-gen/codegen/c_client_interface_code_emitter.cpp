@@ -85,9 +85,9 @@ void CClientInterfaceCodeEmitter::EmitForwardDecls(StringBuilder& sb)
 void CClientInterfaceCodeEmitter::EmitInterfaceDecl(StringBuilder& sb)
 {
     sb.AppendFormat("struct %s {\n", interfaceName_.string());
-    sb.Append(TAB).Append("struct HdfRemoteService *remote;\n");
+    sb.Append(g_tab).Append("struct HdfRemoteService *remote;\n");
     sb.Append("\n");
-    EmitInterfaceMethodsDecl(sb, TAB);
+    EmitInterfaceMethodsDecl(sb, g_tab);
     sb.Append("};\n");
     if (!isCallbackInterface()) {
         sb.Append("\n");
@@ -126,7 +126,7 @@ void CClientInterfaceCodeEmitter::EmitInterfaceMethodDecl(const AutoPtr<ASTMetho
         }
 
         paramStr.Append(");");
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 }

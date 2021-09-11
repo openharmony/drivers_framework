@@ -8,14 +8,14 @@
 
 #include <iostream>
 #include <thread>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include <hdf_log.h>
-#include <osal_mem.h>
-#include <securec.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "securec.h"
 #include "c_test/struct_test/v1_0/client/istruct_test.h"
 
 using namespace OHOS;
@@ -23,7 +23,7 @@ using namespace testing::ext;
 
 static struct IStructTest* g_testClient = nullptr;
 
-class StructTest : public testing::Test {
+class CStructTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase(){}
@@ -31,11 +31,11 @@ public:
     void TearDown(){}
 };
 
-void StructTest::SetUpTestCase()
+void CStructTest::SetUpTestCase()
 {
     g_testClient = HdiStructTestGet();
     if (g_testClient == nullptr) {
-        printf("StructTest: get g_testClient failed.\n");
+        printf("CStructTest: get g_testClient failed.\n");
     }
 }
 
@@ -47,45 +47,12 @@ void TearDownTestCase()
     }
 }
 
-HWTEST_F(StructTest, StructTest_001, TestSize.Level0)
+HWTEST_F(CStructTest, CStructTest_001, TestSize.Level1)
 {
     ASSERT_NE(nullptr, g_testClient);
 }
 
-
-static std::string ESampleToStr(ESample obj)
-{
-    switch (obj) {
-        case MEM_ONE:
-            return "MEM_ONE";
-        case MEM_TWO:
-            return "MEM_TWO";
-        case MEM_THREE:
-            return "MEM_THREE";
-        default:
-            return "unknown";
-    }
-}
-
-static void PrintSSample(const struct SSample* obj)
-{
-    std::cout << "{";
-    std::cout << (obj->m1 ? 1 : 0) << ",";
-    std::cout << obj->m2 << ",";
-    std::cout << obj->m3 << ",";
-    std::cout << obj->m4;
-    std::cout << "}";
-}
-
-static void PrintUSample(const union USample* obj)
-{
-    std::cout << "{";
-    std::cout << (obj->m1 ? 1 : 0) << ",";
-    std::cout << obj->m2;
-    std::cout << "}";
-}
-
-HWTEST_F(StructTest, StructTest_002, TestSize.Level0)
+HWTEST_F(CStructTest, CStructTest_002, TestSize.Level1)
 {
     struct SSample* srcObj = (struct SSample*)OsalMemCalloc(sizeof(struct SSample));
     ASSERT_NE(srcObj, nullptr);
@@ -94,9 +61,6 @@ HWTEST_F(StructTest, StructTest_002, TestSize.Level0)
     srcObj->m2 = 1;
     srcObj->m3 = 10.125;
     srcObj->m4 = strdup("hello world");
-
-    PrintSSample(srcObj);
-    std::cout << "\n";
 
     struct SSample* destObj = nullptr;
     int32_t ec = g_testClient->SSampleTest(g_testClient, srcObj, &destObj);
@@ -107,31 +71,11 @@ HWTEST_F(StructTest, StructTest_002, TestSize.Level0)
     EXPECT_DOUBLE_EQ(srcObj->m3, destObj->m3);
     EXPECT_STREQ(srcObj->m4, destObj->m4);
 
-    PrintSSample(destObj);
-    std::cout << "\n";
-
     SSampleFree(srcObj, true);
     SSampleFree(destObj, true);
 }
 
-static void PrintSSample2(const struct SSample2* obj)
-{
-    std::cout << "{";
-    std::cout << (obj->m1 ? 1 : 0) << ",";
-    std::cout << obj->m2 << ",";
-    std::cout << obj->m3 << ",";
-    std::cout << obj->m4 << ",";
-    std::cout << obj->m5 << ",";
-    std::cout << obj->m6 << ",";
-    std::cout << obj->m7 << ",";
-    std::cout << obj->m8 << ",";
-    std::cout << obj->m9 << ",";
-    std::cout << obj->m10 << ",";
-    std::cout << obj->m11;
-    std::cout << "}";
-}
-
-HWTEST_F(StructTest, StructTest_003, TestSize.Level0)
+HWTEST_F(CStructTest, CStructTest_003, TestSize.Level1)
 {
     struct SSample2* srcObj = (struct SSample2*)OsalMemCalloc(sizeof(struct SSample2));
     ASSERT_NE(srcObj, nullptr);
@@ -147,9 +91,6 @@ HWTEST_F(StructTest, StructTest_003, TestSize.Level0)
     srcObj->m9 = 300;
     srcObj->m10 = 10.5;
     srcObj->m11 = 20.125;
-
-    PrintSSample2(srcObj);
-    std::cout << "\n";
 
     struct SSample2* destObj = nullptr;
     int32_t ec = g_testClient->SSample2Test(g_testClient, srcObj, &destObj);
@@ -167,25 +108,11 @@ HWTEST_F(StructTest, StructTest_003, TestSize.Level0)
     EXPECT_FLOAT_EQ(srcObj->m10, destObj->m10);
     EXPECT_DOUBLE_EQ(srcObj->m11, destObj->m11);
 
-    PrintSSample2(destObj);
-    std::cout << "\n";
-
     SSample2Free(srcObj, true);
     SSample2Free(destObj, true);
 }
 
-static void PrintSSample3(const struct SSample3* obj)
-{
-    std::cout << "{";
-    std::cout << obj->m1 << ", ";
-    std::cout << ESampleToStr(obj->m2) << ", ";
-    PrintSSample2(&obj->m3);
-    std::cout << ", ";
-    std::cout << obj->m4;
-    std::cout << "}";
-}
-
-HWTEST_F(StructTest, StructTest_004, TestSize.Level0)
+HWTEST_F(CStructTest, CStructTest_004, TestSize.Level1)
 {
     struct SSample3* srcObj = (struct SSample3*)OsalMemCalloc(sizeof(struct SSample3));
     ASSERT_NE(srcObj, nullptr);
@@ -207,9 +134,6 @@ HWTEST_F(StructTest, StructTest_004, TestSize.Level0)
 
     srcObj->m4 = open("/fdtest1.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
 
-    PrintSSample3(srcObj);
-    std::cout << "\n";
-
     struct SSample3* destObj = nullptr;
     int32_t ec = g_testClient->SSample3Test(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
@@ -229,106 +153,11 @@ HWTEST_F(StructTest, StructTest_004, TestSize.Level0)
     EXPECT_FLOAT_EQ(srcObj->m3.m10, destObj->m3.m10);
     EXPECT_DOUBLE_EQ(srcObj->m3.m11, destObj->m3.m11);
 
-    PrintSSample3(destObj);
-    std::cout << "\n";
-
     SSample3Free(srcObj, true);
     SSample3Free(destObj, true);
 }
 
-static void PrintSSample4(const struct SSample4* obj)
-{
-    std::cout << "{";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m1Len; i++) {
-        std::cout << (obj->m1[i] ? 1 : 0) << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m2Len; i++) {
-        std::cout << obj->m2[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m3Len; i++) {
-        std::cout << obj->m3[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m4Len; i++) {
-        std::cout << obj->m4[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m5Len; i++) {
-        std::cout << obj->m5[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m6Len; i++) {
-        std::cout << obj->m6[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m7Len; i++) {
-        std::cout << obj->m7[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m8Len; i++) {
-        std::cout << obj->m8[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m9Len; i++) {
-        std::cout << obj->m9[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m10Len; i++) {
-        std::cout << obj->m10[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m11Len; i++) {
-        std::cout << obj->m11[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m12Len; i++) {
-        std::cout << obj->m12[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m13Len; i++) {
-        std::cout << ESampleToStr(obj->m13[i]) << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m14Len; i++) {
-        PrintSSample(&(obj->m14[i]));
-        std::cout << ",";
-    }
-    std::cout << "}";
-
-    std::cout << "}\n";
-}
-
-HWTEST_F(StructTest, StructTest_005, TestSize.Level0)
+HWTEST_F(CStructTest, CStructTest_005, TestSize.Level1)
 {
     struct SSample4* srcObj = (struct SSample4*)OsalMemCalloc(sizeof(struct SSample4));
     ASSERT_NE(srcObj, nullptr);
@@ -421,9 +250,6 @@ HWTEST_F(StructTest, StructTest_005, TestSize.Level0)
         srcObj->m14[i].m4 = strdup("hello");
     }
 
-    PrintSSample4(srcObj);
-    std::cout << "\n";
-
     struct SSample4* destObj = nullptr;
     int32_t ec = g_testClient->SSample4Test(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
@@ -488,106 +314,11 @@ HWTEST_F(StructTest, StructTest_005, TestSize.Level0)
         EXPECT_STREQ((srcObj->m14[i]).m4, (destObj->m14[i]).m4);
     }
 
-    PrintSSample4(destObj);
-    std::cout << "\n";
-
     SSample4Free(srcObj, true);
     SSample4Free(destObj, true);
 }
 
-static void PrintSSample5(const struct SSample5* obj)
-{
-    std::cout << "{";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m1Len; i++) {
-        std::cout << (obj->m1[i] ? 1 : 0) << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m2Len; i++) {
-        std::cout << obj->m2[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m3Len; i++) {
-        std::cout << obj->m3[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m4Len; i++) {
-        std::cout << obj->m4[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m5Len; i++) {
-        std::cout << obj->m5[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m6Len; i++) {
-        std::cout << obj->m6[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m7Len; i++) {
-        std::cout << obj->m7[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m8Len; i++) {
-        std::cout << obj->m8[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m9Len; i++) {
-        std::cout << obj->m9[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m10Len; i++) {
-        std::cout << obj->m10[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m11Len; i++) {
-        std::cout << obj->m11[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m12Len; i++) {
-        std::cout << obj->m12[i] << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m13Len; i++) {
-        std::cout << ESampleToStr(obj->m13[i]) << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m14Len; i++) {
-        PrintSSample(&(obj->m14[i]));
-        std::cout << ",";
-    }
-    std::cout << "},";
-
-    std::cout << "}\n";
-}
-
-HWTEST_F(StructTest, StructTest_006, TestSize.Level0)
+HWTEST_F(CStructTest, CStructTest_006, TestSize.Level1)
 {
     struct SSample5* srcObj = (struct SSample5*)OsalMemCalloc(sizeof(struct SSample5));
     ASSERT_NE(srcObj, nullptr);
@@ -680,9 +411,6 @@ HWTEST_F(StructTest, StructTest_006, TestSize.Level0)
         srcObj->m14[i].m4 = strdup("hello");
     }
 
-    PrintSSample5(srcObj);
-    std::cout << "\n";
-
     struct SSample5* destObj = nullptr;
     int32_t ec = g_testClient->SSample5Test(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
@@ -746,36 +474,11 @@ HWTEST_F(StructTest, StructTest_006, TestSize.Level0)
         EXPECT_STREQ((srcObj->m14[i]).m4, (destObj->m14[i]).m4);
     }
 
-    PrintSSample5(destObj);
-    std::cout << "\n";
-
     SSample5Free(srcObj, true);
     SSample5Free(destObj, true);
 }
 
-static void PrintSSample6(const struct SSample6* obj)
-{
-    std::cout << "{";
-
-    PrintUSample(&obj->m1);
-    std::cout << ",\n";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m2Len; i++) {
-        PrintUSample(&obj->m2[i]);
-    }
-    std::cout << "},";
-
-    std::cout << "{";
-    for (uint32_t i = 0; i < obj->m3Len; i++) {
-        PrintUSample(&obj->m3[i]);
-    }
-    std::cout << "}";
-
-    std::cout << "}";
-}
-
-HWTEST_F(StructTest, StructTest_007, TestSize.Level0)
+HWTEST_F(CStructTest, CStructTest_007, TestSize.Level1)
 {
     struct SSample6* srcObj = (struct SSample6*)OsalMemCalloc(sizeof(struct SSample6));
     ASSERT_NE(srcObj, nullptr);
@@ -797,9 +500,6 @@ HWTEST_F(StructTest, StructTest_007, TestSize.Level0)
         (srcObj->m3[i]).m2 = 2;
     }
 
-    PrintSSample6(srcObj);
-    std::cout << "\n";
-
     struct SSample6* destObj = nullptr;
     int32_t ec = g_testClient->SSample6Test(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
@@ -816,9 +516,6 @@ HWTEST_F(StructTest, StructTest_007, TestSize.Level0)
         EXPECT_EQ(((srcObj->m3[i]).m1 ? 1 : 0), ((destObj->m3[i]).m1 ? 1 : 0));
         EXPECT_EQ((srcObj->m3[i]).m2, (destObj->m3[i]).m2);
     }
-
-    PrintSSample6(destObj);
-    std::cout << "\n";
 
     SSample6Free(srcObj, true);
     SSample6Free(destObj, true);

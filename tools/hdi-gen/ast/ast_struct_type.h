@@ -92,11 +92,8 @@ public:
 
     String EmitJavaTypeDecl() const;
 
-    void EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+    void EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
         StringBuilder& sb, const String& prefix) const override;
-
-    void EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
 
     void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
         const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;

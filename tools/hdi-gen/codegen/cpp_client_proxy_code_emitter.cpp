@@ -75,20 +75,20 @@ void CppClientProxyCodeEmitter::EmitProxyDecl(StringBuilder& sb, const String& p
     sb.AppendFormat("class %s : public IRemoteProxy<%s> {\n",
         proxyName_.string(), interfaceName_.string());
     sb.Append("public:\n");
-    EmitProxyConstructor(sb, TAB);
+    EmitProxyConstructor(sb, g_tab);
     sb.Append("\n");
-    EmitProxyMethodDecls(sb, TAB);
+    EmitProxyMethodDecls(sb, g_tab);
     sb.Append("\n");
     sb.Append("private:\n");
-    EmitProxyConstants(sb, TAB);
+    EmitProxyConstants(sb, g_tab);
     sb.Append("};\n");
 }
 
 void CppClientProxyCodeEmitter::EmitProxyConstructor(StringBuilder& sb, const String& prefix)
 {
     sb.Append(prefix).AppendFormat("explicit %s(\n", proxyName_.string());
-    sb.Append(prefix + TAB).Append("const sptr<IRemoteObject>& remote)\n");
-    sb.Append(prefix + TAB).AppendFormat(": IRemoteProxy<%s>(remote)\n", interfaceName_.string());
+    sb.Append(prefix + g_tab).Append("const sptr<IRemoteObject>& remote)\n");
+    sb.Append(prefix + g_tab).AppendFormat(": IRemoteProxy<%s>(remote)\n", interfaceName_.string());
     sb.Append(prefix).Append("{}\n");
     sb.Append("\n");
     sb.Append(prefix).AppendFormat("virtual ~%s() {}\n", proxyName_.string());
@@ -124,7 +124,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodDecl(const AutoPtr<ASTMethod>& me
 
         paramStr.Append(") override;");
 
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 }
@@ -204,23 +204,23 @@ void CppClientProxyCodeEmitter::EmitGetMethodImpl(StringBuilder& sb, const Strin
     sb.Append(prefix).AppendFormat("sptr<%s> %s::Get()\n",
         interface_->GetName().string(), interface_->GetName().string());
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).Append("do {\n");
-    sb.Append(prefix + TAB + TAB).Append("using namespace OHOS::HDI::ServiceManager::V1_0;\n");
-    sb.Append(prefix + TAB + TAB).Append("auto servMgr = IServiceManager::Get();\n");
-    sb.Append(prefix + TAB + TAB).Append("if (servMgr == nullptr) {\n");
-    sb.Append(prefix + TAB + TAB + TAB).Append("HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
-    sb.Append(prefix + TAB + TAB + TAB).Append("break;\n");
-    sb.Append(prefix + TAB + TAB).Append("}\n\n");
-    sb.Append(prefix + TAB + TAB).AppendFormat("sptr<IRemoteObject> remote = servMgr->GetService(\"%sService\");\n",
+    sb.Append(prefix + g_tab).Append("do {\n");
+    sb.Append(prefix + g_tab + g_tab).Append("using namespace OHOS::HDI::ServiceManager::V1_0;\n");
+    sb.Append(prefix + g_tab + g_tab).Append("auto servMgr = IServiceManager::Get();\n");
+    sb.Append(prefix + g_tab + g_tab).Append("if (servMgr == nullptr) {\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append("break;\n");
+    sb.Append(prefix + g_tab + g_tab).Append("}\n\n");
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("sptr<IRemoteObject> remote = servMgr->GetService(\"%sService\");\n",
         infName_.string());
-    sb.Append(prefix + TAB + TAB).Append("if (remote != nullptr) {\n");
-    sb.Append(prefix + TAB + TAB + TAB).AppendFormat("return iface_cast<%s>(remote);\n",
+    sb.Append(prefix + g_tab + g_tab).Append("if (remote != nullptr) {\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return iface_cast<%s>(remote);\n",
         interface_->GetName().string());
-    sb.Append(prefix + TAB + TAB).Append("}\n");
-    sb.Append(prefix + TAB).Append("} while(false);\n");
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).Append("} while(false);\n");
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: get %sService failed!\", __func__);\n", infName_.string());
-    sb.Append(prefix + TAB).Append("return nullptr;\n");
+    sb.Append(prefix + g_tab).Append("return nullptr;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -254,7 +254,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& me
 
         paramStr.Append(")");
 
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
     EmitProxyMethodBody(method, sb, prefix);
@@ -264,41 +264,41 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
     const String& prefix)
 {
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).Append("MessageParcel data;\n");
-    sb.Append(prefix + TAB).Append("MessageParcel reply;\n");
-    sb.Append(prefix + TAB).Append("MessageOption option(MessageOption::TF_SYNC);\n");
+    sb.Append(prefix + g_tab).Append("MessageParcel data;\n");
+    sb.Append(prefix + g_tab).Append("MessageParcel reply;\n");
+    sb.Append(prefix + g_tab).Append("MessageOption option(MessageOption::TF_SYNC);\n");
     sb.Append("\n");
 
     if (method->GetParameterNumber() > 0) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-                EmitWriteMethodParameter(param, "data", sb, prefix + TAB);
+                EmitWriteMethodParameter(param, "data", sb, prefix + g_tab);
             }
         }
         sb.Append("\n");
     }
 
-    sb.Append(prefix + TAB).AppendFormat("int32_t ec = Remote()->SendRequest(CMD_%s, data, reply, option);\n",
+    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = Remote()->SendRequest(CMD_%s, data, reply, option);\n",
         ConstantName(method->GetName()).string());
-    sb.Append(prefix + TAB).Append("if (ec != HDF_SUCCESS) {\n");
-    sb.Append(prefix + TAB + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s failed, error code is %%d\", ec);\n", method->GetName().string());
-    sb.Append(prefix + TAB + TAB).Append("return ec;\n");
-    sb.Append(prefix + TAB).Append("}\n");
+    sb.Append(prefix + g_tab + g_tab).Append("return ec;\n");
+    sb.Append(prefix + g_tab).Append("}\n");
 
     if (!method->IsOneWay()) {
         sb.Append("\n");
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-                EmitReadMethodParameter(param, "reply", false, sb, prefix + TAB);
+                EmitReadMethodParameter(param, "reply", false, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }
     }
 
-    sb.Append(prefix + TAB).Append("return HDF_SUCCESS;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append(prefix).Append("}\n");
 }
 } // namespace HDI

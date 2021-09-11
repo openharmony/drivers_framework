@@ -8,14 +8,14 @@
 
 #include <iostream>
 #include <thread>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include <hdf_log.h>
-#include <osal_mem.h>
-#include <securec.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "securec.h"
 #include "cpp_test/data_test/v1_0/client/data_test_proxy.h"
 
 using namespace OHOS;
@@ -25,7 +25,7 @@ using namespace test::cpp_test::types::v1_0;
 
 static sptr<IDataTest> g_testClient = nullptr;
 
-class DataTest : public testing::Test {
+class CppDataTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase(){}
@@ -33,20 +33,20 @@ public:
     void TearDown(){}
 };
 
-void DataTest::SetUpTestCase()
+void CppDataTest::SetUpTestCase()
 {
     g_testClient = IDataTest::Get();
     if (g_testClient == nullptr) {
-        printf("DataTest: get g_testClient failed.\n");
+        printf("CppDataTest: get g_testClient failed.\n");
     }
 }
 
-HWTEST_F(DataTest, DataTest_001, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_001, TestSize.Level1)
 {
     ASSERT_NE(nullptr, g_testClient);
 }
 
-HWTEST_F(DataTest, DataTest_002, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_002, TestSize.Level1)
 {
     bool inParam = true;
     bool outParam = false;
@@ -57,7 +57,7 @@ HWTEST_F(DataTest, DataTest_002, TestSize.Level0)
     EXPECT_TRUE(outParam);
 }
 
-HWTEST_F(DataTest, DataTest_003, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_003, TestSize.Level1)
 {
     int8_t inParam = 10;
     int8_t outParam = 0;
@@ -68,7 +68,7 @@ HWTEST_F(DataTest, DataTest_003, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_004, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_004, TestSize.Level1)
 {
     int16_t inParam = 10;
     int16_t outParam = 0;
@@ -79,7 +79,7 @@ HWTEST_F(DataTest, DataTest_004, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_005, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_005, TestSize.Level1)
 {
     int32_t inParam = 10;
     int32_t outParam = 0;
@@ -90,7 +90,7 @@ HWTEST_F(DataTest, DataTest_005, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_006, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_006, TestSize.Level1)
 {
     int64_t inParam = 10;
     int64_t outParam = 0;
@@ -101,7 +101,7 @@ HWTEST_F(DataTest, DataTest_006, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_007, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_007, TestSize.Level1)
 {
     uint8_t inParam = 10;
     uint8_t outParam = 0;
@@ -112,7 +112,7 @@ HWTEST_F(DataTest, DataTest_007, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_008, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_008, TestSize.Level1)
 {
     uint16_t inParam = 10;
     uint16_t outParam = 0;
@@ -123,7 +123,7 @@ HWTEST_F(DataTest, DataTest_008, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_009, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_009, TestSize.Level1)
 {
     uint32_t inParam = 10;
     uint32_t outParam = 0;
@@ -134,7 +134,7 @@ HWTEST_F(DataTest, DataTest_009, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_010, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_010, TestSize.Level1)
 {
     uint64_t inParam = 10;
     uint64_t outParam = 0;
@@ -145,7 +145,7 @@ HWTEST_F(DataTest, DataTest_010, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_011, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_011, TestSize.Level1)
 {
     float inParam = 10.5;
     float outParam = 0;
@@ -156,7 +156,7 @@ HWTEST_F(DataTest, DataTest_011, TestSize.Level0)
     EXPECT_FLOAT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_012, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_012, TestSize.Level1)
 {
     double inParam = 10.5;
     double outParam = 0;
@@ -167,7 +167,7 @@ HWTEST_F(DataTest, DataTest_012, TestSize.Level0)
     EXPECT_DOUBLE_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_013, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_013, TestSize.Level1)
 {
     std::string inParam("hello");
     std::string outParam;
@@ -178,7 +178,7 @@ HWTEST_F(DataTest, DataTest_013, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_014, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_014, TestSize.Level1)
 {
     int fd = open("/cpp_data_test_014.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
     printf("file open, fd = %d\n", fd);
@@ -210,7 +210,7 @@ finished:
     close(fd);
 }
 
-HWTEST_F(DataTest, DataTest_015, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_015, TestSize.Level1)
 {
     ESample inParam = ESample::MEM_ONE;
     ESample outParam = ESample::MEM_TWO;
@@ -221,7 +221,7 @@ HWTEST_F(DataTest, DataTest_015, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_016, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_016, TestSize.Level1)
 {
     SSample inParam;
     inParam.m1 = true;
@@ -240,7 +240,7 @@ HWTEST_F(DataTest, DataTest_016, TestSize.Level0)
     EXPECT_EQ(inParam.m4, outParam.m4);
 }
 
-HWTEST_F(DataTest, DataTest_017, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_017, TestSize.Level1)
 {
     USample inParam;
     inParam.m2 = 10;
@@ -254,7 +254,7 @@ HWTEST_F(DataTest, DataTest_017, TestSize.Level0)
     EXPECT_DOUBLE_EQ(inParam.m2, outParam.m2);
 }
 
-HWTEST_F(DataTest, DataTest_018, TestSize.Level0)
+HWTEST_F(CppDataTest, CppDataTest_018, TestSize.Level1)
 {
     sptr<SequenceData> inParam(new SequenceData(1, 1.2, "hello"));
 

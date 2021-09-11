@@ -114,7 +114,7 @@ int File::Read()
     return (count != 0) ? count : -1;
 }
 
-bool File::ReadData(void* data, size_t size)
+bool File::ReadData(void* data, size_t size) const
 {
     if (data == nullptr || size == 0) {
         return true;
@@ -128,7 +128,7 @@ bool File::ReadData(void* data, size_t size)
     return count == 1;
 }
 
-bool File::WriteData(const void* data, size_t size)
+bool File::WriteData(const void* data, size_t size) const
 {
     if (data == nullptr || size == 0) {
         return true;

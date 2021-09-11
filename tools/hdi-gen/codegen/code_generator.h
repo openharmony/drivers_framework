@@ -10,9 +10,6 @@
 #define OHOS_HDI_CODEGENERATOR_H
 
 #include "ast/ast.h"
-#include "util/autoptr.h"
-#include "util/light_refcount_base.h"
-#include "util/string.h"
 
 namespace OHOS {
 namespace HDI {

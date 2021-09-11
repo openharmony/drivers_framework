@@ -236,13 +236,13 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeMarshallingImpl(StringBuilder& sb,
         String memberName = type->GetMemberName(i);
 
         String name = String::Format("%s.%s", objName.string(), memberName.string());
-        memberType->EmitCppMarshalling("data", name, sb, TAB);
+        memberType->EmitCppMarshalling("data", name, sb, g_tab);
         if (i + 1 < type->GetMemberNumber()) {
             sb.Append("\n");
         }
     }
 
-    sb.Append(TAB).Append("return true;\n");
+    sb.Append(g_tab).Append("return true;\n");
     sb.Append("}\n");
 }
 
@@ -269,15 +269,15 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& s
 
         if (memberType->GetTypeKind() == TypeKind::TYPE_UNION) {
             String cpName = String::Format("%sCp", memberName.string());
-            memberType->EmitCppUnMarshalling("data", cpName, sb, TAB, false);
-            sb.Append(TAB).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n", name.string(),
+            memberType->EmitCppUnMarshalling("data", cpName, sb, g_tab, false);
+            sb.Append(g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n", name.string(),
                 memberType->EmitCppType().string(), cpName.string(), memberType->EmitCppType().string());
         } else {
-            memberType->EmitCppUnMarshalling("data", name, sb, TAB, false);
+            memberType->EmitCppUnMarshalling("data", name, sb, g_tab, false);
         }
     }
 
-    sb.Append(TAB).AppendFormat("return true;\n", objName.string());
+    sb.Append(g_tab).AppendFormat("return true;\n", objName.string());
     sb.Append("}\n");
 }
 

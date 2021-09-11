@@ -8,14 +8,14 @@
 
 #include <iostream>
 #include <thread>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include <hdf_log.h>
-#include <osal_mem.h>
-#include <securec.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "securec.h"
 #include "test/cpp_test/array_test/v1_0/client/array_test_proxy.h"
 
 using namespace OHOS;
@@ -25,7 +25,7 @@ using namespace test::cpp_test::types::v1_0;
 
 static sptr<IArrayTest> g_testClient = nullptr;
 
-class ArrayTest : public testing::Test {
+class CppArrayTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase(){}
@@ -33,20 +33,20 @@ public:
     void TearDown(){}
 };
 
-void ArrayTest::SetUpTestCase()
+void CppArrayTest::SetUpTestCase()
 {
     g_testClient = IArrayTest::Get();
     if (g_testClient == nullptr) {
-        printf("ArrayTest: get g_testClient failed.\n");
+        printf("CppArrayTest: get g_testClient failed.\n");
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_001, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_001, TestSize.Level1)
 {
     ASSERT_NE(nullptr, g_testClient);
 }
 
-HWTEST_F(ArrayTest, ArrayTest_002, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_002, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<bool> inParam;
@@ -70,7 +70,7 @@ HWTEST_F(ArrayTest, ArrayTest_002, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_003, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_003, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int8_t> inParam;
@@ -90,7 +90,7 @@ HWTEST_F(ArrayTest, ArrayTest_003, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_004, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_004, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int16_t> inParam;
@@ -110,7 +110,7 @@ HWTEST_F(ArrayTest, ArrayTest_004, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_005, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_005, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int32_t> inParam;
@@ -130,7 +130,7 @@ HWTEST_F(ArrayTest, ArrayTest_005, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_006, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_006, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<int64_t> inParam;
@@ -150,7 +150,7 @@ HWTEST_F(ArrayTest, ArrayTest_006, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_007, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_007, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint8_t> inParam;
@@ -170,7 +170,7 @@ HWTEST_F(ArrayTest, ArrayTest_007, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_008, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_008, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint16_t> inParam;
@@ -190,7 +190,7 @@ HWTEST_F(ArrayTest, ArrayTest_008, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_009, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_009, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint32_t> inParam;
@@ -210,7 +210,7 @@ HWTEST_F(ArrayTest, ArrayTest_009, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_010, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_010, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<uint64_t> inParam;
@@ -230,7 +230,7 @@ HWTEST_F(ArrayTest, ArrayTest_010, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_011, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_011, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<float> inParam;
@@ -250,7 +250,7 @@ HWTEST_F(ArrayTest, ArrayTest_011, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_012, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_012, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<double> inParam;
@@ -270,7 +270,7 @@ HWTEST_F(ArrayTest, ArrayTest_012, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_013, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_013, TestSize.Level1)
 {
     uint32_t len = 2;
     std::vector<std::string> inParam;
@@ -290,10 +290,10 @@ HWTEST_F(ArrayTest, ArrayTest_013, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_014, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_014, TestSize.Level1)
 {
-    int fd1 = open("/ArrayTest_014_0.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
-    int fd2 = open("/ArrayTest_014_1.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
+    int fd1 = open("/CppArrayTest_014_0.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
+    int fd2 = open("/CppArrayTest_014_1.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
     ASSERT_NE(fd1, -1);
     ASSERT_NE(fd2, -1);
 
@@ -314,7 +314,7 @@ HWTEST_F(ArrayTest, ArrayTest_014, TestSize.Level0)
     close(fd2);
 }
 
-HWTEST_F(ArrayTest, ArrayTest_015, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_015, TestSize.Level1)
 {
     uint32_t len = 2;
     std::vector<ESample> inParam;
@@ -334,7 +334,7 @@ HWTEST_F(ArrayTest, ArrayTest_015, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_016, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_016, TestSize.Level1)
 {
     uint32_t len = 4;
     std::vector<SSample> inParam;
@@ -362,7 +362,7 @@ HWTEST_F(ArrayTest, ArrayTest_016, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_017, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_017, TestSize.Level1)
 {
     uint32_t len = 2;
     std::vector<USample> inParam;
@@ -385,7 +385,7 @@ HWTEST_F(ArrayTest, ArrayTest_017, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArrayTest_018, TestSize.Level0)
+HWTEST_F(CppArrayTest, CppArrayTest_018, TestSize.Level1)
 {
     std::vector<sptr<SequenceData>> inParam = {
         sptr<SequenceData>(new SequenceData(1, 1.2, "hello")),

@@ -140,12 +140,12 @@ void CServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>
         }
 
         paramStr.Append(")");
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).Append("return HDF_SUCCESS;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -157,7 +157,7 @@ void CServiceImplCodeEmitter::EmitServiceImplConstruct(StringBuilder& sb)
     sb.Append("{\n");
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(TAB).AppendFormat("%s->%s = %s%s;\n",
+        sb.Append(g_tab).AppendFormat("%s->%s = %s%s;\n",
             objName.string(), method->GetName().string(), infName_.string(), method->GetName().string());
     }
     sb.Append("}\n");
@@ -168,15 +168,15 @@ void CServiceImplCodeEmitter::EmitServiceImplInstance(StringBuilder& sb)
     String objName("instance");
     sb.AppendFormat("struct %s *Hdi%sInstance()\n", interfaceName_.string(), infName_.string());
     sb.Append("{\n");
-    sb.Append(TAB).AppendFormat("struct %s *%s = (struct %s*)OsalMemAlloc(sizeof(struct %s));\n",
+    sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s*)OsalMemAlloc(sizeof(struct %s));\n",
         interfaceName_.string(), objName.string(), interfaceName_.string(), interfaceName_.string());
-    sb.Append(TAB).AppendFormat("if (%s == NULL) {\n", objName.string());
-    sb.Append(TAB).Append(TAB).AppendFormat("HDF_LOGE(\"%%{public}s: OsalMemAlloc struct %s %s failed!\", __func__);\n",
+    sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: OsalMemAlloc struct %s %s failed!\", __func__);\n",
         interfaceName_.string(), objName.string());
-    sb.Append(TAB).Append(TAB).Append("return NULL;\n");
-    sb.Append(TAB).Append("}\n");
-    sb.Append(TAB).AppendFormat("%sServiceConstruct(%s);\n", infName_.string(), objName.string());
-    sb.Append(TAB).AppendFormat("return %s;\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append(g_tab).AppendFormat("%sServiceConstruct(%s);\n", infName_.string(), objName.string());
+    sb.Append(g_tab).AppendFormat("return %s;\n", objName.string());
     sb.Append("}\n");
 }
 
@@ -184,10 +184,10 @@ void CServiceImplCodeEmitter::EmitServiceImplRelease(StringBuilder& sb)
 {
     sb.AppendFormat("void Hdi%sRelease(struct %s *instance)\n", infName_.string(), interfaceName_.string());
     sb.Append("{\n");
-    sb.Append(TAB).Append("if (instance == NULL) {\n");
-    sb.Append(TAB).Append(TAB).Append("return;\n");
-    sb.Append(TAB).Append("}\n");
-    sb.Append(TAB).Append("OsalMemFree(instance);\n");
+    sb.Append(g_tab).Append("if (instance == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("return;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append(g_tab).Append("OsalMemFree(instance);\n");
     sb.Append("}\n");
 }
 } // namespace HDI

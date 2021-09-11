@@ -8,14 +8,14 @@
 
 #include <iostream>
 #include <thread>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include <hdf_log.h>
-#include <osal_mem.h>
-#include <securec.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "securec.h"
 #include "test/c_test/data_test/v1_0/client/idata_test.h"
 
 using namespace OHOS;
@@ -24,7 +24,7 @@ using namespace testing::ext;
 static struct IDataTest *g_testClient = nullptr;
 static struct ICallback *g_callback = nullptr;
 
-class DataTest : public testing::Test {
+class CDataTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
@@ -32,15 +32,15 @@ public:
     void TearDown(){}
 };
 
-void DataTest::SetUpTestCase()
+void CDataTest::SetUpTestCase()
 {
     g_testClient = HdiDataTestGet();
     if (g_testClient == nullptr) {
-        printf("DataTest: get g_testClient failed.\n");
+        printf("CDataTest: get g_testClient failed.\n");
     }
 }
 
-void DataTest::TearDownTestCase()
+void CDataTest::TearDownTestCase()
 {
     if (g_testClient != nullptr) {
         HdiDataTestRelease(g_testClient);
@@ -48,12 +48,12 @@ void DataTest::TearDownTestCase()
     }
 }
 
-HWTEST_F(DataTest, DataTest_001, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_001, TestSize.Level1)
 {
     ASSERT_NE(nullptr, g_testClient);
 }
 
-HWTEST_F(DataTest, DataTest_002, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_002, TestSize.Level1)
 {
     bool inParam = true;
     bool outParam = false;
@@ -65,8 +65,7 @@ HWTEST_F(DataTest, DataTest_002, TestSize.Level0)
     EXPECT_TRUE(outParam);
 }
 
-
-HWTEST_F(DataTest, DataTest_003, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_003, TestSize.Level1)
 {
     int8_t inParam = 10;
     int8_t outParam = 0;
@@ -77,7 +76,7 @@ HWTEST_F(DataTest, DataTest_003, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_004, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_004, TestSize.Level1)
 {
     int16_t inParam = 10;
     int16_t outParam = 0;
@@ -88,7 +87,7 @@ HWTEST_F(DataTest, DataTest_004, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_005, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_005, TestSize.Level1)
 {
     int32_t inParam = 10;
     int32_t outParam = 0;
@@ -99,7 +98,7 @@ HWTEST_F(DataTest, DataTest_005, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_006, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_006, TestSize.Level1)
 {
     int64_t inParam = 10;
     int64_t outParam = 0;
@@ -110,7 +109,7 @@ HWTEST_F(DataTest, DataTest_006, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_007, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_007, TestSize.Level1)
 {
     uint8_t inParam = 10;
     uint8_t outParam = 0;
@@ -121,7 +120,7 @@ HWTEST_F(DataTest, DataTest_007, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_008, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_008, TestSize.Level1)
 {
     uint16_t inParam = 10;
     uint16_t outParam = 0;
@@ -132,7 +131,7 @@ HWTEST_F(DataTest, DataTest_008, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_009, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_009, TestSize.Level1)
 {
     uint32_t inParam = 10;
     uint32_t outParam = 0;
@@ -143,7 +142,7 @@ HWTEST_F(DataTest, DataTest_009, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_010, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_010, TestSize.Level1)
 {
     uint64_t inParam = 10;
     uint64_t outParam = 0;
@@ -154,7 +153,7 @@ HWTEST_F(DataTest, DataTest_010, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_011, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_011, TestSize.Level1)
 {
     float inParam = 10.5;
     float outParam = 0;
@@ -165,7 +164,7 @@ HWTEST_F(DataTest, DataTest_011, TestSize.Level0)
     EXPECT_FLOAT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_012, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_012, TestSize.Level1)
 {
     double inParam = 10.5;
     double outParam = 0;
@@ -176,7 +175,7 @@ HWTEST_F(DataTest, DataTest_012, TestSize.Level0)
     EXPECT_DOUBLE_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_013, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_013, TestSize.Level1)
 {
     const char* inParam = "hello";
     char* outParam = nullptr;
@@ -187,7 +186,7 @@ HWTEST_F(DataTest, DataTest_013, TestSize.Level0)
     EXPECT_STREQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_014, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_014, TestSize.Level1)
 {
     int fd = open("/c_data_test_014.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
     printf("file open, fd = %d\n", fd);
@@ -219,7 +218,7 @@ finished:
     close(fd);
 }
 
-HWTEST_F(DataTest, DataTest_015, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_015, TestSize.Level1)
 {
     enum ESample inParam = MEM_ONE;
     enum ESample outParam = MEM_TWO;
@@ -230,7 +229,7 @@ HWTEST_F(DataTest, DataTest_015, TestSize.Level0)
     EXPECT_EQ(inParam, outParam);
 }
 
-HWTEST_F(DataTest, DataTest_016, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_016, TestSize.Level1)
 {
     struct SSample inParam;
     inParam.m1 = true;
@@ -260,7 +259,7 @@ HWTEST_F(DataTest, DataTest_016, TestSize.Level0)
     }
 }
 
-HWTEST_F(DataTest, DataTest_017, TestSize.Level0)
+HWTEST_F(CDataTest, CDataTest_017, TestSize.Level1)
 {
     union USample inParam;
     inParam.m2 = 10;
