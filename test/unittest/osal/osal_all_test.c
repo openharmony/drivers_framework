@@ -701,12 +701,14 @@ static void OsaMemoryTest(void)
 static void OsaLogTest(void)
 {
     HDF_LOGI("[OSAL_UT_TEST]%s start", __func__);
-    HDF_LOGE("%s", __func__);
-    HDF_LOGW("%s", __func__);
-    HDF_LOGI("%s", __func__);
+    HDF_LOGE("{private}%{private}s %{private}d{private}", __func__, __LINE__);
+    HDF_LOGW("%{public}s %{public}d", __func__, __LINE__);
+    HDF_LOGI("%{public}s %{private}d", __func__, __LINE__);
+	HDF_LOGI("%{private}s %{public}d", __func__, __LINE__);
     HDF_LOGD("%s", __func__);
     HDF_LOGV("%s", __func__);
-    HDF_LOGI("[OSAL_UT_TEST]%s end", __func__);
+    HDF_LOGI("[OSAL_UT_TEST]%{private}s end", __func__);
+	HDF_LOGI("[OSAL_UT_TEST]%s end", __func__);
 }
 
 static void OsaMutexTest(void)
