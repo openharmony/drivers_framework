@@ -150,21 +150,21 @@ void CppClientInterfaceCodeEmitter::EmitInterfaceDecl(StringBuilder& sb)
 {
     sb.AppendFormat("class %s : public IRemoteBroker {\n", interface_->GetName().string());
     sb.Append("public:\n");
-    EmitInterfaceBody(sb, TAB);
+    EmitInterfaceBody(sb, g_tab);
     sb.Append("};\n\n");
 }
 
 void CppClientInterfaceCodeEmitter::EmitInterfaceBody(StringBuilder& sb, const String& prefix)
 {
-    sb.Append(TAB).AppendFormat("DECLARE_INTERFACE_DESCRIPTOR(u\"%s\");\n", interfaceFullName_.string());
+    sb.Append(g_tab).AppendFormat("DECLARE_INTERFACE_DESCRIPTOR(u\"%s\");\n", interfaceFullName_.string());
     sb.Append("\n");
-    EmitInterfaceDestruction(sb, TAB);
+    EmitInterfaceDestruction(sb, g_tab);
     sb.Append("\n");
     if (!isCallbackInterface()) {
-        EmitInterfaceGetMethodDecl(sb, TAB);
+        EmitInterfaceGetMethodDecl(sb, g_tab);
         sb.Append("\n");
     }
-    EmitInterfaceMethodsDecl(sb, TAB);
+    EmitInterfaceMethodsDecl(sb, g_tab);
 }
 
 void CppClientInterfaceCodeEmitter::EmitInterfaceDestruction(StringBuilder& sb, const String& prefix)
@@ -205,7 +205,7 @@ void CppClientInterfaceCodeEmitter::EmitInterfaceMethodDecl(const AutoPtr<ASTMet
         }
 
         paramStr.Append(") = 0;");
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 }

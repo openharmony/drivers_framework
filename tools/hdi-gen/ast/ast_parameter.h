@@ -67,6 +67,8 @@ public:
     String EmitCppLocalVar();
 
     String EmitJavaLocalVar();
+
+    void EmitCWriteVar(const String& parcelName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
 private:
     String name_;
     AutoPtr<ASTType> type_ = nullptr;

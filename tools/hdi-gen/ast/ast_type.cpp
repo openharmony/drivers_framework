@@ -10,7 +10,7 @@
 
 namespace OHOS {
 namespace HDI {
-const char* ASTType::TAB = "    ";
+const char* g_tab = "    ";
 
 void ASTType::SetName(const String& name)
 {
@@ -172,16 +172,10 @@ String ASTType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return "unknow";
 }
 
-void ASTType::EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+void ASTType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
     StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("//Writeing \"%s\" type of data is not supported\n", name_.string());
-}
-
-void ASTType::EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
-{
-    sb.Append(prefix).AppendFormat("//Writing \"%s\" type of data is not supported\n", name_.string());
 }
 
 void ASTType::EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,

@@ -27,11 +27,8 @@ public:
 
     String EmitJavaType(TypeMode mode, bool isInnerType = false) const override;
 
-    void EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+    void EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
         StringBuilder& sb, const String& prefix) const override;
-
-    virtual void EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const;
 
     void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
         const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;

@@ -16,6 +16,8 @@
 
 namespace OHOS {
 namespace HDI {
+extern const char* g_tab;
+
 enum class TypeKind {
     TYPE_UNKNOWN = 0,
     TYPE_BOOLEAN,
@@ -121,11 +123,8 @@ public:
 
     virtual String EmitJavaType(TypeMode mode, bool isInnerType = false) const;
 
-    virtual void EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+    virtual void EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
         StringBuilder& sb, const String& prefix) const;
-
-    virtual void EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const;
 
     virtual void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
         const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
@@ -153,7 +152,6 @@ public:
     virtual void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, bool emitType, unsigned int innerLevel = 0) const;
 protected:
-    static const char* TAB;
     String name_;
     AutoPtr<ASTNamespace> namespace_;
     TypeKind typeKind_;

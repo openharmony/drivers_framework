@@ -62,27 +62,15 @@ String ASTFdType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return isInnerType ? "Integer" : "int";
 }
 
-void ASTFdType::EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+void ASTFdType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
     StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteFileDescriptor(%s, %s)) {\n",
         parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
-    sb.Append(prefix).Append("}\n");
-}
-
-void ASTFdType::EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
-{
-    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteFileDescriptor(%s, %s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -98,10 +86,10 @@ void ASTFdType::EmitCProxyReadVar(const String& parcelName, const String& name, 
             name.string(), parcelName.string());
         sb.Append(prefix).AppendFormat("if (*%s < 0) {\n", name.string());
     }
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -111,10 +99,10 @@ void ASTFdType::EmitCStubReadVar(const String& parcelName, const String& name, S
     sb.Append(prefix).AppendFormat("%s = HdfSbufReadFileDescriptor(%s);\n",
         name.string(), parcelName.string());
     sb.Append(prefix).AppendFormat("if (%s < 0) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -122,9 +110,9 @@ void ASTFdType::EmitCppWriteVar(const String& parcelName, const String& name, St
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteFileDescriptor(%s)) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -142,9 +130,9 @@ void ASTFdType::EmitCppReadVar(const String& parcelName, const String& name, Str
 void ASTFdType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteFileDescriptor(data, %s)) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -153,9 +141,9 @@ void ASTFdType::EmitCUnMarshalling(const String& name, StringBuilder& sb, const 
 {
     sb.Append(prefix).AppendFormat("%s = HdfSbufReadFileDescriptor(data);\n", name.string());
     sb.Append(prefix).AppendFormat("if (%s < 0) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -163,9 +151,9 @@ void ASTFdType::EmitCppMarshalling(const String& parcelName, const String& name,
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteFileDescriptor(%s)) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 

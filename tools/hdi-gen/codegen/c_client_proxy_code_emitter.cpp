@@ -149,15 +149,15 @@ void CClientProxyCodeEmitter::EmitProxyCallMethodImpl(StringBuilder& sb)
 {
     sb.AppendFormat("static int32_t %sProxyCall(struct %s *self, int32_t id, struct HdfSBuf *data,\n",
         infName_.string(), interfaceName_.string());
-    sb.Append(TAB).Append("struct HdfSBuf *reply)\n");
+    sb.Append(g_tab).Append("struct HdfSBuf *reply)\n");
     sb.Append("{\n");
-    sb.Append(TAB).Append("if (self->remote == NULL\n");
-    sb.Append(TAB).Append(TAB).Append("|| self->remote->dispatcher == NULL\n");
-    sb.Append(TAB).Append(TAB).Append("|| self->remote->dispatcher->Dispatch == NULL) {\n");
-    sb.Append(TAB).Append(TAB).Append("HDF_LOGE(\"%{public}s: obj is null\", __func__);\n");
-    sb.Append(TAB).Append(TAB).Append("return HDF_ERR_INVALID_OBJECT;\n");
-    sb.Append(TAB).Append("}\n");
-    sb.Append(TAB).Append("return self->remote->dispatcher->Dispatch(self->remote, id, data, reply);\n");
+    sb.Append(g_tab).Append("if (self->remote == NULL\n");
+    sb.Append(g_tab).Append(g_tab).Append("|| self->remote->dispatcher == NULL\n");
+    sb.Append(g_tab).Append(g_tab).Append("|| self->remote->dispatcher->Dispatch == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: obj is null\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return HDF_ERR_INVALID_OBJECT;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append(g_tab).Append("return self->remote->dispatcher->Dispatch(self->remote, id, data, reply);\n");
     sb.Append("}\n");
 }
 
@@ -190,7 +190,7 @@ void CClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& meth
         }
 
         paramStr.Append(")");
-        sb.Append(SpecificationParam(paramStr, TAB));
+        sb.Append(SpecificationParam(paramStr, g_tab));
         sb.Append("\n");
     }
     EmitProxyMethodBody(method, sb, "");
@@ -200,18 +200,18 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
     const String& prefix)
 {
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).Append("int32_t ec = HDF_FAILURE;\n");
+    sb.Append(prefix + g_tab).Append("int32_t ec = HDF_FAILURE;\n");
     sb.Append("\n");
 
-    sb.Append(prefix + TAB).Append("struct HdfSBuf *data = HdfSBufTypedObtain(SBUF_IPC);\n");
-    sb.Append(prefix + TAB).Append("struct HdfSBuf *reply = HdfSBufTypedObtain(SBUF_IPC);\n");
+    sb.Append(prefix + g_tab).Append("struct HdfSBuf *data = HdfSBufTypedObtain(SBUF_IPC);\n");
+    sb.Append(prefix + g_tab).Append("struct HdfSBuf *reply = HdfSBufTypedObtain(SBUF_IPC);\n");
     sb.Append("\n");
 
-    sb.Append(prefix + TAB).Append("if (data == NULL || reply == NULL) {\n");
-    sb.Append(prefix + TAB + TAB).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
-    sb.Append(prefix + TAB + TAB).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-    sb.Append(prefix + TAB + TAB).Append("goto finished;\n");
-    sb.Append(prefix + TAB).Append("}\n");
+    sb.Append(prefix + g_tab).Append("if (data == NULL || reply == NULL) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
+    sb.Append(prefix + g_tab + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+    sb.Append(prefix + g_tab + g_tab).Append("goto finished;\n");
+    sb.Append(prefix + g_tab).Append("}\n");
     sb.Append("\n");
 
     String gotoName = GetGotLabel(method);
@@ -219,24 +219,24 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            EmitWriteProxyMethodParameter(param, "data", gotoName, sb, prefix + TAB);
+            param->EmitCWriteVar("data", gotoName, sb, prefix + g_tab);
             sb.Append("\n");
         }
     }
 
-    sb.Append(prefix + TAB).AppendFormat("ec = %sCall(self, CMD_%s, data, reply);\n",
+    sb.Append(prefix + g_tab).AppendFormat("ec = %sCall(self, CMD_%s, data, reply);\n",
         proxyName_.string(), ConstantName(method->GetName()).string());
-    sb.Append(prefix + TAB).Append("if (ec != HDF_SUCCESS) {\n");
-    sb.Append(prefix + TAB + TAB).Append(
+    sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append(
         "HDF_LOGE(\"%{public}s: call failed! error code is %{public}d\", __func__, ec);\n");
-    sb.Append(prefix + TAB + TAB).AppendFormat("goto %s;\n", gotoName.string());
-    sb.Append(prefix + TAB).Append("}\n");
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoName.string());
+    sb.Append(prefix + g_tab).Append("}\n");
     sb.Append("\n");
 
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-            EmitReadProxyMethodParameter(param, "reply", gotoName, sb, prefix + TAB);
+            EmitReadProxyMethodParameter(param, "reply", gotoName, sb, prefix + g_tab);
             sb.Append("\n");
         }
     }
@@ -244,21 +244,14 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
     EmitErrorHandle(method, sb, prefix);
 
     sb.Append(prefix).Append("finished:\n");
-    sb.Append(prefix + TAB).Append("if (data != NULL) {\n");
-    sb.Append(prefix + TAB + TAB).Append("HdfSBufRecycle(data);\n");
-    sb.Append(prefix + TAB).Append("}\n");
-    sb.Append(prefix + TAB).Append("if (reply != NULL) {\n");
-    sb.Append(prefix + TAB + TAB).Append("HdfSBufRecycle(reply);\n");
-    sb.Append(prefix + TAB).Append("}\n");
-    sb.Append(prefix + TAB).Append("return ec;\n");
+    sb.Append(prefix + g_tab).Append("if (data != NULL) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append("HdfSBufRecycle(data);\n");
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).Append("if (reply != NULL) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append("HdfSBufRecycle(reply);\n");
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).Append("return ec;\n");
     sb.Append("}\n");
-}
-
-void CClientProxyCodeEmitter::EmitWriteProxyMethodParameter(const AutoPtr<ASTParameter>& param,
-    const String& parcelName, const String& gotoLabel, StringBuilder& sb, const String& prefix)
-{
-    AutoPtr<ASTType> type = param->GetType();
-    type->EmitCProxyWriteVar(parcelName, param->GetName(), gotoLabel, sb, prefix);
 }
 
 void CClientProxyCodeEmitter::EmitReadProxyMethodParameter(const AutoPtr<ASTParameter>& param,
@@ -275,8 +268,8 @@ void CClientProxyCodeEmitter::EmitReadProxyMethodParameter(const AutoPtr<ASTPara
         sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemAlloc(sizeof(%s));\n",
             name.string(), type->EmitCType().string(), type->EmitCType().string());
         sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + TAB).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
+        sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(prefix).Append("}\n");
         type->EmitCProxyReadVar(parcelName, name, false, gotoLabel, sb, prefix);
     } else if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
@@ -285,8 +278,8 @@ void CClientProxyCodeEmitter::EmitReadProxyMethodParameter(const AutoPtr<ASTPara
         sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemAlloc(sizeof(%s));\n",
             param->GetName().string(), type->EmitCType().string(), type->EmitCType().string());
         sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", param->GetName().string());
-        sb.Append(prefix + TAB).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
+        sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(prefix).Append("}\n");
         sb.Append(prefix).AppendFormat("(void)memcpy_s(*%s, sizeof(%s), %s, sizeof(%s));\n",
             param->GetName().string(), type->EmitCType().string(), cpName.string(), type->EmitCType().string());
@@ -329,13 +322,13 @@ void CClientProxyCodeEmitter::EmitErrorHandle(const AutoPtr<ASTMethod>& method, 
             || paramType->GetTypeKind() == TypeKind::TYPE_STRUCT
             || paramType->GetTypeKind() == TypeKind::TYPE_UNION)) {
             if (!errorLabel) {
-                sb.Append(prefix + TAB).Append("goto finished;\n");
+                sb.Append(prefix + g_tab).Append("goto finished;\n");
                 sb.Append("\n");
                 sb.Append(prefix).Append("errors:\n");
                 errorLabel = true;
             }
 
-            EmitError(paramType, param->GetName(), sb, prefix + TAB);
+            EmitError(paramType, param->GetName(), sb, prefix + g_tab);
             sb.Append("\n");
         }
     }
@@ -348,8 +341,8 @@ void CClientProxyCodeEmitter::EmitError(const AutoPtr<ASTType>& type, const Stri
         case TypeKind::TYPE_STRING:
         case TypeKind::TYPE_UNION: {
             sb.Append(prefix).AppendFormat("if (*%s != NULL) {\n", name.string());
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(*%s);\n", name.string());
-            sb.Append(prefix + TAB).AppendFormat("*%s = NULL;\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(*%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -362,21 +355,21 @@ void CClientProxyCodeEmitter::EmitError(const AutoPtr<ASTType>& type, const Stri
 
             if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
                 || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
                 String elementName = String::Format("(*%s)[i]", name.string());
 
                 if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB + TAB).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB).Append("}\n");
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
                 } else {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("%sFree(&%s, false);\n",
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&%s, false);\n",
                         elementType->GetName().string(), elementName.string());
                 }
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).Append("}\n");
             }
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(*%s);\n", name.string());
-            sb.Append(prefix + TAB).AppendFormat("*%s = NULL;\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(*%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -389,28 +382,28 @@ void CClientProxyCodeEmitter::EmitError(const AutoPtr<ASTType>& type, const Stri
 
             if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
                 || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + TAB).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
+                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
                 String elementName = String::Format("(*%s)[i]", name.string());
 
                 if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB + TAB).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + TAB + TAB).Append("}\n");
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
+                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
                 } else {
-                    sb.Append(prefix + TAB + TAB).AppendFormat("%sFree(&%s, false);\n",
+                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&%s, false);\n",
                         elementType->GetName().string(), elementName.string());
                 }
-                sb.Append(prefix + TAB).Append("}\n");
+                sb.Append(prefix + g_tab).Append("}\n");
             }
-            sb.Append(prefix + TAB).AppendFormat("OsalMemFree(*%s);\n", name.string());
-            sb.Append(prefix + TAB).AppendFormat("*%s = NULL;\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(*%s);\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }
         case TypeKind::TYPE_STRUCT: {
             sb.Append(prefix).AppendFormat("if (*%s != NULL) {\n", name.string());
-            sb.Append(prefix + TAB).AppendFormat("%sFree(*%s, true);\n", type->GetName().string(), name.string());
-            sb.Append(prefix + TAB).AppendFormat("*%s = NULL;\n", name.string());
+            sb.Append(prefix + g_tab).AppendFormat("%sFree(*%s, true);\n", type->GetName().string(), name.string());
+            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
             sb.Append(prefix).Append("}\n");
             break;
         }
@@ -435,7 +428,7 @@ void CClientProxyCodeEmitter::EmitProxyConstruction(StringBuilder& sb)
 
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(TAB).AppendFormat("%s->%s = %sProxy%s;\n",
+        sb.Append(g_tab).AppendFormat("%s->%s = %sProxy%s;\n",
             objName.string(), method->GetName().string(), infName_.string(), method->GetName().string());
     }
 
@@ -446,36 +439,36 @@ void CClientProxyCodeEmitter::EmitProxyGetMethodImpl(StringBuilder& sb)
 {
     sb.AppendFormat("struct %s *Hdi%sGet()\n", interfaceName_.string(), infName_.string());
     sb.Append("{\n");
-    sb.Append(TAB).Append("struct HDIServiceManager *serviceMgr = HDIServiceManagerGet();\n");
-    sb.Append(TAB).Append("if (serviceMgr == NULL) {\n");
-    sb.Append(TAB).Append(TAB).Append("HDF_LOGE(\"%{public}s: HDIServiceManager not found!\", __func__);\n");
-    sb.Append(TAB).Append(TAB).Append("return NULL;\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(g_tab).Append("struct HDIServiceManager *serviceMgr = HDIServiceManagerGet();\n");
+    sb.Append(g_tab).Append("if (serviceMgr == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: HDIServiceManager not found!\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
 
-    sb.Append(TAB).Append("struct HdfRemoteService *remote = ");
+    sb.Append(g_tab).Append("struct HdfRemoteService *remote = ");
     sb.AppendFormat("serviceMgr->GetService(serviceMgr, \"%sService\");\n", infName_.string());
-    sb.Append(TAB).Append("HDIServiceManagerRelease(serviceMgr);\n");
-    sb.Append(TAB).Append("if (remote == NULL) {\n");
-    sb.Append(TAB).Append(TAB).AppendFormat(
+    sb.Append(g_tab).Append("HDIServiceManagerRelease(serviceMgr);\n");
+    sb.Append(g_tab).Append("if (remote == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: %sService not found!\", __func__);\n", infName_.string());
-    sb.Append(TAB).Append(TAB).Append("return NULL;\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
 
-    sb.Append(TAB).AppendFormat("struct %s *%sClient = (struct %s *)OsalMemAlloc(sizeof(struct %s));\n",
+    sb.Append(g_tab).AppendFormat("struct %s *%sClient = (struct %s *)OsalMemAlloc(sizeof(struct %s));\n",
         interfaceName_.string(), infName_.string(), interfaceName_.string(), interfaceName_.string());
-    sb.Append(TAB).AppendFormat("if (%sClient == NULL) {\n", infName_.string());
-    sb.Append(TAB).Append(TAB).AppendFormat(
+    sb.Append(g_tab).AppendFormat("if (%sClient == NULL) {\n", infName_.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: malloc %s instance failed!\", __func__);\n", interfaceName_.string());
-    sb.Append(TAB).Append(TAB).Append("HdfRemoteServiceRecycle(remote);\n");
-    sb.Append(TAB).Append(TAB).Append("return NULL;\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(g_tab).Append(g_tab).Append("HdfRemoteServiceRecycle(remote);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
 
-    sb.Append(TAB).AppendFormat("%sClient->remote = remote;\n", infName_.string());
-    sb.Append(TAB).AppendFormat("%sConstruct(%sClient);\n", infName_.string(), infName_.string());
-    sb.Append(TAB).AppendFormat("return %sClient;\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("%sClient->remote = remote;\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("%sConstruct(%sClient);\n", infName_.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("return %sClient;\n", infName_.string());
     sb.Append("}\n");
 }
 
@@ -483,12 +476,12 @@ void CClientProxyCodeEmitter::EmitProxyReleaseMethodImpl(StringBuilder& sb)
 {
     sb.AppendFormat("void Hdi%sRelease(struct %s *instance)\n", infName_.string(), interfaceName_.string());
     sb.Append("{\n");
-    sb.Append(TAB).Append("if (instance == NULL) {\n");
-    sb.Append(TAB).Append(TAB).Append("return;\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(g_tab).Append("if (instance == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("return;\n");
+    sb.Append(g_tab).Append("}\n");
 
-    sb.Append(TAB).Append("HdfRemoteServiceRecycle(instance->remote);\n");
-    sb.Append(TAB).Append("OsalMemFree(instance);\n");
+    sb.Append(g_tab).Append("HdfRemoteServiceRecycle(instance->remote);\n");
+    sb.Append(g_tab).Append("OsalMemFree(instance);\n");
     sb.Append("}\n");
 }
 
@@ -497,15 +490,15 @@ void CClientProxyCodeEmitter::EmitCbProxyObtainMethodImpl(StringBuilder& sb)
     sb.AppendFormat("struct %s *%sProxyObtain(struct HdfRemoteService *remote)\n",
         interfaceName_.string(), infName_.string());
     sb.Append("{\n");
-    sb.Append(TAB).AppendFormat("struct %s *callback = (struct %s*)OsalMemAlloc(sizeof(struct %s));\n",
+    sb.Append(g_tab).AppendFormat("struct %s *callback = (struct %s*)OsalMemAlloc(sizeof(struct %s));\n",
         interfaceName_.string(), interfaceName_.string(), interfaceName_.string());
-    sb.Append(TAB).Append("if (callback == NULL) {\n");
-    sb.Append(TAB).Append(TAB).Append("HDF_LOGE(\"%{public}s: OsalMemAlloc failed!\", __func__);\n");
-    sb.Append(TAB).Append(TAB).Append("return NULL;\n");
-    sb.Append(TAB).Append("}\n\n");
-    sb.Append(TAB).Append("callback->remote = remote;\n");
-    sb.Append(TAB).AppendFormat("%sProxyConstruct(callback);\n", infName_.string());
-    sb.Append(TAB).Append("return callback;\n");
+    sb.Append(g_tab).Append("if (callback == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: OsalMemAlloc failed!\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).Append("callback->remote = remote;\n");
+    sb.Append(g_tab).AppendFormat("%sProxyConstruct(callback);\n", infName_.string());
+    sb.Append(g_tab).Append("return callback;\n");
     sb.Append("}\n");
 }
 
@@ -513,10 +506,10 @@ void CClientProxyCodeEmitter::EmitCbProxyReleaseMethodImpl(StringBuilder& sb)
 {
     sb.AppendFormat("void %sProxyRelease(struct %s *callback)\n", infName_.string(), interfaceName_.string());
     sb.Append("{\n");
-    sb.Append(TAB).Append("if (callback == NULL) {\n");
-    sb.Append(TAB).Append(TAB).Append("return;\n");
-    sb.Append(TAB).Append("}\n");
-    sb.Append(TAB).Append("OsalMemFree(callback);\n");
+    sb.Append(g_tab).Append("if (callback == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("return;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append(g_tab).Append("OsalMemFree(callback);\n");
     sb.Append("}\n");
 }
 } // namespace HDI

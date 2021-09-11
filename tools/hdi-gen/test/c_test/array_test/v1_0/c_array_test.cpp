@@ -8,14 +8,14 @@
 
 #include <iostream>
 #include <thread>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include <hdf_log.h>
-#include <osal_mem.h>
-#include <securec.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "securec.h"
 #include "c_test/array_test/v1_0/client/iarray_test.h"
 
 using namespace OHOS;
@@ -23,7 +23,7 @@ using namespace testing::ext;
 
 static struct IArrayTest *g_testClient = nullptr;
 
-class ArrayTest : public testing::Test {
+class CArrayTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
@@ -31,15 +31,15 @@ public:
     void TearDown(){}
 };
 
-void ArrayTest::SetUpTestCase()
+void CArrayTest::SetUpTestCase()
 {
     g_testClient = HdiArrayTestGet();
     if (g_testClient == nullptr) {
-        printf("ArrayTest: get g_testClient failed.\n");
+        printf("CArrayTest: get g_testClient failed.\n");
     }
 }
 
-void ArrayTest::TearDownTestCase()
+void CArrayTest::TearDownTestCase()
 {
     if (g_testClient != nullptr) {
         HdiArrayTestRelease(g_testClient);
@@ -47,12 +47,12 @@ void ArrayTest::TearDownTestCase()
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_001, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_001, TestSize.Level1)
 {
     ASSERT_NE(nullptr, g_testClient);
 }
 
-HWTEST_F(ArrayTest, ArratTest_002, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_002, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     bool *inParam = (bool*)OsalMemAlloc(sizeof(bool) * inParamLen);
@@ -89,7 +89,7 @@ HWTEST_F(ArrayTest, ArratTest_002, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_003, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_003, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int8_t *inParam = (int8_t*)OsalMemAlloc(sizeof(int8_t) * inParamLen);
@@ -127,7 +127,7 @@ HWTEST_F(ArrayTest, ArratTest_003, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_004, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_004, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int16_t *inParam = (int16_t*)OsalMemAlloc(sizeof(int16_t) * inParamLen);
@@ -164,7 +164,7 @@ HWTEST_F(ArrayTest, ArratTest_004, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_005, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_005, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int32_t *inParam = (int32_t*)OsalMemAlloc(sizeof(int32_t) * inParamLen);
@@ -201,7 +201,7 @@ HWTEST_F(ArrayTest, ArratTest_005, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_006, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_006, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int64_t *inParam = (int64_t*)OsalMemAlloc(sizeof(int64_t) * inParamLen);
@@ -238,7 +238,7 @@ HWTEST_F(ArrayTest, ArratTest_006, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_007, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_007, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint8_t *inParam = (uint8_t*)OsalMemAlloc(sizeof(uint8_t) * inParamLen);
@@ -275,7 +275,7 @@ HWTEST_F(ArrayTest, ArratTest_007, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_008, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_008, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint16_t *inParam = (uint16_t*)OsalMemAlloc(sizeof(uint16_t) * inParamLen);
@@ -312,7 +312,7 @@ HWTEST_F(ArrayTest, ArratTest_008, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_009, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_009, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint32_t *inParam = (uint32_t*)OsalMemAlloc(sizeof(uint32_t) * inParamLen);
@@ -349,7 +349,7 @@ HWTEST_F(ArrayTest, ArratTest_009, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_010, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_010, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint64_t *inParam = (uint64_t*)OsalMemAlloc(sizeof(uint64_t) * inParamLen);
@@ -386,7 +386,7 @@ HWTEST_F(ArrayTest, ArratTest_010, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_011, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_011, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     float *inParam = (float*)OsalMemAlloc(sizeof(float) * inParamLen);
@@ -424,7 +424,7 @@ HWTEST_F(ArrayTest, ArratTest_011, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_012, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_012, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     double *inParam = (double*)OsalMemAlloc(sizeof(double) * inParamLen);
@@ -462,7 +462,7 @@ HWTEST_F(ArrayTest, ArratTest_012, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_013, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_013, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
     char **inParam = (char**)OsalMemAlloc(sizeof(char*) * inParamLen);
@@ -505,7 +505,7 @@ HWTEST_F(ArrayTest, ArratTest_013, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_014, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_014, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
 
@@ -545,7 +545,7 @@ HWTEST_F(ArrayTest, ArratTest_014, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_015, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_015, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     enum ESample *inParam = (enum ESample*)OsalMemAlloc(sizeof(enum ESample) * inParamLen);
@@ -582,7 +582,7 @@ HWTEST_F(ArrayTest, ArratTest_015, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_016, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_016, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
     struct SSample *inParam = (struct SSample *)OsalMemAlloc(sizeof(struct SSample) * inParamLen);
@@ -632,7 +632,7 @@ HWTEST_F(ArrayTest, ArratTest_016, TestSize.Level0)
     }
 }
 
-HWTEST_F(ArrayTest, ArratTest_017, TestSize.Level0)
+HWTEST_F(CArrayTest, CArrayTest_017, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
     union USample *inParam = (union USample *)OsalMemAlloc(sizeof(union USample) * inParamLen);

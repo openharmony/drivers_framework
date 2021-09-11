@@ -61,17 +61,17 @@ void ASTMapType::EmitCppWriteVar(const String& parcelName, const String& name, S
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteUint32(%s.size())) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
     String elementName = String::Format("it%d", innerLevel++);
     sb.Append(prefix).AppendFormat("for (auto %s : %s) {\n", elementName.string(), name.string());
 
     String keyName = String::Format("(%s.first)", elementName.string());
     String valueName = String::Format("(%s.second)", elementName.string());
-    keyType_->EmitCppWriteVar(parcelName, keyName, sb, prefix + TAB, innerLevel);
-    valueType_->EmitCppWriteVar(parcelName, valueName, sb, prefix + TAB, innerLevel);
+    keyType_->EmitCppWriteVar(parcelName, keyName, sb, prefix + g_tab, innerLevel);
+    valueType_->EmitCppWriteVar(parcelName, valueName, sb, prefix + g_tab, innerLevel);
     sb.Append(prefix).Append("}\n");
 }
 
@@ -87,9 +87,9 @@ void ASTMapType::EmitCppReadVar(const String& parcelName, const String& name, St
     String KeyName = String::Format("key%d", innerLevel);
     String valueName = String::Format("value%d", innerLevel);
     innerLevel++;
-    keyType_->EmitCppReadVar(parcelName, KeyName, sb, prefix + TAB, true, innerLevel);
-    valueType_->EmitCppReadVar(parcelName, valueName, sb, prefix + TAB, true, innerLevel);
-    sb.Append(prefix + TAB).AppendFormat("%s[%s] = %s;\n", name.string(), KeyName.string(), valueName.string());
+    keyType_->EmitCppReadVar(parcelName, KeyName, sb, prefix + g_tab, true, innerLevel);
+    valueType_->EmitCppReadVar(parcelName, valueName, sb, prefix + g_tab, true, innerLevel);
+    sb.Append(prefix + g_tab).AppendFormat("%s[%s] = %s;\n", name.string(), KeyName.string(), valueName.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -97,17 +97,17 @@ void ASTMapType::EmitCppMarshalling(const String& parcelName, const String& name
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteUint32(%s.size())) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s.size failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
     String elementName = String::Format("it%d", innerLevel++);
     sb.Append(prefix).AppendFormat("for (auto %s : %s) {\n", elementName.string(), name.string());
 
     String keyName = String::Format("(%s.first)", elementName.string());
     String valName = String::Format("(%s.second)", elementName.string());
-    keyType_->EmitCppMarshalling(parcelName, keyName, sb, prefix + TAB, innerLevel);
-    valueType_->EmitCppMarshalling(parcelName, valName, sb, prefix + TAB, innerLevel);
+    keyType_->EmitCppMarshalling(parcelName, keyName, sb, prefix + g_tab, innerLevel);
+    valueType_->EmitCppMarshalling(parcelName, valName, sb, prefix + g_tab, innerLevel);
     sb.Append(prefix).Append("}\n");
 }
 
@@ -123,9 +123,9 @@ void ASTMapType::EmitCppUnMarshalling(const String& parcelName, const String& na
     String KeyName = String::Format("key%d", innerLevel);
     String valueName = String::Format("value%d", innerLevel);
     innerLevel++;
-    keyType_->EmitCppUnMarshalling(parcelName, KeyName, sb, prefix + TAB, true, innerLevel);
-    valueType_->EmitCppUnMarshalling(parcelName, valueName, sb, prefix + TAB, true, innerLevel);
-    sb.Append(prefix + TAB).AppendFormat("%s[%s] = %s;\n",
+    keyType_->EmitCppUnMarshalling(parcelName, KeyName, sb, prefix + g_tab, true, innerLevel);
+    valueType_->EmitCppUnMarshalling(parcelName, valueName, sb, prefix + g_tab, true, innerLevel);
+    sb.Append(prefix + g_tab).AppendFormat("%s[%s] = %s;\n",
         name.string(), KeyName.string(), valueName.string());
     sb.Append(prefix).Append("}\n");
 }

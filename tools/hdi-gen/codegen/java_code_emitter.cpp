@@ -13,8 +13,6 @@
 
 namespace OHOS {
 namespace HDI {
-const char* JavaCodeEmitter::TAB = "    ";
-
 JavaCodeEmitter::JavaCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
     :LightRefCountBase(), ast_(ast), directory_(targetDirectory)
 {

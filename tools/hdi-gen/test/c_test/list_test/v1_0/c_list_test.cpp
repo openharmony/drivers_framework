@@ -8,14 +8,14 @@
 
 #include <iostream>
 #include <thread>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
-#include <hdf_log.h>
-#include <osal_mem.h>
-#include <securec.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include "securec.h"
 #include "c_test/list_test/v1_0/client/ilist_test.h"
 
 using namespace OHOS;
@@ -23,7 +23,7 @@ using namespace testing::ext;
 
 static struct IListTest *g_testClient = nullptr;
 
-class ListTest : public testing::Test {
+class CListTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
@@ -31,15 +31,15 @@ public:
     void TearDown(){}
 };
 
-void ListTest::SetUpTestCase()
+void CListTest::SetUpTestCase()
 {
     g_testClient = HdiListTestGet();
     if (g_testClient == nullptr) {
-        printf("ListTest: get g_testClient failed.\n");
+        printf("CListTest: get g_testClient failed.\n");
     }
 }
 
-void ListTest::TearDownTestCase()
+void CListTest::TearDownTestCase()
 {
     if (g_testClient != nullptr) {
         HdiListTestRelease(g_testClient);
@@ -47,12 +47,12 @@ void ListTest::TearDownTestCase()
     }
 }
 
-HWTEST_F(ListTest, ArratTest_001, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_001, TestSize.Level1)
 {
     ASSERT_NE(nullptr, g_testClient);
 }
 
-HWTEST_F(ListTest, ArratTest_002, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_002, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     bool *inParam = (bool*)OsalMemAlloc(sizeof(bool) * inParamLen);
@@ -89,7 +89,7 @@ HWTEST_F(ListTest, ArratTest_002, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_003, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_003, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int8_t *inParam = (int8_t*)OsalMemAlloc(sizeof(int8_t) * inParamLen);
@@ -127,7 +127,7 @@ HWTEST_F(ListTest, ArratTest_003, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_004, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_004, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int16_t *inParam = (int16_t*)OsalMemAlloc(sizeof(int16_t) * inParamLen);
@@ -164,7 +164,7 @@ HWTEST_F(ListTest, ArratTest_004, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_005, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_005, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int32_t *inParam = (int32_t*)OsalMemAlloc(sizeof(int32_t) * inParamLen);
@@ -201,7 +201,7 @@ HWTEST_F(ListTest, ArratTest_005, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_006, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_006, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     int64_t *inParam = (int64_t*)OsalMemAlloc(sizeof(int64_t) * inParamLen);
@@ -238,7 +238,7 @@ HWTEST_F(ListTest, ArratTest_006, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_007, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_007, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint8_t *inParam = (uint8_t*)OsalMemAlloc(sizeof(uint8_t) * inParamLen);
@@ -275,7 +275,7 @@ HWTEST_F(ListTest, ArratTest_007, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_008, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_008, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint16_t *inParam = (uint16_t*)OsalMemAlloc(sizeof(uint16_t) * inParamLen);
@@ -312,7 +312,7 @@ HWTEST_F(ListTest, ArratTest_008, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_009, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_009, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint32_t *inParam = (uint32_t*)OsalMemAlloc(sizeof(uint32_t) * inParamLen);
@@ -349,7 +349,7 @@ HWTEST_F(ListTest, ArratTest_009, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_010, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_010, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     uint64_t *inParam = (uint64_t*)OsalMemAlloc(sizeof(uint64_t) * inParamLen);
@@ -386,7 +386,7 @@ HWTEST_F(ListTest, ArratTest_010, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_011, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_011, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     float *inParam = (float*)OsalMemAlloc(sizeof(float) * inParamLen);
@@ -424,7 +424,7 @@ HWTEST_F(ListTest, ArratTest_011, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_012, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_012, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     double *inParam = (double*)OsalMemAlloc(sizeof(double) * inParamLen);
@@ -462,7 +462,7 @@ HWTEST_F(ListTest, ArratTest_012, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_013, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_013, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
     char **inParam = (char**)OsalMemAlloc(sizeof(char*) * inParamLen);
@@ -505,7 +505,7 @@ HWTEST_F(ListTest, ArratTest_013, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_014, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_014, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
 
@@ -545,7 +545,7 @@ HWTEST_F(ListTest, ArratTest_014, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_015, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_015, TestSize.Level1)
 {
     uint32_t inParamLen = 4;
     enum ESample *inParam = (enum ESample*)OsalMemAlloc(sizeof(enum ESample) * inParamLen);
@@ -582,7 +582,7 @@ HWTEST_F(ListTest, ArratTest_015, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_016, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_016, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
     struct SSample *inParam = (struct SSample *)OsalMemAlloc(sizeof(struct SSample) * inParamLen);
@@ -632,7 +632,7 @@ HWTEST_F(ListTest, ArratTest_016, TestSize.Level0)
     }
 }
 
-HWTEST_F(ListTest, ArratTest_017, TestSize.Level0)
+HWTEST_F(CListTest, CListTest_017, TestSize.Level1)
 {
     uint32_t inParamLen = 2;
     union USample *inParam = (union USample *)OsalMemAlloc(sizeof(union USample) * inParamLen);

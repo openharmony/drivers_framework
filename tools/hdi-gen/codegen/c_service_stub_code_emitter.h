@@ -41,15 +41,6 @@ private:
     void EmitReadStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, StringBuilder& sb,
         const String& prefix);
 
-    void EmitReadStubVariable(const String& parcelName, const String& name, const AutoPtr<ASTType>& type,
-        StringBuilder& sb, const String& prefix);
-
-    void EmitWriteStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, StringBuilder& sb,
-        const String& prefix);
-
-    void EmitWriteStubVariable(const String& parcelName, const String& name, const AutoPtr<ASTType>& type,
-        StringBuilder& sb, const String& prefix);
-
     void EmitCallParameter(StringBuilder& sb, const AutoPtr<ASTType>& type, ParamAttr attribute, const String& name);
 
     void EmitError(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);

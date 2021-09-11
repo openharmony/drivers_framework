@@ -62,27 +62,15 @@ String ASTBooleanType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return isInnerType ? "Boolean" : "boolean";
 }
 
-void ASTBooleanType::EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+void ASTBooleanType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
     StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteInt8(%s, %s ? 1 : 0)) {\n",
         parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
-    sb.Append(prefix).Append("}\n");
-}
-
-void ASTBooleanType::EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
-{
-    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteInt8(%s, %s ? 1 : 0)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -91,10 +79,10 @@ void ASTBooleanType::EmitCProxyReadVar(const String& parcelName, const String& n
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt8(%s, (int8_t *)%s)) {\n",
         parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -103,10 +91,10 @@ void ASTBooleanType::EmitCStubReadVar(const String& parcelName, const String& na
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt8(%s, (int8_t *)%s)) {\n",
         parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -114,9 +102,9 @@ void ASTBooleanType::EmitCppWriteVar(const String& parcelName, const String& nam
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteBool(%s)) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -135,9 +123,9 @@ void ASTBooleanType::EmitCppReadVar(const String& parcelName, const String& name
 void ASTBooleanType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteInt8(data, %s ? 1 : 0)) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -145,10 +133,10 @@ void ASTBooleanType::EmitCUnMarshalling(const String& name, StringBuilder& sb, c
     std::vector<String>& freeObjStatements) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt8(data, (int8_t *)&%s)) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    EmitFreeStatements(freeObjStatements, sb, prefix + TAB);
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    EmitFreeStatements(freeObjStatements, sb, prefix + g_tab);
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -156,9 +144,9 @@ void ASTBooleanType::EmitCppMarshalling(const String& parcelName, const String& 
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteBool(%s)) {\n", parcelName.string(), name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 

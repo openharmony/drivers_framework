@@ -21,7 +21,7 @@ public:
     Options(const Options& other) = delete;
     Options operator=(const Options& other) = delete;
 
-    Options& Parse(int argc, char** argv);
+    Options& Parse(int argc, char* const argv[]);
 
     ~Options() = default;
 
@@ -98,7 +98,7 @@ private:
     
     void CheckOptions();
 
-    static const char* OPT_SUPPORT_ARGS;
+    static const char* optSupportArgs;
     static constexpr int OPT_END = -1;
 
     static constexpr int VERSION_MAJOR = 0;

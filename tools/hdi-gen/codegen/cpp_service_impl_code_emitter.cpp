@@ -79,7 +79,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder& sb)
         sb.AppendFormat("class %sService : public %s {\n", infName_.string(), stubName_.string());
     }
     sb.Append("public:\n");
-    EmitServiceImplBody(sb, TAB);
+    EmitServiceImplBody(sb, g_tab);
     sb.Append("};\n");
 
     sb.Append("\n");
@@ -88,9 +88,9 @@ void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder& sb)
 
 void CppServiceImplCodeEmitter::EmitServiceImplBody(StringBuilder& sb, const String& prefix)
 {
-    EmitServiceImplDestruction(sb, TAB);
+    EmitServiceImplDestruction(sb, g_tab);
     sb.Append("\n");
-    EmitServiceImplMethodDecls(sb, TAB);
+    EmitServiceImplMethodDecls(sb, g_tab);
 }
 
 void CppServiceImplCodeEmitter::EmitServiceImplDestruction(StringBuilder& sb, const String& prefix)
@@ -127,7 +127,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(const AutoPtr<ASTMetho
 
         paramStr.Append(") override;");
 
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 }
@@ -194,12 +194,12 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMetho
 
         paramStr.AppendFormat(")");
 
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + TAB).Append("return HDF_SUCCESS;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append(prefix).Append("}\n");
 }
 } // namespace HDI

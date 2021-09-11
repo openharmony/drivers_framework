@@ -85,7 +85,7 @@ void CServiceInterfaceCodeEmitter::EmitInterfaceDataDecls(StringBuilder& sb)
 void CServiceInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
 {
     sb.AppendFormat("struct %s {\n", interfaceName_.string());
-    EmitInterfaceMethods(sb, TAB);
+    EmitInterfaceMethods(sb, g_tab);
     sb.Append("};\n\n");
     EmitInterfaceInstanceMethodDecl(sb);
     sb.Append("\n");
@@ -124,7 +124,7 @@ void CServiceInterfaceCodeEmitter::EmitInterfaceMethod(const AutoPtr<ASTMethod>&
         }
 
         paramStr.Append(");");
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 }
@@ -143,7 +143,7 @@ void CServiceInterfaceCodeEmitter::EmitInterfaceReleaseMethodDecl(StringBuilder&
 void CServiceInterfaceCodeEmitter::EmitInterfaceRequestMethodDecl(StringBuilder& sb)
 {
     sb.AppendFormat("int32_t %sServiceOnRemoteRequest(void *service, int cmdId,\n", infName_.string());
-    sb.Append(TAB).Append("struct HdfSBuf *data, struct HdfSBuf *reply);\n");
+    sb.Append(g_tab).Append("struct HdfSBuf *data, struct HdfSBuf *reply);\n");
 }
 } // namespace HDI
 } // namespace OHOS

@@ -153,15 +153,15 @@ void CppServiceInterfaceCodeEmitter::EmitInterfaceDecl(StringBuilder& sb)
 
     sb.AppendFormat("class %s {\n", interface_->GetName().string());
     sb.Append("public:\n");
-    EmitInterfaceBody(sb, TAB);
+    EmitInterfaceBody(sb, g_tab);
     sb.Append("};\n");
 }
 
 void CppServiceInterfaceCodeEmitter::EmitInterfaceBody(StringBuilder& sb, const String& prefix)
 {
-    EmitInterfaceDestruction(sb, TAB);
+    EmitInterfaceDestruction(sb, g_tab);
     sb.Append("\n");
-    EmitInterfaceMethods(sb, TAB);
+    EmitInterfaceMethods(sb, g_tab);
 }
 
 void CppServiceInterfaceCodeEmitter::EmitInterfaceDestruction(StringBuilder& sb, const String& prefix)
@@ -199,7 +199,7 @@ void CppServiceInterfaceCodeEmitter::EmitInterfaceMethod(const AutoPtr<ASTMethod
 
         paramStr.Append(") = 0;");
 
-        sb.Append(SpecificationParam(paramStr, prefix + TAB));
+        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
         sb.Append("\n");
     }
 }

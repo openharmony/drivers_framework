@@ -52,8 +52,6 @@ protected:
 
     String SpecificationParam(StringBuilder& paramSb, const String& prefix);
 
-    static const char* TAB;
-
     AutoPtr<AST> ast_;
     AutoPtr<ASTInterfaceType> interface_;
 

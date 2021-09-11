@@ -9,7 +9,6 @@
 #ifndef OHOS_HDI_FILE_H
 #define OHOS_HDI_FILE_H
 
-#include <cstddef>
 #include <cstdio>
 #include "util/string.h"
 
@@ -47,9 +46,9 @@ public:
         return columnNo_;
     }
 
-    bool ReadData(void* data, size_t size);
+    bool ReadData(void* data, size_t size) const;
 
-    bool WriteData(const void* data, size_t size);
+    bool WriteData(const void* data, size_t size) const;
 
     void Flush();
 

@@ -147,27 +147,15 @@ String ASTUnionType::EmitJavaTypeDecl() const
     return sb.ToString();
 }
 
-void ASTUnionType::EmitCProxyWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
+void ASTUnionType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
     StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUnpadBuffer(%s, (const uint8_t *)%s, sizeof(%s))) {\n",
         parcelName.string(), name.string(), EmitCType().string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
-    sb.Append(prefix).Append("}\n");
-}
-
-void ASTUnionType::EmitCStubWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
-{
-    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUnpadBuffer(%s, (const uint8_t *)%s, sizeof(%s))) {\n",
-        parcelName.string(), name.string(), EmitCType().string());
-    sb.Append(prefix + TAB).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -178,8 +166,10 @@ void ASTUnionType::EmitCProxyReadVar(const String& parcelName, const String& nam
         EmitCType().string(), name.string(), EmitCType().string(), parcelName.string(),
         EmitCType().string());
     sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -190,10 +180,10 @@ void ASTUnionType::EmitCStubReadVar(const String& parcelName, const String& name
         EmitCType().string(), name.string(), EmitCType().string(), parcelName.string(),
         EmitCType().string());
     sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -202,9 +192,9 @@ void ASTUnionType::EmitCppWriteVar(const String& parcelName, const String& name,
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteUnpadBuffer((const uint8_t *)&%s, sizeof(%s))) {\n",
         parcelName.string(), name.string(), EmitCppType().string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -219,8 +209,8 @@ void ASTUnionType::EmitCppReadVar(const String& parcelName, const String& name, 
         EmitCppType().string(), name.string(), EmitCppType().string(), parcelName.string(),
         EmitCppType().string());
     sb.Append(prefix).AppendFormat("if (%sCp == nullptr) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
     sb.Append(prefix).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %sCp, sizeof(%s));\n",
         name.string(), EmitCppType().string(), name.string(), EmitCppType().string());
@@ -230,9 +220,9 @@ void ASTUnionType::EmitCMarshalling(const String& name, StringBuilder& sb, const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUnpadBuffer(data, (const uint8_t *)&%s, sizeof(%s))) {\n",
         name.string(), EmitCType().string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -242,9 +232,9 @@ void ASTUnionType::EmitCUnMarshalling(const String& name, StringBuilder& sb, con
     sb.Append(prefix).AppendFormat("const %s *%s = (const %s *)HdfSbufReadUnpadBuffer(data, sizeof(%s));\n",
         EmitCType().string(), name.string(), EmitCType().string(), EmitCType().string());
     sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -253,9 +243,9 @@ void ASTUnionType::EmitCppMarshalling(const String& parcelName, const String& na
 {
     sb.Append(prefix).AppendFormat("if (!%s.WriteUnpadBuffer((const void*)&%s, sizeof(%s))) {\n",
         parcelName.string(), name.string(), EmitCppType().string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -267,9 +257,9 @@ void ASTUnionType::EmitCppUnMarshalling(const String& parcelName, const String& 
         EmitCppType().string(), name.string(), EmitCppType().string(), parcelName.string(),
         EmitCppType().string());
     sb.Append(prefix).AppendFormat("if (%s == nullptr) {\n", name.string());
-    sb.Append(prefix + TAB).AppendFormat(
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + TAB).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 } // namespace HDI

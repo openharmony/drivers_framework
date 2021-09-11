@@ -8,6 +8,8 @@
 
 #include "parser/module_parser.h"
 #include <queue>
+#include "parser/parser.h"
+#include "util/logger.h"
 
 namespace OHOS {
 namespace HDI {
