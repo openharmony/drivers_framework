@@ -10,7 +10,6 @@
 #include "audio_core.h"
 
 #define HDF_LOG_TAG audio_platform_base
-
 struct PlatformData *PlatformDataFromDevice(const struct AudioCard *card)
 {
     if (card == NULL || card->rtd == NULL || card->rtd->platform == NULL) {
@@ -41,33 +40,39 @@ int32_t PlatformCreatePlatformHost(const struct AudioCard *card, struct Platform
 
 int32_t AudioDataBigEndianChange(char *srcData, uint32_t audioLen, enum DataBitWidth bitWidth)
 {
-    uint64_t i;
-    uint16_t framesize;
-    char temp;
     if (srcData == NULL) {
         AUDIO_DRIVER_LOG_ERR("srcData is NULL.");
         return HDF_FAILURE;
     }
+    uint64_t i;
+    uint16_t framesize;
+    char *changeData = srcData;
+    uint32_t *pData = (uint32_t *)changeData;
 
     switch (bitWidth) {
         case DATA_BIT_WIDTH8:
-            framesize = 1; /* 1 byte */
+            return HDF_SUCCESS;
+        case DATA_BIT_WIDTH24:
+            framesize = 3; /* 3 byte , convert step is 3 byte */
+            for (i = 0; i < audioLen; i += framesize) {
+                // swap the first and the third byte, second and fourth unchanged
+                *pData = ((((*pData) >> 0x10) & 0x000000FF) |
+                          ((*pData) & 0xFF00FF00) |
+                          (((*pData) << 0x10) & 0x00FF0000));
+                changeData += framesize;
+                pData = (uint32_t *)changeData;
+            }
             break;
         case DATA_BIT_WIDTH16:
-            framesize = 2; /* 2 bytes */
-            break;
-        case DATA_BIT_WIDTH24:
-            framesize = 3; /* 3 bytes */
-            break;
         default:
-            framesize = 2; /* default 2 bytes */
+            framesize = 4; /* 2 byte, convert step is 4 byte */
+            for (i = 0; i < audioLen; i += framesize) {
+                // swap the first and second byte, swap the third and fourth byte
+                *pData = ((((*pData) << 0x08) & 0xFF00FF00) |
+                          (((*pData) >> 0x08) & 0x00FF00FF));
+                pData++;
+            }
             break;
-    }
-
-    for (i = 0; i < audioLen; i += framesize) {
-        temp = srcData[i];
-        srcData[i] = srcData[i + framesize - 1];
-        srcData[i + framesize - 1] = temp;
     }
     AUDIO_DRIVER_LOG_DEBUG("audioLen = %d\n", audioLen);
     return HDF_SUCCESS;

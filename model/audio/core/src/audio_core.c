@@ -698,7 +698,7 @@ int32_t AudioAccessoryWriteReg(const struct AccessoryDevice *accessory, uint32_t
     return HDF_SUCCESS;
 }
 
-int32_t AudioCodecAiaoWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t val)
+int32_t AudioCodecAiaoWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t val)
 {
     int32_t ret;
     if (codec == NULL || codec->devData == NULL || codec->devData->AiaoWrite == NULL) {

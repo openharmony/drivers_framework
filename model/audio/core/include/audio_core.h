@@ -29,6 +29,15 @@ extern "C" {
 #define AUDIO_DAI_LINK_COMPLETE 1
 #define AUDIO_DAI_LINK_UNCOMPLETE 0
 
+#ifdef __LITEOS__
+#define AUDIO_DRIVER_LOG_DEBUG(fmt, arg...) do { \
+    } while (0)
+#else
+#define AUDIO_DRIVER_LOG_DEBUG(fmt, arg...) do { \
+    HDF_LOGD("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
+    } while (0)
+#endif
+
 #define AUDIO_DRIVER_LOG_ERR(fmt, arg...) do { \
     HDF_LOGE("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
     } while (0)
@@ -39,10 +48,6 @@ extern "C" {
 
 #define AUDIO_DRIVER_LOG_WARNING(fmt, arg...) do { \
     HDF_LOGW("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
-    } while (0)
-
-#define AUDIO_DRIVER_LOG_DEBUG(fmt, arg...) do { \
-    HDF_LOGD("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
     } while (0)
 
 enum AudioDeviceType {
@@ -88,7 +93,7 @@ int32_t AudioCodecWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32
 int32_t AudioAccessoryReadReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val);
 int32_t AudioAccessoryWriteReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t val);
 int32_t AudioCodecAiaoReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val);
-int32_t AudioCodecAiaoWriteReg(struct CodecDevice *codec, uint32_t reg, uint32_t val);
+int32_t AudioCodecAiaoWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t val);
 int32_t AudioAccessoryAiaoReadReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t *val);
 int32_t AudioAccessoryAiaoWriteReg(const struct AccessoryDevice *accessory, uint32_t reg, uint32_t val);
 

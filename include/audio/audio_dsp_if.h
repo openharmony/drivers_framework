@@ -39,8 +39,8 @@ struct DspData {
     const char *drvDspName;
     /* dsp driver callbacks */
     int32_t (*DspInit)(const struct DspDevice *device);
-    int32_t (*Read)(struct DspDevice *, uint8_t *, uint32_t);
-    int32_t (*Write)(struct DspDevice *, uint8_t *, uint32_t);
+    int32_t (*Read)(const struct DspDevice *, uint8_t *, uint32_t);
+    int32_t (*Write)(const struct DspDevice *, uint8_t *, uint32_t);
     int32_t (*decode)(const struct AudioCard *, const uint8_t *, const struct DspDevice *);
     int32_t (*encode)(const struct AudioCard *, const uint8_t *, const struct DspDevice *);
     int32_t (*Equalizer)(const struct AudioCard *, const uint8_t *, const struct DspDevice *);

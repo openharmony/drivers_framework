@@ -383,8 +383,9 @@ static void MuxValueSetPathStatus(const struct AudioSapmComponent *sapmComponent
 
     val = val >> shift;
     for (item = 0; item < enumKtl->max; item++) {
-        if (val == enumKtl->values[item])
+        if (val == enumKtl->values[item]) {
             break;
+        }
     }
 
     path->connect = UNCONNECT_SINK_AND_SOURCE;
@@ -475,7 +476,7 @@ static int32_t AudioSapmConnectMixer(struct AudioCard *audioCard,
     struct AudioSapmComponent *source, struct AudioSapmComponent *sink,
     struct AudioSapmpath *path, const char *controlName)
 {
-    int i;
+    int i = 0;
 
     if ((audioCard == NULL) || (source == NULL) || (sink == NULL) ||
         (path == NULL) || (controlName == NULL)) {
@@ -579,13 +580,15 @@ static void AudioSampExtComponentsCheck(struct AudioSapmComponent *cptSource, st
     /* check for external components */
     if (cptSink->sapmType == AUDIO_SAPM_INPUT) {
         if (cptSource->sapmType == AUDIO_SAPM_MICBIAS || cptSource->sapmType == AUDIO_SAPM_MIC ||
-            cptSource->sapmType == AUDIO_SAPM_LINE || cptSource->sapmType == AUDIO_SAPM_OUTPUT)
+            cptSource->sapmType == AUDIO_SAPM_LINE || cptSource->sapmType == AUDIO_SAPM_OUTPUT) {
             cptSink->external = EXIST_EXTERNAL_WIDGET;
+        }
     }
     if (cptSource->sapmType == AUDIO_SAPM_OUTPUT) {
         if (cptSink->sapmType == AUDIO_SAPM_SPK || cptSink->sapmType == AUDIO_SAPM_HP ||
-            cptSink->sapmType == AUDIO_SAPM_LINE || cptSink->sapmType == AUDIO_SAPM_INPUT)
+            cptSink->sapmType == AUDIO_SAPM_LINE || cptSink->sapmType == AUDIO_SAPM_INPUT) {
             cptSource->external = EXIST_EXTERNAL_WIDGET;
+        }
     }
 
     return;
@@ -953,7 +956,7 @@ int32_t AudioSapmSleep(const struct AudioCard *audioCard)
 int32_t AudioSapmNewControls(struct AudioCard *audioCard)
 {
     struct AudioSapmComponent *sapmComponent = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
 
     if (audioCard == NULL) {
         ADM_LOG_ERR("input param audioCard is NULL.");
@@ -983,7 +986,7 @@ int32_t AudioSapmNewControls(struct AudioCard *audioCard)
             case AUDIO_SAPM_MUX:
             case AUDIO_SAPM_VIRT_MUX:
             case AUDIO_SAPM_VALUE_MUX:
-                ret =AudioSapmNewMuxControls(sapmComponent, audioCard);
+                ret = AudioSapmNewMuxControls(sapmComponent, audioCard);
                 break;
             default:
                 ret = HDF_SUCCESS;
@@ -1013,7 +1016,7 @@ static int32_t MixerUpdatePowerStatus(const struct AudioKcontrol *kcontrol, uint
 {
     struct AudioCard *audioCard = NULL;
     struct AudioSapmpath *path = NULL;
-    int ret;
+    int ret = HDF_SUCCESS;
 
     if (kcontrol == NULL || kcontrol->pri == NULL) {
         ADM_LOG_ERR("input param kcontrol is NULL.");
@@ -1127,6 +1130,7 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
         ADM_LOG_ERR("update power status is failure!");
         return HDF_FAILURE;
     }
+
     curValue &= mixerCtrl->mask << mixerCtrl->shift;
     value = (value & mixerCtrl->mask) << mixerCtrl->shift;
     if (curValue != value) {
