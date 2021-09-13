@@ -208,7 +208,8 @@ void CppClientProxyCodeEmitter::EmitGetMethodImpl(StringBuilder& sb, const Strin
     sb.Append(prefix + g_tab + g_tab).Append("using namespace OHOS::HDI::ServiceManager::V1_0;\n");
     sb.Append(prefix + g_tab + g_tab).Append("auto servMgr = IServiceManager::Get();\n");
     sb.Append(prefix + g_tab + g_tab).Append("if (servMgr == nullptr) {\n");
-    sb.Append(prefix + g_tab + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append(
+        "HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).Append("break;\n");
     sb.Append(prefix + g_tab + g_tab).Append("}\n\n");
     sb.Append(prefix + g_tab + g_tab).AppendFormat("sptr<IRemoteObject> remote = servMgr->GetService(\"%sService\");\n",

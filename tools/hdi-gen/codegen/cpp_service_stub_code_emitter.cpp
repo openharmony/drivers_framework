@@ -375,7 +375,8 @@ void CppServiceStubCodeEmitter::EmitCbStubOnRequestMethodImpl(StringBuilder& sb,
     sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).Append(
         "HDF_LOGE(\"%{public}s: not support cmd %{public}d\", __func__, code);\n");
-    sb.Append(prefix + g_tab + g_tab + g_tab).Append("return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).Append(
+        "return IPCObjectStub::OnRemoteRequest(code, data, reply, option);\n");
     sb.Append(prefix + g_tab + g_tab).Append("}\n");
     sb.Append(prefix + g_tab).Append("}\n");
     sb.Append("}\n");

@@ -191,7 +191,7 @@ HWTEST_F(CppMapTest, CppMapTest_008, TestSize.Level1)
     std::map<int32_t, std::string> outParam;
 
     int32_t ec = g_testClient->MapIntStringTest(inParam, outParam);
-    ASSERT_EQ(ec, HDF_SUCCESS); 
+    ASSERT_EQ(ec, HDF_SUCCESS);
 
     for (auto inIter = inParam.begin(); inIter != inParam.end(); ++inIter) {
         auto outIter = outParam.find(inIter->first);
@@ -212,7 +212,7 @@ HWTEST_F(CppMapTest, CppMapTest_009, TestSize.Level1)
     std::map<int32_t, int> outParam;
 
     int32_t ec = g_testClient->MapIntFdTest(inParam, outParam);
-    ASSERT_EQ(ec, HDF_SUCCESS); 
+    ASSERT_EQ(ec, HDF_SUCCESS);
 
     for (auto inIter = inParam.begin(); inIter != inParam.end(); ++inIter) {
         auto outIter = outParam.find(inIter->first);
@@ -238,7 +238,7 @@ HWTEST_F(CppMapTest, CppMapTest_010, TestSize.Level1)
     std::map<int32_t, sptr<SequenceData>> outParam;
 
     int32_t ec = g_testClient->MapIntSeqTest(inParam, outParam);
-    ASSERT_EQ(ec, HDF_SUCCESS); 
+    ASSERT_EQ(ec, HDF_SUCCESS);
 
     for (auto inIter = inParam.begin(); inIter != inParam.end(); ++inIter) {
         auto outIter = outParam.find(inIter->first);
@@ -261,7 +261,7 @@ HWTEST_F(CppMapTest, CppMapTest_011, TestSize.Level1)
     std::map<int32_t, ESample> outParam;
 
     int32_t ec = g_testClient->MapIntEnumTest(inParam, outParam);
-    ASSERT_EQ(ec, HDF_SUCCESS); 
+    ASSERT_EQ(ec, HDF_SUCCESS);
 
     for (auto inIter = inParam.begin(); inIter != inParam.end(); ++inIter) {
         auto outIter = outParam.find(inIter->first);
