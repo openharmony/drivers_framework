@@ -171,7 +171,8 @@ void CServiceImplCodeEmitter::EmitServiceImplInstance(StringBuilder& sb)
     sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s*)OsalMemAlloc(sizeof(struct %s));\n",
         interfaceName_.string(), objName.string(), interfaceName_.string(), interfaceName_.string());
     sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: OsalMemAlloc struct %s %s failed!\", __func__);\n",
+    sb.Append(g_tab).Append(g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: OsalMemAlloc struct %s %s failed!\", __func__);\n",
         interfaceName_.string(), objName.string());
     sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
     sb.Append(g_tab).Append("}\n");

@@ -215,6 +215,5 @@ void ASTParameter::EmitCWriteVar(const String& parcelName, const String& gotoLab
 
     type_->EmitCWriteVar(parcelName, name_, gotoLabel, sb, prefix);
 }
-
 } // namespace HDI
 } // namespace OHOS
