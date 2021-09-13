@@ -106,8 +106,7 @@ static int32_t SensorBitwiseCalculate(struct SensorRegCfg *cfgItem, uint32_t *va
     uint32_t tmp;
 
     mask = GetSensorRegRealValueMask(cfgItem, &originValue, valueMask);
-    switch ((enum SensorCalculateType)cfgItem->calType)
-    {
+    switch ((enum SensorCalculateType)cfgItem->calType) {
         case SENSOR_CFG_CALC_TYPE_SET:
             *value &= ~mask;
             *value |= (originValue & mask);
