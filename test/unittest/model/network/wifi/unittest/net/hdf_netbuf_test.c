@@ -16,7 +16,7 @@
 #define DEFAULT_TAIL_SIZE       20
 #define DEFAULT_MAPPING_QUEUE   10
 #define DEFAULT_TRIM_SIZE       3
-#define DEFAULT_SECTION_SIZE    3
+#define DEFAULT_SECTION_SIZE    10
 
 #define MAX_MEM_ALLOC_SIZE 0x7fffffff
 
