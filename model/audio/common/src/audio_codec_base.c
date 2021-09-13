@@ -26,7 +26,7 @@ int32_t CodecDeviceReadReg(const struct CodecDevice *codec, uint32_t reg, uint32
         return HDF_ERR_INVALID_OBJECT;
     }
     acodecVir = virtualAdd->acodecVir;
-    *val = OSAL_READL((void *)(acodecVir + reg));
+    *val = OSAL_READL((void *)(volatile uintptr_t)(acodecVir + reg));
 
     AUDIO_DRIVER_LOG_DEBUG("success");
     return HDF_SUCCESS;
@@ -50,7 +50,7 @@ int32_t CodecDeviceWriteReg(const struct CodecDevice *codec, uint32_t reg, uint3
     }
 
     acodecVir = virtualAdd->acodecVir;
-    OSAL_WRITEL(value, (void *)(acodecVir + reg));
+    OSAL_WRITEL(value, (void *)(volatile uintptr_t)(acodecVir + reg));
 
     AUDIO_DRIVER_LOG_DEBUG("success");
     return HDF_SUCCESS;
@@ -74,7 +74,7 @@ int32_t CodecAiaoDeviceReadReg(const struct CodecDevice *codec, uint32_t reg, ui
     }
 
     aiaoVir = virtualAdd->aiaoVir;
-    *val = OSAL_READL((void *)(aiaoVir + reg));
+    *val = OSAL_READL((void *)(volatile uintptr_t)(aiaoVir + reg));
 
     AUDIO_DRIVER_LOG_DEBUG("success");
     return HDF_SUCCESS;
@@ -97,7 +97,7 @@ int32_t CodecAiaoDeviceWriteReg(const struct CodecDevice *codec, uint32_t reg, u
     }
 
     aiaoVir = virtualAdd->aiaoVir;
-    OSAL_WRITEL(value, (void *)(aiaoVir + reg));
+    OSAL_WRITEL(value, (void *)(volatile uintptr_t)(aiaoVir + reg));
 
     AUDIO_DRIVER_LOG_DEBUG("success");
     return HDF_SUCCESS;
