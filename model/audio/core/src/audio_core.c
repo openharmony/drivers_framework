@@ -388,7 +388,7 @@ int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec,
     const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     uint32_t mixerControlMask;
     if (codec == NULL || mixerControl == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
@@ -423,7 +423,7 @@ int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
     const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     uint32_t mixerControlMask;
     if (accessory == NULL || mixerControl == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
@@ -457,7 +457,7 @@ int32_t AudioUpdateCodecAiaoRegBits(struct CodecDevice *codec,
     const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     uint32_t mixerControlMask;
     ADM_LOG_DEBUG("Entry to update AIAO codec  reg bits.");
 
@@ -493,7 +493,7 @@ int32_t AudioUpdateAccessoryAiaoRegBits(struct AccessoryDevice *accessory,
     const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
-    uint32_t curValue;
+    uint32_t curValue = 0;
     uint32_t mixerControlMask;
     ADM_LOG_DEBUG("Entry to update AIAO accessory  reg bits.");
 
@@ -800,8 +800,8 @@ static int32_t AudioGetCtrlOpsReg(struct AudioCtrlElemValue *elemValue,
 
 int32_t AudioCodecGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
-    uint32_t curValue;
-    uint32_t rcurValue;
+    uint32_t curValue = 0;
+    uint32_t rcurValue = 0;
     struct AudioMixerControl *mixerCtrl = NULL;
     struct CodecDevice *codec = NULL;
     if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {
@@ -830,8 +830,8 @@ int32_t AudioCodecGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioC
 
 int32_t AudioAccessoryGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
-    uint32_t curValue;
-    uint32_t rcurValue;
+    uint32_t curValue = 0;
+    uint32_t rcurValue = 0;
     struct AudioMixerControl *mixerCtrl = NULL;
     struct AccessoryDevice *accessory = NULL;
     if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {
@@ -861,8 +861,8 @@ int32_t AudioAccessoryGetCtrlOps(const struct AudioKcontrol *kcontrol, struct Au
 
 int32_t AudioCodecAiaoGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
-    uint32_t curValue;
-    uint32_t rcurValue;
+    uint32_t curValue = 0;
+    uint32_t rcurValue = 0;
     struct CodecDevice *codec = NULL;
     struct AudioMixerControl *mixerCtrl  = NULL;
     if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {
@@ -893,8 +893,8 @@ int32_t AudioCodecAiaoGetCtrlOps(const struct AudioKcontrol *kcontrol, struct Au
 
 int32_t AudioAccessoryAiaoGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
 {
-    uint32_t curValue;
-    uint32_t rcurValue;
+    uint32_t curValue = 0;
+    uint32_t rcurValue = 0;
     struct AccessoryDevice *accessory = NULL;
     struct AudioMixerControl *mixerCtrl  = NULL;
     if (kcontrol == NULL || kcontrol->privateValue <= 0 || elemValue == NULL) {

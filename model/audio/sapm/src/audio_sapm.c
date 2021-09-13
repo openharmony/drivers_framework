@@ -409,7 +409,7 @@ static void MixerSetPathStatus(const struct AudioSapmComponent *sapmComponent, s
     uint32_t mask;
     uint32_t shift;
     uint32_t invert;
-    uint32_t curValue;
+    uint32_t curValue = 0;
 
     if ((sapmComponent == NULL || sapmComponent->codec == NULL) || (path == NULL) || (mixerCtrl == NULL)) {
         ADM_LOG_ERR("input params check error: sapmComponent=%p, path=%p, mixerCtrl=%p.",
