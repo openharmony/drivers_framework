@@ -35,7 +35,7 @@ int UsbIoThread(void *data)
     int ret;
     struct AcmRawDevice *acm = (struct AcmRawDevice *)data;
 
-    for (; ;) {
+    for (;;) {
         printf("%s:%d\n", __func__, __LINE__);
         if (acm == NULL) {
             printf("%s:%d acm is NULL\n", __func__, __LINE__);
@@ -167,7 +167,6 @@ void AcmReadBulkCallback(const void *requestArg)
             if (size) {
                 uint8_t *data = req->buffer;
                 printf("rcv:%s\n", (char *)data);
-
             }
             break;
         case USB_REQUEST_CANCELLED:
@@ -207,26 +206,36 @@ void AcmNotifyReqCallback(const void *requestArg)
     printf("Irqstatus:%d,actualLength:%u\n", req->status, currentSize);
 }
 
-int AcmWriteBufAlloc(struct AcmRawDevice *acm)
+static int AcmWriteBufAllocHandle(struct AcmRawDevice *acm)
 {
     int i;
-    if (!g_writeBufFlag) {
-        struct RawWb *wb;
-        for (wb = &acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
-            wb->buf = OsalMemCalloc(acm->dataOutEp.maxPacketSize);
-            if (!wb->buf) {
-                while (i != 0) {
-                    --i;
-                    --wb;
-                    OsalMemFree(wb->buf);
-                    wb->buf = NULL;
-                }
-                return -HDF_ERR_MALLOC_FAIL;
+    struct RawWb *wb;
+    for (wb = &acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
+        wb->buf = OsalMemCalloc(acm->dataOutEp.maxPacketSize);
+        if (!wb->buf) {
+            while (i != 0) {
+                --i;
+                --wb;
+                OsalMemFree(wb->buf);
+                wb->buf = NULL;
             }
-            g_writeBufFlag = true;
+            return -HDF_ERR_MALLOC_FAIL;
         }
+        g_writeBufFlag = true;
     }
+
     return HDF_SUCCESS;
+}
+
+int AcmWriteBufAlloc(struct AcmRawDevice *acm)
+{
+    int ret = HDF_SUCCESS;
+
+    if (!g_writeBufFlag) {
+        ret = AcmWriteBufAllocHandle(acm);
+    }
+
+    return ret;
 }
 
 void AcmWriteBufFree(struct AcmRawDevice *acm)
@@ -248,22 +257,58 @@ void AcmCtrlReqCallback(const void *requestArg)
     printf("%s:%d entry!", __func__, __LINE__);
 }
 
+static void AcmParaseInterfaceClass(struct AcmRawDevice *acm, const struct UsbRawInterface *interface, uint8_t number)
+{
+    uint8_t ifaceClass;
+    uint8_t numEndpoints;
+
+    ifaceClass = interface->altsetting->interfaceDescriptor.bInterfaceClass;
+    numEndpoints = interface->altsetting->interfaceDescriptor.bNumEndpoints;
+
+    switch (ifaceClass) {
+        case USB_DDK_CLASS_COMM:
+            acm->ctrlIface = number;
+            /* get the first endpoint by default */
+            acm->notifyEp.addr = interface->altsetting->endPoint[0].endpointDescriptor.bEndpointAddress;
+            acm->notifyEp.interval = interface->altsetting->endPoint[0].endpointDescriptor.bInterval;
+            acm->notifyEp.maxPacketSize = interface->altsetting->endPoint[0].endpointDescriptor.wMaxPacketSize;
+            break;
+        case USB_DDK_CLASS_CDC_DATA:
+            acm->dataIface = number;
+            for (uint8_t j = 0; j < numEndpoints; j++) {
+                const struct UsbRawEndpointDescriptor *endPoint = &interface->altsetting->endPoint[j];
+
+                /* get bulk in endpoint */
+                if ((endPoint->endpointDescriptor.bEndpointAddress
+                    & USB_DDK_ENDPOINT_DIR_MASK) == USB_DDK_DIR_IN) {
+                    acm->dataInEp.addr = endPoint->endpointDescriptor.bEndpointAddress;
+                    acm->dataInEp.interval = endPoint->endpointDescriptor.bInterval;
+                    acm->dataInEp.maxPacketSize = endPoint->endpointDescriptor.wMaxPacketSize;
+                } else { /* get bulk out endpoint */
+                    acm->dataOutEp.addr = endPoint->endpointDescriptor.bEndpointAddress;
+                    acm->dataOutEp.interval = endPoint->endpointDescriptor.bInterval;
+                    acm->dataOutEp.maxPacketSize = endPoint->endpointDescriptor.wMaxPacketSize;
+                }
+            }
+            break;
+        default:
+            printf("%s:%d wrong descriptor type\n", __func__, __LINE__);
+            break;
+    }
+
+}
+
 int UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config)
 {
     uint8_t numInterfaces;
     uint8_t i;
-    uint8_t j;
     int ret;
-    uint8_t ifaceClass;
-    uint8_t numEndpoints;
     const struct UsbRawInterface *interface = NULL;
 
     numInterfaces = config->configDescriptor.bNumInterfaces;
     printf("------numInterfaces = [%d]------\n", numInterfaces);
     for (i = 0; i < numInterfaces; i++) {
         interface = config->interface[i];
-        ifaceClass = interface->altsetting->interfaceDescriptor.bInterfaceClass;
-        numEndpoints = interface->altsetting->interfaceDescriptor.bNumEndpoints;
 
         printf("------UsbRawClaimInterface start------\n");
         ret = UsbRawClaimInterface(acm->devHandle, i);
@@ -272,36 +317,7 @@ int UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescri
             continue;
         }
         printf("------UsbRawClaimInterface end------\n");
-        switch (ifaceClass) {
-            case USB_DDK_CLASS_COMM:
-                acm->ctrlIface = i;
-                /* get the first endpoint by default */
-                acm->notifyEp.addr = interface->altsetting->endPoint[0].endpointDescriptor.bEndpointAddress;
-                acm->notifyEp.interval = interface->altsetting->endPoint[0].endpointDescriptor.bInterval;
-                acm->notifyEp.maxPacketSize = interface->altsetting->endPoint[0].endpointDescriptor.wMaxPacketSize;
-                break;
-            case USB_DDK_CLASS_CDC_DATA:
-                acm->dataIface = i;
-                for (j = 0; j < numEndpoints; j++) {
-                    const struct UsbRawEndpointDescriptor *endPoint = &interface->altsetting->endPoint[j];
-
-                    /* get bulk in endpoint */
-                    if ((endPoint->endpointDescriptor.bEndpointAddress
-                        & USB_DDK_ENDPOINT_DIR_MASK) == USB_DDK_DIR_IN) {
-                        acm->dataInEp.addr = endPoint->endpointDescriptor.bEndpointAddress;
-                        acm->dataInEp.interval = endPoint->endpointDescriptor.bInterval;
-                        acm->dataInEp.maxPacketSize = endPoint->endpointDescriptor.wMaxPacketSize;
-                    } else { /* get bulk out endpoint */
-                        acm->dataOutEp.addr = endPoint->endpointDescriptor.bEndpointAddress;
-                        acm->dataOutEp.interval = endPoint->endpointDescriptor.bInterval;
-                        acm->dataOutEp.maxPacketSize = endPoint->endpointDescriptor.wMaxPacketSize;
-                    }
-                }
-                break;
-            default:
-                printf("%s:%d wrong descriptor type\n", __func__, __LINE__);
-                break;
-        }
+        AcmParaseInterfaceClass(acm, interface, i);
     }
 
     return HDF_SUCCESS;

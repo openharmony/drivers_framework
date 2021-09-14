@@ -721,7 +721,7 @@ error:
 static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, const struct IDevmgrService *devmgrSvc,
     const struct UsbPnpNotifyMatchInfoTable *infoTable, struct UsbPnpMatchIdTable **matchIdTable)
 {
-    int ret = HDF_FAILURE;
+    int ret;
     struct UsbPnpMatchIdTable *idTable = NULL;
     int32_t tableCount;
 
@@ -743,8 +743,6 @@ static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, const struct
             continue;
         }
     }
-
-    HDF_LOGD("%s:%d AddDevice end, index=%d, ret=%d", __func__, __LINE__, index, ret);
 }
 
 static int UsbDdkPnpLoaderRemoveHandle(const struct IDevmgrService *devmgrSvc,
@@ -1008,7 +1006,7 @@ int UsbDdkPnpLoaderEventHandle(void)
     }
     return status;
 error:
-    for (idTable = g_usbPnpMatchIdTable[0]; idTable != NULL; ) {
+    for (idTable = g_usbPnpMatchIdTable[0]; idTable != NULL;) {
         tableCount++;
         idTable = g_usbPnpMatchIdTable[tableCount];
     }
