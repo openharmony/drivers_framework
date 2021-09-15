@@ -21,7 +21,7 @@
 #define HDF_LOG_TAG USB_TEST_C
 
 static struct UsbSession *g_session = NULL;
-static struct AcmDevice g_deviceService;
+static struct AcmDevice g_deviceService = {0};
 static struct AcmDevice *g_acm = &g_deviceService;
 static struct UsbInterface *g_ecmDataIface = NULL;
 static struct UsbInterface *g_ecmIntIface = NULL;
@@ -84,26 +84,36 @@ static void AcmWriteIsoCallback(struct UsbRequest *requestArg)
     printf("%s:%d status:%d\n", __func__, __LINE__, req->compInfo.status);
 }
 
-static int AcmWriteBufAlloc(struct AcmDevice *acm)
+static int AcmWriteBufAllocHandle(struct AcmDevice *acm)
 {
     int i;
-    if (!g_writeBufFlag) {
-        struct AcmWb *wb;
-        for (wb = &acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
-            wb->buf = (uint8_t *)OsalMemCalloc(acm->writeSize);
-            if (!wb->buf) {
-                while (i != 0) {
-                    --i;
-                    --wb;
-                    OsalMemFree(wb->buf);
-                    wb->buf = NULL;
-                }
-                return -HDF_ERR_MALLOC_FAIL;
+    struct AcmWb *wb;
+    for (wb = &acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
+        wb->buf = (uint8_t *)OsalMemCalloc(acm->writeSize);
+        if (!wb->buf) {
+            while (i != 0) {
+                --i;
+                --wb;
+                OsalMemFree(wb->buf);
+                wb->buf = NULL;
             }
-            g_writeBufFlag = true;
+            return -HDF_ERR_MALLOC_FAIL;
         }
+        g_writeBufFlag = true;
     }
+
     return HDF_SUCCESS;
+}
+
+static int AcmWriteBufAlloc(struct AcmDevice *acm)
+{
+    int ret = HDF_SUCCESS;
+
+    if (!g_writeBufFlag) {
+        ret = AcmWriteBufAllocHandle(acm);
+    }
+
+    return ret;
 }
 
 static void AcmWriteBufFree(struct AcmDevice *acm)
@@ -1124,7 +1134,7 @@ static int32_t CheckHostSdkIfFreeRequest006(void)
 static int32_t CheckHostSdkIfFillIsoRequest001(void)
 {
     int ret;
-    struct UsbRequestParams parmas;
+    struct UsbRequestParams parmas = {0};
     int i;
     char sendData[] = {"abcde\0"};
     uint32_t size = strlen(sendData) + 1;
@@ -1378,8 +1388,8 @@ static int32_t CheckHostSdkIfFillRequest001(void)
         readParmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
         readParmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
         readParmas.dataReq.numIsoPackets = 0;
-        readParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET)
-            & DIRECTION_MASK);
+        readParmas.dataReq.directon =
+            (UsbRequestDirection)(((uint32_t)g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET) & DIRECTION_MASK);
         readParmas.dataReq.length = g_acm->readSize;
         ret = UsbFillRequest(g_acm->readReq[i], g_acm->data_devHandle, &readParmas);
         if (ret) {
@@ -1558,8 +1568,8 @@ static int32_t CheckHostSdkIfFillRequest005(void)
         readParmas.requestType = USB_REQUEST_PARAMS_DATA_TYPE;
         readParmas.timeout = USB_RAW_REQUEST_TIME_ZERO_MS;
         readParmas.dataReq.numIsoPackets = 0;
-        readParmas.dataReq.directon = (UsbRequestDirection)(((uint32_t)g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET)
-            & DIRECTION_MASK);
+        readParmas.dataReq.directon =
+            (UsbRequestDirection)(((uint32_t)g_acm->dataInPipe->pipeDirection >> USB_DIR_OFFSET) & DIRECTION_MASK);
         readParmas.dataReq.length = g_acm->readSize;
         ret = UsbFillRequest(g_acm->readReq[i], g_acm->data_devHandle, &readParmas);
         if (ret) {
