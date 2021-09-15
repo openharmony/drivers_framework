@@ -1005,7 +1005,7 @@ int32_t MmcDeviceAdd(struct MmcDevice *mmc)
     }
 
     if (mmc->type == MMC_DEV_EMMC || mmc->type == MMC_DEV_SD || mmc->type == MMC_DEV_COMBO) {
-        ret = MmcBlockAdd(mmc);
+        ret = MmcBlockInit(mmc);
         if (ret != HDF_SUCCESS) {
             MmcCntlrPut(mmc->cntlr);
             PlatformDeviceDel(&mmc->device);
@@ -1021,7 +1021,7 @@ void MmcDeviceRemove(struct MmcDevice *mmc)
         return;
     }
     if (mmc->type == MMC_DEV_EMMC || mmc->type == MMC_DEV_SD || mmc->type == MMC_DEV_COMBO) {
-        MmcBlockDel(mmc);
+        MmcBlockUninit(mmc);
     }
     PlatformDeviceDel(&mmc->device);
     MmcCntlrPut(mmc->cntlr);

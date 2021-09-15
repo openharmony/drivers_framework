@@ -224,7 +224,7 @@ struct MmcDevice {
     size_t secSize;   // by bytes
     size_t capacity;  // by sectors
     size_t eraseSize; // by sectors
-    struct StorageBlock *sb;
+    struct MmcBlock *mb;
     void *priv;
 };
 

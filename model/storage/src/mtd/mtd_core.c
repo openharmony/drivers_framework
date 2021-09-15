@@ -16,7 +16,7 @@
 
 static int32_t MtdDeviceCheckParms(struct MtdDevice *mtdDevice)
 {
-    if (mtdDevice->index < 0) {
+    if (mtdDevice->index < 0 || mtdDevice->index >= MTD_DEVICE_NUM_MAX) {
         HDF_LOGE("%s: invalid index: %d", __func__, mtdDevice->index);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -96,6 +96,16 @@ static void MtdDeviceUnlockDefault(struct MtdDevice *mtdDevice)
     return;
 }
 
+struct PlatformManager *MtdManagerGet(void)
+{
+    static struct PlatformManager *g_mtdManager = NULL;
+
+    if (g_mtdManager == NULL) {
+        g_mtdManager = PlatformManagerCreate("STORAGE_MTD");
+    }
+    return g_mtdManager;
+}
+
 int32_t MtdDeviceAdd(struct MtdDevice *mtdDevice)
 {
     int32_t ret;
@@ -124,15 +134,25 @@ int32_t MtdDeviceAdd(struct MtdDevice *mtdDevice)
         mtdDevice->ops->unlock = MtdDeviceUnlockDefault;
     }
 
+    mtdDevice->device.manager = MtdManagerGet();
+    mtdDevice->device.magic = mtdDevice->index;
+    ret = PlatformDeviceAdd(&mtdDevice->device);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: mtd device add fail", __func__);
+        return ret;
+    }
+
     MtdDeviceDump(mtdDevice);
 
     ret = MtdCharInit(mtdDevice);
     if (ret != HDF_SUCCESS) {
+        PlatformDeviceDel(&mtdDevice->device);
         return ret;
     }
 
     ret = MtdBlockInit(mtdDevice);
     if (ret != HDF_SUCCESS) {
+        PlatformDeviceDel(&mtdDevice->device);
         return ret;
     }
 
@@ -144,6 +164,7 @@ void MtdDeviceDel(struct MtdDevice *mtdDevice)
     if (mtdDevice != NULL) {
         MtdCharUninit(mtdDevice);
         MtdBlockUninit(mtdDevice);
+        PlatformDeviceDel(&mtdDevice->device);
         (void)OsalMutexDestroy(&mtdDevice->lock);
     }
 }

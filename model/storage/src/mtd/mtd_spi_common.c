@@ -20,8 +20,7 @@ static void SpiFlashDumpDefualt(struct MtdDevice *mtdDevice)
     MTD_DEVICE_DUMP(mtdDevice);
 
     spi = CONTAINER_OF(mtdDevice, struct SpiFlash, mtd);
-    HDF_LOGD("%s: cs = %u, qe = %u, addrCycle = %u", __func__,
-        spi->cs, spi->qeEnable, spi->addrCycle);
+    HDF_LOGD("%s: cs = %u, addrCycle = %u", __func__, spi->cs, spi->addrCycle);
 
     cfg = &spi->readCfg;
     HDF_LOGD("%s: readCfg -> ifType:%u, cmd:0x%x, dummy:%u, size:%u, clock:%u",
