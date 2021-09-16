@@ -441,7 +441,7 @@ static void EsdWorkHandler(void *arg)
         OsalMutexUnlock(&disp->dispMutex);
         panel->esd->recoveryNum++;
     }
-    HDF_LOGD("%s devId[%d] recoveryNum = %d", __func__, devId, panel->esd->recoveryNum);
+    HDF_LOGD("%s recoveryNum = %d", __func__, panel->esd->recoveryNum);
     if (panel->esd->recoveryNum >= ESD_MAX_RECOVERY) {
         panel->esd->recoveryNum = 0;
         OsalMutexLock(&disp->dispMutex);
