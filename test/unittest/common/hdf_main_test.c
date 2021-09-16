@@ -77,7 +77,7 @@ HdfTestFuncList g_hdfTestFuncList[] = {
     { TEST_PAL_I2C_TYPE, HdfI2cTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I2S) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I2S)
-	{ TEST_PAL_I2S_TYPE, HdfI2sUnitTestEntry },
+    { TEST_PAL_I2S_TYPE, HdfI2sUnitTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_ADC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_ADC)
     { TEST_PAL_ADC_TYPE, HdfAdcTestEntry },

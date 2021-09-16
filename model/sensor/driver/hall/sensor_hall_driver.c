@@ -13,7 +13,6 @@
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_irq.h"
-#include "osal_math.h"
 #include "osal_mem.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
