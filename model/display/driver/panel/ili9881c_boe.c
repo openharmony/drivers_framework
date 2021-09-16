@@ -8,6 +8,7 @@
 
 #include "ili9881c_boe.h"
 #include "gpio_if.h"
+#include "hdf_bl.h"
 #include "hdf_disp.h"
 #include "osal.h"
 

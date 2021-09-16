@@ -9,6 +9,7 @@
 #include "hdf_disp.h"
 #include <securec.h>
 #include "hdf_base.h"
+#include "hdf_bl.h"
 #include "hdf_log.h"
 #include "osal.h"
 
@@ -172,7 +173,7 @@ static int32_t SetDispPower(uint32_t devId, uint32_t powerStatus)
     OsalMutexLock(&disp->dispMutex);
     if (panel->powerStatus == powerStatus) {
         OsalMutexUnlock(&disp->dispMutex);
-        HDF_LOGE("%s:devId[%d] already in mode = %d", __func__, devId, powerStatus);
+        HDF_LOGE("%s: panel already in mode = %d", __func__, powerStatus);
         return HDF_SUCCESS;
     }
     switch (powerStatus) {
@@ -394,6 +395,10 @@ static void EsdTimerHandler(uintptr_t arg)
     struct DispManager *disp = NULL;
 
     disp = GetDispManager();
+    if ((disp == NULL) || (disp->esd == NULL)) {
+        HDF_LOGE("%s: disp or esd is null", __func__);
+        return;
+    }
     if (devId >= disp->esd->panelNum) {
         HDF_LOGE("%s: esd is null", __func__);
         return;
@@ -410,14 +415,20 @@ static void EsdWorkHandler(void *arg)
     struct DispManager *disp = NULL;
 
     disp = GetDispManager();
+    if ((disp == NULL) || (disp->panelManager == NULL)) {
+        HDF_LOGE("%s: disp or panelManager is null", __func__);
+        return;
+    }
     if (devId >= disp->panelManager->panelNum) {
         HDF_LOGE("%s: dispCtrl is null or panel is null", __func__);
         return;
     }
     panel = disp->panelManager->panel[devId];
-    if ((panel->esd != NULL) && (panel->esd->checkFunc != NULL)) {
-        ret = panel->esd->checkFunc(panel);
+    if ((panel->esd == NULL) || (panel->esd->checkFunc == NULL)) {
+        HDF_LOGE("%s: esd or checkFunc is null", __func__);
+        return;
     }
+    ret = panel->esd->checkFunc(panel);
     if (ret != HDF_SUCCESS) {
         OsalMutexLock(&disp->dispMutex);
         if (panel->esd->state == ESD_RUNNING) {
@@ -460,7 +471,7 @@ static void EsdCheckStartUp(struct DispEsd *esd, uint32_t devId)
                 EsdTimerHandler, (uintptr_t)devId);
             OsalTimerStartLoop(esd->timer[devId]);
             esd->panelEsd[devId]->state = ESD_RUNNING;
-            HDF_LOGI("%s devId[%d] enable esd check", __func__, devId);
+            HDF_LOGI("%s panel enable esd check", __func__);
         }
     }
 }
@@ -477,7 +488,7 @@ static void EsdCheckEnd(struct DispEsd *esd, uint32_t devId)
         if (esd->panelEsd[devId]->state == ESD_RUNNING) {
             OsalTimerDelete(esd->timer[devId]);
             esd->panelEsd[devId]->state = ESD_READY;
-            HDF_LOGI("%s devId[%d], disable esd check", __func__, devId);
+            HDF_LOGI("%s panel disable esd check", __func__);
         }
     }
 }
