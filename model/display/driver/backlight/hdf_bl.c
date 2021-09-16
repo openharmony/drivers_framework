@@ -9,7 +9,6 @@
 #include "hdf_bl.h"
 #include <securec.h>
 #include "hdf_base.h"
-#include "hdf_disp.h"
 #include "hdf_log.h"
 #include "osal.h"
 

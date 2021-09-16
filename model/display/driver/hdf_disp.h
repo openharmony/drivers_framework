@@ -10,7 +10,6 @@
 #define HDF_DISP_H
 
 #include "hdf_base.h"
-#include "hdf_bl.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
 #include "hdf_sbuf.h"

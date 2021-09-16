@@ -7,6 +7,7 @@
  */
 
 #include "gpio_if.h"
+#include "hdf_bl.h"
 #include "hdf_disp.h"
 #include "hdf_log.h"
 #include "mipi_dsi_if.h"
