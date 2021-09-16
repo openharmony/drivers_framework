@@ -10,7 +10,6 @@
 #define SENSOR_ALS_DRIVER_H
 
 #include "hdf_workqueue.h"
-#include "osal_mutex.h"
 #include "osal_timer.h"
 #include "sensor_config_parser.h"
 #include "sensor_platform_if.h"
