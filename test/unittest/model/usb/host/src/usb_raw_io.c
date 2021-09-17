@@ -30,12 +30,17 @@ int g_activeConfig;
 bool g_initFlag;
 bool g_stopIoThreadFlag = false;
 
+struct AcmRawDevice *UsbGetIoAcm(void)
+{
+    return g_acm;
+}
+
 int UsbIoThread(void *data)
 {
     int ret;
     struct AcmRawDevice *acm = (struct AcmRawDevice *)data;
 
-    for (;;) {
+    while (true) {
         printf("%s:%d\n", __func__, __LINE__);
         if (acm == NULL) {
             printf("%s:%d acm is NULL\n", __func__, __LINE__);
@@ -206,11 +211,11 @@ void AcmNotifyReqCallback(const void *requestArg)
     printf("Irqstatus:%d,actualLength:%u\n", req->status, currentSize);
 }
 
-static int AcmWriteBufAllocHandle(struct AcmRawDevice *acm)
+static int AcmWriteBufAllocHandle(const struct AcmRawDevice *acm)
 {
     int i;
     struct RawWb *wb;
-    for (wb = &acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
+    for (wb = (struct RawWb *)&acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
         wb->buf = OsalMemCalloc(acm->dataOutEp.maxPacketSize);
         if (!wb->buf) {
             while (i != 0) {
@@ -257,7 +262,8 @@ void AcmCtrlReqCallback(const void *requestArg)
     printf("%s:%d entry!", __func__, __LINE__);
 }
 
-static void AcmParaseInterfaceClass(struct AcmRawDevice *acm, const struct UsbRawInterface *interface, uint8_t number)
+static void AcmParaseInterfaceClass(
+    struct AcmRawDevice * const acm, const struct UsbRawInterface *interface, uint8_t number)
 {
     uint8_t ifaceClass;
     uint8_t numEndpoints;
@@ -295,7 +301,6 @@ static void AcmParaseInterfaceClass(struct AcmRawDevice *acm, const struct UsbRa
             printf("%s:%d wrong descriptor type\n", __func__, __LINE__);
             break;
     }
-
 }
 
 int UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config)
