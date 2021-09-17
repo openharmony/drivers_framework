@@ -190,13 +190,14 @@ void HdfTestDriverDispatch(struct HdfDeviceObject *device)
 
 int HdfTestDriverBind(struct HdfDeviceObject *device)
 {
+    static struct TestService testService;
+
     if (device == NULL) {
         return -1;
     }
 
-    static struct TestService testService = {
-        .testRemoteService.Dispatch = HdfTestCaseProcess,
-    };
+    testService.testRemoteService.Dispatch = HdfTestCaseProcess;
+
     device->service = &testService.testRemoteService;
     return 0;
 }

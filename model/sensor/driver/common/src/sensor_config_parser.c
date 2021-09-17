@@ -63,18 +63,20 @@ static int32_t ParseSensorRegItem(struct DeviceResourceIface *parser, const stru
     int32_t ret;
     int32_t step;
     int32_t index;
+    int32_t num;
     int32_t itemNum = group->itemNum;
+    uint16_t *buf = NULL;
 
     CHECK_NULL_PTR_RETURN_VALUE(group->regCfgItem, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(groupName, HDF_ERR_INVALID_PARAM);
 
-    int32_t num = parser->GetElemNum(regNode, groupName);
+    num = parser->GetElemNum(regNode, groupName);
     if (num <= 0 || num > SENSOR_CONFIG_MAX_ITEM) {
         HDF_LOGE("%s: parser %s element num failed", __func__, groupName);
         return HDF_SUCCESS;
     }
 
-    uint16_t *buf = (uint16_t *)OsalMemCalloc(sizeof(uint16_t) * num);
+    buf = (uint16_t *)OsalMemCalloc(sizeof(uint16_t) * num);
     CHECK_NULL_PTR_RETURN_VALUE(buf, HDF_ERR_MALLOC_FAIL);
 
     ret = parser->GetUint16Array(regNode, groupName, buf, num, 0);
@@ -108,6 +110,7 @@ static int32_t ParseSensorRegItem(struct DeviceResourceIface *parser, const stru
 static int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct DeviceResourceNode *regCfgNode,
     const char *groupName, struct SensorRegCfgGroupNode **groupNode)
 {
+    int32_t num;
     struct SensorRegCfgGroupNode *group = NULL;
 
     CHECK_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
@@ -115,7 +118,7 @@ static int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const str
     CHECK_NULL_PTR_RETURN_VALUE(groupName, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(groupNode, HDF_ERR_INVALID_PARAM);
 
-    int32_t num = parser->GetElemNum(regCfgNode, groupName);
+    num = parser->GetElemNum(regCfgNode, groupName);
     group = *groupNode;
 
     if (num > 0) {
@@ -246,13 +249,14 @@ int32_t DetectSensorDevice(struct SensorCfgData *config)
     uint8_t value = 0;
     uint16_t chipIdReg;
     uint16_t chipIdValue;
+    int32_t ret;
 
     CHECK_NULL_PTR_RETURN_VALUE(config, HDF_ERR_INVALID_PARAM);
 
     chipIdReg = config->sensorAttr.chipIdReg;
     chipIdValue = config->sensorAttr.chipIdValue;
 
-    int32_t ret = GetSensorBusHandle(&config->busCfg);
+    ret = GetSensorBusHandle(&config->busCfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: get sensor bus handle failed", __func__);
         (void)ReleaseSensorBusHandle(&config->busCfg);
@@ -280,6 +284,8 @@ static int32_t ParseSensorInfo(struct DeviceResourceIface *parser, const struct 
     struct SensorCfgData *config)
 {
     int32_t ret;
+    uint16_t id;
+    int32_t value;
     const char *name = NULL;
 
     ret = parser->GetString(infoNode, "sensorName", &name, NULL);
@@ -310,7 +316,6 @@ static int32_t ParseSensorInfo(struct DeviceResourceIface *parser, const struct 
         return HDF_FAILURE;
     }
 
-    uint16_t id;
     ret = parser->GetUint16(infoNode, "sensorTypeId", &id, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorTypeId");
     config->sensorInfo.sensorTypeId = id;
@@ -318,7 +323,6 @@ static int32_t ParseSensorInfo(struct DeviceResourceIface *parser, const struct 
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorId");
     config->sensorInfo.sensorId = id;
 
-    int32_t value;
     ret = parser->GetUint32(infoNode, "maxRange", (uint32_t *)&value, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "maxRange");
     config->sensorInfo.maxRange = value;
@@ -377,6 +381,9 @@ int32_t GetSensorBaseConfigData(const struct DeviceResourceNode *node, struct Se
 {
     int32_t ret;
     struct DeviceResourceIface *parser = NULL;
+    const struct DeviceResourceNode *infoNode = NULL;
+    const struct DeviceResourceNode *busNode = NULL;
+    const struct DeviceResourceNode *attrNode = NULL;
 
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(config, HDF_ERR_INVALID_PARAM);
@@ -387,19 +394,19 @@ int32_t GetSensorBaseConfigData(const struct DeviceResourceNode *node, struct Se
     config->root = node;
     CHECK_NULL_PTR_RETURN_VALUE(parser->GetChildNode, HDF_ERR_INVALID_PARAM);
 
-    const struct DeviceResourceNode *infoNode = parser->GetChildNode(node, "sensorInfo");
+    infoNode = parser->GetChildNode(node, "sensorInfo");
     if (infoNode != NULL) {
         ret = ParseSensorInfo(parser, infoNode, config);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorInfo");
     }
 
-    const struct DeviceResourceNode *busNode = parser->GetChildNode(node, "sensorBusConfig");
+    busNode = parser->GetChildNode(node, "sensorBusConfig");
     if (busNode != NULL) {
         ret = ParseSensorBus(parser, busNode, config);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorBusConfig");
     }
 
-    const struct DeviceResourceNode *attrNode = parser->GetChildNode(node, "sensorIdAttr");
+    attrNode = parser->GetChildNode(node, "sensorIdAttr");
     if (attrNode != NULL) {
         ret = ParseSensorAttr(parser, attrNode, config);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorIdAttr");
