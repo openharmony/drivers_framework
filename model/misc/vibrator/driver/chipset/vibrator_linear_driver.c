@@ -82,9 +82,11 @@ static int32_t DispatchLinearVibrator(struct HdfDeviceIoClient *client,
 
 int32_t BindLinearVibratorDriver(struct HdfDeviceObject *device)
 {
+    struct VibratorLinearDriverData *drvData = NULL;
+
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(device, HDF_FAILURE);
 
-    struct VibratorLinearDriverData *drvData = (struct VibratorLinearDriverData *)OsalMemCalloc(sizeof(*drvData));
+    drvData = (struct VibratorLinearDriverData *)OsalMemCalloc(sizeof(*drvData));
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_MALLOC_FAIL);
 
     drvData->ioService.Dispatch = DispatchLinearVibrator;
@@ -99,6 +101,7 @@ static int32_t ParserLinearConfig(const struct DeviceResourceNode *node, struct 
 {
     int32_t ret;
     struct DeviceResourceIface *parser = NULL;
+    const struct DeviceResourceNode *configNode = NULL;
 
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(node, HDF_FAILURE);
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(drvData, HDF_FAILURE);
@@ -107,7 +110,7 @@ static int32_t ParserLinearConfig(const struct DeviceResourceNode *node, struct 
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(parser->GetChildNode, HDF_ERR_INVALID_PARAM);
 
-    const struct DeviceResourceNode *configNode = parser->GetChildNode(node, "vibratorChipConfig");
+    configNode = parser->GetChildNode(node, "vibratorChipConfig");
     ret = parser->GetUint32(configNode, "busType", &drvData->busType, 0);
     CHECK_VIBRATOR_PARSER_RESULT_RETURN_VALUE(ret, "busType");
     if (drvData->busType == VIBRATOR_BUS_GPIO) {
@@ -128,10 +131,11 @@ static int32_t ParserLinearConfig(const struct DeviceResourceNode *node, struct 
 int32_t InitLinearVibratorDriver(struct HdfDeviceObject *device)
 {
     static struct VibratorOps ops;
+    struct VibratorLinearDriverData *drvData = NULL;
 
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(device, HDF_FAILURE);
 
-    struct VibratorLinearDriverData *drvData = (struct VibratorLinearDriverData *)device->service;
+    drvData = (struct VibratorLinearDriverData *)device->service;
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(drvData, HDF_FAILURE);
 
     ops.Start = StartLinearVibrator;
@@ -157,11 +161,13 @@ int32_t InitLinearVibratorDriver(struct HdfDeviceObject *device)
 
 void ReleaseLinearVibratorDriver(struct HdfDeviceObject *device)
 {
+    struct VibratorLinearDriverData *drvData = NULL;
+
     if (device == NULL) {
         HDF_LOGE("%s: Device is null", __func__);
         return;
     }
-    struct VibratorLinearDriverData *drvData = (struct VibratorLinearDriverData *)device->service;
+    drvData = (struct VibratorLinearDriverData *)device->service;
     if (drvData == NULL) {
         HDF_LOGE("%s: DrvData pointer is null", __func__);
         return;

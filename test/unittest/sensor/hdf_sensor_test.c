@@ -141,8 +141,10 @@ static int32_t SensorDisableTest(void)
 
 static int32_t SensorSetBatchTest(int64_t samplingInterval, int64_t interval)
 {
+    struct SensorTestDrvData *drvData = NULL;
     (void)interval;
-    struct SensorTestDrvData *drvData = GetSensorTestDrvData();
+
+    drvData = GetSensorTestDrvData();
 
     drvData->interval = samplingInterval;
     return HDF_SUCCESS;
@@ -172,12 +174,13 @@ static int32_t SensorTestDispatch(struct HdfDeviceIoClient *client,
 
 int32_t BindSensorDriverTest(struct HdfDeviceObject *device)
 {
-    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
-
     static struct IDeviceIoService service = {
         .object = {0},
         .Dispatch = SensorTestDispatch,
     };
+
+    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
+
     device->service = &service;
     return HDF_SUCCESS;
 }
@@ -185,8 +188,6 @@ int32_t BindSensorDriverTest(struct HdfDeviceObject *device)
 int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
 {
     int32_t ret;
-    (void)device;
-
     struct SensorDeviceInfo deviceInfo = {
         .sensorInfo = {
             .sensorName = "sensor_test",
@@ -208,6 +209,8 @@ int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
         },
     };
 
+    (void)device;
+
     ret = SensorInitTestConfig();
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: sensor test config failed", __func__);
@@ -226,9 +229,8 @@ int32_t InitSensorDriverTest(struct HdfDeviceObject *device)
 
 void ReleaseSensorDriverTest(struct HdfDeviceObject *device)
 {
-    (void)device;
     int32_t ret;
-    struct SensorTestDrvData *drvData = GetSensorTestDrvData();
+    struct SensorTestDrvData *drvData = NULL;
     struct SensorDeviceInfo deviceInfo = {
         .sensorInfo = {
             .sensorName = "sensor_test",
@@ -242,6 +244,8 @@ void ReleaseSensorDriverTest(struct HdfDeviceObject *device)
             .power = SENSOR_TEST_MAX_POWER,
         }
     };
+    drvData = GetSensorTestDrvData();
+    (void)device;
     (void)DeleteSensorDevice(&deviceInfo.sensorInfo);
 
     if (drvData->timer.realTimer != NULL) {
