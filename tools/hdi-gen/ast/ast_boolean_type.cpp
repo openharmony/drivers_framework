@@ -161,5 +161,24 @@ void ASTBooleanType::EmitCppUnMarshalling(const String& parcelName, const String
             name.string(), parcelName.string());
     }
 }
+
+void ASTBooleanType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s.writeBoolean(%s);\n", parcelName.string(), name.string());
+}
+
+void ASTBooleanType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s = %s.readBoolean();\n", name.string(), parcelName.string());
+}
+
+void ASTBooleanType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s %s = %s.readBoolean();\n",
+        EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+}
 } // namespace HDI
 } // namespace OHOS

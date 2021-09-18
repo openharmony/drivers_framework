@@ -15,13 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CServiceDriverCodeEmitter : public CCodeEmitter {
 public:
-
-    CServiceDriverCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
+    CServiceDriverCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CServiceDriverCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitDriverSourceFile();
 
     void EmitDriverIncluions(StringBuilder& sb);

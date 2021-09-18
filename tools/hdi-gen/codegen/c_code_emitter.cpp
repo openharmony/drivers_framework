@@ -11,18 +11,32 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "util/logger.h"
-
 namespace OHOS {
 namespace HDI {
-CCodeEmitter::CCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :LightRefCountBase(), ast_(ast), directory_(targetDirectory)
+bool CCodeEmitter::OutPut(const AutoPtr<AST>& ast, const String& targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        interface_ = ast_->GetInterfaceDef();
+    if (!Reset(ast, targetDirectory)) {
+        return false;
     }
 
-    if (interface_ != nullptr) {
+    EmitCode();
+    return true;
+}
+
+bool CCodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory)
+{
+    if (ast == nullptr) {
+        return false;
+    }
+
+    if (targetDirectory.Equals("")) {
+        return false;
+    }
+
+    CleanData();
+    ast_ = ast;
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        interface_ = ast_->GetInterfaceDef();
         interfaceName_ = interface_->GetName();
         interfaceFullName_ = interface_->GetNamespace()->ToString() + interfaceName_;
         infName_ = interfaceName_.StartsWith("I") ? interfaceName_.Substring(1) : interfaceName_;
@@ -32,11 +46,33 @@ CCodeEmitter::CCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirector
         stubName_ = infName_ + "Stub";
         stubFullName_ = interface_->GetNamespace()->ToString() + stubName_;
 
-        ImplName_ = infName_ + "Service";
-        ImplFullName_ = interface_->GetNamespace()->ToString() + ImplName_;
-    } else {
+        implName_ = infName_ + "Service";
+        implFullName_ = interface_->GetNamespace()->ToString() + implName_;
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_TYPES) {
         infName_ = ast_->GetName();
     }
+
+    if (!ResolveDirectory(targetDirectory)) {
+        return false;
+    }
+
+    return true;
+}
+
+void CCodeEmitter::CleanData()
+{
+    ast_ = nullptr;
+    interface_ = nullptr;
+    directory_ = "";
+    interfaceName_ = "";
+    interfaceFullName_ = "";
+    infName_ = "";
+    proxyName_ = "";
+    proxyFullName_ = "";
+    stubName_ = "";
+    stubFullName_ = "";
+    implName_ = "";
+    implFullName_ = "";
 }
 
 String CCodeEmitter::FileName(const String& name)
@@ -78,6 +114,42 @@ void CCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& par
 {
     AutoPtr<ASTType> type = parameter->GetType();
     sb.Append(prefix).Append(parameter->EmitCParameter());
+}
+
+void CCodeEmitter::EmitErrorHandle(const AutoPtr<ASTMethod>& method, const String& gotoLabel, bool isClient,
+    StringBuilder& sb, const String& prefix)
+{
+    if (!isClient) {
+        sb.Append(prefix).AppendFormat("%s:\n", gotoLabel.string());
+        for (int i = 0; i < method->GetParameterNumber(); i++) {
+            AutoPtr<ASTParameter> param = method->GetParameter(i);
+            AutoPtr<ASTType> paramType = param->GetType();
+            paramType->EmitMemoryRecycle(param->GetName(), isClient, true, sb, prefix + g_tab);
+        }
+        return;
+    }
+
+    bool errorLabel = false;
+    for (size_t i = 0; i < method->GetParameterNumber(); i++) {
+        AutoPtr<ASTParameter> param = method->GetParameter(i);
+        AutoPtr<ASTType> paramType = param->GetType();
+        if (param->GetAttribute() == ParamAttr::PARAM_OUT &&
+            (paramType->GetTypeKind() == TypeKind::TYPE_STRING
+            || paramType->GetTypeKind() == TypeKind::TYPE_ARRAY
+            || paramType->GetTypeKind() == TypeKind::TYPE_LIST
+            || paramType->GetTypeKind() == TypeKind::TYPE_STRUCT
+            || paramType->GetTypeKind() == TypeKind::TYPE_UNION)) {
+            if (!errorLabel) {
+                sb.Append(prefix + g_tab).Append("goto finished;\n");
+                sb.Append("\n");
+                sb.Append(prefix).AppendFormat("%s:\n", gotoLabel.string());
+                errorLabel = true;
+            }
+
+            paramType->EmitMemoryRecycle(param->GetName(), isClient, true, sb, prefix + g_tab);
+            sb.Append("\n");
+        }
+    }
 }
 
 void CCodeEmitter::EmitLicense(StringBuilder& sb)

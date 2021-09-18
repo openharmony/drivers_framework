@@ -117,6 +117,9 @@ public:
 
     void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, bool emitType, unsigned int innerLevel = 0) const override;
+
+    void EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+        const String& prefix) const override;
 private:
     bool isFull_ = false;
     bool isLite_ = false;

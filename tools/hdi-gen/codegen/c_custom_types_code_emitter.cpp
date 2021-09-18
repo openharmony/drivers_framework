@@ -8,9 +8,25 @@
 
 #include "codegen/c_custom_types_code_emitter.h"
 #include "util/file.h"
+#include "util/logger.h"
 
 namespace OHOS {
 namespace HDI {
+bool CCustomTypesCodeEmitter::ResolveDirectory(const String& targetDirectory)
+{
+    if (ast_->GetASTFileType() != ASTFileType::AST_TYPES) {
+        return false;
+    }
+
+    directory_ = String::Format("%s/%s/", targetDirectory.string(), FileName(ast_->GetPackageName()).string());
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CCustomTypesCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
+}
+
 void CCustomTypesCodeEmitter::EmitCode()
 {
     EmitCustomTypesHeaderFile();
@@ -21,7 +37,6 @@ void CCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
 {
     String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -136,7 +151,6 @@ void CCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 {
     String filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -223,142 +237,78 @@ void CCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& sb,
 
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
-        String memberName = type->GetMemberName(i);
-        String name = String::Format("%s->%s", objName.string(), memberName.string());
-
-        if (memberType->GetTypeKind() == TypeKind::TYPE_STRING) {
-            String tmpName = String::Format("%sCp", memberName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
-            sb.Append(g_tab).AppendFormat("%s = strdup(%s);\n", name.string(), tmpName.string());
-            sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
-            sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
-            sb.Append(g_tab).Append("}\n");
-            sb.Append("\n");
-        } else if (memberType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-            String paramName = String::Format("&%s", name.string());
-            memberType->EmitCUnMarshalling(paramName, sb, g_tab, freeObjStatements_);
-            sb.Append("\n");
-        } else if (memberType->GetTypeKind() == TypeKind::TYPE_UNION) {
-            String tmpName = String::Format("%sCp", memberName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
-            sb.Append(g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
-                name.string(), memberType->EmitCType().string(),
-                tmpName.string(), memberType->EmitCType().string());
-            sb.Append("\n");
-        } else if (memberType->GetTypeKind() == TypeKind::TYPE_ARRAY) {
-            String tmpName = String::Format("%sCp", memberName.string());
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(memberType.Get());
-            AutoPtr<ASTType> elementType = arrayType->GetElementType();
-            sb.Append(g_tab).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
-            sb.Append(g_tab).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
-            sb.Append(g_tab).AppendFormat("%s = %s;\n", name.string(), tmpName.string());
-            sb.Append(g_tab).AppendFormat("%sLen = %sLen;\n", name.string(), tmpName.string());
-            sb.Append("\n");
-        } else if (memberType->GetTypeKind() == TypeKind::TYPE_LIST) {
-            String tmpName = String::Format("%sCp", memberName.string());
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(memberType.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-            sb.Append(g_tab).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
-            sb.Append(g_tab).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
-            memberType->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
-            sb.Append(g_tab).AppendFormat("%s = %s;\n", name.string(), tmpName.string());
-            sb.Append(g_tab).AppendFormat("%sLen = %sLen;\n", name.string(), tmpName.string());
-            sb.Append("\n");
-        } else {
-            memberType->EmitCUnMarshalling(name, sb, g_tab, freeObjStatements_);
-            sb.Append("\n");
-        }
+        EmitMemberUnmarshalling(memberType, objName, type->GetMemberName(i), sb, g_tab);
     }
 
     sb.Append(g_tab).AppendFormat("return true;\n");
     sb.Append("errors:\n");
-    for (size_t i = 0; i < type->GetMemberNumber(); i++) {
-        AutoPtr<ASTType> memberType = type->GetMemberType(i);
-        String memberName = type->GetMemberName(i);
-        String name = String::Format("%s->%s", objName.string(), memberName.string());
-        EmitError(name, memberType, sb, g_tab);
-    }
+    EmitCustomTypeMemoryRecycle(type, objName, sb, g_tab);
 
     sb.Append(g_tab).Append("return false;\n");
     sb.Append("}\n");
 }
 
-
-void CCustomTypesCodeEmitter::EmitError(const String& name, const AutoPtr<ASTType>& type,
-    StringBuilder& sb, const String& prefix)
+void CCustomTypesCodeEmitter::EmitMemberUnmarshalling(const AutoPtr<ASTType>& type, const String& name,
+    const String& memberName, StringBuilder& sb, const String& prefix)
 {
+    String varName = String::Format("%s->%s", name.string(), memberName.string());
     switch (type->GetTypeKind()) {
         case TypeKind::TYPE_STRING: {
-            sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", name.string());
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
-            sb.Append(prefix).Append("}\n\n");
-            break;
-        }
-        case TypeKind::TYPE_ARRAY: {
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
-            AutoPtr<ASTType> elementType = arrayType->GetElementType();
-            String lenName = String::Format("%sLen", name.string());
-
-            sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n", lenName.string(), name.string());
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
-                || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
-                String elementName = String::Format("(%s)[i]", name.string());
-
-                if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-                } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&(%s), false);\n",
-                        elementType->GetName().string(), elementName.string());
-                }
-
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            sb.Append("\n");
-            break;
-        }
-        case TypeKind::TYPE_LIST: {
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-            String lenName = String::Format("%sLen", name.string());
-
-            sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n", lenName.string(), name.string());
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
-                || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
-                String elementName = String::Format("(%s)[i]", name.string());
-
-                if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-                } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&(%s), false);\n",
-                        elementType->GetName().string(), elementName.string());
-                }
-
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
-            sb.Append(prefix).Append("}\n");
+            String tmpName = String::Format("%sCp", memberName.string());
+            type->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            sb.Append(g_tab).AppendFormat("%s = strdup(%s);\n", varName.string(), tmpName.string());
+            sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", varName.string());
+            sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
+            sb.Append(g_tab).Append("}\n");
             sb.Append("\n");
             break;
         }
         case TypeKind::TYPE_STRUCT: {
-            sb.Append(prefix).AppendFormat("%sFree(&%s, false);\n", type->GetName().string(), name.string());
-            sb.Append(prefix).Append("\n");
+            String paramName = String::Format("&%s", varName.string());
+            type->EmitCUnMarshalling(paramName, sb, g_tab, freeObjStatements_);
+            sb.Append("\n");
             break;
         }
-        default:
+        case TypeKind::TYPE_UNION: {
+            String tmpName = String::Format("%sCp", memberName.string());
+            type->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            sb.Append(g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
+                varName.string(), type->EmitCType().string(),
+                tmpName.string(), type->EmitCType().string());
+            sb.Append("\n");
             break;
+        }
+        case TypeKind::TYPE_ARRAY:
+        case TypeKind::TYPE_LIST: {
+            EmitArrayMemberUnmarshalling(type, memberName, varName, sb, g_tab);
+            sb.Append("\n");
+            break;
+        }
+        default: {
+            type->EmitCUnMarshalling(varName, sb, g_tab, freeObjStatements_);
+            sb.Append("\n");
+        }
     }
+}
+
+void CCustomTypesCodeEmitter::EmitArrayMemberUnmarshalling(const AutoPtr<ASTType>& type, const String& memberName,
+    const String& varName, StringBuilder& sb, const String& prefix)
+{
+    String tmpName = String::Format("%sCp", memberName.string());
+    AutoPtr<ASTType> elementType = nullptr;
+    if (type->GetTypeKind() == TypeKind::TYPE_ARRAY) {
+        AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
+        elementType = arrayType->GetElementType();
+    } else {
+        AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
+        elementType = listType->GetElementType();
+    }
+
+    sb.Append(prefix).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
+    sb.Append(prefix).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
+    type->EmitCUnMarshalling(tmpName, sb, prefix, freeObjStatements_);
+    sb.Append(prefix).AppendFormat("%s = %s;\n", varName.string(), tmpName.string());
+    sb.Append(prefix).AppendFormat("%sLen = %sLen;\n", varName.string(), tmpName.string());
 }
 
 void CCustomTypesCodeEmitter::EmitCustomTypeFreeImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type)
@@ -372,74 +322,32 @@ void CCustomTypesCodeEmitter::EmitCustomTypeFreeImpl(StringBuilder& sb, const Au
     sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
 
-    for (size_t i = 0; i < type->GetMemberNumber(); i++) {
-        AutoPtr<ASTType> memberType = type->GetMemberType(i);
-        String memberName = type->GetMemberName(i);
-        String name = String::Format("%s->%s", objName.string(), memberName.string());
-        EmitCustomTypeMemberFree(sb, name, memberType, g_tab);
-    }
+    EmitCustomTypeMemoryRecycle(type, objName, sb, g_tab);
 
     sb.Append(g_tab).Append("if (freeSelf) {\n");
     sb.Append(g_tab).Append(g_tab).Append("OsalMemFree(dataBlock);\n");
     sb.Append(g_tab).Append("}\n");
-
     sb.Append("}\n");
 }
 
-void CCustomTypesCodeEmitter::EmitCustomTypeMemberFree(StringBuilder& sb, const String& name,
-    const AutoPtr<ASTType>& type, const String& prefix)
+void CCustomTypesCodeEmitter::EmitCustomTypeMemoryRecycle(const AutoPtr<ASTStructType>& type, const String& name,
+    StringBuilder& sb, const String& prefix)
 {
-    switch (type->GetTypeKind()) {
-        case TypeKind::TYPE_STRING: {
-            sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", name.string());
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
-            sb.Append(prefix).Append("}\n\n");
-            break;
+    for (size_t i = 0; i < type->GetMemberNumber(); i++) {
+        AutoPtr<ASTType> memberType = type->GetMemberType(i);
+        String memberName = type->GetMemberName(i);
+        String varName = String::Format("%s->%s", name.string(), memberName.string());
+        switch (memberType->GetTypeKind()) {
+            case TypeKind::TYPE_STRING:
+            case TypeKind::TYPE_STRUCT:
+            case TypeKind::TYPE_ARRAY:
+            case TypeKind::TYPE_LIST:
+                memberType->EmitMemoryRecycle(varName, false, false, sb, prefix);
+                sb.Append("\n");
+                break;
+            default:
+                break;
         }
-        case TypeKind::TYPE_ARRAY: {
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
-            AutoPtr<ASTType> elementType = arrayType->GetElementType();
-
-            sb.Append(prefix).AppendFormat("if (%sLen > 0 && %s != NULL) {\n", name.string(), name.string());
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + g_tab + g_tab).AppendFormat("OsalMemFree(%s[i]);\n", name.string());
-                sb.Append(prefix + g_tab).Append("}\n");
-            } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(%s, false);\n",
-                    elementType->GetName().string(), name.string());
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
-            sb.Append(prefix).Append("}\n\n");
-            break;
-        }
-        case TypeKind::TYPE_LIST: {
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-
-            sb.Append(prefix).AppendFormat("if (%sLen > 0 && %s != NULL) {\n", name.string(), name.string());
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + g_tab + g_tab).AppendFormat("OsalMemFree(%s[i]);\n", name.string());
-                sb.Append(prefix + g_tab).Append("}\n");
-            } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
-                sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(%s, false);\n",
-                    elementType->GetName().string(), name.string());
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
-            sb.Append(prefix).Append("}\n\n");
-            break;
-        }
-        case TypeKind::TYPE_STRUCT: {
-            sb.Append(prefix).AppendFormat("%sFree(&%s, false);\n\n", type->GetName().string(), name.string());
-            break;
-        }
-        default:
-            break;
     }
 }
 } // namespace HDI

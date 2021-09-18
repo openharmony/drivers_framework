@@ -15,12 +15,13 @@ namespace OHOS {
 namespace HDI {
 class CServiceStubCodeEmitter : public CCodeEmitter {
 public:
-    CServiceStubCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
+    CServiceStubCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CServiceStubCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
 
     void EmitCbServiceStubHeaderFile();
 
@@ -41,9 +42,10 @@ private:
     void EmitReadStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, StringBuilder& sb,
         const String& prefix);
 
-    void EmitCallParameter(StringBuilder& sb, const AutoPtr<ASTType>& type, ParamAttr attribute, const String& name);
+    void EmitStubCallMethod(const AutoPtr<ASTMethod>& method, const String& gotoLabel, StringBuilder& sb,
+        const String& prefix);
 
-    void EmitError(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
+    void EmitCallParameter(StringBuilder& sb, const AutoPtr<ASTType>& type, ParamAttr attribute, const String& name);
 
     void EmitServiceStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
 

@@ -15,13 +15,13 @@ namespace OHOS {
 namespace HDI {
 class JavaClientInterfaceCodeEmitter : public JavaCodeEmitter {
 public:
-    JavaClientInterfaceCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-        : JavaCodeEmitter(ast, targetDirectory) {}
+    JavaClientInterfaceCodeEmitter() : JavaCodeEmitter() {}
 
     virtual ~JavaClientInterfaceCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
 
     void EmitInterfaceFile();
 

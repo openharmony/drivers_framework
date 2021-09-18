@@ -13,14 +13,21 @@
 
 namespace OHOS {
 namespace HDI {
-AutoPtr<CodeGenerator> GeneratorFactory::GetCodeGenerator(const String& targetLanuage)
+GeneratorFactory& GeneratorFactory::GetInstance()
+{
+    static GeneratorFactory factory;
+    return factory;
+}
+
+AutoPtr<CodeGenerator> GeneratorFactory::GetCodeGenerator(const AutoPtr<ASTModule>& astModule,
+    const String& targetLanuage, const String& targetDirectory)
 {
     if (targetLanuage.Equals("c")) {
-        return new CCodeGenerator();
+        return new CCodeGenerator(astModule, targetDirectory);
     } else if (targetLanuage.Equals("cpp")) {
-        return new CppCodeGenerator();
+        return new CppCodeGenerator(astModule, targetDirectory);
     } else if (targetLanuage.Equals("java")) {
-        return new JavaCodeGenerator();
+        return new JavaCodeGenerator(astModule, targetDirectory);
     }
 
     return nullptr;

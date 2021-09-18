@@ -106,6 +106,15 @@ public:
 
     void EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, bool initVariable, unsigned int innerLevel = 0) const override;
+
+    void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const override;
+
+    void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const override;
+
+    void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner, StringBuilder& sb,
+        const String& prefix) const override;
 private:
     String license_;
     bool isOneWay_ = false;

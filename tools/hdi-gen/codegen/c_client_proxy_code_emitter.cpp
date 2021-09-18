@@ -12,12 +12,24 @@
 
 namespace OHOS {
 namespace HDI {
-CClientProxyCodeEmitter::CClientProxyCodeEmitter(const AutoPtr<AST>&  ast, const String& targetDirectory)
-    :CCodeEmitter(ast, targetDirectory)
+bool CClientProxyCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    String infFullName = String::Format("%sclient.%s",
-        interface_->GetNamespace()->ToString().string(), infName_.string());
-    sourceFileName_ = String::Format("%s_proxy.c", FileName(infFullName).string());
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/client/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CClientProxyCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
 }
 
 void CClientProxyCodeEmitter::EmitCode()
@@ -31,13 +43,7 @@ void CClientProxyCodeEmitter::EmitCode()
 void CClientProxyCodeEmitter::EmitCbProxyHeaderFile()
 {
     String filePath = String::Format("%s%s.h", directory_.string(), FileName(proxyName_).string());
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CClientProxyCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -69,20 +75,8 @@ void CClientProxyCodeEmitter::EmitCbProxyMethodsDcl(StringBuilder& sb)
 
 void CClientProxyCodeEmitter::EmitProxySourceFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sclient/%s.c", directory_.string(), FileName(proxyName_).string());
-    } else {
-        filePath = String::Format("%s%s.c", directory_.string(), FileName(proxyName_).string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CClientProxyCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.c", directory_.string(), FileName(proxyName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -203,19 +197,10 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
     sb.Append(prefix + g_tab).Append("int32_t ec = HDF_FAILURE;\n");
     sb.Append("\n");
 
-    sb.Append(prefix + g_tab).Append("struct HdfSBuf *data = HdfSBufTypedObtain(SBUF_IPC);\n");
-    sb.Append(prefix + g_tab).Append("struct HdfSBuf *reply = HdfSBufTypedObtain(SBUF_IPC);\n");
-    sb.Append("\n");
-
-    sb.Append(prefix + g_tab).Append("if (data == NULL || reply == NULL) {\n");
-    sb.Append(prefix + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
-    sb.Append(prefix + g_tab + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-    sb.Append(prefix + g_tab + g_tab).Append("goto finished;\n");
-    sb.Append(prefix + g_tab).Append("}\n");
+    EmitCreateBuf(sb, prefix + g_tab);
     sb.Append("\n");
 
     String gotoName = GetGotLabel(method);
-
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
@@ -241,17 +226,35 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
         }
     }
 
-    EmitErrorHandle(method, sb, prefix);
-
+    EmitErrorHandle(method, "errors", true, sb, prefix);
     sb.Append(prefix).Append("finished:\n");
-    sb.Append(prefix + g_tab).Append("if (data != NULL) {\n");
-    sb.Append(prefix + g_tab + g_tab).Append("HdfSBufRecycle(data);\n");
-    sb.Append(prefix + g_tab).Append("}\n");
-    sb.Append(prefix + g_tab).Append("if (reply != NULL) {\n");
-    sb.Append(prefix + g_tab + g_tab).Append("HdfSBufRecycle(reply);\n");
-    sb.Append(prefix + g_tab).Append("}\n");
+    EmitReleaseBuf(sb, prefix + g_tab);
+
     sb.Append(prefix + g_tab).Append("return ec;\n");
     sb.Append("}\n");
+}
+
+void CClientProxyCodeEmitter::EmitCreateBuf(StringBuilder& sb, const String& prefix)
+{
+    sb.Append(prefix).Append("struct HdfSBuf *data = HdfSBufTypedObtain(SBUF_IPC);\n");
+    sb.Append(prefix).Append("struct HdfSBuf *reply = HdfSBufTypedObtain(SBUF_IPC);\n");
+    sb.Append("\n");
+
+    sb.Append(prefix).Append("if (data == NULL || reply == NULL) {\n");
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
+    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+    sb.Append(prefix + g_tab).Append("goto finished;\n");
+    sb.Append(prefix).Append("}\n");
+}
+
+void CClientProxyCodeEmitter::EmitReleaseBuf(StringBuilder& sb, const String& prefix)
+{
+    sb.Append(prefix).Append("if (data != NULL) {\n");
+    sb.Append(prefix + g_tab).Append("HdfSBufRecycle(data);\n");
+    sb.Append(prefix).Append("}\n");
+    sb.Append(prefix).Append("if (reply != NULL) {\n");
+    sb.Append(prefix + g_tab).Append("HdfSBufRecycle(reply);\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void CClientProxyCodeEmitter::EmitReadProxyMethodParameter(const AutoPtr<ASTParameter>& param,
@@ -306,110 +309,6 @@ String CClientProxyCodeEmitter::GetGotLabel(const AutoPtr<ASTMethod>& method)
     }
 
     return labelName;
-}
-
-void CClientProxyCodeEmitter::EmitErrorHandle(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
-    const String& prefix)
-{
-    bool errorLabel = false;
-    for (size_t i = 0; i < method->GetParameterNumber(); i++) {
-        AutoPtr<ASTParameter> param = method->GetParameter(i);
-        AutoPtr<ASTType> paramType = param->GetType();
-        if (param->GetAttribute() == ParamAttr::PARAM_OUT &&
-            (paramType->GetTypeKind() == TypeKind::TYPE_STRING
-            || paramType->GetTypeKind() == TypeKind::TYPE_ARRAY
-            || paramType->GetTypeKind() == TypeKind::TYPE_LIST
-            || paramType->GetTypeKind() == TypeKind::TYPE_STRUCT
-            || paramType->GetTypeKind() == TypeKind::TYPE_UNION)) {
-            if (!errorLabel) {
-                sb.Append(prefix + g_tab).Append("goto finished;\n");
-                sb.Append("\n");
-                sb.Append(prefix).Append("errors:\n");
-                errorLabel = true;
-            }
-
-            EmitError(paramType, param->GetName(), sb, prefix + g_tab);
-            sb.Append("\n");
-        }
-    }
-}
-
-void CClientProxyCodeEmitter::EmitError(const AutoPtr<ASTType>& type, const String& name, StringBuilder& sb,
-    const String& prefix)
-{
-    switch (type->GetTypeKind()) {
-        case TypeKind::TYPE_STRING:
-        case TypeKind::TYPE_UNION: {
-            sb.Append(prefix).AppendFormat("if (*%s != NULL) {\n", name.string());
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(*%s);\n", name.string());
-            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_ARRAY: {
-            String lenName = String::Format("%sLen", name.string());
-            sb.Append(prefix).AppendFormat("if (*%s > 0 && *%s != NULL) {\n", lenName.string(), name.string());
-
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
-            AutoPtr<ASTType> elementType = arrayType->GetElementType();
-
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
-                || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
-                String elementName = String::Format("(*%s)[i]", name.string());
-
-                if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-                } else {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&%s, false);\n",
-                        elementType->GetName().string(), elementName.string());
-                }
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(*%s);\n", name.string());
-            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_LIST: {
-            String lenName = String::Format("%sLen", name.string());
-            sb.Append(prefix).AppendFormat("if (*%s > 0 && *%s != NULL) {\n", lenName.string(), name.string());
-
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
-                || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
-                String elementName = String::Format("(*%s)[i]", name.string());
-
-                if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-                } else {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("%sFree(&%s, false);\n",
-                        elementType->GetName().string(), elementName.string());
-                }
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(*%s);\n", name.string());
-            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_STRUCT: {
-            sb.Append(prefix).AppendFormat("if (*%s != NULL) {\n", name.string());
-            sb.Append(prefix + g_tab).AppendFormat("%sFree(*%s, true);\n", type->GetName().string(), name.string());
-            sb.Append(prefix + g_tab).AppendFormat("*%s = NULL;\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        default:
-            break;
-    }
 }
 
 void CClientProxyCodeEmitter::EmitProxyConstruction(StringBuilder& sb)

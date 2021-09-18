@@ -19,24 +19,19 @@ namespace OHOS {
 namespace HDI {
 class CppCodeEmitter : public LightRefCountBase {
 public:
-    CppCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
-
     virtual ~CppCodeEmitter() = default;
 
-    virtual void EmitCode() = 0;
-
-    inline String GetSourceFile()
-    {
-        return sourceFileName_;
-    }
-
-    inline bool isInvaildDir()
-    {
-        return directory_.Equals("");
-    }
+    bool OutPut(const AutoPtr<AST>& ast, const String& targetDirectory);
 
     static String FileName(const String& name);
 protected:
+    bool Reset(const AutoPtr<AST>& ast, const String& targetDirectory);
+
+    void CleanData();
+
+    virtual bool ResolveDirectory(const String& targetDirectory) = 0;
+
+    virtual void EmitCode() = 0;
 
     void EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix);
 
@@ -83,11 +78,9 @@ protected:
 
     String SpecificationParam(StringBuilder& sb, const String& prefix);
 
-    AutoPtr<AST> ast_;
-    AutoPtr<ASTInterfaceType> interface_;
-
+    AutoPtr<AST> ast_ = nullptr;
+    AutoPtr<ASTInterfaceType> interface_ = nullptr;
     String directory_;
-    String sourceFileName_;
 
     String interfaceName_;
     String interfaceFullName_;
@@ -96,8 +89,8 @@ protected:
     String proxyFullName_;
     String stubName_;
     String stubFullName_;
-    String ImplName_;
-    String ImplFullName_;
+    String implName_;
+    String implFullName_;
 };
 } // namespace HDI
 } // namespace OHOS

@@ -15,13 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CppServiceInterfaceCodeEmitter : public CppCodeEmitter {
 public:
-    CppServiceInterfaceCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-        : CppCodeEmitter(ast, targetDirectory) {}
+    CppServiceInterfaceCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppServiceInterfaceCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitInterfaceHeaderFile();
 
     void EmitServiceInfHeadMacro(StringBuilder& sb);

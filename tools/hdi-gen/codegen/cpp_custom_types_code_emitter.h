@@ -15,13 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CppCustomTypesCodeEmitter : public CppCodeEmitter {
 public:
-    CppCustomTypesCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-        : CppCodeEmitter(ast, targetDirectory) {}
+    CppCustomTypesCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppCustomTypesCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitCustomTypesHeaderFile();
 
     void EmitHeaderFileInclusions(StringBuilder& sb);

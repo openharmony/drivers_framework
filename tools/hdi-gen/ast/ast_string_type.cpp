@@ -163,5 +163,34 @@ void ASTStringType::EmitCppUnMarshalling(const String& parcelName, const String&
             name.string(), parcelName.string());
     }
 }
+
+void ASTStringType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+    const String& prefix) const
+{
+    String varName = isClient ? String::Format("*%s", name.string()) : name;
+    sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", varName.string());
+    sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", varName.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = NULL;\n", varName.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTStringType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s.writeString(%s);\n", parcelName.string(), name.string());
+}
+
+void ASTStringType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s = %s.readString();\n", name.string(), parcelName.string());
+}
+
+void ASTStringType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s %s = %s.readString();\n",
+        EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+}
 } // namespace HDI
 } // namespace OHOS

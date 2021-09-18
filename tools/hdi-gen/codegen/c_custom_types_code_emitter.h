@@ -15,13 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CCustomTypesCodeEmitter : public CCodeEmitter {
 public:
-    CCustomTypesCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-        : CCodeEmitter(ast, targetDirectory) {}
+    CCustomTypesCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CCustomTypesCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitCustomTypesHeaderFile();
 
     void EmitHeaderInclusions(StringBuilder& sb);
@@ -50,11 +51,15 @@ private:
 
     void EmitCustomTypeUnmarshallingImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type);
 
-    void EmitError(const String& name, const AutoPtr<ASTType>& type, StringBuilder& sb, const String& prefix);
+    void EmitMemberUnmarshalling(const AutoPtr<ASTType>& type, const String& name, const String& memberName,
+        StringBuilder& sb, const String& prefix);
+
+    void EmitArrayMemberUnmarshalling(const AutoPtr<ASTType>& type, const String& memberName, const String& varName,
+        StringBuilder& sb, const String& prefix);
 
     void EmitCustomTypeFreeImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type);
 
-    void EmitCustomTypeMemberFree(StringBuilder& sb, const String& name, const AutoPtr<ASTType>& type,
+    void EmitCustomTypeMemoryRecycle(const AutoPtr<ASTStructType>& type, const String& name, StringBuilder& sb,
         const String& prefix);
 
     std::vector<String> freeObjStatements_;

@@ -13,6 +13,26 @@
 
 namespace OHOS {
 namespace HDI {
+bool JavaClientInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
+{
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("JavaClientInterfaceCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
+}
+
 void JavaClientInterfaceCodeEmitter::EmitCode()
 {
     EmitInterfaceFile();
@@ -20,13 +40,8 @@ void JavaClientInterfaceCodeEmitter::EmitCode()
 
 void JavaClientInterfaceCodeEmitter::EmitInterfaceFile()
 {
-    String filePath = String::Format("%s/%s.java", directory_.string(), FileName(interfaceName_).string());
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("JavaClientInterfaceCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
+    String filePath = String::Format("%s%s.java", directory_.string(), FileName(interfaceName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);

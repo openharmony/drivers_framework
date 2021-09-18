@@ -15,12 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CppClientProxyCodeEmitter : public CppCodeEmitter {
 public:
-    CppClientProxyCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
+    CppClientProxyCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppClientProxyCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitProxyHeaderFile();
 
     void EmitProxyHeadrInclusions(StringBuilder& sb);

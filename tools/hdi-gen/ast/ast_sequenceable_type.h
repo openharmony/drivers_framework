@@ -44,6 +44,15 @@ public:
 
     void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, bool emitType, unsigned int innerLevel = 0) const override;
+
+    void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const override;
+
+    void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const override;
+
+    void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+        StringBuilder& sb, const String& prefix) const override;
 };
 } // namespace HDI
 } // namespace OHOS

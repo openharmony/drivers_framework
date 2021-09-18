@@ -151,6 +151,18 @@ public:
 
     virtual void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, bool emitType, unsigned int innerLevel = 0) const;
+
+    virtual void EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+        const String& prefix) const;
+
+    virtual void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const;
+
+    virtual void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const;
+
+    virtual void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner, StringBuilder& sb,
+        const String& prefix) const;
 protected:
     String name_;
     AutoPtr<ASTNamespace> namespace_;

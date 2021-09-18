@@ -12,6 +12,21 @@
 
 namespace OHOS {
 namespace HDI {
+bool CppCustomTypesCodeEmitter::ResolveDirectory(const String& targetDirectory)
+{
+    if (ast_->GetASTFileType() != ASTFileType::AST_TYPES) {
+        return false;
+    }
+
+    directory_ = String::Format("%s/%s/", targetDirectory.string(), FileName(ast_->GetPackageName()).string());
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CppCustomTypesCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
+}
+
 void CppCustomTypesCodeEmitter::EmitCode()
 {
     EmitCustomTypesHeaderFile();
@@ -23,7 +38,6 @@ void CppCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
     String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_).string());
     File file(filePath, File::WRITE);
     String marcoName = String::Format("%s.%s", ast_->GetPackageName().string(), infName_.string());
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -171,7 +185,6 @@ void CppCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 {
     String filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);

@@ -13,12 +13,24 @@
 
 namespace OHOS {
 namespace HDI {
-CServiceStubCodeEmitter::CServiceStubCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :CCodeEmitter(ast, targetDirectory)
+bool CServiceStubCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    String infFullName = String::Format("%sserver.%s",
-        interface_->GetNamespace()->ToString().string(), infName_.string());
-    sourceFileName_ = String::Format("%s_stub.c", FileName(infFullName).string());
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/server/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CServiceStubCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
 }
 
 void CServiceStubCodeEmitter::EmitCode()
@@ -32,13 +44,7 @@ void CServiceStubCodeEmitter::EmitCode()
 void CServiceStubCodeEmitter::EmitCbServiceStubHeaderFile()
 {
     String filePath = String::Format("%s%s.h", directory_.string(), FileName(stubName_).string());
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CServiceStubCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -69,20 +75,8 @@ void CServiceStubCodeEmitter::EmitCbServiceStubMethodsDcl(StringBuilder& sb)
 
 void CServiceStubCodeEmitter::EmitServiceStubSourceFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sserver/%s.c", directory_.string(), FileName(stubName_).string());
-    } else {
-        filePath = String::Format("%s%s.c", directory_.string(), FileName(stubName_).string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CServiceStubCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.c", directory_.string(), FileName(stubName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -115,7 +109,7 @@ void CServiceStubCodeEmitter::EmitServiceStubInclusions(StringBuilder& sb)
         sb.AppendFormat("#include \"%s.h\"\n", FileName(stubFullName_).string());
         EmitServiceStubStdlibInclusions(sb);
         sb.Append("#include <hdf_remote_service.h>\n");
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(ImplName_).string());
+        sb.AppendFormat("#include \"%s.h\"\n", FileName(implName_).string());
     }
 }
 
@@ -175,25 +169,7 @@ void CServiceStubCodeEmitter::EmitServiceStubMethodImpl(const AutoPtr<ASTMethod>
         }
     }
 
-    if (method->GetParameterNumber() == 0) {
-        sb.Append(prefix + g_tab).AppendFormat("ec = serviceImpl->%s(serviceImpl);\n", method->GetName().string());
-    } else {
-        sb.Append(prefix + g_tab).AppendFormat("ec = serviceImpl->%s(serviceImpl, ", method->GetName().string());
-        for (size_t i = 0; i < method->GetParameterNumber(); i++) {
-            AutoPtr<ASTParameter> param = method->GetParameter(i);
-            EmitCallParameter(sb, param->GetType(), param->GetAttribute(), param->GetName());
-            if (i + 1 < method->GetParameterNumber()) {
-                sb.Append(", ");
-            }
-        }
-        sb.AppendFormat(");\n", method->GetName().string());
-    }
-
-    sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
-    sb.Append(prefix + g_tab + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: call %s function failed!\", __func__);\n", method->GetName().string());
-    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoName.string());
-    sb.Append(prefix + g_tab).Append("}\n");
+    EmitStubCallMethod(method, gotoName, sb, prefix + g_tab);
     sb.Append("\n");
 
     for (int i = 0; i < method->GetParameterNumber(); i++) {
@@ -204,12 +180,7 @@ void CServiceStubCodeEmitter::EmitServiceStubMethodImpl(const AutoPtr<ASTMethod>
         }
     }
 
-    sb.Append(prefix).AppendFormat("%s:\n", gotoName.string());
-    for (int i = 0; i < method->GetParameterNumber(); i++) {
-        AutoPtr<ASTParameter> param = method->GetParameter(i);
-        EmitError(param, sb, prefix + g_tab);
-    }
-
+    EmitErrorHandle(method, gotoName, false, sb, prefix);
     sb.Append(prefix + g_tab).Append("return ec;\n");
     sb.Append(prefix).Append("}\n");
 }
@@ -264,6 +235,30 @@ void CServiceStubCodeEmitter::EmitReadStubMethodParameter(const AutoPtr<ASTParam
     }
 }
 
+void CServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& method, const String& gotoLabel,
+    StringBuilder& sb, const String& prefix)
+{
+    if (method->GetParameterNumber() == 0) {
+        sb.Append(prefix).AppendFormat("ec = serviceImpl->%s(serviceImpl);\n", method->GetName().string());
+    } else {
+        sb.Append(prefix).AppendFormat("ec = serviceImpl->%s(serviceImpl, ", method->GetName().string());
+        for (size_t i = 0; i < method->GetParameterNumber(); i++) {
+            AutoPtr<ASTParameter> param = method->GetParameter(i);
+            EmitCallParameter(sb, param->GetType(), param->GetAttribute(), param->GetName());
+            if (i + 1 < method->GetParameterNumber()) {
+                sb.Append(", ");
+            }
+        }
+        sb.AppendFormat(");\n", method->GetName().string());
+    }
+
+    sb.Append(prefix).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: call %s function failed!\", __func__);\n", method->GetName().string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n");
+}
+
 void CServiceStubCodeEmitter::EmitCallParameter(StringBuilder& sb, const AutoPtr<ASTType>& type, ParamAttr attribute,
     const String& name)
 {
@@ -277,83 +272,6 @@ void CServiceStubCodeEmitter::EmitCallParameter(StringBuilder& sb, const AutoPtr
         if (type->GetTypeKind() == TypeKind::TYPE_ARRAY || type->GetTypeKind() == TypeKind::TYPE_LIST) {
             sb.AppendFormat(", %sLen", name.string());
         }
-    }
-}
-
-void CServiceStubCodeEmitter::EmitError(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix)
-{
-    AutoPtr<ASTType> type = param->GetType();
-    switch (type->GetTypeKind()) {
-        case TypeKind::TYPE_STRING:
-        case TypeKind::TYPE_UNION: {
-            sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", param->GetName().string());
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", param->GetName().string());
-            sb.Append(prefix).Append("}\n\n");
-            break;
-        }
-        case TypeKind::TYPE_ARRAY: {
-            String lenName = String::Format("%sLen", param->GetName().string());
-            sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n",
-                lenName.string(), param->GetName().string());
-
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
-            AutoPtr<ASTType> elementType = arrayType->GetElementType();
-
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
-                || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
-                String elementName = String::Format("%s[i]", param->GetName().string());
-                if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-                } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("%sFree(&%s, false);\n",
-                        elementType->GetName().string(), elementName.string());
-                }
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", param->GetName().string());
-            sb.Append(prefix).Append("}\n");
-            sb.Append("\n");
-            break;
-        }
-        case TypeKind::TYPE_LIST: {
-            String lenName = String::Format("%sLen", param->GetName().string());
-            sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n",
-                lenName.string(), param->GetName().string());
-
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-
-            if (elementType->GetTypeKind() == TypeKind::TYPE_STRING
-                || elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
-                String elementName = String::Format("%s[i]", param->GetName().string());
-                if (elementType->GetTypeKind() == TypeKind::TYPE_STRING) {
-                    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (%s != NULL) {\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("OsalMemFree(%s);\n", elementName.string());
-                    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-                } else if (elementType->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-                    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("%sFree(&%s, false);\n",
-                        elementType->GetName().string(), elementName.string());
-                }
-                sb.Append(prefix + g_tab).Append("}\n");
-            }
-            sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", param->GetName().string());
-            sb.Append(prefix).Append("}\n");
-            sb.Append("\n");
-            break;
-        }
-        case TypeKind::TYPE_STRUCT: {
-            sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", param->GetName().string());
-            sb.Append(prefix + g_tab).AppendFormat("%sFree(%s, true);\n",
-                type->GetName().string(), param->GetName().string());
-            sb.Append(prefix).Append("}\n\n");
-            break;
-        }
-        default:
-            break;
     }
 }
 

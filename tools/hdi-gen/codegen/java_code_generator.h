@@ -16,18 +16,18 @@ namespace OHOS {
 namespace HDI {
 class JavaCodeGenerator : public CodeGenerator {
 public:
-    JavaCodeGenerator() : CodeGenerator(),
-        emitters_() {}
+    using JavaCodeEmitMap = std::unordered_map<String, AutoPtr<JavaCodeEmitter>, StringHashFunc, StringEqualFunc>;
+
+    JavaCodeGenerator(const AutoPtr<ASTModule>& astModule, const String& targetDirectory)
+        : CodeGenerator(astModule, targetDirectory), emitters_() {}
 
     ~JavaCodeGenerator() override {};
 
-    bool Initializate(const AutoPtr<AST>& ast, const String& targetDirectory) override;
-    bool Generate() const override;
+    bool Generate() override;
 private:
-    bool ResolveDirectory() override;
+    void Initializate();
 
-    static const char* TAG;
-    std::vector<AutoPtr<JavaCodeEmitter>> emitters_;
+    JavaCodeEmitMap emitters_;
 };
 } // namespace HDI
 } // namespace OHOS

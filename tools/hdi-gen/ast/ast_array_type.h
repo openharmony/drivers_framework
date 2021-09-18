@@ -62,7 +62,25 @@ public:
 
     void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, bool emitType, unsigned int innerLevel = 0) const override;
+
+    void EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+        const String& prefix) const override;
+
+    void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const override;
+
+    void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const override;
+
+    void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner, StringBuilder& sb,
+        const String& prefix) const override;
 private:
+    void EmitJavaWriteArrayVar(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const;
+
+    void EmitCMallocVar(const String& name, const String& lenName, bool isClient, const String& gotoLabel,
+        StringBuilder& sb, const String& prefix) const;
+
     AutoPtr<ASTType> elementType_;
 };
 } // namespace HDI

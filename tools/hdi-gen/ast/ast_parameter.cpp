@@ -215,5 +215,27 @@ void ASTParameter::EmitCWriteVar(const String& parcelName, const String& gotoLab
 
     type_->EmitCWriteVar(parcelName, name_, gotoLabel, sb, prefix);
 }
+
+void ASTParameter::EmitJavaWriteVar(const String& parcelName, StringBuilder& sb, const String& prefix) const
+{
+    if (attribute_ == ParamAttr::PARAM_IN) {
+        type_->EmitJavaWriteVar(parcelName, name_, sb, prefix);
+    } else {
+        if (type_->GetTypeKind() == TypeKind::TYPE_ARRAY) {
+            sb.Append(prefix).AppendFormat("if (%s == null) {\n", name_.string());
+            sb.Append(prefix + g_tab).AppendFormat("%s.writeInt(-1);\n", parcelName.string());
+            sb.Append(prefix).Append("} else {\n");
+            sb.Append(prefix + g_tab).AppendFormat("%s.writeInt(%s.length);\n", parcelName.string(), name_.string());
+            sb.Append(prefix).Append("}\n");
+        }
+    }
+}
+
+void ASTParameter::EmitJavaReadVar(const String& parcelName, StringBuilder& sb, const String& prefix) const
+{
+    if (attribute_ == ParamAttr::PARAM_OUT) {
+        type_->EmitJavaReadVar(parcelName, name_, sb, prefix);
+    }
+}
 } // namespace HDI
 } // namespace OHOS
