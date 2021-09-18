@@ -607,7 +607,7 @@ static int32_t AudioSapmAddRoute(struct AudioCard *audioCard, const struct Audio
     }
 
     DLIST_FOR_EACH_ENTRY(sapmComponent, &audioCard->components, struct AudioSapmComponent, list) {
-        if (sapmComponent == NULL || sapmComponent->componentName == NULL) {
+        if (sapmComponent->componentName == NULL) {
             continue;
         }
         if ((cptSource == NULL) && (strcmp(sapmComponent->componentName, route->source) == 0)) {
@@ -682,7 +682,7 @@ int32_t AudioSapmNewMixerControls(struct AudioSapmComponent *sapmComponent, stru
 
     for (i = 0; i < sapmComponent->kcontrolsNum; i++) {
         DLIST_FOR_EACH_ENTRY(path, &sapmComponent->sources, struct AudioSapmpath, listSink) {
-            if (path == NULL || path->name == NULL || sapmComponent->kcontrolNews[i].name == NULL) {
+            if (path->name == NULL || sapmComponent->kcontrolNews[i].name == NULL) {
                 continue;
             }
 
@@ -1214,9 +1214,6 @@ int32_t AudioSampPowerUp(const struct AudioCard *card)
 
     DListHeadInit(&upList);
     DLIST_FOR_EACH_ENTRY(sapmComponent, &card->components, struct AudioSapmComponent, list) {
-        if (sapmComponent == NULL) {
-            continue;
-        }
         if (sapmComponent->power == SAPM_POWER_DOWN) {
             AudioSapmPowerSeqInsert(sapmComponent, &upList, SAPM_POWER_UP);
         }

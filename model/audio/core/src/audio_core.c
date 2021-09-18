@@ -217,7 +217,7 @@ int32_t AudioSeekPlatformDevice(struct AudioRuntimeDeivces *rtd, const struct Au
     }
 
     DLIST_FOR_EACH_ENTRY(platform, &platformController, struct PlatformDevice, list) {
-        if (platform != NULL && platform->devPlatformName != NULL &&
+        if (platform->devPlatformName != NULL &&
             strcmp(platform->devPlatformName, configData->platformName) == 0) {
             rtd->platform = platform;
             break;
@@ -269,7 +269,7 @@ int32_t AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct Audio
     }
 
     DLIST_FOR_EACH_ENTRY(codec, &codecController, struct CodecDevice, list) {
-        if (codec != NULL && codec->devCodecName != NULL && strcmp(codec->devCodecName, configData->codecName) == 0) {
+        if (codec->devCodecName != NULL && strcmp(codec->devCodecName, configData->codecName) == 0) {
             rtd->codec = codec;
             DLIST_FOR_EACH_ENTRY(codecDai, &daiController, struct DaiDevice, list) {
                 if (codecDai != NULL && codecDai->device != NULL && codec->device == codecDai->device &&

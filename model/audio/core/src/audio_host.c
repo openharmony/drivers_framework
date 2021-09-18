@@ -415,6 +415,12 @@ static void AudioDriverRelease(struct HdfDeviceObject *device)
 {
     struct AudioHost *audioHost = NULL;
     struct AudioCard *audioCard = NULL;
+    struct DListHead *componentHead = NULL;
+    struct DListHead *controlHead = NULL;
+    struct AudioSapmComponent *componentReq = NULL;
+    struct AudioSapmComponent *componentTmp = NULL;
+    struct AudioKcontrol *ctrlReq = NULL;
+    struct AudioKcontrol *ctrlTmp = NULL;
 
     ADM_LOG_DEBUG("entry.");
     if (device == NULL) {
@@ -429,9 +435,32 @@ static void AudioDriverRelease(struct HdfDeviceObject *device)
 
     if (audioHost->priv != NULL) {
         audioCard = (struct AudioCard *)audioHost->priv;
-        if (audioCard->rtd != NULL) {
-            OsalMemFree(audioCard->rtd);
+
+    componentHead = &audioCard->components;
+    DLIST_FOR_EACH_ENTRY_SAFE(componentReq, componentTmp, componentHead, struct AudioSapmComponent, list) {
+        DListRemove(&componentReq->list);
+        if (componentReq->componentName != NULL) {
+            OsalMemFree(componentReq->componentName);
         }
+        OsalMemFree(componentReq);
+    }
+
+    controlHead = &audioCard->controls;
+    DLIST_FOR_EACH_ENTRY_SAFE(ctrlReq, ctrlTmp, controlHead, struct AudioKcontrol, list) {
+        DListRemove(&ctrlReq->list);
+        if (ctrlReq->pri != NULL) {
+            OsalMemFree(ctrlReq->pri);
+        }
+        if (ctrlReq->privateData != NULL) {
+            OsalMemFree(ctrlReq->privateData);
+        }
+        OsalMemFree(ctrlReq);
+    }
+
+    if (audioCard->rtd != NULL) {
+        OsalMemFree(audioCard->rtd);
+    }
+
         OsalMemFree(audioHost->priv);
     }
     OsalMemFree(audioHost);
