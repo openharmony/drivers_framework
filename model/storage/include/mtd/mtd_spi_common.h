@@ -19,27 +19,27 @@ extern "C" {
 
 struct SpiFlash;
 
+/**
+ * @Defines the spi configuration of a specific operation
+ *
+ */
 struct MtdSpiConfig {
+    /** spi interface type */
     uint8_t ifType;
+    /** the operation command */
     uint8_t cmd;
+    /** dummy cycles */
     uint8_t dummy;
+    /** not used now */
     uint32_t size;
+    /** system clock used */
     uint32_t clock;
 };
 
-struct MtdSpiOps {
-    int32_t (*waitReady)(struct SpiFlash *spi);
-    int32_t (*writeEnable)(struct SpiFlash *spi);
-    int32_t (*qeEnable)(struct SpiFlash *spi);
-    int32_t (*entry4Addr)(struct SpiFlash *spi, int enable);
-};
-
-struct SpiOpsInfo {
-    uint8_t id[MTD_FLASH_ID_LEN_MAX];
-    uint8_t idLen;
-    struct MtdSpiOps spiOps;
-};
-
+/**
+ * @brief Enumerates the type of spi interface.
+ *
+ */
 enum SpiIfType {
     MTD_SPI_IF_STD = 0,
     MTD_SPI_IF_DUAL = 1,
@@ -48,24 +48,102 @@ enum SpiIfType {
     MTD_SPI_IF_QIO = 4,
 };
 
-struct SpiFlash {
-    struct MtdDevice mtd;
-    uint8_t cs;
-    uint8_t qeEnable;
-    uint8_t qeSupport;
-    uint32_t addrCycle;
-    struct MtdSpiConfig eraseCfg;
-    struct MtdSpiConfig writeCfg;
-    struct MtdSpiConfig readCfg;
+/**
+ * @Defines the spi oepration set of a mtd device.
+ *
+ */
+struct MtdSpiOps {
+    int32_t (*waitReady)(struct SpiFlash *spi);
+    int32_t (*writeEnable)(struct SpiFlash *spi);
+    int32_t (*qeEnable)(struct SpiFlash *spi);
+    int32_t (*entry4Addr)(struct SpiFlash *spi, int enable);
+};
+
+/**
+ * @Defines the info structure which contains vendor id and spi operations
+ *
+ */
+struct SpiOpsInfo {
+    uint8_t id[MTD_FLASH_ID_LEN_MAX];
+    uint8_t idLen;
     struct MtdSpiOps spiOps;
 };
 
+/**
+ * @Defines the structure used to identify a physical spi flash.
+ *
+ */
+struct SpiFlash {
+    /** The parent device */
+    struct MtdDevice mtd;
+    /** chip select number */
+    uint8_t cs;
+    /** address cycle */
+    uint32_t addrCycle;
+    /** spi configuration of erase */
+    struct MtdSpiConfig eraseCfg;
+    /** spi configuration of write */
+    struct MtdSpiConfig writeCfg;
+    /** spi configuration of read */
+    struct MtdSpiConfig readCfg;
+    /** spi operation set of the device */
+    struct MtdSpiOps spiOps;
+};
+
+/**
+ * @brief Wait for a spi flash to be ready.
+ *
+ * @param spi Indicates the pointer to the spi flash.
+ *
+ * @return Returns 0 on success; returns a negative value otherwise.
+ */
 int32_t SpiFlashWaitReady(struct SpiFlash *spi);
+
+/**
+ * @brief Enable write operation to a spi falsh.
+ *
+ * @param spi Indicates the pointer to the spi flash.
+ *
+ * @return Returns 0 on success; returns a negative value otherwise.
+ */
 int32_t SpiFlashWriteEnable(struct SpiFlash *spi);
+
+/**
+ * @brief Enable QUAD I/O mode of a spi falsh if it supports.
+ *
+ * @param spi Indicates the pointer to the spi flash.
+ *
+ * @return Returns 0 on success; returns a negative value otherwise.
+ */
 int32_t SpiFlashQeEnable(struct SpiFlash *spi);
+
+/**
+ * @brief Enable 4 byte address mode of a spi falsh if it supports.
+ *
+ * @param spi Indicates the pointer to the spi flash.
+ *
+ * @return Returns 0 on success; returns a negative value otherwise.
+ */
 int32_t SpiFlashEntry4Addr(struct SpiFlash *spi, int enable);
 
+/**
+ * @brief Add a spi flash device.
+ *
+ * do not call in irq context cause it may sleep
+ *
+ * @param spi Indicates the pointer to the spi flash device.
+ *
+ * @return Returns 0 if add successfully; returns a negative value otherwise.
+ */
 int32_t SpiFlashAdd(struct SpiFlash *spi);
+
+/**
+ * @brief Delete a spi flash device.
+ *
+ * do not call in irq context cause it may sleep
+ *
+ * @param spi Indicates the pointer to the spi flash device.
+ */
 void SpiFlashDel(struct SpiFlash *spi);
 
 /****************************Spi Common Command Set **************************************/
@@ -117,7 +195,6 @@ void SpiFlashDel(struct SpiFlash *spi);
 
 #ifdef __cplusplus
 #if __cplusplus
-
 }
 #endif
 #endif /* __cplusplus */

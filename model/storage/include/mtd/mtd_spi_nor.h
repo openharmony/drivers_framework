@@ -23,6 +23,10 @@ extern "C" {
 #define MTD_SPI_ADDR_3BYTE       3
 #define MTD_SPI_ADDR_4BYTE       4
 
+/**
+ * @Defines the structure used to describe a spi nor flash.
+ *
+ */
 struct SpinorInfo {
     const char *name;
     uint8_t id[MTD_FLASH_ID_LEN_MAX];

@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdf_log.h"
 #include "mtd_core.h"
 
 __attribute__((weak)) int32_t MtdBlockOsInit(struct MtdDevice *mtdDevice)
@@ -21,10 +22,31 @@ __attribute__ ((weak)) void MtdBlockOsUninit(struct MtdDevice *mtdDevice)
 
 int32_t MtdBlockInit(struct MtdDevice *mtdDevice)
 {
-    return MtdBlockOsInit(mtdDevice);
+    int32_t ret;
+
+    if (mtdDevice == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (MtdDeviceGet(mtdDevice) == NULL) {
+        HDF_LOGE("%s: get mtd device failed", __func__);
+        return HDF_PLT_ERR_DEV_GET;
+    }
+
+    ret = MtdBlockOsInit(mtdDevice);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: os init failed, ret = %d", __func__, ret);
+        MtdDevicePut(mtdDevice);
+        return ret;
+    }
+
+    return HDF_SUCCESS;
 }
 
 void MtdBlockUninit(struct MtdDevice *mtdDevice)
 {
-    MtdBlockOsUninit(mtdDevice);
+    if (mtdDevice != NULL) {
+        MtdBlockOsUninit(mtdDevice);
+        MtdDevicePut(mtdDevice);
+    }
 }

@@ -41,6 +41,10 @@ extern "C" {
 #define MTD_SPI_NAND_ERASE_FAIL     0x04
 #define MTD_SPI_NAND_PROG_FAIL      0x08
 
+/**
+ * @Defines the structure used to describe a spi nand flash.
+ *
+ */
 struct SpinandInfo {
     const char *name;
     uint8_t id[MTD_FLASH_ID_LEN_MAX];

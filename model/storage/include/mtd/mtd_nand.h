@@ -18,6 +18,10 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
+/**
+ * @brief Enumerates the page size type of a nand flash memory.
+ *
+ */
 enum MtdNandPageSize {
     MTD_NAND_PAGE_SIZE_512 = 512,
     MTD_NAND_PAGE_SIZE_2K = 2048,
@@ -26,6 +30,10 @@ enum MtdNandPageSize {
     MTD_NAND_PAGE_SIZE_16K = 16384,
 };
 
+/**
+ * @brief Enumerates the ECC type of a nand flash memory.
+ *
+ */
 enum MtdNandEccTYpe {
     MTD_NAND_ECC_0BIT = 0,
     MTD_NAND_ECC_8BIT_1K = 1,
@@ -36,6 +44,10 @@ enum MtdNandEccTYpe {
     MTD_NAND_ECC_64BIT_1K = 6,
 };
 
+/**
+ * @brief Defines the bad block area size of a nand flash memory.
+ *
+ */
 #define MTD_NAND_BB_SIZE 2
 
 #ifdef __cplusplus

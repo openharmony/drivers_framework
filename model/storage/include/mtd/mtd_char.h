@@ -19,12 +19,47 @@ extern "C" {
 
 #define CHAR_NAME_LEN 32
 
+/**
+ * @brief Char device init for the mtd device.
+ *
+ * This function behaves differently in different OS
+ *
+ * @param mtdDevice Indicates the pointer to the mtd device.
+ *
+ * @return Returns 0 if init successfully; returns a negative value otherwise.
+ */
 int32_t MtdCharInit(struct MtdDevice *mtdDevice);
+
+/**
+ * @brief Char device uninit for the mtd device.
+ *
+ * This function behaves differently in different OS
+ *
+ * @param mtdDevice Indicates the pointer to the mtd device.
+ *
+ */
 void MtdCharUninit(struct MtdDevice *mtdDevice);
 
-/* these too functions gona implemented by specific os */
-extern int32_t MtdCharOsInit(struct MtdDevice *mtdDevice);
-extern void MtdCharOsUninit(struct MtdDevice *mtdDevice);
+/**
+ * @brief Char device init for the mtd device in specific OS.
+ *
+ * These function gona be implemented by specific os
+ *
+ * @param mtdDevice Indicates the pointer to the mtd device.
+ *
+ * @return Returns 0 if init successfully; returns a negative value otherwise.
+ */
+int32_t MtdCharOsInit(struct MtdDevice *mtdDevice);
+
+/**
+ * @brief Char device uninit for the mtd device in specific OS.
+ *
+ * These function gona be implemented by specific os
+ *
+ * @param mtdDevice Indicates the pointer to the mtd device.
+ *
+ */
+void MtdCharOsUninit(struct MtdDevice *mtdDevice);
 
 #ifdef __cplusplus
 #if __cplusplus
