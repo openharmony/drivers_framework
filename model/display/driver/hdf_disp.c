@@ -425,14 +425,17 @@ static void EsdWorkHandler(void *arg)
     struct DispManager *disp = NULL;
 
     disp = GetDispManager();
-    if ((disp == NULL) || (disp->dispCtrl == NULL) || (devId >= disp->panelManager->panelNum)) {
-        HDF_LOGE("%s: dispCtrl is null or panel is null", __func__);
+    if ((disp == NULL) || (disp->dispCtrl == NULL) || (disp->panelManager ==  NULL) ||
+        (devId >= disp->panelManager->panelNum)) {
+        HDF_LOGE("%s: disp or dispCtrl or panelManager is null", __func__);
         return;
     }
     panel = disp->panelManager->panel[devId];
-    if ((panel->esd != NULL) && (panel->esd->checkFunc != NULL)) {
-        ret = panel->esd->checkFunc(panel);
+    if ((panel == NULL) || (panel->esd == NULL) || (panel->esd->checkFunc == NULL)) {
+        HDF_LOGE("%s: panel or esd or checkFunc is null", __func__);
+        return;
     }
+    ret = panel->esd->checkFunc(panel);
     if (ret != HDF_SUCCESS) {
         OsalMutexLock(&disp->dispMutex);
         if (panel->esd->state == ESD_RUNNING) {
