@@ -6,11 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
  
-#include <stdlib.h>
-#include <string.h>
 #include "hdf_block_buffer.h"
 #include "osal_mem.h"
-#include "utils.h"
 
 struct HdfHdfBlockBuffer *HdfHdfBlockBufferNew(const uint8_t *data, uint16_t size)
 {
@@ -25,10 +22,10 @@ struct HdfHdfBlockBuffer *HdfHdfBlockBufferNew(const uint8_t *data, uint16_t siz
         return NULL;
     }
     buffer->dataSize = size;
-	buffer->position = 0;
-	if (data != NULL) {
-		memcpy(buffer->data, data, size);
-	}
+    buffer->position = 0;
+    if (data != NULL) {
+        memcpy(buffer->data, data, size);
+    }
     return buffer;
 }
 
@@ -46,7 +43,7 @@ uint16_t HdfBlockBufferGetDataSize(struct HdfBlockBuffer *buffer)
 
 uint16_t HdfBlockBufferGetAvailableSize(struct HdfBlockBuffer *buffer)
 {
-    return (buffer == NULL) ? 0 : buffer->dataSize - buffer->position;
+    return (buffer == NULL) ? 0 : (buffer->dataSize - buffer->position);
 }
 
 uint8_t *HdfBlockBufferRead(struct HdfBlockBuffer *buffer, uint16_t size)
@@ -181,8 +178,7 @@ bool HdfBlockBufferWriteData(struct HdfBlockBuffer *buffer, uint8_t *data, size_
     return true;
 }
 
-struct HdfBlockBuffer *HdfBlockBufferDuplicate(
-        struct HdfBlockBuffer *buffer, uint16_t start, uint16_t end)
+struct HdfBlockBuffer *HdfBlockBufferDuplicate(struct HdfBlockBuffer *buffer, uint16_t start, uint16_t end)
 {
     uint16_t bufferSize = HdfBlockBufferGetDataSize(buffer);
     uint16_t newBufferSize;

@@ -6,7 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "osal_mem.h"
 #include "hdf_ordered_list.h"
 
 void HdfOrderedListInit(struct HdfOrderedList *list)
@@ -86,7 +85,7 @@ long HdfOrderedListPeekKey(struct HdfOrderedList *list)
 }
 
 struct HdfOrderedListEntity *HdfOrderedListFetch(
-        struct HdfOrderedList *list, long matchKey, HdfOrderedListComparer comparer)
+    struct HdfOrderedList *list, long matchKey, HdfOrderedListComparer comparer)
 {
     struct HdfSListIterator it;
     struct HdfOrderedListEntity *matchEntity = NULL;

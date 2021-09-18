@@ -6,14 +6,10 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-
+#include "hdf_base.h"
+#include "hdf_object_alloc.h"
 #include "hdf_slist.h"
-#include "object_alloc.h"
-#include "osal_mem.h"
 #include "osal_mutex.h"
-#include "utils.h"
 
 struct HdfChunkLink {
     uint32_t buffSize;
@@ -66,7 +62,6 @@ struct HdfObjectNode *HdfObjectAllocFindSuitableChunk(
 
     while (HdfSListIteratorHasNext(&it)) {
         objectNode = (struct HdfObjectNode *)HdfSListIteratorNext(&it);
-
         if (size == objectNode->chunkSize) {
             bestFitNode = objectNode;
             break;
@@ -87,7 +82,6 @@ static void HdfObjectAllocPushObjectNode(
 
     while (HdfSListIteratorHasNext(&it)) {
         objectNode = (struct HdfObjectNode *)HdfSListIteratorNext(&it);
-
         if (node->chunkSize >= objectNode->chunkSize) {
             break;
         }
@@ -128,7 +122,7 @@ static void HdfObjectAllocPreloadChunk(
 
 void HdfObjectAllocLoadConfigs(const struct HdfObjectPoolConfig *configs)
 {
-    uint32_t idx = 0;
+    uint32_t idx;
     char *chunkBuffBegin = configs->buffer;
     char *chunkBuffEnd = configs->buffer + configs->bufferSize;
 
@@ -161,7 +155,6 @@ void *HdfObjectAllocAlloc(size_t size)
     struct HdfObjectAlloc *allocator = HdfObjectAllocGetInstance();
     OsalMutexLock(&allocator->mutex);
     objectNode = HdfObjectAllocFindSuitableChunk(allocator, size);
-
     if ((objectNode != NULL) && (objectNode->freeCount == 0)) {
         goto finished;
     }
@@ -184,7 +177,6 @@ void HdfObjectAllocFree(void *object)
     struct HdfObjectAlloc *allocator = HdfObjectAllocGetInstance();
     OsalMutexLock(&allocator->mutex);
     objectNode = HdfObjectAllocFindSuitableChunk(allocator, chunkLink->buffSize);
-
     if (objectNode != NULL) {
         objectNode->chunkStack[objectNode->freeCount++] = chunkLink;
 

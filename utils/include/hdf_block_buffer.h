@@ -96,8 +96,7 @@ bool HdfBlockBufferWriteShort(struct BlockBuffer *buffer, uint16_t shortValue);
  *
  * @return the new instance of buff which contain specific packet.
  */
-struct HdfBlockBuffer *HdfBlockBufferDuplicate(
-        struct HdfBlockBuffer *buffer, uint16_t start, uint16_t end);
+struct HdfBlockBuffer *HdfBlockBufferDuplicate(struct HdfBlockBuffer *buffer, uint16_t start, uint16_t end);
 
 /*
  * @brief append an byte array packet into buffer.

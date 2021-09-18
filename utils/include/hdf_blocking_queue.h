@@ -17,15 +17,13 @@
 extern "C" {
 #endif
 
-struct HdfBlockingQueue
-{
+struct HdfBlockingQueue {
     struct HdfSList list;
     struct OsalSem sem;
     struct OsalMutex mutex;
 };
 
-struct HdfSListEntry
-{
+struct HdfSListEntry {
     struct HdfSListNode node;
     void *data;
 };
