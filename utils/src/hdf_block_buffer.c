@@ -9,6 +9,8 @@
 #include "hdf_block_buffer.h"
 #include "osal_mem.h"
 
+static const unsigned int OFFSET = 8;
+
 struct HdfHdfBlockBuffer *HdfHdfBlockBufferNew(const uint8_t *data, uint16_t size)
 {
     uint16_t wantedSize;
@@ -150,14 +152,14 @@ bool HdfBlockBufferWriteUint8(struct HdfBlockBuffer *buffer, uint8_t value)
     return false;
 }
 
-bool HdfBlockBufferWriteUint16(struct HdfBlockBuffer *buffer, uint16_t in_value)
+bool HdfBlockBufferWriteUint16(struct HdfBlockBuffer *buffer, uint16_t inValue)
 {
     if (buffer == NULL) {
         return false;
     }
     if (buffer->position + BYTES_UINT16 <= buffer->dataSize) {
-        buffer->data[buffer->position++] = (uint8_t) (in_value >> 8);
-        buffer->data[buffer->position++] = (uint8_t) (in_value & 0xFF);
+        buffer->data[buffer->position++] = (uint8_t) (inValue >> OFFSET);
+        buffer->data[buffer->position++] = (uint8_t) (inValue & 0xFF);
         return true;
     }
     return false;
