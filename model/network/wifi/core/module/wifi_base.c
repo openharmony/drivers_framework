@@ -1304,7 +1304,8 @@ static int32_t WifiCmdGetNetDevInfo(const RequestContext *context, struct HdfSBu
             if (GetIftype(netDev, &iftype) != HDF_SUCCESS) {
                 iftype = 0;
             }
-            if (!HdfSbufWriteUint32(rspData, i) || !HdfSbufWriteBuffer(rspData, netDev->name, strlen(netDev->name) + 1) ||
+            if (!HdfSbufWriteUint32(rspData, i) ||
+                !HdfSbufWriteBuffer(rspData, netDev->name, strlen(netDev->name) + 1) ||
                 !HdfSbufWriteUint8(rspData, iftype) ||
                 !HdfSbufWriteBuffer(rspData, GET_NET_DEV_MAC_ADDR(netDev), ETH_ADDR_LEN)) {
                 HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
@@ -1358,7 +1359,7 @@ static int32_t  WifiCmdRemainOnChannel(const RequestContext *context, struct Hdf
     }
     ret = RemainOnChannel(netdev, &wifiOnChannel);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to remain on channel,%d",__func__, ret);
+        HDF_LOGE("%s: fail to remain on channel,%d", __func__, ret);
     }
     return ret;
 }
@@ -1396,14 +1397,14 @@ static int32_t WifiCmdProbeReqReport(const RequestContext *context, struct HdfSB
         HDF_LOGE("%s: netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-    if (!HdfSbufReadInt32(reqData,&(report))) {
+    if (!HdfSbufReadInt32(reqData, &(report))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "report");
         return HDF_FAILURE;
     }
 
     ret = ProbeReqReport(netdev, report);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to probe req report,%d",__func__, ret);
+        HDF_LOGE("%s: fail to probe req report,%d", __func__, ret);
     }
     return ret;
 }
@@ -1444,7 +1445,7 @@ static int32_t WifiCmdCancelRemainOnChannel(const RequestContext *context, struc
 
     ret = CancelRemainOnChannel(netdev);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to cancel remain on channel,%d",__func__, ret);
+        HDF_LOGE("%s: fail to cancel remain on channel,%d", __func__, ret);
     }
     return ret;
 }
@@ -1490,7 +1491,7 @@ static int32_t WifiCmdAddIf(const RequestContext *context, struct HdfSBuf *reqDa
 
     ret = AddIf(netdev, &ifAdd);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to cancel remain on channel,%d",__func__, ret);
+        HDF_LOGE("%s: fail to cancel remain on channel,%d", __func__, ret);
     }
     return ret;
 }
@@ -1536,7 +1537,7 @@ static int32_t WifiCmdRemoveIf(const RequestContext *context, struct HdfSBuf *re
     }
     ret = RemoveIf(netdev, ifRemove);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to remove interface,%d",__func__, ret);
+        HDF_LOGE("%s: fail to remove interface,%d", __func__, ret);
     }
     return ret;
 }
@@ -1589,7 +1590,7 @@ static int32_t WifiCmdSetApWpsP2pIe(const RequestContext *context, struct HdfSBu
     }
     ret = SetApWpsP2pIe(netdev, &appIe);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to setapwpsp2pie,%d",__func__, ret);
+        HDF_LOGE("%s: fail to setapwpsp2pie,%d", __func__, ret);
     }
     return ret;
 }
@@ -1630,7 +1631,7 @@ static int32_t WifiCmdGetDriverFlag(const RequestContext *context, struct HdfSBu
 
     ret = GetDriverFlag(netdev, &params);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: fail to getdriverflag,%d",__func__, ret);
+        HDF_LOGE("%s: fail to getdriverflag,%d", __func__, ret);
     }
 
     if (!HdfSbufWriteUint64(rspData, params->drvFlags)) {
