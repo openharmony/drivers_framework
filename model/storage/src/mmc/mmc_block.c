@@ -11,7 +11,6 @@
 #include "hdf_base.h"
 #include "hdf_log.h"
 #include "mmc_block.h"
-#include "platform_core.h"
 
 #define HDF_LOG_TAG mmc_block_c
 
