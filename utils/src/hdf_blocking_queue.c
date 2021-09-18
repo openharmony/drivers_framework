@@ -110,7 +110,7 @@ void *HdfBlockingQueuePoll(struct HdfBlockingQueue *queue, long timeout)
 
 int HdfBlockingQueueOffer(struct HdfBlockingQueue *queue, void *val, long timeout)
 {
-	struct HdfSListEntry *entry = NULL;
+    struct HdfSListEntry *entry = NULL;
     if (OsalSemWait(&queue->sem, timeout) != 0) {
         return -1;
     } 
@@ -120,6 +120,6 @@ int HdfBlockingQueueOffer(struct HdfBlockingQueue *queue, void *val, long timeou
         HdfSListAddTail(&queue->list, &entry->node);
         OsalMutexUnlock(&queue->mutex);
     }
-	OsalSemPost(&queue->sem);
+    OsalSemPost(&queue->sem);
 }
 

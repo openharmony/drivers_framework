@@ -25,7 +25,7 @@ struct HdfBlockBuffer {
 
 struct HdfBlockBuffer *HdfBlockBufferNew(uint16_t size);
 
-void HdfBlockBufferFree(struct BlockBuffer *buffer);
+void HdfBlockBufferFree(const struct BlockBuffer *buffer);
 
 uint16_t HdfBlockBufferGetDataSize(struct BlockBuffer *buffer);
 
@@ -96,8 +96,7 @@ bool HdfBlockBufferWriteShort(struct BlockBuffer *buffer, uint16_t shortValue);
  *
  * @return the new instance of buff which contain specific packet.
  */
-struct HdfBlockBuffer *HdfBlockBufferDuplicate(
-        struct HdfBlockBuffer *buffer, uint16_t start, uint16_t end);
+struct HdfBlockBuffer *HdfBlockBufferDuplicate(const struct HdfBlockBuffer *buffer, uint16_t start, uint16_t end);
 
 /*
  * @brief append an byte array packet into buffer.
