@@ -10,6 +10,7 @@
 #include "audio_codec_if.h"
 #include "audio_core.h"
 #include "audio_parse.h"
+#include "audio_sapm.h"
 
 #define HDF_LOG_TAG audio_host
 
