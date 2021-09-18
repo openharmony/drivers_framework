@@ -352,13 +352,12 @@ struct UsbFillRequestData {
     UsbRequestCallback userCallback;
 };
 
-extern struct AcmRawDevice *g_acm;
-
 struct UsbRawTestFunc {
     enum UsbRawTestCmd type;
     int32_t (*Func)(void);
 };
 
+struct AcmRawDevice *UsbGetIoAcm(void);
 int UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config);
 int AcmWriteBufAlloc(struct AcmRawDevice *acm);
 void AcmNotifyReqCallback(const void *requestArg);

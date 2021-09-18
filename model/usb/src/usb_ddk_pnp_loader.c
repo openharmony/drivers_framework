@@ -1006,7 +1006,8 @@ int UsbDdkPnpLoaderEventHandle(void)
     }
     return status;
 error:
-    for (idTable = g_usbPnpMatchIdTable[0]; idTable != NULL;) {
+    idTable = g_usbPnpMatchIdTable[0];
+    while (idTable != NULL) {
         tableCount++;
         idTable = g_usbPnpMatchIdTable[tableCount];
     }

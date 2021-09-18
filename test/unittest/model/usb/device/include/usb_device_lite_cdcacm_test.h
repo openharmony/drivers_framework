@@ -126,7 +126,6 @@ struct CtrlInfo {
     struct AcmDevice         *acm;
 };
 
-extern struct UsbFnDeviceDesc g_acmFnDevice;
 struct AcmDevice *SetUpAcmDevice(void);
 void ReleaseAcmDevice(struct AcmDevice *acm);
 void AcmEventCallback(struct UsbFnEvent *event);

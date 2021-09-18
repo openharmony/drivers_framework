@@ -570,6 +570,37 @@ int32_t UsbFnDviceTestCancelRequest005(void)
     return HDF_SUCCESS;
 }
 
+int32_t TestCancelRequest(struct UsbFnRequest *req, struct UsbFnRequest *req2)
+{
+    int ret;
+    ret = UsbFnSubmitRequestAsync(req2);
+    if (HDF_SUCCESS != ret) {
+        HDF_LOGE("%s: request async error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbFnCancelRequest(req2);
+    if (HDF_SUCCESS != ret) {
+        dprintf("%s: cancel request error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbFnCancelRequest(req);
+    if (HDF_SUCCESS != ret) {
+        dprintf("%s: cancel request error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbFnFreeRequest(req);
+    if (HDF_SUCCESS != ret) {
+        dprintf("%s: free Request error", __func__);
+        return HDF_FAILURE;
+    }
+    ret = UsbFnFreeRequest(req2);
+    if (HDF_SUCCESS != ret) {
+        dprintf("%s: free Request error", __func__);
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
 int32_t UsbFnDviceTestCancelRequest006(void)
 {
     int ret;
@@ -604,31 +635,6 @@ int32_t UsbFnDviceTestCancelRequest006(void)
         HDF_LOGE("%s: request async error", __func__);
         return HDF_FAILURE;
     }
-    ret = UsbFnSubmitRequestAsync(req2);
-    if (HDF_SUCCESS != ret) {
-        HDF_LOGE("%s: request async error", __func__);
-        return HDF_FAILURE;
-    }
-    ret = UsbFnCancelRequest(req2);
-    if (HDF_SUCCESS != ret) {
-        dprintf("%s: cancel request error", __func__);
-        return HDF_FAILURE;
-    }
-    ret = UsbFnCancelRequest(req);
-    if (HDF_SUCCESS != ret) {
-        dprintf("%s: cancel request error", __func__);
-        return HDF_FAILURE;
-    }
-    ret = UsbFnFreeRequest(req);
-    if (HDF_SUCCESS != ret) {
-        dprintf("%s: free Request error", __func__);
-        return HDF_FAILURE;
-    }
-    ret = UsbFnFreeRequest(req2);
-    if (HDF_SUCCESS != ret) {
-        dprintf("%s: free Request error", __func__);
-        return HDF_FAILURE;
-    }
-    return HDF_SUCCESS;
+    return TestCancelRequest(req, req2);
 }
 

@@ -335,13 +335,42 @@ static struct Serial *SerialAlloc(void)
     return port;
 }
 
+static void ParsePipes(struct AcmDevice *acmDevice, struct UsbFnInterface *fnIface, UsbFnInterfaceHandle handle)
+{
+    uint32_t j;
+    int ret;
+    for (j = 0; j < fnIface->info.numPipes; j++) {
+        struct UsbFnPipeInfo pipeInfo;
+        ret = UsbFnGetInterfacePipeInfo(fnIface, j, &pipeInfo);
+        if (ret != HDF_SUCCESS) {
+            return;
+        }
+        if (pipeInfo.type == USB_PIPE_TYPE_INTERRUPT) {
+            acmDevice->notifyPipe.id = pipeInfo.id;
+            acmDevice->notifyPipe.maxPacketSize = pipeInfo.maxPacketSize;
+            acmDevice->ctrlIface.fn = fnIface;
+            acmDevice->ctrlIface.handle = handle;
+        } else if (pipeInfo.type == USB_PIPE_TYPE_BULK) {
+            if (pipeInfo.dir == USB_PIPE_DIRECTION_IN) {
+                acmDevice->dataInPipe.id = pipeInfo.id;
+                acmDevice->dataInPipe.maxPacketSize = pipeInfo.maxPacketSize;
+                acmDevice->dataIface.fn = fnIface;
+                acmDevice->dataIface.handle = handle;
+            } else {
+                acmDevice->dataOutPipe.id = pipeInfo.id;
+                acmDevice->dataOutPipe.maxPacketSize = pipeInfo.maxPacketSize;
+                acmDevice->dataIface.fn = fnIface;
+                acmDevice->dataIface.handle = handle;
+            }
+        }
+    }
+}
+
 static int ParseInterfaces(struct AcmDevice *acmDevice)
 {
     uint32_t i;
-    uint32_t j;
     struct UsbFnInterface *fnIface = NULL;
-    UsbFnInterfaceHandle handle = NULL;
-    int ret;
+    UsbFnInterfaceHandle handle;
 
     for (i = 0; i < acmDevice->fnDev->numInterfaces; i++) {
         fnIface = (struct UsbFnInterface *)UsbFnGetInterface(acmDevice->fnDev, i);
@@ -352,31 +381,7 @@ static int ParseInterfaces(struct AcmDevice *acmDevice)
         if (handle == NULL) {
             return -1;
         }
-        for (j = 0; j < fnIface->info.numPipes; j++) {
-            struct UsbFnPipeInfo pipeInfo;
-            ret = UsbFnGetInterfacePipeInfo(fnIface, j, &pipeInfo);
-            if (ret != HDF_SUCCESS) {
-                return -1;
-            }
-            if (pipeInfo.type == USB_PIPE_TYPE_INTERRUPT) {
-                acmDevice->notifyPipe.id = pipeInfo.id;
-                acmDevice->notifyPipe.maxPacketSize = pipeInfo.maxPacketSize;
-                acmDevice->ctrlIface.fn = fnIface;
-                acmDevice->ctrlIface.handle = handle;
-            } else if (pipeInfo.type == USB_PIPE_TYPE_BULK) {
-                if (pipeInfo.dir == USB_PIPE_DIRECTION_IN) {
-                    acmDevice->dataInPipe.id = pipeInfo.id;
-                    acmDevice->dataInPipe.maxPacketSize = pipeInfo.maxPacketSize;
-                    acmDevice->dataIface.fn = fnIface;
-                    acmDevice->dataIface.handle = handle;
-                } else {
-                    acmDevice->dataOutPipe.id = pipeInfo.id;
-                    acmDevice->dataOutPipe.maxPacketSize = pipeInfo.maxPacketSize;
-                    acmDevice->dataIface.fn = fnIface;
-                    acmDevice->dataIface.handle = handle;
-                }
-            }
-        }
+        ParsePipes(acmDevice, fnIface, handle);
     }
     return 0;
 }
