@@ -12,12 +12,24 @@
 
 namespace OHOS {
 namespace HDI {
-CppServiceImplCodeEmitter::CppServiceImplCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :CppCodeEmitter(ast, targetDirectory)
+bool CppServiceImplCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    String ImplFullName = String::Format("%sserver.%s",
-        interface_->GetNamespace()->ToString().string(), ImplName_.string());
-    sourceFileName_ = String::Format("%s.cpp", FileName(ImplFullName).string());
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/server/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CppServiceImplCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
 }
 
 void CppServiceImplCodeEmitter::EmitCode()
@@ -28,30 +40,18 @@ void CppServiceImplCodeEmitter::EmitCode()
 
 void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sserver/%s.h", directory_.string(), FileName(infName_ + "Service").string());
-    } else {
-        filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Service").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppServiceImplCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Service").string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
-    EmitHeadMacro(sb, ImplFullName_);
+    EmitHeadMacro(sb, implFullName_);
     sb.Append("\n");
     EmitServiceImplInclusions(sb);
     sb.Append("\n");
     EmitServiceImplDecl(sb);
     sb.Append("\n");
-    EmitTailMacro(sb, ImplFullName_);
+    EmitTailMacro(sb, implFullName_);
 
     String data = sb.ToString();
     file.WriteData(data.string(), data.GetLength());
@@ -134,20 +134,8 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(const AutoPtr<ASTMetho
 
 void CppServiceImplCodeEmitter::EmitImplSourceFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sserver/%s.cpp", directory_.string(), FileName(infName_ + "Service").string());
-    } else {
-        filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_ + "Service").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppServiceImplCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_ + "Service").string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);

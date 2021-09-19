@@ -13,12 +13,24 @@
 
 namespace OHOS {
 namespace HDI {
-CppClientProxyCodeEmitter::CppClientProxyCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :CppCodeEmitter(ast, targetDirectory)
+bool CppClientProxyCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    String proxyName = String::Format("%sclient.%s",
-        interface_->GetNamespace()->ToString().string(), proxyName_.string());
-    sourceFileName_ = String::Format("%s.cpp", FileName(proxyName).string());
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/client/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CppClientProxyCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
 }
 
 void CppClientProxyCodeEmitter::EmitCode()
@@ -29,20 +41,8 @@ void CppClientProxyCodeEmitter::EmitCode()
 
 void CppClientProxyCodeEmitter::EmitProxyHeaderFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sclient/%s.h", directory_.string(), FileName(infName_ + "Proxy").string());
-    } else {
-        filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Proxy").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppClientProxyCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Proxy").string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -142,20 +142,8 @@ void CppClientProxyCodeEmitter::EmitProxyMethodParameter(const AutoPtr<ASTParame
 
 void CppClientProxyCodeEmitter::EmitProxySourceFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sclient/%s.cpp", directory_.string(), FileName(infName_ + "Proxy").string());
-    } else {
-        filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_ + "Proxy").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppClientProxyCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_ + "Proxy").string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -212,8 +200,8 @@ void CppClientProxyCodeEmitter::EmitGetMethodImpl(StringBuilder& sb, const Strin
         "HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).Append("break;\n");
     sb.Append(prefix + g_tab + g_tab).Append("}\n\n");
-    sb.Append(prefix + g_tab + g_tab).AppendFormat("sptr<IRemoteObject> remote = servMgr->GetService(\"%sService\");\n",
-        infName_.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat(
+        "sptr<IRemoteObject> remote = servMgr->GetService(\"%sService\");\n", infName_.string());
     sb.Append(prefix + g_tab + g_tab).Append("if (remote != nullptr) {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return iface_cast<%s>(remote);\n",
         interface_->GetName().string());

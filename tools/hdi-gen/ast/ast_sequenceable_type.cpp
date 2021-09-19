@@ -125,5 +125,40 @@ void ASTSequenceableType::EmitCppUnMarshalling(const String& parcelName, const S
             name.string(), parcelName.string(), name_.string());
     }
 }
+
+void ASTSequenceableType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    if (EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
+        sb.Append(prefix).AppendFormat("%s.writeRemoteObject(%s);\n", parcelName.string(), name.string());
+        return;
+    }
+    sb.Append(prefix).AppendFormat("%s.writeSequenceable(%s);\n", parcelName.string(), name.string());
+}
+
+void ASTSequenceableType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    if (EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
+        sb.Append(prefix).AppendFormat("%s = %s.readRemoteObject();\n", name.string(), parcelName.string());
+        return;
+    }
+    sb.Append(prefix).AppendFormat("%s.readSequenceable(%s);\n", parcelName.string(), name.string());
+}
+
+void ASTSequenceableType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    if (!isInner && EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
+        sb.Append(prefix).AppendFormat("IRemoteObject %s = %s.readRemoteObject();\n",
+            name.string(), parcelName.string());
+        return;
+    }
+    if (!isInner) {
+        sb.Append(prefix).AppendFormat("%s %s = new %s();\n",
+            EmitJavaType(TypeMode::NO_MODE).string(), name.string(), EmitJavaType(TypeMode::NO_MODE).string());
+    }
+    sb.Append(prefix).AppendFormat("%s.readSequenceable(%s);\n", parcelName.string(), name.string());
+}
 } // namespace HDI
 } // namespace OHOS

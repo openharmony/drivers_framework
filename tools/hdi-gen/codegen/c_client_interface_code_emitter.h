@@ -15,13 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CClientInterfaceCodeEmitter : public CCodeEmitter {
 public:
-    CClientInterfaceCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-        : CCodeEmitter(ast, targetDirectory) {}
+    CClientInterfaceCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CClientInterfaceCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitInterfaceHeaderFile();
 
     void EmitImportInclusions(StringBuilder& sb);

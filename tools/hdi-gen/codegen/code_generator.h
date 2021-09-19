@@ -9,26 +9,21 @@
 #ifndef OHOS_HDI_CODEGENERATOR_H
 #define OHOS_HDI_CODEGENERATOR_H
 
-#include "ast/ast.h"
+#include "ast/ast_module.h"
 
 namespace OHOS {
 namespace HDI {
 class CodeGenerator : public LightRefCountBase {
 public:
-    CodeGenerator() : LightRefCountBase(),
-        targetDirectory_(),
-        ast_(nullptr) {}
+    CodeGenerator(const AutoPtr<ASTModule>& astModule, const String& targetDirectory)
+        : LightRefCountBase(), astModule_(astModule), targetDirectory_(targetDirectory) {}
 
     virtual ~CodeGenerator() = default;
 
-    virtual bool Initializate(const AutoPtr<AST>& ast, const String& targetDirectory) = 0;
-
-    virtual bool Generate() const = 0;
+    virtual bool Generate() = 0;
 protected:
-    virtual bool ResolveDirectory() = 0;
-
+    AutoPtr<ASTModule> astModule_;
     String targetDirectory_;
-    AutoPtr<AST> ast_;
 };
 } // namespace HDI
 } // namespace OHOS

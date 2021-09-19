@@ -20,29 +20,26 @@ namespace OHOS {
 namespace HDI {
 class CCodeEmitter : public LightRefCountBase {
 public:
-    CCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
-
     virtual ~CCodeEmitter() = default;
 
-    virtual void EmitCode() = 0;
-
-    inline String GetSourceFile()
-    {
-        return sourceFileName_;
-    }
-
-    inline bool isInvaildDir()
-    {
-        return directory_.Equals("");
-    }
+    bool OutPut(const AutoPtr<AST>& ast, const String& targetDirectory);
 
     static String FileName(const String& name);
-
 protected:
+    bool Reset(const AutoPtr<AST>& ast, const String& targetDirectory);
+
+    void CleanData();
+
+    virtual bool ResolveDirectory(const String& targetDirectory) = 0;
+
+    virtual void EmitCode() = 0;
 
     void EmitInterfaceMethodCommands(StringBuilder& sb);
 
     void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& parameter, StringBuilder& sb, const String& prefix);
+
+    void EmitErrorHandle(const AutoPtr<ASTMethod>& method, const String& gotoLabel, bool isClient, StringBuilder& sb,
+        const String& prefix);
 
     void EmitLicense(StringBuilder& sb);
 
@@ -69,11 +66,9 @@ protected:
 
     String SpecificationParam(StringBuilder& sb, const String& prefix);
 
-    AutoPtr<AST> ast_;
-    AutoPtr<ASTInterfaceType> interface_;
-
+    AutoPtr<AST> ast_ = nullptr;
+    AutoPtr<ASTInterfaceType> interface_ = nullptr;
     String directory_;
-    String sourceFileName_;
 
     String interfaceName_;
     String interfaceFullName_;
@@ -82,8 +77,8 @@ protected:
     String proxyFullName_;
     String stubName_;
     String stubFullName_;
-    String ImplName_;
-    String ImplFullName_;
+    String implName_;
+    String implFullName_;
 };
 } // namespace HDI
 } // namespace OHOS

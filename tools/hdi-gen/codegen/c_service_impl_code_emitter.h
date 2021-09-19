@@ -15,12 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CServiceImplCodeEmitter : public CCodeEmitter {
 public:
-    CServiceImplCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
+    CServiceImplCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CServiceImplCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitServiceImplHeaderFile();
 
     void EmitServiceImplConstructDecl(StringBuilder& sb);

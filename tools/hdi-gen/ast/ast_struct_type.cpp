@@ -249,5 +249,19 @@ void ASTStructType::EmitCppUnMarshalling(const String& parcelName, const String&
     sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
+
+void ASTStructType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+    const String& prefix) const
+{
+    String varName = isClient ? String::Format("*%s", name.string()) : name;
+    if (ownership) {
+        sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", varName.string());
+        sb.Append(prefix + g_tab).AppendFormat("%sFree(%s, true);\n", name_.string(), varName.string());
+        sb.Append(prefix + g_tab).AppendFormat("%s = NULL;\n", varName.string());
+        sb.Append(prefix).Append("}\n");
+    } else {
+        sb.Append(prefix).AppendFormat("%sFree(&%s, false);\n", name_.string(), name.string());
+    }
+}
 } // namespace HDI
 } // namespace OHOS

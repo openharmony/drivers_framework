@@ -9,13 +9,25 @@
 #ifndef OHOS_HDI_GENERATORFACTORY_H
 #define OHOS_HDI_GENERATORFACTORY_H
 
+#include "ast/ast_module.h"
 #include "codegen/code_generator.h"
 
 namespace OHOS {
 namespace HDI {
 class GeneratorFactory {
 public:
-    AutoPtr<CodeGenerator> GetCodeGenerator(const String& targetLanuage);
+    GeneratorFactory(const GeneratorFactory&) = default;
+
+    GeneratorFactory& operator=(const GeneratorFactory&) = default;
+
+    ~GeneratorFactory() = default;
+
+    static GeneratorFactory& GetInstance();
+
+    AutoPtr<CodeGenerator> GetCodeGenerator(const AutoPtr<ASTModule>& astModule, const String& targetLanuage,
+        const String& targetDirectory);
+private:
+    GeneratorFactory() = default;
 };
 } // namespace HDI
 } // namespace OHOS

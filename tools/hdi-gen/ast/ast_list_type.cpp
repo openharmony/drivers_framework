@@ -110,7 +110,7 @@ void ASTListType::EmitCWriteVar(const String& parcelName, const String& name, co
 void ASTListType::EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
     const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
-String lenName = String::Format("%sLen", name.string());
+    String lenName = String::Format("%sLen", name.string());
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(%s, %s)) {\n",
         parcelName.string(), lenName.string());
     sb.Append(prefix + g_tab).AppendFormat(
@@ -119,23 +119,9 @@ String lenName = String::Format("%sLen", name.string());
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n\n");
 
-    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemCalloc(sizeof(%s) * (*%s));\n",
-            name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
-            lenName.string());
-        sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-        sb.Append(prefix).AppendFormat("}\n\n");
-    } else {
-        sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemCalloc(sizeof(%s) * (*%s));\n",
-            name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
-            lenName.string());
-        sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-        sb.Append(prefix).AppendFormat("}\n\n");
-    }
+    EmitCMallocVar(name, lenName, true, gotoLabel, sb, prefix);
+    sb.Append("\n");
+
     sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String cpName = String::Format("%sCp", name.string());
@@ -166,6 +152,7 @@ void ASTListType::EmitCStubReadVar(const String& parcelName, const String& name,
     const String& prefix) const
 {
     String lenName = String::Format("%sLen", name.string());
+
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(%s, &%s)) {\n",
         parcelName.string(), lenName.string());
     sb.Append(prefix + g_tab).AppendFormat(
@@ -175,25 +162,10 @@ void ASTListType::EmitCStubReadVar(const String& parcelName, const String& name,
     sb.Append(prefix).Append("}\n\n");
 
     sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
-    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        sb.Append(prefix + g_tab).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n", name.string(),
-            elementType_->EmitCType().string(), elementType_->EmitCType().string(), lenName.string());
-        sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto errors;\n");
-        sb.Append(prefix + g_tab).AppendFormat("}\n\n");
-    } else {
-        sb.Append(prefix + g_tab).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n",
-            name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
-            lenName.string());
-        sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto errors;\n");
-        sb.Append(prefix + g_tab).AppendFormat("}\n\n");
-    }
+    EmitCMallocVar(name, lenName, false, "errors", sb, prefix + g_tab);
+    sb.Append("\n");
 
     sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
-
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String element = String::Format("%sCp", name.string());
         elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
@@ -357,6 +329,77 @@ void ASTListType::EmitCppUnMarshalling(const String& parcelName, const String& n
         sb.Append(prefix + g_tab).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
     }
     sb.Append(prefix).Append("}\n");
+}
+
+void ASTListType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+    const String& prefix) const
+{
+    String varName = isClient ? String::Format("*%s", name.string()) : name;
+    String lenName = isClient ? String::Format("*%sLen", name.string()) : String::Format("%sLen", name.string());
+
+    sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n", lenName.string(), varName.string());
+    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING
+        || elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
+        sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+        String elementName = isClient ? String::Format("(%s)[i]", varName.string()) :
+            String::Format("%s[i]", varName.string());
+        elementType_->EmitMemoryRecycle(elementName, false, false, sb, prefix + g_tab + g_tab);
+        sb.Append(prefix + g_tab).Append("}\n");
+    }
+
+    sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", varName.string());
+    if (isClient) {
+        sb.Append(prefix + g_tab).AppendFormat("%s = NULL;\n", varName.string());
+    }
+
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTListType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s.writeInt(%s.size());\n", parcelName.string(), name.string());
+    sb.Append(prefix).AppendFormat("for (%s element : %s) {\n",
+        elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string());
+    elementType_->EmitJavaWriteVar(parcelName, "element", sb, prefix + g_tab);
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTListType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
+    sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
+
+    elementType_->EmitJavaReadInnerVar(parcelName, "value", false, sb, prefix + g_tab);
+    sb.Append(prefix + g_tab).AppendFormat("%s.add(value);\n", name.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTListType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s %s = new Array%s();\n",
+        EmitJavaType(TypeMode::NO_MODE).string(), name.string(), EmitJavaType(TypeMode::NO_MODE).string());
+    sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
+    sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
+    elementType_->EmitJavaReadInnerVar(parcelName, "value", true, sb, prefix + g_tab);
+    sb.Append(prefix + g_tab).AppendFormat("%s.add(value);\n", name.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTListType::EmitCMallocVar(const String& name, const String& lenName, bool isClient, const String& gotoLabel,
+    StringBuilder& sb, const String& prefix) const
+{
+    String varName = isClient ? String::Format("*%s", name.string()) : name;
+    String lenVarName = isClient ? String::Format("*%s", lenName.string()) : lenName;
+
+    sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n", varName.string(),
+        elementType_->EmitCType().string(), elementType_->EmitCType().string(), lenVarName.string());
+    sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", varName.string());
+    sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).AppendFormat("}\n");
 }
 } // namespace HDI
 } // namespace OHOS

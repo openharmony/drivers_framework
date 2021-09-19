@@ -12,16 +12,34 @@
 #include <unistd.h>
 #include <unordered_set>
 
+#include "util/logger.h"
+
 namespace OHOS {
 namespace HDI {
-CppCodeEmitter::CppCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    : LightRefCountBase(), ast_(ast), directory_(targetDirectory)
+bool CppCodeEmitter::OutPut(const AutoPtr<AST>& ast, const String& targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        interface_ = ast_->GetInterfaceDef();
+    if (!Reset(ast, targetDirectory)) {
+        return false;
     }
 
-    if (interface_ != nullptr) {
+    EmitCode();
+    return true;
+}
+
+bool CppCodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory)
+{
+    if (ast == nullptr) {
+        return false;
+    }
+
+    if (targetDirectory.Equals("")) {
+        return false;
+    }
+
+    CleanData();
+    ast_ = ast;
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        interface_ = ast_->GetInterfaceDef();
         interfaceName_ = interface_->GetName();
         interfaceFullName_ = interface_->GetNamespace()->ToString() + interfaceName_;
         infName_ = interfaceName_.StartsWith("I") ? interfaceName_.Substring(1) : interfaceName_;
@@ -31,11 +49,33 @@ CppCodeEmitter::CppCodeEmitter(const AutoPtr<AST>& ast, const String& targetDire
         stubName_ = infName_ + "Stub";
         stubFullName_ = interface_->GetNamespace()->ToString() + stubName_;
 
-        ImplName_ = infName_ + "Service";
-        ImplFullName_ = interface_->GetNamespace()->ToString() + ImplName_;
-    } else {
+        implName_ = infName_ + "Service";
+        implFullName_ = interface_->GetNamespace()->ToString() + implName_;
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_TYPES) {
         infName_ = ast_->GetName();
     }
+
+    if (!ResolveDirectory(targetDirectory)) {
+        return false;
+    }
+
+    return true;
+}
+
+void CppCodeEmitter::CleanData()
+{
+    ast_ = nullptr;
+    interface_ = nullptr;
+    directory_ = "";
+    interfaceName_ = "";
+    interfaceFullName_ = "";
+    infName_ = "";
+    proxyName_ = "";
+    proxyFullName_ = "";
+    stubName_ = "";
+    stubFullName_ = "";
+    implName_ = "";
+    implFullName_ = "";
 }
 
 String CppCodeEmitter::FileName(const String& name)

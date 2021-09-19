@@ -21,7 +21,19 @@
 using namespace OHOS;
 using namespace testing::ext;
 
-static struct IStructTest* g_testClient = nullptr;
+static const uint32_t g_arrayLen = 2;
+static const int8_t g_integer8Var = 65;
+static const int16_t g_integer16Var = 3;
+static const int32_t g_integer32Var = 4;
+static const int64_t g_integer64Var = 5;
+static const uint8_t g_uInteger8Var = 97;
+static const uint16_t g_uInteger16Var = 7;
+static const uint32_t g_uInteger32Var = 8;
+static const uint64_t g_uInteger64Var = 8;
+static const float g_floatVar = 10.5;
+static const double g_doubleVar = 11.55;
+
+static struct IStructTest *g_testClient = nullptr;
 
 class CStructTest : public testing::Test {
 public:
@@ -54,15 +66,15 @@ HWTEST_F(CStructTest, CStructTest_001, TestSize.Level1)
 
 HWTEST_F(CStructTest, CStructTest_002, TestSize.Level1)
 {
-    struct SSample* srcObj = (struct SSample*)OsalMemCalloc(sizeof(struct SSample));
+    struct SSample *srcObj = (struct SSample *)OsalMemCalloc(sizeof(struct SSample));
     ASSERT_NE(srcObj, nullptr);
 
     srcObj->m1 = true;
-    srcObj->m2 = 1;
-    srcObj->m3 = 10.125;
+    srcObj->m2 = g_integer32Var;
+    srcObj->m3 = g_doubleVar;
     srcObj->m4 = strdup("hello world");
 
-    struct SSample* destObj = nullptr;
+    struct SSample *destObj = nullptr;
     int32_t ec = g_testClient->SSampleTest(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
 
@@ -77,22 +89,22 @@ HWTEST_F(CStructTest, CStructTest_002, TestSize.Level1)
 
 HWTEST_F(CStructTest, CStructTest_003, TestSize.Level1)
 {
-    struct SSample2* srcObj = (struct SSample2*)OsalMemCalloc(sizeof(struct SSample2));
+    struct SSample2 *srcObj = (struct SSample2 *)OsalMemCalloc(sizeof(struct SSample2));
     ASSERT_NE(srcObj, nullptr);
 
     srcObj->m1 = true;
-    srcObj->m2 = 65;
-    srcObj->m3 = 10;
-    srcObj->m4 = 20;
-    srcObj->m5 = 30;
-    srcObj->m6 = 97;
-    srcObj->m7 = 100;
-    srcObj->m8 = 200;
-    srcObj->m9 = 300;
-    srcObj->m10 = 10.5;
-    srcObj->m11 = 20.125;
+    srcObj->m2 = g_integer8Var;
+    srcObj->m3 = g_integer16Var;
+    srcObj->m4 = g_integer32Var;
+    srcObj->m5 = g_integer64Var;
+    srcObj->m6 = g_uInteger8Var;
+    srcObj->m7 = g_uInteger16Var;
+    srcObj->m8 = g_uInteger32Var;
+    srcObj->m9 = g_uInteger64Var;
+    srcObj->m10 = g_floatVar;
+    srcObj->m11 = g_doubleVar;
 
-    struct SSample2* destObj = nullptr;
+    struct SSample2 *destObj = nullptr;
     int32_t ec = g_testClient->SSample2Test(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
 
@@ -114,33 +126,30 @@ HWTEST_F(CStructTest, CStructTest_003, TestSize.Level1)
 
 HWTEST_F(CStructTest, CStructTest_004, TestSize.Level1)
 {
-    struct SSample3* srcObj = (struct SSample3*)OsalMemCalloc(sizeof(struct SSample3));
+    struct SSample3 *srcObj = (struct SSample3 *)OsalMemCalloc(sizeof(struct SSample3));
     ASSERT_NE(srcObj, nullptr);
 
     srcObj->m1 = strdup("hello world");
     srcObj->m2 = MEM_THREE;
-
     srcObj->m3.m1 = true;
-    srcObj->m3.m2 = 65;
-    srcObj->m3.m3 = 10;
-    srcObj->m3.m4 = 20;
-    srcObj->m3.m5 = 30;
-    srcObj->m3.m6 = 97;
-    srcObj->m3.m7 = 100;
-    srcObj->m3.m8 = 200;
-    srcObj->m3.m9 = 300;
-    srcObj->m3.m10 = 10.5;
-    srcObj->m3.m11 = 20.125;
-
+    srcObj->m3.m2 = g_integer8Var;
+    srcObj->m3.m3 = g_integer16Var;
+    srcObj->m3.m4 = g_integer32Var;
+    srcObj->m3.m5 = g_integer64Var;
+    srcObj->m3.m6 = g_uInteger8Var;
+    srcObj->m3.m7 = g_uInteger16Var;
+    srcObj->m3.m8 = g_uInteger32Var;
+    srcObj->m3.m9 = g_uInteger64Var;
+    srcObj->m3.m10 = g_floatVar;
+    srcObj->m3.m11 = g_doubleVar;
     srcObj->m4 = open("/fdtest1.txt", O_CREAT | O_RDWR | O_TRUNC, 0644);
 
-    struct SSample3* destObj = nullptr;
+    struct SSample3 *destObj = nullptr;
     int32_t ec = g_testClient->SSample3Test(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
 
     EXPECT_STREQ(srcObj->m1, destObj->m1);
     EXPECT_EQ(srcObj->m2, destObj->m2);
-
     EXPECT_EQ((srcObj->m3.m1 ? 1 : 0), (destObj->m3.m1 ? 1 : 0));
     EXPECT_EQ(srcObj->m3.m2, destObj->m3.m2);
     EXPECT_EQ(srcObj->m3.m3, destObj->m3.m3);
@@ -152,109 +161,116 @@ HWTEST_F(CStructTest, CStructTest_004, TestSize.Level1)
     EXPECT_EQ(srcObj->m3.m9, destObj->m3.m9);
     EXPECT_FLOAT_EQ(srcObj->m3.m10, destObj->m3.m10);
     EXPECT_DOUBLE_EQ(srcObj->m3.m11, destObj->m3.m11);
-
     SSample3Free(srcObj, true);
     SSample3Free(destObj, true);
 }
 
-HWTEST_F(CStructTest, CStructTest_005, TestSize.Level1)
+static void SSample4Part1Init(struct SSample4 *srcObj)
 {
-    struct SSample4* srcObj = (struct SSample4*)OsalMemCalloc(sizeof(struct SSample4));
-    ASSERT_NE(srcObj, nullptr);
-
-    srcObj->m1Len = 2;
-    srcObj->m1 = (bool*)OsalMemCalloc(sizeof(bool) * srcObj->m1Len);
+    srcObj->m1Len = g_arrayLen;
+    srcObj->m1 = (bool*)OsalMemCalloc(sizeof(bool) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m1Len; i++) {
         srcObj->m1[i] = true;
     }
 
-    srcObj->m2Len = 2;
-    srcObj->m2 = (int8_t*)OsalMemCalloc(sizeof(int8_t) * srcObj->m2Len);
+    srcObj->m2Len = g_arrayLen;
+    srcObj->m2 = (int8_t*)OsalMemCalloc(sizeof(int8_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m2Len; i++) {
-        srcObj->m2[i] = 65;
+        srcObj->m2[i] = g_integer8Var;
     }
 
-    srcObj->m3Len = 2;
-    srcObj->m3 = (int16_t*)OsalMemCalloc(sizeof(int16_t) * srcObj->m3Len);
+    srcObj->m3Len = g_arrayLen;
+    srcObj->m3 = (int16_t*)OsalMemCalloc(sizeof(int16_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m3Len; i++) {
-        srcObj->m3[i] = 3;
+        srcObj->m3[i] = g_integer16Var;
     }
 
-    srcObj->m4Len = 2;
-    srcObj->m4 = (int32_t*)OsalMemCalloc(sizeof(int32_t) * srcObj->m4Len);
+    srcObj->m4Len = g_arrayLen;
+    srcObj->m4 = (int32_t*)OsalMemCalloc(sizeof(int32_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m4Len; i++) {
-        srcObj->m4[i] = 4;
+        srcObj->m4[i] = g_integer32Var;
     }
 
-    srcObj->m5Len = 2;
-    srcObj->m5 = (int64_t*)OsalMemCalloc(sizeof(int64_t) * srcObj->m5Len);
+    srcObj->m5Len = g_arrayLen;
+    srcObj->m5 = (int64_t*)OsalMemCalloc(sizeof(int64_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m5Len; i++) {
-        srcObj->m5[i] = 5;
+        srcObj->m5[i] = g_integer64Var;
     }
+}
 
-    srcObj->m6Len = 2;
-    srcObj->m6 = (uint8_t*)OsalMemCalloc(sizeof(uint8_t) * srcObj->m6Len);
+static void SSample4Part2Init(struct SSample4 *srcObj)
+{
+    srcObj->m6Len = g_arrayLen;
+    srcObj->m6 = (uint8_t*)OsalMemCalloc(sizeof(uint8_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m6Len; i++) {
-        srcObj->m6[i] = 97;
+        srcObj->m6[i] = g_uInteger8Var;
     }
 
-    srcObj->m7Len = 2;
-    srcObj->m7 = (uint16_t*)OsalMemCalloc(sizeof(uint16_t) * srcObj->m7Len);
+    srcObj->m7Len = g_arrayLen;
+    srcObj->m7 = (uint16_t*)OsalMemCalloc(sizeof(uint16_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m7Len; i++) {
-        srcObj->m7[i] = 7;
+        srcObj->m7[i] = g_uInteger16Var;
     }
 
-    srcObj->m8Len = 2;
-    srcObj->m8 = (uint32_t*)OsalMemCalloc(sizeof(uint32_t) * srcObj->m8Len);
+    srcObj->m8Len = g_arrayLen;
+    srcObj->m8 = (uint32_t*)OsalMemCalloc(sizeof(uint32_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m8Len; i++) {
-        srcObj->m8[i] = 8;
+        srcObj->m8[i] = g_uInteger32Var;
     }
 
-    srcObj->m9Len = 2;
-    srcObj->m9 = (uint64_t*)OsalMemCalloc(sizeof(uint64_t) * srcObj->m9Len);
+    srcObj->m9Len = g_arrayLen;
+    srcObj->m9 = (uint64_t*)OsalMemCalloc(sizeof(uint64_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m9Len; i++) {
-        srcObj->m9[i] = 9;
+        srcObj->m9[i] = g_uInteger64Var;
     }
 
-    srcObj->m10Len = 2;
-    srcObj->m10 = (float*)OsalMemCalloc(sizeof(float) * srcObj->m10Len);
+    srcObj->m10Len = g_arrayLen;
+    srcObj->m10 = (float*)OsalMemCalloc(sizeof(float) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m10Len; i++) {
-        srcObj->m10[i] = 10.5;
+        srcObj->m10[i] = g_floatVar;
     }
 
-    srcObj->m11Len = 2;
-    srcObj->m11 = (double*)OsalMemCalloc(sizeof(double) * srcObj->m11Len);
+    srcObj->m11Len = g_arrayLen;
+    srcObj->m11 = (double*)OsalMemCalloc(sizeof(double) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m11Len; i++) {
-        srcObj->m11[i] = 11.55;
+        srcObj->m11[i] = g_doubleVar;
     }
+}
 
-    srcObj->m12Len = 2;
-    srcObj->m12 = (char**)OsalMemCalloc(sizeof(char*) * srcObj->m12Len);
+static void SSample4Part3Init(struct SSample4 *srcObj)
+{
+    srcObj->m12Len = g_arrayLen;
+    srcObj->m12 = (char**)OsalMemCalloc(sizeof(char *) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m12Len; i++) {
-        const char* str = "hello world";
+        const char *str = "hello world";
         srcObj->m12[i] = strdup(str);
     }
 
-    srcObj->m13Len = 2;
-    srcObj->m13 = (enum ESample*)OsalMemCalloc(sizeof(enum ESample) * srcObj->m13Len);
+    srcObj->m13Len = g_arrayLen;
+    srcObj->m13 = (enum ESample *)OsalMemCalloc(sizeof(enum ESample) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m13Len; i++) {
         srcObj->m13[i] = MEM_ONE;
     }
 
-    srcObj->m14Len = 2;
-    srcObj->m14 = (struct SSample*)OsalMemCalloc(sizeof(struct SSample) * srcObj->m14Len);
+    srcObj->m14Len = g_arrayLen;
+    srcObj->m14 = (struct SSample*)OsalMemCalloc(sizeof(struct SSample) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m14Len; i++) {
         srcObj->m14[i].m1 = true;
-        srcObj->m14[i].m2 = 2;
-        srcObj->m14[i].m3 = 3.55;
+        srcObj->m14[i].m2 = g_integer32Var;
+        srcObj->m14[i].m3 = g_doubleVar;
         srcObj->m14[i].m4 = strdup("hello");
     }
+}
 
-    struct SSample4* destObj = nullptr;
-    int32_t ec = g_testClient->SSample4Test(g_testClient, srcObj, &destObj);
-    ASSERT_EQ(ec, HDF_SUCCESS);
+static void SSample4Init(struct SSample4 *srcObj)
+{
+    SSample4Part1Init(srcObj);
+    SSample4Part2Init(srcObj);
+    SSample4Part3Init(srcObj);
+}
 
-
+static void CompareSSample4Part1(const struct SSample4 *srcObj, const struct SSample4 *destObj)
+{
     for (uint32_t i = 0; i < srcObj->m1Len; i++) {
         EXPECT_EQ((srcObj->m1[i] ? 1 : 0), (destObj->m1[i] ? 1 : 0));
     }
@@ -274,7 +290,10 @@ HWTEST_F(CStructTest, CStructTest_005, TestSize.Level1)
     for (uint32_t i = 0; i < srcObj->m5Len; i++) {
         EXPECT_EQ(srcObj->m5[i], destObj->m5[i]);
     }
+}
 
+static void CompareSSample4Part2(const struct SSample4 *srcObj, const struct SSample4 *destObj)
+{
     for (uint32_t i = 0; i < srcObj->m6Len; i++) {
         EXPECT_EQ(srcObj->m6[i], destObj->m6[i]);
     }
@@ -298,7 +317,10 @@ HWTEST_F(CStructTest, CStructTest_005, TestSize.Level1)
     for (uint32_t i = 0; i < srcObj->m11Len; i++) {
         EXPECT_DOUBLE_EQ(srcObj->m11[i], destObj->m11[i]);
     }
+}
 
+static void CompareSSample4Part3(const struct SSample4 *srcObj, const struct SSample4 *destObj)
+{
     for (uint32_t i = 0; i < srcObj->m12Len; i++) {
         EXPECT_STREQ(srcObj->m12[i], destObj->m12[i]);
     }
@@ -313,108 +335,138 @@ HWTEST_F(CStructTest, CStructTest_005, TestSize.Level1)
         EXPECT_DOUBLE_EQ((srcObj->m14[i]).m3, (destObj->m14[i]).m3);
         EXPECT_STREQ((srcObj->m14[i]).m4, (destObj->m14[i]).m4);
     }
+}
+
+static void CompareSSample4(const struct SSample4 *srcObj, const struct SSample4 *destObj)
+{
+    CompareSSample4Part1(srcObj, destObj);
+    CompareSSample4Part2(srcObj, destObj);
+    CompareSSample4Part3(srcObj, destObj);
+}
+
+HWTEST_F(CStructTest, CStructTest_005, TestSize.Level1)
+{
+    struct SSample4 *srcObj = (struct SSample4*)OsalMemCalloc(sizeof(struct SSample4));
+    ASSERT_NE(srcObj, nullptr);
+
+    SSample4Init(srcObj);
+
+    struct SSample4 *destObj = nullptr;
+    int32_t ec = g_testClient->SSample4Test(g_testClient, srcObj, &destObj);
+    ASSERT_EQ(ec, HDF_SUCCESS);
+
+    CompareSSample4(srcObj, destObj);
 
     SSample4Free(srcObj, true);
     SSample4Free(destObj, true);
 }
 
-HWTEST_F(CStructTest, CStructTest_006, TestSize.Level1)
+static void SSample5Part1Init(struct SSample4 *srcObj)
 {
-    struct SSample5* srcObj = (struct SSample5*)OsalMemCalloc(sizeof(struct SSample5));
-    ASSERT_NE(srcObj, nullptr);
-
-    srcObj->m1Len = 2;
-    srcObj->m1 = (bool*)OsalMemCalloc(sizeof(bool) * srcObj->m1Len);
+    srcObj->m1Len = g_arrayLen;
+    srcObj->m1 = (bool*)OsalMemCalloc(sizeof(bool) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m1Len; i++) {
         srcObj->m1[i] = true;
     }
 
-    srcObj->m2Len = 2;
-    srcObj->m2 = (int8_t*)OsalMemCalloc(sizeof(int8_t) * srcObj->m2Len);
+    srcObj->m2Len = g_arrayLen;
+    srcObj->m2 = (int8_t*)OsalMemCalloc(sizeof(int8_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m2Len; i++) {
-        srcObj->m2[i] = 65;
+        srcObj->m2[i] = g_integer8Var;
     }
 
-    srcObj->m3Len = 2;
-    srcObj->m3 = (int16_t*)OsalMemCalloc(sizeof(int16_t) * srcObj->m3Len);
+    srcObj->m3Len = g_arrayLen;
+    srcObj->m3 = (int16_t*)OsalMemCalloc(sizeof(int16_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m3Len; i++) {
-        srcObj->m3[i] = 3;
+        srcObj->m3[i] = g_integer16Var;
     }
 
-    srcObj->m4Len = 2;
-    srcObj->m4 = (int32_t*)OsalMemCalloc(sizeof(int32_t) * srcObj->m4Len);
+    srcObj->m4Len = g_arrayLen;
+    srcObj->m4 = (int32_t*)OsalMemCalloc(sizeof(int32_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m4Len; i++) {
-        srcObj->m4[i] = 4;
+        srcObj->m4[i] = g_integer32Var;
     }
 
-    srcObj->m5Len = 2;
-    srcObj->m5 = (int64_t*)OsalMemCalloc(sizeof(int64_t) * srcObj->m5Len);
+    srcObj->m5Len = g_arrayLen;
+    srcObj->m5 = (int64_t*)OsalMemCalloc(sizeof(int64_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m5Len; i++) {
-        srcObj->m5[i] = 5;
+        srcObj->m5[i] = g_integer64Var;
     }
+}
 
-    srcObj->m6Len = 2;
-    srcObj->m6 = (uint8_t*)OsalMemCalloc(sizeof(uint8_t) * srcObj->m6Len);
+static void SSample5Part2Init(struct SSample4 *srcObj)
+{
+    srcObj->m6Len = g_arrayLen;
+    srcObj->m6 = (uint8_t*)OsalMemCalloc(sizeof(uint8_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m6Len; i++) {
-        srcObj->m6[i] = 97;
+        srcObj->m6[i] = g_uInteger8Var;
     }
 
-    srcObj->m7Len = 2;
-    srcObj->m7 = (uint16_t*)OsalMemCalloc(sizeof(uint16_t) * srcObj->m7Len);
+    srcObj->m7Len = g_arrayLen;
+    srcObj->m7 = (uint16_t*)OsalMemCalloc(sizeof(uint16_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m7Len; i++) {
-        srcObj->m7[i] = 7;
+        srcObj->m7[i] = g_uInteger16Var;
     }
 
-    srcObj->m8Len = 2;
-    srcObj->m8 = (uint32_t*)OsalMemCalloc(sizeof(uint32_t) * srcObj->m8Len);
+    srcObj->m8Len = g_arrayLen;
+    srcObj->m8 = (uint32_t*)OsalMemCalloc(sizeof(uint32_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m8Len; i++) {
-        srcObj->m8[i] = 8;
+        srcObj->m8[i] = g_uInteger32Var;
     }
 
-    srcObj->m9Len = 2;
-    srcObj->m9 = (uint64_t*)OsalMemCalloc(sizeof(uint64_t) * srcObj->m9Len);
+    srcObj->m9Len = g_arrayLen;
+    srcObj->m9 = (uint64_t*)OsalMemCalloc(sizeof(uint64_t) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m9Len; i++) {
-        srcObj->m9[i] = 9;
+        srcObj->m9[i] = g_uInteger64Var;
     }
 
-    srcObj->m10Len = 2;
-    srcObj->m10 = (float*)OsalMemCalloc(sizeof(float) * srcObj->m10Len);
+    srcObj->m10Len = g_arrayLen;
+    srcObj->m10 = (float*)OsalMemCalloc(sizeof(float) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m10Len; i++) {
-        srcObj->m10[i] = 10.5;
+        srcObj->m10[i] = g_floatVar;
     }
 
-    srcObj->m11Len = 2;
-    srcObj->m11 = (double*)OsalMemCalloc(sizeof(double) * srcObj->m11Len);
+    srcObj->m11Len = g_arrayLen;
+    srcObj->m11 = (double*)OsalMemCalloc(sizeof(double) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m11Len; i++) {
-        srcObj->m11[i] = 11.55;
+        srcObj->m11[i] = g_doubleVar;
     }
+}
 
-    srcObj->m12Len = 2;
-    srcObj->m12 = (char**)OsalMemCalloc(sizeof(char*) * srcObj->m12Len);
+static void SSample5Part3Init(struct SSample4 *srcObj)
+{
+    srcObj->m12Len = g_arrayLen;
+    srcObj->m12 = (char**)OsalMemCalloc(sizeof(char *) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m12Len; i++) {
-        const char* str = "hello world";
+        const char *str = "hello world";
         srcObj->m12[i] = strdup(str);
     }
 
-    srcObj->m13Len = 2;
-    srcObj->m13 = (enum ESample*)OsalMemCalloc(sizeof(enum ESample) * srcObj->m13Len);
+    srcObj->m13Len = g_arrayLen;
+    srcObj->m13 = (enum ESample *)OsalMemCalloc(sizeof(enum ESample) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m13Len; i++) {
         srcObj->m13[i] = MEM_ONE;
     }
 
-    srcObj->m14Len = 2;
-    srcObj->m14 = (struct SSample*)OsalMemCalloc(sizeof(struct SSample) * srcObj->m14Len);
+    srcObj->m14Len = g_arrayLen;
+    srcObj->m14 = (struct SSample*)OsalMemCalloc(sizeof(struct SSample) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m14Len; i++) {
         srcObj->m14[i].m1 = true;
-        srcObj->m14[i].m2 = 2;
-        srcObj->m14[i].m3 = 3.55;
+        srcObj->m14[i].m2 = g_integer32Var;
+        srcObj->m14[i].m3 = g_doubleVar;
         srcObj->m14[i].m4 = strdup("hello");
     }
+}
 
-    struct SSample5* destObj = nullptr;
-    int32_t ec = g_testClient->SSample5Test(g_testClient, srcObj, &destObj);
-    ASSERT_EQ(ec, HDF_SUCCESS);
+static void SSample5Init(struct SSample5 *srcObj)
+{
+    SSample5Part1Init(srcObj);
+    SSample5Part2Init(srcObj);
+    SSample5Part3Init(srcObj);
+}
 
+static void CompareSSample5Part1(const struct SSample5 *srcObj, const struct SSample5 *destObj)
+{
     for (uint32_t i = 0; i < srcObj->m1Len; i++) {
         EXPECT_EQ((srcObj->m1[i] ? 1 : 0), (destObj->m1[i] ? 1 : 0));
     }
@@ -434,7 +486,10 @@ HWTEST_F(CStructTest, CStructTest_006, TestSize.Level1)
     for (uint32_t i = 0; i < srcObj->m5Len; i++) {
         EXPECT_EQ(srcObj->m5[i], destObj->m5[i]);
     }
+}
 
+static void CompareSSample5Part2(const struct SSample5 *srcObj, const struct SSample5 *destObj)
+{
     for (uint32_t i = 0; i < srcObj->m6Len; i++) {
         EXPECT_EQ(srcObj->m6[i], destObj->m6[i]);
     }
@@ -458,7 +513,10 @@ HWTEST_F(CStructTest, CStructTest_006, TestSize.Level1)
     for (uint32_t i = 0; i < srcObj->m11Len; i++) {
         EXPECT_DOUBLE_EQ(srcObj->m11[i], destObj->m11[i]);
     }
+}
 
+static void CompareSSample5Part3(const struct SSample5 *srcObj, const struct SSample5 *destObj)
+{
     for (uint32_t i = 0; i < srcObj->m12Len; i++) {
         EXPECT_STREQ(srcObj->m12[i], destObj->m12[i]);
     }
@@ -473,6 +531,27 @@ HWTEST_F(CStructTest, CStructTest_006, TestSize.Level1)
         EXPECT_DOUBLE_EQ((srcObj->m14[i]).m3, (destObj->m14[i]).m3);
         EXPECT_STREQ((srcObj->m14[i]).m4, (destObj->m14[i]).m4);
     }
+}
+
+static void CompareSSample5(const struct SSample5 *srcObj, const struct SSample5 *destObj)
+{
+    CompareSSample5Part1(srcObj, destObj);
+    CompareSSample5Part2(srcObj, destObj);
+    CompareSSample5Part3(srcObj, destObj);
+}
+
+HWTEST_F(CStructTest, CStructTest_006, TestSize.Level1)
+{
+    struct SSample5 *srcObj = (struct SSample5*)OsalMemCalloc(sizeof(struct SSample5));
+    ASSERT_NE(srcObj, nullptr);
+
+    SSample5Init(srcObj);
+
+    struct SSample5 *destObj = nullptr;
+    int32_t ec = g_testClient->SSample5Test(g_testClient, srcObj, &destObj);
+    ASSERT_EQ(ec, HDF_SUCCESS);
+
+    CompareSSample5(srcObj, destObj);
 
     SSample5Free(srcObj, true);
     SSample5Free(destObj, true);
@@ -480,27 +559,27 @@ HWTEST_F(CStructTest, CStructTest_006, TestSize.Level1)
 
 HWTEST_F(CStructTest, CStructTest_007, TestSize.Level1)
 {
-    struct SSample6* srcObj = (struct SSample6*)OsalMemCalloc(sizeof(struct SSample6));
+    struct SSample6 *srcObj = (struct SSample6 *)OsalMemCalloc(sizeof(struct SSample6));
     ASSERT_NE(srcObj, nullptr);
 
     srcObj->m1.m1 = true;
-    srcObj->m1.m2 = 1;
+    srcObj->m1.m2 = g_integer32Var;
 
-    srcObj->m2Len = 2;
-    srcObj->m2 = (union USample*)OsalMemCalloc(sizeof(union USample) * srcObj->m2Len);
+    srcObj->m2Len = g_arrayLen;
+    srcObj->m2 = (union USample*)OsalMemCalloc(sizeof(union USample) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m2Len; i++) {
         (srcObj->m2[i]).m1 = true;
         (srcObj->m2[i]).m2 = 2;
     }
 
-    srcObj->m3Len = 2;
-    srcObj->m3 = (union USample*)OsalMemCalloc(sizeof(union USample) * srcObj->m3Len);
+    srcObj->m3Len = g_arrayLen;
+    srcObj->m3 = (union USample*)OsalMemCalloc(sizeof(union USample) * g_arrayLen);
     for (uint32_t i = 0; i < srcObj->m3Len; i++) {
         (srcObj->m3[i]).m1 = true;
         (srcObj->m3[i]).m2 = 2;
     }
 
-    struct SSample6* destObj = nullptr;
+    struct SSample6 *destObj = nullptr;
     int32_t ec = g_testClient->SSample6Test(g_testClient, srcObj, &destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
 

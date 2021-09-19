@@ -22,63 +22,45 @@
 
 namespace OHOS {
 namespace HDI {
-const char* CppCodeGenerator::TAG = "CppCodeGenerator";
-
-bool CppCodeGenerator::Initializate(const AutoPtr<AST>& ast, const String& targetDirectory)
+bool CppCodeGenerator::Generate()
 {
-    ast_ = ast;
-    targetDirectory_ = targetDirectory;
+    Initializate();
 
-    if (!ResolveDirectory()) {
-        return false;
-    }
-
-    if (ast_->GetASTFileType() == ASTFileType::AST_TYPES) {
-        AutoPtr<CppCodeEmitter> customTypesCodeEmitter = new CppCustomTypesCodeEmitter(ast_, targetDirectory_);
-        emitters_.push_back(customTypesCodeEmitter);
-        return true;
-    }
-
-    AutoPtr<CppCodeEmitter> clientInterfaceCodeEmitter = new CppClientInterfaceCodeEmitter(ast_, targetDirectory_);
-    AutoPtr<CppCodeEmitter> clientProxyCodeEmitter = new CppClientProxyCodeEmitter(ast_, targetDirectory_);
-
-    AutoPtr<CppCodeEmitter> serviceInterfaceCodeEmitter = new CppServiceInterfaceCodeEmitter(ast_, targetDirectory_);
-    AutoPtr<CppCodeEmitter> serviceDriverCodeEmitter = new CppServiceDriverCodeEmitter(ast_, targetDirectory_);
-    AutoPtr<CppCodeEmitter> serviceStubCodeEmitter = new CppServiceStubCodeEmitter(ast_, targetDirectory_);
-    AutoPtr<CppCodeEmitter> serviceImplCodeEmitter = new CppServiceImplCodeEmitter(ast_, targetDirectory_);
-
-    emitters_.push_back(clientInterfaceCodeEmitter);
-    emitters_.push_back(clientProxyCodeEmitter);
-    emitters_.push_back(serviceInterfaceCodeEmitter);
-    emitters_.push_back(serviceDriverCodeEmitter);
-    emitters_.push_back(serviceStubCodeEmitter);
-    emitters_.push_back(serviceImplCodeEmitter);
-
-    return true;
-}
-
-bool CppCodeGenerator::Generate() const
-{
-    for (auto emitter : emitters_) {
-        if (!emitter->isInvaildDir()) {
-            emitter->EmitCode();
+    for (auto& astPair : astModule_->GetAllAsts()) {
+        AutoPtr<AST> ast = astPair.second;
+        switch (ast->GetASTFileType()) {
+            case ASTFileType::AST_TYPES: {
+                emitters_["types"]->OutPut(ast, targetDirectory_);
+                break;
+            }
+            case ASTFileType::AST_IFACE:
+            case ASTFileType::AST_ICALLBACK: {
+                emitters_["clientIface"]->OutPut(ast, targetDirectory_);
+                emitters_["proxy"]->OutPut(ast, targetDirectory_);
+                emitters_["serviceIface"]->OutPut(ast, targetDirectory_);
+                emitters_["driver"]->OutPut(ast, targetDirectory_);
+                emitters_["stub"]->OutPut(ast, targetDirectory_);
+                emitters_["impl"]->OutPut(ast, targetDirectory_);
+                break;
+            }
+            default:
+                break;
         }
     }
-
     return true;
 }
 
-bool CppCodeGenerator::ResolveDirectory()
+void CppCodeGenerator::Initializate()
 {
-    String packageFilePath = String::Format("%s/%s/",
-        targetDirectory_.string(), CppCodeEmitter::FileName(ast_->GetPackageName()).string());
-    targetDirectory_ = packageFilePath;
-
-    if (!File::CreateParentDir(targetDirectory_)) {
-        Logger::E(TAG, "create '%s' directory failed!", targetDirectory_);
-        return false;
-    }
-    return true;
+    emitters_ = {
+        {"types", new CppCustomTypesCodeEmitter()},
+        {"clientIface", new CppClientInterfaceCodeEmitter()},
+        {"proxy", new CppClientProxyCodeEmitter()},
+        {"serviceIface", new CppServiceInterfaceCodeEmitter()},
+        {"driver", new CppServiceDriverCodeEmitter()},
+        {"stub", new CppServiceStubCodeEmitter()},
+        {"impl", new CppServiceImplCodeEmitter()},
+    };
 }
 } // namespace HDI
 } // namespace OHOS

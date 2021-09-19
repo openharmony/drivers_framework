@@ -15,12 +15,13 @@ namespace OHOS {
 namespace HDI {
 class CppServiceStubCodeEmitter : public CppCodeEmitter {
 public:
-    CppServiceStubCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
+    CppServiceStubCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppServiceStubCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
 
     // ISample.idl -> sample_service_stub.h
     void EmitStubHeaderFile();
@@ -61,6 +62,8 @@ private:
     void EmitStubMethodImpls(StringBuilder& sb, const String& prefix);
 
     void EmitStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+
+    void EmitStubCallMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
     void EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
 

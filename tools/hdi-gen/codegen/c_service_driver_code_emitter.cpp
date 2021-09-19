@@ -12,12 +12,19 @@
 
 namespace OHOS {
 namespace HDI {
-CServiceDriverCodeEmitter::CServiceDriverCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :CCodeEmitter(ast, targetDirectory)
+bool CServiceDriverCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    String infFullName = String::Format("%sserver.%s",
-        interface_->GetNamespace()->ToString().string(), infName_.string());
-    sourceFileName_ = String::Format("%s_driver.c", FileName(infFullName).string());
+    if (ast_->GetASTFileType() != ASTFileType::AST_IFACE) {
+        return false;
+    }
+
+    directory_ = String::Format("%s/%s/server/", targetDirectory.string(), FileName(ast_->GetPackageName()).string());
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CServiceDriverCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
 }
 
 void CServiceDriverCodeEmitter::EmitCode()
@@ -30,20 +37,8 @@ void CServiceDriverCodeEmitter::EmitCode()
 
 void CServiceDriverCodeEmitter::EmitDriverSourceFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sserver/%s.c", directory_.string(), FileName(infName_ + "Driver").string());
-    } else {
-        filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_ + "Driver").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CServiceDriverCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_ + "Driver").string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);

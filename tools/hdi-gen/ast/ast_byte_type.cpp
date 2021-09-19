@@ -158,5 +158,24 @@ void ASTByteType::EmitCppUnMarshalling(const String& parcelName, const String& n
         sb.Append(prefix).AppendFormat("%s = %s.ReadInt8();\n", name.string(), parcelName.string());
     }
 }
+
+void ASTByteType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s.writeByte(%s);\n", parcelName.string(), name.string());
+}
+
+void ASTByteType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s = %s.readByte();\n", name.string(), parcelName.string());
+}
+
+void ASTByteType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s %s = %s.readByte();\n",
+        EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+}
 } // namespace HDI
 } // namespace OHOS

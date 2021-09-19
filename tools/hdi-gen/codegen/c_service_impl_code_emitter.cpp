@@ -12,12 +12,24 @@
 
 namespace OHOS {
 namespace HDI {
-CServiceImplCodeEmitter::CServiceImplCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :CCodeEmitter(ast, targetDirectory)
+bool CServiceImplCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    String infFullName = String::Format("%sserver.%s",
-        interface_->GetNamespace()->ToString().string(), infName_.string());
-    sourceFileName_ = String::Format("%s_service.c", FileName(infFullName).string());
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/server/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CServiceImplCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
 }
 
 void CServiceImplCodeEmitter::EmitCode()
@@ -31,17 +43,11 @@ void CServiceImplCodeEmitter::EmitCode()
 void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
 {
     String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Service").string());
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CServiceDriverCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
-    EmitHeadMacro(sb, ImplFullName_);
+    EmitHeadMacro(sb, implFullName_);
     sb.Append("\n");
     sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
     sb.Append("\n");
@@ -51,7 +57,7 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
     sb.Append("\n");
     EmitTailExternC(sb);
     sb.Append("\n");
-    EmitTailMacro(sb, ImplFullName_);
+    EmitTailMacro(sb, implFullName_);
 
     String data = sb.ToString();
     file.WriteData(data.string(), data.GetLength());
@@ -66,20 +72,8 @@ void CServiceImplCodeEmitter::EmitServiceImplConstructDecl(StringBuilder& sb)
 
 void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sserver/%s.c", directory_.string(), FileName(infName_ + "Service").string());
-    } else {
-        filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_ + "Service").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CServiceDriverCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_ + "Service").string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);

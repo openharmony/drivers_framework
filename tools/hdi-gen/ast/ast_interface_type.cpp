@@ -180,5 +180,28 @@ void ASTInterfaceType::EmitCppReadVar(const String& parcelName, const String& na
             name.string(), name_.string(), parcelName.string());
     }
 }
+
+void ASTInterfaceType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s.writeRemoteObject(%s.asObject());\n", parcelName.string(),
+        name.string());
+}
+
+void ASTInterfaceType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    String stubName = name_.StartsWith("I") ? (name_.Substring(1) + "Stub") : (name_ + "Stub");
+    sb.Append(prefix).AppendFormat("%s = %s.asInterface(%s.readRemoteObject());\n",
+        name.string(), stubName.string(), parcelName.string());
+}
+
+void ASTInterfaceType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    String stubName = name_.StartsWith("I") ? (name_.Substring(1) + "Stub") : (name_ + "Stub");
+    sb.Append(prefix).AppendFormat("%s %s = %s.asInterface(%s.readRemoteObject());\n",
+        EmitJavaType(TypeMode::NO_MODE).string(), name.string(), stubName.string(), parcelName.string());
+}
 } // namespace HDI
 } // namespace OHOS

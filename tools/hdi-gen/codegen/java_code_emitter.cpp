@@ -13,22 +13,56 @@
 
 namespace OHOS {
 namespace HDI {
-JavaCodeEmitter::JavaCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :LightRefCountBase(), ast_(ast), directory_(targetDirectory)
+bool JavaCodeEmitter::OutPut(const AutoPtr<AST>& ast, const String& targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        interface_ = ast_->GetInterfaceDef();
+    if (!Reset(ast, targetDirectory)) {
+        return false;
     }
 
-    if (interface_ != nullptr) {
+    EmitCode();
+    return true;
+}
+
+bool JavaCodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory)
+{
+    if (ast == nullptr) {
+        return false;
+    }
+
+    if (targetDirectory.Equals("")) {
+        return false;
+    }
+
+    CleanData();
+    ast_ = ast;
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        interface_ = ast_->GetInterfaceDef();
         interfaceName_ = interface_->GetName();
         interfaceFullName_ = interface_->GetNamespace()->ToString() + interfaceName_;
         infName_ = interfaceName_.StartsWith("I") ? interfaceName_.Substring(1) : interfaceName_;
         proxyName_ = infName_ + "Proxy";
         proxyFullName_ = interface_->GetNamespace()->ToString() + proxyName_;
-    } else {
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_TYPES) {
         infName_ = ast_->GetName();
     }
+
+    if (!ResolveDirectory(targetDirectory)) {
+        return false;
+    }
+
+    return true;
+}
+
+void JavaCodeEmitter::CleanData()
+{
+    ast_ = nullptr;
+    interface_ = nullptr;
+    directory_ = "";
+    interfaceName_ = "";
+    interfaceFullName_ = "";
+    infName_ = "";
+    proxyName_ = "";
+    proxyFullName_ = "";
 }
 
 String JavaCodeEmitter::FileName(const String& name)

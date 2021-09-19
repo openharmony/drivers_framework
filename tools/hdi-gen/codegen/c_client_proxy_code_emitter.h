@@ -15,12 +15,14 @@ namespace OHOS {
 namespace HDI {
 class CClientProxyCodeEmitter : public CCodeEmitter {
 public:
-    CClientProxyCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory);
+    CClientProxyCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CClientProxyCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitCbProxyHeaderFile();
 
     void EmitProxySourceFile();
@@ -39,14 +41,14 @@ private:
 
     void EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
+    void EmitCreateBuf(StringBuilder& sb, const String& prefix);
+
+    void EmitReleaseBuf(StringBuilder& sb, const String& prefix);
+
     void EmitReadProxyMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
         const String& gotoLabel, StringBuilder& sb, const String& prefix);
 
     String GetGotLabel(const AutoPtr<ASTMethod>& method);
-
-    void EmitErrorHandle(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
-
-    void EmitError(const AutoPtr<ASTType>& type, const String& name, StringBuilder& sb, const String& prefix);
 
     void EmitProxyConstruction(StringBuilder&);
 

@@ -262,5 +262,17 @@ void ASTUnionType::EmitCppUnMarshalling(const String& parcelName, const String& 
     sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
+
+void ASTUnionType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+    const String& prefix) const
+{
+    if (ownership) {
+        String varName = isClient ? String::Format("*%s", name.string()) : name;
+        sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", varName.string());
+        sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", varName.string());
+        sb.Append(prefix + g_tab).AppendFormat("%s = NULL;\n", varName.string());
+        sb.Append(prefix).Append("}\n");
+    }
+}
 } // namespace HDI
 } // namespace OHOS

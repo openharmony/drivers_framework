@@ -232,5 +232,29 @@ void ASTType::EmitCppUnMarshalling(const String& parcelName, const String& name,
 {
     sb.Append(prefix).AppendFormat("//Reading \"%s\" type of data is not supported\n", name_.string());
 }
+
+void ASTType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+    const String& prefix) const
+{
+    // only String, Array, List, struct and union type need recycle memory
+}
+
+void ASTType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("//Writeing \"%s\" type of data is not supported\n", name_.string());
+}
+
+void ASTType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("//Reading \"%s\" type of data is not supported\n", name_.string());
+}
+
+void ASTType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("//Reading \"%s\" type of data is not supported\n", name_.string());
+}
 } // namespace HDI
 } // namespace OHOS

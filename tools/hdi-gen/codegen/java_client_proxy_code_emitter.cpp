@@ -11,6 +11,26 @@
 
 namespace OHOS {
 namespace HDI {
+bool JavaClientProxyCodeEmitter::ResolveDirectory(const String& targetDirectory)
+{
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CppClientInterfaceCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
+}
+
 void JavaClientProxyCodeEmitter::EmitCode()
 {
     EmitProxyFile();
@@ -18,14 +38,8 @@ void JavaClientProxyCodeEmitter::EmitCode()
 
 void JavaClientProxyCodeEmitter::EmitProxyFile()
 {
-    String filePath = String::Format("%s/%s.java", directory_.string(), FileName(proxyName_).string());
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppClientInterfaceCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.java", directory_.string(), FileName(proxyName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -183,22 +197,11 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& m
     sb.Append("\n");
     sb.Append(prefix).AppendFormat("    data.writeInterfaceToken(DESCRIPTOR);\n");
 
-    bool needBlankLine = false;
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
-        if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            EmitWriteMethodParameter(param, "data", sb, prefix + g_tab);
-            needBlankLine = true;
-        } else {
-            AutoPtr<ASTType> type = param->GetType();
-            if (type->GetTypeKind() == TypeKind::TYPE_ARRAY) {
-                EmitWriteOutArrayVariable("data", param->GetName(), type, sb, prefix + g_tab);
-            }
-        }
+        param->EmitJavaWriteVar("data", sb, prefix + g_tab);
     }
-    if (needBlankLine) {
-        sb.Append("\n");
-    }
+    sb.Append("\n");
 
     sb.Append(prefix + g_tab).Append("try {\n");
     sb.Append(prefix + g_tab + g_tab).AppendFormat("if (remote.sendRequest(COMMAND_%s, data, reply, option)) {\n",
@@ -208,9 +211,7 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& m
     sb.Append(prefix + g_tab).Append("    reply.readException();\n");
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
-        if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-            EmitReadMethodParameter(param, "reply", sb, prefix + g_tab + g_tab);
-        }
+        param->EmitJavaReadVar("reply", sb, prefix + g_tab + g_tab);
     }
 
     sb.Append(prefix + g_tab).Append("} finally {\n");
@@ -219,423 +220,6 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& m
     sb.Append(prefix + g_tab).Append("}\n");
     sb.Append(prefix + g_tab).Append("return 0;\n");
     sb.Append(prefix).Append("}\n");
-}
-
-void JavaClientProxyCodeEmitter::EmitWriteMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
-    StringBuilder& sb, const String& prefix)
-{
-    AutoPtr<ASTType> type = param->GetType();
-    EmitWriteVariable(parcelName, param->GetName(), type, sb, prefix);
-}
-
-void JavaClientProxyCodeEmitter::EmitReadMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
-    StringBuilder& sb, const String& prefix)
-{
-    AutoPtr<ASTType> type = param->GetType();
-    EmitReadOutVariable(parcelName, param->GetName(), type, sb, prefix);
-}
-
-void JavaClientProxyCodeEmitter::EmitWriteVariable(const String& parcelName, const String& name,
-    const AutoPtr<ASTType>& type, StringBuilder& sb, const String& prefix)
-{
-    switch (type->GetTypeKind()) {
-        case TypeKind::TYPE_BOOLEAN:
-            sb.Append(prefix).AppendFormat("%s.writeBoolean(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_BYTE:
-            sb.Append(prefix).AppendFormat("%s.writeByte(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_SHORT:
-            sb.Append(prefix).AppendFormat("%s.writeShort(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_INT:
-        case TypeKind::TYPE_FILEDESCRIPTOR:
-            sb.Append(prefix).AppendFormat("%s.writeInt(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_LONG:
-            sb.Append(prefix).AppendFormat("%s.writeLong(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_FLOAT:
-            sb.Append(prefix).AppendFormat("%s.writeFloat(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_DOUBLE:
-            sb.Append(prefix).AppendFormat("%s.writeDouble(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_STRING:
-            sb.Append(prefix).AppendFormat("%s.writeString(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_SEQUENCEABLE:
-            if (type->EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
-                sb.Append(prefix).AppendFormat("%s.writeRemoteObject(%s);\n", parcelName.string(), name.string());
-                break;
-            }
-            sb.Append(prefix).AppendFormat("%s.writeSequenceable(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_INTERFACE:
-            sb.Append(prefix).AppendFormat("%s.writeRemoteObject(%s.asObject());\n", parcelName.string(),
-                name.string());
-            break;
-        case TypeKind::TYPE_LIST: {
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-
-            sb.Append(prefix).AppendFormat("%s.writeInt(%s.size());\n", parcelName.string(), name.string());
-            sb.Append(prefix).AppendFormat("for (%s element : %s) {\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string());
-            EmitWriteVariable(parcelName, "element", elementType, sb, prefix + g_tab);
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_MAP: {
-            AutoPtr<ASTMapType> mapType = dynamic_cast<ASTMapType*>(type.Get());
-            AutoPtr<ASTType> keyType = mapType->GetKeyType();
-            AutoPtr<ASTType> valueType = mapType->GetValueType();
-
-            sb.Append(prefix).AppendFormat("%s.writeInt(%s.size());\n", parcelName.string(), name.string());
-            sb.Append(prefix).AppendFormat("for (Map.Entry<%s, %s> entry : %s.entrySet()) {\n",
-                keyType->EmitJavaType(TypeMode::NO_MODE, true).string(),
-                valueType->EmitJavaType(TypeMode::NO_MODE, true).string(), name.string());
-            EmitWriteVariable(parcelName, "entry.getKey()", keyType, sb, prefix + g_tab);
-            EmitWriteVariable(parcelName, "entry.getValue()", valueType, sb, prefix + g_tab);
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_ARRAY: {
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
-            AutoPtr<ASTType> elementType = arrayType->GetElementType();
-
-            sb.Append(prefix).AppendFormat("if (%s == null) {\n", name.string());
-            sb.Append(prefix).AppendFormat("    %s.writeInt(-1);\n", parcelName.string());
-            sb.Append(prefix).Append("} else { \n");
-            EmitWriteArrayVariable(parcelName, name, elementType, sb, prefix + g_tab);
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-void JavaClientProxyCodeEmitter::EmitWriteArrayVariable(const String& parcelName, const String& name,
-    const AutoPtr<ASTType>& type, StringBuilder& sb, const String& prefix)
-{
-    switch (type->GetTypeKind()) {
-        case TypeKind::TYPE_BOOLEAN:
-            sb.Append(prefix).AppendFormat("%s.writeBooleanArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_BYTE:
-            sb.Append(prefix).AppendFormat("%s.writeByteArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_SHORT:
-            sb.Append(prefix).AppendFormat("%s.writeShortArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_INT:
-        case TypeKind::TYPE_FILEDESCRIPTOR:
-            sb.Append(prefix).AppendFormat("%s.writeIntArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_LONG:
-            sb.Append(prefix).AppendFormat("%s.writeLongArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_FLOAT:
-            sb.Append(prefix).AppendFormat("%s.writeFloatArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_DOUBLE:
-            sb.Append(prefix).AppendFormat("%s.writeDoubleArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_STRING:
-            sb.Append(prefix).AppendFormat("%s.writeStringArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_SEQUENCEABLE:
-            sb.Append(prefix).AppendFormat("%s.writeSequenceableArray(%s);\n", parcelName.string(), name.string());
-            break;
-        default:
-            break;
-    }
-}
-
-void JavaClientProxyCodeEmitter::EmitWriteOutArrayVariable(const String& parcelName, const String& name,
-    const AutoPtr<ASTType>& type, StringBuilder& sb, const String& prefix)
-{
-    sb.Append(prefix).AppendFormat("if (%s == null) {\n", name.string());
-    sb.Append(prefix).AppendFormat("    %s.writeInt(-1);\n", parcelName.string());
-    sb.Append(prefix).Append("} else {\n");
-    sb.Append(prefix).AppendFormat("    %s.writeInt(%s.length);\n", parcelName.string(), name.string());
-    sb.Append(prefix).Append("}\n");
-}
-
-void JavaClientProxyCodeEmitter::EmitReadVariable(const String& parcelName, const String& name,
-    const AutoPtr<ASTType>& type, ParamAttr attribute, StringBuilder& sb, const String& prefix)
-{
-    switch (type->GetTypeKind()) {
-        case TypeKind::TYPE_BOOLEAN:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readBoolean();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_BYTE:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readByte();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_SHORT:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readShort();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_INT:
-        case TypeKind::TYPE_FILEDESCRIPTOR:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readInt();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_LONG:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readLong();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_FLOAT:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readFloat();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_DOUBLE:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readDouble();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_STRING:
-            sb.Append(prefix).AppendFormat("%s %s = %s.readString();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_SEQUENCEABLE:
-            if (attribute == ParamAttr::PARAM_OUT && type->EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
-                sb.Append(prefix).AppendFormat("IRemoteObject %s = %s.readRemoteObject();\n",
-                    name.string(), parcelName.string());
-                break;
-            }
-            if (attribute == ParamAttr::PARAM_OUT) {
-                sb.Append(prefix).AppendFormat("%s %s = new %s();\n",
-                    type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
-                    type->EmitJavaType(TypeMode::NO_MODE).string());
-            }
-            sb.Append(prefix).AppendFormat("%s.readSequenceable(%s);\n", parcelName.string(), name.string());
-
-            break;
-        case TypeKind::TYPE_INTERFACE:
-            sb.Append(prefix).AppendFormat("%s %s = %s.asInterface(%s.readRemoteObject());\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
-                StubName(type->EmitJavaType(TypeMode::NO_MODE)).string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_LIST: {
-            sb.Append(prefix).AppendFormat("%s %s = new Array%s();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
-                type->EmitJavaType(TypeMode::NO_MODE).string());
-            sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
-            sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
-            sb.Append(prefix + g_tab).AppendFormat("%s.add(value);\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_MAP: {
-            sb.Append(prefix).AppendFormat("%s %s = new Hash%s();\n",
-                type->EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
-                type->EmitJavaType(TypeMode::NO_MODE).string());
-            sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
-            sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
-
-            AutoPtr<ASTMapType> mapType = dynamic_cast<ASTMapType*>(type.Get());
-            AutoPtr<ASTType> keyType = mapType->GetKeyType();
-            AutoPtr<ASTType> valueType = mapType->GetValueType();
-
-            EmitReadVariable(parcelName, "key", keyType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
-            EmitReadVariable(parcelName, "value", valueType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
-            sb.Append(prefix + g_tab).AppendFormat("%s.put(key, value);\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_ARRAY: {
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
-            if (attribute == ParamAttr::PARAM_OUT) {
-                EmitReadOutArrayVariable(parcelName, name, arrayType, sb, prefix);
-            } else {
-                EmitReadArrayVariable(parcelName, name, arrayType, attribute, sb, prefix);
-            }
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-void JavaClientProxyCodeEmitter::EmitReadArrayVariable(const String& parcelName, const String& name,
-    const AutoPtr<ASTArrayType>& arrayType, ParamAttr attribute, StringBuilder& sb, const String& prefix)
-{
-    AutoPtr<ASTType> elementType = arrayType->GetElementType();
-    switch (elementType->GetTypeKind()) {
-        case TypeKind::TYPE_BOOLEAN:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readBooleanArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_BYTE:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readByteArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_SHORT:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readShortArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_INT:
-        case TypeKind::TYPE_FILEDESCRIPTOR:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readIntArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_LONG:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readLongArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_FLOAT:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readFloatArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_DOUBLE:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readDoubleArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_STRING:
-            sb.Append(prefix).AppendFormat("%s[] %s = %s.readStringArray();\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_SEQUENCEABLE:
-            sb.Append(prefix).AppendFormat("int size = %s.readInt();\n", parcelName.string());
-            sb.Append(prefix).AppendFormat("%s %s = new %s[size];\n",
-                elementType->EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
-                elementType->EmitJavaType(TypeMode::NO_MODE).string());
-            sb.Append(prefix).AppendFormat("for (int i = 0; i < size; ++i) {\n");
-            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_IN, sb, prefix + g_tab);
-            sb.Append(prefix + g_tab).AppendFormat("%s[i] = value;\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        default:
-            break;
-    }
-}
-
-void JavaClientProxyCodeEmitter::EmitReadOutArrayVariable(const String& parcelName, const String& name,
-    const AutoPtr<ASTArrayType>& arrayType, StringBuilder& sb, const String& prefix)
-{
-    AutoPtr<ASTType> elementType = arrayType->GetElementType();
-    switch (elementType->GetTypeKind()) {
-        case TypeKind::TYPE_BOOLEAN:
-            sb.Append(prefix).AppendFormat("%s.readBooleanArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_BYTE:
-            sb.Append(prefix).AppendFormat("%s.readByteArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_SHORT:
-            sb.Append(prefix).AppendFormat("%s.readShortArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_INT:
-        case TypeKind::TYPE_FILEDESCRIPTOR:
-            sb.Append(prefix).AppendFormat("%s.readIntArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_LONG:
-            sb.Append(prefix).AppendFormat("%s.readLongArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_FLOAT:
-            sb.Append(prefix).AppendFormat("%s.readFloatArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_DOUBLE:
-            sb.Append(prefix).AppendFormat("%s.readDoubleArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_STRING:
-            sb.Append(prefix).AppendFormat("%s.readStringArray(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_SEQUENCEABLE:
-            sb.Append(prefix).AppendFormat("%s.readSequenceableArray(%s);\n", parcelName.string(), name.string());
-            break;
-        default:
-            break;
-    }
-}
-
-void JavaClientProxyCodeEmitter::EmitReadOutVariable(const String& parcelName, const String& name,
-    const AutoPtr<ASTType>& type, StringBuilder& sb, const String& prefix)
-{
-    switch (type->GetTypeKind()) {
-        case TypeKind::TYPE_BOOLEAN:
-            sb.Append(prefix).AppendFormat("%s = %s.readBoolean();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_BYTE:
-            sb.Append(prefix).AppendFormat("%s = %s.readByte();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_SHORT:
-            sb.Append(prefix).AppendFormat("%s = %s.readShort();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_INT:
-        case TypeKind::TYPE_FILEDESCRIPTOR:
-            sb.Append(prefix).AppendFormat("%s = %s.readInt();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_LONG:
-            sb.Append(prefix).AppendFormat("%s = %s.readLong();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_FLOAT:
-            sb.Append(prefix).AppendFormat("%s = %s.readFloat();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_DOUBLE:
-            sb.Append(prefix).AppendFormat("%s = %s.readDouble();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_STRING:
-            sb.Append(prefix).AppendFormat("%s = %s.readString();\n",
-                name.string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_SEQUENCEABLE:
-            if (type->EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
-                sb.Append(prefix).AppendFormat("%s = %s.readRemoteObject();\n", name.string(), parcelName.string());
-                break;
-            }
-            sb.Append(prefix).AppendFormat("%s.readSequenceable(%s);\n", parcelName.string(), name.string());
-            break;
-        case TypeKind::TYPE_INTERFACE:
-            sb.Append(prefix).AppendFormat("%s = %s.asInterface(%s.readRemoteObject());\n", name.string(),
-                StubName(type->EmitJavaType(TypeMode::NO_MODE)).string(), parcelName.string());
-            break;
-        case TypeKind::TYPE_LIST: {
-            sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
-            sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
-
-            AutoPtr<ASTListType> listType = dynamic_cast<ASTListType*>(type.Get());
-            AutoPtr<ASTType> elementType = listType->GetElementType();
-
-            EmitReadVariable(parcelName, "value", elementType, ParamAttr::PARAM_OUT, sb, prefix + g_tab);
-            sb.Append(prefix + g_tab).AppendFormat("%s.add(value);\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_MAP: {
-            sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
-            sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
-
-            AutoPtr<ASTMapType> mapType = dynamic_cast<ASTMapType*>(type.Get());
-            AutoPtr<ASTType> keyType = mapType->GetKeyType();
-            AutoPtr<ASTType> valueType = mapType->GetValueType();
-
-            EmitReadVariable(parcelName, "key", keyType, ParamAttr::PARAM_OUT, sb, prefix + g_tab);
-            EmitReadVariable(parcelName, "value", valueType, ParamAttr::PARAM_OUT, sb, prefix + g_tab);
-            sb.Append(prefix + g_tab).AppendFormat("%s.put(key, value);\n", name.string());
-            sb.Append(prefix).Append("}\n");
-            break;
-        }
-        case TypeKind::TYPE_ARRAY: {
-            AutoPtr<ASTArrayType> arrayType = dynamic_cast<ASTArrayType*>(type.Get());
-            EmitReadOutArrayVariable(parcelName, name, arrayType, sb, prefix);
-            break;
-        }
-        default:
-            break;
-    }
 }
 
 void JavaClientProxyCodeEmitter::EmitLocalVariable(const AutoPtr<ASTParameter>& param, StringBuilder& sb,
@@ -658,11 +242,6 @@ void JavaClientProxyCodeEmitter::EmitLocalVariable(const AutoPtr<ASTParameter>& 
         sb.Append(prefix).AppendFormat("%s %s;\n", type->EmitJavaType(TypeMode::NO_MODE).string(),
             param->GetName().string());
     }
-}
-
-String JavaClientProxyCodeEmitter::StubName(const String& name)
-{
-    return name.StartsWith("I") ? (name.Substring(1) + "Stub") : (name + "Stub");
 }
 } // namespace HDI
 } // namespace OHOS

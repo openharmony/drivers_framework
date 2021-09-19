@@ -185,10 +185,8 @@ bool Parser::ParseIdlImport(std::shared_ptr<FileDetail>& fileDetailPtr)
 bool Parser::ParseFile()
 {
     bool ret = true;
-
     ast_ = new AST();
     ast_->SetIdlFile(lexer_->GetFilePath());
-
     ParseLicense();
 
     Token token;
@@ -229,17 +227,7 @@ bool Parser::ParseFile()
         }
     }
     lexer_->GetToken();
-
-    // here, ast_ cannot be a sequenceable idl
-    if (ast_->GetInterfaceDef() != nullptr) {
-        if (ast_->GetInterfaceDef()->IsCallback()) {
-            ast_->SetAStFileType(ASTFileType::AST_ICALLBACK);
-        } else {
-            ast_->SetAStFileType(ASTFileType::AST_IFACE);
-        }
-    } else {
-        ast_->SetAStFileType(ASTFileType::AST_TYPES);
-    }
+    SetAstFileType();
 
     return ret;
 }
@@ -413,48 +401,11 @@ bool Parser::ParseAttribute()
     bool ret = true;
     AutoPtr<Attribute> attributes = nullptr;
 
-    // read '['
-    Token token = lexer_->GetToken();
-    if (token == Token::BRACKETS_LEFT) {
-        attributes = new Attribute();
-        token = lexer_->PeekToken();
-        while (token != Token::BRACKETS_RIGHT) {
-            switch (token) {
-                case Token::ONEWAY:
-                    attributes->isOneWay = true;
-                    break;
-                case Token::CALLBACK:
-                    attributes->isCallback = true;
-                    break;
-                case Token::FULL:
-                    attributes->isFull = true;
-                    break;
-                case Token::LITE:
-                    attributes->isLite = true;
-                    break;
-                default: {
-                    LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
-                    lexer_->SkipCurrentLine(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
-                    lexer_->GetToken();
-                    return false;
-                }
-            }
-            lexer_->GetToken();
-            token = lexer_->PeekToken();
-            if (token == Token::COMMA) {
-                lexer_->GetToken();
-                token = lexer_->PeekToken();
-            } else if (token == Token::BRACKETS_RIGHT) {
-                break;
-            } else {
-                LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
-                return false;
-            }
-        }
-        lexer_->GetToken();
+    if (!ParseAttributeBody(attributes)) {
+        return false;
     }
 
-    token = lexer_->PeekToken();
+    Token token = lexer_->PeekToken();
     switch (token) {
         case Token::ENUM:
             ret = ParseEnumDefine(attributes) && ret;
@@ -479,11 +430,6 @@ bool Parser::ParseAttribute()
 bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
 {
     lexer_->GetToken();
-    bool ret = true;
-    bool isOneWay = false;
-    bool isCallback = false;
-    bool isFull = false;
-    bool isLite = false;
     String interfaceName;
 
     Token token = lexer_->PeekToken();
@@ -494,7 +440,6 @@ bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
         return false;
     }
     lexer_->GetToken();
-
     interfaceName = lexer_->GetIdentifier();
 
     token = lexer_->PeekToken();
@@ -504,8 +449,6 @@ bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
         lexer_->GetToken();
         return false;
     }
-
-    // read '{'
     lexer_->GetToken();
 
     if (interfaceName.IsEmpty()) {
@@ -529,7 +472,13 @@ bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
         interface->SetFull(attributes->isFull);
         interface->SetLite(attributes->isLite);
     }
+    return ParseInterfaceBody(interface);
+}
 
+bool Parser::ParseInterfaceBody(const AutoPtr<ASTInterfaceType>& interface)
+{
+    bool ret = true;
+    Token token = lexer_->PeekToken();
     while (token != Token::BRACES_RIGHT && token != Token::END_OF_FILE) {
         ret = ParseMethod(interface) && ret;
         token = lexer_->PeekToken();
@@ -540,7 +489,6 @@ bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
         lexer_->SkipEof();
         return false;
     }
-
     lexer_->GetToken();
 
     if (ast_->GetInterfaceDef() != nullptr) {
@@ -550,16 +498,13 @@ bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
     }
 
     ast_->AddInterfaceDef(interface);
-
     return ret;
 }
 
 bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
 {
-    bool ret = true;
-    AutoPtr<Attribute> attributes = new Attribute();
-    ret = ParseMethodAttr(interface, attributes) && ret;
-    if (!ret) {
+    AutoPtr<Attribute> attributes = nullptr;
+    if (!ParseAttributeBody(attributes)) {
         return false;
     }
 
@@ -580,7 +525,7 @@ bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
         }
         return false;
     }
-    token = lexer_->GetToken();
+    lexer_->GetToken();
 
     AutoPtr<ASTMethod> method = new ASTMethod();
     method->SetName(lexer_->GetIdentifier());
@@ -591,24 +536,73 @@ bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
         method->SetLite(attributes->isLite);
     }
 
-    token = lexer_->PeekToken();
-    if (token != Token::PARENTHESES_LEFT) {
-        LogError(String("'(' is expected."));
-        if (token == Token::BRACES_RIGHT) {
-            return false;
-        }
-        // jump over colon
-        lexer_->GetToken();
-        while (token != Token::SEMICOLON && token != Token::END_OF_FILE) {
-            token = lexer_->PeekToken();
-            if (token == Token::BRACES_RIGHT) {
-                break;
-            }
-            lexer_->GetToken();
-        }
+    if (!ParseParameterList(method)) {
         return false;
     }
-    token = lexer_->GetToken();
+
+    interface->AddMethod(method);
+    return true;
+}
+
+bool Parser::ParseAttributeBody(AutoPtr<Attribute>& attributes)
+{
+    Token token = lexer_->PeekToken();
+    if (token != Token::BRACKETS_LEFT) {
+        return true;
+    }
+    lexer_->GetToken();
+
+    attributes = new Attribute();
+    token = lexer_->PeekToken();
+    while (token != Token::BRACKETS_RIGHT) {
+        switch (token) {
+            case Token::ONEWAY:
+                attributes->isOneWay = true;
+                break;
+            case Token::CALLBACK:
+                attributes->isCallback = true;
+                break;
+            case Token::FULL:
+                attributes->isFull = true;
+                break;
+            case Token::LITE:
+                attributes->isLite = true;
+                break;
+            default: {
+                LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
+                lexer_->Skip(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
+                lexer_->GetToken();
+                return false;
+            }
+        }
+        lexer_->GetToken();
+        token = lexer_->PeekToken();
+        if (token == Token::COMMA) {
+            lexer_->GetToken();
+            token = lexer_->PeekToken();
+        } else if (token == Token::BRACKETS_RIGHT) {
+            break;
+        } else {
+            LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
+            lexer_->Skip(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
+            lexer_->GetToken();
+            return false;
+        }
+    }
+    lexer_->GetToken();
+    return true;
+}
+
+bool Parser::ParseParameterList(AutoPtr<ASTMethod>& method)
+{
+    bool ret = true;
+    Token token = lexer_->PeekToken();
+    if (token != Token::PARENTHESES_LEFT) {
+        LogError(String("'(' is expected."));
+        lexer_->Skip(';');
+        return false;
+    }
+    lexer_->GetToken();
 
     token = lexer_->PeekToken();
     while (token != Token::PARENTHESES_RIGHT && token != Token::END_OF_FILE) {
@@ -637,64 +631,44 @@ bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
         return false;
     }
     lexer_->GetToken();
-    interface->AddMethod(method);
-    return ret;
-}
-
-bool Parser::ParseMethodAttr(const AutoPtr<ASTInterfaceType>& interface, const AutoPtr<Attribute>& attributes)
-{
-    if (interface == nullptr || attributes == nullptr) {
-        return false;
-    }
-
-    Token token = lexer_->PeekToken();
-    if (token == Token::BRACES_RIGHT) {
-        LogError(String::Format("%s has no method.", interface->GetName().string()));
-        lexer_->SkipCurrentLine(Lexer::TokenToChar(Token::BRACES_RIGHT));
-        lexer_->GetToken();
-        return false;
-    }
-
-    if (token == Token::BRACKETS_LEFT) {
-        lexer_->GetToken();
-        token = lexer_->PeekToken();
-        while (token != Token::BRACKETS_RIGHT) {
-            switch (token) {
-                case Token::ONEWAY:
-                    attributes->isOneWay = true;
-                    break;
-                case Token::FULL:
-                    attributes->isFull = true;
-                    break;
-                case Token::LITE:
-                    attributes->isLite = true;
-                    break;
-                default: {
-                    LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
-                    lexer_->SkipCurrentLine(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
-                    lexer_->GetToken();
-                    return false;
-                }
-            }
-            lexer_->GetToken();
-            token = lexer_->PeekToken();
-            if (token == Token::COMMA) {
-                lexer_->GetToken();
-                token = lexer_->PeekToken();
-            } else if (token == Token::BRACKETS_RIGHT) {
-            } else {
-                LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
-                lexer_->SkipCurrentLine(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
-                lexer_->GetToken();
-                return false;
-            }
-        }
-        lexer_->GetToken();
-    }
     return true;
 }
 
 bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
+{
+    AutoPtr<ASTParameter> parameter = new ASTParameter();
+    if (!ParseParamAttr(parameter)) {
+        return false;
+    }
+
+    AutoPtr<ASTType> type = ParseType();
+
+    Token token = lexer_->PeekToken();
+    if (type == nullptr) {
+        while (token != Token::COMMA && token != Token::PARENTHESES_RIGHT && token != Token::END_OF_FILE) {
+            lexer_->GetToken();
+            token = lexer_->PeekToken();
+        }
+        return false;
+    }
+
+    if (token != Token::IDENTIFIER) {
+        LogError(String("Parameter name is expected."));
+        while (token != Token::COMMA && token != Token::PARENTHESES_RIGHT && token != Token::END_OF_FILE) {
+            lexer_->GetToken();
+            token = lexer_->PeekToken();
+        }
+        return false;
+    }
+    lexer_->GetToken();
+
+    parameter->SetName(lexer_->GetIdentifier());
+    parameter->SetType(type);
+    method->AddParameter(parameter);
+    return true;
+}
+
+bool Parser::ParseParamAttr(const AutoPtr<ASTParameter>& parameter)
 {
     Token token = lexer_->PeekToken();
     if (token != Token::BRACKETS_LEFT) {
@@ -707,52 +681,11 @@ bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
     }
     lexer_->GetToken();
 
-    AutoPtr<ASTParameter> parameter = new ASTParameter();
-    if (!ParseParamAttr(parameter)) {
-        return false;
-    }
-
-    token = lexer_->PeekToken();
-    if (token != Token::BRACKETS_RIGHT) {
-        LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
-        while (token != Token::SEMICOLON && token != Token::END_OF_FILE) {
-            lexer_->GetToken();
-            token = lexer_->PeekToken();
-        }
-        return false;
-    }
-    lexer_->GetToken();
-    AutoPtr<ASTType> type = ParseType();
-    if (type == nullptr) {
-        while (token != Token::COMMA && token != Token::PARENTHESES_RIGHT && token != Token::END_OF_FILE) {
-            lexer_->GetToken();
-            token = lexer_->PeekToken();
-        }
-        return false;
-    }
-
-    token = lexer_->PeekToken();
-    if (token != Token::IDENTIFIER) {
-        LogError(String("Parameter name is expected."));
-        while (token != Token::COMMA && token != Token::PARENTHESES_RIGHT && token != Token::END_OF_FILE) {
-            lexer_->GetToken();
-            token = lexer_->PeekToken();
-        }
-        return false;
-    }
-    lexer_->GetToken();
-    parameter->SetName(lexer_->GetIdentifier());
-    parameter->SetType(type);
-    method->AddParameter(parameter);
-    return true;
-}
-
-bool Parser::ParseParamAttr(const AutoPtr<ASTParameter>& parameter)
-{
     if (parameter == nullptr) {
         return false;
     }
-    Token token = lexer_->PeekToken();
+
+    token = lexer_->PeekToken();
     if (token == Token::IN) {
         lexer_->GetToken();
         parameter->SetAttribute(ParamAttr::PARAM_IN);
@@ -768,6 +701,18 @@ bool Parser::ParseParamAttr(const AutoPtr<ASTParameter>& parameter)
         }
         return false;
     }
+
+    token = lexer_->PeekToken();
+    if (token != Token::BRACKETS_RIGHT) {
+        LogError(String::Format("']' is expected."));
+        while (token != Token::SEMICOLON && token != Token::END_OF_FILE) {
+            lexer_->GetToken();
+            token = lexer_->PeekToken();
+        }
+        return false;
+    }
+    lexer_->GetToken();
+
     return true;
 }
 
@@ -791,25 +736,8 @@ AutoPtr<ASTType> Parser::ParseType()
         lexer_->GetToken();
         type = ast_->FindType(lexer_->GetIdentifier());
     } else if (token == Token::UNSIGNED) {
-        String unsignedStr = lexer_->DumpToken();
         lexer_->GetToken();
-        token = lexer_->PeekToken();
-        switch (token) {
-            case Token::CHAR:
-            case Token::SHORT:
-            case Token::INTEGER:
-            case Token::LONG: {
-                type = ast_->FindType(unsignedStr + " " + lexer_->DumpToken());
-                lexer_->GetToken();
-                break;
-            }
-            default: {
-                LogError(typeLineNo, typeColumnNo,
-                    String::Format("'unsigned %s' type was not declared in the idl file.",
-                        lexer_->DumpToken().string()));
-                return nullptr;
-            }
-        }
+        type = ParseUnsignedType(typeLineNo, typeColumnNo);
     } else {
         LogError(typeLineNo, typeColumnNo, String("Invalid type name."));
         return nullptr;
@@ -823,27 +751,36 @@ AutoPtr<ASTType> Parser::ParseType()
     token = lexer_->PeekToken();
     if (token == Token::BRACKETS_LEFT) {
         lexer_->GetToken();
-        token = lexer_->PeekToken();
-        if (token != Token::BRACKETS_RIGHT) {
-            LogError(typeLineNo, typeColumnNo, String("']' is expected."));
-            return nullptr;
-        }
-        lexer_->GetToken();
-
-        if (type != nullptr) {
-            AutoPtr<ASTArrayType> arrayType = new ASTArrayType();
-            arrayType->SetElementType(type);
-
-            type = ast_->FindType(arrayType->ToString());
-            if (type == nullptr) {
-                ast_->AddType(arrayType.Get());
-                type = static_cast<ASTType*>(arrayType.Get());
-            }
-        }
+        type = ParseArrayType(type);
     }
 
     if (!CheckType(typeLineNo, typeColumnNo, type)) {
         return nullptr;
+    }
+
+    return type;
+}
+
+AutoPtr<ASTType> Parser::ParseUnsignedType(int typeLineNo, int typeColumnNo)
+{
+    AutoPtr<ASTType> type = nullptr;
+    String unsignedStr = lexer_->DumpToken();
+    Token token = lexer_->PeekToken();
+    switch (token) {
+        case Token::CHAR:
+        case Token::SHORT:
+        case Token::INTEGER:
+        case Token::LONG: {
+            type = ast_->FindType(unsignedStr + " " + lexer_->DumpToken());
+            lexer_->GetToken();
+            break;
+        }
+        default: {
+            LogError(typeLineNo, typeColumnNo,
+                String::Format("'unsigned %s' type was not declared in the idl file.",
+                    lexer_->DumpToken().string()));
+            return nullptr;
+        }
     }
 
     return type;
@@ -934,6 +871,31 @@ AutoPtr<ASTType> Parser::ParseMap()
     }
 
     return ret;
+}
+
+AutoPtr<ASTType> Parser::ParseArrayType(const AutoPtr<ASTType>& elementType)
+{
+    Token token = lexer_->PeekToken();
+    if (token != Token::BRACKETS_RIGHT) {
+        LogError(String("']' is expected."));
+        return nullptr;
+    }
+    lexer_->GetToken();
+
+    if (elementType == nullptr) {
+        return nullptr;
+    }
+
+    AutoPtr<ASTArrayType> arrayType = new ASTArrayType();
+    arrayType->SetElementType(elementType);
+    AutoPtr<ASTType> type = ast_->FindType(arrayType->ToString());
+
+    if (type == nullptr) {
+        ast_->AddType(arrayType.Get());
+        type = static_cast<ASTType*>(arrayType.Get());
+    }
+
+    return type;
 }
 
 AutoPtr<ASTType> Parser::ParseCustomType()
@@ -1106,7 +1068,22 @@ bool Parser::ParseStructDefine(const AutoPtr<Attribute>& attributes)
     type->SetName(lexer_->GetIdentifier());
     lexer_->GetToken();
 
-    token = lexer_->PeekToken();
+    if (!ParseStructMember(type)) {
+        return false;
+    }
+
+    if (attributes != nullptr) {
+        type->SetFull(attributes->isFull);
+        type->SetLite(attributes->isLite);
+    }
+
+    ast_->AddTypeDefinition(type.Get());
+    return true;
+}
+
+bool Parser::ParseStructMember(const AutoPtr<ASTStructType>& type)
+{
+    Token token = lexer_->PeekToken();
     if (token != Token::BRACES_LEFT) {
         lexer_->SkipCurrentLine(';');
         return false;
@@ -1129,7 +1106,6 @@ bool Parser::ParseStructDefine(const AutoPtr<Attribute>& attributes)
         }
         String memberName = lexer_->GetIdentifier();
         lexer_->GetToken();
-
         type->AddMember(member, memberName);
 
         token = lexer_->PeekToken();
@@ -1152,13 +1128,6 @@ bool Parser::ParseStructDefine(const AutoPtr<Attribute>& attributes)
         return false;
     }
     lexer_->GetToken();
-
-    if (attributes != nullptr) {
-        type->SetFull(attributes->isFull);
-        type->SetLite(attributes->isLite);
-    }
-
-    ast_->AddTypeDefinition(type.Get());
     return true;
 }
 
@@ -1180,7 +1149,22 @@ bool Parser::ParseUnionDefine(const AutoPtr<Attribute>& attributes)
     type->SetName(lexer_->GetIdentifier());
     lexer_->GetToken();
 
-    token = lexer_->PeekToken();
+    if (!ParseUnionMember(type)) {
+        return false;
+    }
+
+    if (attributes != nullptr) {
+        type->SetFull(attributes->isFull);
+        type->SetLite(attributes->isLite);
+    }
+
+    ast_->AddTypeDefinition(type.Get());
+    return true;
+}
+
+bool Parser::ParseUnionMember(const AutoPtr<ASTUnionType>& type)
+{
+    Token token = lexer_->PeekToken();
     if (token != Token::BRACES_LEFT) {
         lexer_->SkipCurrentLine(';');
         return false;
@@ -1203,7 +1187,6 @@ bool Parser::ParseUnionDefine(const AutoPtr<Attribute>& attributes)
         }
         String memberName = lexer_->GetIdentifier();
         lexer_->GetToken();
-
         type->AddMember(member, memberName);
 
         token = lexer_->PeekToken();
@@ -1226,13 +1209,6 @@ bool Parser::ParseUnionDefine(const AutoPtr<Attribute>& attributes)
         return false;
     }
     lexer_->GetToken();
-
-    if (attributes != nullptr) {
-        type->SetFull(attributes->isFull);
-        type->SetLite(attributes->isLite);
-    }
-
-    ast_->AddTypeDefinition(type.Get());
     return true;
 }
 
@@ -1268,6 +1244,19 @@ bool Parser::CheckType(int lineNo, int columnNo, const AutoPtr<ASTType>& type)
     return true;
 }
 
+void Parser::SetAstFileType()
+{
+    if (ast_->GetInterfaceDef() != nullptr) {
+        if (ast_->GetInterfaceDef()->IsCallback()) {
+            ast_->SetAStFileType(ASTFileType::AST_ICALLBACK);
+        } else {
+            ast_->SetAStFileType(ASTFileType::AST_IFACE);
+        }
+    } else {
+        ast_->SetAStFileType(ASTFileType::AST_TYPES);
+    }
+}
+
 bool Parser::CheckIntegrity()
 {
     if (ast_ == nullptr) {
@@ -1287,36 +1276,10 @@ bool Parser::CheckIntegrity()
 
     switch (ast_->GetASTFileType()) {
         case ASTFileType::AST_IFACE: {
-            AutoPtr<ASTInterfaceType> interface = ast_->GetInterfaceDef();
-            if (interface == nullptr) {
-                LogError(String("ast's interface is empty."));
-                return false;
-            }
-
-            if (ast_->GetTypeDefinitionNumber() > 0) {
-                LogError(String("interface ast cannot has custom types."));
-                return false;
-            }
-
-            if (interface->GetMethodNumber() == 0) {
-                LogError(String("interface ast has no method."));
-                return false;
-            }
-
-            break;
+            return CheckInterfaceAst();
         }
         case ASTFileType::AST_ICALLBACK: {
-            AutoPtr<ASTInterfaceType> interface = ast_->GetInterfaceDef();
-            if (interface == nullptr) {
-                LogError(String("ast's interface is empty."));
-                return false;
-            }
-
-            if (!interface->IsCallback()) {
-                LogError(String("ast is callback, but ast's interface is not callback."));
-                return false;
-            }
-            break;
+            return CheckCallbackAst();
         }
         case ASTFileType::AST_SEQUENCEABLE: {
             LogError(String("it's impossible that ast is sequenceable."));
@@ -1333,6 +1296,41 @@ bool Parser::CheckIntegrity()
             break;
     }
 
+    return true;
+}
+
+bool Parser::CheckInterfaceAst()
+{
+    AutoPtr<ASTInterfaceType> interface = ast_->GetInterfaceDef();
+    if (interface == nullptr) {
+        LogError(String("ast's interface is empty."));
+        return false;
+    }
+
+    if (ast_->GetTypeDefinitionNumber() > 0) {
+        LogError(String("interface ast cannot has custom types."));
+        return false;
+    }
+
+    if (interface->GetMethodNumber() == 0) {
+        LogError(String("interface ast has no method."));
+        return false;
+    }
+    return true;
+}
+
+bool Parser::CheckCallbackAst()
+{
+    AutoPtr<ASTInterfaceType> interface = ast_->GetInterfaceDef();
+    if (interface == nullptr) {
+        LogError(String("ast's interface is empty."));
+        return false;
+    }
+
+    if (!interface->IsCallback()) {
+        LogError(String("ast is callback, but ast's interface is not callback."));
+        return false;
+    }
     return true;
 }
 

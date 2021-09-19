@@ -13,17 +13,28 @@
 
 namespace OHOS {
 namespace HDI {
-const char* ModuleParser::TAG = "ModuleParser";
+AutoPtr<ASTModule> ModuleParser::Parse()
+{
+    if (!ParserDependencies()) {
+        return nullptr;
+    }
+
+    if (!CompileFiles()) {
+        return nullptr;
+    }
+
+    return module_;
+}
 
 bool ModuleParser::ParserDependencies()
 {
     if (!ParserAllImports(option_.GetSourceFile())) {
-        Logger::E(TAG, "Parsing all idl file failed.");
+        Logger::E(g_tab, "Parsing all idl file failed.");
         return false;
     }
 
     if (!CheckCircularReference()) {
-        Logger::E(TAG, "has circle reference.");
+        Logger::E(g_tab, "has circle reference.");
         return false;
     }
 
@@ -36,7 +47,7 @@ bool ModuleParser::CompileFiles()
 
     for (const auto& filePath : compileFiles_) {
         if (!parserPtr->Parse(filePath)) {
-            Logger::E(TAG, "parse %s failed", filePath.string());
+            Logger::E(g_tab, "parse %s failed", filePath.string());
             return false;
         }
     }
@@ -73,19 +84,19 @@ bool ModuleParser::ParserAllImportsRecursion(const std::shared_ptr<FileDetail>& 
         std::unique_ptr<Parser> parserPtr = std::make_unique<Parser>(option_);
         std::shared_ptr<FileDetail> file = nullptr;
         if (!parserPtr->Parse(filePath, file)) {
-            Logger::E(TAG, "Parsing %s failed.", filePath.string());
+            Logger::E(g_tab, "Parsing %s failed.", filePath.string());
             return false;
         }
 
         if (file == nullptr) {
-            Logger::E(TAG, "Parsing %s failed, generator filedetail is nullptr.", filePath.string());
+            Logger::E(g_tab, "Parsing %s failed, generator filedetail is nullptr.", filePath.string());
             return false;
         }
 
         sourceFiles_[file->GetFullName()] = file;
 
         if (!ParserAllImportsRecursion(file)) {
-            Logger::E(TAG, "Parsing %s file's import failed.", file->GetFilePath().string());
+            Logger::E(g_tab, "Parsing %s file's import failed.", file->GetFilePath().string());
             return false;
         }
     }

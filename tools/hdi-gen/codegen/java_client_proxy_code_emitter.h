@@ -16,13 +16,14 @@ namespace OHOS {
 namespace HDI {
 class JavaClientProxyCodeEmitter : public JavaCodeEmitter {
 public:
-    JavaClientProxyCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-        : JavaCodeEmitter(ast, targetDirectory) {}
+    JavaClientProxyCodeEmitter() : JavaCodeEmitter() {}
 
     virtual ~JavaClientProxyCodeEmitter() = default;
+private:
+    bool ResolveDirectory(const String& targetDirectory) override;
 
     void EmitCode() override;
-private:
+
     void EmitProxyFile();
 
     void EmitProxyImports(StringBuilder& sb);
@@ -47,20 +48,8 @@ private:
 
     void EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
-    void EmitWriteMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, StringBuilder& sb,
-        const String& prefix);
-
     void EmitReadMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, StringBuilder& sb,
         const String& prefix);
-
-    void EmitWriteVariable(const String& parcelName, const String& name, const AutoPtr<ASTType>& type,
-        StringBuilder& sb, const String& prefix);
-
-    void EmitWriteArrayVariable(const String& parcelName, const String& name, const AutoPtr<ASTType>& type,
-        StringBuilder& sb, const String& prefix);
-
-    void EmitWriteOutArrayVariable(const String& parcelName, const String& name, const AutoPtr<ASTType>& type,
-        StringBuilder& sb, const String& prefix);
 
     void EmitReadVariable(const String& parcelName, const String& name, const AutoPtr<ASTType>& type,
         ParamAttr attribute, StringBuilder& sb, const String& prefix);
@@ -75,8 +64,6 @@ private:
         StringBuilder& sb, const String& prefix);
 
     void EmitLocalVariable(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
-
-    String StubName(const String& name);
 };
 } // namespace HDI
 } // namespace OHOS

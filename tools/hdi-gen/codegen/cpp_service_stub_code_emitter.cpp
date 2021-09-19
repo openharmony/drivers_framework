@@ -12,12 +12,24 @@
 
 namespace OHOS {
 namespace HDI {
-CppServiceStubCodeEmitter::CppServiceStubCodeEmitter(const AutoPtr<AST>& ast, const String& targetDirectory)
-    :CppCodeEmitter(ast, targetDirectory)
+bool CppServiceStubCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    String stubFullName = String::Format("%sserver.%s",
-        interface_->GetNamespace()->ToString().string(), stubName_.string());
-    sourceFileName_ = String::Format("%s.cpp", FileName(stubFullName).string());
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/server/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CppServiceStubCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
 }
 
 void CppServiceStubCodeEmitter::EmitCode()
@@ -28,20 +40,8 @@ void CppServiceStubCodeEmitter::EmitCode()
 
 void CppServiceStubCodeEmitter::EmitStubHeaderFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sserver/%s.h", directory_.string(), FileName(infName_ + "Stub").string());
-    } else {
-        filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Stub").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppServiceStubCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.h", directory_.string(), FileName(stubName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -196,20 +196,8 @@ void CppServiceStubCodeEmitter::EmitStubExternalsMethodsDel(StringBuilder& sb)
 
 void CppServiceStubCodeEmitter::EmitStubSourceFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sserver/%s.cpp", directory_.string(), FileName(infName_ + "Stub").string());
-    } else {
-        filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_ + "Stub").string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppServiceStubCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.cpp", directory_.string(), FileName(stubName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -290,34 +278,8 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
         }
     }
 
-    if (method->GetParameterNumber() == 0) {
-        if (!isCallbackInterface()) {
-            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = service.%s();\n", method->GetName().string());
-        } else {
-            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = %s();\n", method->GetName().string());
-        }
-    } else {
-        if (!isCallbackInterface()) {
-            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = service.%s(", method->GetName().string());
-        } else {
-            sb.Append(prefix + g_tab).AppendFormat("int32_t ec = %s(", method->GetName().string());
-        }
-
-        for (size_t i = 0; i < method->GetParameterNumber(); i++) {
-            AutoPtr<ASTParameter> param = method->GetParameter(i);
-            sb.Append(param->GetName());
-            if (i + 1 < method->GetParameterNumber()) {
-                sb.Append(", ");
-            }
-        }
-        sb.Append(");\n");
-    }
-
-    sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
-    sb.Append(prefix + g_tab + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s failed, error code is %%d\", ec);\n", method->GetName().string());
-    sb.Append(prefix + g_tab + g_tab).Append("return ec;\n");
-    sb.Append(prefix + g_tab).Append("}\n\n");
+    EmitStubCallMethod(method, sb, prefix + g_tab);
+    sb.Append("\n");
 
     if (!method->IsOneWay()) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
@@ -331,6 +293,30 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
 
     sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append("}\n");
+}
+
+void CppServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
+    const String& prefix)
+{
+    if (!isCallbackInterface()) {
+        sb.Append(prefix).AppendFormat("int32_t ec = service.%s(", method->GetName().string());
+    } else {
+        sb.Append(prefix).AppendFormat("int32_t ec = %s(", method->GetName().string());
+    }
+    for (size_t i = 0; i < method->GetParameterNumber(); i++) {
+        AutoPtr<ASTParameter> param = method->GetParameter(i);
+        sb.Append(param->GetName());
+        if (i + 1 < method->GetParameterNumber()) {
+            sb.Append(", ");
+        }
+    }
+    sb.Append(");\n");
+
+    sb.Append(prefix).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s failed, error code is %%d\", ec);\n", method->GetName().string());
+    sb.Append(prefix + g_tab).Append("return ec;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void CppServiceStubCodeEmitter::EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix)

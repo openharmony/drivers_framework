@@ -70,6 +70,10 @@ public:
 
     void EmitCWriteVar(const String& parcelName, const String& gotoLabel, StringBuilder& sb,
         const String& prefix) const;
+
+    void EmitJavaWriteVar(const String& parcelName, StringBuilder& sb, const String& prefix) const;
+
+    void EmitJavaReadVar(const String& parcelName, StringBuilder& sb, const String& prefix) const;
 private:
     String name_;
     AutoPtr<ASTType> type_ = nullptr;

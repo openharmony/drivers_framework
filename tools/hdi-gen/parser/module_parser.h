@@ -31,17 +31,13 @@ public:
 
     ~ModuleParser() {}
 
+    AutoPtr<ASTModule> Parse();
+private:
     // parser file and circular reference
     bool ParserDependencies();
 
     bool CompileFiles();
 
-    inline AutoPtr<ASTModule> GetAStModule() const
-    {
-        return module_;
-    }
-
-private:
     // parse all idl file involved in compilation.
     bool ParserAllImports(const String& rootFilePath);
 
@@ -50,7 +46,6 @@ private:
     // check circular reference and reverse topology sorting of all idl file
     bool CheckCircularReference();
 
-    static const char* TAG;
     const Options& option_;
     FileDetailMap sourceFiles_;
 

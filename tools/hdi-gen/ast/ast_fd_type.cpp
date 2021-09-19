@@ -167,5 +167,24 @@ void ASTFdType::EmitCppUnMarshalling(const String& parcelName, const String& nam
         sb.Append(prefix).AppendFormat("%s = %s.ReadFileDescriptor();\n", name.string(), parcelName.string());
     }
 }
+
+void ASTFdType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s.writeInt(%s);\n", parcelName.string(), name.string());
+}
+
+void ASTFdType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s = %s.readInt();\n", name.string(), parcelName.string());
+}
+
+void ASTFdType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s %s = %s.readInt();\n",
+        EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+}
 } // namespace HDI
 } // namespace OHOS

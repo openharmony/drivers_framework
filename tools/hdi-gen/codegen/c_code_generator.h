@@ -16,18 +16,18 @@ namespace OHOS {
 namespace HDI {
 class CCodeGenerator : public CodeGenerator {
 public:
-    CCodeGenerator() : CodeGenerator(),
-        emitters_() {}
+    using CCodeEmitMap = std::unordered_map<String, AutoPtr<CCodeEmitter>, StringHashFunc, StringEqualFunc>;
+
+    CCodeGenerator(const AutoPtr<ASTModule>& astModule, const String& targetDirectory)
+        : CodeGenerator(astModule, targetDirectory), emitters_() {}
 
     virtual ~CCodeGenerator() = default;
 
-    bool Initializate(const AutoPtr<AST>& ast, const String& targetDirectory) override;
-    bool Generate() const override;
+    bool Generate() override;
 private:
-    bool ResolveDirectory() override;
+    void Initializate();
 
-    static const char* TAG;
-    std::vector<AutoPtr<CCodeEmitter>> emitters_;
+    CCodeEmitMap emitters_;
 };
 } // namespace HDI
 } // namespace OHOS

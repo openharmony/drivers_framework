@@ -17,52 +17,32 @@
 
 namespace OHOS {
 namespace HDI {
-const char* JavaCodeGenerator::TAG = "JavaCodeGenerator";
-
-bool JavaCodeGenerator::Initializate(const AutoPtr<AST>& ast, const String& targetDirectory)
+bool JavaCodeGenerator::Generate()
 {
-    if (ast->GetASTFileType() == ASTFileType::AST_TYPES) {
-        Logger::E(TAG, "java has no types idl.");
-        return false;
-    }
+    Initializate();
 
-    ast_ = ast;
-    targetDirectory_ = targetDirectory;
-
-    if (!ResolveDirectory()) {
-        return false;
-    }
-
-    AutoPtr<JavaCodeEmitter> clientInterfaceCodeEmitter = new JavaClientInterfaceCodeEmitter(ast_, targetDirectory_);
-    AutoPtr<JavaCodeEmitter> clientProxyCodeEmitter = new JavaClientProxyCodeEmitter(ast_, targetDirectory_);
-
-    emitters_.push_back(clientInterfaceCodeEmitter);
-    emitters_.push_back(clientProxyCodeEmitter);
-    return true;
-}
-
-bool JavaCodeGenerator::Generate() const
-{
-    for (auto emitter : emitters_) {
-        if (!emitter->isInvaildDir()) {
-            emitter->EmitCode();
+    for (auto& astPair : astModule_->GetAllAsts()) {
+        AutoPtr<AST> ast = astPair.second;
+        switch (ast->GetASTFileType()) {
+            case ASTFileType::AST_IFACE:
+            case ASTFileType::AST_ICALLBACK: {
+                emitters_["clientIface"]->OutPut(ast, targetDirectory_);
+                emitters_["proxy"]->OutPut(ast, targetDirectory_);
+                break;
+            }
+            default:
+                break;
         }
     }
-
     return true;
 }
 
-bool JavaCodeGenerator::ResolveDirectory()
+void JavaCodeGenerator::Initializate()
 {
-    String packageFilePath = String::Format("%s/%s/",
-        targetDirectory_.string(), JavaCodeEmitter::FileName(ast_->GetPackageName()).string());
-    targetDirectory_ = packageFilePath;
-
-    if (!File::CreateParentDir(targetDirectory_)) {
-        Logger::E(TAG, "create '%s' directory failed!", targetDirectory_);
-        return false;
-    }
-    return true;
+    emitters_ = {
+        {"clientIface", new JavaClientInterfaceCodeEmitter()},
+        {"proxy", new JavaClientProxyCodeEmitter()},
+    };
 }
 } // namespace HDI
 } // namespace OHOS

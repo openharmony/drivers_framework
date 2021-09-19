@@ -81,9 +81,13 @@ private:
 
     bool ParseInterface(const AutoPtr<Attribute>& attributes = nullptr);
 
+    bool ParseInterfaceBody(const AutoPtr<ASTInterfaceType>& interface);
+
     bool ParseMethod(const AutoPtr<ASTInterfaceType>& interface);
 
-    bool ParseMethodAttr(const AutoPtr<ASTInterfaceType>& interface, const AutoPtr<Attribute>& attributes);
+    bool ParseAttributeBody(AutoPtr<Attribute>& attributes);
+
+    bool ParseParameterList(AutoPtr<ASTMethod>& method);
 
     bool ParseParameter(const AutoPtr<ASTMethod>& method);
 
@@ -91,9 +95,13 @@ private:
 
     AutoPtr<ASTType> ParseType();
 
+    AutoPtr<ASTType> ParseUnsignedType(int typeLineNo, int typeColumnNo);
+
     AutoPtr<ASTType> ParseList();
 
     AutoPtr<ASTType> ParseMap();
+
+    AutoPtr<ASTType> ParseArrayType(const AutoPtr<ASTType>& elementType);
 
     AutoPtr<ASTType> ParseCustomType();
 
@@ -105,11 +113,21 @@ private:
 
     bool ParseStructDefine(const AutoPtr<Attribute>& attributes = nullptr);
 
+    bool ParseStructMember(const AutoPtr<ASTStructType>& type);
+
     bool ParseUnionDefine(const AutoPtr<Attribute>& attributes = nullptr);
+
+    bool ParseUnionMember(const AutoPtr<ASTUnionType>& type);
 
     bool CheckType(int lineNo, int columnNo, const AutoPtr<ASTType>& type);
 
+    void SetAstFileType();
+
     bool CheckIntegrity();
+
+    bool CheckInterfaceAst();
+
+    bool CheckCallbackAst();
 
     bool IsValidTypeName(const String& typeName);
 

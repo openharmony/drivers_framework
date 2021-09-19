@@ -119,23 +119,9 @@ void ASTArrayType::EmitCProxyReadVar(const String& parcelName, const String& nam
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n\n");
 
-    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemCalloc(sizeof(%s) * (*%s));\n",
-            name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
-            lenName.string());
-        sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-        sb.Append(prefix).AppendFormat("}\n\n");
-    } else {
-        sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemCalloc(sizeof(%s) * (*%s));\n",
-            name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
-            lenName.string());
-        sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-        sb.Append(prefix).AppendFormat("}\n\n");
-    }
+    EmitCMallocVar(name, lenName, true, gotoLabel, sb, prefix);
+    sb.Append("\n");
+
     sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String cpName = String::Format("%sCp", name.string());
@@ -175,25 +161,10 @@ void ASTArrayType::EmitCStubReadVar(const String& parcelName, const String& name
     sb.Append(prefix).Append("}\n\n");
 
     sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
-    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        sb.Append(prefix + g_tab).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n", name.string(),
-            elementType_->EmitCType().string(), elementType_->EmitCType().string(), lenName.string());
-        sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto errors;\n");
-        sb.Append(prefix + g_tab).AppendFormat("}\n\n");
-    } else {
-        sb.Append(prefix + g_tab).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n",
-            name.string(), elementType_->EmitCType().string(), elementType_->EmitCType().string(),
-            lenName.string());
-        sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto errors;\n");
-        sb.Append(prefix + g_tab).AppendFormat("}\n\n");
-    }
+    EmitCMallocVar(name, lenName, false, "errors", sb, prefix + g_tab);
+    sb.Append("\n");
 
     sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
-
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String element = String::Format("%sCp", name.string());
         elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
@@ -355,6 +326,181 @@ void ASTArrayType::EmitCppUnMarshalling(const String& parcelName, const String& 
         sb.Append(prefix + g_tab).AppendFormat("%s.push_back(%s);\n", name.string(), valueName.string());
     }
     sb.Append(prefix).Append("}\n");
+}
+
+void ASTArrayType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
+    const String& prefix) const
+{
+    String varName = isClient ? String::Format("*%s", name.string()) : name;
+    String lenName = isClient ? String::Format("*%sLen", name.string()) : String::Format("%sLen", name.string());
+
+    sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n", lenName.string(), varName.string());
+
+    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING
+        || elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
+        sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+        String elementName = isClient ? String::Format("(%s)[i]", varName.string()) :
+            String::Format("%s[i]", varName.string());
+        elementType_->EmitMemoryRecycle(elementName, false, false, sb, prefix + g_tab + g_tab);
+        sb.Append(prefix + g_tab).Append("}\n");
+    }
+
+    sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", varName.string());
+    if (isClient) {
+        sb.Append(prefix + g_tab).AppendFormat("%s = NULL;\n", varName.string());
+    }
+
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTArrayType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("if (%s == null) {\n", name.string());
+    sb.Append(prefix).AppendFormat("    %s.writeInt(-1);\n", parcelName.string());
+    sb.Append(prefix).Append("} else { \n");
+    EmitJavaWriteArrayVar(parcelName, name, sb, prefix + g_tab);
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTArrayType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    switch (elementType_->GetTypeKind()) {
+        case TypeKind::TYPE_BOOLEAN:
+            sb.Append(prefix).AppendFormat("%s.readBooleanArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_BYTE:
+            sb.Append(prefix).AppendFormat("%s.readByteArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_SHORT:
+            sb.Append(prefix).AppendFormat("%s.readShortArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_INT:
+        case TypeKind::TYPE_FILEDESCRIPTOR:
+            sb.Append(prefix).AppendFormat("%s.readIntArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_LONG:
+            sb.Append(prefix).AppendFormat("%s.readLongArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_FLOAT:
+            sb.Append(prefix).AppendFormat("%s.readFloatArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_DOUBLE:
+            sb.Append(prefix).AppendFormat("%s.readDoubleArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_STRING:
+            sb.Append(prefix).AppendFormat("%s.readStringArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_SEQUENCEABLE:
+            sb.Append(prefix).AppendFormat("%s.readSequenceableArray(%s);\n", parcelName.string(), name.string());
+            break;
+        default:
+            break;
+    }
+}
+
+void ASTArrayType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    switch (elementType_->GetTypeKind()) {
+        case TypeKind::TYPE_BOOLEAN:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readBooleanArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_BYTE:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readByteArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_SHORT:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readShortArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_INT:
+        case TypeKind::TYPE_FILEDESCRIPTOR:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readIntArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_LONG:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readLongArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_FLOAT:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readFloatArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_DOUBLE:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readDoubleArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_STRING:
+            sb.Append(prefix).AppendFormat("%s[] %s = %s.readStringArray();\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(), parcelName.string());
+            break;
+        case TypeKind::TYPE_SEQUENCEABLE:
+            sb.Append(prefix).AppendFormat("int size = %s.readInt();\n", parcelName.string());
+            sb.Append(prefix).AppendFormat("%s %s = new %s[size];\n",
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
+                elementType_->EmitJavaType(TypeMode::NO_MODE).string());
+            sb.Append(prefix).AppendFormat("for (int i = 0; i < size; ++i) {\n");
+            elementType_->EmitJavaReadInnerVar(parcelName, "value", true, sb, prefix + g_tab);
+            sb.Append(prefix + g_tab).AppendFormat("%s[i] = value;\n", name.string());
+            sb.Append(prefix).Append("}\n");
+            break;
+        default:
+            break;
+    }
+}
+
+void ASTArrayType::EmitJavaWriteArrayVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    switch (elementType_->GetTypeKind()) {
+        case TypeKind::TYPE_BOOLEAN:
+            sb.Append(prefix).AppendFormat("%s.writeBooleanArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_BYTE:
+            sb.Append(prefix).AppendFormat("%s.writeByteArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_SHORT:
+            sb.Append(prefix).AppendFormat("%s.writeShortArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_INT:
+        case TypeKind::TYPE_FILEDESCRIPTOR:
+            sb.Append(prefix).AppendFormat("%s.writeIntArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_LONG:
+            sb.Append(prefix).AppendFormat("%s.writeLongArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_FLOAT:
+            sb.Append(prefix).AppendFormat("%s.writeFloatArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_DOUBLE:
+            sb.Append(prefix).AppendFormat("%s.writeDoubleArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_STRING:
+            sb.Append(prefix).AppendFormat("%s.writeStringArray(%s);\n", parcelName.string(), name.string());
+            break;
+        case TypeKind::TYPE_SEQUENCEABLE:
+            sb.Append(prefix).AppendFormat("%s.writeSequenceableArray(%s);\n", parcelName.string(), name.string());
+            break;
+        default:
+            break;
+    }
+}
+
+void ASTArrayType::EmitCMallocVar(const String& name, const String& lenName, bool isClient, const String& gotoLabel,
+    StringBuilder& sb, const String& prefix) const
+{
+    String varName = isClient ? String::Format("*%s", name.string()) : name;
+    String lenVarName = isClient ? String::Format("*%s", lenName.string()) : lenName;
+
+    sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s) * (%s));\n", varName.string(),
+        elementType_->EmitCType().string(), elementType_->EmitCType().string(), lenVarName.string());
+    sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", varName.string());
+    sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).AppendFormat("}\n");
 }
 } // namespace HDI
 } // namespace OHOS

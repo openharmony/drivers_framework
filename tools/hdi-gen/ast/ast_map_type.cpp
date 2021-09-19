@@ -129,5 +129,44 @@ void ASTMapType::EmitCppUnMarshalling(const String& parcelName, const String& na
         name.string(), KeyName.string(), valueName.string());
     sb.Append(prefix).Append("}\n");
 }
+
+void ASTMapType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s.writeInt(%s.size());\n", parcelName.string(), name.string());
+    sb.Append(prefix).AppendFormat("for (Map.Entry<%s, %s> entry : %s.entrySet()) {\n",
+        keyType_->EmitJavaType(TypeMode::NO_MODE, true).string(),
+        valueType_->EmitJavaType(TypeMode::NO_MODE, true).string(), name.string());
+    keyType_->EmitJavaWriteVar(parcelName, "entry.getKey()", sb, prefix + g_tab);
+    valueType_->EmitJavaWriteVar(parcelName, "entry.getValue()", sb, prefix + g_tab);
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTMapType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
+    sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
+
+    keyType_->EmitJavaReadInnerVar(parcelName, "key", false, sb, prefix + g_tab);
+    valueType_->EmitJavaReadInnerVar(parcelName, "value", false, sb, prefix + g_tab);
+
+    sb.Append(prefix + g_tab).AppendFormat("%s.put(key, value);\n", name.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTMapType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
+    StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("%s %s = new Hash%s();\n",
+        EmitJavaType(TypeMode::NO_MODE).string(), name.string(), EmitJavaType(TypeMode::NO_MODE).string());
+    sb.Append(prefix).AppendFormat("int %sSize = %s.readInt();\n", name.string(), parcelName.string());
+    sb.Append(prefix).AppendFormat("for (int i = 0; i < %sSize; ++i) {\n", name.string());
+
+    keyType_->EmitJavaReadInnerVar(parcelName, "key", true, sb, prefix + g_tab);
+    valueType_->EmitJavaReadInnerVar(parcelName, "value", true, sb, prefix + g_tab);
+    sb.Append(prefix + g_tab).AppendFormat("%s.put(key, value);\n", name.string());
+    sb.Append(prefix).Append("}\n");
+}
 } // namespace HDI
 } // namespace OHOS

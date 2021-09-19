@@ -12,6 +12,26 @@
 
 namespace OHOS {
 namespace HDI {
+bool CppClientInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
+{
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
+        directory_ = String::Format("%s/%s/client/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string());
+    } else {
+        return false;
+    }
+
+    if (!File::CreateParentDir(directory_)) {
+        Logger::E("CppClientInterfaceCodeEmitter", "Create '%s' failed!", directory_.string());
+        return false;
+    }
+
+    return true;
+}
+
 void CppClientInterfaceCodeEmitter::EmitCode()
 {
     EmitInterfaceHeaderFile();
@@ -19,20 +39,8 @@ void CppClientInterfaceCodeEmitter::EmitCode()
 
 void CppClientInterfaceCodeEmitter::EmitInterfaceHeaderFile()
 {
-    String filePath;
-    if (!isCallbackInterface()) {
-        filePath = String::Format("%sclient/%s.h", directory_.string(), FileName(interfaceName_).string());
-    } else {
-        filePath = String::Format("%s%s.h", directory_.string(), FileName(interfaceName_).string());
-    }
-
-    if (!File::CreateParentDir(filePath)) {
-        Logger::E("CppClientInterfaceCodeEmitter", "Create '%s' failed!", filePath.string());
-        return;
-    }
-
+    String filePath = String::Format("%s%s.h", directory_.string(), FileName(interfaceName_).string());
     File file(filePath, File::WRITE);
-
     StringBuilder sb;
 
     EmitLicense(sb);

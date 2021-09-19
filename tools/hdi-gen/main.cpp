@@ -18,7 +18,6 @@ using namespace OHOS::HDI;
 int main(int argc, char** argv)
 {
     Options& options = Options::GetInstance().Parse(argc, argv);
-
     if (options.HasErrors()) {
         options.ShowErrors();
         return 0;
@@ -44,47 +43,25 @@ int main(int argc, char** argv)
             Logger::E("hdi-gen", "open idl file failed!");
             return -1;
         }
-
         printf("%s:%lu\n", idlFile->GetPath().string(), idlFile->GetHashKey());
         return 0;
     }
 
     ModuleParser moduleParser(options);
-    if (!moduleParser.ParserDependencies()) {
-        Logger::E("hdi-gen", "Parsing dependencies failed.");
+    AutoPtr<ASTModule> astModule = moduleParser.Parse();
+    if (astModule == nullptr) {
         return -1;
     }
-
-    if (!moduleParser.CompileFiles()) {
-        Logger::E("hdi-gen", "Parsing .idl failed.");
-        return -1;
-    }
-
-    AutoPtr<ASTModule> astModule = moduleParser.GetAStModule();
 
     if (!options.DoGenerateCode()) {
         return 0;
     }
 
-    for (auto& astPair : astModule->GetAllAsts()) {
-        AutoPtr<AST> ast = astPair.second;
-        GeneratorFactory factory;
-        AutoPtr<CodeGenerator> codeGen = factory.GetCodeGenerator(options.GetTargetLanguage());
-        if (codeGen == nullptr) {
-            Logger::E("hdi-gen", "new Generate failed.");
-            return -1;
-        }
-
-        if (!codeGen->Initializate(ast, options.GetGenerationDirectory())) {
-            Logger::E("hdi-gen", "Generate initializate failed.");
-            return -1;
-        }
-
-        if (!codeGen->Generate()) {
-            Logger::E("hdi-gen", "Generate \"%s\" codes failed.", options.GetTargetLanguage().string());
-            return -1;
-        }
+    AutoPtr<CodeGenerator> codeGen = GeneratorFactory::GetInstance().GetCodeGenerator(astModule,
+        options.GetTargetLanguage(), options.GetGenerationDirectory());
+    if (!codeGen->Generate()) {
+        Logger::E("hdi-gen", "Generate \"%s\" codes failed.", options.GetTargetLanguage().string());
+        return -1;
     }
-
     return 0;
 }

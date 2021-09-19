@@ -114,31 +114,8 @@ HWTEST_F(CppStructTest, CppStructTest_004, TestSize.Level1)
     close(destObj.m4);
 }
 
-HWTEST_F(CppStructTest, CppStructTest_005, TestSize.Level1)
+static void CompareSSample4Part1(const SSample4& srcObj, const SSample4& destObj) const
 {
-    SSample4 srcObj = {
-        {true, false},
-        {65, 66},
-        {3, 4},
-        {5, 6},
-        {7, 8},
-        {97, 98},
-        {30, 40},
-        {50, 60},
-        {70, 80},
-        {10.5, 20.5},
-        {30.125, 30.125},
-        {"hello", "world"},
-        {ESample::MEM_ONE, ESample::MEM_THREE},
-        {{true, 1, 1000.125, "hello"}, {false, 1, 1000.125, "world"}},
-        {sptr<SequenceData>(new SequenceData(1, 1.2, "hello")), sptr<SequenceData>(new SequenceData(2, 2.2, "world"))},
-    };
-
-    SSample4 destObj;
-
-    int32_t ec = g_testClient->SSample4Test(srcObj, destObj);
-    ASSERT_EQ(ec, HDF_SUCCESS);
-
     for (size_t i = 0; i < srcObj.m1.size(); i++) {
         EXPECT_EQ((srcObj.m1[i] ? 1 : 0), (destObj.m1[i] ? 1 : 0));
     }
@@ -158,7 +135,10 @@ HWTEST_F(CppStructTest, CppStructTest_005, TestSize.Level1)
     for (size_t i = 0; i < srcObj.m5.size(); i++) {
         EXPECT_EQ(srcObj.m5[i], destObj.m5[i]);
     }
+}
 
+static void CompareSSample4Part2(const SSample4& srcObj, const SSample4& destObj) const
+{
     for (size_t i = 0; i < srcObj.m6.size(); i++) {
         EXPECT_EQ(srcObj.m6[i], destObj.m6[i]);
     }
@@ -182,7 +162,10 @@ HWTEST_F(CppStructTest, CppStructTest_005, TestSize.Level1)
     for (size_t i = 0; i < srcObj.m11.size(); i++) {
         EXPECT_DOUBLE_EQ(srcObj.m11[i], destObj.m11[i]);
     }
+}
 
+static void CompareSSample4Part3(const SSample4& srcObj, const SSample4& destObj) const
+{
     for (size_t i = 0; i < srcObj.m12.size(); i++) {
         EXPECT_EQ(srcObj.m12[i], destObj.m12[i]);
     }
@@ -212,9 +195,16 @@ HWTEST_F(CppStructTest, CppStructTest_005, TestSize.Level1)
     }
 }
 
-HWTEST_F(CppStructTest, CppStructTest_006, TestSize.Level1)
+static void CompareSSample4(const SSample4& srcObj, const SSample4& destObj) const
 {
-    SSample5 srcObj = {
+    CompareSSample4Part1(srcObj, destObj);
+    CompareSSample4Part2(srcObj, destObj);
+    CompareSSample4Part3(srcObj, destObj);
+}
+
+HWTEST_F(CppStructTest, CppStructTest_005, TestSize.Level1)
+{
+    SSample4 srcObj = {
         {true, false},
         {65, 66},
         {3, 4},
@@ -232,11 +222,16 @@ HWTEST_F(CppStructTest, CppStructTest_006, TestSize.Level1)
         {sptr<SequenceData>(new SequenceData(1, 1.2, "hello")), sptr<SequenceData>(new SequenceData(2, 2.2, "world"))},
     };
 
-    SSample5 destObj;
+    SSample4 destObj;
 
-    int32_t ec = g_testClient->SSample5Test(srcObj, destObj);
+    int32_t ec = g_testClient->SSample4Test(srcObj, destObj);
     ASSERT_EQ(ec, HDF_SUCCESS);
 
+    CompareSSample4(srcObj, destObj);
+}
+
+static void CompareSSample5Part1(const SSample5& srcObj, const SSample5& destObj) const
+{
     for (size_t i = 0; i < srcObj.m1.size(); i++) {
         EXPECT_EQ((srcObj.m1[i] ? 1 : 0), (destObj.m1[i] ? 1 : 0));
     }
@@ -256,7 +251,10 @@ HWTEST_F(CppStructTest, CppStructTest_006, TestSize.Level1)
     for (size_t i = 0; i < srcObj.m5.size(); i++) {
         EXPECT_EQ(srcObj.m5[i], destObj.m5[i]);
     }
+}
 
+static void CompareSSample5Part2(const SSample5& srcObj, const SSample5& destObj) const
+{
     for (size_t i = 0; i < srcObj.m6.size(); i++) {
         EXPECT_EQ(srcObj.m6[i], destObj.m6[i]);
     }
@@ -280,7 +278,10 @@ HWTEST_F(CppStructTest, CppStructTest_006, TestSize.Level1)
     for (size_t i = 0; i < srcObj.m11.size(); i++) {
         EXPECT_DOUBLE_EQ(srcObj.m11[i], destObj.m11[i]);
     }
+}
 
+static void CompareSSample5Part3(const SSample5& srcObj, const SSample5& destObj) const
+{
     for (size_t i = 0; i < srcObj.m12.size(); i++) {
         EXPECT_EQ(srcObj.m12[i], destObj.m12[i]);
     }
@@ -308,4 +309,39 @@ HWTEST_F(CppStructTest, CppStructTest_006, TestSize.Level1)
             std::cout << "var1 or var2 is nullptr" << std::endl;
         }
     }
+}
+
+static void CompareSSample5(const SSample5& srcObj, const SSample5& destObj) const
+{
+    CompareSSample5Part1(srcObj, destObj);
+    CompareSSample5Part2(srcObj, destObj);
+    CompareSSample5Part3(srcObj, destObj);
+}
+
+HWTEST_F(CppStructTest, CppStructTest_006, TestSize.Level1)
+{
+    SSample5 srcObj = {
+        {true, false},
+        {65, 66},
+        {3, 4},
+        {5, 6},
+        {7, 8},
+        {97, 98},
+        {30, 40},
+        {50, 60},
+        {70, 80},
+        {10.5, 20.5},
+        {30.125, 30.125},
+        {"hello", "world"},
+        {ESample::MEM_ONE, ESample::MEM_THREE},
+        {{true, 1, 1000.125, "hello"}, {false, 1, 1000.125, "world"}},
+        {sptr<SequenceData>(new SequenceData(1, 1.2, "hello")), sptr<SequenceData>(new SequenceData(2, 2.2, "world"))},
+    };
+
+    SSample5 destObj;
+
+    int32_t ec = g_testClient->SSample5Test(srcObj, destObj);
+    ASSERT_EQ(ec, HDF_SUCCESS);
+
+    CompareSSample5(srcObj, destObj);
 }
