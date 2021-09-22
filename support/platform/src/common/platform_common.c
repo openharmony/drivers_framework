@@ -53,6 +53,12 @@ static struct PlatformModuleInfo g_platformModules[] = {
         .moduleName = "PLATFORM_MODULE_MIPI_DSI",
     },
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_MIPI_CSI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_MIPI_CSI)
+    {
+        .moduleType = PLATFORM_MODULE_MIPI_CSI,
+        .moduleName = "PLATFORM_MODULE_MIPI_CSI",
+    },
+#endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_UART) || defined(CONFIG_DRIVERS_HDF_PLATFORM_UART)
     {
         .moduleType = PLATFORM_MODULE_UART,
