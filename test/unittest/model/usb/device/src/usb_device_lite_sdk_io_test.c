@@ -154,7 +154,16 @@ int32_t UsbFnDviceTestRequestAsync004(void)
     req->context = g_acmDevice;
     g_acmDevice->submit = 0;
     dprintf("------send \"abc\" to host------\n");
-    memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abc", strlen("abc"));
+    if (g_acmDevice->dataInPipe.maxPacketSize < strlen("abc")) {
+        ret = UsbFnFreeRequest(req);
+        if (HDF_SUCCESS != ret) {
+            HDF_LOGE("%s: free Request error", __func__);
+        }
+        return HDF_FAILURE;
+    }
+    if (memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abc", strlen("abc")) != EOK) {
+        HDF_LOGE("%s:%d memcpy_s fail", __func__, __LINE__);
+    }
     req->length = strlen("abc");
     ret = UsbFnSubmitRequestAsync(req);
     if (HDF_SUCCESS != ret) {
@@ -194,7 +203,9 @@ int32_t UsbFnDviceTestRequestAsync005(void)
         req->complete = WriteComplete;
         req->context = g_acmDevice;
         g_acmDevice->submit = 0;
-        memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "xyz", strlen("xyz"));
+        if (memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "xyz", strlen("xyz")) != EOK) {
+            HDF_LOGE("%s:%d memcpy_s fail", __func__, __LINE__);
+        }
         req->length = strlen("xyz");
         ret = UsbFnSubmitRequestAsync(req);
         if (HDF_SUCCESS != ret) {
@@ -318,7 +329,9 @@ int32_t UsbFnDviceTestRequestSync004(void)
         return HDF_FAILURE;
     }
     dprintf("------send \"abc\" to host------\n");
-    memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abc", strlen("abc"));
+    if (memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abc", strlen("abc")) != EOK) {
+        HDF_LOGE("%s:%d memcpy_s fail", __func__, __LINE__);
+    }
     req->length = strlen("abc");
     ret = UsbFnSubmitRequestSync(req, 0);
     if (HDF_SUCCESS != ret || (req->actual != strlen("abc")) || \
@@ -352,7 +365,9 @@ int32_t UsbFnDviceTestRequestSync005(void)
             HDF_LOGE("%s: alloc req fail", __func__);
             return HDF_FAILURE;
         }
-        memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abcdefg", strlen("abcdefg"));
+        if (memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abcdefg", strlen("abcdefg")) != EOK) {
+            HDF_LOGE("%s:%d memcpy_s fail", __func__, __LINE__);
+        }
         req->length = strlen("abcdefg");
         ret = UsbFnSubmitRequestSync(req, 0);
         if (HDF_SUCCESS != ret || (req->actual != strlen("abcdefg")) || \
@@ -412,7 +427,6 @@ int32_t UsbFnDviceTestRequestSync007(void)
 
 static void TestCancelComplete(uint8_t pipe, struct UsbFnRequest *req)
 {
-    dprintf("%s, req->buf = 0x%x\n", __func__, (uint32_t)req->buf);
     g_acmDevice->havedSubmit = true;
 }
 
@@ -546,7 +560,9 @@ int32_t UsbFnDviceTestCancelRequest005(void)
     req->complete = TestCancelComplete;
     req->context = g_acmDevice;
     dprintf("------send \"abc\" to host------\n");
-    memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abc", strlen("abc"));
+    if (memcpy_s(req->buf, g_acmDevice->dataInPipe.maxPacketSize, "abc", strlen("abc")) != EOK) {
+        HDF_LOGE("%s:%d memcpy_s fail", __func__, __LINE__);
+    }
     req->length = strlen("abc");
     ret = UsbFnSubmitRequestAsync(req);
     if (HDF_SUCCESS != ret) {

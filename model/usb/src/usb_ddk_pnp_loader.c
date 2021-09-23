@@ -133,7 +133,7 @@ static bool UsbDdkPnpLoaderMatchFlag(const struct UsbPnpNotifyMatchInfoTable *de
 
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_CLASS) {
         for (i = 0; i < id->interfaceClassLength; i++) {
-            if (!((id->interfaceClassMask >> i) & 0x01)) {
+            if (!((uint32_t)(id->interfaceClassMask >> i) & 0x01)) {
                 break;
             }
         }
