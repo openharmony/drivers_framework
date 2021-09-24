@@ -12,15 +12,13 @@
 #include "hdf_log.h"
 #include "module_manager.h"
 #include "osal_time.h"
-#include "osal_timer.h"
 
 #define HDF_LOG_TAG "wlan_param_monitor"
 
 #define WLAN_PARAM_REPORT_INTERVAL 1000
 
 typedef enum {
-    CMD_START_MONITOR = 0,
-    CMD_STOP_MONITOR,
+    CMD_REQUEST_PARAM = 0,
     CMD_MAX_INDEX
 } Command;
 
@@ -30,25 +28,15 @@ typedef enum {
 } Event;
 
 typedef struct {
-    OSAL_DECLARE_TIMER(timer);
-    bool isTimerStart;
-} WlanParamMonitorCtrl;
-
-typedef struct {
     uint32_t event;
     uint32_t value;
 } ReportInfo;
 
-static WlanParamMonitorCtrl g_wlanParamMonitorCtrl = {
-    .isTimerStart = false,
-};
-
-static void WlanParamReportTimer(uintptr_t arg)
+static void ProcessRequestParam(void)
 {
     ReportInfo info;
     struct HdfSBuf *data = NULL;
 
-    (void)arg;
     info.event = EVENT_WLAN_PARAM;
     info.value = (uint32_t)OsalGetSysTimeMs();
     data = HdfSBufObtainDefaultSize();
@@ -65,50 +53,11 @@ static void WlanParamReportTimer(uintptr_t arg)
     HdfSBufRecycle(data);
 }
 
-static void ProcessStartMonitor(void)
-{
-    if (g_wlanParamMonitorCtrl.isTimerStart) {
-        HDF_LOGE("wlan param monitor timer is already started");
-        return;
-    }
-    if (OsalTimerCreate(&g_wlanParamMonitorCtrl.timer, WLAN_PARAM_REPORT_INTERVAL,
-        WlanParamReportTimer, 0) != HDF_SUCCESS) {
-        HDF_LOGE("create wlan param monitor timer fail");
-        return;
-    }
-    if (OsalTimerStartLoop(&g_wlanParamMonitorCtrl.timer) != HDF_SUCCESS) {
-        OsalTimerDelete(&g_wlanParamMonitorCtrl.timer);
-        HDF_LOGE("start wlan param monitor timer fail");
-        return;
-    }
-    g_wlanParamMonitorCtrl.isTimerStart = true;
-}
-
-static void ProcessStopMonitor(void)
-{
-    if (!g_wlanParamMonitorCtrl.isTimerStart) {
-        HDF_LOGE("wlan param monitor timer is not started");
-        return;
-    }
-    if (OsalTimerDelete(&g_wlanParamMonitorCtrl.timer) != HDF_SUCCESS) {
-        HDF_LOGE("delete wlan param monitor timer fail");
-    } else {
-        g_wlanParamMonitorCtrl.isTimerStart = false;
-    }
-}
-
 int32_t SoftbusWlanParamMonitorInit(struct HdfDeviceObject *device)
 {
     (void)device;
     HDF_LOGI("SoftbusWlanParamMonitorInit init");
     return HDF_SUCCESS;
-}
-
-void SoftbusWlanParamMonitorDeinit(void)
-{
-    if (g_wlanParamMonitorCtrl.isTimerStart) {
-        ProcessStartMonitor();
-    }
 }
 
 void SoftbusWlanParamMonitorProcess(const struct HdfSBuf *reqData, struct HdfSBuf *rspData)
@@ -128,14 +77,7 @@ void SoftbusWlanParamMonitorProcess(const struct HdfSBuf *reqData, struct HdfSBu
     }
     cmd = *((uint32_t *)data);
     HDF_LOGI("process command: %d", cmd);
-    switch (cmd) {
-        case CMD_START_MONITOR:
-            ProcessStartMonitor();
-            break;
-        case CMD_STOP_MONITOR:
-            ProcessStopMonitor();
-            break;
-        default:
-            break;
+    if (cmd == CMD_REQUEST_PARAM) {
+        ProcessRequestParam();
     }
 }

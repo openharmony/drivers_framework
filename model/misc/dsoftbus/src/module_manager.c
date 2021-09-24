@@ -19,7 +19,7 @@ static SoftbusDriverModule g_modules[] = {
 #ifdef ENABLE_WLAN_PARAM_MONITOR
     {
         .init = SoftbusWlanParamMonitorInit,
-        .deinit = SoftbusWlanParamMonitorDeinit,
+        .deinit = NULL,
         .process = SoftbusWlanParamMonitorProcess,
     },
 #endif
