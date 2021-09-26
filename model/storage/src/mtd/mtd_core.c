@@ -207,7 +207,6 @@ static void MtdDumpBuf(uint8_t *buf, size_t len)
 #define MTD_DUMP_LINE_LEN     32
 #define MTD_DUMP_BUF_LEN    (MTD_DUMP_LINE_LEN * MTD_DUMP_SIGLE_WIDTH + 1)
     char lineBuf[MTD_DUMP_BUF_LEN];
-
     for (idx = 0; idx < len;) {
         line = (MTD_DUMP_LINE_LEN <= (len - idx)) ? MTD_DUMP_LINE_LEN : (len - idx);
         for (i = 0, lidx = 0; i < line; i++, lidx += MTD_DUMP_SIGLE_WIDTH, buf++) {
@@ -387,7 +386,6 @@ static int32_t MtdDeviceWriteReadByPageUnlock(struct MtdDevice *mtdDevice, struc
 
     dataLenLeft = msg->withOob ?
         (msg->len / (mtdDevice->writeSize + mtdDevice->oobSize)) * mtdDevice->writeSize : msg->len;
-
     for (addr = msg->addr, buf = msg->buf; (dataLenLeft > 0) && addr < mtdDevice->capacity;) {
         if (MtdDeviceIsBadBlockUnlocked(mtdDevice, addr)) {
             if (!msg->skipBad) {
