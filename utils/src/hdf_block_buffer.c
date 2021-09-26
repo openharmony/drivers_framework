@@ -8,6 +8,7 @@
  
 #include "hdf_block_buffer.h"
 #include "osal_mem.h"
+#include "securec.h"
 
 static const unsigned int OFFSET = 8;
 
@@ -26,7 +27,10 @@ struct HdfHdfBlockBuffer *HdfHdfBlockBufferNew(const uint8_t *data, uint16_t siz
     buffer->dataSize = size;
     buffer->position = 0;
     if (data != NULL) {
-        memcpy(buffer->data, data, size);
+        if (memcpy_s(buffer->data, buffer->dataSize, data, size) != EOK) {
+            OsalMemFree(buffer);
+            return NULL;
+        }
     }
     return buffer;
 }
@@ -172,10 +176,9 @@ bool HdfBlockBufferWriteData(struct HdfBlockBuffer *buffer, uint8_t *data, size_
         return false;
     }
     residualSize = buffer->dataSize - buffer->position;
-    if (length > residualSize) {
+    if (memcpy_s(buffer->data + buffer->position, residualSize, data, length) != EOK) {
         return false;
     }
-    memcpy(buffer->data + buffer->position, data, length);
     buffer->position += length;
     return true;
 }
@@ -196,17 +199,20 @@ struct HdfBlockBuffer *HdfBlockBufferDuplicate(const struct HdfBlockBuffer *buff
     if (newBuffer == NULL) {
         return NULL;
     }
-    memcpy(newBuffer->data, buffer->data + start, newBufferSize);
+    if (memcpy_s(newBuffer->data, newBufferSize, buffer->data + start, newBufferSize) != EOK) {
+        OsalMemFree(newBuffer);
+        return NULL;
+    }
+
     return newBuffer;
 }
 
 bool HdfBlockBufferWriteBuff(struct HdfBlockBuffer *dst, struct HdfBlockBuffer *src)
 {
-    if (dst->position + src->dataSize <= dst->dataSize) {
-        memcpy(&dst->data[dst->position], src->data, src->dataSize);
-        dst->position += src->dataSize;
-        return true;
+    if (memcpy_s(&dst->data[dst->position], dst->dataSize - dst->position, src->data, src->dataSize) != EOK) {
+        return false;
     }
-    return false;
+    dst->position += src->dataSize;
+    return true;
 }
 
