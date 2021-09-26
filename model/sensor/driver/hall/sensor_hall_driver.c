@@ -34,7 +34,7 @@ int32_t HallRegisterChipOps(const struct HallOpsCall *ops)
 
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(ops, HDF_ERR_INVALID_PARAM);
-    
+
     drvData->ops.Init = ops->Init;
     drvData->ops.ReadData = ops->ReadData;
     return HDF_SUCCESS;
@@ -43,7 +43,7 @@ int32_t HallRegisterChipOps(const struct HallOpsCall *ops)
 static void HallDataWorkEntry(void *arg)
 {
     struct HallDrvData *drvData = NULL;
-    
+
     drvData = (struct HallDrvData *)arg;
     CHECK_NULL_PTR_RETURN(drvData);
 
@@ -256,7 +256,7 @@ static int32_t ParserHallPinConfigData(const struct DeviceResourceNode *node, st
     CHECK_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
 
     CHECK_NULL_PTR_RETURN_VALUE(parser->GetChildNode, HDF_ERR_INVALID_PARAM);
-    
+
     const struct DeviceResourceNode *pinNode = parser->GetChildNode(node, "hallPinConfig");
     CHECK_NULL_PTR_RETURN_VALUE(pinNode, HDF_ERR_INVALID_PARAM);
 

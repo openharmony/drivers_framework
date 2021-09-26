@@ -14,7 +14,7 @@
 
 #define BMP180_REG_CHIP_ID         0xD0
 
-// i2c slave address 
+// i2c slave address
 
 #define BMP180_ADDR                0x77
 
@@ -24,8 +24,8 @@
 #define BMP180_AC1_LSB_ADDR        0xAB
 #define BMP180_AC2_MSB_ADDR        0xAC
 #define BMP180_AC2_LSB_ADDR        0xAD
-#define BMP180_AC3_MSB_ADDR        0xAE 
-#define BMP180_AC3_LSB_ADDR        0xAF 
+#define BMP180_AC3_MSB_ADDR        0xAE
+#define BMP180_AC3_LSB_ADDR        0xAF
 #define BMP180_AC4_MSB_ADDR        0xB0
 #define BMP180_AC4_LSB_ADDR        0xB1
 #define BMP180_AC5_MSB_ADDR        0xB2
@@ -69,19 +69,19 @@
 #define BMP180_CONSTANT_0          (-7357)
 #define BMP180_CONSTANT_1          1
 #define BMP180_CONSTANT_2          2
-#define BMP180_CONSTANT_3 	       4
-#define BMP180_CONSTANT_4 	       8
-#define BMP180_CONSTANT_5 	       11
-#define BMP180_CONSTANT_6 	       12
-#define BMP180_CONSTANT_7 	       13
-#define BMP180_CONSTANT_8 	       15
-#define BMP180_CONSTANT_9 	       16
-#define BMP180_CONSTANT_10 	       3038
-#define BMP180_CONSTANT_11 	       3791
-#define BMP180_CONSTANT_12 	       4000
-#define BMP180_CONSTANT_13	       32768
-#define BMP180_CONSTANT_14	       50000
-#define BMP180_CONSTANT_15	       0x80000000
+#define BMP180_CONSTANT_3          4
+#define BMP180_CONSTANT_4          8
+#define BMP180_CONSTANT_5          11
+#define BMP180_CONSTANT_6          12
+#define BMP180_CONSTANT_7          13
+#define BMP180_CONSTANT_8          15
+#define BMP180_CONSTANT_9          16
+#define BMP180_CONSTANT_10         3038
+#define BMP180_CONSTANT_11         3791
+#define BMP180_CONSTANT_12         4000
+#define BMP180_CONSTANT_13         32768
+#define BMP180_CONSTANT_14         50000
+#define BMP180_CONSTANT_15         0x80000000
 
 
 int32_t DetectBarometerBmp180Chip(struct SensorCfgData *data);
