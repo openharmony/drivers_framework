@@ -9,7 +9,7 @@
 #ifndef SENSOR_HALL_DRIVER_H
 #define SENSOR_HALL_DRIVER_H
 
-#include "hdf_workqueue.h" 
+#include "hdf_workqueue.h"
 #include "sensor_config_parser.h"
 #include "sensor_platform_if.h"
 

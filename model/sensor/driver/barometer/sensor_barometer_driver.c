@@ -143,7 +143,7 @@ static int32_t SetBarometerDisable(void)
         return HDF_SUCCESS;
     }
 
-    ret = SetSensorRegCfgArray(&drvData->barometerCfg->busCfg, 
+    ret = SetSensorRegCfgArray(&drvData->barometerCfg->busCfg,
         drvData->barometerCfg->regCfgGroup[SENSOR_DISABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: barometer sensor disable config failed", __func__);

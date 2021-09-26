@@ -53,7 +53,7 @@ static int32_t ReadEepromRawData(struct SensorCfgData *data, uint8_t rfg[BAROMET
 
     ret = ReadSensor(&data->busCfg, BMP180_AC4_MSB_ADDR, &rfg[BAROMETER_AC4_MSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-    
+
     ret = ReadSensor(&data->busCfg, BMP180_AC4_LSB_ADDR, &rfg[BAROMETER_AC4_LSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
@@ -85,7 +85,7 @@ static int32_t ReadEepromRawData(struct SensorCfgData *data, uint8_t rfg[BAROMET
 
     ret = ReadSensor(&data->busCfg, BMP180_MB_LSB_ADDR, &rfg[BAROMETER_MB_LSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
-    
+
     ret = ReadSensor(&data->busCfg, BMP180_MC_MSB_ADDR, &rfg[BAROMETER_MC_MSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
@@ -197,8 +197,8 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRaw
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
     Barom->unpensatePre = (int32_t)(SENSOR_DATA_SHIFT_RIGHT(
-        (SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB], SENSOR_DATA_WIDTH_16_BIT) | 
-            SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB], SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]), 
+        (SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_MSB], SENSOR_DATA_WIDTH_16_BIT) |
+            SENSOR_DATA_SHIFT_LEFT(reg[BAROMETER_BAR_LSB], SENSOR_DATA_WIDTH_8_BIT) | reg[BAROMETER_BAR_XLSB]),
         (BMP180_CONSTANT_4 - OSSETTING)));
     }
     return ret;
@@ -208,9 +208,9 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
 {
     struct Coefficient coefficientData = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    // Calculated temperature 
+    // Calculated temperature
 
-    coefficientData.x1 = ((barometerData->unpensateTemp - g_calibraData.ac6) * (g_calibraData.ac5)) 
+    coefficientData.x1 = ((barometerData->unpensateTemp - g_calibraData.ac6) * (g_calibraData.ac5))
         >> BMP180_CONSTANT_8;
     coefficientData.x2 = (g_calibraData.mc << BMP180_CONSTANT_5) / (coefficientData.x1 + g_calibraData.md);
     coefficientData.b5 = coefficientData.x1 + coefficientData.x2;
@@ -219,19 +219,19 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
     // Calculated pressure
 
     coefficientData.b6 = coefficientData.b5 - BMP180_CONSTANT_12;
-    coefficientData.x1 = (g_calibraData.b2 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
+    coefficientData.x1 = (g_calibraData.b2 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6))
         >> BMP180_CONSTANT_5;
     coefficientData.x2 = (g_calibraData.ac2 * coefficientData.b6) >> BMP180_CONSTANT_5;
     coefficientData.x3 = coefficientData.x1 + coefficientData.x2;
-    coefficientData.b3 = (((((int32_t)g_calibraData.ac1) * BMP180_CONSTANT_3 + coefficientData.x3) << OSSETTING) 
+    coefficientData.b3 = (((((int32_t)g_calibraData.ac1) * BMP180_CONSTANT_3 + coefficientData.x3) << OSSETTING)
         + BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
     coefficientData.x1 = (g_calibraData.ac3 * coefficientData.b6) >> BMP180_CONSTANT_7;
-    coefficientData.x2 = (g_calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6)) 
+    coefficientData.x2 = (g_calibraData.b1 * ((coefficientData.b6 * coefficientData.b6) >> BMP180_CONSTANT_6))
         >> BMP180_CONSTANT_9;
     coefficientData.x3 = ((coefficientData.x1 + coefficientData.x2) + BMP180_CONSTANT_2) >> BMP180_CONSTANT_2;
-    coefficientData.b4 = (g_calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13)) 
+    coefficientData.b4 = (g_calibraData.ac4 * (uint32_t)(coefficientData.x3 + BMP180_CONSTANT_13))
         >> BMP180_CONSTANT_8;
-    coefficientData.b7 = ((uint32_t)(barometerData->unpensatePre) - (uint32_t)coefficientData.b3) 
+    coefficientData.b7 = ((uint32_t)(barometerData->unpensatePre) - (uint32_t)coefficientData.b3)
         * (BMP180_CONSTANT_14 >> OSSETTING);
     if (coefficientData.b7 < BMP180_CONSTANT_15) {
         coefficientData.p = (coefficientData.b7 << BMP180_CONSTANT_1) / coefficientData.b4;
@@ -241,7 +241,7 @@ static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_
     coefficientData.x1 = (coefficientData.p >> BMP180_CONSTANT_4) * (coefficientData.p >> BMP180_CONSTANT_4);
     coefficientData.x1 = (coefficientData.x1 * BMP180_CONSTANT_10) >> BMP180_CONSTANT_9;
     coefficientData.x2 = (BMP180_CONSTANT_0 * coefficientData.p) >> BMP180_CONSTANT_9;
-    tnp[BAROMETER_BAROMETER] = coefficientData.p + ((coefficientData.x1 + coefficientData.x2 
+    tnp[BAROMETER_BAROMETER] = coefficientData.p + ((coefficientData.x1 + coefficientData.x2
         + BMP180_CONSTANT_11) >> BMP180_CONSTANT_3);
 
     return HDF_SUCCESS;
