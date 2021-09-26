@@ -237,6 +237,7 @@ static int32_t SpiDmaTransferTest(struct SpiTest *test)
         return ret;
     }
 
+    SpiUnsetDmaIntMsg(&msg);
     return HDF_SUCCESS;
 }
 
@@ -268,6 +269,7 @@ static int32_t SpiIntTransferTest(struct SpiTest *test)
         return ret;
     }
 
+    SpiUnsetDmaIntMsg(&msg);
     return HDF_SUCCESS;
 }
 
