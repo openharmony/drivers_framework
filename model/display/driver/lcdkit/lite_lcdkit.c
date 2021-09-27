@@ -205,9 +205,9 @@ static int32_t SetBacklightByPwm(uint32_t level)
         return HDF_FAILURE;
     }
     duty = (level * panelCfg->info.pwm.period) / panelCfg->info.blk.maxLevel;
-    ret = PwmSetDutyCycle(panelCfg->pwmHandle, duty);
+    ret = PwmSetDuty(panelCfg->pwmHandle, duty);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmSetDutyCycle failed", __func__);
+        HDF_LOGE("%s: PwmSetDuty failed", __func__);
         return HDF_FAILURE;
     }
     static uint32_t lastLevel = 0;
