@@ -379,11 +379,6 @@ static int32_t MtdDeviceWriteReadByPageUnlock(struct MtdDevice *mtdDevice, struc
     off_t eraseOffset;
     struct MtdPage mtdPage;
 
-#ifdef MTD_DEBUG
-    HDF_LOGD("%s: addr=0x%jd, len=%zu, buf=%p, type:%d, withoob:%d, skipbad:%d", __func__,
-        msg->addr, msg->len, msg->buf, msg->type, msg->withOob, msg->skipBad);
-#endif
-
     dataLenLeft = msg->withOob ?
         (msg->len / (mtdDevice->writeSize + mtdDevice->oobSize)) * mtdDevice->writeSize : msg->len;
     for (addr = msg->addr, buf = msg->buf; (dataLenLeft > 0) && addr < mtdDevice->capacity;) {
