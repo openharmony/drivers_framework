@@ -51,7 +51,7 @@ static int32_t BlPwmUpdateBrightness(struct BacklightDev *blDev, uint32_t bright
     duty = (brightness * blPwmDev->config.period) / blPwmDev->props.maxBrightness;
     ret = PwmSetDuty(blPwmDev->pwmHandle, duty);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: PwmSetDutyCycle failed, ret %d", __func__, ret);
+        HDF_LOGE("%s: PwmSetDuty failed, ret %d", __func__, ret);
         return HDF_FAILURE;
     }
     if (brightness != 0) {
