@@ -15,10 +15,11 @@
 
 static void PowerStateTokenOnFirstAcquire(struct HdfSRef *sref)
 {
+    struct PowerStateToken *stateToken = NULL;
     if (sref == NULL) {
         return;
     }
-    struct PowerStateToken *stateToken = (struct PowerStateToken *)HDF_SLIST_CONTAINER_OF(
+    stateToken = (struct PowerStateToken *)HDF_SLIST_CONTAINER_OF(
         struct HdfSRef, sref, struct PowerStateToken, wakeRef);
 
     if (stateToken->psmState == PSM_STATE_ACTIVE) {
@@ -36,17 +37,19 @@ static void PowerStateTokenOnFirstAcquire(struct HdfSRef *sref)
 
 static void PowerStateTokenOnLastRelease(struct HdfSRef *sref)
 {
+    struct PowerStateToken *stateToken = NULL;
+    const struct IPowerEventListener *listener = NULL;
     if (sref == NULL) {
         return;
     }
-    struct PowerStateToken *stateToken = (struct PowerStateToken *)HDF_SLIST_CONTAINER_OF(
+    stateToken = (struct PowerStateToken *)HDF_SLIST_CONTAINER_OF(
         struct HdfSRef, sref, struct PowerStateToken, wakeRef);
 
     if (stateToken->psmState != PSM_STATE_ACTIVE && stateToken->psmState != PSM_STATE_IDLE) {
         return;
     }
 
-    const struct IPowerEventListener *listener = stateToken->listener;
+    listener = stateToken->listener;
     if ((listener != NULL) && (listener->Suspend != NULL)) {
         listener->Suspend(stateToken->deviceObject);
     }

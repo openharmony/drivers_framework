@@ -139,16 +139,18 @@ static void DevmgrServiceUpdateStatus(struct DevHostServiceClnt *hostClnt, uint1
 static int DevmgrServiceAttachDevice(
     struct IDevmgrService *inst, const struct HdfDeviceInfo *deviceInfo, struct IHdfDeviceToken *token)
 {
+    struct DevHostServiceClnt *hostClnt = NULL;
+    struct DeviceTokenClnt *tokenClnt = NULL;
     if (deviceInfo == NULL) {
         HDF_LOGE("failed to attach device, deviceInfo is null");
         return HDF_FAILURE;
     }
-    struct DevHostServiceClnt *hostClnt = DevmgrServiceFindDeviceHost(inst, deviceInfo->hostId);
+    hostClnt = DevmgrServiceFindDeviceHost(inst, deviceInfo->hostId);
     if (hostClnt == NULL) {
         HDF_LOGE("failed to attach device, hostClnt is null");
         return HDF_FAILURE;
     }
-    struct DeviceTokenClnt *tokenClnt = DeviceTokenClntNewInstance(token);
+    tokenClnt = DeviceTokenClntNewInstance(token);
     if (tokenClnt == NULL) {
         HDF_LOGE("failed to attach device, tokenClnt is null");
         return HDF_FAILURE;
@@ -271,11 +273,12 @@ int DevmgrServicePowerStateChange(struct IDevmgrService *devmgrService, enum Hdf
 
 bool DevmgrServiceConstruct(struct DevmgrService *inst)
 {
+    struct IDevmgrService *devMgrSvcIf = NULL;
     if (OsalMutexInit(&inst->devMgrMutex) != HDF_SUCCESS) {
         HDF_LOGE("%s:failed to mutex init ", __func__);
         return false;
     }
-    struct IDevmgrService *devMgrSvcIf = (struct IDevmgrService *)inst;
+    devMgrSvcIf = (struct IDevmgrService *)inst;
     if (devMgrSvcIf != NULL) {
         devMgrSvcIf->AttachDevice = DevmgrServiceAttachDevice;
         devMgrSvcIf->AttachDeviceHost = DevmgrServiceAttachDeviceHost;
@@ -313,11 +316,11 @@ struct IDevmgrService *DevmgrServiceGetInstance()
 void DevmgrServiceRelease(struct HdfObject *object)
 {
     struct DevmgrService *devmgrService = (struct DevmgrService *)object;
+    struct DevHostServiceClnt *hostClnt = NULL;
+    struct DevHostServiceClnt *hostClntTmp = NULL;
     if (devmgrService == NULL) {
         return;
     }
-    struct DevHostServiceClnt *hostClnt = NULL;
-    struct DevHostServiceClnt *hostClntTmp = NULL;
     DLIST_FOR_EACH_ENTRY_SAFE(hostClnt, hostClntTmp, &devmgrService->hosts, struct DevHostServiceClnt, node) {
         DListRemove(&hostClnt->node);
         DevHostServiceClntDelete(hostClnt);	

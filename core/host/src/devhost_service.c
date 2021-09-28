@@ -114,6 +114,7 @@ int DevHostServiceDelDevice(struct IDevHostService *inst, const struct HdfDevice
     struct HdfDevice *device = NULL;
     struct DevHostService *hostService = (struct DevHostService *)inst;
     struct IDriverLoader *driverLoader =  HdfDriverLoaderGetInstance();
+    struct HdfDeviceNode *devNode = NULL;
 
     if ((deviceInfo == NULL) || (driverLoader == NULL) || (driverLoader->UnLoadNode == NULL)) {
         HDF_LOGE("failed to del device, input param is null");
@@ -127,7 +128,7 @@ int DevHostServiceDelDevice(struct IDevHostService *inst, const struct HdfDevice
     }
 
     driverLoader->UnLoadNode(driverLoader, deviceInfo);
-    struct HdfDeviceNode *devNode = DevHostServiceSeparateDeviceNode(&device->devNodes, deviceInfo);
+    devNode = DevHostServiceSeparateDeviceNode(&device->devNodes, deviceInfo);
     if (device->super.Detach != NULL) {
         device->super.Detach(&device->super, devNode);
     } else {
@@ -223,12 +224,12 @@ void DevHostServiceConstruct(struct DevHostService *service)
 
 void DevHostServiceDestruct(struct DevHostService *service)
 {
+    struct HdfDevice *device = NULL;
+    struct HdfDevice *tmp = NULL;
     if (service == NULL) {
         return;
     }
 
-    struct HdfDevice *device = NULL;
-    struct HdfDevice *tmp = NULL;
     DLIST_FOR_EACH_ENTRY_SAFE(device, tmp, &service->devices, struct HdfDevice, node) {
         HdfDeviceFreeInstance(device);
     }

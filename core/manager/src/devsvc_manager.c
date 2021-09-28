@@ -43,12 +43,13 @@ static struct DevSvcRecord *DevSvcManagerSearchService(struct IDevSvcManager *in
 int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *svcName, struct HdfDeviceObject *service)
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
+    struct DevSvcRecord *record = NULL;
     if ((devSvcManager == NULL) || (service == NULL) || (svcName == NULL)) {
         HDF_LOGE("failed to add service, input param is null");
         return HDF_FAILURE;
     }
 
-    struct DevSvcRecord *record = DevSvcRecordNewInstance();
+    record = DevSvcRecordNewInstance();
     if (record == NULL) {
         HDF_LOGE("failed to add service , record is null");
         return HDF_FAILURE;
@@ -66,11 +67,12 @@ int DevSvcManagerSubscribeService(struct IDevSvcManager *inst, const char *svcNa
 {
     int ret = HDF_FAILURE;
     struct DevSvcManager *devSvcMgr = (struct DevSvcManager *)inst;
+    struct HdfObject *deviceService = NULL;
     if (svcName == NULL || devSvcMgr == NULL) {
         return ret;
     }
 
-    struct HdfObject *deviceService = DevSvcManagerGetService(inst, svcName);
+    deviceService = DevSvcManagerGetService(inst, svcName);
     if (deviceService != NULL) {
         if (callBack.OnServiceConnected != NULL) {
             callBack.OnServiceConnected(callBack.deviceObject, deviceService);
@@ -85,10 +87,11 @@ void DevSvcManagerRemoveService(struct IDevSvcManager *inst, const char *svcName
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     uint32_t serviceKey = HdfStringMakeHashKey(svcName, 0);
+    struct DevSvcRecord *serviceRecord = NULL;
     if (svcName == NULL || devSvcManager == NULL) {
         return;
     }
-    struct DevSvcRecord *serviceRecord = DevSvcManagerSearchService(inst, serviceKey);
+    serviceRecord = DevSvcManagerSearchService(inst, serviceKey);
     if (serviceRecord != NULL) {
         OsalMutexLock(&devSvcManager->mutex);
         HdfSListRemove(&devSvcManager->services, &serviceRecord->entry);
@@ -100,11 +103,12 @@ void DevSvcManagerRemoveService(struct IDevSvcManager *inst, const char *svcName
 struct HdfDeviceObject *DevSvcManagerGetObject(struct IDevSvcManager *inst, const char *svcName)
 {
     uint32_t serviceKey = HdfStringMakeHashKey(svcName, 0);
+    struct DevSvcRecord *serviceRecord = NULL;
     if (svcName == NULL) {
         HDF_LOGE("Get service failed, svcName is null");
         return NULL;
     }
-    struct DevSvcRecord *serviceRecord = DevSvcManagerSearchService(inst, serviceKey);
+    serviceRecord = DevSvcManagerSearchService(inst, serviceKey);
     if (serviceRecord != NULL) {
         return serviceRecord->value;
     }
@@ -122,11 +126,12 @@ struct HdfObject *DevSvcManagerGetService(struct IDevSvcManager *inst, const cha
 
 bool DevSvcManagerConstruct(struct DevSvcManager *inst)
 {
+    struct IDevSvcManager *devSvcMgrIf = NULL;
     if (inst == NULL) {
         HDF_LOGE("%s: inst is null!", __func__);
         return false;
     }
-    struct IDevSvcManager *devSvcMgrIf = &inst->super;
+    devSvcMgrIf = &inst->super;
     devSvcMgrIf->AddService = DevSvcManagerAddService;
     devSvcMgrIf->SubscribeService = DevSvcManagerSubscribeService;
     devSvcMgrIf->UnsubscribeService = NULL;

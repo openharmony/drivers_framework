@@ -22,11 +22,12 @@ int32_t HdfDeviceSubscribeService(
     uint32_t matchId;
     struct DevHostService *hostService = NULL;
     const struct HdfDeviceInfo *deviceInfo = NULL;
+    struct HdfDeviceNode *devNode = NULL;
     if (deviceObject == NULL || serviceName == NULL) {
         HDF_LOGE("failed to subscribe service, deviceObject/serviceName is null");
         return HDF_FAILURE;
     }
-    struct HdfDeviceNode *devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
     hostService = devNode->hostService;
     if (hostService == NULL) {
@@ -44,13 +45,15 @@ int32_t HdfDeviceSubscribeService(
 
 const char *HdfDeviceGetServiceName(const struct HdfDeviceObject *deviceObject)
 {
+    struct HdfDeviceNode *devNode = NULL;
+    const struct HdfDeviceInfo *deviceInfo = NULL;
     if (deviceObject == NULL) {
         HDF_LOGE("failed to get service name, deviceObject is invalid");
         return NULL;
     }
-    struct HdfDeviceNode *devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
-    const struct HdfDeviceInfo *deviceInfo = devNode->deviceInfo;
+    deviceInfo = devNode->deviceInfo;
     if (deviceInfo == NULL) {
         HDF_LOGE("failed to get service name, deviceInfo is null");
         return NULL;
@@ -60,33 +63,37 @@ const char *HdfDeviceGetServiceName(const struct HdfDeviceObject *deviceObject)
 
 int HdfPmRegisterPowerListener(struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener)
 {
+    struct HdfDeviceNode *devNode = NULL;
     if (deviceObject == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
-    struct HdfDeviceNode *devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
     return HdfDeviceNodeAddPowerStateListener(devNode, listener);
 }
 
 void HdfPmUnregisterPowerListener(struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener)
 {
+    struct HdfDeviceNode *devNode = NULL;
     if (deviceObject == NULL) {
         return;
     }
-    struct HdfDeviceNode *devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
     HdfDeviceNodeRemovePowerStateListener(devNode, listener);
 }
 
 void HdfPmAcquireDevice(struct HdfDeviceObject *deviceObject)
 {
+    struct HdfDeviceNode *devNode = NULL;
+    struct IPowerStateToken *tokenIf = NULL;
     if (deviceObject == NULL) {
         HDF_LOGE("%s: input param is invalid", __func__);
         return;
     }
-    struct HdfDeviceNode *devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
-    struct IPowerStateToken *tokenIf = (struct IPowerStateToken *)devNode->powerToken;
+    tokenIf = (struct IPowerStateToken *)devNode->powerToken;
     if ((tokenIf != NULL) && (tokenIf->AcquireWakeLock != NULL)) {
         tokenIf->AcquireWakeLock(tokenIf);
     }
@@ -94,13 +101,15 @@ void HdfPmAcquireDevice(struct HdfDeviceObject *deviceObject)
 
 void HdfPmReleaseDevice(struct HdfDeviceObject *deviceObject)
 {
+    struct HdfDeviceNode *devNode = NULL;
+    struct IPowerStateToken *tokenIf = NULL;
     if (deviceObject == NULL) {
         HDF_LOGE("%s: input param is invalid", __func__);
         return;
     }
-    struct HdfDeviceNode *devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
-    struct IPowerStateToken *tokenIf = (struct IPowerStateToken *)devNode->powerToken;
+    tokenIf = (struct IPowerStateToken *)devNode->powerToken;
     if ((tokenIf != NULL) && (tokenIf->ReleaseWakeLock != NULL)) {
         tokenIf->ReleaseWakeLock(tokenIf);
     }
@@ -108,13 +117,15 @@ void HdfPmReleaseDevice(struct HdfDeviceObject *deviceObject)
 
 void HdfPmSetMode(struct HdfDeviceObject *deviceObject, uint32_t mode)
 {
+    struct HdfDeviceNode *devNode = NULL;
+    struct PowerStateToken *token = NULL;
     if (deviceObject == NULL || mode > HDF_POWER_MODE_MAX) {
         HDF_LOGE("%s: input param is invalid", __func__);
         return;
     }
-    struct HdfDeviceNode *devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
-    struct PowerStateToken *token = devNode->powerToken;
+    token = devNode->powerToken;
     if (token != NULL) {
         token->mode = mode;
     }

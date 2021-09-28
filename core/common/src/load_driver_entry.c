@@ -13,18 +13,20 @@
 static struct HdfDriverEntry *HdfDriverEntryConstruct(int32_t *driverCount)
 {
     int i;
+    struct HdfDriverEntry *driverEntry = NULL;
+    size_t *addrBegin = NULL;
     *driverCount = (int32_t)(((uint8_t *)(HDF_DRIVER_END()) - (uint8_t *)(HDF_DRIVER_BEGIN())) / sizeof(size_t));
     if (*driverCount <= 0) {
         HDF_LOGE("%s: failed to hdf get device counts", __func__);
         return NULL;
     }
-    struct HdfDriverEntry *driverEntry = OsalMemCalloc(*driverCount * sizeof(struct HdfDriverEntry));
+    driverEntry = OsalMemCalloc(*driverCount * sizeof(struct HdfDriverEntry));
     if (driverEntry == NULL) {
         HDF_LOGE("%s: failed to alloc driver entry mem", __func__);
         *driverCount = 0;
         return NULL;
     }
-    size_t *addrBegin = (size_t *)(HDF_DRIVER_BEGIN());
+    addrBegin = (size_t *)(HDF_DRIVER_BEGIN());
     for (i = 0; i < *driverCount; i++) {
         driverEntry[i] = *(struct HdfDriverEntry *)(*addrBegin);
         addrBegin++;
@@ -35,12 +37,12 @@ static struct HdfDriverEntry *HdfDriverEntryConstruct(int32_t *driverCount)
 struct HdfDriverEntry *HdfDriverLoaderGetDriverEntry(const struct HdfDeviceInfo *deviceInfo)
 {
     int i;
+    static struct HdfDriverEntry *driverEntry = NULL;
+    static int32_t driverCount = 0;
     if ((deviceInfo == NULL) || (deviceInfo->moduleName == NULL) || (deviceInfo->svcName == NULL)) {
         HDF_LOGE("%s: failed to get device entry, input deviceInfo is NULL", __func__);
         return NULL;
     }
-    static struct HdfDriverEntry *driverEntry = NULL;
-    static int32_t driverCount = 0;
     if (driverEntry == NULL) {
         driverEntry = HdfDriverEntryConstruct(&driverCount);
         if (driverEntry == NULL) {

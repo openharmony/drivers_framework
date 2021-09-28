@@ -67,11 +67,12 @@ static size_t SbufRawImplGetLeftReadSize(struct HdfSBufRaw *sbuf)
 static bool SbufRawImplWriteRollback(struct HdfSbufImpl *impl, uint32_t size)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    size_t alignSize;
     if (sbuf == NULL) {
         return false;
     }
 
-    size_t alignSize = SbufRawImplGetAlignSize(size);
+    alignSize = SbufRawImplGetAlignSize(size);
     if (sbuf->writePos < alignSize) {
         return false;
     }
@@ -83,11 +84,12 @@ static bool SbufRawImplWriteRollback(struct HdfSbufImpl *impl, uint32_t size)
 static bool SbufRawImplReadRollback(struct HdfSbufImpl *impl, uint32_t size)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    size_t alignSize;
     if (sbuf == NULL) {
         return false;
     }
 
-    size_t alignSize = SbufRawImplGetAlignSize(size);
+    alignSize = SbufRawImplGetAlignSize(size);
     if (sbuf->readPos < alignSize) {
         return false;
     }
@@ -141,12 +143,14 @@ static size_t SbufRawImplGetDataSize(const struct HdfSbufImpl *impl)
 
 static bool SbufRawImplGrow(struct HdfSBufRaw *sbuf, uint32_t growSize)
 {
+    uint32_t newSize;
+    uint8_t *newData = NULL;
     if (sbuf->isBind) {
         HDF_LOGE("%s: binded sbuf oom", __func__);
         return false;
     }
 
-    uint32_t newSize = SbufRawImplGetAlignSize(sbuf->capacity + growSize);
+    newSize = SbufRawImplGetAlignSize(sbuf->capacity + growSize);
     if (newSize < sbuf->capacity) {
         HDF_LOGE("%s: grow size overflow", __func__);
         return false;
@@ -156,7 +160,7 @@ static bool SbufRawImplGrow(struct HdfSBufRaw *sbuf, uint32_t growSize)
         return false;
     }
 
-    uint8_t *newData = OsalMemCalloc(newSize);
+    newData = OsalMemCalloc(newSize);
     if (newData == NULL) {
         HDF_LOGE("%s: oom", __func__);
         return false;
@@ -179,6 +183,10 @@ static bool SbufRawImplGrow(struct HdfSBufRaw *sbuf, uint32_t growSize)
 static bool SbufRawImplWrite(struct HdfSbufImpl *impl, const uint8_t *data, uint32_t size)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    size_t alignSize;
+    size_t writeableSize;
+    uint8_t *dest = NULL;
+
     if (sbuf == NULL || sbuf->data == NULL || data == NULL) {
         return false;
     }
@@ -187,13 +195,13 @@ static bool SbufRawImplWrite(struct HdfSbufImpl *impl, const uint8_t *data, uint
         return true;
     }
 
-    size_t alignSize = SbufRawImplGetAlignSize(size);
+    alignSize = SbufRawImplGetAlignSize(size);
     // in case of desireCapacity overflow
     if (alignSize < size) {
         HDF_LOGE("desireCapacity overflow");
         return false;
     }
-    size_t writeableSize = SbufRawImplGetLeftWriteSize(sbuf);
+    writeableSize = SbufRawImplGetLeftWriteSize(sbuf);
     if (alignSize > writeableSize) {
         size_t growSize = (alignSize > HDF_SBUF_GROW_SIZE_DEFAULT) ? (alignSize + HDF_SBUF_GROW_SIZE_DEFAULT)
                                                                    : HDF_SBUF_GROW_SIZE_DEFAULT;
@@ -203,7 +211,7 @@ static bool SbufRawImplWrite(struct HdfSbufImpl *impl, const uint8_t *data, uint
         writeableSize = SbufRawImplGetLeftWriteSize(sbuf);
     }
 
-    uint8_t *dest = sbuf->data + sbuf->writePos;
+    dest = sbuf->data + sbuf->writePos;
     if (memcpy_s(dest, writeableSize, data, size) != EOK) {
         return false; /* never hits */
     }
@@ -215,6 +223,7 @@ static bool SbufRawImplWrite(struct HdfSbufImpl *impl, const uint8_t *data, uint
 static bool SbufRawImplRead(struct HdfSbufImpl *impl, uint8_t *data, uint32_t readSize)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    size_t alignSize;
     if (sbuf == NULL || sbuf->data == NULL || data == NULL) {
         return false;
     }
@@ -223,7 +232,7 @@ static bool SbufRawImplRead(struct HdfSbufImpl *impl, uint8_t *data, uint32_t re
         return true;
     }
 
-    size_t alignSize = SbufRawImplGetAlignSize(readSize);
+    alignSize = SbufRawImplGetAlignSize(readSize);
     if (alignSize > SbufRawImplGetLeftReadSize(sbuf)) {
         HDF_LOGE("Read out of buffer range");
         return false;
@@ -350,12 +359,13 @@ static bool SbufRawImplReadInt8(struct HdfSbufImpl *impl, int8_t *value)
 static bool SbufRawImplReadBuffer(struct HdfSbufImpl *impl, const uint8_t **data, uint32_t *readSize)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    int buffSize = 0;
+    size_t alignSize;
     if (sbuf == NULL || sbuf->data == NULL || data == NULL || readSize == NULL) {
         HDF_LOGE("%s: input invalid", __func__);
         return false;
     }
 
-    int buffSize = 0;
     if (!SbufRawImplReadInt32(impl, &buffSize)) {
         return false;
     }
@@ -365,7 +375,7 @@ static bool SbufRawImplReadBuffer(struct HdfSbufImpl *impl, const uint8_t **data
         *readSize = 0;
         return true;
     }
-    size_t alignSize = SbufRawImplGetAlignSize(buffSize);
+    alignSize = SbufRawImplGetAlignSize(buffSize);
     if (alignSize > SbufRawImplGetLeftReadSize(sbuf)) {
         HDF_LOGE("%s:readBuff out of range", __func__);
         (void)SbufRawImplReadRollback(impl, sizeof(int32_t));
@@ -381,22 +391,24 @@ static bool SbufRawImplReadBuffer(struct HdfSbufImpl *impl, const uint8_t **data
 static const char *SbufRawImplReadString(struct HdfSbufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    int32_t strLen = 0;
+    size_t alignSize;
+    char *str = NULL;
     if (sbuf == NULL || sbuf->data == NULL) {
         HDF_LOGE("%s: input null", __func__);
         return NULL;
     }
     /* This length contains the '\0' at the end of the string. */
-    int32_t strLen = 0;
     if (!SbufRawImplReadInt32(impl, &strLen) || strLen <= 0) {
         return NULL;
     }
-    size_t alignSize = SbufRawImplGetAlignSize(strLen);
+    alignSize = SbufRawImplGetAlignSize(strLen);
     if (strLen > INT16_MAX || alignSize > SbufRawImplGetLeftReadSize(sbuf)) {
         (void)SbufRawImplReadRollback(impl, sizeof(int32_t));
         return NULL;
     }
 
-    char *str = (char *)(sbuf->data + sbuf->readPos);
+    str = (char *)(sbuf->data + sbuf->readPos);
     sbuf->readPos += alignSize;
     /* Set '\0' at end of the string forcibly. */
     str[strLen - 1] = '\0';
@@ -406,11 +418,12 @@ static const char *SbufRawImplReadString(struct HdfSbufImpl *impl)
 static struct HdfSbufImpl *SbufRawImplCopy(const struct HdfSbufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    struct HdfSBufRaw *new = NULL;
     if (sbuf == NULL || sbuf->data == NULL) {
         return NULL;
     }
 
-    struct HdfSBufRaw *new = SbufRawImplNewInstance(sbuf->capacity);
+    new = SbufRawImplNewInstance(sbuf->capacity);
     if (new == NULL) {
         return NULL;
     }
@@ -428,11 +441,12 @@ static struct HdfSbufImpl *SbufRawImplCopy(const struct HdfSbufImpl *impl)
 static struct HdfSbufImpl *SbufRawImplMove(struct HdfSbufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
+    struct HdfSBufRaw *new = NULL;
     if (sbuf == NULL || sbuf->isBind) {
         return NULL;
     }
 
-    struct HdfSBufRaw *new = OsalMemCalloc(sizeof(struct HdfSBufRaw));
+    new = OsalMemCalloc(sizeof(struct HdfSBufRaw));
     if (new == NULL) {
         return NULL;
     }
@@ -494,11 +508,12 @@ static void SbufInterfaceAssign(struct HdfSbufImpl *inf)
 
 static struct HdfSBufRaw *SbufRawImplNewInstance(size_t capacity)
 {
+    struct HdfSBufRaw *sbuf = NULL;
     if (capacity > HDF_SBUF_MAX_SIZE) {
         HDF_LOGE("%s: Sbuf size exceeding max limit", __func__);
         return NULL;
     }
-    struct HdfSBufRaw *sbuf = (struct HdfSBufRaw *)OsalMemCalloc(sizeof(struct HdfSBufRaw));
+    sbuf = (struct HdfSBufRaw *)OsalMemCalloc(sizeof(struct HdfSBufRaw));
     if (sbuf == NULL) {
         HDF_LOGE("Sbuf instance failure");
         return NULL;
@@ -529,6 +544,7 @@ struct HdfSbufImpl *SbufObtainRaw(size_t capacity)
 
 struct HdfSbufImpl *SbufBindRaw(uintptr_t base, size_t size)
 {
+    struct HdfSBufRaw *sbuf = NULL;
     if (base == 0 || size == 0) {
         return NULL;
     }
@@ -537,7 +553,7 @@ struct HdfSbufImpl *SbufBindRaw(uintptr_t base, size_t size)
         HDF_LOGE("Base not in 4-byte alignment");
         return NULL;
     }
-    struct HdfSBufRaw *sbuf = (struct HdfSBufRaw *)OsalMemAlloc(sizeof(struct HdfSBufRaw));
+    sbuf = (struct HdfSBufRaw *)OsalMemAlloc(sizeof(struct HdfSBufRaw));
     if (sbuf == NULL) {
         HDF_LOGE("%s: oom", __func__);
         return NULL;

@@ -66,11 +66,13 @@ const struct DeviceResourceNode *HdfGetRootNode(void)
 
 static bool HdfHostListCompare(struct HdfSListNode *listEntryFirst, struct HdfSListNode *listEntrySecond)
 {
+    struct HdfHostInfo *attrFirst = NULL;
+    struct HdfHostInfo *attrSecond = NULL;
     if (listEntryFirst == NULL || listEntrySecond == NULL) {
         return false;
     }
-    struct HdfHostInfo *attrFirst = (struct HdfHostInfo *)listEntryFirst;
-    struct HdfHostInfo *attrSecond = (struct HdfHostInfo *)listEntrySecond;
+    attrFirst = (struct HdfHostInfo *)listEntryFirst;
+    attrSecond = (struct HdfHostInfo *)listEntrySecond;
     return attrFirst->priority <= attrSecond->priority;
 }
 
@@ -138,11 +140,13 @@ bool HdfAttributeManagerGetHostList(struct HdfSList *hostList)
 
 static bool HdfDeviceListCompare(struct HdfSListNode *listEntryFirst, struct HdfSListNode *listEntrySecond)
 {
+    struct HdfDeviceInfo *attrFirst = NULL;
+    struct HdfDeviceInfo *attrSecond = NULL;
     if (listEntryFirst == NULL || listEntrySecond == NULL) {
         return false;
     }
-    struct HdfDeviceInfo *attrFirst = (struct HdfDeviceInfo *)listEntryFirst;
-    struct HdfDeviceInfo *attrSecond = (struct HdfDeviceInfo *)listEntrySecond;
+    attrFirst = (struct HdfDeviceInfo *)listEntryFirst;
+    attrSecond = (struct HdfDeviceInfo *)listEntrySecond;
     return attrFirst->priority <= attrSecond->priority;
 }
 
@@ -244,14 +248,16 @@ struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *h
 {
     uint16_t deviceIdx = 0;
     const struct DeviceResourceNode *hostNode = GetHostNode(hostName);
+    struct HdfSList *deviceList = NULL;
+    const struct DeviceResourceNode *device = NULL;
     if (hostNode == NULL) {
         return NULL;
     }
-    struct HdfSList *deviceList = (struct HdfSList *)OsalMemCalloc(sizeof(struct HdfSList));
+    deviceList = (struct HdfSList *)OsalMemCalloc(sizeof(struct HdfSList));
     if (deviceList == NULL) {
         return NULL;
     }
-    const struct DeviceResourceNode *device = hostNode->child;
+    device = hostNode->child;
     while (device != NULL) {
         const struct DeviceResourceNode *deviceNode = device->child;
         while (deviceNode != NULL) {
@@ -294,11 +300,13 @@ bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const voi
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct DevHostServiceClnt *hostClnt = NULL;
     struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
+    struct HdfDeviceInfo *deviceNodeInfo = NULL;
+    char *svcName = NULL;
     if (devMgrSvc == NULL || moduleName == NULL || serviceName == NULL) {
         return false;
     }
 
-    struct HdfDeviceInfo *deviceNodeInfo = HdfDeviceInfoNewInstance();
+    deviceNodeInfo = HdfDeviceInfoNewInstance();
     if (deviceNodeInfo == NULL) {
         return false;
     }
@@ -319,7 +327,7 @@ bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const voi
                 deviceNodeInfo->permission = deviceInfo->permission;
                 deviceNodeInfo->deviceMatchAttr = deviceInfo->deviceMatchAttr;
                 deviceNodeInfo->moduleName = deviceInfo->moduleName;
-                char *svcName = OsalMemCalloc(strlen(serviceName) + 1);
+                svcName = OsalMemCalloc(strlen(serviceName) + 1);
                 if (svcName == NULL) {
                     break;
                 }

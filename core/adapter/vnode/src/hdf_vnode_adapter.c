@@ -545,8 +545,9 @@ static unsigned int HdfVNodeAdapterPoll(struct file *filep, poll_table *wait)
 
 static int HdfVNodeAdapterClose(struct OsalCdev *cdev, struct file *filep)
 {
+    struct HdfVNodeAdapterClient *client = NULL;
     (void)cdev;
-    struct HdfVNodeAdapterClient *client = (struct HdfVNodeAdapterClient *)OsalGetFilePriv(filep);
+    client = (struct HdfVNodeAdapterClient *)OsalGetFilePriv(filep);
     if (client->ioServiceClient.device != NULL && client->ioServiceClient.device->service != NULL &&
         client->ioServiceClient.device->service->Release != NULL) {
         client->ioServiceClient.device->service->Release(&client->ioServiceClient);

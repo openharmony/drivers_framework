@@ -31,12 +31,13 @@ static struct DeviceResourceNode *CreateTreeNode(const char *start, int32_t offs
     struct DeviceResourceNode *parentNode, char **treeMem)
 {
     struct DeviceResourceNode *newNode = (struct DeviceResourceNode *)(*treeMem);
+    struct DeviceResourceNode *curNode = NULL;
     *treeMem += sizeof(struct DeviceResourceNode);
     newNode->name = start + offset + HCS_PREFIX_LENGTH;
     newNode->hashValue = offset + sizeof(struct HbcHeader);
     if (parentNode != NULL) {
         newNode->parent = parentNode;
-        struct DeviceResourceNode *curNode = parentNode->child;
+        curNode = parentNode->child;
         while ((curNode != NULL) && (curNode->sibling != NULL)) {
             curNode = curNode->sibling;
         }
@@ -64,15 +65,17 @@ static bool UpdateTreeStack(struct TreeStack **treeStack, int32_t *treeLayer, st
 
 static bool AddAttrInNode(const char *start, struct DeviceResourceNode *parentNode, char **treeMem)
 {
+    struct DeviceResourceAttr *newAttr = NULL;
+    struct DeviceResourceAttr *curAttr = NULL;
     if (parentNode == NULL) {
         HDF_LOGE("%s failed, the parentNode is NULL", __func__);
         return false;
     }
-    struct DeviceResourceAttr *newAttr = (struct DeviceResourceAttr *)(*treeMem);
+    newAttr = (struct DeviceResourceAttr *)(*treeMem);
     *treeMem += sizeof(struct DeviceResourceAttr);
     newAttr->name = start + HCS_PREFIX_LENGTH;
     newAttr->value = start + HCS_PREFIX_LENGTH + HCS_STRING_LENGTH(newAttr->name);
-    struct DeviceResourceAttr *curAttr = parentNode->attrData;
+    curAttr = parentNode->attrData;
     parentNode->attrData = newAttr;
     newAttr->next = curAttr;
     return true;
@@ -82,12 +85,14 @@ static int32_t ParseByteCode(const char *treeStart, int32_t offset, char **treeM
     struct TreeStack **treeStack, int32_t *treeLayerOrMemLen)
 {
     int32_t termOffset = HcsGetNodeOrAttrLength(treeStart + offset);
+    struct DeviceResourceNode *parentOrCurNode = NULL;
+    struct DeviceResourceNode *newNode = NULL;
+    uint32_t newNodeOffset;
     if (termOffset <= 0) {
         HDF_LOGE("%s failed, HcsGetNodeOrAttrLength error, errno: %d", __func__, termOffset);
         return HDF_FAILURE;
     }
 
-    struct DeviceResourceNode *parentOrCurNode = NULL;
     switch (HcsGetPrefix(treeStart + offset)) {
         case CONFIG_NODE:
             if (*treeMem == NULL) {
@@ -95,8 +100,7 @@ static int32_t ParseByteCode(const char *treeStart, int32_t offset, char **treeM
                 break;
             }
             parentOrCurNode = GetParentNode(offset, *treeStack, treeLayerOrMemLen, termOffset);
-            struct DeviceResourceNode *newNode = CreateTreeNode(treeStart, offset, parentOrCurNode, treeMem);
-            uint32_t newNodeOffset;
+            newNode = CreateTreeNode(treeStart, offset, parentOrCurNode, treeMem);
             (void)HcsSwapToUint32(&newNodeOffset, treeStart + offset + HCS_STRING_LENGTH(newNode->name) +
                 HCS_PREFIX_LENGTH, CONFIG_DWORD);
             newNodeOffset += offset + termOffset;

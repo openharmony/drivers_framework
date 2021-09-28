@@ -119,6 +119,7 @@ static struct MapNode *MapCreateNode(const char *key, uint32_t hash,
 int32_t MapSet(Map *map, const char *key, const void *value, uint32_t valueSize)
 {
     struct MapNode *node = NULL;
+    uint32_t hash;
 
     if (map == NULL || key == NULL || value == NULL || valueSize == 0) {
         return HDF_ERR_INVALID_PARAM;
@@ -126,7 +127,7 @@ int32_t MapSet(Map *map, const char *key, const void *value, uint32_t valueSize)
     if (valueSize > HDF_MAP_KEY_MAX_SIZE || strlen(key) > HDF_MAP_VALUE_MAX_SIZE) {
         return HDF_ERR_INVALID_PARAM;
     }
-    uint32_t hash = MapHash(key);
+    hash = MapHash(key);
     if (map->nodeSize > 0 && map->nodes != NULL) {
         uint32_t idx = MapHashIdx(map, hash);
         node = map->nodes[idx];
@@ -167,13 +168,17 @@ int32_t MapSet(Map *map, const char *key, const void *value, uint32_t valueSize)
 
 void* MapGet(const Map *map, const char *key)
 {
+    uint32_t hash;
+    uint32_t idx;
+    struct MapNode *node = NULL;
+
     if (map == NULL || key == NULL || map->nodeSize == 0 || map->nodes == NULL) {
         return NULL;
     }
 
-    uint32_t hash = MapHash(key);
-    uint32_t idx = MapHashIdx(map, hash);
-    struct MapNode *node = map->nodes[idx];
+    hash = MapHash(key);
+    idx = MapHashIdx(map, hash);
+    node = map->nodes[idx];
 
     while (node != NULL) {
         if (node->hash == hash && node->key != NULL && !strcmp(node->key, key)) {
@@ -188,14 +193,19 @@ void* MapGet(const Map *map, const char *key)
 
 int32_t MapErase(Map *map, const char *key)
 {
+    uint32_t hash;
+    uint32_t idx;
+    struct MapNode *node = NULL;
+    struct MapNode *prev = NULL;
+
     if (map == NULL || key == NULL || map->nodeSize == 0 || map->nodes == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
 
-    uint32_t hash = MapHash(key);
-    uint32_t idx = MapHashIdx(map, hash);
-    struct MapNode *node = map->nodes[idx];
-    struct MapNode *prev = node;
+    hash = MapHash(key);
+    idx = MapHashIdx(map, hash);
+    node = map->nodes[idx];
+    prev = node;
 
     while (node != NULL) {
         if (node->hash == hash && node->key != NULL && !strcmp(node->key, key)) {
