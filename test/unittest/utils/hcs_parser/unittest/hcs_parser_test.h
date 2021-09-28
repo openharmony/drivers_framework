@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef HDF_CONFIG_TEST_H
-#define HDF_CONFIG_TEST_H
+#ifndef HCS_PARSER_TEST_H
+#define HCS_PARSER_TEST_H
 
 #include "hdf_main_test.h"
 
@@ -57,4 +57,4 @@ enum HdfConfigTestCaseCmd {
 
 int32_t HdfConfigEntry(HdfTestMsg *msg);
 
-#endif // HDF_CONFIG_TEST_H
+#endif // HCS_PARSER_TEST_H
