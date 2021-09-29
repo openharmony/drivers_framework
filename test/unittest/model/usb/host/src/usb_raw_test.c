@@ -172,11 +172,11 @@ int32_t CheckRawSdkIfAllocRequest002(void)
     for (i = 0; i < ACM_NW; i++) {
         rawAcm->wb[i].request = UsbRawAllocRequest(rawAcm->devHandle, 0, rawAcm->dataOutEp.maxPacketSize);
         rawAcm->wb[i].instance = rawAcm;
-        ((struct UsbHostRequest *)(rawAcm->wb[i].request))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
         if (rawAcm->wb[i].request == NULL) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
         }
+        ((struct UsbHostRequest *)(rawAcm->wb[i].request))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
     }
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
@@ -205,11 +205,11 @@ int32_t CheckRawSdkIfAllocRequest004(void)
 
     for (i = 0; i < ACM_NR; i++) {
         rawAcm->readReq[i] = UsbRawAllocRequest(rawAcm->devHandle, 0, rawAcm->dataInEp.maxPacketSize);
-        ((struct UsbHostRequest *)(rawAcm->readReq[i]))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
         if (rawAcm->readReq[i] == NULL) {
             HDF_LOGE("%s: error", __func__);
             return HDF_FAILURE;
         }
+        ((struct UsbHostRequest *)(rawAcm->readReq[i]))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
     }
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
@@ -231,11 +231,11 @@ int32_t CheckRawSdkIfAllocRequest006(void)
 {
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     rawAcm->ctrlReq = UsbRawAllocRequest(rawAcm->devHandle, 0, USB_CTRL_REQ_SIZE);
-    ((struct UsbHostRequest *)(rawAcm->ctrlReq))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
     if (rawAcm->ctrlReq == NULL) {
         HDF_LOGE("%s: error", __func__);
         return HDF_FAILURE;
     }
+    ((struct UsbHostRequest *)(rawAcm->ctrlReq))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
 }
@@ -256,11 +256,11 @@ int32_t CheckRawSdkIfAllocRequest008(void)
 {
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     rawAcm->notifyReq = UsbRawAllocRequest(rawAcm->devHandle, 0, rawAcm->notifyEp.maxPacketSize);
-    ((struct UsbHostRequest *)(rawAcm->notifyReq))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
     if (rawAcm->notifyReq == NULL) {
         HDF_LOGE("%s: error", __func__);
         return HDF_FAILURE;
     }
+    ((struct UsbHostRequest *)(rawAcm->notifyReq))->devHandle = (struct UsbDeviceHandle *)rawAcm->devHandle;
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
 }

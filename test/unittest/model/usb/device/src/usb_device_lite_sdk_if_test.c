@@ -946,6 +946,10 @@ int32_t UsbFnDviceTestAllocCtrlRequest005(void)
     struct UsbFnRequest *req = NULL;
     UsbFnInterfaceHandle handle = NULL;
 
+    if (g_acmDevice == NULL) {
+        HDF_LOGE("%s: dataIface.handle is invail", __func__);
+        return HDF_FAILURE;
+    }
     req = UsbFnAllocCtrlRequest(handle,
         g_acmDevice->notifyPipe.maxPacketSize);
     if (req != NULL) {
@@ -1093,6 +1097,10 @@ int32_t UsbFnDviceTestAllocRequest004(void)
     struct UsbFnRequest *req = NULL;
     UsbFnInterfaceHandle handle = NULL;
 
+    if (g_acmDevice == NULL) {
+        HDF_LOGE("%s: dataIface.handle is invail", __func__);
+        return HDF_FAILURE;
+    }
     req = UsbFnAllocRequest(handle, g_acmDevice->notifyPipe.id, 0x800);
     if (req != NULL) {
         HDF_LOGE("%s: alloc req success!!", __func__);
@@ -1594,6 +1602,11 @@ int32_t UsbFnDviceTestStartReceEvent003(void)
 {
     int ret;
     struct UsbFnInterface *fn = NULL;
+
+    if (g_acmDevice == NULL) {
+        HDF_LOGE("%s: dataIface.handle is invail", __func__);
+        return HDF_FAILURE;
+    }
     ret = UsbFnStartRecvInterfaceEvent(fn, 0xff,
         EventCallBack, g_acmDevice);
     if (HDF_SUCCESS == ret) {
@@ -1818,6 +1831,10 @@ int32_t UsbFnDviceTestCloseInterface003(void)
 {
     int ret;
 
+    if (g_acmDevice == NULL) {
+        HDF_LOGE("%s: dataIface.handle is invail", __func__);
+        return HDF_FAILURE;
+    }
     ret = UsbFnCloseInterface(g_acmDevice->ctrlIface.handle);
     if (HDF_SUCCESS == ret) {
         HDF_LOGE("%s: close interface success!!", __func__);
@@ -1831,6 +1848,10 @@ int32_t UsbFnDviceTestCloseInterface004(void)
 {
     int ret;
 
+    if (g_acmDevice == NULL) {
+        HDF_LOGE("%s: dataIface.handle is invail", __func__);
+        return HDF_FAILURE;
+    }
     ret = UsbFnCloseInterface(g_acmDevice->dataIface.handle);
     if (HDF_SUCCESS == ret) {
         HDF_LOGE("%s: close interface success!!", __func__);

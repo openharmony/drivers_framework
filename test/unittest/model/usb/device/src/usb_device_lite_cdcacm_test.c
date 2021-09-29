@@ -339,8 +339,8 @@ static void ParsePipes(struct AcmDevice *acmDevice, struct UsbFnInterface *fnIfa
 {
     uint32_t j;
     int ret;
+    struct UsbFnPipeInfo pipeInfo = {0};
     for (j = 0; j < fnIface->info.numPipes; j++) {
-        struct UsbFnPipeInfo pipeInfo;
         ret = UsbFnGetInterfacePipeInfo(fnIface, j, &pipeInfo);
         if (ret != HDF_SUCCESS) {
             return;
@@ -388,12 +388,11 @@ static int ParseInterfaces(struct AcmDevice *acmDevice)
 
 static void CtrlComplete(uint8_t pipe, struct UsbFnRequest *req)
 {
-    struct CtrlInfo *ctrlInfo = (struct CtrlInfo *)req->context;
-    struct AcmDevice *acm = ctrlInfo->acm;
-
     if (req == NULL) {
         return;
     }
+    struct CtrlInfo *ctrlInfo = (struct CtrlInfo *)req->context;
+    struct AcmDevice *acm = ctrlInfo->acm;
     if (USB_REQUEST_COMPLETED != req->status) {
         goto out;
     }
@@ -446,7 +445,7 @@ static int32_t SendNotifyRequest(struct AcmDevice *acm, uint8_t type,
     struct UsbFnRequest *req = acm->notifyReq;
     struct UsbCdcNotification *notify = NULL;
     int ret;
-    if (acm == NULL || req->buf) {
+    if ((acm == NULL) || (req == NULL) || (req->buf == NULL) || (data == NULL)) {
         return -1;
     }
     acm->notifyReq = NULL;
@@ -592,7 +591,7 @@ static struct UsbFnRequest *GetCtrlReq(struct AcmDevice *acm)
     return req;
 }
 
-static void Setup(struct AcmDevice *acm, struct UsbFnCtrlRequest *setup)
+static int Setup(struct AcmDevice *acm, struct UsbFnCtrlRequest *setup)
 {
     struct UsbFnRequest *req = NULL;
     struct CtrlInfo *ctrlInfo = NULL;
@@ -601,7 +600,7 @@ static void Setup(struct AcmDevice *acm, struct UsbFnCtrlRequest *setup)
     int ret = 0;
     req = GetCtrlReq(acm);
     if (req == NULL) {
-        return;
+        return ret;
     }
     switch (setup->request) {
         case USB_DDK_CDC_REQ_SET_LINE_CODING:
@@ -616,7 +615,9 @@ static void Setup(struct AcmDevice *acm, struct UsbFnCtrlRequest *setup)
             if (acm->lineCoding.dwDTERate == 0) {
                 acm->lineCoding = acm->port->lineCoding;
             }
-            memcpy_s(req->buf, req->length, &acm->lineCoding, ret);
+            if (memcpy_s(req->buf, req->length, &acm->lineCoding, ret) != EOK) {
+                HDF_LOGE("%s:%d memcpy_s fail", __func__, __LINE__);
+            }
             break;
         case USB_DDK_CDC_REQ_SET_CONTROL_LINE_STATE:
             ret = 0;
@@ -631,6 +632,7 @@ out:
     ctrlInfo->request = setup->request;
     req->length = ret;
     ret = UsbFnSubmitRequestAsync(req);
+    return ret;
 }
 
 static void Suspend(struct AcmDevice *acm)
