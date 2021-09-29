@@ -19,6 +19,7 @@ extern "C" {
 
 typedef enum {
     SOFTBUS_MODULE_WLAN_PARAM_MONITOR = 0,
+    SOFTBUS_MODULE_LWIP_MONITOR,
     SOFTBUS_MODULE_MAX_INDEX,
 } SoftbusDriverModuleId;
 

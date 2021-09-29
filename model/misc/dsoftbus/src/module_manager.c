@@ -9,6 +9,9 @@
 #include "module_manager.h"
 
 #include "hdf_log.h"
+#ifdef ENABLE_LWIP_MONITOR
+#include "softbus_lwip_monitor.h"
+#endif
 #ifdef ENABLE_WLAN_PARAM_MONITOR
 #include "wlan_param_monitor.h"
 #endif
@@ -16,6 +19,13 @@
 #define HDF_LOG_TAG "hdf_dsoftbus"
 
 static SoftbusDriverModule g_modules[] = {
+#ifdef ENABLE_LWIP_MONITOR
+    {
+        .init = SoftbusLwipMonitorInit,
+        .deinit = NULL,
+        .process = NULL,
+    },
+#endif
 #ifdef ENABLE_WLAN_PARAM_MONITOR
     {
         .init = SoftbusWlanParamMonitorInit,
@@ -40,7 +50,7 @@ void SoftbusDispatchModuleCommand(int32_t moduleId, const struct HdfSBuf *reqDat
         g_modules[i].process(reqData, rspData);
         return;
     }
-    HDF_LOGE("no moduleId: %d registered", moduleId);
+    HDF_LOGE("no moduleId: %d process command", moduleId);
 }
 
 int32_t SoftbusModuleManagerInit(struct HdfDeviceObject *device)
