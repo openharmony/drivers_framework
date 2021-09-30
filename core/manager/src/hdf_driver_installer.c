@@ -17,11 +17,12 @@
 static int DriverInstallerStartDeviceHost(uint32_t devHostId, const char *devHostName)
 {
     struct IDevHostService *hostServiceIf = DevHostServiceNewInstance(devHostId, devHostName);
+    int ret;
     if ((hostServiceIf == NULL) || (hostServiceIf->StartService == NULL)) {
         HDF_LOGE("hostServiceIf or hostServiceIf->StartService is null");
         return HDF_FAILURE;
     }
-    int ret = hostServiceIf->StartService(hostServiceIf);
+    ret = hostServiceIf->StartService(hostServiceIf);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("failed to start host service, ret: %d", ret);
         DevHostServiceFreeInstance(hostServiceIf);

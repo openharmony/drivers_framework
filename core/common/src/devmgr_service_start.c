@@ -53,6 +53,10 @@ int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data
     int32_t deviceClass = 0;
     const char *svcName = NULL;
     struct DevmgrService *devMgrSvc = (struct DevmgrService *)stub;
+    static struct SubscriberCallback callback = {
+        .deviceObject = NULL,
+        .OnServiceConnected = NULL,
+    };
     if (data == NULL || devMgrSvc == NULL) {
         HDF_LOGE("%s: input param is invalid", __func__);
         return ret;
@@ -65,10 +69,6 @@ int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data
                 HDF_LOGE("%s: get svc name is null", __func__);
                 break;
             }
-            static struct SubscriberCallback callback = {
-                .deviceObject = NULL,
-                .OnServiceConnected = NULL,
-            };
             ret = DevSvcManagerClntSubscribeService(svcName, callback);
             break;
         case DEVMGR_UNLOAD_SERVICE:
@@ -107,13 +107,14 @@ int DeviceManagerIsQuickLoad(void)
 
 int DeviceManagerStart(void)
 {
+    struct HdfIoService *ioService = NULL;
     struct IDevmgrService *instance = DevmgrServiceGetInstance();
 
     if (instance == NULL || instance->StartService == NULL) {
         HDF_LOGE("device manager start failed, service instance is null");
         return HDF_FAILURE;
     }
-    struct HdfIoService *ioService = HdfIoServicePublish(DEV_MGR_NODE, DEV_MGR_NODE_PERM);
+    ioService = HdfIoServicePublish(DEV_MGR_NODE, DEV_MGR_NODE_PERM);
     if (ioService != NULL) {
         static struct HdfIoDispatcher dispatcher = {
             .Dispatch = DeviceManagerDispatch,
@@ -126,11 +127,12 @@ int DeviceManagerStart(void)
 
 int DeviceManagerStartStep2()
 {
+    struct DevmgrService *devMgrSvc = NULL;
     if (DeviceManagerIsQuickLoad() == DEV_MGR_SLOW_LOAD) {
         HDF_LOGW("%s: device manager is not set to QuickLoad mode", __func__);
         return HDF_SUCCESS;
     }
-    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
+    devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
     return DevmgrServiceLoadLeftDriver(devMgrSvc);
 }
 

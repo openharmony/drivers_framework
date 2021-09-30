@@ -180,11 +180,11 @@ struct HdfSListNode *HdfSListNext(struct HdfSListNode *link)
 
 struct HdfSListNode *HdfSListPop(struct HdfSList *list)
 {
+    struct HdfSListNode *first = NULL;
     if (list == NULL || list->root == NULL) {
         return NULL;
     }
-
-    struct HdfSListNode *first = list->root;
+    first = list->root;
     list->root = first->next;
     return first;
 }

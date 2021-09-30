@@ -19,12 +19,13 @@
 int DevSvcManagerClntAddService(const char *svcName, struct HdfDeviceObject *service)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
+    struct IDevSvcManager *serviceManager = NULL;
     if (devSvcMgrClnt == NULL) {
         HDF_LOGE("failed to add service, client is null");
         return HDF_FAILURE;
     }
 
-    struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
+    serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->AddService == NULL) {
         HDF_LOGE("serviceManager AddService function is null");
         return HDF_FAILURE;
@@ -35,12 +36,13 @@ int DevSvcManagerClntAddService(const char *svcName, struct HdfDeviceObject *ser
 const struct HdfObject *DevSvcManagerClntGetService(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
+    struct IDevSvcManager *serviceManager = NULL;
     if (devSvcMgrClnt == NULL) {
         HDF_LOGE("failed to get service, client is null");
         return NULL;
     }
 
-    struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
+    serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->GetService == NULL) {
         HDF_LOGE("serviceManager GetService function is null");
         return NULL;
@@ -51,12 +53,13 @@ const struct HdfObject *DevSvcManagerClntGetService(const char *svcName)
 struct HdfDeviceObject *DevSvcManagerClntGetDeviceObject(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
+    struct IDevSvcManager *serviceManager = NULL;
     if (devSvcMgrClnt == NULL) {
         HDF_LOGE("failed to get device object, client is null");
         return NULL;
     }
 
-    struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
+    serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->GetObject == NULL) {
         HDF_LOGE("failed to get device object, method not implement");
         return NULL;
@@ -91,12 +94,13 @@ void HdfUnregisterDevice(const char *moduleName, const char *serviceName)
 int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCallback callback)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
+    struct IDevSvcManager *serviceManager = NULL;
     if (devSvcMgrClnt == NULL) {
         HDF_LOGE("failed to subscribe service, client is null");
         return HDF_FAILURE;
     }
 
-    struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
+    serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->SubscribeService == NULL) {
         HDF_LOGE("failed to subscribe service, method not implement");
         return HDF_FAILURE;
@@ -107,12 +111,13 @@ int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCall
 int DevSvcManagerClntUnsubscribeService(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
+    struct IDevSvcManager *serviceManager = NULL;
     if (devSvcMgrClnt == NULL) {
         HDF_LOGE("failed to unsubscribe service, client is null");
         return HDF_FAILURE;
     }
 
-    struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
+    serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->UnsubscribeService == NULL) {
         HDF_LOGE("failed to unsubscribe service, method not implement");
         return HDF_FAILURE;
@@ -123,12 +128,13 @@ int DevSvcManagerClntUnsubscribeService(const char *svcName)
 void DevSvcManagerClntRemoveService(const char *svcName)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
+    struct IDevSvcManager *serviceManager = NULL;
     if (devSvcMgrClnt == NULL) {
         HDF_LOGE("failed to remove service, devSvcMgrClnt is null");
         return;
     }
 
-    struct IDevSvcManager *serviceManager = devSvcMgrClnt->devSvcMgrIf;
+    serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->RemoveService == NULL) {
         HDF_LOGE("failed to remove service, method not implement");
         return;

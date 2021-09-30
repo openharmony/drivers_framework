@@ -47,10 +47,11 @@ void HdfServiceObserverRecordRecycle(struct HdfServiceObserverRecord *observerRe
 
 bool HdfServiceObserverRecordCompare(struct HdfSListNode *listEntry, uint32_t serviceKey)
 {
+    struct HdfServiceObserverRecord *record = NULL;
     if (listEntry == NULL) {
         return false;
     }
-    struct HdfServiceObserverRecord *record = (struct HdfServiceObserverRecord *)listEntry;
+    record = (struct HdfServiceObserverRecord *)listEntry;
     if (record->serviceKey == serviceKey) {
         return true;
     }
