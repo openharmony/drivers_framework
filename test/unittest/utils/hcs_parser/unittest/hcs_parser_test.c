@@ -6,7 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_config_test.h"
+#include "hcs_parser_test.h"
 #include "device_resource_if.h"
 #include "hcs_config_test.h"
 #include "hdf_base.h"
