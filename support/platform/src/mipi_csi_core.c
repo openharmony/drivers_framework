@@ -96,12 +96,14 @@ struct MipiCsiCntlr *MipiCsiCntlrGet(uint8_t number)
 
 void MipiCsiCntlrPut(const struct MipiCsiCntlr *cntlr)
 {
+    uint8_t number;
+
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
         return;
     }
 
-    uint8_t number = cntlr->devNo;
+    number = cntlr->devNo;
     if (number >= MAX_CNTLR_CNT) {
         HDF_LOGE("%s: invalid number.", __func__);
         return;
