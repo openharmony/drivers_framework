@@ -112,6 +112,10 @@ static int32_t EmmcDeviceGetFromHandle(DevHandle handle, struct EmmcDevice **emm
 
 int32_t EmmcGetCid(DevHandle handle, uint8_t *cid, uint32_t size)
 {
+#ifndef __USER__
+    struct EmmcDevice *emmc = NULL;
+    int32_t ret;
+#endif
     if (handle == NULL) {
         HDF_LOGE("EmmcGetCid: handle is NULL!");
         return HDF_ERR_INVALID_OBJECT;
@@ -124,9 +128,6 @@ int32_t EmmcGetCid(DevHandle handle, uint8_t *cid, uint32_t size)
 #ifdef __USER__
     return EmmcServiceGetCid((struct HdfIoService *)handle, cid, size);
 #else
-    struct EmmcDevice *emmc = NULL;
-    int32_t ret;
-
     if (EmmcDeviceGetFromHandle(handle, &emmc) != HDF_SUCCESS) {
         return HDF_ERR_INVALID_OBJECT;
     }
