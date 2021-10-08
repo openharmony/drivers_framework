@@ -75,13 +75,13 @@ int HcsTestCreateDMHcsToTree(void)
 
 static bool TestHcsGetNodeByMatchAttrSuccess(void)
 {
+    const struct DeviceResourceNode *fingerPrintNode = NULL;
     const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
     if (audioNode == NULL) {
         HDF_LOGE("%s failed, HcsGetNodeByMatchAttr failed, line: %d\n", __FUNCTION__, __LINE__);
         return false;
     }
-    const struct DeviceResourceNode *fingerPrintNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot,
-        HW_FINGERPRINT_INFO);
+    fingerPrintNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
     if (fingerPrintNode == NULL) {
         HDF_LOGE("%s failed, HcsGetNodeByMatchAttr failed, line: %d\n", __FUNCTION__, __LINE__);
         return false;
@@ -133,18 +133,20 @@ int HcsTestGetNodeByMatchAttrFail(void)
 
 static bool TestHcsAttrGetBoolSuccess(void)
 {
+    const struct DeviceResourceNode *fingerNode = NULL;
     const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
     bool primaryMic = g_devResInstance->GetBool(audioNode, "builtin_primary_mic_exist");
+    bool dualFinger = NULL;
     if (!primaryMic) {
         HDF_LOGE("%s failed, HcsGetBool failed, line: %d\n", __FUNCTION__, __LINE__);
         return false;
     }
-    const struct DeviceResourceNode *fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
+    fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
     if (fingerNode == NULL) {
         HDF_LOGE("%s failed, HcsGetNodeByMatchAttr failed, line: %d\n", __FUNCTION__, __LINE__);
         return false;
     }
-    bool dualFinger = g_devResInstance->GetBool(fingerNode, DUAL_FINGERPRINT);
+    dualFinger = g_devResInstance->GetBool(fingerNode, DUAL_FINGERPRINT);
     if (dualFinger) {
         HDF_LOGE("%s failed, HcsGetBool failed, line: %d\n", __FUNCTION__, __LINE__);
         return false;
@@ -165,17 +167,19 @@ int HcsTestGetBoolAttrValueSuccess(void)
 
 static bool TestHcsAttrGetBoolFailed(void)
 {
+    const struct DeviceResourceNode *fingerNode = NULL;
     const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    bool testReadBool = NULL;
     if (audioNode == NULL) {
         HDF_LOGE("%s failed, HcsGetNodeByMatchAttr failed, line: %d", __FUNCTION__, __LINE__);
         return false;
     }
-    bool testReadBool = g_devResInstance->GetBool(audioNode, INVALID_STRING);
+    testReadBool = g_devResInstance->GetBool(audioNode, INVALID_STRING);
     if (testReadBool) {
         HDF_LOGE("%s failed, HcsGetBool failed, line: %d", __FUNCTION__, __LINE__);
         return false;
     }
-    const struct DeviceResourceNode *fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
+    fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
     if (fingerNode == NULL) {
         HDF_LOGE("%s failed, HcsGetNodeByMatchAttr failed, line: %d", __FUNCTION__, __LINE__);
         return false;
@@ -211,12 +215,14 @@ int HcsTestGetBoolAttrValueFail(void)
 
 int HcsTestGetUint8AttrValueSuccess(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint8_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint8(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT8_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint8(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT8_MAX);
     if ((ret != HDF_SUCCESS) || (data != U8_DATA)) {
         HDF_LOGE("%s failed, line: %d, ret = %d, data = %u", __FUNCTION__, __LINE__, ret, data);
         return HDF_FAILURE;
@@ -226,12 +232,14 @@ int HcsTestGetUint8AttrValueSuccess(void)
 
 int HcsTestGetUint8AttrValueFail(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint8_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint8(audioNode, INVALID_STRING, &data, DEFAULT_UINT8_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint8(audioNode, INVALID_STRING, &data, DEFAULT_UINT8_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT8_MAX)) {
         return HDF_FAILURE;
     }
@@ -256,15 +264,17 @@ int HcsTestGetUint8AttrValueFail(void)
 
 int HcsTestGetUint8ArrayElemSuccess(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint8_t data[DATA_TEST_ARRAY_LENGTH] = { 0 };
     // the test data is 0, 1, 2, 3, 4, 5, 6, 7.
     uint8_t testData[DATA_TEST_ARRAY_LENGTH] = { 0, 1, 2, 3, 4, 5, 6, 7 };
     uint32_t i;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t count = g_devResInstance->GetElemNum(dataType, TEST_U8_ELEM_DATA);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    count = g_devResInstance->GetElemNum(dataType, TEST_U8_ELEM_DATA);
     if (count != DATA_TEST_ARRAY_LENGTH) {
         return HDF_FAILURE;
     }
@@ -281,22 +291,24 @@ int HcsTestGetUint8ArrayElemSuccess(void)
 
 int HcsTestGetUint8ArrayElemFail(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
+    uint8_t data1[DATA_TYPE_NUM_U64] = { 0 };
     uint8_t data;
     uint32_t i;
+    int32_t ret;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     // the number of 8 is invalid value.
-    int32_t ret = g_devResInstance->GetUint8ArrayElem(dataType, TEST_U8_ELEM_DATA, 8, &data,
-        DEFAULT_UINT8_MAX);
+    ret = g_devResInstance->GetUint8ArrayElem(dataType, TEST_U8_ELEM_DATA, 8, &data, DEFAULT_UINT8_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT8_MAX)) {
         HDF_LOGE("%s failed, line: %d, ret = %d, data = %x", __FUNCTION__, __LINE__, ret, data);
         return HDF_FAILURE;
     }
-    uint8_t data1[DATA_TYPE_NUM_U64] = { 0 };
     dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t count = g_devResInstance->GetElemNum(dataType, READ_FOUR_DATA_TYPE);
+    count = g_devResInstance->GetElemNum(dataType, READ_FOUR_DATA_TYPE);
     if (count != DATA_TYPE_NUM_U64) {
         return HDF_FAILURE;
     }
@@ -314,13 +326,14 @@ int HcsTestGetUint8ArrayElemFail(void)
 
 int HcsTestGetUint8ArraySuccess(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint8_t data[DATA_TEST_ARRAY_LENGTH] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint8Array(dataType, TEST_U8_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH,
-        DEFAULT_UINT8_MAX);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint8Array(dataType, TEST_U8_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH, DEFAULT_UINT8_MAX);
     // the 0~7 represents the location in array or the value in hcs file.
     if ((ret != HDF_SUCCESS) || (data[0] != 0) || (data[1] != 1) || (data[2] != 2) || (data[3] != 3) || (data[4] != 4)
         || (data[5] != 5) || (data[6] != 6) || (data[7] != 7)) {
@@ -331,12 +344,14 @@ int HcsTestGetUint8ArraySuccess(void)
 
 int HcsTestGetUint8ArrayFail(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint8_t data[DATA_TYPE_NUM_U64 + 1] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint8Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT8_MAX);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint8Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT8_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
@@ -353,12 +368,14 @@ int HcsTestGetUint8ArrayFail(void)
 
 int HcsTestGetUint16AttrValueSuccess(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint16_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint16(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT16_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint16(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT16_MAX);
     if ((ret != HDF_SUCCESS) || (data != U8_DATA)) {
         HDF_LOGE("%s failed, line: %d, ret = %d, data = %u", __FUNCTION__, __LINE__, ret, data);
         return HDF_FAILURE;
@@ -373,12 +390,14 @@ int HcsTestGetUint16AttrValueSuccess(void)
 
 int HcsTestGetUint16AttrValueFail(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint16_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint16(audioNode, INVALID_STRING, &data, DEFAULT_UINT16_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint16(audioNode, INVALID_STRING, &data, DEFAULT_UINT16_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT16_MAX)) {
         return HDF_FAILURE;
     }
@@ -399,16 +418,18 @@ int HcsTestGetUint16AttrValueFail(void)
 
 int HcsTestGetUint16ArrayElemSuccess(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     // the length of data is 8.
     uint16_t data[DATA_TEST_ARRAY_LENGTH] = { 0 };
     // the test data is 0, 1, 2, 3, 4, 5, 256, 257.
     uint16_t testData[DATA_TEST_ARRAY_LENGTH] = { 0, 1, 2, 3, 4, 5, 256, 257 };
     uint32_t i;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t count = g_devResInstance->GetElemNum(dataType, TEST_U16_ELEM_DATA);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    count = g_devResInstance->GetElemNum(dataType, TEST_U16_ELEM_DATA);
     if (count != DATA_TEST_ARRAY_LENGTH) {
         return HDF_FAILURE;
     }
@@ -424,20 +445,23 @@ int HcsTestGetUint16ArrayElemSuccess(void)
 
 int HcsTestGetUint16ArrayElemFail(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
+    uint16_t data1[DATA_TYPE_NUM_U64] = { 0 };
     uint16_t data;
     uint32_t i;
+    int32_t ret;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint16ArrayElem(dataType, TEST_U16_ELEM_DATA, DATA_TEST_ARRAY_LENGTH, &data,
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint16ArrayElem(dataType, TEST_U16_ELEM_DATA, DATA_TEST_ARRAY_LENGTH, &data,
         DEFAULT_UINT16_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT16_MAX)) {
         return HDF_FAILURE;
     }
-    uint16_t data1[DATA_TYPE_NUM_U64] = { 0 };
     dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t count = g_devResInstance->GetElemNum(dataType, READ_FOUR_DATA_TYPE);
+    count = g_devResInstance->GetElemNum(dataType, READ_FOUR_DATA_TYPE);
     if (count != DATA_TYPE_NUM_U64) {
         return HDF_FAILURE;
     }
@@ -454,12 +478,14 @@ int HcsTestGetUint16ArrayElemFail(void)
 
 int HcsTestGetUint16ArraySuccess(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint16_t data[DATA_TEST_ARRAY_LENGTH] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint16Array(dataType, TEST_U16_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH,
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint16Array(dataType, TEST_U16_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH,
         DEFAULT_UINT16_MAX);
     // the data[0~7] represents the location in array, the test data is 0, 1, 2, 3, 4, 5, 256, 257.
     if ((ret != HDF_SUCCESS) || (data[0] != 0) || (data[1] != 1) || (data[2] != 2) || (data[3] != 3) || (data[4] != 4)
@@ -471,12 +497,14 @@ int HcsTestGetUint16ArraySuccess(void)
 
 int HcsTestGetUint16ArrayFail(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint16_t data[DATA_TYPE_NUM_U64 + 1] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint16Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT16_MAX);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint16Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT16_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
@@ -493,12 +521,14 @@ int HcsTestGetUint16ArrayFail(void)
 
 int HcsTestGetUint32AttrValueSuccess(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint32_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint32(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT32_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint32(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT32_MAX);
     if ((ret != HDF_SUCCESS) || (data != U8_DATA)) {
         HDF_LOGE("%s failed, line: %d, ret = %d, data = %u", __FUNCTION__, __LINE__, ret, data);
         return HDF_FAILURE;
@@ -518,12 +548,14 @@ int HcsTestGetUint32AttrValueSuccess(void)
 
 int HcsTestGetUint32AttrValueFail(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint32_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint32(audioNode, INVALID_STRING, &data, DEFAULT_UINT32_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint32(audioNode, INVALID_STRING, &data, DEFAULT_UINT32_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT32_MAX)) {
         return HDF_FAILURE;
     }
@@ -536,14 +568,16 @@ int HcsTestGetUint32AttrValueFail(void)
 
 int HcsTestGetUint32ArrayElemSuccess(void)
 {
+    const struct DeviceResourceNode *fingerNode = NULL;
     uint32_t data[DATA_TYPE_NUM_U32] = { 0 };
     uint32_t testData[DATA_TYPE_NUM_U32] = { U8_DATA, U16_DATA, U32_DATA };
     int32_t i;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
-    int32_t count = g_devResInstance->GetElemNum(fingerNode, READ_U32_INDEX);
+    fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
+    count = g_devResInstance->GetElemNum(fingerNode, READ_U32_INDEX);
     if (count != DATA_TYPE_NUM_U32) {
         return HDF_FAILURE;
     }
@@ -558,12 +592,14 @@ int HcsTestGetUint32ArrayElemSuccess(void)
 
 int HcsTestGetUint32ArrayElemFail(void)
 {
+    const struct DeviceResourceNode *fingerNode = NULL;
     uint32_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
-    int32_t ret = g_devResInstance->GetUint32ArrayElem(fingerNode, READ_U32_INDEX, DATA_TYPE_NUM_U32, &data,
+    fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
+    ret = g_devResInstance->GetUint32ArrayElem(fingerNode, READ_U32_INDEX, DATA_TYPE_NUM_U32, &data,
         DEFAULT_UINT32_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT32_MAX)) {
         return HDF_FAILURE;
@@ -574,10 +610,11 @@ int HcsTestGetUint32ArrayElemFail(void)
 int HcsTestGetUint32ArraySuccess(void)
 {
     uint32_t data[BOARDID_LENGTH] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    int32_t ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, BOARDID_LENGTH, DEFAULT_UINT32_MAX);
+    ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, BOARDID_LENGTH, DEFAULT_UINT32_MAX);
     // the 0, 1 represents the location in array.
     if ((ret != HDF_SUCCESS) || (data[0] != U32_DATA) || (data[1] != U16_DATA)) {
         return HDF_FAILURE;
@@ -588,10 +625,11 @@ int HcsTestGetUint32ArraySuccess(void)
 int HcsTestGetUint32ArrayFail(void)
 {
     uint32_t data[DATA_TYPE_NUM_U32] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    int32_t ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, 0, DEFAULT_UINT32_MAX);
+    ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, 0, DEFAULT_UINT32_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
@@ -606,12 +644,14 @@ int HcsTestGetUint32ArrayFail(void)
 
 int HcsTestGetUint64AttrValueSuccess(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint64_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint64(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT32_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint64(audioNode, SMARTPA_NUM, &data, DEFAULT_UINT32_MAX);
     if ((ret != HDF_SUCCESS) || (data != U8_DATA)) {
         HDF_LOGE("%s failed, line: %d", __FUNCTION__, __LINE__);
         return HDF_FAILURE;
@@ -636,12 +676,14 @@ int HcsTestGetUint64AttrValueSuccess(void)
 
 int HcsTestGetUint64AttrValueFail(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
     uint64_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    int32_t ret = g_devResInstance->GetUint64(audioNode, INVALID_STRING, &data, DEFAULT_UINT64_MAX);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    ret = g_devResInstance->GetUint64(audioNode, INVALID_STRING, &data, DEFAULT_UINT64_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT64_MAX)) {
         return HDF_FAILURE;
     }
@@ -654,14 +696,16 @@ int HcsTestGetUint64AttrValueFail(void)
 
 int HcsTestGetUint64ArrayElemSuccess(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint64_t data[DATA_TYPE_NUM_U64] = { 0 };
     uint64_t testData[DATA_TYPE_NUM_U64] = { U8_DATA, U16_DATA, U32_DATA, U64_DATA };
     uint32_t i;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t count = g_devResInstance->GetElemNum(dataType, READ_FOUR_DATA_TYPE);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    count = g_devResInstance->GetElemNum(dataType, READ_FOUR_DATA_TYPE);
     if (count != DATA_TYPE_NUM_U64) {
         return HDF_FAILURE;
     }
@@ -677,12 +721,14 @@ int HcsTestGetUint64ArrayElemSuccess(void)
 
 int HcsTestGetUint64ArrayElemFail(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint64_t data;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint64ArrayElem(dataType, READ_FOUR_DATA_TYPE, DATA_TYPE_NUM_U64, &data,
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint64ArrayElem(dataType, READ_FOUR_DATA_TYPE, DATA_TYPE_NUM_U64, &data,
         DEFAULT_UINT64_MAX);
     if ((ret == HDF_SUCCESS) || (data != DEFAULT_UINT64_MAX)) {
         return HDF_FAILURE;
@@ -692,12 +738,14 @@ int HcsTestGetUint64ArrayElemFail(void)
 
 int HcsTestGetUint64ArraySuccess(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint64_t data[DATA_TYPE_NUM_U64] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64,
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64,
         DEFAULT_UINT64_MAX);
     // the 0, 1, 2 represents the location in array.
     if ((ret != HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != U16_DATA) || (data[2] != U32_DATA) ||
@@ -709,12 +757,14 @@ int HcsTestGetUint64ArraySuccess(void)
 
 int HcsTestGetUint64ArrayFail(void)
 {
+    const struct DeviceResourceNode *dataType = NULL;
     uint64_t data[DATA_TYPE_NUM_U64 + 1] = { 0 };
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    int32_t ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT64_MAX);
+    dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
+    ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT64_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
     if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
         return HDF_FAILURE;
@@ -731,14 +781,16 @@ int HcsTestGetUint64ArrayFail(void)
 
 int HcsTestGetElemNumSuccess(void)
 {
+    const struct DeviceResourceNode *fingerNode = NULL;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    int32_t count = g_devResInstance->GetElemNum(g_testRoot, BOARD_ID);
+    count = g_devResInstance->GetElemNum(g_testRoot, BOARD_ID);
     if (count != BOARDID_LENGTH) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
+    fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
     count = g_devResInstance->GetElemNum(fingerNode, READ_U32_INDEX);
     if (count != DATA_TYPE_NUM_U32) {
         return HDF_FAILURE;
@@ -752,12 +804,14 @@ int HcsTestGetElemNumSuccess(void)
 
 int HcsTestGetElemNumFail(void)
 {
+    const struct DeviceResourceNode *fingerNode = NULL;
+    int32_t count;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
+    fingerNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_FINGERPRINT_INFO);
     // the dual_fingerprint attr do not array, so the count is HDF_FAILURE.
-    int32_t count = g_devResInstance->GetElemNum(fingerNode, DUAL_FINGERPRINT);
+    count = g_devResInstance->GetElemNum(fingerNode, DUAL_FINGERPRINT);
     if (count != HDF_FAILURE) {
         return HDF_FAILURE;
     }
@@ -771,18 +825,21 @@ int HcsTestGetElemNumFail(void)
 
 int HcsTestGetChildNodeSuccess(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
+    const struct DeviceResourceNode *fingerprintNode = NULL;
+    const struct DeviceResourceNode *oneNode = NULL;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetChildNode(g_testRoot, AUDIO_INFO);
+    audioNode = g_devResInstance->GetChildNode(g_testRoot, AUDIO_INFO);
     if (audioNode == NULL) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
+    fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
     if (fingerprintNode == NULL) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *oneNode = g_devResInstance->GetChildNode(fingerprintNode, "fingerprint_one");
+    oneNode = g_devResInstance->GetChildNode(fingerprintNode, "fingerprint_one");
     if (oneNode == NULL) {
         return HDF_FAILURE;
     }
@@ -791,14 +848,16 @@ int HcsTestGetChildNodeSuccess(void)
 
 int HcsTestGetChildNodeFail(void)
 {
+    const struct DeviceResourceNode *twoNode = NULL;
+    const struct DeviceResourceNode *nullNode = NULL;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *twoNode = g_devResInstance->GetChildNode(g_testRoot, "fingerprint_two");
+    twoNode = g_devResInstance->GetChildNode(g_testRoot, "fingerprint_two");
     if (twoNode != NULL) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *nullNode = g_devResInstance->GetChildNode(g_testRoot, INVALID_NODE);
+    nullNode = g_devResInstance->GetChildNode(g_testRoot, INVALID_NODE);
     if (nullNode != NULL) {
         return HDF_FAILURE;
     }
@@ -815,14 +874,15 @@ int HcsTestGetChildNodeFail(void)
 
 int HcsTestTraverseAttrInNodeSuccess(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
+    struct DeviceResourceAttr *pp = NULL;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetChildNode(g_testRoot, AUDIO_INFO);
+    audioNode = g_devResInstance->GetChildNode(g_testRoot, AUDIO_INFO);
     if (audioNode == NULL) {
         return HDF_FAILURE;
     }
-    struct DeviceResourceAttr *pp = NULL;
     DEV_RES_NODE_FOR_EACH_ATTR(audioNode, pp) {
         if ((pp == NULL) || (pp->name == NULL)) {
             break;
@@ -841,14 +901,16 @@ int HcsTestTraverseAttrInNodeSuccess(void)
 
 int HcsTestTraverseAttrInNodeFail(void)
 {
+    const struct DeviceResourceNode *fingerprintNode = NULL;
+    struct DeviceResourceAttr *pp = NULL;
+    const struct DeviceResourceNode *childNode = NULL;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
+    fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
     if (fingerprintNode == NULL) {
         return HDF_FAILURE;
     }
-    struct DeviceResourceAttr *pp = NULL;
     DEV_RES_NODE_FOR_EACH_ATTR(fingerprintNode, pp) {
         if ((pp == NULL) || (pp->name == NULL)) {
             break;
@@ -863,7 +925,6 @@ int HcsTestTraverseAttrInNodeFail(void)
         return HDF_FAILURE;
     }
 
-    const struct DeviceResourceNode *childNode = NULL;
     DEV_RES_NODE_FOR_EACH_CHILD_NODE(fingerprintNode, childNode) {
         if ((childNode == NULL) || (childNode->name == NULL)) {
             break;
@@ -882,12 +943,14 @@ int HcsTestTraverseAttrInNodeFail(void)
 
 int HcsTestGetStringSuccess(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
+    const char *type = NULL;
+    int32_t readString;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    const char *type = NULL;
-    int32_t readString = g_devResInstance->GetString(audioNode, "cust_name", &type, NULL);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    readString = g_devResInstance->GetString(audioNode, "cust_name", &type, NULL);
     if ((readString != HDF_SUCCESS) || (type == NULL) || (strcmp(type, "audio_custom_v2") != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
@@ -896,12 +959,14 @@ int HcsTestGetStringSuccess(void)
 
 int HcsTestGetStringFail(void)
 {
+    const struct DeviceResourceNode *audioNode = NULL;
+    const char *type = NULL;
+    int32_t testReadString;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
-    const char *type = NULL;
-    int32_t testReadString = g_devResInstance->GetString(audioNode, INVALID_STRING, &type, STRING_ATTR_VALUE);
+    audioNode = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_AUDIO_INFO);
+    testReadString = g_devResInstance->GetString(audioNode, INVALID_STRING, &type, STRING_ATTR_VALUE);
     if ((testReadString == HDF_SUCCESS) || (type == NULL) || (strcmp(type, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
@@ -918,13 +983,15 @@ int HcsTestGetStringFail(void)
 
 int HcsTestGetStringArrayElemSuccess(void)
 {
+    const char *rawDataDts = NULL;
+    const struct DeviceResourceNode *fingerprintNode = NULL;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const char *rawDataDts = NULL;
-    const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
+    fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
     // the third param(0) is the location in string_list_names array.
-    int32_t ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 0, &rawDataDts, NULL);
+    ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 0, &rawDataDts, NULL);
     if ((ret != HDF_SUCCESS) || (strcmp(rawDataDts, "first") != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
@@ -943,14 +1010,15 @@ int HcsTestGetStringArrayElemSuccess(void)
 
 int HcsTestGetStringArrayElemFail(void)
 {
+    const char *rawDataDts = NULL;
+    const struct DeviceResourceNode *fingerprintNode = NULL;
+    int32_t ret;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const char *rawDataDts = NULL;
-    const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
+    fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
     // the third param(3) is the location in string_list_names array.
-    int32_t ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 3, &rawDataDts,
-        STRING_ATTR_VALUE);
+    ret = g_devResInstance->GetStringArrayElem(fingerprintNode, STRING_LIST_NAMES, 3, &rawDataDts, STRING_ATTR_VALUE);
     if ((ret == HDF_SUCCESS) || (strcmp(rawDataDts, STRING_ATTR_VALUE) != HDF_SUCCESS)) {
         return HDF_FAILURE;
     }
@@ -981,11 +1049,13 @@ int HcsTestGetStringArrayElemFail(void)
 
 int HcsTestGetNodeAttrRefSuccess(void)
 {
+    const struct DeviceResourceNode *fingerprintNode = NULL;
+    const struct DeviceResourceNode *ret = NULL;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
-    const struct DeviceResourceNode *ret = g_devResInstance->GetNodeByRefAttr(fingerprintNode, FINGER_INFO);
+    fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
+    ret = g_devResInstance->GetNodeByRefAttr(fingerprintNode, FINGER_INFO);
     if (ret == NULL) {
         return HDF_FAILURE;
     }
@@ -998,11 +1068,13 @@ int HcsTestGetNodeAttrRefSuccess(void)
 
 int HcsTestGetNodeAttrRefFail(void)
 {
+    const struct DeviceResourceNode *fingerprintNode = NULL;
+    const struct DeviceResourceNode *ret = NULL;
     if (!TestGetRootNode()) {
         return HDF_FAILURE;
     }
-    const struct DeviceResourceNode *fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
-    const struct DeviceResourceNode *ret = g_devResInstance->GetNodeByRefAttr(fingerprintNode, DUAL_FINGERPRINT);
+    fingerprintNode = g_devResInstance->GetChildNode(g_testRoot, FINGERPRINT_INFO);
+    ret = g_devResInstance->GetNodeByRefAttr(fingerprintNode, DUAL_FINGERPRINT);
     if (ret != NULL) {
         return HDF_FAILURE;
     }
