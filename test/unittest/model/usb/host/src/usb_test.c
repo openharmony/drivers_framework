@@ -84,11 +84,11 @@ static void AcmWriteIsoCallback(struct UsbRequest *requestArg)
     printf("%s:%d status:%d\n", __func__, __LINE__, req->compInfo.status);
 }
 
-static int AcmWriteBufAllocHandle(struct AcmDevice *acm)
+static int AcmWriteBufAllocHandle(const struct AcmDevice *acm)
 {
     int i;
     struct AcmWb *wb;
-    for (wb = &acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
+    for (wb = (struct AcmWb *)&acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
         wb->buf = (uint8_t *)OsalMemCalloc(acm->writeSize);
         if (!wb->buf) {
             while (i != 0) {
@@ -1477,9 +1477,9 @@ static int32_t CheckHostSdkIfFillRequest004(void)
     parmas.requestType = USB_REQUEST_PARAMS_CTRL_TYPE;
     parmas.timeout = USB_CTRL_SET_TIMEOUT;
     g_acm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    g_acm->lineCoding.bCharFormat = CHARFORMAT;
+    g_acm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     g_acm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    g_acm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    g_acm->lineCoding.bDataBits = DATA_BITS_LENGTH;
     msgData.request = USB_DDK_CDC_REQ_SET_LINE_CODING;
     msgData.requestType = USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     msgData.value = value;
@@ -1656,9 +1656,9 @@ static int32_t CheckHostSdkIfFillRequest008(void)
     parmas.requestType = USB_REQUEST_PARAMS_CTRL_TYPE;
     parmas.timeout = USB_CTRL_SET_TIMEOUT;
     g_acm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    g_acm->lineCoding.bCharFormat = CHARFORMAT;
+    g_acm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     g_acm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    g_acm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    g_acm->lineCoding.bDataBits = DATA_BITS_LENGTH;
     msgData.request = USB_DDK_CDC_REQ_SET_LINE_CODING;
     msgData.requestType = USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     msgData.value = value;

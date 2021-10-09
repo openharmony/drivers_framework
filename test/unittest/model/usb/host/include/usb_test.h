@@ -120,7 +120,7 @@ enum UsbTestCmd {
 #define REQUEST_TYPE_MASK       0x3
 
 #define DATARATE                9600
-#define CHARFORMAT              8
+#define DATA_BITS_LENGTH        8
 #define ACM_NW                  16
 #define ACM_NR                  16
 #define READ_BUF_SIZE           8192
