@@ -1269,9 +1269,9 @@ int32_t CheckRawSdkIfFillControlSetup001(void)
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
 
     rawAcm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    rawAcm->lineCoding.bCharFormat = CHARFORMAT;
+    rawAcm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     rawAcm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    rawAcm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    rawAcm->lineCoding.bDataBits = DATA_BITS_LENGTH;
 
     ctrlReq.requestType = USB_DDK_DIR_OUT | USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     ctrlReq.requestCmd  = USB_DDK_CDC_REQ_SET_LINE_CODING;
@@ -1337,9 +1337,9 @@ int32_t CheckRawSdkIfFillControlSetup004(void)
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
 
     rawAcm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    rawAcm->lineCoding.bCharFormat = CHARFORMAT;
+    rawAcm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     rawAcm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    rawAcm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    rawAcm->lineCoding.bDataBits = DATA_BITS_LENGTH;
 
     ctrlReq.requestType = USB_DDK_DIR_OUT | USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     ctrlReq.requestCmd  = USB_DDK_CDC_REQ_SET_LINE_CODING;
@@ -1377,9 +1377,9 @@ int32_t CheckRawSdkIfSendControlRequest001(void)
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
 
     rawAcm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    rawAcm->lineCoding.bCharFormat = CHARFORMAT;
+    rawAcm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     rawAcm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    rawAcm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    rawAcm->lineCoding.bDataBits = DATA_BITS_LENGTH;
     ctrlReq.requestType = USB_DDK_DIR_OUT | USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     ctrlReq.requestCmd  = USB_DDK_CDC_REQ_SET_LINE_CODING;
     ctrlReq.value       = CpuToLe16(0);
@@ -1404,9 +1404,9 @@ int32_t CheckRawSdkIfSendControlRequest002(void)
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
 
     rawAcm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    rawAcm->lineCoding.bCharFormat = CHARFORMAT;
+    rawAcm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     rawAcm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    rawAcm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    rawAcm->lineCoding.bDataBits = DATA_BITS_LENGTH;
     ctrlReq.requestType = USB_DDK_DIR_OUT | USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     ctrlReq.requestCmd  = USB_DDK_CDC_REQ_SET_LINE_CODING;
     ctrlReq.value       = CpuToLe16(0);
@@ -1444,9 +1444,9 @@ int32_t CheckRawSdkIfSendControlRequest004(void)
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
 
     rawAcm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    rawAcm->lineCoding.bCharFormat = CHARFORMAT;
+    rawAcm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     rawAcm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    rawAcm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    rawAcm->lineCoding.bDataBits = DATA_BITS_LENGTH;
     ctrlReq.requestType = USB_DDK_DIR_OUT | USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     ctrlReq.requestCmd  = USB_DDK_CDC_REQ_SET_LINE_CODING;
     ctrlReq.value       = CpuToLe16(0);
@@ -1471,9 +1471,9 @@ int32_t CheckRawSdkIfSendControlRequest005(void)
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
 
     rawAcm->lineCoding.dwDTERate = CpuToLe32(DATARATE);
-    rawAcm->lineCoding.bCharFormat = CHARFORMAT;
+    rawAcm->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     rawAcm->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    rawAcm->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    rawAcm->lineCoding.bDataBits = DATA_BITS_LENGTH;
     ctrlReq.requestType = USB_DDK_DIR_OUT | USB_DDK_TYPE_CLASS | USB_DDK_RECIP_INTERFACE;
     ctrlReq.requestCmd  = USB_DDK_CDC_REQ_SET_LINE_CODING;
     ctrlReq.value       = CpuToLe16(0);

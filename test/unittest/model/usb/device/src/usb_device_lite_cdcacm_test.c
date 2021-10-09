@@ -329,9 +329,9 @@ static struct Serial *SerialAlloc(void)
     DListHeadInit(&port->writePool);
 
     port->lineCoding.dwDTERate = CpuToLe32(PORT_RATE);
-    port->lineCoding.bCharFormat = CHAR_FORMAT;
+    port->lineCoding.bCharFormat = USB_CDC_1_STOP_BITS;
     port->lineCoding.bParityType = USB_CDC_NO_PARITY;
-    port->lineCoding.bDataBits = USB_CDC_1_STOP_BITS;
+    port->lineCoding.bDataBits = DATA_BIT;
     return port;
 }
 
@@ -440,12 +440,12 @@ static int AllocCtrlRequests(struct AcmDevice *acmDevice)
 }
 
 static int32_t SendNotifyRequest(struct AcmDevice *acm, uint8_t type,
-    uint16_t value, void *data, uint32_t length)
+    uint16_t value, const uint16_t *data, uint32_t length)
 {
     struct UsbFnRequest *req = acm->notifyReq;
     struct UsbCdcNotification *notify = NULL;
     int ret;
-    if ((acm == NULL) || (req == NULL) || (req->buf == NULL) || (data == NULL)) {
+    if ((acm == NULL) || (acm->ctrlIface.fn == NULL) || (req == NULL) || (req->buf == NULL) || (data == NULL)) {
         return -1;
     }
     acm->notifyReq = NULL;
@@ -458,7 +458,10 @@ static int32_t SendNotifyRequest(struct AcmDevice *acm, uint8_t type,
     notify->wValue = CpuToLe16(value);
     notify->wIndex = CpuToLe16(acm->ctrlIface.fn->info.index);
     notify->wLength = CpuToLe16(length);
-    memcpy_s((void *)(notify + 1), length, data, length);
+    ret = memcpy_s((void *)(notify + 1), length, data, length);
+    if (ret != EOK) {
+        HDF_LOGE("%s: memcpy_s fail, ret=%d", __func__, ret);
+    }
 
     ret = UsbFnSubmitRequestAsync(req);
     return ret;

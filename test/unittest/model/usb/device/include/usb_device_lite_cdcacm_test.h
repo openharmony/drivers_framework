@@ -31,9 +31,9 @@
 #define WAIT_100MS 100
 #define SYNC_5000MS 5000
 #define CDC_ACM
-#define QUEUE_SIZE              8
+#define QUEUE_SIZE      8
 #define PORT_RATE       9600
-#define CHAR_FORMAT     8
+#define DATA_BIT        8
 
 #define SS_MAX_PACKET_SIZE 1024
 #define MAX_PACKET_SIZE 512

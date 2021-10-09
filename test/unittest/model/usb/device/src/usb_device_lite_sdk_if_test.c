@@ -17,10 +17,8 @@
 
 #define HDF_LOG_TAG usb_device_sdk_test
 
-static struct AcmDevice *g_acmDevice = NULL;
+struct AcmDevice *g_acmDevice = NULL;
 extern struct UsbFnDeviceDesc g_acmFnDevice;
-
-#include "usb_device_lite_sdk_io_test.c"
 
 int32_t UsbFnDviceTestCreate(void)
 {

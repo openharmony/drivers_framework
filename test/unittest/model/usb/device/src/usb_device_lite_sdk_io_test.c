@@ -12,6 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "usb_device_lite_cdcacm_test.h"
+
+#define HDF_LOG_TAG usb_device_sdk_test
+extern struct AcmDevice *g_acmDevice;
 
 static void ReadComplete(uint8_t pipe, struct UsbFnRequest *req)
 {
