@@ -20,6 +20,11 @@
 struct AcmDevice *g_acmDevice = NULL;
 extern struct UsbFnDeviceDesc g_acmFnDevice;
 
+struct AcmDevice *UsbGetAcmDevice(void)
+{
+    return g_acmDevice;
+}
+
 int32_t UsbFnDviceTestCreate(void)
 {
     dprintf("%s: start\n", __func__);
@@ -1120,7 +1125,7 @@ int32_t UsbFnDviceTestAllocRequest005(void)
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
     }
-    req = UsbFnAllocRequest(g_acmDevice->ctrlIface.handle, 0x20, 0x800);
+    req = UsbFnAllocRequest(g_acmDevice->ctrlIface.handle, 0x20, REQUEST_ALLOC_LENGTH);
     if (req != NULL) {
         HDF_LOGE("%s: alloc req success!!", __func__);
         ret = UsbFnFreeRequest(req);
@@ -1181,12 +1186,13 @@ int32_t UsbFnDviceTestAllocRequest008(void)
 {
     int ret;
     struct UsbFnRequest *req = NULL;
+    uint32_t length;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
     }
-    req = UsbFnAllocRequest(g_acmDevice->dataIface.handle,
-        0x20, g_acmDevice->dataOutPipe.maxPacketSize);
+    length = g_acmDevice->dataOutPipe.maxPacketSize;
+    req = UsbFnAllocRequest(g_acmDevice->dataIface.handle, 0x20, length);
     if (req != NULL) {
         HDF_LOGE("%s: alloc req success!!", __func__);
         ret = UsbFnFreeRequest(req);
