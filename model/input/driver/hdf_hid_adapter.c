@@ -114,31 +114,11 @@ static int32_t SetInputDevAbsAttr(InputDevice *inputDev, HidInfo *info)
     return HDF_SUCCESS;
 }
 
-static int32_t GetInfoFromCache(InputDevice *inputDev, HidInfo **info)
+static void GetInfoFromCache(InputDevice *inputDev, HidInfo *info)
 {
-    int32_t id = 0;
-    while (id < MAX_INPUT_DEV_NUM) {
-        if (g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
-            *info = g_cachedInfo[id];
-            break;
-        }
-        id++;
-    }
-    if (id == MAX_INPUT_DEV_NUM || info == NULL) {
-        HDF_LOGE("%s: match cached info failed", __func__);
-        return HDF_FAILURE;
-    }
-    return HDF_SUCCESS;
-}
-
-static void SetInputDevAbility(InputDevice *inputDev)
-{
-    HidInfo *info = NULL;
     uint32_t len;
     int32_t ret;
 
-    ret = GetInfoFromCache(inputDev, &info);
-    MEMCPY_CHECK_RETURN(ret);
     len = sizeof(unsigned long);
     ret = memcpy_s(inputDev->abilitySet.devProp, len * BITS_TO_LONG(INPUT_PROP_CNT),
         info->devProp, len * BITS_TO_LONG(INPUT_PROP_CNT));
@@ -176,6 +156,26 @@ static void SetInputDevAbility(InputDevice *inputDev)
     inputDev->attrSet.id.vendor = info->vendor;
     inputDev->attrSet.id.product = info->product;
     inputDev->attrSet.id.version = info->version;
+}
+
+static void SetInputDevAbility(InputDevice *inputDev)
+{
+    HidInfo *info = NULL;
+    int32_t id = 0;
+
+    while (id < MAX_INPUT_DEV_NUM) {
+        if (g_cachedInfo[id] != NULL && !strcmp(inputDev->devName, g_cachedInfo[id]->devName)) {
+            info = g_cachedInfo[id];
+            break;
+        }
+        id++;
+    }
+    if (id == MAX_INPUT_DEV_NUM || info == NULL) {
+        HDF_LOGE("%s: match cached info failed", __func__);
+        return;
+    }
+
+    GetInfoFromCache(inputDev, info);
     FreeCachedInfo();
 }
 
