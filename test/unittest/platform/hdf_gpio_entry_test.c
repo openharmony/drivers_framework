@@ -15,19 +15,10 @@
 
 int32_t HdfGpioTestEntry(HdfTestMsg *msg)
 {
-    struct GpioTester *tester = NULL;
-
     if (msg == NULL) {
         return HDF_FAILURE;
     }
 
-    tester = GpioTesterGet();
-    if (tester == NULL) {
-        HDF_LOGE("%s: tester is NULL!\n", __func__);
-        return HDF_FAILURE;
-    }
-
-    msg->result = tester->doTest(tester, msg->subCmd);
-
+    msg->result = GpioTestExecute(msg->subCmd);
     return HDF_SUCCESS;
 }

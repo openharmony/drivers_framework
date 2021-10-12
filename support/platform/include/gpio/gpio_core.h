@@ -14,6 +14,7 @@
 #include "hdf_dlist.h"
 #include "gpio_if.h"
 #include "osal_spinlock.h"
+#include "platform_core.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -148,6 +149,15 @@ static inline uint16_t GpioGetLocalNumber(struct GpioCntlr *cntlr, uint16_t gpio
 {
     return (cntlr == NULL) ? gpio : (gpio - cntlr->start);
 }
+
+struct GpioManager {
+    struct IDeviceIoService service;
+    struct PlatformDevice device;
+    struct PlatformManager manager;
+    struct DListHead cntlrList;
+};
+
+struct GpioManager *GpioManagerGet(void);
 
 #ifdef __cplusplus
 #if __cplusplus

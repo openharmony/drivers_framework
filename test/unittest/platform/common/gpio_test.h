@@ -9,7 +9,13 @@
 #ifndef GPIO_TEST_H
 #define GPIO_TEST_H
 
-#include "hdf_device_desc.h"
+#include "hdf_base.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int32_t GpioTestExecute(int cmd);
 
 enum GpioTestCmd {
     GPIO_TEST_SET_GET_DIR = 0,
@@ -21,12 +27,14 @@ enum GpioTestCmd {
     GPIO_TEST_MAX = 6,
 };
 
-struct GpioTester {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    int32_t (*doTest)(struct GpioTester *tester, int32_t cmd);
+struct GpioTestConfig {
     uint16_t gpio;
     uint16_t gpioIrq;
+    uint16_t testUserApi;
+};
+
+struct GpioTester {
+    struct GpioTestConfig cfg;
     uint16_t oldDir;
     uint16_t oldVal;
     uint16_t irqCnt;
@@ -35,9 +43,8 @@ struct GpioTester {
     uint32_t irqTimeout;
 };
 
-static inline struct GpioTester *GpioTesterGet(void)
-{
-    return (struct GpioTester *)DevSvcManagerClntGetService("GPIO_TEST");
+#ifdef __cplusplus
 }
+#endif
 
 #endif /* GPIO_TEST_H */
