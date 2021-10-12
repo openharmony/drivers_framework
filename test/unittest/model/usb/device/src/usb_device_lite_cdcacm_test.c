@@ -442,10 +442,14 @@ static int AllocCtrlRequests(struct AcmDevice *acmDevice)
 static int32_t SendNotifyRequest(struct AcmDevice *acm, uint8_t type,
     uint16_t value, const uint16_t *data, uint32_t length)
 {
-    struct UsbFnRequest *req = acm->notifyReq;
+    struct UsbFnRequest *req = NULL;
     struct UsbCdcNotification *notify = NULL;
     int ret;
-    if ((acm == NULL) || (acm->ctrlIface.fn == NULL) || (req == NULL) || (req->buf == NULL) || (data == NULL)) {
+    if ((data == NULL) || (acm == NULL) || (acm->ctrlIface.fn == NULL)) {
+        return -1;
+    }
+    req = acm->notifyReq;
+    if ((req == NULL) || (req->buf == NULL)) {
         return -1;
     }
     acm->notifyReq = NULL;
@@ -458,6 +462,9 @@ static int32_t SendNotifyRequest(struct AcmDevice *acm, uint8_t type,
     notify->wValue = CpuToLe16(value);
     notify->wIndex = CpuToLe16(acm->ctrlIface.fn->info.index);
     notify->wLength = CpuToLe16(length);
+    if (((void *)(notify + 1) == NULL) || (length == 0)) {
+        return HDF_FAILURE;
+    }
     ret = memcpy_s((void *)(notify + 1), length, data, length);
     if (ret != EOK) {
         HDF_LOGE("%s: memcpy_s fail, ret=%d", __func__, ret);

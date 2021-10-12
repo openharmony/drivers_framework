@@ -52,6 +52,7 @@
 #define ACM_DATA_IDX            2
 #define ACM_IAD_IDX             3
 
+#define REQUEST_ALLOC_LENGTH    ((uint32_t)(0x0800))
 
 struct Serial {
     struct AcmDevice         *acm;
@@ -132,6 +133,7 @@ void AcmEventCallback(struct UsbFnEvent *event);
 void AcmDeviceRelease(struct AcmDevice *acmDevice);
 int remove_usb_device(void);
 
+struct AcmDevice *UsbGetAcmDevice(void);
 int32_t UsbFnDviceTestCreate(void);
 int32_t UsbFnDviceTestCreate002(void);
 int32_t UsbFnDviceTestCreate003(void);

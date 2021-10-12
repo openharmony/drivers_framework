@@ -130,10 +130,11 @@ static bool UsbDdkPnpLoaderMatchFlag(const struct UsbPnpNotifyMatchInfoTable *de
 {
     int32_t i;
     bool ret = true;
+    uint32_t offset;
 
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_CLASS) {
-        for (i = 0; i < id->interfaceClassLength; i++) {
-            if (!((uint32_t)(id->interfaceClassMask >> i) & 0x01)) {
+        for (i = 0, offset = 0; i < id->interfaceClassLength; i++, offset = i) {
+            if (!((id->interfaceClassMask >> offset) & 0x01)) {
                 break;
             }
         }
@@ -144,8 +145,8 @@ static bool UsbDdkPnpLoaderMatchFlag(const struct UsbPnpNotifyMatchInfoTable *de
     }
 
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_SUBCLASS) {
-        for (i = 0; i < id->interfaceSubClassLength; i++) {
-            if (!((id->interfaceSubClassMask >> i) & 0x01)) {
+        for (i = 0, offset = 0; i < id->interfaceSubClassLength; i++, offset = i) {
+            if (!((id->interfaceSubClassMask >> offset) & 0x01)) {
                 break;
             }
         }
@@ -156,8 +157,8 @@ static bool UsbDdkPnpLoaderMatchFlag(const struct UsbPnpNotifyMatchInfoTable *de
     }
 
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_PROTOCOL) {
-        for (i = 0; i < id->interfaceProtocolLength; i++) {
-            if (!((id->interfaceProtocolMask >> i) & 0x01)) {
+        for (i = 0, offset = 0; i < id->interfaceProtocolLength; i++, offset = i) {
+            if (!((id->interfaceProtocolMask >> offset) & 0x01)) {
                 break;
             }
         }
@@ -168,8 +169,8 @@ static bool UsbDdkPnpLoaderMatchFlag(const struct UsbPnpNotifyMatchInfoTable *de
     }
 
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_NUMBER) {
-        for (i = 0; i < id->interfaceLength; i++) {
-            if (!((id->interfaceMask >> i) & 0x01)) {
+        for (i = 0, offset = 0; i < id->interfaceLength; i++, offset = i) {
+            if (!((id->interfaceMask >> offset) & 0x01)) {
                 break;
             }
         }
