@@ -6,10 +6,10 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_log.h"
-#include "hdf_base.h"
 #include "hcs_parser_test.h"
+#include "hdf_base.h"
 #include "hdf_device_desc.h"
+#include "hdf_log.h"
 #include "hdf_main_test.h"
 #include "osal_test_entry.h"
 
