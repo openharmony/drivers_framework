@@ -6,12 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "gpio_core.h"
+#include "gpio/gpio_core.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_sem.h"
 #include "osal_thread.h"
 #include "plat_log.h"
+#include "platform_core.h"
 #include "securec.h"
 
 #define HDF_LOG_TAG gpio_core
@@ -32,28 +33,25 @@ struct GpioIrqBridge {
     bool stop;
 };
 
-static struct DListHead g_cntlrList;
-static OsalSpinlock g_listLock;
-static uint32_t g_irqFlags;
+static struct GpioManager g_gpioManager;
 
-static struct DListHead *GpioCntlrListGet(void)
+struct GpioManager *GpioManagerGet(void)
 {
-    static struct DListHead *list = NULL;
-    uint32_t flags;
+    static struct GpioManager *manager = NULL;
 
-    if (list == NULL) {
-        list = &g_cntlrList;
-        DListHeadInit(list);
-        OsalSpinInit(&g_listLock);
+    if (manager == NULL) {
+        manager = &g_gpioManager;
+
+        manager->manager.name = "PLATFORM_GPIO_MANAGER";
+        OsalSpinInit(&manager->manager.spin);
+        DListHeadInit(&manager->manager.devices);
+
+        PlatformDeviceInit(&manager->device);
+        PlatformDeviceGet(&manager->device);
+        HDF_LOGI("%s: gpio manager init done", __func__);
     }
-    while (OsalSpinLockIrqSave(&g_listLock, &flags) != HDF_SUCCESS);
-    g_irqFlags = flags;
-    return list;
-}
 
-static void GpioCntlrListPut(void)
-{
-    (void)OsalSpinUnlockIrqRestore(&g_listLock, &g_irqFlags);
+    return manager;
 }
 
 static uint16_t GpioCntlrQueryStart(struct GpioCntlr *cntlr, struct DListHead *list)
@@ -99,7 +97,7 @@ static uint16_t GpioCntlrQueryStart(struct GpioCntlr *cntlr, struct DListHead *l
 int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
 {
     uint16_t start;
-    struct DListHead *list = NULL;
+    struct GpioManager *gpioMgr = NULL;
 
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
@@ -127,18 +125,23 @@ int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
         }
     }
 
-    OsalSpinInit(&cntlr->spin);
-
-    list = GpioCntlrListGet();
-    if ((start = GpioCntlrQueryStart(cntlr, list)) >= GPIO_NUM_MAX) {
+    gpioMgr = GpioManagerGet();
+    if (gpioMgr == NULL) {
+        HDF_LOGE("GpioCntlrAdd: get gpio manager failed");
+        return HDF_PLT_ERR_DEV_GET;
+    }
+    (void)OsalSpinLock(&gpioMgr->manager.spin);
+    if ((start = GpioCntlrQueryStart(cntlr, &gpioMgr->manager.devices)) >= GPIO_NUM_MAX) {
         HDF_LOGE("GpioCntlrAdd: query range for start:%d fail:%d", cntlr->start, start);
-        GpioCntlrListPut();
+        (void)OsalSpinUnlock(&gpioMgr->manager.spin);
         return HDF_ERR_INVALID_PARAM;
     }
+
     cntlr->start = start;
+    OsalSpinInit(&cntlr->spin);
     DListHeadInit(&cntlr->list);
-    DListInsertTail(&cntlr->list, list);
-    GpioCntlrListPut();
+    DListInsertTail(&cntlr->list, &gpioMgr->manager.devices);
+    (void)OsalSpinUnlock(&gpioMgr->manager.spin);
     HDF_LOGI("GpioCntlrAdd: start:%u count:%u", cntlr->start, cntlr->count);
 
     return HDF_SUCCESS;
@@ -146,6 +149,8 @@ int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
 
 void GpioCntlrRemove(struct GpioCntlr *cntlr)
 {
+    struct GpioManager *gpioMgr = NULL;
+
     if (cntlr == NULL) {
         return;
     }
@@ -155,10 +160,16 @@ void GpioCntlrRemove(struct GpioCntlr *cntlr)
         return;
     }
 
+    gpioMgr = GpioManagerGet();
+    if (gpioMgr == NULL) {
+        HDF_LOGE("GpioCntlrRemove: get gpio manager failed");
+        return;
+    }
+
     cntlr->device->service = NULL;
-    (void)GpioCntlrListGet();
+    (void)OsalSpinLock(&gpioMgr->manager.spin);
     DListRemove(&cntlr->list);
-    GpioCntlrListPut();
+    (void)OsalSpinUnlock(&gpioMgr->manager.spin);
     if (cntlr->ginfos != NULL) {
         OsalMemFree(cntlr->ginfos);
         cntlr->ginfos = NULL;
@@ -168,18 +179,24 @@ void GpioCntlrRemove(struct GpioCntlr *cntlr)
 
 struct GpioCntlr *GpioGetCntlr(uint16_t gpio)
 {
-    struct DListHead *list = NULL;
     struct GpioCntlr *cntlr = NULL;
     struct GpioCntlr *tmp = NULL;
+    struct GpioManager *gpioMgr = NULL;
 
-    list = GpioCntlrListGet();
-    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, list, struct GpioCntlr, list) {
+    gpioMgr = GpioManagerGet();
+    if (gpioMgr == NULL) {
+        HDF_LOGE("GpioCntlrRemove: get gpio manager failed");
+        return NULL;
+    }
+
+    (void)OsalSpinLock(&gpioMgr->manager.spin);
+    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, &gpioMgr->manager.devices, struct GpioCntlr, list) {
         if (gpio >= cntlr->start && gpio < (cntlr->start + cntlr->count)) {
-            GpioCntlrListPut();
+            (void)OsalSpinUnlock(&gpioMgr->manager.spin);
             return cntlr;
         }
     }
-    GpioCntlrListPut();
+    (void)OsalSpinUnlock(&gpioMgr->manager.spin);
     HDF_LOGE("GpioGetCntlr: gpio %u not in any controllers!", gpio);
     return NULL;
 }
