@@ -60,21 +60,21 @@ static int32_t ParserHapticEffect(struct DeviceResourceIface *parser, const stru
     int32_t ret;
     int32_t count;
     struct VibratorEffectNode *effectNode = NULL;
-    const struct DeviceResourceAttr *hapticAttr = NULL;
+    const struct DeviceResourceNode *childNode = NULL;
     struct VibratorHapticData *hapticData = GetHapticData();
 
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
 
     (void)OsalMutexLock(&hapticData->mutex);
-    DEV_RES_NODE_FOR_EACH_ATTR(hapticNode, hapticAttr) {
-        if ((hapticAttr == NULL) || (hapticAttr->name == NULL)) {
+    DEV_RES_NODE_FOR_EACH_CHILD_NODE(hapticNode, childNode) {
+        if ((childNode == NULL) || (childNode->name == NULL)) {
+             HDF_LOGI("%s:childNode is NULL", __func__);
             break;
         }
 
-        count = parser->GetElemNum(hapticNode, hapticAttr->name);
-        // Minimum of two elements, including the type and sequence.
+        count = parser->GetElemNum(childNode, "seq");
         if (count <= 1 || count > VIBRATOR_HAPTIC_SEQ_MAX) {
-            HDF_LOGE("%s: haptic [%s] parser seq count fail", __func__, hapticAttr->name);
+            HDF_LOGE("%s: haptic [%s] parser seq count fail", __func__, childNode->name);
             continue;
         }
 
@@ -83,10 +83,11 @@ static int32_t ParserHapticEffect(struct DeviceResourceIface *parser, const stru
             HDF_LOGE("%s: malloc effect effectNode fail", __func__);
             continue;
         }
-        effectNode->effect = hapticAttr->name;
-        ret = parser->GetUint32Array(hapticNode, hapticAttr->name, effectNode->seq, count, 0);
-        CHECK_VIBRATOR_PARSER_RESULT_RETURN_VALUE(ret, hapticAttr->name);
         effectNode->num = count;
+        ret = parser->GetString(childNode, "effectName", &effectNode->effect, NULL);
+        ret = parser->GetUint32(childNode, "type", &effectNode->type, 0);
+        ret = parser->GetUint32Array(childNode, "seq", effectNode->seq, count, 0);
+
         DListInsertTail(&effectNode->node, &hapticData->effectSeqHead);
     }
     (void)OsalMutexUnlock(&hapticData->mutex);
@@ -249,9 +250,10 @@ static int32_t GetHapticSeqByEffect(struct VibratorEffectCfg *effectCfg)
     if ((effectCfg->cfgMode == VIBRATOR_MODE_PRESET) && (effectCfg->effect != NULL)) {
         DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &hapticData->effectSeqHead, struct VibratorEffectNode, node) {
             if (strcmp(effectCfg->effect, pos->effect) == 0 && pos->seq != NULL) {
-                hapticData->effectType = pos->seq[0];
-                hapticData->seqCount = pos->num - 1;
-                hapticData->currentEffectSeq = &(pos->seq[1]);
+                hapticData->effectType = pos->type;
+                HDF_LOGE("%s: pos_num = %d", __func__, pos->num);
+                hapticData->seqCount = pos->num;
+                hapticData->currentEffectSeq = &(pos->seq[0]);
                 break;
             }
         }
