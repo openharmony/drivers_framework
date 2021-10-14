@@ -6,7 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_base.h"
 #include "hdf_object_alloc.h"
 #include "hdf_slist.h"
 #include "osal_mutex.h"
