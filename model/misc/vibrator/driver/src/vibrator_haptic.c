@@ -68,7 +68,6 @@ static int32_t ParserHapticEffect(struct DeviceResourceIface *parser, const stru
     (void)OsalMutexLock(&hapticData->mutex);
     DEV_RES_NODE_FOR_EACH_CHILD_NODE(hapticNode, childNode) {
         if ((childNode == NULL) || (childNode->name == NULL)) {
-             HDF_LOGI("%s:childNode is NULL", __func__);
             break;
         }
 
