@@ -32,7 +32,8 @@ enum VibratorTimeSeqIndex {
 struct VibratorEffectNode {
     const char *effect;
     int32_t num;
-    uint32_t *seq; // The first element of seq is preset type referring to enum VibratorEffectType
+    uint32_t type;   // preset type
+    uint32_t *seq;
     struct DListHead node;
 };
 
