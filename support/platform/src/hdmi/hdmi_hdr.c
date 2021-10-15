@@ -124,7 +124,7 @@ static void HdmiChangeToHdr(struct HdmiCntlr *cntlr, struct HdmiCommonAttr *comm
     struct HdmiHdrAttr *hdrAttr = &(cntlr->attr.hdrAttr);
     struct HdmiHdrInfo *hdrInfo = &(cntlr->hdr->info);
 
-    HdmiHdrZeroDrmInfoframeTimerSet(cntlr,false);
+    HdmiHdrZeroDrmInfoframeTimerSet(cntlr, false);
     if (hdrAttr->userMode != HDMI_HDR_USERMODE_HDR10) {
         HDF_LOGE("usermode is not HDR10/HLG.");
         return;

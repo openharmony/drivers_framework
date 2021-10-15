@@ -377,15 +377,15 @@ static int32_t HdmiInfoframeSend(struct HdmiInfoframe *frame, union HdmiInfofram
 }
 
 static void HdmiFillAviHdrInfoframe(struct HdmiAviInfoframe *avi,
-    struct HdmiVideoAttr *videoAttr, struct HdmiHdrAttr *HdrAttr, struct HdmiCommonAttr *commAttr)
+    struct HdmiVideoAttr *videoAttr, struct HdmiHdrAttr *hdrAttr, struct HdmiCommonAttr *commAttr)
 {
-    switch (HdrAttr->mode) {
+    switch (hdrAttr->mode) {
         case HDMI_HDR_MODE_CEA_861_3:
         case HDMI_HDR_MODE_CEA_861_3_AUTHEN:
             avi->colorimetry = videoAttr->colorimetry;
             avi->extColorimetry = videoAttr->extColorimetry;
             avi->colorSpace = commAttr->colorSpace;
-            if (HdrAttr->mode == HDMI_HDR_MODE_CEA_861_3_AUTHEN) {
+            if (hdrAttr->mode == HDMI_HDR_MODE_CEA_861_3_AUTHEN) {
                 avi->colorSpace = HDMI_COLOR_SPACE_YCBCR422;
             }
             avi->range = videoAttr->quantization;
@@ -443,7 +443,7 @@ static void HdmiFillAviInfoframeVersion(struct HdmiAviInfoframe *avi)
 }
 
 static void HdmiFillAviInfoframe(struct HdmiAviInfoframe *avi,
-    struct HdmiVideoAttr *videoAttr, struct HdmiHdrAttr *HdrAttr, struct HdmiCommonAttr *commAttr)
+    struct HdmiVideoAttr *videoAttr, struct HdmiHdrAttr *hdrAttr, struct HdmiCommonAttr *commAttr)
 {
     bool enable3d = true;
 
@@ -469,7 +469,7 @@ static void HdmiFillAviInfoframe(struct HdmiAviInfoframe *avi,
     avi->vic = HdmiCommonGetVic(videoAttr->timing, videoAttr->aspect, enable3d);
     avi->pixelRepetitionFactor = (uint8_t)videoAttr->pixelRepeat;
     avi->yccRange = videoAttr->yccQuantization;
-    HdmiFillAviHdrInfoframe(avi, videoAttr, HdrAttr, commAttr);
+    HdmiFillAviHdrInfoframe(avi, videoAttr, hdrAttr, commAttr);
     HdmiFillAviInfoframeVersion(avi);
 }
 
@@ -516,8 +516,10 @@ void HdmiFillAudioInfoframe(struct HdmiAudioInfoframe *audio, struct HdmiAudioAt
     }
 
     /* fill coding type. */
-    if (audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_AC3 || audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_DTS ||
-        audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_EAC3 || audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_DTS_HD) {
+    if (audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_AC3 ||
+        audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_DTS ||
+        audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_EAC3 ||
+        audioAttr->codingType == HDMI_AUDIO_CODING_TYPE_DTS_HD) {
         audio->codingType = audioAttr->codingType;
     } else {
         audio->codingType = HDMI_AUDIO_CODING_TYPE_STREAM;

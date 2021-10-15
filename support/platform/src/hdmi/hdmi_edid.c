@@ -176,13 +176,13 @@ static int32_t HdmiEdidEstablisedTimingPhase(struct HdmiEdid *edid)
      * The established timing block is a field of one-bit flags, which are used to inducate support for established
      * VESA and other common timing in a very compact form. A bit set to "1" indicate support for that timing.
      */
-     for (i = 0; i < HDMI_EDID_ESTABLISHED_TIMING_BUTT; i++) {
+    for (i = 0; i < HDMI_EDID_ESTABLISHED_TIMING_BUTT; i++) {
         if ((data & (1 << i)) > 0) {
             sinkCap->establishedTimingsInfo.estTimings[i] = i;
             sinkCap->establishedTimingsInfo.estTimingsNum++;
         }
-     }
-     return HDF_SUCCESS;
+    }
+    return HDF_SUCCESS;
 }
 
 static uint32_t HdmiEdidGetStandardTimingVertPixel(uint32_t aspectRatio, uint32_t horizPixel)
@@ -381,15 +381,17 @@ static int32_t HdmiEdidFirstBlockPhase(struct HdmiEdid *edid)
 {
     uint32_t i, len;
     int32_t ret;
-    HdmiEdidPhaseFunc func[] = { HdmiEdidHeaderPhase,
-                                 HdmiEdidVendorInfoPhase,
-                                 HdmiEdidVersionInfoPhase,
-                                 HdmiEdidBasicDispPhase,
-                                 HdmiEdidColorFeaturePhase,
-                                 HdmiEdidEstablisedTimingPhase,
-                                 HdmiEdidStandardTimingPhase,
-                                 HdmiEdidDetailedTimingPhase,
-                                 HdmiEdidExtBlockNumPhase };
+    HdmiEdidPhaseFunc func[] = {
+        HdmiEdidHeaderPhase,
+        HdmiEdidVendorInfoPhase,
+        HdmiEdidVersionInfoPhase,
+        HdmiEdidBasicDispPhase,
+        HdmiEdidColorFeaturePhase,
+        HdmiEdidEstablisedTimingPhase,
+        HdmiEdidStandardTimingPhase,
+        HdmiEdidDetailedTimingPhase,
+        HdmiEdidExtBlockNumPhase
+    };
 
     ret = HdmiEdidBlockCheckSum(edid->raw);
     if (ret != HDF_SUCCESS) {
@@ -519,8 +521,7 @@ static int32_t HdmiEdidExtAudioDataBlockPhase(struct HdmiSinkDeviceCapability *s
 static int32_t HdmiEdidExtVideoDataBlockPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data, uint8_t len)
 {
     uint8_t i;
-    uint32_t vicAll = 0;
-    uint32_t vicLower = 0;
+    uint32_t vicAll, vicLower;
     uint32_t implicitNative = 0;
 
     for (i = 0; i < len; i++) {
@@ -634,11 +635,13 @@ static void HdmiEdidVsdbVicInfoPhase(struct HdmiSinkDeviceCapability *sinkCap,
 {
     uint8_t i, index;
     /* see hdmi spec 1.4 table 8-13. */
-    uint32_t hdmi4kVic[] = { 0,
-                             HDMI_VIC_3840X2160P30_16_9,
-                             HDMI_VIC_3840X2160P25_16_9,
-                             HDMI_VIC_3840X2160P24_16_9,
-                             HDMI_VIC_4096X2160P24_256_135 };
+    uint32_t hdmi4kVic[] = {
+        0,
+        HDMI_VIC_3840X2160P30_16_9,
+        HDMI_VIC_3840X2160P25_16_9,
+        HDMI_VIC_3840X2160P24_16_9,
+        HDMI_VIC_4096X2160P24_256_135
+    };
 
     for (i = 0; i < vicLen; i++) {
         if (sinkCap->videoInfo.vicNum >= HDMI_EDID_EXTENSION_MAX_VIC_COUNT) {
@@ -1076,7 +1079,7 @@ static int32_t HdmiEdidExtUseExtDataBlockPhase(struct HdmiSinkDeviceCapability *
         case HDMI_EDID_EXT_YCBCR420_CMDB:
             HdmiEdidExtUseExtDataBlockY420CmdbPhase(sinkCap, data, len);
             break;
-        default :
+        default:
             HDF_LOGD("ext use ext DB: tag code %d unphase", extTagCode);
             break;
     }

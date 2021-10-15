@@ -676,6 +676,7 @@ static void HdmiFrlTrainingResultCheckTimeout(struct HdmiFrl *frl)
 static void HdmiFrlTrainingResultHandleTimeout(struct HdmiFrl *frl)
 {
     uint64_t curTime;
+    bool frlStart = false;
     struct HdmiCntlr *cntlr = (struct HdmiCntlr *)frl->priv;
 
     if (cntlr != NULL || cntlr->ops != NULL) {
@@ -683,19 +684,18 @@ static void HdmiFrlTrainingResultHandleTimeout(struct HdmiFrl *frl)
     }
 
     do {
-        if (HdmiFrlGetFrlStart(cntlr->scdc) == true) {
-            if (frl->info.start == true) {
-                frl->info.work = true;
-                /* n/cts config */
-                HdmiFrlAudioNctsSet(frl);
-                if (cntlr->ops->phyOutputEnable != NULL) {
-                    cntlr->ops->phyOutputEnable(cntlr, frl->info.work);
-                }
-                HdmiFrlSetFrlStart(cntlr->scdc, true);
-                HdmiFrlStateMachineChangeState(frl, HDMI_FRL_TRAIN_STEP_RETRAIN_CHECK);
-                break;
+        frlStart = HdmiFrlGetFrlStart(cntlr->scdc);
+        if (frlStart == true && frl->info.start == true) {
+            frl->info.work = true;
+            /* n/cts config */
+            HdmiFrlAudioNctsSet(frl);
+            if (cntlr->ops->phyOutputEnable != NULL) {
+                cntlr->ops->phyOutputEnable(cntlr, frl->info.work);
             }
-        } else if (HdmiFrlGetFltUpdate(cntlr->scdc) == true) {
+            HdmiFrlSetFrlStart(cntlr->scdc, true);
+            HdmiFrlStateMachineChangeState(frl, HDMI_FRL_TRAIN_STEP_RETRAIN_CHECK);
+            break;
+        } else if (frlStart == false && HdmiFrlGetFltUpdate(cntlr->scdc) == true) {
             HdmiFrlSetFltUpdate(cntlr->scdc, true);
             HdmiFrlStateMachineChangeState(frl, HDMI_FRL_TRAIN_STEP_TRAIN_START);
             break;

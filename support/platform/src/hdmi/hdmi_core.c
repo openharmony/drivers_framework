@@ -884,7 +884,7 @@ static int32_t HdmiColorSpaceCheck(struct HdmiCntlr *cntlr, struct HdmiSinkDevic
     return HDF_SUCCESS;
 }
 
-static void hdmiDeepColor10bitsCheck(struct HdmiSinkDeviceCapability *sinkCap, struct HdmiCommonAttr *commAttr,
+static void HdmiDeepColor10bitsCheck(struct HdmiSinkDeviceCapability *sinkCap, struct HdmiCommonAttr *commAttr,
     union HdmiCap *cap, uint32_t *tmdsClock, bool *supportDeepColor)
 {
     uint32_t tmpTmdsClk = *tmdsClock;
@@ -911,7 +911,7 @@ static void hdmiDeepColor10bitsCheck(struct HdmiSinkDeviceCapability *sinkCap, s
     *tmdsClock = tmpTmdsClk;
 }
 
-static void hdmiDeepColor12bitsCheck(struct HdmiSinkDeviceCapability *sinkCap, struct HdmiCommonAttr *commAttr,
+static void HdmiDeepColor12bitsCheck(struct HdmiSinkDeviceCapability *sinkCap, struct HdmiCommonAttr *commAttr,
     union HdmiCap *cap, uint32_t *tmdsClock, bool *supportDeepColor)
 {
     uint32_t tmpTmdsClk = *tmdsClock;
@@ -938,7 +938,7 @@ static void hdmiDeepColor12bitsCheck(struct HdmiSinkDeviceCapability *sinkCap, s
     *tmdsClock = tmpTmdsClk;
 }
 
-static int32_t hdmiDeepColorCheck(struct HdmiCntlr *cntlr, struct HdmiSinkDeviceCapability *sinkCap,
+static int32_t HdmiDeepColorCheck(struct HdmiCntlr *cntlr, struct HdmiSinkDeviceCapability *sinkCap,
     uint32_t maxTmdsClk)
 {
     struct HdmiVideoAttr *videoAttr = &(cntlr->attr.videoAttr);
@@ -953,10 +953,10 @@ static int32_t hdmiDeepColorCheck(struct HdmiCntlr *cntlr, struct HdmiSinkDevice
 
     switch (commAttr->deepColor) {
         case HDMI_DEEP_COLOR_30BITS:
-            hdmiDeepColor10bitsCheck(sinkCap, commAttr, cap, &tmdsClock, &supportDeepColor);
+            HdmiDeepColor10bitsCheck(sinkCap, commAttr, cap, &tmdsClock, &supportDeepColor);
             break;
         case HDMI_DEEP_COLOR_36BITS:
-            hdmiDeepColor12bitsCheck(sinkCap, commAttr, cap, &tmdsClock, &supportDeepColor);
+            HdmiDeepColor12bitsCheck(sinkCap, commAttr, cap, &tmdsClock, &supportDeepColor);
             break;
         default:
             commAttr->deepColor = HDMI_DEEP_COLOR_24BITS;
@@ -1028,7 +1028,7 @@ static int32_t HdmiColorBitSelect(struct HdmiCntlr *cntlr)
     if (HdmiColorSpaceCheck(cntlr, sinkCap, maxTmdsClk) != HDF_SUCCESS) {
         return HDF_ERR_INVALID_PARAM;
     }
-    if (hdmiDeepColorCheck(cntlr, sinkCap, maxTmdsClk) != HDF_SUCCESS) {
+    if (HdmiDeepColorCheck(cntlr, sinkCap, maxTmdsClk) != HDF_SUCCESS) {
         return HDF_ERR_INVALID_PARAM;
     }
     return HDF_SUCCESS;
@@ -1106,21 +1106,21 @@ static void HdmiFillVideoAttrFromHardwareStatus(struct HdmiVideoAttr *videoAttr,
          * when the timing is 4096*2160, the aspect ratio in AVI infoframe is 0
          * (but the real aspect ratio is 256:135<0x04>, the video_code is 0)
          */
-         aspectIs256 = (((vic == 0) && (hwStatus->infoframeStatus.vsif[8] == 0x04)) ||
+        aspectIs256 = (((vic == 0) && (hwStatus->infoframeStatus.vsif[8] == 0x04)) ||
             ((vic >= HDMI_VIC_4096X2160P25_256_135) && (vic <= HDMI_VIC_4096X2160P60_256_135)));
-         videoAttr->aspect = (aspectIs256 == true) ? HDMI_PICTURE_ASPECT_256_135 :
+        videoAttr->aspect = (aspectIs256 == true) ? HDMI_PICTURE_ASPECT_256_135 :
             ((hwStatus->infoframeStatus.avi[5] >> 4) & 0x3);  /* 4'b, BIT[2:1] */
-         videoAttr->activeAspect = hwStatus->infoframeStatus.avi[5] & 0xf;
-         videoAttr->colorimetry = (hwStatus->infoframeStatus.avi[5] >> 6) & 0x3; /* 6'b, BIT[2:1] */
-         videoAttr->quantization = (hwStatus->infoframeStatus.avi[6] >> 2) & 0x3; /* 2'b, BIT[2:1] */
-         videoAttr->extColorimetry = (hwStatus->infoframeStatus.avi[6] >> 4) & 0x07; /* 4'b, BIT[3:1] */
-         videoAttr->yccQuantization = (hwStatus->infoframeStatus.avi[8] >> 6) & 0x3; /* 6'b, BIT[2:1] */
-         videoAttr->pixelRepeat = (hwStatus->infoframeStatus.avi[8] & 0xf) + 1;
-         videoAttr->timing = HdmiCommonGetVideoTiming(vic, videoAttr->aspect);
-         if ((!hwStatus->infoframeStatus.vsifEnable) && (!vic)) {
+        videoAttr->activeAspect = hwStatus->infoframeStatus.avi[5] & 0xf;
+        videoAttr->colorimetry = (hwStatus->infoframeStatus.avi[5] >> 6) & 0x3; /* 6'b, BIT[2:1] */
+        videoAttr->quantization = (hwStatus->infoframeStatus.avi[6] >> 2) & 0x3; /* 2'b, BIT[2:1] */
+        videoAttr->extColorimetry = (hwStatus->infoframeStatus.avi[6] >> 4) & 0x07; /* 4'b, BIT[3:1] */
+        videoAttr->yccQuantization = (hwStatus->infoframeStatus.avi[8] >> 6) & 0x3; /* 6'b, BIT[2:1] */
+        videoAttr->pixelRepeat = (hwStatus->infoframeStatus.avi[8] & 0xf) + 1;
+        videoAttr->timing = HdmiCommonGetVideoTiming(vic, videoAttr->aspect);
+        if ((!hwStatus->infoframeStatus.vsifEnable) && (!vic)) {
             videoAttr->timing = HDMI_VIDEO_TIMING_NONE;
-         }
-         commAttr->quantization = (commAttr->colorSpace == HDMI_COLOR_SPACE_RGB) ?
+        }
+        commAttr->quantization = (commAttr->colorSpace == HDMI_COLOR_SPACE_RGB) ?
             videoAttr->quantization : (videoAttr->yccQuantization + 1);
     }
 

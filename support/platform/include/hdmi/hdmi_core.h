@@ -57,26 +57,26 @@ struct HdmiCntlr;
 union HdmiCap {
     uint32_t data;
     struct CapBitsData {
-        uint32_t scdc : 1;           /* bit0: support scdc */
-        uint32_t frl : 1;            /* bit1: support frl */
-        uint32_t hdr : 1;            /* bit2: support hdr */
-        uint32_t hdcp: 1;            /* bit3: support hdcp */
-        uint32_t cec : 1;            /* bit4: support cec */
-        uint32_t hdmi14 : 1;         /* bit5: support hdmi1.4 spec */
-        uint32_t hdmi20 : 1;         /* bit6: support hdmi2.0 spec */
-        uint32_t hdmi21 : 1;         /* bit7: support hdmi2.1 spec */
-        uint32_t hdcp14 : 1;         /* bit8: support hdcp1.4 spec */
-        uint32_t hdcp22 : 1;         /* bit9: support hdcp2.2 spec */
-        uint32_t rgb444 : 1;         /* bit10: support rgb444 */
-        uint32_t ycbcr444 : 1;       /* bit11: support ycbcr444 */
-        uint32_t ycbcr422 : 1;       /* bit12: support ycbcr422 */
-        uint32_t ycbcr420 : 1;       /* bit13: support ycbcr420 */
-        uint32_t deepColor10bits: 1; /* bit14: support deep color 10 bits */
-        uint32_t deepColor12bits: 1; /* bit15: support deep color 12 bits */
-        uint32_t deepColor16bits: 1; /* bit16: support deep color 16 bits */
-        uint32_t scramble : 1;       /* bit17: support scramble */
-        uint32_t cecRc : 1;          /* bit18: support CEC Remote Control */
-        uint32_t rev : 13;           /* bit21~31: reserved */
+        uint32_t scdc : 1;            /* bit0: support scdc */
+        uint32_t frl : 1;             /* bit1: support frl */
+        uint32_t hdr : 1;             /* bit2: support hdr */
+        uint32_t hdcp : 1;            /* bit3: support hdcp */
+        uint32_t cec : 1;             /* bit4: support cec */
+        uint32_t hdmi14 : 1;          /* bit5: support hdmi1.4 spec */
+        uint32_t hdmi20 : 1;          /* bit6: support hdmi2.0 spec */
+        uint32_t hdmi21 : 1;          /* bit7: support hdmi2.1 spec */
+        uint32_t hdcp14 : 1;          /* bit8: support hdcp1.4 spec */
+        uint32_t hdcp22 : 1;          /* bit9: support hdcp2.2 spec */
+        uint32_t rgb444 : 1;          /* bit10: support rgb444 */
+        uint32_t ycbcr444 : 1;        /* bit11: support ycbcr444 */
+        uint32_t ycbcr422 : 1;        /* bit12: support ycbcr422 */
+        uint32_t ycbcr420 : 1;        /* bit13: support ycbcr420 */
+        uint32_t deepColor10bits : 1; /* bit14: support deep color 10 bits */
+        uint32_t deepColor12bits : 1; /* bit15: support deep color 12 bits */
+        uint32_t deepColor16bits : 1; /* bit16: support deep color 16 bits */
+        uint32_t scramble : 1;        /* bit17: support scramble */
+        uint32_t cecRc : 1;           /* bit18: support CEC Remote Control */
+        uint32_t rev : 13;            /* bit21~31: reserved */
     } bits;
 };
 

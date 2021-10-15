@@ -37,6 +37,8 @@ extern "C" {
 #define HDMI_6_BITS_SHIFT 6
 #define HDMI_NIBBLE_SHIFT 4
 #define HDMI_2_BITS_SHIFT 2
+#define HDMI_ONE_BYTE_MARK 0xFF
+#define HDMI_TWO_BYTES_SHIFT 16
 
 #define HDMI_HDMI14_MAX_TMDS_RATE 340000  /* unit: KHz */
 #define HDMI_HDMI20_MAX_TMDS_RATE 600000  /* unit: KHz */

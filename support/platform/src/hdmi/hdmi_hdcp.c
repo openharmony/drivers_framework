@@ -291,8 +291,14 @@ static int32_t HdmiHdcpAuthenticationWaitKsvListReady(struct HdmiHdcp *hdcp)
     if (ret != HDF_SUCCESS) {
         return ret;
     }
-    (void)HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_WRITE_BCAPS, &(hdcp->bcaps), sizeof(hdcp->bcaps));
-    (void)HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_WRITE_BSTATUS, hdcp->bstatus, sizeof(hdcp->bstatus));
+    ret = HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_WRITE_BCAPS, &(hdcp->bcaps), sizeof(hdcp->bcaps));
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGD("hdcp auth wait ksv list ready, WRITE_BCAPS fail");
+    }
+    ret = HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_WRITE_BSTATUS, hdcp->bstatus, sizeof(hdcp->bstatus));
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGD("hdcp auth wait ksv list ready, WRITE_BSTATUS fail");
+    }
     return HDF_SUCCESS;
 }
 
@@ -316,8 +322,14 @@ static int32_t HdmiHdcpAuthenticationReadKsvList(struct HdmiHdcp *hdcp)
         return ret;
     }
     /* We may need to reset SHA before write ksv list. */
-    (void)HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_RESET_SHA, NULL, 0);
-    (void)HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_WRITE_KSV_FIFO, hdcp->ksvList, hdcp->ksvLen);
+    ret = HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_RESET_SHA, NULL, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGD("hdcp auth read ksv list, RESET_SHA fail");
+    }
+    ret = HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_WRITE_KSV_FIFO, hdcp->ksvList, hdcp->ksvLen);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGD("hdcp auth read ksv list, WRITE_KSV_FIFO fail");
+    }
     return HDF_SUCCESS;
 }
 
@@ -350,14 +362,18 @@ static int32_t HdmiHdcpAuthenticationSecondPart(struct HdmiHdcp *hdcp)
 
 static void HdmiHdcpAuthenticationSucc(struct HdmiHdcp *hdcp)
 {
-    (void)HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_AUTH_DONE, NULL, 0);
+    if (HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_AUTH_DONE, NULL, 0) != HDF_SUCCESS) {
+        HDF_LOGE("hdcp auth succ, AUTH_DONE fail.");
+    }
     hdcp->state = HDMI_HDCP_AUTH_DONE;
     hdcp->authRetryCnt = 0;
 }
 
 static void HdmiHdcpAuthenticationFail(struct HdmiHdcp *hdcp)
 {
-    (void)HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_AUTH_FAIL, NULL, 0);
+    if (HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_AUTH_FAIL, NULL, 0) != HDF_SUCCESS) {
+        HDF_LOGE("hdcp auth fail, AUTH_FAIL fail.");
+    }
     hdcp->state = HDMI_HDCP_AUTH_FAIL;
 }
 
@@ -454,7 +470,9 @@ void HdmiHdcpClose(struct HdmiHdcp *hdcp)
         return;
     }
 
-    (void)HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_AUTH_CLOSE, NULL, 0);
+    if (HdmiHdcpWriteMsgToReg(hdcp, HDMI_HDCP_OPT_AUTH_CLOSE, NULL, 0) != HDF_SUCCESS) {
+        HDF_LOGD("hdcp close, AUTH_CLOSE fail");
+    }
     hdcp->state = HDMI_HDCP_AUTH_INACTIVE;
     hdcp->authRetryCnt = 0;
 }

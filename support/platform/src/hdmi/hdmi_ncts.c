@@ -68,7 +68,7 @@ uint32_t HdmiGetN(uint32_t sampleRate, uint32_t tmdsClock)
 {
     uint32_t i;
 
-    for (i = 0;i < sizeof(g_audioNctsMap) / sizeof(g_audioNctsMap[0]); i++) {
+    for (i = 0; i < sizeof(g_audioNctsMap) / sizeof(g_audioNctsMap[0]); i++) {
         if (g_audioNctsMap[i].sampleRate == sampleRate &&
             g_audioNctsMap[i].tmdsClock == tmdsClock) {
             return g_audioNctsMap[i].n;
@@ -92,7 +92,7 @@ uint32_t HdmiGetCts(uint32_t sampleRate, uint32_t tmdsClock)
     uint32_t tmpN = HDMI_NCTS_INVALID_VALUE;
     uint32_t tmpCts = HDMI_NCTS_INVALID_VALUE;
 
-    for (i = 0;i < sizeof(g_audioNctsMap) / sizeof(g_audioNctsMap[0]); i++) {
+    for (i = 0; i < sizeof(g_audioNctsMap) / sizeof(g_audioNctsMap[0]); i++) {
         if (g_audioNctsMap[i].sampleRate == sampleRate &&
             g_audioNctsMap[i].tmdsClock == tmdsClock) {
             tmpN = g_audioNctsMap[i].n;

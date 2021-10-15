@@ -91,10 +91,10 @@ union HdmiScdcsTmdsConfig {
     uint8_t data;
     struct {
         uint8_t scramblingEnable : 1;
-        uint8_t tmdsBitClockRatio: 1; /*
-                                       * 0: TMDS_Bit_Period/TMDS_Clock_Period is 1/10;
-                                       * 1: TMDS_Bit_Period/TMDS_Clock_Period is 1/40.
-                                       */
+        uint8_t tmdsBitClockRatio : 1; /*
+                                        * 0: TMDS_Bit_Period/TMDS_Clock_Period is 1/10;
+                                        * 1: TMDS_Bit_Period/TMDS_Clock_Period is 1/40.
+                                        */
         uint8_t reserved : 6;
     } bits;
 };

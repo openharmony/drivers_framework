@@ -195,7 +195,7 @@ static bool HdmiCecCheckRecordOnMsgLen(struct HdmiCecMsg *msg)
                 return false;
             }
             break;
-        default :
+        default:
             break;
     }
     return true;
@@ -211,7 +211,7 @@ static bool HdmiCecCheckSomeSpecialfMsgLen(struct HdmiCecMsg *msg, uint8_t opcod
             break;
         case HDMI_CEC_OPCODE_RECORD_ON:
             ret = HdmiCecCheckRecordOnMsgLen(msg);
-        default :
+        default:
             break;
     }
     return ret;
@@ -392,7 +392,7 @@ static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct H
             data[5] = digital->systemData.dvb.orgNetworkId >> HDMI_ONE_BYTE_SHIFT;
             data[6] = digital->systemData.dvb.orgNetworkId & HDMI_ONE_BYTE_MARK;
             break;
-        default :
+        default:
             HDF_LOGE("digital system 0x%x is invalid", digital->system);
     }
 }
@@ -453,7 +453,7 @@ void HdmiCecEncodingRecordOnMsg(struct HdmiCecMsg *msg, struct HdmiCecRecordSour
         case HDMI_CEC_RECORD_SRC_EXT_PHY_ADDR:
             HdmiCecEncodingRecordOnExtPhyAddr(msg, src->data.extPhyAddr);
             break;
-        default :
+        default:
             HDF_LOGE("cec record on: type %d unknow", src->type);
     }
 
@@ -1437,29 +1437,36 @@ static void HdmiCecHandleReportPhyAddressMsg(struct HdmiCntlr *cntlr,
 static void HdmiCecHandleUserControlPrtessedMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
+    (void)msg;
+    (void)txMsg;
+
     /* Not support CEC Remote Control. */
     if (cntlr->cap.baseCap.bits.cecRc == 0) {
         return;
     }
-
-    /* TODO */
+    HDF_LOGD("Now User Control Prtessed not support.");
 }
 
 static void HdmiCecHandleUserControlReleasedMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
+    (void)msg;
+    (void)txMsg;
+
     /* Not support CEC Remote Control. */
     if (cntlr->cap.baseCap.bits.cecRc == 0) {
         return;
     }
-     /* TODO */
+    HDF_LOGD("Now User Control Released not support.");
 }
 
 static void HdmiCecHandleGetCecVersionMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
     HdmiCecEncodingCecVersionMsg(txMsg, cntlr->cec->info.cecVersion);
-    HdmiCecSendMsg(cntlr, txMsg);
+    if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+        HDF_LOGE("get cec version msg send fail");
+    }
 }
 
 static void HdmiCecHandleGivePhyAddressMsg(struct HdmiCntlr *cntlr,
@@ -1472,7 +1479,9 @@ static void HdmiCecHandleGivePhyAddressMsg(struct HdmiCntlr *cntlr,
     }
 
     HdmiCecEncodingReportPhyAddressMsg(txMsg, cntlr->cec->info.phyAddr, cntlr->cec->info.primaryDeviceType);
-    HdmiCecSendMsg(cntlr, txMsg);
+    if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+        HDF_LOGE("give phy address msg send fail");
+    }
 }
 
 static void HdmiCecHandleGiveDeviceVendorIdMsg(struct HdmiCntlr *cntlr,
@@ -1480,11 +1489,15 @@ static void HdmiCecHandleGiveDeviceVendorIdMsg(struct HdmiCntlr *cntlr,
 {
     if (cntlr->cec->info.vendorId == HDMI_CEC_VENDOR_ID_UNKNOWN) {
         HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
-        HdmiCecSendMsg(cntlr, txMsg);
+        if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+            HDF_LOGE("feature abort msg send fail");
+        }
         return;
     }
     HdmiCecEncodingDeviceVendorIdMsg(txMsg, cntlr->cec->info.vendorId);
-    HdmiCecSendMsg(cntlr, txMsg);
+    if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+        HDF_LOGE("give device vendor id msg send fail");
+    }
 }
 
 static void HdmiCecHandleAbortMsg(struct HdmiCntlr *cntlr,
@@ -1495,7 +1508,9 @@ static void HdmiCecHandleAbortMsg(struct HdmiCntlr *cntlr,
         return;
     }
     HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_REFUSED);
-    HdmiCecSendMsg(cntlr, txMsg);
+    if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+        HDF_LOGE("feature abort msg send fail");
+    }
 }
 
 static void HdmiCecHandleGiveOsdNameMsg(struct HdmiCntlr *cntlr,
@@ -1503,12 +1518,16 @@ static void HdmiCecHandleGiveOsdNameMsg(struct HdmiCntlr *cntlr,
 {
     if (cntlr->cec->info.osdName[0] == 0) {
         HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
-        HdmiCecSendMsg(cntlr, txMsg);
+        if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+            HDF_LOGE("feature abort msg send fail");
+        }
         return;
     }
 
     HdmiCecEncodingSetOsdNameMsg(txMsg, cntlr->cec->info.osdName, cntlr->cec->info.osdNameLen);
-    HdmiCecSendMsg(cntlr, txMsg);
+    if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+        HDF_LOGE("set osd name msg send fail");
+    }
 }
 
 static void HdmiCecHandleGiveFeaturesMsg(struct HdmiCntlr *cntlr,
@@ -1516,12 +1535,16 @@ static void HdmiCecHandleGiveFeaturesMsg(struct HdmiCntlr *cntlr,
 {
     if (cntlr->cec->info.cecVersion < HDMI_CEC_VERSION_2_0) {
         HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
-        HdmiCecSendMsg(cntlr, txMsg);
+        if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+            HDF_LOGE("feature abort msg send fail");
+        }
         return;
     }
 
     HdmiCecEncodingReportFeaturesMsg(txMsg, &(cntlr->cec->info));
-    HdmiCecSendMsg(cntlr, txMsg);
+    if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+        HDF_LOGE("report feature msg send fail");
+    }
 }
 
 static void HdmiCecMsgDefaultHandle(struct HdmiCntlr *cntlr,
@@ -1539,7 +1562,9 @@ static void HdmiCecMsgDefaultHandle(struct HdmiCntlr *cntlr,
     }
 
     HdmiCecEncodingFeatureAbortMsg(txMsg, opcode, HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
-    HdmiCecSendMsg(cntlr, txMsg);
+    if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
+        HDF_LOGE("feature abort msg send fail");
+    }
 }
 
 static void HdmiCecMsgHandle(struct HdmiCntlr *cntlr, struct HdmiCecMsg *msg,
