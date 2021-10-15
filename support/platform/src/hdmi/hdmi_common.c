@@ -187,19 +187,19 @@ enum HdmiVideoBitDepth HdmiCommonDeepClolorConvertToColorDepth(enum HdmiDeepColo
     enum HdmiVideoBitDepth colorDepth;
 
     switch (deepColor) {
-        case HDMI_DEEP_COLOR_24BITS :
+        case HDMI_DEEP_COLOR_24BITS:
             colorDepth = HDMI_VIDEO_BIT_DEPTH_8;
             break;
-        case HDMI_DEEP_COLOR_30BITS :
+        case HDMI_DEEP_COLOR_30BITS:
             colorDepth = HDMI_VIDEO_BIT_DEPTH_10;
             break;
-        case HDMI_DEEP_COLOR_36BITS :
+        case HDMI_DEEP_COLOR_36BITS:
             colorDepth = HDMI_VIDEO_BIT_DEPTH_12;
             break;
-        case HDMI_DEEP_COLOR_48BITS :
+        case HDMI_DEEP_COLOR_48BITS:
             colorDepth = HDMI_VIDEO_BIT_DEPTH_16;
             break;
-        default :
+        default:
             HDF_LOGD("deep color %d is not support, use default value.", deepColor);
             colorDepth = HDMI_VIDEO_BIT_DEPTH_8;
             break;
@@ -212,22 +212,22 @@ enum HdmiDeepColor HdmiCommonColorDepthConvertToDeepClolor(enum HdmiVideoBitDept
     enum HdmiDeepColor deepColor;
 
     switch (colorDepth) {
-        case HDMI_VIDEO_BIT_DEPTH_8 :
+        case HDMI_VIDEO_BIT_DEPTH_8:
             deepColor = HDMI_DEEP_COLOR_24BITS;
             break;
-        case HDMI_VIDEO_BIT_DEPTH_10 :
+        case HDMI_VIDEO_BIT_DEPTH_10:
             deepColor = HDMI_DEEP_COLOR_30BITS;
             break;
-        case HDMI_VIDEO_BIT_DEPTH_12 :
+        case HDMI_VIDEO_BIT_DEPTH_12:
             deepColor = HDMI_DEEP_COLOR_36BITS;
             break;
-        case HDMI_VIDEO_BIT_DEPTH_16 :
+        case HDMI_VIDEO_BIT_DEPTH_16:
             deepColor = HDMI_DEEP_COLOR_48BITS;
             break;
-        case HDMI_VIDEO_BIT_DEPTH_OFF :
+        case HDMI_VIDEO_BIT_DEPTH_OFF:
             deepColor = HDMI_DEEP_COLOR_OFF;
             break;
-        default :
+        default:
             deepColor = HDMI_DEEP_COLOR_BUTT;
             break;
     }

@@ -241,7 +241,6 @@ static int32_t HdmiHdcpAuthenticationCheckBstatus(struct HdmiHdcp *hdcp)
 {
     int32_t ret;
     uint16_t bstatus;
-    bool maxDevExceeded, maxCascadeExceeded;
 
     ret = HdmiHdcpRead(hdcp, HDMI_HDCP_BSTATUS, hdcp->bstatus, sizeof(hdcp->bstatus));
     if (ret != HDF_SUCCESS) {
@@ -251,17 +250,15 @@ static int32_t HdmiHdcpAuthenticationCheckBstatus(struct HdmiHdcp *hdcp)
     /* phase bstatus. */
     bstatus = (hdcp->bstatus[1] << 8) | hdcp->bstatus[0];
     hdcp->deviceCount = bstatus & HDMI_HDCP_BSTATUS_DEVICE_COUNT_MARK;
-    maxDevExceeded = (bstatus & HDMI_HDCP_BSTATUS_MAX_DEVS_EXCEEDED_MARK) ? true : false;
-    maxCascadeExceeded = (bstatus & HDMI_HDCP_BSTATUS_MAX_CASCADE_EXCEEDED_MARK) ? true : false;
     if (hdcp->deviceCount == 0) {
         HDF_LOGE("hdcp auth, check bstatus, no device attached to the repeater.");
         return HDF_DEV_ERR_NO_DEVICE;
     }
-    if (maxDevExceeded == true) {
+    if ((bstatus & HDMI_HDCP_BSTATUS_MAX_DEVS_EXCEEDED_MARK) > 0) {
         HDF_LOGE("hdcp auth, check bstatus, exceeds max allowed connected devices.");
         return HDF_ERR_IO;
     }
-    if (maxCascadeExceeded == true) {
+    if ((bstatus & HDMI_HDCP_BSTATUS_MAX_CASCADE_EXCEEDED_MARK) > 0) {
         HDF_LOGE("hdcp auth, check bstatus, exceeds max allowed cascade.");
         return HDF_ERR_IO;
     }

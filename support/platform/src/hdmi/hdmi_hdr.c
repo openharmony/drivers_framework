@@ -44,7 +44,7 @@ static void HdmiHdrZeroDrmInfoframeTimerSet(struct HdmiCntlr *cntlr, bool start)
         return;
     }
 
-    hdrAttr->eotfType = HDMI_DRM_EOTF_SDR_LUMIN;
+    hdrAttr->eotfType = HDMI_EOTF_SDR_LUMIN;
     hdrAttr->metadataType = HDMI_DRM_STATIC_METADATA_TYPE_1;
     if (memset_s(&(hdrAttr->descriptor), sizeof(hdrAttr->descriptor), 0, sizeof(hdrAttr->descriptor)) != EOK) {
         HDF_LOGE("memset_s fail");

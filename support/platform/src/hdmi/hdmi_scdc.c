@@ -158,10 +158,10 @@ int32_t HdmiScdcWriteTestConfig0(struct HdmiScdc *scdc, uint8_t *testCfg)
 /* cntlr ops */
 bool HdmiCntlrScdcSourceScrambleGet(struct HdmiCntlr *cntlr)
 {
-    bool ret;
+    bool ret = false;
 
     if (cntlr == NULL || cntlr->ops == NULL || cntlr->ops->scdcSourceScrambleGet == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
+        return ret;
     }
     HdmiCntlrLock(cntlr);
     ret = cntlr->ops->scdcSourceScrambleGet(cntlr);
@@ -303,39 +303,39 @@ int32_t HdmiScdcOptMsgHandle(struct HdmiScdc *scdc, enum HdmiScdcOptMsg msg, uin
     }
 
     switch (msg) {
-        case HDMI_SCDC_OPT_SET_SOURCE_VER :
+        case HDMI_SCDC_OPT_SET_SOURCE_VER:
             ret = HdmiScdcWriteSourceVersion(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_GET_SOURCE_VER :
+        case HDMI_SCDC_OPT_GET_SOURCE_VER:
             ret = HdmiScdcReadSourceVersion(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_GET_SINK_VER :
+        case HDMI_SCDC_OPT_GET_SINK_VER:
             ret = HdmiScdcReadSinkVersion(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_SET_FLT_UPDATE :
-        case HDMI_SCDC_OPT_SET_FRL_START :
+        case HDMI_SCDC_OPT_SET_FLT_UPDATE:
+        case HDMI_SCDC_OPT_SET_FRL_START:
             ret = HdmiScdcWriteUpdate0(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_GET_FLT_UPDATE :
-        case HDMI_SCDC_OPT_GET_FRL_START :
+        case HDMI_SCDC_OPT_GET_FLT_UPDATE:
+        case HDMI_SCDC_OPT_GET_FRL_START:
             ret = HdmiScdcReadUpdate0(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_SET_CONFIG1 :
+        case HDMI_SCDC_OPT_SET_CONFIG1:
             ret = HdmiScdcWriteConfig1(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_GET_CONFIG1 :
+        case HDMI_SCDC_OPT_GET_CONFIG1:
             ret = HdmiScdcReadConfig1(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_GET_TEST_CONFIG_1 :
+        case HDMI_SCDC_OPT_GET_TEST_CONFIG_1:
             ret = HdmiScdcReadTestConfig1(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_GET_FLT_READY :
+        case HDMI_SCDC_OPT_GET_FLT_READY:
             ret = HdmiScdcReadStatusFlag0(scdc, buffer);
             break;
-        case HDMI_SCDC_OPT_GET_LTP_REQ :
+        case HDMI_SCDC_OPT_GET_LTP_REQ:
             ret = HdmiScdcRead(scdc, HDMI_SCDCS_OFFSET_STASTUS_FLAG_1, buffer, len);
             break;
-        default :
+        default:
             HDF_LOGE("scdc msg handle, msg %d not support.", msg);
             ret = HDF_ERR_NOT_SUPPORT;
             break;

@@ -20,19 +20,19 @@ uint32_t HdmiDfmGetPixelFormat(enum HdmiColorSpace colorSpace)
     uint32_t pixelFormat;
 
     switch (colorSpace) {
-        case HDMI_COLOR_SPACE_RGB :
+        case HDMI_COLOR_SPACE_RGB:
             pixelFormat = HDMI_DFM_PIXEL_FORMAT_MODE_0;
             break;
-        case HDMI_COLOR_SPACE_YCBCR420 :
+        case HDMI_COLOR_SPACE_YCBCR420:
             pixelFormat = HDMI_DFM_PIXEL_FORMAT_MODE_1;
             break;
-        case HDMI_COLOR_SPACE_YCBCR422 :
+        case HDMI_COLOR_SPACE_YCBCR422:
             pixelFormat = HDMI_DFM_PIXEL_FORMAT_MODE_2;
             break;
-        case HDMI_COLOR_SPACE_YCBCR444 :
+        case HDMI_COLOR_SPACE_YCBCR444:
             pixelFormat = HDMI_DFM_PIXEL_FORMAT_MODE_3;
             break;
-        default :
+        default:
             pixelFormat = HDMI_DFM_PIXEL_FORMAT_MODE_0;
             break;
     }
@@ -108,21 +108,21 @@ static uint32_t HdmiDfmGetAudioPackets(struct HdmiDfmParam *param)
     uint32_t ap = 0;
 
     switch (param->packetType) {
-        case HDMI_AUDIO_SAMPLE_PACKET :
-        case HDMI_ONE_BIT_AUDIO_SAMPLE_PACKET :
+        case HDMI_AUDIO_SAMPLE_PACKET:
+        case HDMI_ONE_BIT_AUDIO_SAMPLE_PACKET:
             ap = HDMI_AUDIO_AP_SIZE_100;
             if (param->layout == false) {
                 ap = HDMI_AUDIO_AP_SIZE_25;
             }
             break;
-        case HDMI_DTS_AUDIO_PACKET :
-        case HDMI_HBR_AUDIO_PACKET :
-        case HDMI_MULTI_STREAM_AUDIO_SAMPLE_PACKET :
-        case HDMI_ONE_BIT_MULTI_STREAM_AUDIO_SAMPLE_PACKET :
+        case HDMI_DTS_AUDIO_PACKET:
+        case HDMI_HBR_AUDIO_PACKET:
+        case HDMI_MULTI_STREAM_AUDIO_SAMPLE_PACKET:
+        case HDMI_ONE_BIT_MULTI_STREAM_AUDIO_SAMPLE_PACKET:
             ap = HDMI_AUDIO_AP_SIZE_100;
             break;
-        case HDMI_AUDIO_3D_SAMPLE_PACKET :
-        case HDMI_ONE_BIT_AUDIO_3D_SAMPLE_PACKET :
+        case HDMI_AUDIO_3D_SAMPLE_PACKET:
+        case HDMI_ONE_BIT_AUDIO_3D_SAMPLE_PACKET:
             if (param->acat == HDMI_AUDIO_CHANNEL_ALLOC_TYPE1) {
                 ap = HDMI_AUDIO_AP_SIZE_200;
             } else if (param->acat == HDMI_AUDIO_CHANNEL_ALLOC_TYPE2) {
@@ -131,7 +131,7 @@ static uint32_t HdmiDfmGetAudioPackets(struct HdmiDfmParam *param)
                 ap = HDMI_AUDIO_AP_SIZE_400;
             }
             break;
-        default :
+        default:
             HDF_LOGE("audio packet type 0x%x, is not support.", param->packetType);
             break;
     }

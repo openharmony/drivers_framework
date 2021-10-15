@@ -206,10 +206,10 @@ static bool HdmiCecCheckSomeSpecialfMsgLen(struct HdmiCecMsg *msg, uint8_t opcod
     bool ret = true;
 
     switch (opcode) {
-        case HDMI_CEC_OPCODE_TIMER_STATUS :
+        case HDMI_CEC_OPCODE_TIMER_STATUS:
             ret = HdmiCecCheckTimerStatusMsgLen(msg);
             break;
-        case HDMI_CEC_OPCODE_RECORD_ON :
+        case HDMI_CEC_OPCODE_RECORD_ON:
             ret = HdmiCecCheckRecordOnMsgLen(msg);
         default :
             break;
@@ -360,10 +360,10 @@ static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct H
         return;
     }
     switch (digital->system) {
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_GEN :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_BS :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_CS :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_T :
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_GEN:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_BS:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_CS:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_T:
             data[1] = digital->systemData.arib.transportId >> HDMI_ONE_BYTE_SHIFT;
             data[2] = digital->systemData.arib.transportId & HDMI_ONE_BYTE_MARK;
             data[3] = digital->systemData.arib.serviceId >> HDMI_ONE_BYTE_SHIFT;
@@ -371,20 +371,20 @@ static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct H
             data[5] = digital->systemData.arib.orgNetworkId >> HDMI_ONE_BYTE_SHIFT;
             data[6] = digital->systemData.arib.orgNetworkId & HDMI_ONE_BYTE_MARK;
             break;
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_GEN :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_CABLE :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_SATELLITE :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_TERRESTRIAL :
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_GEN:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_CABLE:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_SATELLITE:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_TERRESTRIAL:
             data[1] = digital->systemData.atsc.transportId >> HDMI_ONE_BYTE_SHIFT;
             data[2] = digital->systemData.atsc.transportId & HDMI_ONE_BYTE_MARK;
             data[3] = digital->systemData.atsc.programNumber >> HDMI_ONE_BYTE_SHIFT;
             data[4] = digital->systemData.atsc.programNumber & HDMI_ONE_BYTE_MARK;
             break;
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_GEN :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_C :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_S :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_S2 :
-        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_T :
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_GEN:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_C:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_S:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_S2:
+        case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_T:
             data[1] = digital->systemData.dvb.transportId >> HDMI_ONE_BYTE_SHIFT;
             data[2] = digital->systemData.dvb.transportId & HDMI_ONE_BYTE_MARK;
             data[3] = digital->systemData.dvb.serviceId >> HDMI_ONE_BYTE_SHIFT;
@@ -437,20 +437,20 @@ static void HdmiCecEncodingRecordOnExtPhyAddr(struct HdmiCecMsg *msg, uint16_t e
 void HdmiCecEncodingRecordOnMsg(struct HdmiCecMsg *msg, struct HdmiCecRecordSource *src, bool response)
 {
     switch (src->type) {
-        case HDMI_CEC_RECORD_SRC_OWN :
+        case HDMI_CEC_RECORD_SRC_OWN:
             HdmiCecEncodingRecordOnOwn(msg);
             break;
-        case HDMI_CEC_RECORD_SRC_DIGITAL :
+        case HDMI_CEC_RECORD_SRC_DIGITAL:
             HdmiCecEncodingRecordOnDigital(msg, &(src->data.id));
             break;
-        case HDMI_CEC_RECORD_SRC_ANALOG :
+        case HDMI_CEC_RECORD_SRC_ANALOG:
             HdmiCecEncodingRecordOnAnalog(msg, src->data.analog.anaBcastType,
                 src->data.analog.anaFreq, src->data.analog.bcstSystem);
             break;
-        case HDMI_CEC_RECORD_SRC_EXT_PLUG :
+        case HDMI_CEC_RECORD_SRC_EXT_PLUG:
             HdmiCecEncodingRecordOnExtPlug(msg, src->data.extPlug);
             break;
-        case HDMI_CEC_RECORD_SRC_EXT_PHY_ADDR :
+        case HDMI_CEC_RECORD_SRC_EXT_PHY_ADDR:
             HdmiCecEncodingRecordOnExtPhyAddr(msg, src->data.extPhyAddr);
             break;
         default :
@@ -970,17 +970,17 @@ void HdmiCecEncodingUserControlPrtessedMsg(struct HdmiCecMsg *msg, struct HdmiCe
         return;
     }
     switch (cmd->cmdType) {
-        case HDMI_CEC_UI_CMD_SELECT_BROADCAST_TYPE :
-        case HDMI_CEC_UI_CMD_SELECT_SOUND_PRESENTATION :
-        case HDMI_CEC_UI_CMD_PLAY_FUNCTION :
-        case HDMI_CEC_UI_CMD_SELECT_MEDIA_FUNCTION :
-        case HDMI_CEC_UI_CMD_SELECT_AV_INPUT_FUNCTION :
-        case HDMI_CEC_UI_CMD_SELECT_AUDIO_INPUT_FUNCTION :
+        case HDMI_CEC_UI_CMD_SELECT_BROADCAST_TYPE:
+        case HDMI_CEC_UI_CMD_SELECT_SOUND_PRESENTATION:
+        case HDMI_CEC_UI_CMD_PLAY_FUNCTION:
+        case HDMI_CEC_UI_CMD_SELECT_MEDIA_FUNCTION:
+        case HDMI_CEC_UI_CMD_SELECT_AV_INPUT_FUNCTION:
+        case HDMI_CEC_UI_CMD_SELECT_AUDIO_INPUT_FUNCTION:
             (msg->len)++;
             /* The additional operand is one byte for all these UI commands */
             msg->data[3] = cmd->addOperands.uiBroadcastType;
             break;
-        case HDMI_CEC_UI_CMD_TUNE_FUNCTION :
+        case HDMI_CEC_UI_CMD_TUNE_FUNCTION:
             msg->len += HDMI_CEC_CHANNEL_IDENTIFIER_LEN;
             msg->data[3] = (cmd->addOperands.channel.format << HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
                 (cmd->addOperands.channel.major >> HDMI_ONE_BYTE_SHIFT);
@@ -988,7 +988,7 @@ void HdmiCecEncodingUserControlPrtessedMsg(struct HdmiCecMsg *msg, struct HdmiCe
             msg->data[5] = (cmd->addOperands.channel.minor >> HDMI_ONE_BYTE_SHIFT);
             msg->data[6] = (cmd->addOperands.channel.minor & HDMI_ONE_BYTE_MARK);
             break;
-        default :
+        default:
             HDF_LOGI("UI type %d have no additional operands.", cmd->cmdType);
             break;
     }
@@ -1389,35 +1389,35 @@ static int32_t HdmiCecSendMsg(struct HdmiCntlr *cntlr, struct HdmiCecMsg *msg)
 static bool HdmiCecMsgIgnore(uint8_t opcode, bool unregistered, bool broadcast)
 {
     switch (opcode) {
-        case HDMI_CEC_OPCODE_GET_CEC_VERSION :
-        case HDMI_CEC_OPCODE_ABORT :
-        case HDMI_CEC_OPCODE_GIVE_DEVICE_POWER_STATUS :
-        case HDMI_CEC_OPCODE_GIVE_OSD_NAME :
+        case HDMI_CEC_OPCODE_GET_CEC_VERSION:
+        case HDMI_CEC_OPCODE_ABORT:
+        case HDMI_CEC_OPCODE_GIVE_DEVICE_POWER_STATUS:
+        case HDMI_CEC_OPCODE_GIVE_OSD_NAME:
             /* Ignore if initiator is Unregistered, because these messages should reply with a directed message. */
             if (unregistered == true) {
                 return true;
             }
         /* fallthrough */
-        case HDMI_CEC_OPCODE_GIVE_DEVICE_VENDOR_ID :
-        case HDMI_CEC_OPCODE_GIVE_FEATURES :
-        case HDMI_CEC_OPCODE_GIVE_PHYSICAL_ADDRESS :
+        case HDMI_CEC_OPCODE_GIVE_DEVICE_VENDOR_ID:
+        case HDMI_CEC_OPCODE_GIVE_FEATURES:
+        case HDMI_CEC_OPCODE_GIVE_PHYSICAL_ADDRESS:
             /* Ignore if addressing is wrong */
             if (broadcast == true) {
                 return true;
             }
             break;
-        case HDMI_CEC_OPCODE_USER_CONTROL_PRESSED :
-        case HDMI_CEC_OPCODE_USER_CONTROL_RELEASED :
+        case HDMI_CEC_OPCODE_USER_CONTROL_PRESSED:
+        case HDMI_CEC_OPCODE_USER_CONTROL_RELEASED:
             if (unregistered == true || broadcast == true) {
                 return true;
             }
             break;
-        case HDMI_CEC_OPCODE_REPORT_PHYSICAL_ADDRESS :
+        case HDMI_CEC_OPCODE_REPORT_PHYSICAL_ADDRESS:
             if (broadcast == false) {
                 return true;
             }
             break;
-        default :
+        default:
             break;
     }
     return false;

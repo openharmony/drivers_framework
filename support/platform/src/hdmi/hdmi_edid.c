@@ -169,7 +169,7 @@ static int32_t HdmiEdidEstablisedTimingPhase(struct HdmiEdid *edid)
     struct HdmiEdidFirstBlockInfo *block = (struct HdmiEdidFirstBlockInfo *)edid->raw;
 
     for (i = 0; i < HDMI_EDID_ESTABLISHED_TIMINGS_FIELD_LEN; i++) {
-        data |= (block->estTimings[i] << (i * HDMI_EDID_ONE_BYTE_SHIFT));
+        data |= (block->estTimings[i] << (i * HDMI_ONE_BYTE_SHIFT));
     }
 
     /*
@@ -190,19 +190,19 @@ static uint32_t HdmiEdidGetStandardTimingVertPixel(uint32_t aspectRatio, uint32_
     uint32_t vertPixel = 0;
 
     switch (aspectRatio) {
-        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_16_10 :
+        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_16_10:
             vertPixel = horizPixel * 10 / 16;
             break;
-        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_5_4 :
+        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_5_4:
             vertPixel = horizPixel * 4 / 5;
             break;
-        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_4_3 :
+        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_4_3:
             vertPixel = horizPixel * 3 / 4;
             break;
-        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_16_9 :
+        case HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_16_9:
             vertPixel = horizPixel * 9 / 16;
             break;
-        default :
+        default:
             HDF_LOGE("aspectRatio %d is invalid.", aspectRatio);
             break;
     }
@@ -253,30 +253,30 @@ static void HdmiEdidDigitalSyncSignal(struct HdmiEdidPreferredTimingInfo *perTim
 {
     /* bit3/bit2/bit1 */
     switch ((flags & HDMI_EDID_DETAILED_TIMING_SYNC_SIGNAL_TYPE_MARK) >> 1) {
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_WS_0 :
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_WS_1 :
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_DS_2 :
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_DS_3 :
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_WS_0:
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_WS_1:
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_DS_2:
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DCS_DS_3:
             perTiming->ihs = false;
             perTiming->ivs = false;
             break;
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VN_HN_4 :
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VN_HN_4:
             perTiming->ihs = false;
             perTiming->ivs = false;
             break;
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VN_HP_5 :
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VN_HP_5:
             perTiming->ihs = true;
             perTiming->ivs = false;
             break;
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VP_HN_6 :
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VP_HN_6:
             perTiming->ihs = false;
             perTiming->ivs = true;
             break;
-        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VP_HP_7 :
+        case HDMI_EDID_DETAILED_TIMING_SYNC_DSS_VP_HP_7:
             perTiming->ihs = true;
             perTiming->ivs = true;
             break;
-        default :
+        default:
             break;
     }
 }
@@ -293,7 +293,7 @@ static void HdmiEdidDetailedTimingDescriptorPhase(struct HdmiSinkDeviceCapabilit
     }
 
     perTiming = &cap->preTimingInfo[cap->preTimingCnt];
-    pixelClock = (block->pixelClk[1] << HDMI_EDID_ONE_BYTE_SHIFT) | (block->pixelClk[0]);
+    pixelClock = (block->pixelClk[1] << HDMI_ONE_BYTE_SHIFT) | (block->pixelClk[0]);
     if (pixelClock == 0) {
         HDF_LOGD(" pixel clock is 0. preTimingCnt = %d", cap->preTimingCnt);
         return;
@@ -301,32 +301,32 @@ static void HdmiEdidDetailedTimingDescriptorPhase(struct HdmiSinkDeviceCapabilit
 
     perTiming->pixelClk = pixelClock * HDMI_EDID_DETAILED_TIMING_PIXEL_CLK_KHZ_FACTOR;
     perTiming->hActive = (block->hActive) |
-        ((block->hActiveBlanking & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) << HDMI_EDID_NIBBLE_SHIFT);
+        ((block->hActiveBlanking & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) << HDMI_NIBBLE_SHIFT);
     perTiming->hBackBlank = (block->hBlanking) |
-        ((block->hActiveBlanking & HDMI_EDID_DETAILED_TIMING_LOWER_4BITS_MARK) << HDMI_EDID_ONE_BYTE_SHIFT);
+        ((block->hActiveBlanking & HDMI_EDID_DETAILED_TIMING_LOWER_4BITS_MARK) << HDMI_ONE_BYTE_SHIFT);
     perTiming->hFrontBlank = (block->hSyncOffset) |
-        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_HS_OFFSET_MARK) << HDMI_EDID_2_BITS_SHIFT);
+        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_HS_OFFSET_MARK) << HDMI_2_BITS_SHIFT);
     perTiming->hSyncPluseWidth = (block->hSyncPulseWidth) |
-        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_HS_PULSE_WIDTH_MARK) << HDMI_EDID_NIBBLE_SHIFT);
+        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_HS_PULSE_WIDTH_MARK) << HDMI_NIBBLE_SHIFT);
 
     perTiming->vActive = (block->vActive) |
-        ((block->vActiveBlanking & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) << HDMI_EDID_NIBBLE_SHIFT);
+        ((block->vActiveBlanking & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) << HDMI_NIBBLE_SHIFT);
     perTiming->vBackBlank = (block->vBlanking) |
-        ((block->vActiveBlanking & HDMI_EDID_DETAILED_TIMING_LOWER_4BITS_MARK) << HDMI_EDID_ONE_BYTE_SHIFT);
+        ((block->vActiveBlanking & HDMI_EDID_DETAILED_TIMING_LOWER_4BITS_MARK) << HDMI_ONE_BYTE_SHIFT);
     perTiming->vFrontBlank =
-        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_VS_OFFSET_MARK) << HDMI_EDID_2_BITS_SHIFT) |
-        ((block->vsOffesetPulseWidth & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) >> HDMI_EDID_NIBBLE_SHIFT);
+        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_VS_OFFSET_MARK) << HDMI_2_BITS_SHIFT) |
+        ((block->vsOffesetPulseWidth & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) >> HDMI_NIBBLE_SHIFT);
     perTiming->vSyncPluseWidth =
-        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_VS_PULSE_WIDTH_MARK) << HDMI_EDID_NIBBLE_SHIFT) |
+        ((block->hsOffsetVsOffset & HDMI_EDID_DETAILED_TIMING_VS_PULSE_WIDTH_MARK) << HDMI_NIBBLE_SHIFT) |
         (block->vsOffesetPulseWidth & HDMI_EDID_DETAILED_TIMING_LOWER_4BITS_MARK);
 
     perTiming->imageWidth = (block->hImageSize) |
-        ((block->hvImageSize & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) << HDMI_EDID_NIBBLE_SHIFT);
+        ((block->hvImageSize & HDMI_EDID_DETAILED_TIMING_UPPER_4BITS_MARK) << HDMI_NIBBLE_SHIFT);
     perTiming->imageHeight = (block->vImageSize) |
-        ((block->hvImageSize & HDMI_EDID_DETAILED_TIMING_LOWER_4BITS_MARK) << HDMI_EDID_ONE_BYTE_SHIFT);
-    perTiming->interlaceFlag = (block->flags & HDMI_EDID_BIT7_MARK) ? true : false;
+        ((block->hvImageSize & HDMI_EDID_DETAILED_TIMING_LOWER_4BITS_MARK) << HDMI_ONE_BYTE_SHIFT);
+    perTiming->interlaceFlag = (block->flags & HDMI_BIT7_MARK) ? true : false;
     /* Digital composite/separate */
-    if ((block->flags & HDMI_EDID_BIT4_MARK) != 0) {
+    if ((block->flags & HDMI_BIT4_MARK) != 0) {
         HdmiEdidDigitalSyncSignal(perTiming, block->flags);
     }
     cap->preTimingCnt++;
@@ -413,39 +413,39 @@ static int32_t HdmiEdidFirstBlockPhase(struct HdmiEdid *edid)
 
 static void HdmiEdidExtAdbSampleRatePhase(struct HdmiEdidAudioInfo *audio, uint8_t data, uint8_t formatCode)
 {
-    if ((data & HDMI_EDID_BIT0_MARK) > 0 &&
+    if ((data & HDMI_BIT0_MARK) > 0 &&
         audio->sampleRateNum < HDMI_EDID_EXTENSION_AUDIO_MAX_SAMPLE_RATE_NUM) {
         audio->sampleRate[audio->sampleRateNum] = HDMI_SAMPLE_RATE_32K;
         audio->sampleRateNum++;
     }
-    if ((data & HDMI_EDID_BIT1_MARK) > 0 &&
+    if ((data & HDMI_BIT1_MARK) > 0 &&
         audio->sampleRateNum < HDMI_EDID_EXTENSION_AUDIO_MAX_SAMPLE_RATE_NUM) {
         audio->sampleRate[audio->sampleRateNum] = HDMI_SAMPLE_RATE_44K;
         audio->sampleRateNum++;
     }
-    if ((data & HDMI_EDID_BIT2_MARK) > 0 &&
+    if ((data & HDMI_BIT2_MARK) > 0 &&
         audio->sampleRateNum < HDMI_EDID_EXTENSION_AUDIO_MAX_SAMPLE_RATE_NUM) {
         audio->sampleRate[audio->sampleRateNum] = HDMI_SAMPLE_RATE_48K;
         audio->sampleRateNum++;
     }
-    if ((data & HDMI_EDID_BIT3_MARK) > 0 &&
+    if ((data & HDMI_BIT3_MARK) > 0 &&
         audio->sampleRateNum < HDMI_EDID_EXTENSION_AUDIO_MAX_SAMPLE_RATE_NUM) {
         audio->sampleRate[audio->sampleRateNum] = HDMI_SAMPLE_RATE_88K;
         audio->sampleRateNum++;
     }
-    if ((data & HDMI_EDID_BIT4_MARK) > 0 &&
+    if ((data & HDMI_BIT4_MARK) > 0 &&
         audio->sampleRateNum < HDMI_EDID_EXTENSION_AUDIO_MAX_SAMPLE_RATE_NUM) {
         audio->sampleRate[audio->sampleRateNum] = HDMI_SAMPLE_RATE_96K;
         audio->sampleRateNum++;
     }
 
     if (formatCode >= HDMI_AUDIO_CODING_TYPE_LPCM && formatCode <= HDMI_AUDIO_CODING_TYPE_WMA_PRO) {
-        if ((data & HDMI_EDID_BIT5_MARK) > 0 &&
+        if ((data & HDMI_BIT5_MARK) > 0 &&
             audio->sampleRateNum < HDMI_EDID_EXTENSION_AUDIO_MAX_SAMPLE_RATE_NUM) {
             audio->sampleRate[audio->sampleRateNum] = HDMI_SAMPLE_RATE_176K;
             audio->sampleRateNum++;
         }
-        if ((data & HDMI_EDID_BIT6_MARK) > 0 &&
+        if ((data & HDMI_BIT6_MARK) > 0 &&
             audio->sampleRateNum < HDMI_EDID_EXTENSION_AUDIO_MAX_SAMPLE_RATE_NUM) {
             audio->sampleRate[audio->sampleRateNum] = HDMI_SAMPLE_RATE_192K;
             audio->sampleRateNum++;
@@ -460,17 +460,17 @@ static void HdmiEdidExtAdbDepthAndMaxRatePhase(struct HdmiEdidAudioInfo *audio, 
      * Audio Format Codes 2 to 8, Maximum bit rate divided by 8 kHz.
      */
     if (formatCode == HDMI_AUDIO_CODING_TYPE_LPCM) {
-        if ((data & HDMI_EDID_BIT0_MARK) > 0 &&
+        if ((data & HDMI_BIT0_MARK) > 0 &&
             audio->bitDepthNum < HDMI_EDID_EXTENSION_AUDIO_MAX_BIT_DEPTH_NUM) {
             audio->bitDepth[audio->bitDepthNum] = HDMI_ADIO_BIT_DEPTH_16;
             audio->bitDepthNum++;
         }
-        if ((data & HDMI_EDID_BIT1_MARK) > 0 &&
+        if ((data & HDMI_BIT1_MARK) > 0 &&
             audio->bitDepthNum < HDMI_EDID_EXTENSION_AUDIO_MAX_BIT_DEPTH_NUM) {
             audio->bitDepth[audio->bitDepthNum] = HDMI_ADIO_BIT_DEPTH_20;
             audio->bitDepthNum++;
         }
-        if ((data & HDMI_EDID_BIT2_MARK) > 0 &&
+        if ((data & HDMI_BIT2_MARK) > 0 &&
             audio->bitDepthNum < HDMI_EDID_EXTENSION_AUDIO_MAX_BIT_DEPTH_NUM) {
             audio->bitDepth[audio->bitDepthNum] = HDMI_ADIO_BIT_DEPTH_24;
             audio->bitDepthNum++;
@@ -538,7 +538,7 @@ static int32_t HdmiEdidExtVideoDataBlockPhase(struct HdmiSinkDeviceCapability *s
          * The most significant bit declares whether the format is a Native Video Format of the
          * display (native =1, not native = 0). Typically, there is a single SVD, with its native bit set.
          */
-        if ((vicAll & HDMI_EDID_BIT7_MARK) > 0 && vicLower < HDMI_EDID_EXTENSION_VIC_NATIVE_MAX) {
+        if ((vicAll & HDMI_BIT7_MARK) > 0 && vicLower < HDMI_EDID_EXTENSION_VIC_NATIVE_MAX) {
             if (sinkCap->videoInfo.nativeFormat == 0) {
                 sinkCap->videoInfo.nativeFormat = vicLower;
             }
@@ -547,7 +547,7 @@ static int32_t HdmiEdidExtVideoDataBlockPhase(struct HdmiSinkDeviceCapability *s
         if (implicitNative == 0) {
             implicitNative = vicAll;
         }
-        if ((vicAll & HDMI_EDID_BIT7_MARK) > 0 && vicLower < HDMI_EDID_EXTENSION_VIC_NATIVE_MAX) {
+        if ((vicAll & HDMI_BIT7_MARK) > 0 && vicLower < HDMI_EDID_EXTENSION_VIC_NATIVE_MAX) {
             sinkCap->videoInfo.vic[sinkCap->videoInfo.vicNum] = vicLower;
         } else {
             sinkCap->videoInfo.vic[sinkCap->videoInfo.vicNum] = vicAll;
@@ -564,10 +564,10 @@ static int32_t HdmiEdidExtVideoDataBlockPhase(struct HdmiSinkDeviceCapability *s
 static void HdmiEdidVsdbCecPhyAddrPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data, uint8_t len)
 {
     if (len >= 5) {
-        sinkCap->vsdbInfo.cecAddr.phyAddrA = (data[3] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT;
-        sinkCap->vsdbInfo.cecAddr.phyAddrB = (data[3] & HDMI_EDID_LOWER_NIBBLE_MARK);
-        sinkCap->vsdbInfo.cecAddr.phyAddrC = (data[4] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT;
-        sinkCap->vsdbInfo.cecAddr.phyAddrD = (data[4] & HDMI_EDID_LOWER_NIBBLE_MARK);
+        sinkCap->vsdbInfo.cecAddr.phyAddrA = (data[3] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
+        sinkCap->vsdbInfo.cecAddr.phyAddrB = (data[3] & HDMI_LOWER_NIBBLE_MARK);
+        sinkCap->vsdbInfo.cecAddr.phyAddrC = (data[4] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
+        sinkCap->vsdbInfo.cecAddr.phyAddrD = (data[4] & HDMI_LOWER_NIBBLE_MARK);
         sinkCap->vsdbInfo.cecAddr.addrValid =
             (sinkCap->vsdbInfo.cecAddr.phyAddrA != HDMI_EDID_EXTENSION_VSDB_CEC_INVALID_ADDR) &&
             (sinkCap->vsdbInfo.cecAddr.phyAddrB != HDMI_EDID_EXTENSION_VSDB_CEC_INVALID_ADDR) &&
@@ -579,12 +579,12 @@ static void HdmiEdidVsdbCecPhyAddrPhase(struct HdmiSinkDeviceCapability *sinkCap
 static void HdmiEdidVsdbColorDepthPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data, uint8_t len)
 {
     if (len >= 6) {
-        sinkCap->vsdbInfo.supportAi = (data[5] & HDMI_EDID_BIT7_MARK) ? true : false;
-        sinkCap->vsdbInfo.supportDviDual = (data[5] & HDMI_EDID_BIT0_MARK) ? true : false;
-        sinkCap->vsdbInfo.deepColor.dcY444 = (data[5] & HDMI_EDID_BIT3_MARK) ? true : false;
-        sinkCap->vsdbInfo.deepColor.dc30bit = (data[5] & HDMI_EDID_BIT4_MARK) ? true : false;
-        sinkCap->vsdbInfo.deepColor.dc36bit = (data[5] & HDMI_EDID_BIT5_MARK) ? true : false;
-        sinkCap->vsdbInfo.deepColor.dc48bit = (data[5] & HDMI_EDID_BIT6_MARK) ? true : false;
+        sinkCap->vsdbInfo.supportAi = (data[5] & HDMI_BIT7_MARK) ? true : false;
+        sinkCap->vsdbInfo.supportDviDual = (data[5] & HDMI_BIT0_MARK) ? true : false;
+        sinkCap->vsdbInfo.deepColor.dcY444 = (data[5] & HDMI_BIT3_MARK) ? true : false;
+        sinkCap->vsdbInfo.deepColor.dc30bit = (data[5] & HDMI_BIT4_MARK) ? true : false;
+        sinkCap->vsdbInfo.deepColor.dc36bit = (data[5] & HDMI_BIT5_MARK) ? true : false;
+        sinkCap->vsdbInfo.deepColor.dc48bit = (data[5] & HDMI_BIT6_MARK) ? true : false;
     }
 }
 
@@ -603,9 +603,9 @@ static void HdmiEdidVsdbMaxTmdsClockPhase(struct HdmiSinkDeviceCapability *sinkC
 static void HdmiEdidVsdbSinkPresentPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data, uint8_t len)
 {
     if (len >= 8) {
-        sinkCap->vsdbInfo.latencyFieldsPresent = (data[7] & HDMI_EDID_BIT7_MARK) ? true : false;
-        sinkCap->vsdbInfo.iLatencyFieldsPresent = (data[7] & HDMI_EDID_BIT6_MARK) ? true : false;
-        sinkCap->vsdbInfo.hdmiVideoPresent = (data[7] & HDMI_EDID_BIT5_MARK) ? true : false;
+        sinkCap->vsdbInfo.latencyFieldsPresent = (data[7] & HDMI_BIT7_MARK) ? true : false;
+        sinkCap->vsdbInfo.iLatencyFieldsPresent = (data[7] & HDMI_BIT6_MARK) ? true : false;
+        sinkCap->vsdbInfo.hdmiVideoPresent = (data[7] & HDMI_BIT5_MARK) ? true : false;
     }
 }
 
@@ -670,25 +670,25 @@ static void HdmiEdidVsdb3dStructureInfoPhase(struct HdmiSinkDeviceCapability *si
          * bit8: sinks support "Side-by-side(half) with all sub-sampling methods" 3D formats.
          */
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_SIDE_BY_SIDE_HALF] =
-            (data[(*offset)] & HDMI_EDID_BIT0_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT0_MARK) ? true : false;
         (*offset)++;
     }
 
     if ((*offset) <= len) {
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_FRAME_PACKING] =
-            (data[(*offset)] & HDMI_EDID_BIT0_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT0_MARK) ? true : false;
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_FIELD_ALTERNATIVE] =
-            (data[(*offset)] & HDMI_EDID_BIT1_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT1_MARK) ? true : false;
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_LINE_ALTERNATIVE] =
-            (data[(*offset)] & HDMI_EDID_BIT2_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT2_MARK) ? true : false;
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_SIDE_BY_SIDE_FULL] =
-            (data[(*offset)] & HDMI_EDID_BIT3_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT3_MARK) ? true : false;
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_L_DEPTH] =
-            (data[(*offset)] & HDMI_EDID_BIT4_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT4_MARK) ? true : false;
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_L_DEPTH_GFX_GFX_DEPTH] =
-            (data[(*offset)] & HDMI_EDID_BIT5_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT5_MARK) ? true : false;
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_TOP_AND_BOTTOM] =
-            (data[(*offset)] & HDMI_EDID_BIT6_MARK) ? true : false;
+            (data[(*offset)] & HDMI_BIT6_MARK) ? true : false;
          (*offset)++;
     }
 }
@@ -703,7 +703,7 @@ static void HdmiEdidVsdbVicAnd3dInfoPhase(struct HdmiSinkDeviceCapability *sinkC
         HDF_LOGD("vsdb: these is no vic/3d field.");
         return;
     }
-    sinkCap->vsdbInfo._3dPresent = (data[12] & HDMI_EDID_BIT7_MARK) ? true : false;
+    sinkCap->vsdbInfo._3dPresent = (data[12] & HDMI_BIT7_MARK) ? true : false;
     sinkCap->vsdbInfo._3dMultiPresent =
         (data[12] & HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_MARK) >> HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_SHIFT;
 
@@ -757,25 +757,25 @@ static int32_t HdmiEdidVsdbPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8
 
 static void HdmiEdidHfVsdb21Phase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data, uint8_t len)
 {
-    sinkCap->hfVsdbInfo.maxFrlRate = (data[6] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT;
+    sinkCap->hfVsdbInfo.maxFrlRate = (data[6] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
 
-    sinkCap->hfVsdbInfo.fapaStartLocation = (data[7] & HDMI_EDID_BIT0_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.allm = (data[7] & HDMI_EDID_BIT1_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.fva = (data[7] & HDMI_EDID_BIT2_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.cnmVrr = (data[7] & HDMI_EDID_BIT3_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.cinemaVrr = (data[7] & HDMI_EDID_BIT4_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.mDelta = (data[7] & HDMI_EDID_BIT5_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.fapaStartLocation = (data[7] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.allm = (data[7] & HDMI_BIT1_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.fva = (data[7] & HDMI_BIT2_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.cnmVrr = (data[7] & HDMI_BIT3_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.cinemaVrr = (data[7] & HDMI_BIT4_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.mDelta = (data[7] & HDMI_BIT5_MARK) ? true : false;
     sinkCap->hfVsdbInfo.vrrMin = (data[8] & 0x3F);
     sinkCap->hfVsdbInfo.vrrMax = ((data[8] & 0xC0) << 2) | data[9];
 
-    sinkCap->hfVsdbInfo.dscInfo.dsc1p2 = (data[10] & HDMI_EDID_BIT7_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dscInfo.dscNative420 = (data[10] & HDMI_EDID_BIT6_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dscInfo.dscAllBpp = (data[10] & HDMI_EDID_BIT3_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dscInfo.dsc10bpc = (data[10] & HDMI_EDID_BIT2_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dscInfo.dsc20bpc = (data[10] & HDMI_EDID_BIT1_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dscInfo.dsc16bpc = (data[10] & HDMI_EDID_BIT0_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dscInfo.dscMaxSlices = (data[11] & HDMI_EDID_LOWER_NIBBLE_MARK);
-    sinkCap->hfVsdbInfo.dscInfo.dscMaxFrlRate = (data[11] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT;
+    sinkCap->hfVsdbInfo.dscInfo.dsc1p2 = (data[10] & HDMI_BIT7_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dscInfo.dscNative420 = (data[10] & HDMI_BIT6_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dscInfo.dscAllBpp = (data[10] & HDMI_BIT3_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dscInfo.dsc10bpc = (data[10] & HDMI_BIT2_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dscInfo.dsc20bpc = (data[10] & HDMI_BIT1_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dscInfo.dsc16bpc = (data[10] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dscInfo.dscMaxSlices = (data[11] & HDMI_LOWER_NIBBLE_MARK);
+    sinkCap->hfVsdbInfo.dscInfo.dscMaxFrlRate = (data[11] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
     sinkCap->hfVsdbInfo.dscInfo.dscTotalChunkKBytes = (data[12] & 0x3F);
 }
 
@@ -794,16 +794,16 @@ static int32_t HdmiEdidHfVsdbPhase(struct HdmiSinkDeviceCapability *sinkCap, uin
     sinkCap->maxTmdsClk = data[4] * HDMI_EDID_EXTENSION_TMDS_FACTOR;
     sinkCap->supportHdmi20 = (sinkCap->maxTmdsClk > HDMI_EDID_EXTENSION_MAX_HDMI14_TMDS_RATE) ? true : false;
     /* byte5: several sink present */
-    sinkCap->hfVsdbInfo.scdcPresent = (data[5] & HDMI_EDID_BIT7_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.rrCapable = (data[5] & HDMI_EDID_BIT6_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.lte340McscScramble = (data[5] & HDMI_EDID_BIT3_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.independentView = (data[5] & HDMI_EDID_BIT2_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dualView = (data[5] & HDMI_EDID_BIT1_MARK) ? true : false;
-    sinkCap->hfVsdbInfo._3dOsdDisparity = (data[5] & HDMI_EDID_BIT0_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.scdcPresent = (data[5] & HDMI_BIT7_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.rrCapable = (data[5] & HDMI_BIT6_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.lte340McscScramble = (data[5] & HDMI_BIT3_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.independentView = (data[5] & HDMI_BIT2_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dualView = (data[5] & HDMI_BIT1_MARK) ? true : false;
+    sinkCap->hfVsdbInfo._3dOsdDisparity = (data[5] & HDMI_BIT0_MARK) ? true : false;
     /* byte6: deep color */
-    sinkCap->hfVsdbInfo.dc.dc30bit = (data[6] & HDMI_EDID_BIT0_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dc.dc36bit = (data[6] & HDMI_EDID_BIT1_MARK) ? true : false;
-    sinkCap->hfVsdbInfo.dc.dc48bit = (data[6] & HDMI_EDID_BIT2_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dc.dc30bit = (data[6] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dc.dc36bit = (data[6] & HDMI_BIT1_MARK) ? true : false;
+    sinkCap->hfVsdbInfo.dc.dc48bit = (data[6] & HDMI_BIT2_MARK) ? true : false;
     if (len > HDMI_EDID_EXTENSION_HFVSDB_MIN_INVALID_LEN &&
         len <= HDMI_EDID_EXTENSION_HFVSDB_MAX_INVALID_LEN) {
         HdmiEdidHfVsdb21Phase(sinkCap, data, len);
@@ -848,27 +848,27 @@ static int32_t HdmiEdidExtSpeakerDataBlockPhase(struct HdmiSinkDeviceCapability 
     }
 
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_FL_FR] =
-        (data[0] & HDMI_EDID_BIT0_MARK) ? true : false;
+        (data[0] & HDMI_BIT0_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_LFE] =
-        (data[0] & HDMI_EDID_BIT1_MARK) ? true : false;
+        (data[0] & HDMI_BIT1_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_FC] =
-        (data[0] & HDMI_EDID_BIT2_MARK) ? true : false;
+        (data[0] & HDMI_BIT2_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_BL_BR] =
-        (data[0] & HDMI_EDID_BIT3_MARK) ? true : false;
+        (data[0] & HDMI_BIT3_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_BC] =
-        (data[0] & HDMI_EDID_BIT4_MARK) ? true : false;
+        (data[0] & HDMI_BIT4_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_FLC_FRC] =
-        (data[0] & HDMI_EDID_BIT5_MARK) ? true : false;
+        (data[0] & HDMI_BIT5_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_RLC_RRC] =
-        (data[0] & HDMI_EDID_BIT6_MARK) ? true : false;
+        (data[0] & HDMI_BIT6_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_FLW_FRW] =
-        (data[0] & HDMI_EDID_BIT7_MARK) ? true : false;
+        (data[0] & HDMI_BIT7_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_TPFL_TPFH] =
-        (data[1] & HDMI_EDID_BIT0_MARK) ? true : false;
+        (data[1] & HDMI_BIT0_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_TPC] =
-        (data[1] & HDMI_EDID_BIT1_MARK) ? true : false;
+        (data[1] & HDMI_BIT1_MARK) ? true : false;
     sinkCap->supportAudioSpeaker[HDMI_EDID_AUDIO_SPEAKER_TPFC] =
-        (data[1] & HDMI_EDID_BIT2_MARK) ? true : false;
+        (data[1] & HDMI_BIT2_MARK) ? true : false;
     return HDF_SUCCESS;
 }
 
@@ -880,8 +880,8 @@ static void HdmiEdidExtUseExtDataBlockVcdbPhase(struct HdmiSinkDeviceCapability 
         return;
     }
 
-    sinkCap->videoCap.qy = (data[1] & HDMI_EDID_BIT7_MARK) ? true : false;
-    sinkCap->videoCap.qs = (data[1] & HDMI_EDID_BIT6_MARK) ? true : false;
+    sinkCap->videoCap.qy = (data[1] & HDMI_BIT7_MARK) ? true : false;
+    sinkCap->videoCap.qs = (data[1] & HDMI_BIT6_MARK) ? true : false;
 }
 
 static void HdmiEdidExtUseExtDataBlockCdbPhase(struct HdmiSinkDeviceCapability *sinkCap,
@@ -892,17 +892,17 @@ static void HdmiEdidExtUseExtDataBlockCdbPhase(struct HdmiSinkDeviceCapability *
         return;
     }
 
-    sinkCap->colorimetry.xvYcc601 = (data[1] & HDMI_EDID_BIT0_MARK) ? true : false;
-    sinkCap->colorimetry.xvYcc709 = (data[1] & HDMI_EDID_BIT1_MARK) ? true : false;
-    sinkCap->colorimetry.sYcc601 = (data[1] & HDMI_EDID_BIT2_MARK) ? true : false;
-    sinkCap->colorimetry.opYcc601 = (data[1] & HDMI_EDID_BIT3_MARK) ? true : false;
-    sinkCap->colorimetry.opRgb = (data[1] & HDMI_EDID_BIT4_MARK) ? true : false;
-    sinkCap->colorimetry.bt2020cYcc = (data[1] & HDMI_EDID_BIT5_MARK) ? true : false;
-    sinkCap->colorimetry.bt2020Ycc = (data[1] & HDMI_EDID_BIT6_MARK) ? true : false;
-    sinkCap->colorimetry.bt2020Rgb = (data[1] & HDMI_EDID_BIT7_MARK) ? true : false;
+    sinkCap->colorimetry.xvYcc601 = (data[1] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->colorimetry.xvYcc709 = (data[1] & HDMI_BIT1_MARK) ? true : false;
+    sinkCap->colorimetry.sYcc601 = (data[1] & HDMI_BIT2_MARK) ? true : false;
+    sinkCap->colorimetry.opYcc601 = (data[1] & HDMI_BIT3_MARK) ? true : false;
+    sinkCap->colorimetry.opRgb = (data[1] & HDMI_BIT4_MARK) ? true : false;
+    sinkCap->colorimetry.bt2020cYcc = (data[1] & HDMI_BIT5_MARK) ? true : false;
+    sinkCap->colorimetry.bt2020Ycc = (data[1] & HDMI_BIT6_MARK) ? true : false;
+    sinkCap->colorimetry.bt2020Rgb = (data[1] & HDMI_BIT7_MARK) ? true : false;
 
-    sinkCap->colorimetry.dciP3 = (data[2] & HDMI_EDID_BIT7_MARK) ? true : false;
-    sinkCap->colorimetry.md = (data[2] & HDMI_EDID_LOWER_NIBBLE_MARK);
+    sinkCap->colorimetry.dciP3 = (data[2] & HDMI_BIT7_MARK) ? true : false;
+    sinkCap->colorimetry.md = (data[2] & HDMI_LOWER_NIBBLE_MARK);
 }
 
 static void HdmiEdidExtUseExtDataBlockY420VdbPhase(struct HdmiSinkDeviceCapability *sinkCap,
@@ -952,14 +952,14 @@ static void HdmiEdidExtUseExtDataBlockY420CmdbPhase(struct HdmiSinkDeviceCapabil
      * Bit 0 of data byte 3 is associated with the first sequential SVD listed in the regular Video Data Block(s)
      * of the EDID, bit 1 the second SVD, bit 2 the third, and so on.
      */
-    loop = len * HDMI_EDID_BITS_OF_ONE_BYTE;
+    loop = len * HDMI_BITS_OF_ONE_BYTE;
     loop = (loop > HDMI_EDID_EXTENSION_MAX_VIC_COUNT) ? HDMI_EDID_EXTENSION_MAX_VIC_COUNT : loop;
     data++;
     for (i = 0; (i < loop) && (i < sinkCap->videoInfo.vicNum); i++) {
         if (sinkCap->y420Cap.SupportY420VicNum >= HDMI_EDID_EXTENSION_MAX_VIC_COUNT) {
             break;
         }
-        if ((data[i / HDMI_EDID_BITS_OF_ONE_BYTE] & (0x01 << (i % HDMI_EDID_BITS_OF_ONE_BYTE))) > 0) {
+        if ((data[i / HDMI_BITS_OF_ONE_BYTE] & (0x01 << (i % HDMI_BITS_OF_ONE_BYTE))) > 0) {
             sinkCap->y420Cap.SupportY420Format[sinkCap->y420Cap.SupportY420VicNum] = sinkCap->videoInfo.vic[i];
             sinkCap->y420Cap.SupportY420VicNum++;
             sinkCap->colorSpace.ycbcr420 = true;
@@ -975,11 +975,11 @@ static void HdmiEdidExtUseExtDataBlockHdrSmdbPhase(struct HdmiSinkDeviceCapabili
         return;
     }
 
-    sinkCap->hdrCap.eotf.sdr = (data[1] & HDMI_EDID_BIT0_MARK) ? true : false;
-    sinkCap->hdrCap.eotf.hdr = (data[1] & HDMI_EDID_BIT1_MARK) ? true : false;
-    sinkCap->hdrCap.eotf.smpteSt2048 = (data[1] & HDMI_EDID_BIT2_MARK) ? true : false;
-    sinkCap->hdrCap.eotf.hlg = (data[1] & HDMI_EDID_BIT2_MARK) ? true : false;
-    sinkCap->hdrCap.smType1 = (data[2] & HDMI_EDID_BIT0_MARK) ? true : false;
+    sinkCap->hdrCap.eotf.sdr = (data[1] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->hdrCap.eotf.hdr = (data[1] & HDMI_BIT1_MARK) ? true : false;
+    sinkCap->hdrCap.eotf.smpteSt2048 = (data[1] & HDMI_BIT2_MARK) ? true : false;
+    sinkCap->hdrCap.eotf.hlg = (data[1] & HDMI_BIT2_MARK) ? true : false;
+    sinkCap->hdrCap.smType1 = (data[2] & HDMI_BIT0_MARK) ? true : false;
 
     /*
      * The length of the data block, n, in Byte 1 indicates which of the Bytes 5 to 7 are present. Bytes 5 to 7 are
@@ -1014,35 +1014,35 @@ static void HdmiEdidExtUseExtDataBlockVsvdbPhase(struct HdmiSinkDeviceCapability
     }
     sinkCap->dolbyCap.oui = oui;
     sinkCap->dolbyCap.version = (data[4] & HDMI_EDID_VSVDB_DOLBY_VERSION_MARK) >> HDMI_EDID_VSVDB_DOLBY_VERSION_SHIFT;
-    sinkCap->dolbyCap.yuv422 = (data[4] & HDMI_EDID_BIT0_MARK) ? true : false;
-    sinkCap->dolbyCap.b2160p60 = (data[4] & HDMI_EDID_BIT1_MARK) ? true : false;
+    sinkCap->dolbyCap.yuv422 = (data[4] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->dolbyCap.b2160p60 = (data[4] & HDMI_BIT1_MARK) ? true : false;
     if (sinkCap->dolbyCap.version == HDMI_EDID_VSVDB_DOLBY_VERSION_0) {
-        sinkCap->dolbyCap.globalDimming = (data[4] & HDMI_EDID_BIT2_MARK) ? true : false;
-        sinkCap->dolbyCap.redX = ((data[5] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT) |
-            (data[6] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.redY = (data[5] & HDMI_EDID_LOWER_NIBBLE_MARK) | (data[7] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.greenX = ((data[8] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT) |
-            (data[9] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.greenY = (data[8] & HDMI_EDID_LOWER_NIBBLE_MARK) | (data[10] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.blueX = ((data[11] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT) |
-            (data[12] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.blueY = (data[11] & HDMI_EDID_LOWER_NIBBLE_MARK) | (data[13] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.whiteX = ((data[14] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT) |
-            (data[15] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.whiteY = (data[14] & HDMI_EDID_LOWER_NIBBLE_MARK) | (data[16] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.minLuminance = ((data[17] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT) |
-            (data[18] << HDMI_EDID_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.globalDimming = (data[4] & HDMI_BIT2_MARK) ? true : false;
+        sinkCap->dolbyCap.redX = ((data[5] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
+            (data[6] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.redY = (data[5] & HDMI_LOWER_NIBBLE_MARK) | (data[7] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.greenX = ((data[8] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
+            (data[9] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.greenY = (data[8] & HDMI_LOWER_NIBBLE_MARK) | (data[10] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.blueX = ((data[11] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
+            (data[12] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.blueY = (data[11] & HDMI_LOWER_NIBBLE_MARK) | (data[13] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.whiteX = ((data[14] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
+            (data[15] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.whiteY = (data[14] & HDMI_LOWER_NIBBLE_MARK) | (data[16] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.minLuminance = ((data[17] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
+            (data[18] << HDMI_NIBBLE_SHIFT);
         sinkCap->dolbyCap.maxLuminance =
-            (data[17] & HDMI_EDID_LOWER_NIBBLE_MARK) | (data[19] << HDMI_EDID_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.dMajorVer = (data[20] & HDMI_EDID_UPPER_NIBBLE_MARK) >> HDMI_EDID_NIBBLE_SHIFT;
-        sinkCap->dolbyCap.dMinorVer = (data[20] & HDMI_EDID_LOWER_NIBBLE_MARK);
+            (data[17] & HDMI_LOWER_NIBBLE_MARK) | (data[19] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.dMajorVer = (data[20] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
+        sinkCap->dolbyCap.dMinorVer = (data[20] & HDMI_LOWER_NIBBLE_MARK);
         return;
     }
     if (sinkCap->dolbyCap.version == HDMI_EDID_VSVDB_DOLBY_VERSION_1) {
         sinkCap->dolbyCap.dmVer = (data[4] & HDMI_EDID_VSVDB_DOLBY_DM_VER_MARK) >> HDMI_EDID_VSVDB_DOLBY_DM_VER_SHIFT;
-        sinkCap->dolbyCap.globalDimming = (data[5] & HDMI_EDID_BIT0_MARK) ? true : false;
+        sinkCap->dolbyCap.globalDimming = (data[5] & HDMI_BIT0_MARK) ? true : false;
         sinkCap->dolbyCap.maxLuminance = ((data[5] >> 1) & HDMI_EDID_VSVDB_DOLBY_LOWER_7BIT_MARK);
-        sinkCap->dolbyCap.colorimetry = (data[6] & HDMI_EDID_BIT0_MARK) ? true : false;
+        sinkCap->dolbyCap.colorimetry = (data[6] & HDMI_BIT0_MARK) ? true : false;
         sinkCap->dolbyCap.minLuminance = ((data[6] >> 1) & HDMI_EDID_VSVDB_DOLBY_LOWER_7BIT_MARK);
         sinkCap->dolbyCap.redX = data[8];
         sinkCap->dolbyCap.redY = data[9];
@@ -1058,22 +1058,22 @@ static int32_t HdmiEdidExtUseExtDataBlockPhase(struct HdmiSinkDeviceCapability *
     uint8_t extTagCode = data[0];
 
     switch (extTagCode) {
-        case HDMI_EDID_EXT_VCDB :
+        case HDMI_EDID_EXT_VCDB:
             HdmiEdidExtUseExtDataBlockVcdbPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_EXT_VSVDB :
+        case HDMI_EDID_EXT_VSVDB:
             HdmiEdidExtUseExtDataBlockVsvdbPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_EXT_CDB :
+        case HDMI_EDID_EXT_CDB:
             HdmiEdidExtUseExtDataBlockCdbPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_EXT_HDR_SMDB :
+        case HDMI_EDID_EXT_HDR_SMDB:
             HdmiEdidExtUseExtDataBlockHdrSmdbPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_EXT_YCBCR420_VDB :
+        case HDMI_EDID_EXT_YCBCR420_VDB:
             HdmiEdidExtUseExtDataBlockY420VdbPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_EXT_YCBCR420_CMDB :
+        case HDMI_EDID_EXT_YCBCR420_CMDB:
             HdmiEdidExtUseExtDataBlockY420CmdbPhase(sinkCap, data, len);
             break;
         default :
@@ -1094,24 +1094,24 @@ static int32_t HdmiEdidExtDataBlockPhase(struct HdmiSinkDeviceCapability *sinkCa
     }
 
     switch (tag) {
-        case HDMI_EDID_AUDIO_DATA_BLOCK :
+        case HDMI_EDID_AUDIO_DATA_BLOCK:
             /* Audio Data Block (includes one or more Short Audio Descriptors) */
             ret = HdmiEdidExtAudioDataBlockPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_VIDEO_DATA_BLOCK :
+        case HDMI_EDID_VIDEO_DATA_BLOCK:
             /* Video Data Block (includes one or more Short Video Descriptors) */
             ret = HdmiEdidExtVideoDataBlockPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_VENDOR_SPECIFIC_DATA_BLOCK :
+        case HDMI_EDID_VENDOR_SPECIFIC_DATA_BLOCK:
             ret = HdmiEdidExtVsDataBlockPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_SPEAKER_ALLOCATION_DATA_BLOCK :
+        case HDMI_EDID_SPEAKER_ALLOCATION_DATA_BLOCK:
             ret = HdmiEdidExtSpeakerDataBlockPhase(sinkCap, data, len);
             break;
-        case HDMI_EDID_USE_EXT_DATA_BLOCK :
+        case HDMI_EDID_USE_EXT_DATA_BLOCK:
             ret = HdmiEdidExtUseExtDataBlockPhase(sinkCap, data, len);
             break;
-        default :
+        default:
             HDF_LOGD("tag = %d is reserved or unphase block", tag);
             break;
     }
@@ -1188,9 +1188,9 @@ static int32_t HdmiEdidExtBlockPhase(struct HdmiEdid *edid, uint8_t blockNum)
     }
     /* byte3: indication of underscan support, audio support, support of YCBCR and total number of native DTDs. */
     sinkCap->colorSpace.rgb444 = true;
-    sinkCap->colorSpace.ycbcr422 = (data[3] & HDMI_EDID_BIT4_MARK) ? true : false;
-    sinkCap->colorSpace.ycbcr444 = (data[3] & HDMI_EDID_BIT5_MARK) ? true : false;
-    sinkCap->supportAudio = (data[3] & HDMI_EDID_BIT6_MARK) ? true : false;
+    sinkCap->colorSpace.ycbcr422 = (data[3] & HDMI_BIT4_MARK) ? true : false;
+    sinkCap->colorSpace.ycbcr444 = (data[3] & HDMI_BIT5_MARK) ? true : false;
+    sinkCap->supportAudio = (data[3] & HDMI_BIT6_MARK) ? true : false;
     /*
      * Video Data Block, Audio Data Block, Speaker Allocation Data Block,
      * Vendor Specific Data Block and Video Capability Data Block phase.

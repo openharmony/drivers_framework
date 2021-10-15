@@ -858,7 +858,7 @@ static int32_t HdmiColorSpaceCheck(struct HdmiCntlr *cntlr, struct HdmiSinkDevic
     }
 
     switch (commAttr->colorSpace) {
-        case HDMI_COLOR_SPACE_RGB :
+        case HDMI_COLOR_SPACE_RGB:
             supportColorSpace = true;
             if ((sinkCap->colorSpace.rgb444 && cap->bits.rgb444) == false) {
                 HDF_LOGD("sink or source not support RGB!");
@@ -1090,8 +1090,8 @@ static void HdmiHdrModeCheck(struct HdmiCommonAttr *commAttr,
 static void HdmiFillVideoAttrFromHardwareStatus(struct HdmiVideoAttr *videoAttr,
     struct HdmiHardwareStatus *hwStatus, struct HdmiCommonAttr *commAttr)
 {
-    bool rgb;
-    bool aspectIs256;
+    bool rgb = false;
+    bool aspectIs256 = false;
     uint8_t vic;
     enum HdmiVsVideoFormat format;
     enum Hdmi4kVic vic4k;
@@ -1139,15 +1139,15 @@ static void HdmiFillVideoAttrFromHardwareStatus(struct HdmiVideoAttr *videoAttr,
 static void HdmiFillCommonAttrFromHardwareStatus(struct HdmiCommonAttr *commAttr,
     struct HdmiHardwareStatus *hwStatus, struct HdmiAttr *attr)
 {
-    bool dolby;
+    bool dolby = false;
 
     switch (hwStatus->commonStatus.tmdsMode) {
-        case HDMI_TMDS_MODE_HDMI_1_4 :
-        case HDMI_TMDS_MODE_HDMI_2_0 :
+        case HDMI_TMDS_MODE_HDMI_1_4:
+        case HDMI_TMDS_MODE_HDMI_2_0:
             commAttr->enableHdmi = true;
             commAttr->enableVideo = true;
             break;
-        case HDMI_TMDS_MODE_DVI :
+        case HDMI_TMDS_MODE_DVI:
             commAttr->enableHdmi = false;
             commAttr->enableVideo = true;
             break;

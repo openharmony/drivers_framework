@@ -38,10 +38,10 @@ static int32_t HdmiEventPostMsg(struct HdmiCntlr *cntlr, struct HdmiEventMsg *ev
 
 bool HdmiHpdStatusGet(struct HdmiCntlr *cntlr)
 {
-    bool ret;
+    bool ret = false;
 
     if (cntlr == NULL || cntlr->ops == NULL || cntlr->ops->hotPlugStateGet == NULL) {
-        return false;
+        return ret;
     }
 
     HdmiCntlrLock(cntlr);
@@ -101,8 +101,8 @@ static int32_t HdmiEventHotPlugHandleComm(struct HdmiCntlr *cntlr)
     }
 
     /* Update EDID. */
-    if (memset_s(cntlr->hdmi, sizeof(struct HdmiDevice), 0, sizeof(struct HdmiDevice)) != EOK) {
-        HDF_LOGE("memcpy_s fail.");
+    if (HdmiEdidReset(&(cntlr->hdmi->edid)) != HDF_SUCCESS) {
+        HDF_LOGE("edid reset fail.");
         ret = HDF_ERR_IO;
         goto __END;
     }
@@ -199,22 +199,22 @@ int32_t HdmiEventMsgHandleDefault(struct PlatformQueue *queue, struct PlatformMs
     }
     event = (struct HdmiEventMsg *)msg;
     switch (msg->code) {
-        case HDMI_EVENT_HOTPLUG :
+        case HDMI_EVENT_HOTPLUG:
             ret = HdmiEventHotPlugHandle(cntlr);
             break;
-        case HDMI_EVENT_HOTUNPLUG :
+        case HDMI_EVENT_HOTUNPLUG:
             ret = HdmiEventHotUnplugHandle(cntlr);
             break;
-        case HDMI_EVENT_DETECT_SINK :
+        case HDMI_EVENT_DETECT_SINK:
             ret = HdmiEventDetectSinkHandle(cntlr);
             break;
         case HDMI_EVENT_CEC_MSG:
             ret = HdmiEventCecMsgHandle(cntlr, event->priv);
             break;
-        case HDMI_EVENT_ZERO_DRMIF_TIMEOUT :
+        case HDMI_EVENT_ZERO_DRMIF_TIMEOUT:
             ret = HdmiEventHdrZeroDrmIfTimeout(cntlr);
             break;
-        case HDMI_EVENT_SWITCH_TO_HDRMODE_TIMEOUT :
+        case HDMI_EVENT_SWITCH_TO_HDRMODE_TIMEOUT:
             ret = HdmiEventSwitchToHdrModeTimeout(cntlr);
             break;
         default:
@@ -237,28 +237,28 @@ int32_t HdmiEventHandle(struct HdmiCntlr *cntlr, enum HdmiEventType event, void 
         return HDF_ERR_INVALID_OBJECT;
     }
     switch (event) {
-        case HDMI_EVENT_HOTPLUG :
+        case HDMI_EVENT_HOTPLUG:
             ret = HdmiAddEventMsgToQueue(cntlr, HDMI_EVENT_HOTPLUG, false, data);
             break;
-        case HDMI_EVENT_HOTUNPLUG :
+        case HDMI_EVENT_HOTUNPLUG:
             ret = HdmiAddEventMsgToQueue(cntlr, HDMI_EVENT_HOTUNPLUG, false, data);
             break;
-        case HDMI_EVENT_DETECT_SINK :
+        case HDMI_EVENT_DETECT_SINK:
             ret = HdmiAddEventMsgToQueue(cntlr, HDMI_EVENT_DETECT_SINK, false, data);
             break;
-        case HDMI_EVENT_CEC_MSG :
+        case HDMI_EVENT_CEC_MSG:
             ret = HdmiAddEventMsgToQueue(cntlr, HDMI_EVENT_CEC_MSG, false, data);
             break;
-        case HDMI_EVENT_HDCP_MSG :
+        case HDMI_EVENT_HDCP_MSG:
             ret = HdmiAddEventMsgToQueue(cntlr, HDMI_EVENT_HDCP_MSG, false, data);
             break;
-        case HDMI_EVENT_ZERO_DRMIF_TIMEOUT :
+        case HDMI_EVENT_ZERO_DRMIF_TIMEOUT:
             ret = HdmiAddEventMsgToQueue(cntlr, HDMI_EVENT_ZERO_DRMIF_TIMEOUT, false, data);
             break;
-        case HDMI_EVENT_SWITCH_TO_HDRMODE_TIMEOUT :
+        case HDMI_EVENT_SWITCH_TO_HDRMODE_TIMEOUT:
             ret = HdmiAddEventMsgToQueue(cntlr, HDMI_EVENT_SWITCH_TO_HDRMODE_TIMEOUT, false, data);
             break;
-        default :
+        default:
             HDF_LOGE("event %d is not support", event);
             break;
     }

@@ -445,7 +445,7 @@ static void HdmiFillAviInfoframeVersion(struct HdmiAviInfoframe *avi)
 static void HdmiFillAviInfoframe(struct HdmiAviInfoframe *avi,
     struct HdmiVideoAttr *videoAttr, struct HdmiHdrAttr *HdrAttr, struct HdmiCommonAttr *commAttr)
 {
-    bool enable3d;
+    bool enable3d = true;
 
     if (memset_s(avi, sizeof(struct HdmiAviInfoframe), 0, sizeof(struct HdmiAviInfoframe)) != EOK) {
         HDF_LOGE("fill vsif, memset_s fail.");
@@ -463,7 +463,9 @@ static void HdmiFillAviInfoframe(struct HdmiAviInfoframe *avi,
 
     avi->range = videoAttr->quantization;
     avi->extColorimetry = videoAttr->extColorimetry;
-    enable3d = (videoAttr->_3dStruct >= HDMI_VS_VIDEO_3D_BUTT) ? false : true;
+    if (videoAttr->_3dStruct >= HDMI_VS_VIDEO_3D_BUTT) {
+        enable3d = false;
+    }
     avi->vic = HdmiCommonGetVic(videoAttr->timing, videoAttr->aspect, enable3d);
     avi->pixelRepetitionFactor = (uint8_t)videoAttr->pixelRepeat;
     avi->yccRange = videoAttr->yccQuantization;
@@ -759,19 +761,19 @@ int32_t HdmiInfoframeGetInfo(struct HdmiInfoframe *frame, enum HdmiPacketType ty
     }
 
     switch (type) {
-        case HDMI_INFOFRAME_PACKET_TYPE_VS :
+        case HDMI_INFOFRAME_PACKET_TYPE_VS:
             infoframe->vs = frame->vs;
             break;
-        case HDMI_INFOFRAME_PACKET_TYPE_AVI :
+        case HDMI_INFOFRAME_PACKET_TYPE_AVI:
             infoframe->avi = frame->avi;
             break;
-        case HDMI_INFOFRAME_PACKET_TYPE_AUDIO :
+        case HDMI_INFOFRAME_PACKET_TYPE_AUDIO:
             infoframe->audio = frame->audio;
             break;
-        case HDMI_INFOFRAME_PACKET_TYPE_DRM :
+        case HDMI_INFOFRAME_PACKET_TYPE_DRM:
             infoframe->drm = frame->drm;
             break;
-        default :
+        default:
             HDF_LOGD("infoframe %d not support get", type);
             return HDF_ERR_INVALID_PARAM;
     }
@@ -786,19 +788,19 @@ int32_t HdmiInfoframeSetInfo(struct HdmiInfoframe *frame, enum HdmiPacketType ty
     }
 
     switch (type) {
-        case HDMI_INFOFRAME_PACKET_TYPE_VS :
+        case HDMI_INFOFRAME_PACKET_TYPE_VS:
             frame->vs = infoframe->vs;
             break;
-        case HDMI_INFOFRAME_PACKET_TYPE_AVI :
+        case HDMI_INFOFRAME_PACKET_TYPE_AVI:
             frame->avi = infoframe->avi;
             break;
-        case HDMI_INFOFRAME_PACKET_TYPE_AUDIO :
+        case HDMI_INFOFRAME_PACKET_TYPE_AUDIO:
             frame->audio = infoframe->audio;
             break;
-        case HDMI_INFOFRAME_PACKET_TYPE_DRM :
+        case HDMI_INFOFRAME_PACKET_TYPE_DRM:
             frame->drm = infoframe->drm;
             break;
-        default :
+        default:
             HDF_LOGD("infoframe %d not support set", type);
             return HDF_ERR_INVALID_PARAM;
     }

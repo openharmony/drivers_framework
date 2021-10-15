@@ -362,6 +362,11 @@ enum HdmiNups {
     HDMI_NUPS_BOTH = 3,         /* Picture has been scaled horizontally and vertically */
 };
 
+/**
+ * @brief Defines the video attribute struct.
+ *
+ * @since 1.0
+ */
 struct HdmiVideoAttr {
     uint32_t tmdsClock;  /* unit: KHz */
     uint32_t pixelClock; /* unit: KHz */
@@ -476,7 +481,7 @@ enum HdmiAudioFormatChannel {
 };
 
 /**
- * @brief Defines the audio Attribute struct.
+ * @brief Defines the audio attribute struct.
  *
  * @since 1.0
  */
@@ -489,13 +494,18 @@ struct HdmiAudioAttr {
     enum HdmiAudioFormatChannel channels;
 };
 
-/* Electro-Optical Transfer Function (EOTF) type define. */
+/**
+ * @brief Enumerates Electro-Optical Transfer Function (EOTF),
+ * see the section 6.9 of CTA-861-G for details.
+ *
+ * @since 1.0
+ */
 enum HdmiEotfType {
-    HDMI_DRM_EOTF_SDR_LUMIN = 0,        /* Traditional gamma - SDR Luminance Range */
-    HDMI_DRM_EOTF_HDR_LUMIN = 1,        /* Traditional gamma - HDR Luminance Range */
-    HDMI_DRM_EOTF_SMPTE_ST_2048 = 2,    /* SMPTE ST 2048 */
-    HDMI_DRM_EOTF_HLG = 3,              /* Hybrid Log-Gamma (HLG) based on ITU-R BT.2100-0 */
-    HDMI_DRM_EOTF_BUTT,
+    HDMI_EOTF_SDR_LUMIN = 0,        /* Traditional gamma - SDR Luminance Range */
+    HDMI_EOTF_HDR_LUMIN = 1,        /* Traditional gamma - HDR Luminance Range */
+    HDMI_EOTF_SMPTE_ST_2048 = 2,    /* SMPTE ST 2048 */
+    HDMI_EOTF_HLG = 3,              /* Hybrid Log-Gamma (HLG) based on ITU-R BT.2100-0 */
+    HDMI_EOTF_BUTT,
 };
 
 /**
@@ -578,10 +588,21 @@ struct HdmiStaticMetadataDescriptor1st {
     uint16_t maxFrameAverageLightLevel;     /* Maximum Frame-average Light Level, in units of 1 cd/m^2 */
 };
 
+/**
+ * @brief Defines the static metadata descriptor,
+ * see the section 6.9 of CTA-861-G for details.
+ *
+ * @since 1.0
+ */
 union HdmiStaticMetadataDescriptor {
     struct HdmiStaticMetadataDescriptor1st type1;
 };
 
+/**
+ * @brief Defines the hdr attribute struct.
+ *
+ * @since 1.0
+ */
 struct HdmiHdrAttr {
     enum HdmiHdrMode mode;
     enum HdmiHdrUserMode userMode;

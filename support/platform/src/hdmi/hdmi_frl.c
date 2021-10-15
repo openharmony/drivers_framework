@@ -166,22 +166,22 @@ static bool HdmiFrlCheckFrlStrategy(enum HdmiFrlStrategyMode strategy, uint32_t 
     bool support = true;
 
     switch (strategy) {
-        case HDMI_FRL_STRATEGY_MODE_1 :
+        case HDMI_FRL_STRATEGY_MODE_1:
             if (pixelClock <= HDMI_HDMI20_MAX_TMDS_RATE && tmdsClock <= HDMI_HDMI20_MAX_TMDS_RATE) {
                 support = false;
             }
             break;
-        case HDMI_FRL_STRATEGY_MODE_2 :
+        case HDMI_FRL_STRATEGY_MODE_2:
             if (tmdsClock <= HDMI_HDMI14_MAX_TMDS_RATE) {
                 support = false;
             }
             break;
-        case HDMI_FRL_STRATEGY_MODE_3 :
+        case HDMI_FRL_STRATEGY_MODE_3:
             if (formatType == HDMI_VIDEO_FORMA_INTERLACE) {
                 support = false;
             }
             break;
-        default :
+        default:
             HDF_LOGE("strategy %d is not support", strategy);
             break;
     }
@@ -196,23 +196,23 @@ static void HdmiFrlFillRateInfo(uint32_t *frlBitRate, uint32_t *frlLaneNum, uint
     }
 
     switch (frlRate) {
-        case HDMI_FRL_WORK_MODE_3L3G :
+        case HDMI_FRL_WORK_MODE_3L3G:
             *frlBitRate = HDMI_FRL_BIT_RATE_3;
             break;
-        case HDMI_FRL_WORK_MODE_3L6G :
-        case HDMI_FRL_WORK_MODE_4L6G :
+        case HDMI_FRL_WORK_MODE_3L6G:
+        case HDMI_FRL_WORK_MODE_4L6G:
             *frlBitRate = HDMI_FRL_BIT_RATE_6;
             break;
-        case HDMI_FRL_WORK_MODE_4L8G :
+        case HDMI_FRL_WORK_MODE_4L8G:
             *frlBitRate = HDMI_FRL_BIT_RATE_8;
             break;
-        case HDMI_FRL_WORK_MODE_4L10G :
+        case HDMI_FRL_WORK_MODE_4L10G:
             *frlBitRate = HDMI_FRL_BIT_RATE_10;
             break;
-        case HDMI_FRL_WORK_MODE_4L12G :
+        case HDMI_FRL_WORK_MODE_4L12G:
             *frlBitRate = HDMI_FRL_BIT_RATE_12;
             break;
-        default :
+        default:
             break;
     }
 }
@@ -588,28 +588,28 @@ void HdmiFrlTrainingStateMachineHandle(struct HdmiFrl *frl)
     }
 
     switch (frl->info.machineInfo.trainingState) {
-        case HDMI_FRL_TRAIN_STEP_READR_CHECK :
+        case HDMI_FRL_TRAIN_STEP_READR_CHECK:
             HdmiFrlTrainingReadyCheck(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_TRAIN_START :
+        case HDMI_FRL_TRAIN_STEP_TRAIN_START:
             HdmiFrlConfigAndStartTraining(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RESULT_CHECK :
+        case HDMI_FRL_TRAIN_STEP_RESULT_CHECK:
             HdmiFrlTrainingResultCheck(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RATE_CHANGE :
+        case HDMI_FRL_TRAIN_STEP_RATE_CHANGE:
             HdmiFrlTrainingRateChange(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RESULT_HANDLE :
+        case HDMI_FRL_TRAIN_STEP_RESULT_HANDLE:
             HdmiFrlTrainingPassedCheck(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RETRAIN_CHECK :
+        case HDMI_FRL_TRAIN_STEP_RETRAIN_CHECK:
             HdmiFrlRetrainingCheck(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_TRAIN_STOP :
+        case HDMI_FRL_TRAIN_STEP_TRAIN_STOP:
             HdmiFrlTrainingStop(frl);
             break;
-        default :
+        default:
             break;
     }
 }
@@ -748,28 +748,28 @@ void HdmiFrlTrainingStateMachineTimeoutHandle(struct HdmiFrl *frl)
     }
 
     switch (frl->info.machineInfo.trainingState) {
-        case HDMI_FRL_TRAIN_STEP_READR_CHECK :
+        case HDMI_FRL_TRAIN_STEP_READR_CHECK:
             HdmiFrlTrainingReadyCheckTimeout(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_TRAIN_START :
+        case HDMI_FRL_TRAIN_STEP_TRAIN_START:
             HdmiFrlConfigAndStartTraining(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RESULT_CHECK :
+        case HDMI_FRL_TRAIN_STEP_RESULT_CHECK:
             HdmiFrlTrainingResultCheckTimeout(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RATE_CHANGE :
+        case HDMI_FRL_TRAIN_STEP_RATE_CHANGE:
             HdmiFrlTrainingRateChange(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RESULT_HANDLE :
+        case HDMI_FRL_TRAIN_STEP_RESULT_HANDLE:
             HdmiFrlTrainingResultHandleTimeout(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_RETRAIN_CHECK :
+        case HDMI_FRL_TRAIN_STEP_RETRAIN_CHECK:
             HdmiFrlRetrainingCheckTimeout(frl);
             break;
-        case HDMI_FRL_TRAIN_STEP_TRAIN_STOP :
+        case HDMI_FRL_TRAIN_STEP_TRAIN_STOP:
             HdmiFrlTrainingStop(frl);
             break;
-        default :
+        default:
             break;
     }
 }
