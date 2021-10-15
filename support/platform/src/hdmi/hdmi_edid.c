@@ -370,6 +370,7 @@ static int32_t HdmiEdidExtBlockNumPhase(struct HdmiEdid *edid)
     struct HdmiSinkDeviceCapability *sinkCap = &(edid->sinkCap);
 
     sinkCap->extBlockNum = edid->raw[HDMI_EDID_EXTENSION_BLOCK_ADDR];
+    HDF_LOGD("edid extBlockNum = %d.", sinkCap->extBlockNum);
     if (sinkCap->extBlockNum > (HDMI_EDID_MAX_BLOCK_NUM - 1)) {
         HDF_LOGW("ext block number %d is invallid.", sinkCap->extBlockNum);
         sinkCap->extBlockNum = HDMI_EDID_MAX_BLOCK_NUM - 1;
@@ -1219,7 +1220,7 @@ int32_t HdmiEdidPhase(struct HdmiEdid *edid)
     }
 
     sinkCap = &(edid->sinkCap);
-    for (blockNum = 1; blockNum < sinkCap->extBlockNum; blockNum++) {
+    for (blockNum = 1; blockNum <= sinkCap->extBlockNum; blockNum++) {
         ret = HdmiEdidExtBlockPhase(edid, blockNum);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("edid ext block%d phase fail.", blockNum);
