@@ -1,0 +1,23 @@
+{
+    "supported_boards": {
+        "hispark_taurus": {
+            "board_parent_path": "vendor/hisilicon/hispark_taurus",
+            "dot_config_path": "kernel/liteos_a/tools/build/config",
+            "dot_configs": ["hispark_taurus_debug_shell_tee.config", "hispark_taurus_debug_shell.config"
+                            ,"hispark_taurus_release_tee.config", "hispark_taurus_release.config"
+                            , "hispark_taurus_clang_release_tee.config", "hispark_taurus_clang_release.config"]
+        },
+        "hispark_taurus_linux": {
+            "patch_and_config": ["hi3516dv300.patch", "hi3516dv300_small_defconfig", "hi3516dv300_standard_defconfig",
+                      "small_common_defconfig", "standard_common_defconfig"]
+        },
+        "hispark_aries": {
+            "board_parent_path": "vendor/hisilicon/hispark_aries",
+            "dot_config_path": "kernel/liteos_a/tools/build/config",
+            "dot_configs": ["hispark_aries_clang_release.config", "hispark_aries_release.config", "hispark_aries_debug_shell.config"]
+        }
+    },
+    "drivers_path_relative_to_vendor": "drivers/framework",
+    "drivers_path_relative_adapter": "drivers/adapter/khdf",
+    "template_file_path": "tools/hdf_dev_eco_tool/resources/templates/lite"
+}
