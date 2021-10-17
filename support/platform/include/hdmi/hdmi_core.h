@@ -366,11 +366,13 @@ int32_t HdmiCntlrSetAudioAttribute(struct HdmiCntlr *cntlr, struct HdmiAudioAttr
 int32_t HdmiCntlrSetHdrAttribute(struct HdmiCntlr *cntlr, struct HdmiHdrAttr *attr);
 int32_t HdmiCntlrInfoframeGet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoframeInfo *frame);
 int32_t HdmiCntlrInfoframeSet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoframeInfo *frame);
+int32_t HdmiCntlrRegisterHpdCallbackFunc(struct HdmiCntlr *cntlr, struct HdmiHpdCallbackInfo *callback);
+int32_t HdmiCntlrUnregisterHpdCallbackFunc(struct HdmiCntlr *cntlr);
 void HdmiCntlrClose(struct HdmiCntlr *cntlr);
 
 bool HdmiHpdStatusDelayGet(struct HdmiCntlr *cntlr);
 bool HdmiHpdStatusGet(struct HdmiCntlr *cntlr);
-int32_t HdmiEventHandle(struct HdmiCntlr *cntlr, enum HdmiEventType event, void *datat);
+int32_t HdmiEventHandle(struct HdmiCntlr *cntlr, enum HdmiEventType event, void *data);
 int32_t HdmiEventMsgHandleDefault(struct PlatformQueue *queue, struct PlatformMsg *msg);
 
 bool HdmiEdidSupportFrl(struct HdmiDevice *hdmi);

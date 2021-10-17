@@ -10,6 +10,7 @@
 #define HDMI_EVENT_H
 
 #include "hdf_base.h"
+#include "hdmi_if.h"
 #include "platform_core.h"
 
 #ifdef __cplusplus
@@ -40,6 +41,7 @@ struct HdmiEventMsg {
 struct HdmiEvent {
     bool plugged;
     bool hpdDetected;
+    struct HdmiHpdCallbackInfo callback;
 };
 
 #ifdef __cplusplus

@@ -155,7 +155,7 @@ static int32_t HdmiEventHotUnplugHandle(struct HdmiCntlr *cntlr)
     cntlr->event.plugged = false;
     cntlr->event.hpdDetected = false;
     if (cntlr->event.callback.callbackFunc != NULL) {
-        cntlr->event.callback.callbackFunc(cntlr->event.callback.data, true);
+        cntlr->event.callback.callbackFunc(cntlr->event.callback.data, false);
     }
     return HDF_SUCCESS;
 }
