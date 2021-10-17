@@ -38,6 +38,8 @@ enum HdmiIoCmd {
     HDMI_CMD_READ_SINK_EDID,
     HDMI_CMD_INFOFRAME_SET,
     HDMI_CMD_INFOFRAME_GET,
+    HDMI_CMD_REGISTER_HPD_CALLBACK_FUNC,
+    HDMI_CMD_UNREGISTER_HPD_CALLBACK_FUNC,
     HDMI_CMD_BUTT,
 };
 
@@ -347,6 +349,58 @@ __EXIT :
     }
     return ret;
 }
+
+static int32_t HdmiUserRegisterHpdCallbackFunc(DevHandle handle, struct HdmiHpdCallbackInfo *callback)
+{
+    int32_t ret;
+    struct HdfSBuf *buf = NULL;
+    struct HdfIoService *service = (struct HdfIoService *)handle;
+    uint32_t addr = (uint32_t)(uintptr_t)callback;
+
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("HdmiUserRegisterHpdCallbackFunc: service is invalid");
+        return HDF_ERR_INVALID_PARAM;
+    }
+    if (callback == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    buf = HdfSBufObtain(sizeof(uint32_t));
+    if (buf == NULL) {
+        HDF_LOGE("HdmiUserRegisterHpdCallbackFunc: failed to obtain buf");
+        return HDF_ERR_MALLOC_FAIL;
+    }
+    if (!HdfSbufWriteBuffer(buf, (void *)&addr, sizeof(uint32_t))) {
+        HDF_LOGE("HdmiUserRegisterHpdCallbackFunc: sbuf write attr failed");
+        HdfSBufRecycle(buf);
+        return HDF_ERR_IO;
+    }
+
+    ret = service->dispatcher->Dispatch(&service->object, HDMI_CMD_REGISTER_HPD_CALLBACK_FUNC, buf, NULL);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("HdmiUserRegisterHpdCallbackFunc: failed to write, ret %d", ret);
+    }
+    HdfSBufRecycle(buf);
+    return ret;
+}
+
+static int32_t HdmiUserUnregisterHpdCallbackFunc(DevHandle handle)
+{
+    struct HdfIoService *service = (struct HdfIoService *)handle;
+    int32_t ret;
+
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("HdmiUserUnregisterHpdCallbackFunc: service is invalid");
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    ret = service->dispatcher->Dispatch(&service->object, HDMI_CMD_UNREGISTER_HPD_CALLBACK_FUNC, NULL, NULL);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("HdmiUserUnregisterHpdCallbackFunc: failed to send service call:%d", ret);
+        return ret;
+    }
+    return HDF_SUCCESS;
+}
 #endif
 
 static void *HdmiCntlrObjGet(uint16_t busNum)
@@ -481,6 +535,24 @@ int32_t HdmiReadSinkEdid(DevHandle handle, uint8_t *buffer, uint32_t len)
     return HdmiUserGetSinkEdid(handle, buffer, len);
 #else
     return HdmiCntlrGetSinkEdid((struct HdmiCntlr *)handle, buffer, len);
+#endif
+}
+
+int32_t HdmiRegisterHpdCallbackFunc(DevHandle handle, struct HdmiHpdCallbackInfo *callback)
+{
+#ifdef __USER__
+    return HdmiUserRegisterHpdCallbackFunc(handle, callback);
+#else
+    return HdmiCntlrRegisterHpdCallbackFunc((struct HdmiCntlr *)handle, callback);
+#endif
+}
+
+int32_t HdmiUnregisterHpdCallbackFunc(DevHandle handle)
+{
+#ifdef __USER__
+    return HdmiUserUnregisterHpdCallbackFunc(handle);
+#else
+    return HdmiCntlrUnregisterHpdCallbackFunc((struct HdmiCntlr *)handle);
 #endif
 }
 

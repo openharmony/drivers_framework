@@ -92,6 +92,7 @@ static int32_t HdmiEventHotPlugHandleComm(struct HdmiCntlr *cntlr)
     int32_t ret;
 
     cntlr->event.plugged = true;
+    HDF_LOGD("Hdmi sink device plugged!");
     if (cntlr->hdmi == NULL) {
         ret = HdmiCntlrAllocDev(cntlr);
         if (ret != HDF_SUCCESS) {
@@ -122,6 +123,9 @@ __END:
         return ret;
     }
     cntlr->event.hpdDetected = true;
+    if (cntlr->event.callback.callbackFunc != NULL) {
+        cntlr->event.callback.callbackFunc(cntlr->event.callback.data, true);
+    }
     return HDF_SUCCESS;
 }
 
@@ -133,7 +137,7 @@ static int32_t HdmiEventHotPlugHandle(struct HdmiCntlr *cntlr)
     }
 
     if (cntlr->event.plugged == true) {
-        HDF_LOGD("hdp state not change");
+        HDF_LOGD("HdmiEventHotPlugHandle: hdp state not change");
         return HDF_SUCCESS;
     }
     return HdmiEventHotPlugHandleComm(cntlr);
@@ -142,7 +146,7 @@ static int32_t HdmiEventHotPlugHandle(struct HdmiCntlr *cntlr)
 static int32_t HdmiEventHotUnplugHandle(struct HdmiCntlr *cntlr)
 {
     if (cntlr->event.plugged == false) {
-        HDF_LOGD("plug state not change");
+        HDF_LOGD("HdmiEventHotUnplugHandle: plug state not change");
         return HDF_SUCCESS;
     }
 
@@ -150,6 +154,9 @@ static int32_t HdmiEventHotUnplugHandle(struct HdmiCntlr *cntlr)
     HdmiCntlrFreeDev(cntlr);
     cntlr->event.plugged = false;
     cntlr->event.hpdDetected = false;
+    if (cntlr->event.callback.callbackFunc != NULL) {
+        cntlr->event.callback.callbackFunc(cntlr->event.callback.data, true);
+    }
     return HDF_SUCCESS;
 }
 

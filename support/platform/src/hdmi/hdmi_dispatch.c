@@ -27,6 +27,8 @@ enum HdmiIoCmd {
     HDMI_CMD_READ_SINK_EDID,
     HDMI_CMD_INFOFRAME_SET,
     HDMI_CMD_INFOFRAME_GET,
+    HDMI_CMD_REGISTER_HPD_CALLBACK_FUNC,
+    HDMI_CMD_UNREGISTER_HPD_CALLBACK_FUNC,
     HDMI_CMD_BUTT,
 };
 
@@ -222,6 +224,27 @@ static int32_t HdmiCmdInfoframeGet(struct HdmiCntlr *cntlr, struct HdfSBuf *data
     return HDF_SUCCESS;
 }
 
+static int32_t HdmiCmdRegisterHpdCallbackFunc(struct HdmiCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    uint32_t *addr = NULL;
+    size_t size;
+    (void)reply;
+
+    if (!HdfSbufReadBuffer(data, (const void **)&addr, &size)) {
+        HDF_LOGE("HdmiCmdRegisterHpdCallbackFunc: sbuf read buffer failed");
+        return HDF_ERR_IO;
+    }
+    return HdmiCntlrRegisterHpdCallbackFunc(cntlr, (struct HdmiHpdCallbackInfo *)(uintptr_t)(*addr));
+}
+
+static int32_t HdmiCmdUnregisterHpdCallbackFunc(struct HdmiCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    (void)data;
+    (void)reply;
+
+    return HdmiCntlrUnregisterHpdCallbackFunc(cntlr);
+}
+
 int32_t HdmiIoDispatch(struct HdfDeviceIoClient *client, int32_t cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct HdmiCntlr *cntlr = NULL;
@@ -240,6 +263,8 @@ int32_t HdmiIoDispatch(struct HdfDeviceIoClient *client, int32_t cmd, struct Hdf
         { HDMI_CMD_READ_SINK_EDID, HdmiCmdReadSinkEdid },
         { HDMI_CMD_INFOFRAME_SET, HdmiCmdInfoframeSet },
         { HDMI_CMD_INFOFRAME_GET, HdmiCmdInfoframeGet },
+        { HDMI_CMD_REGISTER_HPD_CALLBACK_FUNC, HdmiCmdRegisterHpdCallbackFunc },
+        { HDMI_CMD_UNREGISTER_HPD_CALLBACK_FUNC, HdmiCmdUnregisterHpdCallbackFunc },
     };
 
     if (client == NULL || client->device == NULL) {

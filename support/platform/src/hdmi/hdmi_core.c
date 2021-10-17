@@ -1394,6 +1394,30 @@ int32_t HdmiCntlrInfoframeSet(struct HdmiCntlr *cntlr, enum HdmiPacketType type,
     return HdmiInfoframeSetInfo(&(cntlr->infoframe), type, frame);
 }
 
+int32_t HdmiCntlrRegisterHpdCallbackFunc(struct HdmiCntlr *cntlr, struct HdmiHpdCallbackInfo *callback)
+{
+    if (cntlr == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (callback == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    cntlr->event.callback.data = callback->data;
+    cntlr->event.callback.callbackFunc = callback->callbackFunc;
+    return HDF_SUCCESS;
+}
+
+int32_t HdmiCntlrUnregisterHpdCallbackFunc(struct HdmiCntlr *cntlr)
+{
+    if (cntlr == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    cntlr->event.callback.data = NULL;
+    cntlr->event.callback.callbackFunc = NULL;
+    return HDF_SUCCESS;
+}
+
 void HdmiCntlrClose(struct HdmiCntlr *cntlr)
 {
     if (cntlr == NULL || cntlr->ops == NULL) {

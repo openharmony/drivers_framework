@@ -65,7 +65,7 @@ static int32_t HdmiEdidBlockCheckSum(uint8_t *data)
     uint32_t i;
     uint32_t checkSum = 0;
 
-    HDF_LOGI("check sum is 0x%x", data[HDMI_EDID_CHECKSUM_ADDR]);
+    HDF_LOGD("check sum is 0x%x", data[HDMI_EDID_CHECKSUM_ADDR]);
     for (i = 0; i < HDMI_EDID_SINGLE_BLOCK_SIZE; i++) {
         checkSum += data[i];
     }

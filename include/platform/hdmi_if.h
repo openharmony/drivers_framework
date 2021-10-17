@@ -614,6 +614,16 @@ struct HdmiHdrAttr {
 };
 
 /**
+ * @brief Defines the hdmi HPD(Hot Plug Detect) callback info.
+ *
+ * @since 1.0
+ */
+struct HdmiHpdCallbackInfo {
+    void *data;
+    void (*callbackFunc)(void *data, bool hdp);
+};
+
+/**
  * @brief Opens an HDMI controller with a specified bus number.
  *
  * Before using the HDMI interface, you can obtain the device handle of the HDMI controller
@@ -744,6 +754,31 @@ int32_t HdmiSetHdrAttribute(DevHandle handle, struct HdmiHdrAttr *attr);
  * @since 1.0
  */
 int32_t HdmiReadSinkEdid(DevHandle handle, uint8_t *buffer, uint32_t len);
+
+/**
+ * @brief HDMI register HPD(Hot Plug Detect) callback function.
+ *
+ * @param handle Indicates the pointer to the device handle of the HDMI controller.
+ * @param callback Indicates the pointer to the callback info.
+ *
+ * @return Returns the length of the data read if the operation is successful;
+ * returns a negative value or 0 if the operation fails.
+ *
+ * @since 1.0
+ */
+int32_t HdmiRegisterHpdCallbackFunc(DevHandle handle, struct HdmiHpdCallbackInfo *callback);
+
+/**
+ * @brief HDMI unregister HPD(Hot Plug Detect) callback function.
+ *
+ * @param handle Indicates the pointer to the device handle of the HDMI controller.
+ *
+ * @return Returns the length of the data read if the operation is successful;
+ * returns a negative value or 0 if the operation fails.
+ *
+ * @since 1.0
+ */
+int32_t HdmiUnregisterHpdCallbackFunc(DevHandle handle);
 
 /**
  * @brief Closes an HDMI controller.
