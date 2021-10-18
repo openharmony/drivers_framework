@@ -145,7 +145,7 @@ struct HdmiVsInfoframe {
     uint8_t verNum;
     uint8_t len;
     union {
-        struct HdmiVs14VsifContent _14Vsif;
+        struct HdmiVs14VsifContent vsif;
         struct HdmiVsUserVsifContent userVsif;
         struct HdmiForumVsifContent forumVsif;
     } vsifContent;
@@ -382,7 +382,7 @@ union HdmiGbdRangeData0 {
     struct {
         uint8_t gbdColorSpace : 3; /* [0:2] */
         uint8_t gbdColorPercision : 2; /* [3:4] */
-        uint8_t rsvd: 2; /* [5:6] */
+        uint8_t rsvd : 2; /* [5:6] */
         uint8_t formatFlag : 1; /* [7] */
     } bits;
     uint8_t val;

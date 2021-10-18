@@ -697,7 +697,7 @@ static void HdmiEdidVsdb3dStructureInfoPhase(struct HdmiSinkDeviceCapability *si
             (data[(*offset)] & HDMI_BIT5_MARK) ? true : false;
         sinkCap->vsdbInfo.support3dType[HDMI_VS_VIDEO_3D_TOP_AND_BOTTOM] =
             (data[(*offset)] & HDMI_BIT6_MARK) ? true : false;
-         (*offset)++;
+        (*offset)++;
     }
 }
 

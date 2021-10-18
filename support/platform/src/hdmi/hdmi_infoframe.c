@@ -63,11 +63,11 @@ static int32_t HdmiInfoframePacketVsEncoding(union HdmiInfoframeInfo *infoframe,
     }
 
     HdmiInfoframeFillHeader(&(infoframe->header), data, len);
-    if (vs->vsifContent._14Vsif.oui == HDMI_IEEE_OUI_1_4) {
+    if (vs->vsifContent.vsif.oui == HDMI_IEEE_OUI_1_4) {
         data[4] = HDMI_IEEE_OUI_1_4_1ST;
         data[5] = HDMI_IEEE_OUI_1_4_2ND;
         data[6] = HDMI_IEEE_OUI_1_4_3RD;
-        vsifContent = &(vs->vsifContent._14Vsif);
+        vsifContent = &(vs->vsifContent.vsif);
         userContent = &(vs->vsifContent.userVsif);
         data[7] = (vsifContent->format & HDMI_VENDOR_1_4_FORMAT_MARK) << HDMI_VENDOR_1_4_FORMAT_SHIFT;
         if (vsifContent->format == HDMI_VS_VIDEO_FORMAT_4K) {
@@ -627,29 +627,29 @@ static uint8_t HdmiGetVsifLength(struct HdmiVs14VsifContent *_14Vsif, bool dolby
 static void HdmiFill14Vsif(struct HdmiVsInfoframe *vs, struct HdmiVideoAttr *videoAttr)
 {
     struct HdmiVideo4kInfo *_4kInfo = NULL;
-    struct HdmiVs14VsifContent *_14Vsif = &(vs->vsifContent._14Vsif);
+    struct HdmiVs14VsifContent *vsif = &(vs->vsifContent.vsif);
     enum HdmiVic vic;
     uint32_t cnt;
 
-    _14Vsif->oui = HDMI_IEEE_OUI_1_4;
+    vsif->oui = HDMI_IEEE_OUI_1_4;
     vic = HdmiCommonGetVic(videoAttr->timing, videoAttr->aspect, false);
     if ((vic == HDMI_VIC_3840X2160P24_16_9 || vic == HDMI_VIC_3840X2160P25_16_9 ||
         vic == HDMI_VIC_3840X2160P30_16_9 || vic == HDMI_VIC_4096X2160P24_256_135) &&
         videoAttr->_3dStruct == HDMI_VS_VIDEO_3D_BUTT) {
-        _14Vsif->format = HDMI_VS_VIDEO_FORMAT_4K;
+        vsif->format = HDMI_VS_VIDEO_FORMAT_4K;
         for (cnt = 0; cnt <= HDMI_VIDEO_4K_CODES_MAX; cnt++) {
             _4kInfo = HdmiCommonGetVideo4kInfo(cnt);
             if (_4kInfo != NULL && _4kInfo->timing == videoAttr->timing) {
-                _14Vsif->vic = _4kInfo->_4kVic;
+                vsif->vic = _4kInfo->_4kVic;
                 break;
             }
         }
     } else if (videoAttr->_3dStruct < HDMI_VS_VIDEO_3D_BUTT) {  // common 3D
-        _14Vsif->format = HDMI_VS_VIDEO_FORMAT_3D;
-        _14Vsif->_3dStruct = videoAttr->_3dStruct;
+        vsif->format = HDMI_VS_VIDEO_FORMAT_3D;
+        vsif->_3dStruct = videoAttr->_3dStruct;
     } else {
-        _14Vsif->format = HDMI_VS_VIDEO_FORMAT_NULL;
-        _14Vsif->_3dStruct = videoAttr->_3dStruct;
+        vsif->format = HDMI_VS_VIDEO_FORMAT_NULL;
+        vsif->_3dStruct = videoAttr->_3dStruct;
     }
 }
 
@@ -667,7 +667,7 @@ static void HdmiFillVsInfoframe(struct HdmiInfoframe *frame, struct HdmiVideoAtt
     vs->type = HDMI_INFOFRAME_PACKET_TYPE_VS;
     vs->verNum = HDMI_VSIF_VERSION;
     HdmiFill14Vsif(vs, videoAttr);
-    vs->len = HdmiGetVsifLength(&(vs->vsifContent._14Vsif), dolbyEnable, hdrSupport);
+    vs->len = HdmiGetVsifLength(&(vs->vsifContent.vsif), dolbyEnable, hdrSupport);
     /* fill user vendor data */
     vs->vsifContent.userVsif.len = frame->userVsif.len;
     ret = memcpy_s(vs->vsifContent.userVsif.data, HDMI_VENDOR_USER_DATA_MAX_LEN,
