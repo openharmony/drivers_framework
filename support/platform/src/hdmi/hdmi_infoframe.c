@@ -626,7 +626,7 @@ static uint8_t HdmiGetVsifLength(struct HdmiVs14VsifContent *_14Vsif, bool dolby
 
 static void HdmiFill14Vsif(struct HdmiVsInfoframe *vs, struct HdmiVideoAttr *videoAttr)
 {
-    struct HdmiVideo4kInfo *_4kInfo = NULL;
+    struct HdmiVideo4kInfo *info = NULL;
     struct HdmiVs14VsifContent *vsif = &(vs->vsifContent.vsif);
     enum HdmiVic vic;
     uint32_t cnt;
@@ -638,9 +638,9 @@ static void HdmiFill14Vsif(struct HdmiVsInfoframe *vs, struct HdmiVideoAttr *vid
         videoAttr->_3dStruct == HDMI_VS_VIDEO_3D_BUTT) {
         vsif->format = HDMI_VS_VIDEO_FORMAT_4K;
         for (cnt = 0; cnt <= HDMI_VIDEO_4K_CODES_MAX; cnt++) {
-            _4kInfo = HdmiCommonGetVideo4kInfo(cnt);
-            if (_4kInfo != NULL && _4kInfo->timing == videoAttr->timing) {
-                vsif->vic = _4kInfo->_4kVic;
+            info = HdmiCommonGetVideo4kInfo(cnt);
+            if (info != NULL && info->timing == videoAttr->timing) {
+                vsif->vic = info->_4kVic;
                 break;
             }
         }
