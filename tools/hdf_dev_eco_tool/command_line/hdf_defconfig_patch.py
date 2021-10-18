@@ -60,7 +60,7 @@ class HdfDefconfigAndPatch(object):
     def get_config_patch(self):
         return os.path.join(self.root, "kernel", self.kernel, "patches")
 
-        def add_module(self, path, files):
+    def add_module(self, path, files):
         for filename in os.listdir(path):
             new_path = os.path.join(path, filename)
             if not os.path.isdir(new_path):
