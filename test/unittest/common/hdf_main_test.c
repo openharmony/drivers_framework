@@ -44,6 +44,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_MIPI_DSI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_MIPI_DSI)
 #include "hdf_mipi_dsi_entry_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_MIPI_CSI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_MIPI_CSI)
+#include "hdf_mipi_csi_entry_test.h"
+#endif
 #if (defined(LOSCFG_STORAGE_EMMC) && defined(LOSCFG_DRIVERS_HDF_PLATFORM_EMMC)) || \
      defined(CONFIG_DRIVERS_HDF_PLATFORM_EMMC)
 #include "hdf_emmc_entry_test.h"
@@ -96,6 +99,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_MIPI_DSI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_MIPI_DSI)
     { TEST_PAL_MIPI_DSI_TYPE, HdfMipiDsiEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_MIPI_CSI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_MIPI_CSI)
+    { TEST_PAL_MIPI_CSI_TYPE, HdfMipiCsiEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SDIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SDIO)
     { TEST_PAL_SDIO_TYPE, HdfSdioUnitTestEntry },

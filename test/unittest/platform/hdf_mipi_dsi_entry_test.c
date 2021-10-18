@@ -8,7 +8,6 @@
 
 #include "hdf_mipi_dsi_entry_test.h"
 #include "hdf_log.h"
-#include "mipi_dsi_if.h"
 #include "mipi_dsi_test.h"
 
 #define HDF_LOG_TAG hdf_mipi_dsi_entry_test

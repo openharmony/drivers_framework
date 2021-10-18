@@ -7,14 +7,7 @@
  */
 
 #include "hdf_uhdf_test.h"
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <fcntl.h>
 #include <gtest/gtest.h>
-#include <string>
-#include <unistd.h>
-#include "hdf_io_service_if.h"
 
 using namespace testing::ext;
 
