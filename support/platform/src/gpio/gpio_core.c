@@ -9,8 +9,6 @@
 #include "gpio/gpio_core.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
-#include "osal_sem.h"
-#include "osal_thread.h"
 #include "plat_log.h"
 #include "platform_core.h"
 #include "securec.h"
