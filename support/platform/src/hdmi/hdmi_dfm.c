@@ -6,9 +6,9 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdmi_dfm.h"
 #include "hdf_log.h"
 #include "hdmi_common.h"
-#include "hdmi_dfm.h"
 
 #define HDF_LOG_TAG hdmi_dfm_c
 

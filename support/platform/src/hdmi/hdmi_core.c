@@ -6,9 +6,9 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdmi_core.h"
 #include "device_resource_if.h"
 #include "hdf_log.h"
-#include "hdmi_core.h"
 #include "hdmi_dispatch.h"
 #include "osal_mem.h"
 #include "osal_time.h"
