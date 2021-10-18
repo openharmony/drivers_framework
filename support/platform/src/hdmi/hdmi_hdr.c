@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -8,6 +8,7 @@
 
 #include "hdf_log.h"
 #include "hdmi_core.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG hdmi_hdr_c
 

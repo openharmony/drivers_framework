@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -286,7 +286,7 @@ static int32_t HdmiHdcpAuthenticationWaitKsvListReady(struct HdmiHdcp *hdcp)
     if (ready == false) {
         return HDF_ERR_TIMEOUT;
     }
-    /*  */
+
     ret = HdmiHdcpAuthenticationCheckBstatus(hdcp);
     if (ret != HDF_SUCCESS) {
         return ret;
