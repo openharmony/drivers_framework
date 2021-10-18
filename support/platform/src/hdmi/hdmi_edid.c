@@ -34,11 +34,15 @@ int32_t HdmiEdidGetRaw(struct HdmiEdid *edid, uint8_t *raw, uint32_t len)
 {
     uint32_t length;
 
-    if (edid == NULL || raw == NULL || len == 0) {
+    if (edid == NULL || raw == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
 
     length = ((len < edid->rawLen) ? len : edid->rawLen);
+    if (length == 0) {
+        HDF_LOGE("edid data not get.");
+        return (int32_t)length;
+    }
     if (memcpy_s(raw, len, edid->raw, length) != EOK) {
         HDF_LOGE("memcpy_s fail.");
         return HDF_ERR_IO;
