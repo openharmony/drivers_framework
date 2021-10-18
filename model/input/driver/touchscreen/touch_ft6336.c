@@ -92,10 +92,11 @@ static int32_t ChipDataHandle(ChipDevice *device)
     uint8_t buf[POINT_BUFFER_LEN] = {0};
     uint8_t reg = 0x0;
     uint8_t pointNum;
+    int32_t ret;
     InputI2cClient *i2cClient = &device->driver->i2cClient;
     FrameData *frame = &device->driver->frameData;
 
-    int32_t ret = InputI2cRead(i2cClient, &reg, 1, buf, POINT_BUFFER_LEN);
+    ret = InputI2cRead(i2cClient, &reg, 1, buf, POINT_BUFFER_LEN);
     CHIP_CHECK_RETURN(ret);
 
     OsalMutexLock(&device->driver->mutex);
