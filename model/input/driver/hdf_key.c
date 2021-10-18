@@ -23,6 +23,7 @@
 
 int32_t KeyIrqHandle(uint16_t intGpioNum, void *data)
 {
+    int32_t ret;
     uint16_t gpioValue = 0;
     KeyDriver *driver = (KeyDriver *)data;
     if (driver == NULL) {
@@ -32,7 +33,7 @@ int32_t KeyIrqHandle(uint16_t intGpioNum, void *data)
     if (event == NULL) {
         return HDF_FAILURE;
     }
-    int32_t ret = GpioDisableIrq(intGpioNum);
+    ret = GpioDisableIrq(intGpioNum);
 
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: disable irq failed, ret %d", __func__, ret);
@@ -143,13 +144,14 @@ static InputDevice *InputDeviceInstance(KeyDriver *keyDrv)
 
 static int32_t RegisterKeyDevice(KeyChipCfg *keyCfg)
 {
+    int32_t ret;
     KeyDriver *keyDrv = KeyDriverInstance(keyCfg);
     if (keyDrv == NULL) {
         HDF_LOGE("%s: instance key config failed", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    int32_t ret = KeyInit(keyDrv);
+    ret = KeyInit(keyDrv);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: key driver init failed, ret %d", __func__, ret);
         goto EXIT;
@@ -178,6 +180,7 @@ EXIT:
 
 static int32_t HdfKeyDriverInit(struct HdfDeviceObject *device)
 {
+    int32_t ret;
     HDF_LOGI("%s: enter", __func__);
     if (device == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -189,7 +192,7 @@ static int32_t HdfKeyDriverInit(struct HdfDeviceObject *device)
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    int32_t ret = RegisterKeyDevice(keyCfg);
+    ret = RegisterKeyDevice(keyCfg);
     if (ret != HDF_SUCCESS) {
         goto EXIT;
     }

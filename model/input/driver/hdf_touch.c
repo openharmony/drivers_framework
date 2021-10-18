@@ -456,13 +456,14 @@ static int32_t TouchGetDeviceStrInfo(TouchDriver *driver, int32_t cmd, struct Hd
 
 static int32_t TouchGetDeviceAttr(TouchDriver *driver, struct HdfSBuf *reply)
 {
+    char *tempStr = "main_touch";
+    int32_t ret;
     if (driver->inputDev == NULL) {
         return HDF_FAILURE;
     }
 
     HDF_LOGE("%s: enter", __func__);
-    char *tempStr = "main_touch";
-    int32_t ret = strncpy_s(driver->inputDev->attrSet.devName, DEV_NAME_LEN, tempStr, strlen(tempStr));
+    ret = strncpy_s(driver->inputDev->attrSet.devName, DEV_NAME_LEN, tempStr, strlen(tempStr));
     if (ret != 0) {
         HDF_LOGE("%s: strncpy dev attr failed", __func__);
         return HDF_FAILURE;

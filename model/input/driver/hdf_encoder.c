@@ -18,12 +18,13 @@
 
 static void EncoderTimerFunc(uintptr_t arg)
 {
+    int32_t ret;
     EncoderDriver *encoderDrv = (EncoderDriver *)arg;
     uint16_t gpioClk = encoderDrv->encoderCfg->gpioClk;
     uint16_t gpioData = encoderDrv->encoderCfg->gpioData;
     uint16_t gpioSW = encoderDrv->encoderCfg->gpioSW;
 
-    int32_t ret = GpioRead(gpioClk, &encoderDrv->encoderClkNowSta);
+    ret = GpioRead(gpioClk, &encoderDrv->encoderClkNowSta);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: gpio read failed, ret %d", __func__, ret);
         return;
@@ -64,12 +65,13 @@ static void EncoderTimerFunc(uintptr_t arg)
 
 static EncoderCfg *EncoderConfigInstance(struct HdfDeviceObject *device)
 {
+    int32_t ret;
     EncoderCfg *encoderCfg = (EncoderCfg *)OsalMemAlloc(sizeof(EncoderCfg));
     if (encoderCfg == NULL) {
         HDF_LOGE("%s: malloc encoder config failed", __func__);
         return NULL;
     }
-    int32_t ret = memset_s(encoderCfg, sizeof(EncoderCfg), 0, sizeof(EncoderCfg));
+    ret = memset_s(encoderCfg, sizeof(EncoderCfg), 0, sizeof(EncoderCfg));
     if (ret != 0) {
         HDF_LOGE("%s: memset_s encoder config failed", __func__);
         OsalMemFree(encoderCfg);
@@ -87,12 +89,13 @@ static EncoderCfg *EncoderConfigInstance(struct HdfDeviceObject *device)
 
 static EncoderDriver *EncoderDriverInstance(EncoderCfg *encoderCfg)
 {
+    int32_t ret;
     EncoderDriver *encoderDrv = (EncoderDriver *)OsalMemAlloc(sizeof(EncoderDriver));
     if (encoderDrv == NULL) {
         HDF_LOGE("%s: malloc key driver failed", __func__);
         return NULL;
     }
-    int32_t ret = memset_s(encoderDrv, sizeof(EncoderDriver), 0, sizeof(EncoderDriver));
+    ret = memset_s(encoderDrv, sizeof(EncoderDriver), 0, sizeof(EncoderDriver));
     if (ret != 0) {
         HDF_LOGE("%s: memset encoder driver failed", __func__);
         OsalMemFree(encoderDrv);
@@ -107,6 +110,7 @@ static EncoderDriver *EncoderDriverInstance(EncoderCfg *encoderCfg)
 
 static int32_t EncoderInit(EncoderDriver *EncoderDrv)
 {
+    int32_t ret;
     uint16_t gpioClk = EncoderDrv->encoderCfg->gpioClk;
     uint16_t gpioData = EncoderDrv->encoderCfg->gpioData;
     uint16_t gpioSW = EncoderDrv->encoderCfg->gpioSW;
@@ -114,7 +118,7 @@ static int32_t EncoderInit(EncoderDriver *EncoderDrv)
     GpioSetDir(gpioData, GPIO_DIR_IN);
     GpioSetDir(gpioSW, GPIO_DIR_IN);
 
-    int32_t ret = OsalTimerCreate(&EncoderDrv->timer, TIMER_INTERVAL_ENCODER, EncoderTimerFunc, EncoderDrv);
+    ret = OsalTimerCreate(&EncoderDrv->timer, TIMER_INTERVAL_ENCODER, EncoderTimerFunc, EncoderDrv);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: create timer failed, ret = %d\n", __func__, ret);
         return HDF_FAILURE;
@@ -149,12 +153,13 @@ static int32_t EncoderInit(EncoderDriver *EncoderDrv)
 
 static InputDevice *InputDeviceInstance(EncoderDriver *encoderDrv)
 {
+    int32_t ret;
     InputDevice *inputDev = (InputDevice *)OsalMemAlloc(sizeof(InputDevice));
     if (inputDev == NULL) {
         HDF_LOGE("%s: malloc input device failed", __func__);
         return NULL;
     }
-    int32_t ret = memset_s(inputDev, sizeof(InputDevice), 0, sizeof(InputDevice));
+    ret = memset_s(inputDev, sizeof(InputDevice), 0, sizeof(InputDevice));
     if (ret != 0) {
         HDF_LOGE("%s: memset encoder driver failed", __func__);
         OsalMemFree(inputDev);
@@ -178,6 +183,7 @@ static InputDevice *InputDeviceInstance(EncoderDriver *encoderDrv)
 
 static int32_t RegisterEncoderDevice(EncoderCfg *encoderCfg, struct HdfDeviceObject *device)
 {
+    int32_t ret;
     EncoderDriver *EncoderDrv = EncoderDriverInstance(encoderCfg);
     if (EncoderDrv == NULL) {
         HDF_LOGE("%s: instance encoder driver failed", __func__);
@@ -185,7 +191,7 @@ static int32_t RegisterEncoderDevice(EncoderCfg *encoderCfg, struct HdfDeviceObj
     }
     device->priv = (void *)EncoderDrv;
 
-    int32_t ret = EncoderInit(EncoderDrv);
+    ret = EncoderInit(EncoderDrv);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: key driver init failed, ret %d", __func__, ret);
         goto EXIT;
@@ -213,6 +219,7 @@ EXIT:
 
 static int32_t HdfEnCoderDriverInit(struct HdfDeviceObject *device)
 {
+    int32_t ret;
     if (device == NULL) {
         HDF_LOGE("%s: param is null", __func__);
         return HDF_ERR_INVALID_PARAM;
@@ -224,7 +231,7 @@ static int32_t HdfEnCoderDriverInit(struct HdfDeviceObject *device)
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    int32_t ret = RegisterEncoderDevice(encoderCfg, device);
+    ret = RegisterEncoderDevice(encoderCfg, device);
     if (ret != HDF_SUCCESS) {
         goto EXIT;
     }

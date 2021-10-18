@@ -103,12 +103,14 @@ static int32_t CreateDeviceNode(InputDevice *inputDev)
 
 static void DeleteDeviceNode(InputDevice *inputDev)
 {
+    int32_t len;
+    int32_t ret;
     if (IsHidDevice(inputDev->devType)) {
         char svcName[SERVICE_NAME_LEN] = {0};
         const char *moduleName = "HDF_HID";
 
-        int32_t len = (inputDev->devId < PLACEHOLDER_LIMIT) ? 1 : PLACEHOLDER_LENGTH;
-        int32_t ret = snprintf_s(svcName, SERVICE_NAME_LEN, strlen("hdf_input_event") + len, "%s%u",
+        len = (inputDev->devId < PLACEHOLDER_LIMIT) ? 1 : PLACEHOLDER_LENGTH;
+        ret = snprintf_s(svcName, SERVICE_NAME_LEN, strlen("hdf_input_event") + len, "%s%u",
             "hdf_input_event", inputDev->devId);
         if (ret < 0) {
             HDF_LOGE("%s: snprintf_s failed", __func__);

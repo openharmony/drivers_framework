@@ -25,12 +25,13 @@
 
 int32_t ParseKeyConfig(const struct DeviceResourceNode *node, KeyChipCfg *config)
 {
+    int32_t ret;
+    struct DeviceResourceIface *parser = NULL;
     if (node == NULL || config == NULL) {
         HDF_LOGE("%s: param is null", __func__);
         return HDF_FAILURE;
     }
 
-    struct DeviceResourceIface *parser = NULL;
     parser = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (parser == NULL) {
         HDF_LOGE("%s: instance parser failed", __func__);
@@ -38,7 +39,7 @@ int32_t ParseKeyConfig(const struct DeviceResourceNode *node, KeyChipCfg *config
     }
 
     const struct DeviceResourceNode *keyNode = node;
-    int32_t ret = parser->GetString(keyNode, "keyName", &config->keyName, NULL);
+    ret = parser->GetString(keyNode, "keyName", &config->keyName, NULL);
     CHECK_PARSER_RET(ret, "GetString");
     ret = parser->GetUint8(keyNode, "inputType", &config->devType, 0);
     CHECK_PARSER_RET(ret, "GetUint8");
