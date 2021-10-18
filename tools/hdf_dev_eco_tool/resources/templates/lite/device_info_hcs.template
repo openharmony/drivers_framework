@@ -1,0 +1,15 @@
+${model_name} :: host{
+    hostName = "${model_name}_host";
+    priority = 100;
+    device_${model_name} :: device {
+        device0 :: deviceNode {
+            policy = 2;
+            priority= 100;
+            preload = 0;
+            permission = 0664;
+            moduleName = "${driver_name}_driver";
+            serviceName = "${driver_name}_service";
+            deviceMatchAttr = "";
+        }
+    }
+}
