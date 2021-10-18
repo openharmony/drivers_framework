@@ -13,9 +13,11 @@
 #include "hdf_io_service_if.h"
 #include "platform_errno.h"
 #else
+#include "devsvc_manager_clnt.h"
 #include "gpio/gpio_core.h"
 #endif
 
+#include "hdf_base.h"
 #include "hdf_log.h"
 
 #define HDF_LOG_TAG gpio_if
