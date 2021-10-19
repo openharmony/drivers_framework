@@ -6,12 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "osal_mem.h"
-#include "device_resource_if.h"
-#include "hdf_base.h"
-#include "hdf_device_desc.h"
-#include "hdf_log.h"
 #include "mipi_dsi_test.h"
+#include "hdf_log.h"
 
 #define HDF_LOG_TAG mipi_dsi_test
 

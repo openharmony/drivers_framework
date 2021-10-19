@@ -58,6 +58,7 @@ typedef enum {
     TEST_PAL_ADC_TYPE       = 20,
     TEST_PAL_WDT_TYPE       = 21,
     TEST_PAL_I3C_TYPE       = 22,
+    TEST_PAL_MIPI_CSI_TYPE  = 23,
     TEST_PAL_END            = 200,
     TEST_OSAL_BEGIN         = TEST_PAL_END,
 #define HDF_OSAL_TEST_ITEM(v) (TEST_OSAL_BEGIN + (v))
