@@ -9,6 +9,7 @@
 #ifndef HDMI_DFM_H
 #define HDMI_DFM_H
 
+#include "hdmi_common.h"
 #include "hdmi_if.h"
 
 #ifdef __cplusplus
