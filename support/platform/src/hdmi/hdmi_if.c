@@ -8,7 +8,6 @@
 
 #include "hdmi_if.h"
 #ifndef __USER__
-#include "devsvc_manager_clnt.h"
 #include "hdmi_core.h"
 #endif
 #include "hdf_base.h"

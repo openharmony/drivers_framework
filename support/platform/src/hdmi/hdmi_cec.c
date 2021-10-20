@@ -211,6 +211,7 @@ static bool HdmiCecCheckSomeSpecialfMsgLen(struct HdmiCecMsg *msg, uint8_t opcod
             break;
         case HDMI_CEC_OPCODE_RECORD_ON:
             ret = HdmiCecCheckRecordOnMsgLen(msg);
+            break;
         default:
             break;
     }
