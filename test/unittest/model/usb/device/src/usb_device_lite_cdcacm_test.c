@@ -335,31 +335,31 @@ static struct Serial *SerialAlloc(void)
     return port;
 }
 
-static void ParsePipes(struct AcmDevice *acmDevice, struct UsbFnInterface *fnIface, UsbFnInterfaceHandle handle)
+static void ParsePipes(struct AcmDevice *acmDevice, const struct UsbFnInterface *fnIface, UsbFnInterfaceHandle handle)
 {
     uint32_t j;
     int ret;
     struct UsbFnPipeInfo pipeInfo = {0};
     for (j = 0; j < fnIface->info.numPipes; j++) {
-        ret = UsbFnGetInterfacePipeInfo(fnIface, j, &pipeInfo);
+        ret = UsbFnGetInterfacePipeInfo((struct UsbFnInterface *)fnIface, j, &pipeInfo);
         if (ret != HDF_SUCCESS) {
             return;
         }
         if (pipeInfo.type == USB_PIPE_TYPE_INTERRUPT) {
             acmDevice->notifyPipe.id = pipeInfo.id;
             acmDevice->notifyPipe.maxPacketSize = pipeInfo.maxPacketSize;
-            acmDevice->ctrlIface.fn = fnIface;
+            acmDevice->ctrlIface.fn = (struct UsbFnInterface *)fnIface;
             acmDevice->ctrlIface.handle = handle;
         } else if (pipeInfo.type == USB_PIPE_TYPE_BULK) {
             if (pipeInfo.dir == USB_PIPE_DIRECTION_IN) {
                 acmDevice->dataInPipe.id = pipeInfo.id;
                 acmDevice->dataInPipe.maxPacketSize = pipeInfo.maxPacketSize;
-                acmDevice->dataIface.fn = fnIface;
+                acmDevice->dataIface.fn = (struct UsbFnInterface *)fnIface;
                 acmDevice->dataIface.handle = handle;
             } else {
                 acmDevice->dataOutPipe.id = pipeInfo.id;
                 acmDevice->dataOutPipe.maxPacketSize = pipeInfo.maxPacketSize;
-                acmDevice->dataIface.fn = fnIface;
+                acmDevice->dataIface.fn = (struct UsbFnInterface *)fnIface;
                 acmDevice->dataIface.handle = handle;
             }
         }
@@ -601,7 +601,7 @@ static struct UsbFnRequest *GetCtrlReq(struct AcmDevice *acm)
     return req;
 }
 
-static int Setup(struct AcmDevice *acm, struct UsbFnCtrlRequest *setup)
+static int Setup(struct AcmDevice *acm, const struct UsbFnCtrlRequest *setup)
 {
     struct UsbFnRequest *req = NULL;
     struct CtrlInfo *ctrlInfo = NULL;
