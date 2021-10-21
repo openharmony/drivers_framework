@@ -74,6 +74,5 @@ int32_t AudioDataBigEndianChange(char *srcData, uint32_t audioLen, enum DataBitW
             }
             break;
     }
-    AUDIO_DRIVER_LOG_DEBUG("audioLen = %d\n", audioLen);
     return HDF_SUCCESS;
 }

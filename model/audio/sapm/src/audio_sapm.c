@@ -675,7 +675,7 @@ int32_t AudioSapmNewMixerControls(struct AudioSapmComponent *sapmComponent, stru
     struct AudioSapmpath *path = NULL;
     int32_t i;
 
-    if (sapmComponent == NULL || audioCard == NULL) {
+    if (sapmComponent == NULL || sapmComponent->kcontrols == NULL || audioCard == NULL) {
         ADM_LOG_ERR("input params check error: sapmComponent=%p, audioCard=%p.", sapmComponent, audioCard);
         return HDF_FAILURE;
     }
@@ -720,6 +720,11 @@ int AudioSapmNewMuxControls(struct AudioSapmComponent *sapmComponent, struct Aud
     kctrl = AudioAddControl(audioCard, &sapmComponent->kcontrolNews[0]);
     if (kctrl == NULL) {
         ADM_LOG_ERR("add control fail!");
+        return HDF_FAILURE;
+    }
+
+    if (sapmComponent->kcontrols == NULL) {
+        ADM_LOG_ERR("sapmComponent->kcontrols is NULL!");
         return HDF_FAILURE;
     }
     sapmComponent->kcontrols[0] = kctrl;
@@ -1126,14 +1131,13 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
         ADM_LOG_ERR("Device read register is failure!");
         return HDF_FAILURE;
     }
-    if (MixerUpdatePowerStatus(kcontrol, pathStatus) != HDF_SUCCESS) {
-        ADM_LOG_ERR("update power status is failure!");
-        return HDF_FAILURE;
-    }
-
     curValue &= mixerCtrl->mask << mixerCtrl->shift;
     value = (value & mixerCtrl->mask) << mixerCtrl->shift;
-    if (curValue != value) {
+    if (curValue != value || g_audioSapmIsSleep == true) {
+        if (MixerUpdatePowerStatus(kcontrol, pathStatus) != HDF_SUCCESS) {
+            ADM_LOG_ERR("update power status is failure!");
+            return HDF_FAILURE;
+        }
         if (AudioUpdateCodecRegBits(codec, mixerCtrl, elemValue->value[0]) != HDF_SUCCESS) {
             ADM_LOG_ERR("update reg bits fail!");
             return HDF_FAILURE;
@@ -1166,7 +1170,7 @@ int32_t AudioAccessorySapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const
     }
     curValue &= mixerCtrl->mask << mixerCtrl->shift;
     value = (value & mixerCtrl->mask) << mixerCtrl->shift;
-    if (curValue != value) {
+    if (curValue != value || g_audioSapmIsSleep == true) {
         if (MixerUpdatePowerStatus(kcontrol, pathStatus) != HDF_SUCCESS) {
             ADM_LOG_ERR("update power status fail!");
             return HDF_FAILURE;

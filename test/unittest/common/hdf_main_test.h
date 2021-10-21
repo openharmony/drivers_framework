@@ -69,6 +69,7 @@ typedef enum {
     TEST_WIFI_END           = 600,
     TEST_CONFIG_TYPE        = 601,
     TEST_AUDIO_TYPE         = 701,
+    TEST_AUDIO_DRIVER_TYPE  = TEST_AUDIO_TYPE + 1,
     TEST_HDF_FRAME_END      = 800,
     TEST_USB_DEVICE_TYPE    = 900,
     TEST_USB_HOST_TYPE      = 1000,

@@ -397,7 +397,7 @@ static int32_t StreamTransferWrite(const struct AudioCard *audioCard, struct Aud
     return HDF_SUCCESS;
 }
 
-static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, struct AudioTxMmapData *txMmapData)
+static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, const struct AudioTxMmapData *txMmapData)
 {
     struct PlatformDevice *platform = NULL;
     int32_t ret = HDF_SUCCESS;
@@ -425,7 +425,7 @@ static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, struct
     return HDF_SUCCESS;
 }
 
-static int32_t StreamTransferMmapRead(const struct AudioCard *audioCard, struct AudioRxMmapData *rxMmapData)
+static int32_t StreamTransferMmapRead(const struct AudioCard *audioCard, const struct AudioRxMmapData *rxMmapData)
 {
     struct PlatformDevice *platform = NULL;
     int32_t ret = HDF_SUCCESS;
@@ -465,7 +465,7 @@ int32_t StreamHostWrite(const struct HdfDeviceIoClient *client, struct HdfSBuf *
         ADM_LOG_ERR("input param is NULL.");
         return HDF_FAILURE;
     }
-
+    (void)memset_s(&transfer, sizeof(struct AudioTxData), 0, sizeof(struct AudioTxData));
     if (!HdfSbufReadUint32(data, (uint32_t *)&(transfer.frames))) {
         ADM_LOG_ERR("read request frames failed!");
         return HDF_FAILURE;

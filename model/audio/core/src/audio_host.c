@@ -41,6 +41,7 @@ struct AudioCard *GetCardInstance(const char *serviceName)
             return audioCard;
         }
     }
+    ADM_LOG_ERR("serviceName is %s.", serviceName);
     return NULL;
 }
 
@@ -387,8 +388,12 @@ static int32_t AudioDriverInit(struct HdfDeviceObject *device)
     }
 
     /* Bind specific codec、platform and dai device */
-    AudioBindDaiLink(audioCard, &(audioCard->configData));
-    if (!audioCard->rtd->complete) {
+    ret = AudioBindDaiLink(audioCard, &(audioCard->configData));
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioBindDaiLink fail ret=%d", ret);
+        return HDF_FAILURE;
+    }
+    if (audioCard->rtd == NULL || (!audioCard->rtd->complete)) {
         ADM_LOG_ERR("AudioBindDaiLink fail!");
         return HDF_ERR_IO;
     }
