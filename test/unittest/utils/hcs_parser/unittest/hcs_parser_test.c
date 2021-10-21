@@ -7,11 +7,7 @@
  */
 
 #include "hcs_parser_test.h"
-#include "device_resource_if.h"
 #include "hcs_config_test.h"
-#include "hdf_base.h"
-#include "hdf_log.h"
-#include "osal_mem.h"
 
 // add test case entry
 HdfTestCaseList g_hdfConfigTestCaseList[] = {
