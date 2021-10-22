@@ -142,11 +142,12 @@ int32_t HdfWlanPowerMgrRelease(struct PowerManager* powerMgr)
  */
 struct PowerManager* HdfWlanCreatePowerManager(const struct HdfConfWlanPowers *configPowers)
 {
+	struct PowerManagerImpl *powerMgrimpl = NULL;
     if (configPowers == NULL) {
         HDF_LOGE("%s: configPowers is NULL", __func__);
         return NULL;
     }
-    struct PowerManagerImpl *powerMgrimpl = NULL;
+    
     powerMgrimpl = (struct PowerManagerImpl *)OsalMemCalloc(sizeof(struct PowerManagerImpl));
     if (powerMgrimpl == NULL) {
         HDF_LOGE("%s: OsalMemCalloc fail! ", __func__);

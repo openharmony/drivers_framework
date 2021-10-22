@@ -27,6 +27,7 @@ int32_t MessageQueueTest001(void)
     int c = 3;
     int d = 4;
     int32_t errCode;
+	void *p = NULL;
     PriorityQueue *queue = CreatePriorityQueue(TEST_QUEUE_SIZE, NO_PRIORITY);
     if (queue == NULL) {
         HDF_LOGE("%s:Create queue failed!", __func__);
@@ -45,7 +46,7 @@ int32_t MessageQueueTest001(void)
         errCode = PushPriorityQueue(queue, 0, &d);
         MSG_BREAK_IF_NOT_SUCCESS(errCode);
 
-        void *p = PopPriorityQueue(queue, 0);
+        p = PopPriorityQueue(queue, 0);
         MSG_BREAK_IF(errCode, p == NULL);
         MSG_BREAK_IF(errCode, p != &a);
 
@@ -75,7 +76,9 @@ int32_t MessageQueueTest002(void)
     int c = 3;
     int d = 4;
     int32_t errCode;
-    PriorityQueue *queue = CreatePriorityQueue(TEST_QUEUE_SIZE, MUTI_PRIORITY);
+	void *p = NULL;
+    PriorityQueue *queue = NULL;
+    queue = CreatePriorityQueue(TEST_QUEUE_SIZE, MUTI_PRIORITY);
     if (queue == NULL) {
         HDF_LOGE("%s:Create queue failed!", __func__);
         return -1;
@@ -93,7 +96,7 @@ int32_t MessageQueueTest002(void)
         errCode = PushPriorityQueue(queue, 0, &d);
         MSG_BREAK_IF_NOT_SUCCESS(errCode);
 
-        void *p = PopPriorityQueue(queue, 0);
+        p = PopPriorityQueue(queue, 0);
         MSG_BREAK_IF(errCode, p == NULL);
         MSG_BREAK_IF(errCode, p != &a);
 
@@ -130,7 +133,9 @@ static int RunPushQueue(void *para)
 int32_t MessageQueueTest003(void)
 {
     int32_t errCode = HDF_SUCCESS;
-    PriorityQueue *queue = CreatePriorityQueue(TEST_QUEUE_SIZE, NO_PRIORITY);
+	void *p = NULL;
+    PriorityQueue *queue = NULL;
+	queue = CreatePriorityQueue(TEST_QUEUE_SIZE, NO_PRIORITY);
     if (queue == NULL) {
         HDF_LOGE("%s:Create queue failed!", __func__);
         return -1;
@@ -157,7 +162,7 @@ int32_t MessageQueueTest003(void)
             break;
         }
 
-        void *p = PopPriorityQueue(queue, POP_TIMEOUT);
+        p = PopPriorityQueue(queue, POP_TIMEOUT);
         MSG_BREAK_IF(errCode, p == NULL);
         MSG_BREAK_IF(errCode, p != &g_testValue);
     } while (false);

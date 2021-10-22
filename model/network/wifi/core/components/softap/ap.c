@@ -49,17 +49,19 @@ static uint32_t ChangeBeacon(struct NetDevice *netDev, WifiApSetting *apSettings
 
 static int32_t StartAp(struct NetDevice *netDev, WifiApSetting *apSettings)
 {
-    HDF_LOGE("%s:starting ap...", __func__);
     struct WlanAPConf apConf = { 0 };
     int32_t ret;
-    struct HdfChipDriver *chipDriver = GetChipDriver(netDev);
+	struct HdfChipDriver *chipDriver = NULL;
+    errno_t err;
+	HDF_LOGE("%s:starting ap...", __func__);
+	chipDriver = GetChipDriver(netDev);
     if (chipDriver == NULL) {
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
 
     apConf.band = IEEE80211_BAND_2GHZ;
-    errno_t err = memcpy_s(apConf.ssidConf.ssid, IEEE80211_MAX_SSID_LEN, apSettings->ssid, apSettings->ssidLen);
+    err = memcpy_s(apConf.ssidConf.ssid, IEEE80211_MAX_SSID_LEN, apSettings->ssid, apSettings->ssidLen);
     if (err != EOK) {
         HDF_LOGE("%s: memcpy_s failed!ret=%d", __func__, err);
         return HDF_FAILURE;

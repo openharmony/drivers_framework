@@ -376,7 +376,7 @@ static int32_t WifiCmdSetScanningMacAddress(const RequestContext *context, struc
     const char *ifName = NULL;
     unsigned char *mac = NULL;
     uint32_t replayDataSize;
-
+	struct HdfChipDriver *chipDriver = NULL;
     (void)context;
     if (reqData == NULL || rspData == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -397,7 +397,7 @@ static int32_t WifiCmdSetScanningMacAddress(const RequestContext *context, struc
         return HDF_FAILURE;
     }
 
-    struct HdfChipDriver *chipDriver = GetChipDriver(netdev);
+    chipDriver = GetChipDriver(netdev);
     if (chipDriver == NULL) {
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;

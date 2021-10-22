@@ -171,6 +171,7 @@ static void DestroyTask(struct FlowControlModule *fcm, FlowDir dir)
 
 int32_t CreateFlowControlTask(struct FlowControlModule *fcm)
 {
+	int32_t ret;
     struct OsalThreadParam config = {
         .priority = OSAL_THREAD_PRI_HIGHEST,
         .stackSize = 0,
@@ -180,8 +181,7 @@ int32_t CreateFlowControlTask(struct FlowControlModule *fcm)
         HDF_LOGE("%s fail: fcm = null!", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-
-    int32_t ret = CreateTask(&fcm->txTransferThread, RX_THREAD_NAME, RunWiFiTxFlowControl, &config, fcm);
+	ret = CreateTask(&fcm->txTransferThread, RX_THREAD_NAME, RunWiFiTxFlowControl, &config, fcm);
     if (ret == HDF_FAILURE) {
         fcm->threadStatus[FLOW_TX] = THREAD_INIT_FAIL;
         return HDF_FAILURE;

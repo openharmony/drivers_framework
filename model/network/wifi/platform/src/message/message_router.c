@@ -70,6 +70,7 @@ static void ReleaseRemoteService(RemoteService *service)
 
 static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bool requireLock)
 {
+	MessageDispatcher *result = NULL;
     if (dispatcherId >= MESSAGE_ENGINE_MAX_DISPATCHER) {
         HDF_LOGE("%s:Input ID is too big.input=%u", __func__, dispatcherId);
         return NULL;
@@ -82,7 +83,7 @@ static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bo
             return NULL;
         }
     }
-    MessageDispatcher *result = NULL;
+    
     do {
         if (g_dispatchers[dispatcherId] == NULL) {
             break;
@@ -105,17 +106,19 @@ static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bo
 
 static ErrorCode RegDispatcher(DispatcherId dispatcherId, MessageDispatcher *dispatcher)
 {
+	HDF_STATUS status;
+    ErrorCode errCode;
     if (dispatcherId >= MESSAGE_ENGINE_MAX_DISPATCHER) {
         HDF_LOGE("%s:dispatcher id is too big!id=%u", __func__, dispatcherId);
         return ME_ERROR_PARA_WRONG;
     }
 
-    HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
-    ErrorCode errCode = ME_SUCCESS;
+    errCode = ME_SUCCESS;
     do {
         if (g_routerStatus != ME_STATUS_RUNNING) {
             errCode = ME_ERROR_WRONG_STATUS;
@@ -138,11 +141,12 @@ static ErrorCode RegDispatcher(DispatcherId dispatcherId, MessageDispatcher *dis
 
 ErrorCode AddDispatcher(DispatcherConfig *config)
 {
+	ErrorCode errCode;
+    MessageDispatcher *dispatcher = NULL;
     if (config == NULL) {
         return ME_ERROR_NULL_PTR;
     }
-    MessageDispatcher *dispatcher = NULL;
-    ErrorCode errCode = CreateLocalDispatcher(&dispatcher, config);
+	errCode = CreateLocalDispatcher(&dispatcher, config);
     if (errCode != ME_SUCCESS) {
         return errCode;
     }
@@ -190,12 +194,13 @@ static void NotifyAllNodesServiceDel(const NodeId nodeId, ServiceId serviceId)
 static ErrorCode NotifyAllNodesServiceAdd(const NodeId nodeId, struct ServiceDef *mapper)
 {
     uint8_t i;
+	uint8_t notifyNodeIndex;
+    ErrorCode errCode;
     if (mapper == NULL) {
         return ME_ERROR_NULL_PTR;
     }
 
-    ErrorCode errCode = ME_SUCCESS;
-    uint8_t notifyNodeIndex;
+    errCode = ME_SUCCESS;
     for (notifyNodeIndex = 0; notifyNodeIndex < MAX_NODE_COUNT; notifyNodeIndex++) {
         if (notifyNodeIndex == nodeId) {
             continue;
@@ -258,6 +263,11 @@ static ErrorCode DoRegistService(const NodeId nodeId, const DispatcherId dispatc
 }
 static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId dispatcherId, struct ServiceDef *mapper)
 {
+	 HDF_STATUS status;
+    MessageNode *node = NULL;
+    RemoteService *remoteService = NULL;
+    MessageDispatcher *dispatcher = NULL;
+    ErrorCode errCode;
     if (mapper == NULL) {
         return ME_ERROR_NULL_PTR;
     }
@@ -266,23 +276,19 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
         HDF_LOGE("%s:serviceId exceed max value! ServiceId=%u", __func__, mapper->serviceId);
         return ME_ERROR_PARA_WRONG;
     }
-    HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
 
-    MessageNode *node = RefMessageNode(nodeId, false);
+    node = RefMessageNode(nodeId, false);
     if (node == NULL) {
         HDF_LOGE("%s:Node not found!", __func__);
         OsalMutexUnlock(&g_routerMutex);
         return ME_ERROR_NO_SUCH_NODE;
     }
-    RemoteService *remoteService = NULL;
-    MessageDispatcher *dispatcher = NULL;
-
-    ErrorCode errCode;
-    do {
+	do {
         if (node->CreateRemoteService == NULL) {
             HDF_LOGE("%s:Can not reg service to node %d", __func__, nodeId);
             errCode = ME_ERROR_NOT_SUPPORTED;
@@ -337,6 +343,8 @@ ErrorCode RegistLocalService(const DispatcherId dispatcherId, struct ServiceDef 
 
 ErrorCode RegistRemoteService(NodeId nodeId, RemoteService *service)
 {
+	HDF_STATUS status;
+    ErrorCode errCode;
     if (service == NULL) {
         return ME_ERROR_NULL_PTR;
     }
@@ -348,13 +356,13 @@ ErrorCode RegistRemoteService(NodeId nodeId, RemoteService *service)
         HDF_LOGE("%s:NodeId exceed max value! NodeId=%d", __func__, nodeId);
         return ME_ERROR_PARA_WRONG;
     }
-    HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
 
-    ErrorCode errCode = DoRegistService(nodeId, BAD_DISPATCHER_ID, service);
+    errCode = DoRegistService(nodeId, BAD_DISPATCHER_ID, service);
     if (errCode != ME_SUCCESS) {
         HDF_LOGE("%s:RegService failed! errCode=%d", __func__, errCode);
     }
@@ -367,16 +375,19 @@ ErrorCode RegistRemoteService(NodeId nodeId, RemoteService *service)
 }
 static ErrorCode UnregistServiceInner(const NodeId nodeId, const DispatcherId dispatcherId, const ServiceId serviceId)
 {
+	RemoteService *service = NULL;
+    HDF_STATUS status;
+    ErrorCode errCode;
     if (serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
         return ME_ERROR_PARA_WRONG;
     }
 
-    HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
-    ErrorCode errCode = ME_SUCCESS;
+    errCode = ME_SUCCESS;
     do {
         if (g_servicesIndex[serviceId].nodeIndex != nodeId || g_servicesIndex[serviceId].dispatcherId != dispatcherId) {
             errCode = ME_ERROR_NO_SUCH_SERVICE;
@@ -386,7 +397,7 @@ static ErrorCode UnregistServiceInner(const NodeId nodeId, const DispatcherId di
             errCode = ME_ERROR_NO_SUCH_SERVICE;
             break;
         }
-        RemoteService *service = g_servicesIndex[serviceId].remoteService;
+        service = g_servicesIndex[serviceId].remoteService;
         ReleaseRemoteService(service);
         g_servicesIndex[serviceId].remoteService = NULL;
         g_servicesIndex[serviceId].nodeIndex = NO_SUCH_NODE_INDEX;
@@ -438,6 +449,9 @@ static bool CheckServiceID(ServiceId serviceId, bool allowSync)
 
 RemoteService *RefRemoteService(ServiceId serviceId)
 {
+	HDF_STATUS status;
+    RemoteService *remoteService = NULL;
+    RemoteService *service = NULL;
     if (serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
         return NULL;
     }
@@ -445,16 +459,14 @@ RemoteService *RefRemoteService(ServiceId serviceId)
     if (!CheckServiceID(serviceId, true)) {
         return NULL;
     }
-
-    RemoteService *service = NULL;
-    HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
         return NULL;
     }
 
     do {
-        RemoteService *remoteService = g_servicesIndex[serviceId].remoteService;
+        remoteService = g_servicesIndex[serviceId].remoteService;
         if (remoteService != NULL && remoteService->Ref != NULL) {
             service = remoteService->Ref(remoteService);
         }
@@ -469,11 +481,12 @@ RemoteService *RefRemoteService(ServiceId serviceId)
 
 ErrorCode SendMessage(MessageContext *context)
 {
-    RemoteService *service = RefRemoteService(context->receiverId);
+	RemoteService *service = NULL;
+	ErrorCode errCode;
+    service = RefRemoteService(context->receiverId);
     if (service == NULL) {
         return ME_ERROR_NO_SUCH_SERVICE;
     }
-    ErrorCode errCode;
     do {
         if (service->SendMessage == NULL) {
             errCode = ME_ERROR_NOT_SUPPORTED;
@@ -552,6 +565,7 @@ static void ReleaseNodes(void)
 static ErrorCode DoStartMessageRouter(uint8_t nodesConfig)
 {
     uint8_t i;
+	ErrorCode errCode;
     if (g_routerStatus != ME_STATUS_STOPPED) {
         HDF_LOGE("Router have already started!");
         return ME_ERROR_MUTI_INIT_NOT_ALLOWED;
@@ -562,8 +576,6 @@ static ErrorCode DoStartMessageRouter(uint8_t nodesConfig)
         g_servicesIndex[i].nodeIndex = NO_SUCH_NODE_INDEX;
         g_servicesIndex[i].dispatcherId = BAD_DISPATCHER_ID;
     }
-
-    ErrorCode errCode;
     do {
         HDF_LOGE("%s:Create local node ...", __func__);
         errCode = CreateLocalNode(&g_messageNodes[LOCAL_NODE_INDEX]);
@@ -595,13 +607,14 @@ static ErrorCode DoStartMessageRouter(uint8_t nodesConfig)
 
 ErrorCode EnableDefaultDispatcher(void)
 {
+	ErrorCode errCode;
     DispatcherConfig config = {
         .dispatcherId = DEFAULT_DISPATCHER_ID,
         .queueSize = DEFAULT_DISPATCHER_QUEUE_SIZE,
         .priorityLevelCount = DEFAULT_DISPATCHER_PRIORITY_COUNT
     };
     HDF_LOGI("Register default dispatcher...");
-    ErrorCode errCode = AddDispatcher(&config);
+    errCode = AddDispatcher(&config);
     if (errCode != ME_SUCCESS) {
         HDF_LOGE("Register default dispatcher failed!ret=%d", errCode);
     }
@@ -610,18 +623,20 @@ ErrorCode EnableDefaultDispatcher(void)
 
 ErrorCode StartMessageRouter(uint8_t nodesConfig)
 {
+	HDF_STATUS status;
+    ErrorCode errCode;
     if (g_routerMutex.realMutex == NULL) {
         HDF_STATUS status = OsalMutexInit(&g_routerMutex);
         if (status != HDF_SUCCESS) {
             return ME_ERROR_OPER_MUTEX_FAILED;
         }
     }
-    HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
-    ErrorCode errCode = DoStartMessageRouter(nodesConfig);
+    errCode = DoStartMessageRouter(nodesConfig);
     status = OsalMutexUnlock(&g_routerMutex);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
@@ -632,6 +647,7 @@ ErrorCode StartMessageRouter(uint8_t nodesConfig)
 static ErrorCode DoShutdownMessageRouter(void)
 {
     uint8_t i;
+	RemoteService *service = NULL;
     if (g_routerStatus == ME_STATUS_STOPPED) {
         return ME_SUCCESS;
     }
@@ -641,7 +657,7 @@ static ErrorCode DoShutdownMessageRouter(void)
         if (g_servicesIndex[i].remoteService == NULL) {
             continue;
         }
-        RemoteService *service = g_servicesIndex[i].remoteService;
+        service = g_servicesIndex[i].remoteService;
         g_servicesIndex[i].remoteService = NULL;
         g_servicesIndex[i].nodeIndex = NO_SUCH_NODE_INDEX;
         g_servicesIndex[i].dispatcherId = BAD_DISPATCHER_ID;
@@ -667,14 +683,14 @@ static ErrorCode DoShutdownMessageRouter(void)
 ErrorCode ShutdownMessageRouter()
 {
     HDF_LOGW("%s:Shutdown router...", __func__);
-    HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+	HDF_STATUS status;
+    ErrorCode errCode;
+    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
-
-    ErrorCode errCode = DoShutdownMessageRouter();
-
+    errCode = DoShutdownMessageRouter();
     status = OsalMutexUnlock(&g_routerMutex);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);
@@ -687,13 +703,14 @@ ErrorCode ShutdownMessageRouter()
 
 MessageNode *RefMessageNode(const NodeId nodeId, bool isRequireLock)
 {
+	MessageNode *node = NULL;
+    HDF_STATUS status;
     if (nodeId >= MAX_NODE_COUNT) {
         HDF_LOGE("Input nodeId >= MAX_NODE_COUNT");
         return NULL;
     }
-    MessageNode *node = NULL;
     if (isRequireLock) {
-        HDF_STATUS status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
+        status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
         if (status != HDF_SUCCESS) {
             HDF_LOGE("%s:require lock failed!", __func__);
             return NULL;
@@ -705,7 +722,7 @@ MessageNode *RefMessageNode(const NodeId nodeId, bool isRequireLock)
     }
 
     if (isRequireLock) {
-        HDF_STATUS status = OsalMutexUnlock(&g_routerMutex);
+        status = OsalMutexUnlock(&g_routerMutex);
         if (status != HDF_SUCCESS) {
             HDF_LOGE("%s:Unlock mutex failed!", __func__);
         }

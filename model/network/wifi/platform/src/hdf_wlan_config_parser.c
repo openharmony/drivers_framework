@@ -250,6 +250,8 @@ static int32_t ParseWlanPowerConfig(const struct DeviceResourceNode *node,
 static int32_t ParseWlanPowersConfig(const struct DeviceResourceNode *node, struct HdfConfWlanPowers *powersConfig)
 {
     struct DeviceResourceIface *drsOps = NULL;
+	const struct DeviceResourceNode *fstPowerNode = NULL;
+    const struct DeviceResourceNode *secPowerNode = NULL;
     if (node == NULL || powersConfig == NULL) {
         HDF_LOGE("%s: at least one of the paras is NULL!", __func__);
         return HDF_FAILURE;
@@ -259,8 +261,7 @@ static int32_t ParseWlanPowersConfig(const struct DeviceResourceNode *node, stru
         HDF_LOGE("%s: at least one of the paras is NULL!", __func__);
         return HDF_FAILURE;
     }
-
-    const struct DeviceResourceNode *fstPowerNode = drsOps->GetChildNode(node, "power0");
+	fstPowerNode = drsOps->GetChildNode(node, "power0");
     if (fstPowerNode == NULL) {
         HDF_LOGE("%s: get power0 config fail!", __func__);
         return HDF_FAILURE;
@@ -269,7 +270,7 @@ static int32_t ParseWlanPowersConfig(const struct DeviceResourceNode *node, stru
         return HDF_FAILURE;
     }
 
-    const struct DeviceResourceNode *secPowerNode = drsOps->GetChildNode(node, "power1");
+    secPowerNode = drsOps->GetChildNode(node, "power1");
     if (secPowerNode == NULL) {
         HDF_LOGE("%s: get power1 config fail!", __func__);
         return HDF_FAILURE;

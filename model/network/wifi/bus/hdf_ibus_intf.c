@@ -19,10 +19,11 @@ extern "C" {
 
 struct BusDev *HdfWlanCreateBusManager(const struct HdfConfigWlanBus *busConfig)
 {
+	struct BusDev *bus = NULL;
     if (busConfig == NULL) {
         return NULL;
     }
-    struct BusDev *bus = (struct BusDev *)OsalMemCalloc(sizeof(struct BusDev));
+    bus = (struct BusDev *)OsalMemCalloc(sizeof(struct BusDev));
     if (bus == NULL) {
         return NULL;
     }
