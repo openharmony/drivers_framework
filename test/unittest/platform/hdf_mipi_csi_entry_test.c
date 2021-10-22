@@ -18,13 +18,14 @@ int32_t HdfMipiCsiEntry(HdfTestMsg *msg)
     struct MipiCsiTest *test = NULL;
 
     if (msg == NULL) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s: msg is NULL!", __func__);
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     test = MipiCsiTestServiceGet();
     if (test == NULL) {
-        HDF_LOGE("%s: get service fail!", __func__);
-        return HDF_FAILURE;
+        HDF_LOGE("%s: test is NULL!", __func__);
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     HDF_LOGI("%s: call [doTest]", __func__);

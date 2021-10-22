@@ -24,7 +24,7 @@ int32_t MipiCsiRegisterCntlr(struct MipiCsiCntlr *cntlr, struct HdfDeviceObject 
     HDF_LOGI("%s: enter!", __func__);
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_ERR_INVALID_PARAM;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->devNo >= MAX_CNTLR_CNT) {
         HDF_LOGE("%s: cntlr->devNo is error.", __func__);
@@ -32,7 +32,7 @@ int32_t MipiCsiRegisterCntlr(struct MipiCsiCntlr *cntlr, struct HdfDeviceObject 
     }
     if (device == NULL) {
         HDF_LOGE("%s: device is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     if (g_mipiCsihandle[cntlr->devNo].cntlr == NULL) {
@@ -119,11 +119,11 @@ int32_t MipiCsiCntlrSetComboDevAttr(struct MipiCsiCntlr *cntlr, ComboDevAttr *pA
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (pAttr == NULL) {
         HDF_LOGE("%s: pAttr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->setComboDevAttr == NULL) {
         HDF_LOGE("%s: setComboDevAttr is NULL.", __func__);
@@ -131,7 +131,7 @@ int32_t MipiCsiCntlrSetComboDevAttr(struct MipiCsiCntlr *cntlr, ComboDevAttr *pA
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->setComboDevAttr(cntlr, pAttr);
+    ret = cntlr->ops->setComboDevAttr(cntlr, pAttr);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -150,7 +150,7 @@ int32_t MipiCsiCntlrSetPhyCmvmode(struct MipiCsiCntlr *cntlr, uint8_t devno, Phy
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->setPhyCmvmode == NULL) {
         HDF_LOGE("%s: setPhyCmvmode is NULL.", __func__);
@@ -158,7 +158,7 @@ int32_t MipiCsiCntlrSetPhyCmvmode(struct MipiCsiCntlr *cntlr, uint8_t devno, Phy
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->setPhyCmvmode(cntlr, devno, cmvMode);
+    ret = cntlr->ops->setPhyCmvmode(cntlr, devno, cmvMode);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -177,7 +177,7 @@ int32_t MipiCsiCntlrSetExtDataType(struct MipiCsiCntlr *cntlr, ExtDataType* data
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (dataType == NULL) {
         HDF_LOGE("%s: dataType is NULL.", __func__);
@@ -189,7 +189,7 @@ int32_t MipiCsiCntlrSetExtDataType(struct MipiCsiCntlr *cntlr, ExtDataType* data
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->setExtDataType(cntlr, dataType);
+    ret = cntlr->ops->setExtDataType(cntlr, dataType);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -208,7 +208,7 @@ int32_t MipiCsiCntlrSetHsMode(struct MipiCsiCntlr *cntlr, LaneDivideMode laneDiv
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->setHsMode == NULL) {
         HDF_LOGE("%s: setHsMode is NULL.", __func__);
@@ -216,7 +216,7 @@ int32_t MipiCsiCntlrSetHsMode(struct MipiCsiCntlr *cntlr, LaneDivideMode laneDiv
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->setHsMode(cntlr, laneDivideMode);
+    ret = cntlr->ops->setHsMode(cntlr, laneDivideMode);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -235,7 +235,7 @@ int32_t MipiCsiCntlrEnableClock(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->enableClock == NULL) {
         HDF_LOGE("%s: enableClock is NULL.", __func__);
@@ -243,7 +243,7 @@ int32_t MipiCsiCntlrEnableClock(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->enableClock(cntlr, comboDev);
+    ret = cntlr->ops->enableClock(cntlr, comboDev);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -262,7 +262,7 @@ int32_t MipiCsiCntlrDisableClock(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->disableClock == NULL) {
         HDF_LOGE("%s: disableClock is NULL.", __func__);
@@ -270,7 +270,7 @@ int32_t MipiCsiCntlrDisableClock(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->disableClock(cntlr, comboDev);
+    ret = cntlr->ops->disableClock(cntlr, comboDev);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -289,7 +289,7 @@ int32_t MipiCsiCntlrResetRx(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->resetRx == NULL) {
         HDF_LOGE("%s: resetRx is NULL.", __func__);
@@ -297,7 +297,7 @@ int32_t MipiCsiCntlrResetRx(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->resetRx(cntlr, comboDev);
+    ret = cntlr->ops->resetRx(cntlr, comboDev);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -316,7 +316,7 @@ int32_t MipiCsiCntlrUnresetRx(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->unresetRx == NULL) {
         HDF_LOGE("%s: unresetRx is NULL.", __func__);
@@ -324,7 +324,7 @@ int32_t MipiCsiCntlrUnresetRx(struct MipiCsiCntlr *cntlr, uint8_t comboDev)
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->unresetRx(cntlr, comboDev);
+    ret = cntlr->ops->unresetRx(cntlr, comboDev);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -343,7 +343,7 @@ int32_t MipiCsiCntlrEnableSensorClock(struct MipiCsiCntlr *cntlr, uint8_t snsClk
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->enableSensorClock == NULL) {
         HDF_LOGE("%s: enableSensorClock is NULL.", __func__);
@@ -351,7 +351,7 @@ int32_t MipiCsiCntlrEnableSensorClock(struct MipiCsiCntlr *cntlr, uint8_t snsClk
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->enableSensorClock(cntlr, snsClkSource);
+    ret = cntlr->ops->enableSensorClock(cntlr, snsClkSource);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -370,7 +370,7 @@ int32_t MipiCsiCntlrDisableSensorClock(struct MipiCsiCntlr *cntlr, uint8_t snsCl
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->disableSensorClock == NULL) {
         HDF_LOGE("%s: disableSensorClock is NULL.", __func__);
@@ -378,7 +378,7 @@ int32_t MipiCsiCntlrDisableSensorClock(struct MipiCsiCntlr *cntlr, uint8_t snsCl
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->disableSensorClock(cntlr, snsClkSource);
+    ret = cntlr->ops->disableSensorClock(cntlr, snsClkSource);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -397,7 +397,7 @@ int32_t MipiCsiCntlrResetSensor(struct MipiCsiCntlr *cntlr, uint8_t snsResetSour
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->resetSensor == NULL) {
         HDF_LOGE("%s: resetSensor is NULL.", __func__);
@@ -405,7 +405,7 @@ int32_t MipiCsiCntlrResetSensor(struct MipiCsiCntlr *cntlr, uint8_t snsResetSour
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->resetSensor(cntlr, snsResetSource);
+    ret = cntlr->ops->resetSensor(cntlr, snsResetSource);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -424,7 +424,7 @@ int32_t MipiCsiCntlrUnresetSensor(struct MipiCsiCntlr *cntlr, uint8_t snsResetSo
 
     if ((cntlr == NULL) || (cntlr->ops == NULL)) {
         HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->unresetSensor == NULL) {
         HDF_LOGE("%s: unresetSensor is NULL.", __func__);
@@ -432,7 +432,7 @@ int32_t MipiCsiCntlrUnresetSensor(struct MipiCsiCntlr *cntlr, uint8_t snsResetSo
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
-    ret =  cntlr->ops->unresetSensor(cntlr, snsResetSource);
+    ret = cntlr->ops->unresetSensor(cntlr, snsResetSource);
     (void)OsalMutexUnlock(&(cntlr->lock));
 
     if (ret == HDF_SUCCESS) {
@@ -448,7 +448,7 @@ int32_t MipiCsiDebugGetMipiDevCtx(struct MipiCsiCntlr *cntlr, MipiDevCtx *ctx)
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -460,7 +460,7 @@ int32_t MipiCsiDebugGetMipiDevCtx(struct MipiCsiCntlr *cntlr, MipiDevCtx *ctx)
     }
     if (ctx == NULL) {
         HDF_LOGE("%s: ctx is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -475,7 +475,7 @@ int32_t MipiCsiDebugGetPhyErrIntCnt(struct MipiCsiCntlr *cntlr, unsigned int phy
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -487,7 +487,7 @@ int32_t MipiCsiDebugGetPhyErrIntCnt(struct MipiCsiCntlr *cntlr, unsigned int phy
     }
     if (errInfo == NULL) {
         HDF_LOGE("%s: errInfo is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -502,7 +502,7 @@ int32_t MipiCsiDebugGetMipiErrInt(struct MipiCsiCntlr *cntlr, unsigned int phyId
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -514,7 +514,7 @@ int32_t MipiCsiDebugGetMipiErrInt(struct MipiCsiCntlr *cntlr, unsigned int phyId
     }
     if (errInfo == NULL) {
         HDF_LOGE("%s: errInfo is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -529,7 +529,7 @@ int32_t MipiCsiDebugGetLvdsErrIntCnt(struct MipiCsiCntlr *cntlr, unsigned int ph
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -541,7 +541,7 @@ int32_t MipiCsiDebugGetLvdsErrIntCnt(struct MipiCsiCntlr *cntlr, unsigned int ph
     }
     if (errInfo == NULL) {
         HDF_LOGE("%s: errInfo is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -556,7 +556,7 @@ int32_t MipiCsiDebugGetAlignErrIntCnt(struct MipiCsiCntlr *cntlr, unsigned int p
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -568,7 +568,7 @@ int32_t MipiCsiDebugGetAlignErrIntCnt(struct MipiCsiCntlr *cntlr, unsigned int p
     }
     if (errInfo == NULL) {
         HDF_LOGE("%s: errInfo is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -583,7 +583,7 @@ int32_t MipiCsiDebugGetPhyData(struct MipiCsiCntlr *cntlr, int phyId, int laneId
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -595,7 +595,7 @@ int32_t MipiCsiDebugGetPhyData(struct MipiCsiCntlr *cntlr, int phyId, int laneId
     }
     if (laneData == NULL) {
         HDF_LOGE("%s: laneData is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -610,7 +610,7 @@ int32_t MipiCsiDebugGetPhyMipiLinkData(struct MipiCsiCntlr *cntlr, int phyId, in
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -622,7 +622,7 @@ int32_t MipiCsiDebugGetPhyMipiLinkData(struct MipiCsiCntlr *cntlr, int phyId, in
     }
     if (laneData == NULL) {
         HDF_LOGE("%s: laneData is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -637,7 +637,7 @@ int32_t MipiCsiDebugGetPhyLvdsLinkData(struct MipiCsiCntlr *cntlr, int phyId, in
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -649,7 +649,7 @@ int32_t MipiCsiDebugGetPhyLvdsLinkData(struct MipiCsiCntlr *cntlr, int phyId, in
     }
     if (laneData == NULL) {
         HDF_LOGE("%s: laneData is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -664,7 +664,7 @@ int32_t MipiCsiDebugGetMipiImgsizeStatis(struct MipiCsiCntlr *cntlr, uint8_t dev
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -676,7 +676,7 @@ int32_t MipiCsiDebugGetMipiImgsizeStatis(struct MipiCsiCntlr *cntlr, uint8_t dev
     }
     if (pSize == NULL) {
         HDF_LOGE("%s: pSize is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -691,7 +691,7 @@ int32_t MipiCsiDebugGetLvdsImgsizeStatis(struct MipiCsiCntlr *cntlr, uint8_t dev
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -703,7 +703,7 @@ int32_t MipiCsiDebugGetLvdsImgsizeStatis(struct MipiCsiCntlr *cntlr, uint8_t dev
     }
     if (pSize == NULL) {
         HDF_LOGE("%s: pSize is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
@@ -718,7 +718,7 @@ int32_t MipiCsiDebugGetLvdsLaneImgsizeStatis(struct MipiCsiCntlr *cntlr, uint8_t
 {
     if (cntlr == NULL) {
         HDF_LOGE("%s: cntlr is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->debugs == NULL) {
         HDF_LOGE("%s: debugs is NULL.", __func__);
@@ -730,7 +730,7 @@ int32_t MipiCsiDebugGetLvdsLaneImgsizeStatis(struct MipiCsiCntlr *cntlr, uint8_t
     }
     if (pSize == NULL) {
         HDF_LOGE("%s: pSize is NULL.", __func__);
-        return HDF_FAILURE;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     (void)OsalMutexLock(&(cntlr->lock));
