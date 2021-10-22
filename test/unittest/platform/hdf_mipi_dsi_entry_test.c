@@ -14,19 +14,23 @@
 
 int32_t HdfMipiDsiEntry(HdfTestMsg *msg)
 {
+    int32_t ret;
     struct MipiDsiTest *test = NULL;
 
     if (msg == NULL) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s: msg is NULL!", __func__);
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     test = MipiDsiTestServiceGet();
     if (test == NULL) {
-        HDF_LOGE("%s: get service fail!", __func__);
-        return HDF_FAILURE;
+        HDF_LOGE("%s: test is NULL!", __func__);
+        return HDF_ERR_INVALID_OBJECT;
     }
 
-    msg->result = test->doTest(test, msg->subCmd);
+    HDF_LOGI("%s: call [doTest]", __func__);
+    ret = test->doTest(test, msg->subCmd);
+    msg->result = (int8_t)ret;
 
     return HDF_SUCCESS;
 }

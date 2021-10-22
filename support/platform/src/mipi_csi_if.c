@@ -5,7 +5,7 @@
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
- 
+
 #include "mipi_csi_if.h"
 #include "mipi_csi_core.h"
 
