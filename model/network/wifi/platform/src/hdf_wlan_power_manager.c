@@ -147,7 +147,6 @@ struct PowerManager* HdfWlanCreatePowerManager(const struct HdfConfWlanPowers *c
         HDF_LOGE("%s: configPowers is NULL", __func__);
         return NULL;
     }
-    
     powerMgrimpl = (struct PowerManagerImpl *)OsalMemCalloc(sizeof(struct PowerManagerImpl));
     if (powerMgrimpl == NULL) {
         HDF_LOGE("%s: OsalMemCalloc fail! ", __func__);
@@ -158,6 +157,5 @@ struct PowerManager* HdfWlanCreatePowerManager(const struct HdfConfWlanPowers *c
     powerMgrimpl->base.Release = HdfWlanPowerMgrRelease;
     powerMgrimpl->powerDatas.power0 = configPowers->power0;
     powerMgrimpl->powerDatas.power1 = configPowers->power1;
-
     return (struct PowerManager *)powerMgrimpl;
 }

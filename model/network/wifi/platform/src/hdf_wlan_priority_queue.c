@@ -52,7 +52,6 @@ PriorityQueue *CreatePriorityQueue(uint16_t queueSize, uint8_t priorityLevelCoun
         DestroyPriorityQueue((PriorityQueue *)priorityQueue);
         return NULL;
     }
-
     status = OsalSemInit(&priorityQueue->messageSemaphore, 0);
     if (status != HDF_SUCCESS) {
         DestroyPriorityQueue((PriorityQueue *)priorityQueue);

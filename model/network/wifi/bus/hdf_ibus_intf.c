@@ -27,7 +27,6 @@ struct BusDev *HdfWlanCreateBusManager(const struct HdfConfigWlanBus *busConfig)
     if (bus == NULL) {
         return NULL;
     }
-
     switch (busConfig->busType) {
         case BUS_SDIO:
             if (HdfSdioBusInit(bus, busConfig) != HDF_SUCCESS) {

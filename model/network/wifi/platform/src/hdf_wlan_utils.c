@@ -241,24 +241,20 @@ char *HdfWlanGetIfNames(const uint8_t chipId, uint8_t *ifNameCount)
             (*ifNameCount)++;
         }
     }
-
     if (*ifNameCount == 0) {
         // Never alloc 0 size
         bufferSize = sizeof(char);
     } else {
         bufferSize = IFNAMSIZ * (uint32_t)(*ifNameCount);
     }
-
     ifNames = (char *)OsalMemCalloc(bufferSize);
     if (ifNames == NULL) {
         HDF_LOGE("%s: oom!", __func__);
         return NULL;
     }
-
     if (*ifNameCount == 0) {
         return ifNames;
     }
-
     for (i = 0, j = 0; i < MAX_IF_COUNT; i++) {
         if (((netIfMapTemp >> i) & 0x1) == 0) {
             continue;

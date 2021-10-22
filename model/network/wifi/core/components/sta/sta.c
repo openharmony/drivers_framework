@@ -60,7 +60,6 @@ inline static int32_t AbortScan(struct NetDevice *netDev)
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
-
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->staOps, AbortScan);
     return chipDriver->staOps->AbortScan(netDev);
 }
@@ -68,24 +67,20 @@ inline static int32_t AbortScan(struct NetDevice *netDev)
 static int WifiFillScanParam(struct WlanScanRequest *params, struct HdfSBuf *reqData)
 {
     uint32_t dataSize = 0;
-
     if (!HdfSbufReadBuffer(reqData, (const void **)&params->bssid, &dataSize)) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "apSettings");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadBuffer(reqData, (const void **)&params->ssids, &dataSize)) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ssids");
         return HDF_FAILURE;
     }
     params->ssidCount = dataSize / sizeof(params->ssids[0]);
-
     if (!HdfSbufReadBuffer(reqData, (const void **)&params->extraIEs, &dataSize)) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "extraIes");
         return HDF_FAILURE;
     }
     params->extraIEsLen = dataSize;
-
     if (!HdfSbufReadBuffer(reqData, (const void **)&params->freqs, &dataSize)) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "freqs");
         return HDF_FAILURE;
@@ -99,17 +94,14 @@ static int WifiFillScanParam(struct WlanScanRequest *params, struct HdfSBuf *req
 static uint8_t WifiValidIeAttr(const uint8_t *ie, uint32_t len)
 {
     uint8_t elemLen;
-
     if (ie == NULL) { // ie null is normal
         return true;
     }
-
     while (len != 0) {
         if (len < 2) {
             return false;
         }
         len -= 2;
-
         elemLen = ie[1];
         if (elemLen > len) {
             return false;
@@ -117,19 +109,16 @@ static uint8_t WifiValidIeAttr(const uint8_t *ie, uint32_t len)
         len -= elemLen;
         ie += 2 + elemLen;
     }
-
     return true;
 }
 
 static int WifiFillAssocParams(WifiAssociateParams *assoc, struct HdfSBuf *reqData)
 {
     uint32_t dataSize = 0;
-
     if (!HdfSbufReadBuffer(reqData, (const void **)&assoc->bssid, &dataSize) || dataSize != ETH_ADDR_LEN) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "bssid");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadBuffer(reqData, (const void **)&assoc->ssid, &(assoc->ssidLen))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ssid");
         return HDF_FAILURE;
@@ -170,7 +159,6 @@ static int WifiFillAssocParams(WifiAssociateParams *assoc, struct HdfSBuf *reqDa
         HDF_LOGE("%s:void ssid", __func__);
         return HDF_FAILURE;
     }
-
     if (WifiValidIeAttr(assoc->ie, assoc->ieLen) == false) {
         HDF_LOGE("%s:illegal ie", __func__);
         return HDF_FAILURE;
@@ -185,27 +173,23 @@ static int WifiSetAssocParams(const WifiAssociateParams *assoc, const struct Net
     params->ssidLen = assoc->ssidLen;
     params->ie = assoc->ie;
     params->ieLen = assoc->ieLen;
-
     if ((assoc->authType > WIFI_AUTHTYPE_AUTOMATIC) || (assoc->authType == WIFI_AUTHTYPE_SAE)) {
         HDF_LOGE("%s:illegal authType %u", __func__, assoc->authType);
         return HDF_FAILURE;
     }
     params->authType = assoc->authType;
-
     params->bssid = assoc->bssid;
     params->privacy = assoc->privacy;
     if ((assoc->mfp != WIFI_MFP_REQUIRED) && (assoc->mfp != WIFI_MFP_NO) && (assoc->mfp != WIFI_MFP_OPTIONAL)) {
         HDF_LOGE("%s:unexpected mfp.mfp=%u", __func__, assoc->mfp);
         return HDF_FAILURE;
     }
-
     params->mfp = (WifiMfp)assoc->mfp;
     if (assoc->key != NULL) {
         params->key = assoc->key;
         params->keyLen = assoc->keyLen;
         params->keyIdx = assoc->keyIdx;
     }
-
     if (memcpy_s(&params->crypto, sizeof(WifiCryptoSetting), assoc->crypto, sizeof(WifiCryptoSetting)) != EOK) {
         HDF_LOGE("%s:copy crypto failed!", __func__);
         return HDF_FAILURE;
@@ -221,7 +205,6 @@ static int32_t WifiCmdAssoc(const RequestContext *context, struct HdfSBuf *reqDa
     struct WlanHwCapability *capability = NULL;
     const char *ifName = NULL;
     int32_t ret;
-
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -236,7 +219,6 @@ static int32_t WifiCmdAssoc(const RequestContext *context, struct HdfSBuf *reqDa
     if (WifiFillAssocParams(&assoc, reqData) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-
     if ((netdev = NetDeviceGetInstByName(ifName)) == NULL) {
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
@@ -244,7 +226,6 @@ static int32_t WifiCmdAssoc(const RequestContext *context, struct HdfSBuf *reqDa
     if (WifiSetAssocParams(&assoc, netdev, &params) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-
     capability = GetHwCapability(netdev);
     if (capability == NULL) {
         HDF_LOGE("%s:GetHwCapability failed!", __func__);
@@ -259,12 +240,10 @@ static int32_t WifiCmdAssoc(const RequestContext *context, struct HdfSBuf *reqDa
             break;
         }
     } while (false);
-
     if (capability->Release != NULL) {
         capability->Release(capability);
         capability = NULL;
     }
-
     return ret;
 }
 
@@ -274,7 +253,6 @@ static int32_t WifiCmdDisconnect(const RequestContext *context, struct HdfSBuf *
     uint16_t reasonCode;
     const char *ifName = NULL;
     int ret;
-
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -286,7 +264,6 @@ static int32_t WifiCmdDisconnect(const RequestContext *context, struct HdfSBuf *
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint16(reqData, &reasonCode)) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "reasonCode");
         return HDF_FAILURE;
@@ -296,7 +273,6 @@ static int32_t WifiCmdDisconnect(const RequestContext *context, struct HdfSBuf *
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-
     HDF_LOGW("%s:%s disconnecting from AP...", __func__, ifName);
     ret = Disconnect(netdev, reasonCode);
     if (ret != HDF_SUCCESS) {
@@ -311,7 +287,6 @@ static int32_t WifiCmdScan(const RequestContext *context, struct HdfSBuf *reqDat
     const char *ifName = NULL;
     struct WlanScanRequest params = { 0 };
     int32_t ret;
-
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -332,7 +307,6 @@ static int32_t WifiCmdScan(const RequestContext *context, struct HdfSBuf *reqDat
     if (ret != HDF_SUCCESS) {
         return ret;
     }
-
     ret = ScanAll(netdev, &params);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:ScanAll failed!ret=%d", __func__, ret);
@@ -345,10 +319,8 @@ static int32_t WifiCmdAbortScan(const RequestContext *context, struct HdfSBuf *r
     struct NetDevice *netdev = NULL;
     int32_t ret;
     const char *ifName = HdfSbufReadString(reqData);
-
     (void)context;
     (void)rspData;
-
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
         return HDF_FAILURE;
@@ -362,7 +334,6 @@ static int32_t WifiCmdAbortScan(const RequestContext *context, struct HdfSBuf *r
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:AbortScan failed!ret=%d", __func__, ret);
     }
-
     // keep return SUCCESS if AbortScan return FAILED
     return HDF_SUCCESS;
 }
@@ -396,14 +367,12 @@ static int32_t WifiCmdSetScanningMacAddress(const RequestContext *context, struc
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "mac");
         return HDF_FAILURE;
     }
-
     chipDriver = GetChipDriver(netdev);
     if (chipDriver == NULL) {
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->staOps, SetScanningMacAddress);
-
     ret = chipDriver->staOps->SetScanningMacAddress(netdev, mac, IEEE80211_MAC_ADDR_LEN);
     if (ret != HDF_SUCCESS && ret != HDF_ERR_NOT_SUPPORT) {
         HDF_LOGE("%s: fail to do set scanning mac addr!ret=%d", __func__, ret);
