@@ -9,8 +9,8 @@
 #ifndef OHOS_HDI_MODULE_PARSER_H
 #define OHOS_HDI_MODULE_PARSER_H
 
-#include <set>
 #include <memory>
+#include <set>
 #include "ast/ast_module.h"
 #include "parser/file_detail.h"
 #include "util/options.h"
