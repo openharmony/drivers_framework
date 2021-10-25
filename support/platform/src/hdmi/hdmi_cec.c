@@ -147,10 +147,10 @@ static struct HdmiCecMsgLenInfo *HdmiCecGetMsgLenInfo(uint8_t opcode)
 
 static bool HdmiCecCheckTimerStatusMsgLen(struct HdmiCecMsg *msg)
 {
-    uint8_t info = (msg->data[2] & 0xf);  /* Progremmed Info or Not Progremmed Error Info. */
+    uint8_t info = (msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0xf);  /* Progremmed Info or Not Progremmed Error Info. */
 
     /* Progremmed Indicator Check. */
-    if ((msg->data[2] & 0x10) > 0) {
+    if ((msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0x10) > 0) {
         if ((info == HDMI_CEC_PROGRAMMED_INFO_NOT_ENOUGH_SPAC ||
             info == HDMI_CEC_PROGRAMMED_INFO_MIGHT_NOT_BE_ENOUGH_SPACE) &&
             msg->len < HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TIMER_STATUS_DATA_MAX_LEN)) {
@@ -168,7 +168,7 @@ static bool HdmiCecCheckTimerStatusMsgLen(struct HdmiCecMsg *msg)
 
 static bool HdmiCecCheckRecordOnMsgLen(struct HdmiCecMsg *msg)
 {
-    switch (msg->data[2]) {
+    switch (msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]) {
         case HDMI_CEC_RECORD_SRC_OWN:
             break;
         case HDMI_CEC_RECORD_SRC_DIGITAL:
@@ -254,37 +254,37 @@ static bool HdmiCecCheckMsgLen(struct HdmiCec *cec, struct HdmiCecMsg *msg, uint
 void HdmiCecEncodingActiveSourceMsg(struct HdmiCecMsg *msg, uint16_t phyAddr)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_ACTIVE_SOURCE_MSG_PARAM_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_ACTIVE_SOURCE;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_ACTIVE_SOURCE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
 }
 
 void HdmiCecEncodingImageViewOnMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_IMAGE_VIEW_ON;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_IMAGE_VIEW_ON;
 }
 
 void HdmiCecEncodingTextViewOnMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_TEXT_VIEW_ON;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TEXT_VIEW_ON;
 }
 
 void HdmiCecEncodingInactiveSourceMsg(struct HdmiCecMsg *msg, uint16_t phyAddr)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_INACTIVE_SOURCE_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_INACTIVE_SOURCE;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_INACTIVE_SOURCE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
 }
 
 void HdmiCecEncodingRequestActiveSourceMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_REQUEST_ACTIVE_SOURCE;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REQUEST_ACTIVE_SOURCE;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_ACTIVE_SOURCE;
     }
@@ -293,12 +293,12 @@ void HdmiCecEncodingRequestActiveSourceMsg(struct HdmiCecMsg *msg, bool response
 void HdmiCecEncodingRoutingChangeMsg(struct HdmiCecMsg *msg, uint16_t orgAddr, uint16_t newAddr, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_ROUTING_CHANGE_MSG_PARAM_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_ROUTING_CHANGE;
-    msg->data[2] = (orgAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (orgAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = (newAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[5] = (newAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_ROUTING_CHANGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (orgAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (orgAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (newAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (newAddr & HDMI_ONE_BYTE_MARK);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_ROUTING_INFORMATION;
     }
@@ -307,31 +307,31 @@ void HdmiCecEncodingRoutingChangeMsg(struct HdmiCecMsg *msg, uint16_t orgAddr, u
 void HdmiCecEncodingRoutingInfomationMsg(struct HdmiCecMsg *msg, uint16_t phyAddr)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_ROUTING_INFORMATIO_MSG_PARAM_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_ROUTING_INFORMATION;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_ROUTING_INFORMATION;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
 }
 
 void HdmiCecEncodingSetStreamPathMsg(struct HdmiCecMsg *msg, uint16_t phyAddr)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SET_STREAM_PATH_MSG_PARAM_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_SET_STREAM_PATH;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_STREAM_PATH;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
 }
 
 void HdmiCecEncodingStandbyMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_STANDBY;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_STANDBY;
 }
 
 void HdmiCecEncodingRecordOffMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_OFF;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_OFF;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_RECORD_STATUS;
     }
@@ -340,8 +340,8 @@ void HdmiCecEncodingRecordOffMsg(struct HdmiCecMsg *msg, bool response)
 static void HdmiCecEncodingRecordOnOwn(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_RECORD_SOURCE_TYPE_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_ON;
-    msg->data[2] = HDMI_CEC_RECORD_SRC_OWN;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_ON;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = HDMI_CEC_RECORD_SRC_OWN;
 }
 
 static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct HdmiCecDigitalServiceId *digital)
@@ -350,13 +350,13 @@ static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct H
         return;
     }
 
-    data[0] = (digital->method << HDMI_CEC_DIGITAL_SERVICE_ID_METHOD_SHIFT) | (digital->system);
+    data[DATA_ZEROTH_OFFSET_ELEMENT] = (digital->method << HDMI_CEC_DIGITAL_SERVICE_ID_METHOD_SHIFT) | (digital->system);
     if (digital->method == HDMI_CEC_SERVICE_ID_METHOD_BY_CHANNEL) {
-        data[1] = (digital->systemData.channel.format << HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
+        data[DATA_FIRST_OFFSET_ELEMENT] = (digital->systemData.channel.format << HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
              (digital->systemData.channel.major >> HDMI_ONE_BYTE_SHIFT);
-        data[2] = digital->systemData.channel.major & HDMI_ONE_BYTE_MARK;
-        data[3] = digital->systemData.channel.minor >> HDMI_ONE_BYTE_SHIFT;
-        data[4] = digital->systemData.channel.minor & HDMI_ONE_BYTE_MARK;
+        data[DATA_SECOND_OFFSET_ELEMENT] = digital->systemData.channel.major & HDMI_ONE_BYTE_MARK;
+        data[DATA_THIRD_OFFSET_ELEMENT] = digital->systemData.channel.minor >> HDMI_ONE_BYTE_SHIFT;
+        data[DATA_FORTH_OFFSET_ELEMENT] = digital->systemData.channel.minor & HDMI_ONE_BYTE_MARK;
         return;
     }
     switch (digital->system) {
@@ -364,33 +364,33 @@ static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct H
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_BS:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_CS:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ARIB_T:
-            data[1] = digital->systemData.arib.transportId >> HDMI_ONE_BYTE_SHIFT;
-            data[2] = digital->systemData.arib.transportId & HDMI_ONE_BYTE_MARK;
-            data[3] = digital->systemData.arib.serviceId >> HDMI_ONE_BYTE_SHIFT;
-            data[4] = digital->systemData.arib.serviceId & HDMI_ONE_BYTE_MARK;
-            data[5] = digital->systemData.arib.orgNetworkId >> HDMI_ONE_BYTE_SHIFT;
-            data[6] = digital->systemData.arib.orgNetworkId & HDMI_ONE_BYTE_MARK;
+            data[DATA_FIRST_OFFSET_ELEMENT] = digital->systemData.arib.transportId >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_SECOND_OFFSET_ELEMENT] = digital->systemData.arib.transportId & HDMI_ONE_BYTE_MARK;
+            data[DATA_THIRD_OFFSET_ELEMENT] = digital->systemData.arib.serviceId >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_FORTH_OFFSET_ELEMENT] = digital->systemData.arib.serviceId & HDMI_ONE_BYTE_MARK;
+            data[DATA_FIFTH_OFFSET_ELEMENT] = digital->systemData.arib.orgNetworkId >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_SIXTH_OFFSET_ELEMENT] = digital->systemData.arib.orgNetworkId & HDMI_ONE_BYTE_MARK;
             break;
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_GEN:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_CABLE:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_SATELLITE:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_ATSC_TERRESTRIAL:
-            data[1] = digital->systemData.atsc.transportId >> HDMI_ONE_BYTE_SHIFT;
-            data[2] = digital->systemData.atsc.transportId & HDMI_ONE_BYTE_MARK;
-            data[3] = digital->systemData.atsc.programNumber >> HDMI_ONE_BYTE_SHIFT;
-            data[4] = digital->systemData.atsc.programNumber & HDMI_ONE_BYTE_MARK;
+            data[DATA_FIRST_OFFSET_ELEMENT] = digital->systemData.atsc.transportId >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_SECOND_OFFSET_ELEMENT] = digital->systemData.atsc.transportId & HDMI_ONE_BYTE_MARK;
+            data[DATA_THIRD_OFFSET_ELEMENT] = digital->systemData.atsc.programNumber >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_FORTH_OFFSET_ELEMENT] = digital->systemData.atsc.programNumber & HDMI_ONE_BYTE_MARK;
             break;
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_GEN:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_C:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_S:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_S2:
         case HDMI_CEC_DIG_SERVICE_BCAST_SYSTEM_DVB_T:
-            data[1] = digital->systemData.dvb.transportId >> HDMI_ONE_BYTE_SHIFT;
-            data[2] = digital->systemData.dvb.transportId & HDMI_ONE_BYTE_MARK;
-            data[3] = digital->systemData.dvb.serviceId >> HDMI_ONE_BYTE_SHIFT;
-            data[4] = digital->systemData.dvb.serviceId & HDMI_ONE_BYTE_MARK;
-            data[5] = digital->systemData.dvb.orgNetworkId >> HDMI_ONE_BYTE_SHIFT;
-            data[6] = digital->systemData.dvb.orgNetworkId & HDMI_ONE_BYTE_MARK;
+            data[DATA_FIRST_OFFSET_ELEMENT] = digital->systemData.dvb.transportId >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_SECOND_OFFSET_ELEMENT] = digital->systemData.dvb.transportId & HDMI_ONE_BYTE_MARK;
+            data[DATA_THIRD_OFFSET_ELEMENT] = digital->systemData.dvb.serviceId >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_FORTH_OFFSET_ELEMENT] = digital->systemData.dvb.serviceId & HDMI_ONE_BYTE_MARK;
+            data[DATA_FIFTH_OFFSET_ELEMENT] = digital->systemData.dvb.orgNetworkId >> HDMI_ONE_BYTE_SHIFT;
+            data[DATA_SIXTH_OFFSET_ELEMENT] = digital->systemData.dvb.orgNetworkId & HDMI_ONE_BYTE_MARK;
             break;
         default:
             HDF_LOGE("digital system 0x%x is invalid", digital->system);
@@ -400,38 +400,38 @@ static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct H
 static void HdmiCecEncodingRecordOnDigital(struct HdmiCecMsg *msg, struct HdmiCecDigitalServiceId *digital)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_RECORD_ON_DIGITAL_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_ON;
-    msg->data[2] = HDMI_CEC_RECORD_SRC_DIGITAL;
-    HdmiCecEncodingDigitalServiceId(&(msg->data[3]), HDMI_CEC_DIGITAL_SERVICE_ID_LEN, digital);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_ON;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = HDMI_CEC_RECORD_SRC_DIGITAL;
+    HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]), HDMI_CEC_DIGITAL_SERVICE_ID_LEN, digital);
 }
 
 static void HdmiCecEncodingRecordOnAnalog(struct HdmiCecMsg *msg,
     uint8_t anaBcastType, uint16_t anaFreq, uint8_t bcstSystem)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_RECORD_ON_ANALOG_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_ON;
-    msg->data[2] = HDMI_CEC_RECORD_SRC_ANALOG;
-    msg->data[3] = anaBcastType;
-    msg->data[4] = (anaFreq >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[5] = (anaFreq & HDMI_ONE_BYTE_MARK);
-    msg->data[6] = bcstSystem;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_ON;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = HDMI_CEC_RECORD_SRC_ANALOG;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = anaBcastType;
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (anaFreq >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (anaFreq & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = bcstSystem;
 }
 
 static void HdmiCecEncodingRecordOnExtPlug(struct HdmiCecMsg *msg, uint8_t extPlug)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_RECORD_ON_EXT_PLUG_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_ON;
-    msg->data[2] = HDMI_CEC_RECORD_SRC_EXT_PLUG;
-    msg->data[3] = extPlug;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_ON;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = HDMI_CEC_RECORD_SRC_EXT_PLUG;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = extPlug;
 }
 
 static void HdmiCecEncodingRecordOnExtPhyAddr(struct HdmiCecMsg *msg, uint16_t extPhyAddr)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_RECORD_ON_EXT_PHY_ADDR_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_ON;
-    msg->data[2] = HDMI_CEC_RECORD_SRC_EXT_PHY_ADDR;
-    msg->data[3] = (extPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[4] = (extPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_ON;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = HDMI_CEC_RECORD_SRC_EXT_PHY_ADDR;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (extPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (extPhyAddr & HDMI_ONE_BYTE_MARK);
 }
 
 void HdmiCecEncodingRecordOnMsg(struct HdmiCecMsg *msg, struct HdmiCecRecordSource *src, bool response)
@@ -465,14 +465,14 @@ void HdmiCecEncodingRecordOnMsg(struct HdmiCecMsg *msg, struct HdmiCecRecordSour
 void HdmiCecEncodingRecordStatusMsg(struct HdmiCecMsg *msg, uint8_t recordStatusInfo)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_RECORD_STATUS_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_STATUS;
-    msg->data[2] = recordStatusInfo;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = recordStatusInfo;
 }
 
 void HdmiCecEncodingRecordTvScreenMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_RECORD_TV_SCREEN;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_TV_SCREEN;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_RECORD_ON;
     }
@@ -483,13 +483,13 @@ static void HdmiCecEncodingCommTimerInfo(uint8_t *data, uint8_t len, struct Hdmi
     if (len < HDMI_CEC_COMM_TIMER_INFO_LEN) {
         return;
     }
-    data[0] = info->data;
-    data[1] = info->month;
-    data[2] = HDMI_CEC_BCD_FORMAT_TIME(info->startHour);
-    data[3] = HDMI_CEC_BCD_FORMAT_TIME(info->startMinute);
-    data[4] = HDMI_CEC_BCD_FORMAT_TIME(info->durationHour);
-    data[5] = HDMI_CEC_BCD_FORMAT_TIME(info->durationMinute);
-    data[6] = info->recordingSeq;
+    data[DATA_ZEROTH_OFFSET_ELEMENT] = info->data;
+    data[DATA_FIRST_OFFSET_ELEMENT] = info->month;
+    data[DATA_SECOND_OFFSET_ELEMENT] = HDMI_CEC_BCD_FORMAT_TIME(info->startHour);
+    data[DATA_THIRD_OFFSET_ELEMENT] = HDMI_CEC_BCD_FORMAT_TIME(info->startMinute);
+    data[DATA_FORTH_OFFSET_ELEMENT] = HDMI_CEC_BCD_FORMAT_TIME(info->durationHour);
+    data[DATA_FIFTH_OFFSET_ELEMENT] = HDMI_CEC_BCD_FORMAT_TIME(info->durationMinute);
+    data[DATA_SIXTH_OFFSET_ELEMENT] = info->recordingSeq;
 }
 
 static void HdmiCecEncodingAnalogueTimerInfo(uint8_t *data, uint8_t len, struct HdmiCecAnalogueTimerInfo *info)
@@ -498,17 +498,17 @@ static void HdmiCecEncodingAnalogueTimerInfo(uint8_t *data, uint8_t len, struct 
         return;
     }
     HdmiCecEncodingCommTimerInfo(data, HDMI_CEC_COMM_TIMER_INFO_LEN, &(info->commInfo));
-    data[7] = info->anaBcastType;
-    data[8] = (info->anaFreq >> HDMI_ONE_BYTE_SHIFT);
-    data[9] = (info->anaFreq & HDMI_ONE_BYTE_MARK);
-    data[10] = info->bcstSystem;
+    data[DATA_SEVENTH_OFFSET_ELEMENT] = info->anaBcastType;
+    data[DATA_EIGHTH_OFFSET_ELEMENT] = (info->anaFreq >> HDMI_ONE_BYTE_SHIFT);
+    data[DATA_NINTH_OFFSET_ELEMENT] = (info->anaFreq & HDMI_ONE_BYTE_MARK);
+    data[DATA_TENTH_OFFSET_ELEMENT] = info->bcstSystem;
 }
 
 void HdmiCecEncodingClearAnalogueTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecAnalogueTimerInfo *info, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_ANALOGUE_TIMER_INFO_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_CLEAR_ANALOGUE_TIMER;
-    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[2]), HDMI_CEC_ANALOGUE_TIMER_INFO_LEN, info);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CLEAR_ANALOGUE_TIMER;
+    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_ANALOGUE_TIMER_INFO_LEN, info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
     }
@@ -520,14 +520,14 @@ static void HdmiCecEncodingDigitalTimerInfo(uint8_t *data, uint8_t len, struct H
         return;
     }
     HdmiCecEncodingCommTimerInfo(data, HDMI_CEC_COMM_TIMER_INFO_LEN, &(info->commInfo));
-    HdmiCecEncodingDigitalServiceId(&data[7], len - HDMI_CEC_COMM_TIMER_INFO_LEN, &(info->id));
+    HdmiCecEncodingDigitalServiceId(&data[DATA_SEVENTH_OFFSET_ELEMENT], len - HDMI_CEC_COMM_TIMER_INFO_LEN, &(info->id));
 }
 
 void HdmiCecEncodingClearDigitalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecDigitalTimerInfo *info, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_DIGITAL_TIMER_INFO_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_CLEAR_DIGITAL_TIMER;
-    HdmiCecEncodingDigitalTimerInfo(&(msg->data[2]), HDMI_CEC_DIGITAL_TIMER_INFO_LEN, info);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CLEAR_DIGITAL_TIMER;
+    HdmiCecEncodingDigitalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_DIGITAL_TIMER_INFO_LEN, info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
     }
@@ -539,17 +539,17 @@ static void HdmiCecEncodingExternalTimerInfo(uint8_t *data, uint8_t len, struct 
         return;
     }
     HdmiCecEncodingCommTimerInfo(data, HDMI_CEC_COMM_TIMER_INFO_LEN, &(info->commInfo));
-    data[7] = info->extSrcSpec;
-    data[8] = info->extPlug;
-    data[9] = (info->extPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    data[10] = (info->extPhyAddr & HDMI_ONE_BYTE_MARK);
+    data[DATA_SEVENTH_OFFSET_ELEMENT] = info->extSrcSpec;
+    data[DATA_EIGHTH_OFFSET_ELEMENT] = info->extPlug;
+    data[DATA_NINTH_OFFSET_ELEMENT] = (info->extPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    data[DATA_TENTH_OFFSET_ELEMENT] = (info->extPhyAddr & HDMI_ONE_BYTE_MARK);
 }
 
 void HdmiCecEncodingClearExternalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecExternalTimerInfo *info, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_EXTERNAL_TIMER_INFO_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_CLEAR_EXTERNAL_TIMER;
-    HdmiCecEncodingExternalTimerInfo(&(msg->data[2]), HDMI_CEC_EXTERNAL_TIMER_INFO_LEN, info);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CLEAR_EXTERNAL_TIMER;
+    HdmiCecEncodingExternalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_EXTERNAL_TIMER_INFO_LEN, info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
     }
@@ -558,8 +558,8 @@ void HdmiCecEncodingClearExternalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCec
 void HdmiCecEncodingSetAnalogueTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecAnalogueTimerInfo *info, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_ANALOGUE_TIMER_INFO_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_ANALOGUE_TIMER;
-    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[2]), HDMI_CEC_ANALOGUE_TIMER_INFO_LEN, info);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_ANALOGUE_TIMER;
+    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_ANALOGUE_TIMER_INFO_LEN, info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_STATUS;
     }
@@ -568,8 +568,8 @@ void HdmiCecEncodingSetAnalogueTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecAn
 void HdmiCecEncodingSetDigitalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecDigitalTimerInfo *info, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_DIGITAL_TIMER_INFO_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_DIGITAL_TIMER;
-    HdmiCecEncodingDigitalTimerInfo(&(msg->data[2]), HDMI_CEC_DIGITAL_TIMER_INFO_LEN, info);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_DIGITAL_TIMER;
+    HdmiCecEncodingDigitalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_DIGITAL_TIMER_INFO_LEN, info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_STATUS;
     }
@@ -578,8 +578,8 @@ void HdmiCecEncodingSetDigitalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecDig
 void HdmiCecEncodingSetExternalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecExternalTimerInfo *info, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_EXTERNAL_TIMER_INFO_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_EXTERNAL_TIMER;
-    HdmiCecEncodingExternalTimerInfo(&(msg->data[2]), HDMI_CEC_EXTERNAL_TIMER_INFO_LEN, info);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_EXTERNAL_TIMER;
+    HdmiCecEncodingExternalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_EXTERNAL_TIMER_INFO_LEN, info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_STATUS;
     }
@@ -595,8 +595,8 @@ void HdmiCecEncodingSetTimerProgramTitleMsg(struct HdmiCecMsg *msg, uint8_t *tit
     }
     length = ((len <= HDMI_CEC_PROGRAM_TITLE_STR_MAX_LEN) ? len : HDMI_CEC_PROGRAM_TITLE_STR_MAX_LEN);
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_TIMER_PROGRAM_TITLE;
-    if (memcpy_s(&(msg->data[2]), (msg->len - 2), title, length) != EOK) {
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_TIMER_PROGRAM_TITLE;
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), title, length) != EOK) {
         HDF_LOGE("encoding set timer program title, memcpy_s fail.");
     }
 }
@@ -604,8 +604,8 @@ void HdmiCecEncodingSetTimerProgramTitleMsg(struct HdmiCecMsg *msg, uint8_t *tit
 void HdmiCecEncodingTimerClearedStatusMsg(struct HdmiCecMsg *msg, uint8_t status)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TIMER_CLEARED_STATUS_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
-    msg->data[2] = status;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = status;
 }
 
 void HdmiCecEncodingTimerStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecTimerStatusData *status)
@@ -613,11 +613,11 @@ void HdmiCecEncodingTimerStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecTimerSt
     bool duration = false;
 
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TIMER_STATUS_DATA_MIN_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_TIMER_STATUS;
-    msg->data[2] |= (status->timerOverlap << 7);
-    msg->data[2] |= (status->mediaInfo << 5);
-    msg->data[2] |= (status->progInfo.indicator << 4);
-    msg->data[2] |= (status->progInfo.info);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TIMER_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->timerOverlap << 7);
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->mediaInfo << 5);
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->progInfo.indicator << 4);
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->progInfo.info);
     if (status->progInfo.indicator > 0) {
         /* Progremmed Info */
         if (status->progInfo.info == HDMI_CEC_PROGRAMMED_INFO_NOT_ENOUGH_SPAC ||
@@ -632,22 +632,22 @@ void HdmiCecEncodingTimerStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecTimerSt
     }
     if (duration == true) {
         msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TIMER_STATUS_DATA_MAX_LEN);
-        msg->data[3] = HDMI_CEC_BCD_FORMAT_TIME(status->progInfo.durationHour);
-        msg->data[4] = HDMI_CEC_BCD_FORMAT_TIME(status->progInfo.durationMinute);
+        msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = HDMI_CEC_BCD_FORMAT_TIME(status->progInfo.durationHour);
+        msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CEC_BCD_FORMAT_TIME(status->progInfo.durationMinute);
     }
 }
 
 void HdmiCecEncodingCecVersionMsg(struct HdmiCecMsg *msg, uint8_t version)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_CEC_VERSION_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_CEC_VERSION;
-    msg->data[2] = version;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CEC_VERSION;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = version;
 }
 
 void HdmiCecEncodingGetCecVersionMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GET_CEC_VERSION;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GET_CEC_VERSION;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_CEC_VERSION;
     }
@@ -656,7 +656,7 @@ void HdmiCecEncodingGetCecVersionMsg(struct HdmiCecMsg *msg, bool response)
 void HdmiCecEncodingGetPhyAddressMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_PHYSICAL_ADDRESS;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_PHYSICAL_ADDRESS;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_REPORT_PHYSICAL_ADDRESS;
     }
@@ -665,7 +665,7 @@ void HdmiCecEncodingGetPhyAddressMsg(struct HdmiCecMsg *msg, bool response)
 void HdmiCecEncodingGetMenuLanguageMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GET_MENU_LANGUAGE;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GET_MENU_LANGUAGE;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_SET_MENU_LANGUAGE;
     }
@@ -674,11 +674,11 @@ void HdmiCecEncodingGetMenuLanguageMsg(struct HdmiCecMsg *msg, bool response)
 void HdmiCecEncodingReportPhyAddressMsg(struct HdmiCecMsg *msg, uint16_t phyAddr, uint8_t deviceType)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_REPORT_PHYSICAL_ADDRESS_MSG_PARAM_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_PHYSICAL_ADDRESS;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = deviceType;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_PHYSICAL_ADDRESS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = deviceType;
 }
 
 void HdmiCecEncodingSetMenuLanguageMsg(struct HdmiCecMsg *msg, uint8_t *language, uint32_t len)
@@ -689,9 +689,9 @@ void HdmiCecEncodingSetMenuLanguageMsg(struct HdmiCecMsg *msg, uint8_t *language
     }
 
     msg->len = HDMI_CEC_GET_MSG_LEN(len);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_SET_MENU_LANGUAGE;
-    if (memcpy_s(&(msg->data[2]), (msg->len - 2), language, len) != EOK) {
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_MENU_LANGUAGE;
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), language, len) != EOK) {
         HDF_LOGE("encoding set menu language, memcpy_s fail.");
     }
 }
@@ -701,11 +701,11 @@ void HdmiCecEncodingReportFeaturesMsg(struct HdmiCecMsg *msg, struct HdmiCecInfo
     uint32_t i;
 
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_FEATURES;
-    msg->data[2] = info->cecVersion;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_FEATURES;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = info->cecVersion;
     msg->len++;
-    msg->data[3] = info->allDeviceType;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = info->allDeviceType;
     msg->len++;
     /* fill RC Profile. */
     for (i = 0; i < HDMI_CEC_RC_PROFILE_MAX_NUM; i++) {
@@ -728,7 +728,7 @@ void HdmiCecEncodingReportFeaturesMsg(struct HdmiCecMsg *msg, struct HdmiCecInfo
 void HdmiCecEncodingGiveFeaturesMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_FEATURES;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_FEATURES;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_SET_MENU_LANGUAGE;
     }
@@ -738,22 +738,22 @@ void HdmiCecEncodingGiveFeaturesMsg(struct HdmiCecMsg *msg, bool response)
 void HdmiCecEncodingDeckControlMsg(struct HdmiCecMsg *msg, uint8_t mode)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_DECK_CONTROL_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_DECK_CONTROL;
-    msg->data[2] = mode;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_DECK_CONTROL;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = mode;
 }
 
 void HdmiCecEncodingDeckStatusMsg(struct HdmiCecMsg *msg, uint8_t info)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_DECK_STATUS_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_DECK_STATUS;
-    msg->data[2] = info;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_DECK_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = info;
 }
 
 void HdmiCecEncodingGiveDeckStatusMsg(struct HdmiCecMsg *msg, uint8_t statusReq, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_GIVE_DECK_STATUS_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_DECK_STATUS;
-    msg->data[2] = statusReq;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_DECK_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = statusReq;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_DECK_STATUS;
     }
@@ -762,15 +762,15 @@ void HdmiCecEncodingGiveDeckStatusMsg(struct HdmiCecMsg *msg, uint8_t statusReq,
 void HdmiCecEncodingPlayMsg(struct HdmiCecMsg *msg, uint8_t playMode)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_PLAY_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_PLAY;
-    msg->data[2] = playMode;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_PLAY;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = playMode;
 }
 
 void HdmiCecEncodingGiveTunerDeviceStatusMsg(struct HdmiCecMsg *msg, uint8_t statusReq, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_GIVE_TUNER_DEVICE_STATU_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_TUNER_DEVICE_STATUS;
-    msg->data[2] = statusReq;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_TUNER_DEVICE_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = statusReq;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TUNER_DEVICE_STATUS;
     }
@@ -780,33 +780,33 @@ void HdmiCecEncodingSelectAnalogueServiceMsg(struct HdmiCecMsg *msg,
     uint8_t anaBcastType, uint16_t anaFreq, uint8_t bcstSystem)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SELECT_ANALOGUE_SERVICE_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SELECT_ANALOGUE_SERVICE;
-    msg->data[2] = anaBcastType;
-    msg->data[3] = (anaFreq >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[4] = (anaFreq & HDMI_ONE_BYTE_MARK);
-    msg->data[5] = bcstSystem;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SELECT_ANALOGUE_SERVICE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = anaBcastType;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (anaFreq >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (anaFreq & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = bcstSystem;
 }
 
 void HdmiCecEncodingSelectDigitalServiceMsg(struct HdmiCecMsg *msg, struct HdmiCecDigitalServiceId *digital)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SELECT_DIGITAL_SERVICE;
-    HdmiCecEncodingDigitalServiceId(&(msg->data[2]), HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN, digital);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SELECT_DIGITAL_SERVICE;
+    HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN, digital);
 }
 
 void HdmiCecEncodingTunerDeviceStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecTunerDeviceInfo *info)
 {
-    msg->data[1] = HDMI_CEC_OPCODE_TUNER_DEVICE_STATUS;
-    msg->data[2] = (info->recordingFlag << 7) | (info->dispInfo);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TUNER_DEVICE_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (info->recordingFlag << 7) | (info->dispInfo);
     if (info->isAnalogService == true) {
         msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TUNER_DEVICE_STATUS_MSG_ANA_PARAM_LEN);
-        msg->data[3] = info->data.analog.anaBcastType;
-        msg->data[4] = (info->data.analog.anaFreq >> HDMI_ONE_BYTE_SHIFT);
-        msg->data[5] = (info->data.analog.anaFreq & HDMI_ONE_BYTE_MARK);
-        msg->data[6] = info->data.analog.bcstSystem;
+        msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = info->data.analog.anaBcastType;
+        msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (info->data.analog.anaFreq >> HDMI_ONE_BYTE_SHIFT);
+        msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (info->data.analog.anaFreq & HDMI_ONE_BYTE_MARK);
+        msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = info->data.analog.bcstSystem;
     } else {
         msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TUNER_DEVICE_STATUS_MSG_DIG_PARAM_LEN);
-        HdmiCecEncodingDigitalServiceId(&(msg->data[3]), HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN,
+        HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]), HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN,
             &(info->data.digital));
     }
 }
@@ -814,28 +814,28 @@ void HdmiCecEncodingTunerDeviceStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecT
 void HdmiCecEncodingTunerStepDecrementMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_TUNER_STEP_DECREMENT;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TUNER_STEP_DECREMENT;
 }
 
 void HdmiCecEncodingTunerStepIncrementMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_TUNER_STEP_INCREMENT;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TUNER_STEP_INCREMENT;
 }
 
 void HdmiCecEncodingDeviceVendorIdMsg(struct HdmiCecMsg *msg, uint32_t devVendorId)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_DEVICE_VENDOR_ID_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_DEVICE_VENDOR_ID;
-    msg->data[2] = (devVendorId >> HDMI_TWO_BYTES_SHIFT) & HDMI_ONE_BYTE_MARK;
-    msg->data[3] = (devVendorId >> HDMI_ONE_BYTE_SHIFT) & HDMI_ONE_BYTE_MARK;
-    msg->data[4] = (devVendorId & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_DEVICE_VENDOR_ID;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (devVendorId >> HDMI_TWO_BYTES_SHIFT) & HDMI_ONE_BYTE_MARK;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (devVendorId >> HDMI_ONE_BYTE_SHIFT) & HDMI_ONE_BYTE_MARK;
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (devVendorId & HDMI_ONE_BYTE_MARK);
 }
 
 void HdmiCecEncodingGiveDeviceVendorIdMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_DEVICE_VENDOR_ID;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_DEVICE_VENDOR_ID;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_DEVICE_VENDOR_ID;
     }
@@ -851,8 +851,8 @@ void HdmiCecEncodingVendorCommandMsg(struct HdmiCecMsg *msg, uint8_t *data, uint
     }
     length = (len > HDMI_CEC_VENDOR_SPECIFIC_DATA_MAX_LEN) ? HDMI_CEC_VENDOR_SPECIFIC_DATA_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
-    msg->data[1] = HDMI_CEC_OPCODE_VENDOR_COMMAND;
-    if (memcpy_s(&(msg->data[2]), (msg->len - 2), data, length) != EOK) {
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_VENDOR_COMMAND;
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), data, length) != EOK) {
         HDF_LOGE("encoding vendor cmd, memcpy_s fail.");
     }
 }
@@ -868,11 +868,11 @@ void HdmiCecEncodingVendorCommandWithIdMsg(struct HdmiCecMsg *msg, uint32_t vend
     length = (len > HDMI_CEC_VENDOR_SPECIFIC_DATA_WITH_ID_MAX_LEN) ?
         HDMI_CEC_VENDOR_SPECIFIC_DATA_WITH_ID_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_VENDOR_ID_LEN + length);
-    msg->data[1] = HDMI_CEC_OPCODE_VENDOR_COMMAND_WITH_ID;
-    msg->data[2] = (vendorId >> HDMI_TWO_BYTES_SHIFT) & HDMI_ONE_BYTE_MARK;
-    msg->data[3] = (vendorId >> HDMI_ONE_BYTE_SHIFT) & HDMI_ONE_BYTE_MARK;
-    msg->data[4] = (vendorId & HDMI_ONE_BYTE_MARK);
-    if (memcpy_s(&(msg->data[5]), (msg->len - 5), data, length) != EOK) {
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_VENDOR_COMMAND_WITH_ID;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (vendorId >> HDMI_TWO_BYTES_SHIFT) & HDMI_ONE_BYTE_MARK;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (vendorId >> HDMI_ONE_BYTE_SHIFT) & HDMI_ONE_BYTE_MARK;
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (vendorId & HDMI_ONE_BYTE_MARK);
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT]), (msg->len - 5), data, length) != EOK) {
         HDF_LOGE("encoding vendor cmd with id, memcpy_s fail.");
     }
 }
@@ -887,8 +887,8 @@ void HdmiCecEncodingVendorRemoteButtonDownMsg(struct HdmiCecMsg *msg, uint8_t *r
     }
     length = (len > HDMI_CEC_VENDOR_SPECIFIC_RC_CODE_MAX_LEN) ? HDMI_CEC_VENDOR_SPECIFIC_RC_CODE_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
-    msg->data[1] = HDMI_CEC_OPCODE_VENDOR_REMOTE_BUTTON_DOWN;
-    if (memcpy_s(&(msg->data[2]), (msg->len - 2), rcCode, length) != EOK) {
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_VENDOR_REMOTE_BUTTON_DOWN;
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), rcCode, length) != EOK) {
         HDF_LOGE("encoding vendor remote button down, memcpy_s fail.");
     }
 }
@@ -896,7 +896,7 @@ void HdmiCecEncodingVendorRemoteButtonDownMsg(struct HdmiCecMsg *msg, uint8_t *r
 void HdmiCecEncodingVendorRemoteButtonUpMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_VENDOR_REMOTE_BUTTON_UP;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_VENDOR_REMOTE_BUTTON_UP;
 }
 
 void HdmiCecEncodingSetOsdStringMsg(struct HdmiCecMsg *msg, uint8_t dispControl, uint8_t *str, uint32_t len)
@@ -909,9 +909,9 @@ void HdmiCecEncodingSetOsdStringMsg(struct HdmiCecMsg *msg, uint8_t dispControl,
     }
     length = (len > HDMI_CEC_OSD_STRING_MAX_LEN) ? HDMI_CEC_OSD_STRING_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(length + HDMI_CEC_DISPLAY_CONTROL_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_OSD_STRING;
-    msg->data[2] = dispControl;
-    if (memcpy_s(&(msg->data[3]), (msg->len - 3), str, length) != EOK) {
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_OSD_STRING;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = dispControl;
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]), (msg->len - 3), str, length) != EOK) {
         HDF_LOGE("encoding set OSD string, memcpy_s fail.");
     }
 }
@@ -919,7 +919,7 @@ void HdmiCecEncodingSetOsdStringMsg(struct HdmiCecMsg *msg, uint8_t dispControl,
 void HdmiCecEncodingGiveOsdNameMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_OSD_NAME;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_OSD_NAME;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_SET_OSD_NAME;
     }
@@ -935,8 +935,8 @@ void HdmiCecEncodingSetOsdNameMsg(struct HdmiCecMsg *msg, uint8_t *name, uint32_
     }
     length = (len > HDMI_CEC_OSD_NAME_MAX_LEN) ? HDMI_CEC_OSD_NAME_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_OSD_NAME;
-    if (memcpy_s(&(msg->data[2]), (msg->len - 2), name, length) != EOK) {
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_OSD_NAME;
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), name, length) != EOK) {
         HDF_LOGE("encoding set OSD name, memcpy_s fail.");
     }
 }
@@ -944,8 +944,8 @@ void HdmiCecEncodingSetOsdNameMsg(struct HdmiCecMsg *msg, uint8_t *name, uint32_
 void HdmiCecEncodingMenuRequestMsg(struct HdmiCecMsg *msg, uint8_t menuReq, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_MENU_REQUEST_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_MENU_REQUEST;
-    msg->data[2] = menuReq;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_MENU_REQUEST;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = menuReq;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_MENU_STATUS;
     }
@@ -954,8 +954,8 @@ void HdmiCecEncodingMenuRequestMsg(struct HdmiCecMsg *msg, uint8_t menuReq, bool
 void HdmiCecEncodingMenuStatusMsg(struct HdmiCecMsg *msg, uint8_t menuStatus)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_MENU_STATUS_MSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_MENU_STATUS;
-    msg->data[2] = menuStatus;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_MENU_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = menuStatus;
 }
 
 void HdmiCecEncodingUserControlPrtessedMsg(struct HdmiCecMsg *msg, struct HdmiCecUiCmd *cmd)
@@ -964,8 +964,8 @@ void HdmiCecEncodingUserControlPrtessedMsg(struct HdmiCecMsg *msg, struct HdmiCe
         return;
     }
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_UI_COMMAND_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_USER_CONTROL_PRESSED;
-    msg->data[2] = cmd->cmdType;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_USER_CONTROL_PRESSED;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = cmd->cmdType;
     if (cmd->hasAddOp == false) {
         return;
     }
@@ -978,15 +978,15 @@ void HdmiCecEncodingUserControlPrtessedMsg(struct HdmiCecMsg *msg, struct HdmiCe
         case HDMI_CEC_UI_CMD_SELECT_AUDIO_INPUT_FUNCTION:
             (msg->len)++;
             /* The additional operand is one byte for all these UI commands */
-            msg->data[3] = cmd->addOperands.uiBroadcastType;
+            msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = cmd->addOperands.uiBroadcastType;
             break;
         case HDMI_CEC_UI_CMD_TUNE_FUNCTION:
             msg->len += HDMI_CEC_CHANNEL_IDENTIFIER_LEN;
-            msg->data[3] = (cmd->addOperands.channel.format << HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
+            msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (cmd->addOperands.channel.format << HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
                 (cmd->addOperands.channel.major >> HDMI_ONE_BYTE_SHIFT);
-            msg->data[4] = (cmd->addOperands.channel.major & HDMI_ONE_BYTE_MARK);
-            msg->data[5] = (cmd->addOperands.channel.minor >> HDMI_ONE_BYTE_SHIFT);
-            msg->data[6] = (cmd->addOperands.channel.minor & HDMI_ONE_BYTE_MARK);
+            msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (cmd->addOperands.channel.major & HDMI_ONE_BYTE_MARK);
+            msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (cmd->addOperands.channel.minor >> HDMI_ONE_BYTE_SHIFT);
+            msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = (cmd->addOperands.channel.minor & HDMI_ONE_BYTE_MARK);
             break;
         default:
             HDF_LOGI("UI type %d have no additional operands.", cmd->cmdType);
@@ -997,13 +997,13 @@ void HdmiCecEncodingUserControlPrtessedMsg(struct HdmiCecMsg *msg, struct HdmiCe
 void HdmiCecEncodingUserControlReleasedMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_USER_CONTROL_RELEASED;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_USER_CONTROL_RELEASED;
 }
 
 void HdmiCecEncodingGiveDevicePowerStatusMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_DEVICE_POWER_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_DEVICE_POWER_STATUS;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_REPORT_POWER_STATUS;
     }
@@ -1012,28 +1012,28 @@ void HdmiCecEncodingGiveDevicePowerStatusMsg(struct HdmiCecMsg *msg, bool respon
 void HdmiCecEncodingReportDevicePowerStatusMsg(struct HdmiCecMsg *msg, uint8_t powerStatus)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_REPORT_POWER_STATUS_MSG_PARA_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_POWER_STATUS;
-    msg->data[2] = powerStatus;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_POWER_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = powerStatus;
 }
 
 void HdmiCecEncodingFeatureAbortMsg(struct HdmiCecMsg *msg, uint8_t opcode, uint8_t reason)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_FEATURE_ABORT_MSG_PARA_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_FEATURE_ABORT;
-    msg->data[2] = opcode;
-    msg->data[3] = reason;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_FEATURE_ABORT;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = opcode;
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = reason;
 }
 
 void HdmiCecEncodingAbortMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_ABORT;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_ABORT;
 }
 
 void HdmiCecEncodingGiveAudioStatusMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_AUDIO_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_AUDIO_STATUS;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_REPORT_AUDIO_STATUS;
     }
@@ -1042,7 +1042,7 @@ void HdmiCecEncodingGiveAudioStatusMsg(struct HdmiCecMsg *msg, bool response)
 void HdmiCecEncodingGiveSystemAudioModeMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_GIVE_SYSTEM_AUDIO_MODE_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GIVE_SYSTEM_AUDIO_MODE_STATUS;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_SYSTEM_AUDIO_MODE_STATUS;
     }
@@ -1051,8 +1051,8 @@ void HdmiCecEncodingGiveSystemAudioModeMsg(struct HdmiCecMsg *msg, bool response
 void HdmiCecEncodingReportAudioStatusMsg(struct HdmiCecMsg *msg, uint8_t audioMuteStatus, uint8_t audioVolumeStatus)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_REPORT_AUDIO_STATUSMSG_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_AUDIO_STATUS;
-    msg->data[2] = (audioMuteStatus << HDMI_CEC_AUDIO_MUTE_STATUS_SHIFT) |
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_AUDIO_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (audioMuteStatus << HDMI_CEC_AUDIO_MUTE_STATUS_SHIFT) |
         (audioVolumeStatus & HDMI_CEC_AUDIO_VOLUME_STATUS_MARK);
 }
 
@@ -1067,7 +1067,7 @@ void HdmiCecEncodingRequestShortAudioDescriptorMsg(struct HdmiCecMsg *msg,
     }
     num = (len > HDMI_CEC_MAX_AUDIO_FORMAT_NUM) ? HDMI_CEC_MAX_AUDIO_FORMAT_NUM : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(num * HDMI_CEC_AUDIO_FORMAT_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_REQUEST_SHORT_AUDIO_DESCRIPTOR;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REQUEST_SHORT_AUDIO_DESCRIPTOR;
     for (i = 0; i < num; i++) {
         msg->data[2 + i] = (id[i] << HDMI_CEC_AUDIO_FORMAT_ID_SHIFT) | (code[i] & HDMI_CEC_AUDIO_FORMAT_CODE_MARK);
     }
@@ -1086,7 +1086,7 @@ void HdmiCecEncodingReportShortAudioDescriptorMsg(struct HdmiCecMsg *msg, uint32
     }
     num = (len > HDMI_CEC_MAX_SHORT_AUDIO_DESCRIPTOR_NUM) ? HDMI_CEC_MAX_SHORT_AUDIO_DESCRIPTOR_NUM : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN * num);
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_SHORT_AUDIO_DESCRIPTOR;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_SHORT_AUDIO_DESCRIPTOR;
     for (i = 0; i < num; i++) {
         msg->data[2 + i * HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN] =
             (descriptor[i] >> HDMI_TWO_BYTES_SHIFT) & HDMI_ONE_BYTE_MARK;
@@ -1099,16 +1099,16 @@ void HdmiCecEncodingReportShortAudioDescriptorMsg(struct HdmiCecMsg *msg, uint32
 void HdmiCecEncodingSetSystemAudioModeMsg(struct HdmiCecMsg *msg, uint8_t status)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SYSTEM_AUDIO_STATUS_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_SYSTEM_AUDIO_MODE;
-    msg->data[2] = status;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_SYSTEM_AUDIO_MODE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = status;
 }
 
 void HdmiCecEncodingSystemAudioModeRequestMsg(struct HdmiCecMsg *msg, uint16_t phyAddr, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SYSTEM_AUDIO_MODE_REQUEST_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SYSTEM_AUDIO_MODE_REQUEST;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SYSTEM_AUDIO_MODE_REQUEST;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_SET_SYSTEM_AUDIO_MODE;
     }
@@ -1117,21 +1117,21 @@ void HdmiCecEncodingSystemAudioModeRequestMsg(struct HdmiCecMsg *msg, uint16_t p
 void HdmiCecEncodingSystemAudioModeStatusMsg(struct HdmiCecMsg *msg, uint8_t status)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SYSTEM_AUDIO_STATUS_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SYSTEM_AUDIO_MODE_STATUS;
-    msg->data[2] = status;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SYSTEM_AUDIO_MODE_STATUS;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = status;
 }
 
 void HdmiCecEncodingSetAudioRateMsg(struct HdmiCecMsg *msg, uint8_t rate)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SET_AUDIO_RATE_PARAM_LEN);
-    msg->data[1] = HDMI_CEC_OPCODE_SET_AUDIO_RATE;
-    msg->data[2] = rate;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_AUDIO_RATE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = rate;
 }
 
 void HdmiCecEncodingInitiateArcMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_INITIATE_ARC;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_INITIATE_ARC;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_REPORT_ARC_INITIATED;
     }
@@ -1140,19 +1140,19 @@ void HdmiCecEncodingInitiateArcMsg(struct HdmiCecMsg *msg, bool response)
 void HdmiCecEncodingReportArcInitiatedMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_ARC_INITIATED;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_ARC_INITIATED;
 }
 
 void HdmiCecEncodingReportArcTerminationMsg(struct HdmiCecMsg *msg)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_ARC_TERMINATION;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_ARC_TERMINATION;
 }
 
 void HdmiCecEncodingRequestArcInitiationMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_REQUEST_ARC_INITIATION;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REQUEST_ARC_INITIATION;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_INITIATE_ARC;
     }
@@ -1161,7 +1161,7 @@ void HdmiCecEncodingRequestArcInitiationMsg(struct HdmiCecMsg *msg, bool respons
 void HdmiCecEncodingRequestArcTerminationMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_REQUEST_ARC_TERMINATION;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REQUEST_ARC_TERMINATION;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TERMINATE_ARC;
     }
@@ -1170,7 +1170,7 @@ void HdmiCecEncodingRequestArcTerminationMsg(struct HdmiCecMsg *msg, bool respon
 void HdmiCecEncodingTerminateArcMsg(struct HdmiCecMsg *msg, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
-    msg->data[1] = HDMI_CEC_OPCODE_TERMINATE_ARC;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TERMINATE_ARC;
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_REPORT_ARC_TERMINATION;
     }
@@ -1179,10 +1179,10 @@ void HdmiCecEncodingTerminateArcMsg(struct HdmiCecMsg *msg, bool response)
 void HdmiCecEncodingRequestCurrentLatencyMsg(struct HdmiCecMsg *msg, uint16_t phyAddr, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_REQUEST_CURRENT_LATENCY_MSG_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_REQUEST_CURRENT_LATENCY;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REQUEST_CURRENT_LATENCY;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_REPORT_CURRENT_LATENCY;
     }
@@ -1192,16 +1192,16 @@ void HdmiCecEncodingReportCurrentLatencyMsg(struct HdmiCecMsg *msg,
     uint16_t phyAddr, struct HdmiCecLatencyInfo *info)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_REPORT_CURRENT_LATENCY_MSG_PARAM_MIN_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_REPORT_CURRENT_LATENCY;
-    msg->data[2] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (phyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = info->videoLatency;
-    msg->data[5] = (info->lowLatencyMode << HDMI_CEC_LOW_LATENCY_MODE_SHIFT) | (info->audioOutputCompensated);
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_CURRENT_LATENCY;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = info->videoLatency;
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (info->lowLatencyMode << HDMI_CEC_LOW_LATENCY_MODE_SHIFT) | (info->audioOutputCompensated);
     /* Operand[Audio Output Delay] is only present when [Audio Output Compensated] is 3. */
     if (info->audioOutputCompensated == HDMI_CEC_AUDIO_OUTPUT_COMPENSATED_PARTIAL_DELAY) {
         msg->len++;
-        msg->data[6] = info->audioOutputDelay;
+        msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = info->audioOutputDelay;
     }
 }
 
@@ -1210,15 +1210,15 @@ void HdmiCdcEncodingHecInquireStateMsg(struct HdmiCecMsg *msg, uint16_t initiato
     uint16_t phyAddr1, uint16_t phyAddr2, bool response)
 {
     msg->len = HDMI_CDC_GET_MSG_LEN(HDMI_CDC_HEC_INQUIRE_STATE_MSG_PARAM_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HEC_INQUIRE_STATE;
-    msg->data[5] = (phyAddr1 >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[6] = (phyAddr1 & HDMI_ONE_BYTE_MARK);
-    msg->data[7] = (phyAddr2 >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[8] = (phyAddr2 & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HEC_INQUIRE_STATE;
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (phyAddr1 >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = (phyAddr1 & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_SEVENTH_ELEMENT] = (phyAddr2 >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_EIGHTH_ELEMENT] = (phyAddr2 & HDMI_ONE_BYTE_MARK);
     if (response == true) {
         msg->rspMsg = HDMI_CDC_HEC_REPORT_STATE;
     }
@@ -1228,21 +1228,21 @@ void HdmiCdcEncodingHecReportStateMsg(struct HdmiCecMsg *msg, uint16_t initiator
     uint16_t phyAddr, struct HdmiCdcHecState *state)
 {
     msg->len = HDMI_CDC_GET_MSG_LEN(HDMI_CDC_HEC_REPORT_STATE_MSG_PARAM_MIN_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HEC_REPORT_STATE;
-    msg->data[5] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[6] = (phyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[7] = (state->hecFuncState << HDMI_CDC_HEC_FUNC_STATE_SHIFT) |
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HEC_REPORT_STATE;
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_SEVENTH_ELEMENT] = (state->hecFuncState << HDMI_CDC_HEC_FUNC_STATE_SHIFT) |
         (state->hostFuncState << HDMI_CDC_HOST_FUNC_STATE_SHIFT) |
         (state->encFuncState << HDMI_CDC_ENC_FUNC_STATE_SHIFT) |
         (state->cdcErrCode);
     if (state->haveHecField == true) {
         msg->len = HDMI_CDC_GET_MSG_LEN(HDMI_CDC_HEC_REPORT_STATE_MSG_PARAM_MAX_LEN);
-        msg->data[8] = (state->hecField >> HDMI_ONE_BYTE_SHIFT);
-        msg->data[9] = (state->hecField & HDMI_ONE_BYTE_MARK);
+        msg->data[HDMI_CEC_MSG_DATA_EIGHTH_ELEMENT] = (state->hecField >> HDMI_ONE_BYTE_SHIFT);
+        msg->data[DATA_NINTH_OFFSET_ELEMENT] = (state->hecField & HDMI_ONE_BYTE_MARK);
     }
 }
 
@@ -1250,14 +1250,14 @@ void HdmiCdcEncodingHecSetStateAdjacentMsg(struct HdmiCecMsg *msg, uint16_t init
     uint16_t phyAddr, uint8_t hecSetState, bool response)
 {
     msg->len = HDMI_CDC_GET_MSG_LEN(HDMI_CDC_HEC_SET_STATE_ADJACENT_MSG_PARAM_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HEC_SET_STATE_ADJACENT;
-    msg->data[5] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[6] = (phyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[7] = hecSetState;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HEC_SET_STATE_ADJACENT;
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (phyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = (phyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_SEVENTH_ELEMENT] = hecSetState;
     if (response == true) {
         msg->rspMsg = HDMI_CDC_HEC_REPORT_STATE;
     }
@@ -1269,16 +1269,16 @@ void HdmiCdcEncodingHecSetStateMsg(struct HdmiCecMsg *msg, uint16_t initiatorPhy
     uint32_t i;
 
     msg->len = HDMI_CDC_GET_MSG_LEN(HDMI_CDC_HEC_SET_STATE_MSG_MIN_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HEC_SET_STATE;
-    msg->data[5] = (info->phyAddr1 >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[6] = (info->phyAddr1 & HDMI_ONE_BYTE_MARK);
-    msg->data[7] = (info->phyAddr2 >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[8] = (info->phyAddr2 & HDMI_ONE_BYTE_MARK);
-    msg->data[9] = info->hecSetState;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HEC_SET_STATE;
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (info->phyAddr1 >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = (info->phyAddr1 & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_SEVENTH_ELEMENT] = (info->phyAddr2 >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_EIGHTH_ELEMENT] = (info->phyAddr2 & HDMI_ONE_BYTE_MARK);
+    msg->data[DATA_NINTH_OFFSET_ELEMENT] = info->hecSetState;
     for (i = 0; (i < info->phyAddrLen) && (i < HDMI_CDC_HEC_SET_STATE_MSG_OPTIONAL_PA_MAX_NUM); i++) {
         if (info->phyAddr[i] == HDMI_CEC_INVALID_PHY_ADDR) {
             break;
@@ -1302,11 +1302,11 @@ void HdmiCdcEncodingHecRequestDeactivationMsg(struct HdmiCecMsg *msg, uint16_t i
         return;
     }
     msg->len = HDMI_CDC_GET_MSG_LEN(0);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HEC_REQUEST_DEACTIVATION;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HEC_REQUEST_DEACTIVATION;
     for (i = 0; i < len; i++) {
         msg->data[msg->len] = (phyAddr[i] >> HDMI_ONE_BYTE_SHIFT);
         (msg->len)++;
@@ -1321,21 +1321,21 @@ void HdmiCdcEncodingHecRequestDeactivationMsg(struct HdmiCecMsg *msg, uint16_t i
 void HdmiCdcEncodingHecNotifyAliveMsg(struct HdmiCecMsg *msg, uint16_t initiatorPhyAddr)
 {
     msg->len = HDMI_CDC_GET_MSG_LEN(0);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HEC_NOTIFY_ALIVE;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HEC_NOTIFY_ALIVE;
 }
 
 void HdmiCdcEncodingHecDiscoverMsg(struct HdmiCecMsg *msg, uint16_t initiatorPhyAddr, bool response)
 {
     msg->len = HDMI_CDC_GET_MSG_LEN(0);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HEC_DISCOVER;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HEC_DISCOVER;
     if (response == true) {
         msg->rspMsg = HDMI_CDC_HEC_REPORT_STATE;
     }
@@ -1345,12 +1345,12 @@ void HdmiCdcEncodingHpdSetStateMsg(struct HdmiCecMsg *msg, uint16_t initiatorPhy
     uint8_t portNum, uint8_t hpdState, bool response)
 {
     msg->len = HDMI_CDC_GET_MSG_LEN(HDMI_CDC_HPD_SET_STATE_MSG_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = HDMI_CDC_HPD_SET_STATE;
-    msg->data[5] = (portNum << HDMI_CDC_INPUT_PORT_NUMBER_SHIFT) | hpdState;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = HDMI_CDC_HPD_SET_STATE;
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (portNum << HDMI_CDC_INPUT_PORT_NUMBER_SHIFT) | hpdState;
     if (response == true) {
         msg->rspMsg = CEC_MSG_CDC_HPD_REPORT_STATE;
     }
@@ -1360,12 +1360,12 @@ void HdmiCdcEncodingHpdReportStateMsg(struct HdmiCecMsg *msg, uint16_t initiator
     uint8_t hpdState, uint8_t errCode)
 {
     msg->len = HDMI_CDC_GET_MSG_LEN(HDMI_CDC_HPD_REPORT_STATE_MSG_LEN);
-    msg->data[0] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
-    msg->data[1] = HDMI_CEC_OPCODE_CDC_MESSAGE;
-    msg->data[2] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
-    msg->data[3] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
-    msg->data[4] = CEC_MSG_CDC_HPD_REPORT_STATE;
-    msg->data[5] = (hpdState << HDMI_CDC_INPUT_PORT_NUMBER_SHIFT) | errCode;
+    msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
+    msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CDC_MESSAGE;
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (initiatorPhyAddr >> HDMI_ONE_BYTE_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (initiatorPhyAddr & HDMI_ONE_BYTE_MARK);
+    msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = CEC_MSG_CDC_HPD_REPORT_STATE;
+    msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (hpdState << HDMI_CDC_INPUT_PORT_NUMBER_SHIFT) | errCode;
 }
 
 static int32_t HdmiCecSendMsg(struct HdmiCntlr *cntlr, struct HdmiCecMsg *msg)
@@ -1426,7 +1426,7 @@ static bool HdmiCecMsgIgnore(uint8_t opcode, bool unregistered, bool broadcast)
 static void HdmiCecHandleReportPhyAddressMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
-    uint16_t phyAddr = ((msg->data[2] << HDMI_ONE_BYTE_SHIFT) | msg->data[3]);
+    uint16_t phyAddr = ((msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] << HDMI_ONE_BYTE_SHIFT) | msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]);
     (void)cntlr;
     (void)txMsg;
 
@@ -1488,7 +1488,7 @@ static void HdmiCecHandleGiveDeviceVendorIdMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
     if (cntlr->cec->info.vendorId == HDMI_CEC_VENDOR_ID_UNKNOWN) {
-        HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
+        HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
         if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
             HDF_LOGE("feature abort msg send fail");
         }
@@ -1507,7 +1507,7 @@ static void HdmiCecHandleAbortMsg(struct HdmiCntlr *cntlr,
     if (cntlr->cec->info.primaryDeviceType == HDMI_CEC_DEVICE_TYPE_PURE_CEC_SWITCH) {
         return;
     }
-    HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_REFUSED);
+    HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT], HDMI_CEC_ABORT_REFUSED);
     if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
         HDF_LOGE("feature abort msg send fail");
     }
@@ -1517,7 +1517,7 @@ static void HdmiCecHandleGiveOsdNameMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
     if (cntlr->cec->info.osdName[0] == 0) {
-        HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
+        HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
         if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
             HDF_LOGE("feature abort msg send fail");
         }
@@ -1534,7 +1534,7 @@ static void HdmiCecHandleGiveFeaturesMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
     if (cntlr->cec->info.cecVersion < HDMI_CEC_VERSION_2_0) {
-        HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[1], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
+        HdmiCecEncodingFeatureAbortMsg(txMsg, msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT], HDMI_CEC_ABORT_UNRECOGNIZED_OPCODE);
         if (HdmiCecSendMsg(cntlr, txMsg) != HDF_SUCCESS) {
             HDF_LOGE("feature abort msg send fail");
         }
@@ -1551,7 +1551,7 @@ static void HdmiCecMsgDefaultHandle(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
     bool broadcast = HdmiCecIsBroadcastMsg(msg);
-    uint8_t opcode = msg->data[1];
+    uint8_t opcode = msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT];
     bool isResponse = (cntlr->cec->info.isWaitingResponse == true && cntlr->cec->info.response == opcode);
 
     if (broadcast == true || isResponse == true) {
@@ -1605,7 +1605,7 @@ static void HdmiCecUpdateResponseFlag(struct HdmiCec *cec, uint8_t opcode)
 
 static void HdmiCecReceivedMsgHandle(struct HdmiCntlr *cntlr, struct HdmiCecMsg *msg)
 {
-    uint8_t opcode = msg->data[1];
+    uint8_t opcode = msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT];
     bool broadcast = HdmiCecIsBroadcastMsg(msg);
     bool unregistered = (HdmiCecGetMsgInitiator(msg) == HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST);
     struct HdmiCecMsg txMsg = {0};
@@ -1643,7 +1643,7 @@ int32_t HdmiCecReceivedMsg(struct HdmiCec *cec, struct HdmiCecMsg *msg)
 
     initiator = HdmiCecGetMsgInitiator(msg);
     destination = HdmiCecGetMsgDestination(msg);
-    opcode = msg->data[1];
+    opcode = msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT];
     /* Check if this message is for us. */
     if (initiator != HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST &&
         HdmiCecLogAddrValid(cntlr->cec, initiator) == true) {
