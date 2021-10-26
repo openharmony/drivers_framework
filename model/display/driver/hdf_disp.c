@@ -110,8 +110,8 @@ static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
     if (disp && disp->panelManager && devId < disp->panelManager->panelNum) {
         panel = disp->panelManager->panel[devId];
     }
-    if (UpdateBrightness(panel->blDev, level) != HDF_SUCCESS) {
-        HDF_LOGE("%s:UpdateBrightness failed", __func__);
+    if ((panel == NULL) || (UpdateBrightness(panel->blDev, level) != HDF_SUCCESS)) {
+        HDF_LOGE("%s:panel is null or UpdateBrightness failed", __func__);
         return HDF_FAILURE;
     }
     HDF_LOGI("%s:level = %u", __func__, level);
