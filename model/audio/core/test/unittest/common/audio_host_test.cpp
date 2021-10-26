@@ -39,13 +39,13 @@ void AudioHostTest::TearDown()
 {
 }
 
-HWTEST_F(AudioHostTest, AudioHostTest_GetCodec, TestSize.Level0)
+HWTEST_F(AudioHostTest, AudioHostTest_GetCodec, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTGETCODEC, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioHostTest, AudioHostTest_GetAudioServiceName, TestSize.Level0)
+HWTEST_F(AudioHostTest, AudioHostTest_GetAudioServiceName, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTGETCARDINSTANCE, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

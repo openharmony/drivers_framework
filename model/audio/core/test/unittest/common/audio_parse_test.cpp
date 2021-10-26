@@ -39,7 +39,7 @@ void AudioParseTest::TearDown()
 {
 }
 
-HWTEST_F(AudioParseTest, AudioParseTest_GetConfigData, TestSize.Level0)
+HWTEST_F(AudioParseTest, AudioParseTest_GetConfigData, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTGETCCNFIGDATA, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

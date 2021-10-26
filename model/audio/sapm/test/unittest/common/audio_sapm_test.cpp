@@ -11,7 +11,7 @@
 #include "hdf_uhdf_test.h"
 
 using namespace testing::ext;
-
+namespace {
 class AudioSapmTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -38,32 +38,33 @@ void AudioSapmTest::TearDown()
 {
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest001, TestSize.Level0)
+HWTEST_F(AudioSapmTest, AudioSapmTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTNEWCOMPONENT, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest002, TestSize.Level0)
+HWTEST_F(AudioSapmTest, AudioSapmTest002, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTADDROUTES, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest003, TestSize.Level0)
+HWTEST_F(AudioSapmTest, AudioSapmTest003, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTNEWCONTROLS, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest004, TestSize.Level0)
+HWTEST_F(AudioSapmTest, AudioSapmTest004, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTPOWERCOMPONET, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest005, TestSize.Level0)
+HWTEST_F(AudioSapmTest, AudioSapmTest005, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTREFRESHTIME, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
 }

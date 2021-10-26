@@ -7,12 +7,16 @@
  */
 
 #include "audio_accessory_base.h"
-#include "audio_device_log.h"
+#include "audio_core.h"
 
 #define HDF_LOG_TAG audio_accessory_base
 
 int32_t FormatToBitWidth(enum AudioFormat format, uint16_t *bitWidth)
 {
+    if (bitWidth == NULL) {
+        AUDIO_DRIVER_LOG_ERR("input param is NULL");
+        return HDF_FAILURE;
+    }
     // current set default format(standard) for 16/24 bit
     switch (format) {
         case AUDIO_FORMAT_PCM_16_BIT:
@@ -22,7 +26,7 @@ int32_t FormatToBitWidth(enum AudioFormat format, uint16_t *bitWidth)
             *bitWidth = I2S_SAMPLE_FORMAT_REG_VAL_24;
             break;
         default:
-            AUDIO_DEVICE_LOG_ERR("format: %d is not support.", format);
+            AUDIO_DRIVER_LOG_ERR("format: %d is not support.", format);
             return HDF_ERR_NOT_SUPPORT;
     }
     return HDF_SUCCESS;
@@ -30,6 +34,10 @@ int32_t FormatToBitWidth(enum AudioFormat format, uint16_t *bitWidth)
 
 int32_t RateToFrequency(uint32_t rate, uint16_t *freq)
 {
+    if (freq == NULL) {
+        AUDIO_DRIVER_LOG_ERR("input param is NULL");
+        return HDF_FAILURE;
+    }
     switch (rate) {
         case I2S_SAMPLE_FREQUENCY_8000:
             *freq = I2S_SAMPLE_FREQUENCY_REG_VAL_8000;
@@ -68,7 +76,7 @@ int32_t RateToFrequency(uint32_t rate, uint16_t *freq)
             *freq = I2S_SAMPLE_FREQUENCY_REG_VAL_96000;
             break;
         default:
-            AUDIO_DEVICE_LOG_ERR("rate: %d is not support.", rate);
+            AUDIO_DRIVER_LOG_ERR("rate: %d is not support.", rate);
             return HDF_ERR_NOT_SUPPORT;
     }
     return HDF_SUCCESS;

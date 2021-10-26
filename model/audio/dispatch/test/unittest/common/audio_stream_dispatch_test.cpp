@@ -11,7 +11,7 @@
 #include "hdf_uhdf_test.h"
 
 using namespace testing::ext;
-
+namespace {
 class AudioStreamDispatchTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -38,8 +38,9 @@ void AudioStreamDispatchTest::TearDown()
 {
 }
 
-HWTEST_F(AudioStreamDispatchTest, AudioStreamDispatchTest001, TestSize.Level0)
+HWTEST_F(AudioStreamDispatchTest, AudioStreamDispatchTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTSTREAMDISPATCH, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
 }
