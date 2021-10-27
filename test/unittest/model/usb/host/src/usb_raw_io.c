@@ -15,7 +15,7 @@
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_time.h"
-#include "usb_interface.h"
+#include "usb_ddk_interface.h"
 #ifdef LOSCFG_DRIVERS_HDF_USB_PNP_NOTIFY
 #include "usb_pnp_notify.h"
 #endif
