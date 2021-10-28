@@ -29,7 +29,7 @@ PriorityQueue *CreatePriorityQueue(uint16_t queueSize, uint8_t priorityLevelCoun
     uint32_t queueMemSize;
     PriorityQueueImpl *priorityQueue = NULL;
     uint32_t ret = HDF_SUCCESS;
-	HDF_STATUS status;
+    HDF_STATUS status;
     if (priorityLevelCount > MAX_PRIORITY_LEVEL || priorityLevelCount == 0) {
         HDF_LOGE("%s:priorityLevelCount must in 1 to 8", __func__);
         return NULL;
@@ -64,7 +64,7 @@ PriorityQueue *CreatePriorityQueue(uint16_t queueSize, uint8_t priorityLevelCoun
 void DestroyPriorityQueue(PriorityQueue *queue)
 {
     uint8_t i;
-	HDF_STATUS status;	
+    HDF_STATUS status;	
     PriorityQueueImpl *queueImpl = (PriorityQueueImpl *)queue;
     if (queue == NULL) {
         return;

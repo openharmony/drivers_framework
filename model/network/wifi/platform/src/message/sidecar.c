@@ -26,7 +26,7 @@ typedef struct {
 
 static ErrorCode MessageInputCheck(const Service *sideCar, ServiceId receiver, struct HdfSBuf *sendData)
 {
-	SideCarPrivateData *privateData = NULL;
+    SideCarPrivateData *privateData = NULL;
     if (sideCar == NULL || sideCar->privateData == NULL) {
         HDF_LOGE("%s:sideCar or sideCar.privateData is NULL", __func__);
         return ME_ERROR_NULL_PTR;
@@ -75,7 +75,7 @@ int32_t DispatchToMessage(struct HdfDeviceIoClient *client, int id, struct HdfSB
     ServiceId serviceId = GetServiceID(id);
     uint32_t cmd = GetCmd(id);
     MessageContext *context = NULL;
-	RemoteService *targetService = NULL;
+    RemoteService *targetService = NULL;
 
     if (client == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -110,7 +110,7 @@ int32_t DispatchToMessage(struct HdfDeviceIoClient *client, int id, struct HdfSB
 static ErrorCode SideCarSendSyncMessage(const Service *sideCar, ServiceId receiver, uint32_t commandId,
     struct HdfSBuf *sendData, struct HdfSBuf *recvData)
 {
-	SideCarPrivateData *privateData = NULL;
+    SideCarPrivateData *privateData = NULL;
     MessageContext *context = NULL;
     RemoteService *targetService = NULL;
     ErrorCode errCode = MessageInputCheck(sideCar, receiver, sendData);
@@ -144,7 +144,7 @@ static ErrorCode SideCarSendSyncMessage(const Service *sideCar, ServiceId receiv
 static ErrorCode SideCarSendAsyncMessageInner(const Service *sideCar, ServiceId receiver, uint32_t commandId,
     struct HdfSBuf *reqData, MessageCallBack callback)
 {
-	SideCarPrivateData *privateData = NULL;
+    SideCarPrivateData *privateData = NULL;
     MessageContext *context = NULL;
     struct HdfSBuf *rspData = NULL;
     RemoteService *targetService = NULL;
@@ -204,7 +204,7 @@ static ErrorCode SideCarSendOneWayMessage(const struct SideCar_ *sideCar, Servic
 
 static ErrorCode DestroyService(Service *service)
 {
-	SideCarPrivateData *data = NULL;
+    SideCarPrivateData *data = NULL;
     ErrorCode errCode;
     if (service == NULL) {
         return ME_ERROR_NULL_PTR;
@@ -216,7 +216,7 @@ static ErrorCode DestroyService(Service *service)
     }
     data = (SideCarPrivateData *)service->privateData;
     HDF_LOGE("Destroy service! id=%d", data->serviceId);
-	errCode = UnregistLocalService(data->dispatcherId, data->serviceId);
+    errCode = UnregistLocalService(data->dispatcherId, data->serviceId);
     if (errCode != ME_SUCCESS) {
         HDF_LOGE("Unregist service failed!ret=%d", errCode);
         return errCode;
@@ -230,7 +230,7 @@ static ErrorCode DestroyService(Service *service)
 
 Service *InitService(struct ServiceDef *def, const ServiceCfg *cfg)
 {
-	Service *service = NULL;
+    Service *service = NULL;
     SideCarPrivateData *privateData = NULL;
     ErrorCode errCode;
     if (cfg == NULL || def == NULL) {

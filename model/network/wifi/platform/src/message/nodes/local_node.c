@@ -31,7 +31,7 @@ typedef struct LocalNodeService {
 
 static void HandleRequestMessage(const RemoteService *service, MessageContext *context)
 {
-	 LocalNodeService *localNodeService = NULL;
+    LocalNodeService *localNodeService = NULL;
     localNodeService = (LocalNodeService *)service;
     struct MessageDef messageDef = { NULL, 0 };
     if (context == NULL || service == NULL) {
@@ -51,7 +51,7 @@ static void HandleRequestMessage(const RemoteService *service, MessageContext *c
 static void HandleResponseMessage(const RemoteService *service, MessageContext *context)
 {
     (void)service;
-	HDF_STATUS status;
+    HDF_STATUS status;
     if (context->requestType < MESSAGE_RSP_START) {
         return;
     }
@@ -74,6 +74,7 @@ static void HandleResponseMessage(const RemoteService *service, MessageContext *
 
 ErrorCode SendMessageLocalNode(const RemoteService *service, MessageContext *context)
 {
+    LocalNodeService *localService = NULL;
     uint8_t pri = HIGHEST_PRIORITY;
     if (service == NULL || context == NULL) {
         HDF_LOGE("%s:Input is NULL!", __func__);
@@ -88,7 +89,7 @@ ErrorCode SendMessageLocalNode(const RemoteService *service, MessageContext *con
         (void)OsalSemPost(&context->rspSemaphore);
         return ME_SUCCESS;
     } else {
-        LocalNodeService *localService = (LocalNodeService *)service;
+        localService = (LocalNodeService *)service;
         if (localService->dispatcher == NULL || localService->dispatcher->AppendMessage == NULL) {
             HDF_LOGE("This service has no dispatcher!");
             return ME_ERROR_NOT_SUPPORTED;
@@ -118,7 +119,7 @@ static void ShutdownLocalService(RemoteService *service)
 
 static void DestroyLocalNodeRemoteService(RemoteService *service)
 {
-	LocalNodeService *localService = NULL;
+    LocalNodeService *localService = NULL;
     if (service == NULL) {
         return;
     }
@@ -133,7 +134,7 @@ static void DestroyLocalNodeRemoteService(RemoteService *service)
 
 RemoteService *CreateLocalNodeService(MessageNode *node, MessageDispatcher *dispatcher, struct ServiceDef *mapper)
 {
-	LocalNodeService *service = NULL;
+    LocalNodeService *service = NULL;
     (void)node;
     ErrorCode errCode;
     if (mapper == NULL) {
@@ -143,7 +144,7 @@ RemoteService *CreateLocalNodeService(MessageNode *node, MessageDispatcher *disp
         HDF_LOGE("%s:Bad dispatcher found!", __func__);
         return NULL;
     }
-	service = (LocalNodeService *)OsalMemCalloc(sizeof(LocalNodeService));
+    service = (LocalNodeService *)OsalMemCalloc(sizeof(LocalNodeService));
     if (service == NULL) {
         return NULL;
     }
@@ -177,7 +178,7 @@ RemoteService *CreateLocalNodeService(MessageNode *node, MessageDispatcher *disp
 
 static ErrorCode InitLocalNode(MessageNode *node)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     ErrorCode errCode;
     if (node == NULL) {
         return ME_ERROR_NULL_PTR;
@@ -187,7 +188,7 @@ static ErrorCode InitLocalNode(MessageNode *node)
     if (status != HDF_SUCCESS) {
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
-	errCode = ME_SUCCESS;
+    errCode = ME_SUCCESS;
     do {
         if (node->status != ME_STATUS_STOPPED) {
             HDF_LOGE("%s:unexpected status %d", __func__, node->status);
@@ -226,7 +227,7 @@ static ErrorCode InitLocalNode(MessageNode *node)
 
 static void DestroyLocalNode(MessageNode *node)
 {
-	int32_t ret;
+    int32_t ret;
     if (node == NULL) {
         return;
     }
@@ -239,7 +240,7 @@ static void DestroyLocalNode(MessageNode *node)
 
 ErrorCode CreateLocalNode(MessageNode **node)
 {
-	int32_t ret;
+    int32_t ret;
     LocalMessageNode *newNode = NULL;
     ErrorCode errCode;
     if (node == NULL) {

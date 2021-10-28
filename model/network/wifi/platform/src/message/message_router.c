@@ -70,7 +70,7 @@ static void ReleaseRemoteService(RemoteService *service)
 
 static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bool requireLock)
 {
-	MessageDispatcher *result = NULL;
+    MessageDispatcher *result = NULL;
     if (dispatcherId >= MESSAGE_ENGINE_MAX_DISPATCHER) {
         HDF_LOGE("%s:Input ID is too big.input=%u", __func__, dispatcherId);
         return NULL;
@@ -106,7 +106,7 @@ static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bo
 
 static ErrorCode RegDispatcher(DispatcherId dispatcherId, MessageDispatcher *dispatcher)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     ErrorCode errCode;
     if (dispatcherId >= MESSAGE_ENGINE_MAX_DISPATCHER) {
         HDF_LOGE("%s:dispatcher id is too big!id=%u", __func__, dispatcherId);
@@ -141,7 +141,7 @@ static ErrorCode RegDispatcher(DispatcherId dispatcherId, MessageDispatcher *dis
 
 ErrorCode AddDispatcher(DispatcherConfig *config)
 {
-	ErrorCode errCode;
+    ErrorCode errCode;
     MessageDispatcher *dispatcher = NULL;
     if (config == NULL) {
         return ME_ERROR_NULL_PTR;
@@ -194,7 +194,7 @@ static void NotifyAllNodesServiceDel(const NodeId nodeId, ServiceId serviceId)
 static ErrorCode NotifyAllNodesServiceAdd(const NodeId nodeId, struct ServiceDef *mapper)
 {
     uint8_t i;
-	uint8_t notifyNodeIndex;
+    uint8_t notifyNodeIndex;
     ErrorCode errCode;
     if (mapper == NULL) {
         return ME_ERROR_NULL_PTR;
@@ -263,7 +263,7 @@ static ErrorCode DoRegistService(const NodeId nodeId, const DispatcherId dispatc
 }
 static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId dispatcherId, struct ServiceDef *mapper)
 {
-	 HDF_STATUS status;
+    HDF_STATUS status;
     MessageNode *node = NULL;
     RemoteService *remoteService = NULL;
     MessageDispatcher *dispatcher = NULL;
@@ -288,7 +288,7 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
         OsalMutexUnlock(&g_routerMutex);
         return ME_ERROR_NO_SUCH_NODE;
     }
-	do {
+    do {
         if (node->CreateRemoteService == NULL) {
             HDF_LOGE("%s:Can not reg service to node %d", __func__, nodeId);
             errCode = ME_ERROR_NOT_SUPPORTED;
@@ -343,7 +343,7 @@ ErrorCode RegistLocalService(const DispatcherId dispatcherId, struct ServiceDef 
 
 ErrorCode RegistRemoteService(NodeId nodeId, RemoteService *service)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     ErrorCode errCode;
     if (service == NULL) {
         return ME_ERROR_NULL_PTR;
@@ -375,7 +375,7 @@ ErrorCode RegistRemoteService(NodeId nodeId, RemoteService *service)
 }
 static ErrorCode UnregistServiceInner(const NodeId nodeId, const DispatcherId dispatcherId, const ServiceId serviceId)
 {
-	RemoteService *service = NULL;
+    RemoteService *service = NULL;
     HDF_STATUS status;
     ErrorCode errCode;
     if (serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
@@ -449,7 +449,7 @@ static bool CheckServiceID(ServiceId serviceId, bool allowSync)
 
 RemoteService *RefRemoteService(ServiceId serviceId)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     RemoteService *remoteService = NULL;
     RemoteService *service = NULL;
     if (serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
@@ -481,8 +481,8 @@ RemoteService *RefRemoteService(ServiceId serviceId)
 
 ErrorCode SendMessage(MessageContext *context)
 {
-	RemoteService *service = NULL;
-	ErrorCode errCode;
+    RemoteService *service = NULL;
+    ErrorCode errCode;
     service = RefRemoteService(context->receiverId);
     if (service == NULL) {
         return ME_ERROR_NO_SUCH_SERVICE;
@@ -565,7 +565,7 @@ static void ReleaseNodes(void)
 static ErrorCode DoStartMessageRouter(uint8_t nodesConfig)
 {
     uint8_t i;
-	ErrorCode errCode;
+    ErrorCode errCode;
     if (g_routerStatus != ME_STATUS_STOPPED) {
         HDF_LOGE("Router have already started!");
         return ME_ERROR_MUTI_INIT_NOT_ALLOWED;
@@ -607,7 +607,7 @@ static ErrorCode DoStartMessageRouter(uint8_t nodesConfig)
 
 ErrorCode EnableDefaultDispatcher(void)
 {
-	ErrorCode errCode;
+    ErrorCode errCode;
     DispatcherConfig config = {
         .dispatcherId = DEFAULT_DISPATCHER_ID,
         .queueSize = DEFAULT_DISPATCHER_QUEUE_SIZE,
@@ -623,7 +623,7 @@ ErrorCode EnableDefaultDispatcher(void)
 
 ErrorCode StartMessageRouter(uint8_t nodesConfig)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     ErrorCode errCode;
     if (g_routerMutex.realMutex == NULL) {
         HDF_STATUS status = OsalMutexInit(&g_routerMutex);
@@ -647,7 +647,7 @@ ErrorCode StartMessageRouter(uint8_t nodesConfig)
 static ErrorCode DoShutdownMessageRouter(void)
 {
     uint8_t i;
-	RemoteService *service = NULL;
+    RemoteService *service = NULL;
     if (g_routerStatus == ME_STATUS_STOPPED) {
         return ME_SUCCESS;
     }
@@ -683,7 +683,7 @@ static ErrorCode DoShutdownMessageRouter(void)
 ErrorCode ShutdownMessageRouter()
 {
     HDF_LOGW("%s:Shutdown router...", __func__);
-	HDF_STATUS status;
+    HDF_STATUS status;
     ErrorCode errCode;
     status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
@@ -703,7 +703,7 @@ ErrorCode ShutdownMessageRouter()
 
 MessageNode *RefMessageNode(const NodeId nodeId, bool isRequireLock)
 {
-	MessageNode *node = NULL;
+    MessageNode *node = NULL;
     HDF_STATUS status;
     if (nodeId >= MAX_NODE_COUNT) {
         HDF_LOGE("Input nodeId >= MAX_NODE_COUNT");

@@ -718,8 +718,7 @@ static int32_t WifiCmdSendAction(const RequestContext *context, struct HdfSBuf *
     const char *ifName = NULL;
     uint32_t dataSize = 0;
     struct NetDevice *netdev = NULL;
-	int ret;
-
+    int ret;
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -979,8 +978,7 @@ static int32_t WifiCmdSetTxPower(const RequestContext *context, struct HdfSBuf *
 static int32_t WifiCmdSetClient(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     uint32_t clientNum = 0;
-	struct HdfWifiEventToClientMap *eventToClientMap = NULL;
-
+    struct HdfWifiEventToClientMap *eventToClientMap = NULL;
     (void)rspData;
     if (reqData == NULL || context == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -1203,7 +1201,7 @@ void SendMessageResetDriverCallBack(const RequestContext *context, struct HdfSBu
     ErrorCode rspCode)
 {
     uint8_t chipId;
-	int32_t ret;
+    int32_t ret;
     const char *ifName = NULL;
     (void)context;
 
@@ -1232,7 +1230,7 @@ void SendMessageResetDriverCallBack(const RequestContext *context, struct HdfSBu
 static int32_t WifiCmdResetDriver(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     int32_t ret;
-	struct HdfSBuf *data = NULL;
+    struct HdfSBuf *data = NULL;
     (void)context;
     if (reqData == NULL || rspData == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -1495,8 +1493,7 @@ static int32_t WifiCmdRemoveIf(const RequestContext *context, struct HdfSBuf *re
     struct NetDevice *netdev = NULL;
     const char *ifName = NULL;
     WifiIfRemove *ifRemove = NULL;
-	uint32_t dataSize;
-
+    uint32_t dataSize;
     (void)context;
     if (reqData == NULL || rspData == NULL) {
         return HDF_ERR_INVALID_PARAM;

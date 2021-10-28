@@ -61,7 +61,7 @@ void ReleaseMessageMapper(struct ServiceDef *mapper)
 
 struct MessageDef *GetMsgDef(const struct ServiceDef *serviceDef, uint32_t commandId)
 {
-	struct MessageDef *msgDef = NULL;
+    struct MessageDef *msgDef = NULL;
     if (serviceDef == NULL || serviceDef->messages == NULL) {
         HDF_LOGE("%s:input is NULL!", __func__);
         return NULL;
@@ -104,7 +104,7 @@ ErrorCode AppendToLocalDispatcher(MessageDispatcher *dispatcher, const uint8_t p
 
 void SetToResponse(MessageContext *context)
 {
-	ServiceId senderId;
+    ServiceId senderId;
     if (context->requestType != MESSAGE_TYPE_ASYNC_REQ && context->requestType != MESSAGE_TYPE_SYNC_REQ) {
         HDF_LOGE("Only sync and async message can send response!type=%u", context->requestType);
         return;
@@ -130,7 +130,7 @@ static void HandleAsyncResponse(MessageContext *context)
 
 static void HandleSyncResponse(MessageContext *context)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     if (context == NULL) {
         HDF_LOGE("Input context is NULL!");
         return;
@@ -232,7 +232,7 @@ static void ReleaseAllMessage(MessageDispatcher *dispatcher)
 
 static int RunDispatcher(void *para)
 {
-	MessageDispatcher *dispatcher = NULL;
+    MessageDispatcher *dispatcher = NULL;
     MessageContext *context = NULL;
     if (para == NULL) {
         HDF_LOGE("Start dispatcher failed! cause:%s\n", "input para is NULL");
@@ -278,13 +278,13 @@ static int RunDispatcher(void *para)
 
 static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     ErrorCode errCode;
     LocalMessageDispatcher *localDispatcher = NULL;
     if (dispatcher == NULL) {
         return ME_ERROR_NULL_PTR;
     }
-	status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
@@ -335,11 +335,11 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
 
 static void ShutdownDispatcher(MessageDispatcher *dispatcher)
 {
-	HDF_STATUS status;
+    HDF_STATUS status;
     if (dispatcher == NULL) {
         return;
     }
-	status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Get lock failed!status=%d", status);
         return;
@@ -384,7 +384,7 @@ static void DestroyLocalDispatcher(MessageDispatcher *dispatcher)
 
 ErrorCode CreateLocalDispatcher(MessageDispatcher **dispatcher, const DispatcherConfig *config)
 {
-	LocalMessageDispatcher *localDispatcher = NULL;
+    LocalMessageDispatcher *localDispatcher = NULL;
     int32_t ret;
     ErrorCode errCode;
     if (dispatcher == NULL || config == NULL) {

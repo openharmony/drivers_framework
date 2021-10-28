@@ -347,7 +347,7 @@ static int32_t WifiCmdSetScanningMacAddress(const RequestContext *context, struc
     const char *ifName = NULL;
     unsigned char *mac = NULL;
     uint32_t replayDataSize;
-	struct HdfChipDriver *chipDriver = NULL;
+    struct HdfChipDriver *chipDriver = NULL;
     (void)context;
     if (reqData == NULL || rspData == NULL) {
         return HDF_ERR_INVALID_PARAM;

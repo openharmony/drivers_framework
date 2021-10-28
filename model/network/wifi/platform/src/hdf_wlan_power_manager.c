@@ -142,7 +142,7 @@ int32_t HdfWlanPowerMgrRelease(struct PowerManager* powerMgr)
  */
 struct PowerManager* HdfWlanCreatePowerManager(const struct HdfConfWlanPowers *configPowers)
 {
-	struct PowerManagerImpl *powerMgrimpl = NULL;
+    struct PowerManagerImpl *powerMgrimpl = NULL;
     if (configPowers == NULL) {
         HDF_LOGE("%s: configPowers is NULL", __func__);
         return NULL;

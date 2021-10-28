@@ -45,7 +45,7 @@ struct WlanHwCapability *GetHwCapability(struct NetDevice *netDev)
 {
     struct HdfChipDriver *chipDriver = GetChipDriver(netDev);
     struct WlanHwCapability *capability = NULL;
-	int32_t ret;
+    int32_t ret;
     if (chipDriver == NULL) {
         HDF_LOGE("%s:bad net device found!", __func__);
         return NULL;
@@ -223,7 +223,7 @@ char *HdfWlanGetIfNames(const uint8_t chipId, uint8_t *ifNameCount)
     char *ifNames = NULL;
     uint32_t bufferSize;
     uint8_t i, j;
-	int32_t ret;
+    int32_t ret;
     if (ifNameCount == NULL) {
         HDF_LOGE("%s: para is NULL", __func__);
         return NULL;

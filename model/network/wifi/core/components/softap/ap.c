@@ -48,10 +48,10 @@ static int32_t StartAp(struct NetDevice *netDev, WifiApSetting *apSettings)
 {
     struct WlanAPConf apConf = { 0 };
     int32_t ret;
-	struct HdfChipDriver *chipDriver = NULL;
+    struct HdfChipDriver *chipDriver = NULL;
     errno_t err;
-	HDF_LOGE("%s:starting ap...", __func__);
-	chipDriver = GetChipDriver(netDev);
+    HDF_LOGE("%s:starting ap...", __func__);
+    chipDriver = GetChipDriver(netDev);
     if (chipDriver == NULL) {
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;

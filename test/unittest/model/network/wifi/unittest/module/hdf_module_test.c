@@ -76,12 +76,13 @@ static int32_t WiFiModuleTestSetEnv(void)
 int32_t WiFiModuleTestCreateModule(void)
 {
     int32_t ret;
+    struct WifiModule *module = NULL;
     ret = WiFiModuleTestSetEnv();
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:WiFiModuleTestSetEnv failed.ret=%d", __func__, ret);
         return ret;
     }
-    struct WifiModule *module = OsalMemCalloc(sizeof(struct WifiModule));
+    module = OsalMemCalloc(sizeof(struct WifiModule));
     if (module == NULL) {
         HDF_LOGE("%s fail WifiModuleCreate FAIL ", __func__);
         return HDF_FAILURE;
