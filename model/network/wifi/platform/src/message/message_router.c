@@ -146,7 +146,7 @@ ErrorCode AddDispatcher(DispatcherConfig *config)
     if (config == NULL) {
         return ME_ERROR_NULL_PTR;
     }
-	errCode = CreateLocalDispatcher(&dispatcher, config);
+    errCode = CreateLocalDispatcher(&dispatcher, config);
     if (errCode != ME_SUCCESS) {
         return errCode;
     }
