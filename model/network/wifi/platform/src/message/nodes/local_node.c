@@ -247,7 +247,7 @@ ErrorCode CreateLocalNode(MessageNode **node)
         return ME_ERROR_NULL_PTR;
     }
     HDF_LOGI("Creating local node...");
-	newNode = (LocalMessageNode *)OsalMemCalloc(sizeof(LocalMessageNode));
+    newNode = (LocalMessageNode *)OsalMemCalloc(sizeof(LocalMessageNode));
     if (newNode == NULL) {
         return ME_ERROR_RES_LAKE;
     }

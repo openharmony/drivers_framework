@@ -136,7 +136,7 @@ int32_t MessageQueueTest003(void)
     void *p = NULL;
     PriorityQueue *queue = NULL;
     int32_t status;
-	queue = CreatePriorityQueue(TEST_QUEUE_SIZE, NO_PRIORITY);
+    queue = CreatePriorityQueue(TEST_QUEUE_SIZE, NO_PRIORITY);
     if (queue == NULL) {
         HDF_LOGE("%s:Create queue failed!", __func__);
         return -1;

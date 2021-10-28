@@ -362,7 +362,7 @@ static void ShutdownDispatcher(MessageDispatcher *dispatcher)
 IMPLEMENT_SHARED_OBJ(MessageDispatcher);
 static void DestroyLocalDispatcher(MessageDispatcher *dispatcher)
 {
-	int32_t ret;
+    int32_t ret;
     if (dispatcher == NULL) {
         return;
     }
