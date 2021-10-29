@@ -13,7 +13,7 @@
 #include "hdf_device_desc.h"
 #include "hdf_platform.h"
 #include "implementation/global_implementation.h"
-#include "usb_interface.h"
+#include "usb_ddk_interface.h"
 #include "usb_raw_api.h"
 
 enum UsbRawTestCmd {

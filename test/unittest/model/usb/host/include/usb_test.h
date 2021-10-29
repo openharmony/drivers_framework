@@ -14,7 +14,7 @@
 #include "hdf_platform.h"
 #include "implementation/global_implementation.h"
 #include "usb_ddk.h"
-#include "usb_interface.h"
+#include "usb_ddk_interface.h"
 
 enum UsbTestCmd {
     USB_WRITE_TEST = 0,
