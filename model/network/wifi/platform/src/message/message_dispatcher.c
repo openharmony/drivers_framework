@@ -281,13 +281,16 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
     HDF_STATUS status;
     ErrorCode errCode;
     LocalMessageDispatcher *localDispatcher = NULL;
+
     if (dispatcher == NULL) {
         return ME_ERROR_NULL_PTR;
     }
+
     status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
+    
     errCode = ME_SUCCESS;
     do {
         if (dispatcher->status != ME_STATUS_STOPPED) {
@@ -308,6 +311,7 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
             errCode = ME_ERROR_CREATE_THREAD_FAILED;
             break;
         }
+
         status = OsalThreadStart(&localDispatcher->dispatcherThread, &config);
         if (status != HDF_SUCCESS) {
             HDF_LOGE("%s:OsalThreadStart failed!status=%d", __func__, status);
