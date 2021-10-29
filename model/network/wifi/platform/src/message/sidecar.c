@@ -26,12 +26,13 @@ typedef struct {
 
 static ErrorCode MessageInputCheck(const Service *sideCar, ServiceId receiver, struct HdfSBuf *sendData)
 {
+    SideCarPrivateData *privateData = NULL;
     if (sideCar == NULL || sideCar->privateData == NULL) {
         HDF_LOGE("%s:sideCar or sideCar.privateData is NULL", __func__);
         return ME_ERROR_NULL_PTR;
     }
 
-    SideCarPrivateData *privateData = (SideCarPrivateData *)sideCar->privateData;
+    privateData = (SideCarPrivateData *)sideCar->privateData;
     if (receiver >= MESSAGE_ENGINE_MAX_SERVICE || privateData->serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
         return ME_ERROR_NO_SUCH_SERVICE;
     }
@@ -74,6 +75,7 @@ int32_t DispatchToMessage(struct HdfDeviceIoClient *client, int id, struct HdfSB
     ServiceId serviceId = GetServiceID(id);
     uint32_t cmd = GetCmd(id);
     MessageContext *context = NULL;
+    RemoteService *targetService = NULL;
 
     if (client == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -88,7 +90,6 @@ int32_t DispatchToMessage(struct HdfDeviceIoClient *client, int id, struct HdfSB
     context->rspData = rspData;
     context->requestType = MESSAGE_TYPE_SYNC_REQ;
     context->client = client;
-    RemoteService *targetService = NULL;
     do {
         targetService = RefRemoteService(serviceId);
         if (targetService == NULL || targetService->SendMessage == NULL) {
@@ -109,18 +110,20 @@ int32_t DispatchToMessage(struct HdfDeviceIoClient *client, int id, struct HdfSB
 static ErrorCode SideCarSendSyncMessage(const Service *sideCar, ServiceId receiver, uint32_t commandId,
     struct HdfSBuf *sendData, struct HdfSBuf *recvData)
 {
+    SideCarPrivateData *privateData = NULL;
+    MessageContext *context = NULL;
+    RemoteService *targetService = NULL;
     ErrorCode errCode = MessageInputCheck(sideCar, receiver, sendData);
     if (errCode != ME_SUCCESS) {
         return errCode;
     }
-    SideCarPrivateData *privateData = (SideCarPrivateData *)sideCar->privateData;
-    MessageContext *context = CreateMessageContext(privateData->serviceId, receiver, commandId, sendData);
+    privateData = (SideCarPrivateData *)sideCar->privateData;
+    context = CreateMessageContext(privateData->serviceId, receiver, commandId, sendData);
     if (context == NULL) {
         return ME_ERROR_NULL_PTR;
     }
     context->rspData = recvData;
     context->requestType = MESSAGE_TYPE_SYNC_REQ;
-    RemoteService *targetService = NULL;
     do {
         targetService = RefRemoteService(receiver);
         if (targetService == NULL || targetService->SendMessage == NULL) {
@@ -141,17 +144,21 @@ static ErrorCode SideCarSendSyncMessage(const Service *sideCar, ServiceId receiv
 static ErrorCode SideCarSendAsyncMessageInner(const Service *sideCar, ServiceId receiver, uint32_t commandId,
     struct HdfSBuf *reqData, MessageCallBack callback)
 {
+    SideCarPrivateData *privateData = NULL;
+    MessageContext *context = NULL;
+    struct HdfSBuf *rspData = NULL;
+    RemoteService *targetService = NULL;
     ErrorCode errCode = MessageInputCheck(sideCar, receiver, reqData);
     if (errCode != ME_SUCCESS) {
         return errCode;
     }
 
-    SideCarPrivateData *privateData = (SideCarPrivateData *)sideCar->privateData;
-    MessageContext *context = CreateMessageContext(privateData->serviceId, receiver, commandId, reqData);
+    privateData = (SideCarPrivateData *)sideCar->privateData;
+    context = CreateMessageContext(privateData->serviceId, receiver, commandId, reqData);
     if (context == NULL) {
         return ME_ERROR_NULL_PTR;
     }
-    struct HdfSBuf *rspData = HdfSBufObtainDefaultSize();
+    rspData = HdfSBufObtainDefaultSize();
     if (rspData == NULL) {
         OsalMemFree(context);
         return HDF_FAILURE;
@@ -159,8 +166,6 @@ static ErrorCode SideCarSendAsyncMessageInner(const Service *sideCar, ServiceId 
     context->requestType = MESSAGE_TYPE_ASYNC_REQ;
     context->callback = callback;
     context->rspData = rspData;
-
-    RemoteService *targetService = NULL;
     do {
         targetService = RefRemoteService(receiver);
         if (targetService == NULL || targetService->SendMessage == NULL) {
@@ -199,6 +204,8 @@ static ErrorCode SideCarSendOneWayMessage(const struct SideCar_ *sideCar, Servic
 
 static ErrorCode DestroyService(Service *service)
 {
+    SideCarPrivateData *data = NULL;
+    ErrorCode errCode;
     if (service == NULL) {
         return ME_ERROR_NULL_PTR;
     }
@@ -207,10 +214,9 @@ static ErrorCode DestroyService(Service *service)
         HDF_LOGE("%s:privateData is NULL!", __func__);
         return ME_ERROR_PARA_WRONG;
     }
-    SideCarPrivateData *data = (SideCarPrivateData *)service->privateData;
+    data = (SideCarPrivateData *)service->privateData;
     HDF_LOGE("Destroy service! id=%d", data->serviceId);
-
-    ErrorCode errCode = UnregistLocalService(data->dispatcherId, data->serviceId);
+    errCode = UnregistLocalService(data->dispatcherId, data->serviceId);
     if (errCode != ME_SUCCESS) {
         HDF_LOGE("Unregist service failed!ret=%d", errCode);
         return errCode;
@@ -224,6 +230,9 @@ static ErrorCode DestroyService(Service *service)
 
 Service *InitService(struct ServiceDef *def, const ServiceCfg *cfg)
 {
+    Service *service = NULL;
+    SideCarPrivateData *privateData = NULL;
+    ErrorCode errCode;
     if (cfg == NULL || def == NULL) {
         return NULL;
     }
@@ -233,7 +242,7 @@ Service *InitService(struct ServiceDef *def, const ServiceCfg *cfg)
         return NULL;
     }
 
-    Service *service = (Service *)OsalMemCalloc(sizeof(Service));
+    service = (Service *)OsalMemCalloc(sizeof(Service));
     if (service == NULL) {
         HDF_LOGE("%s:OsalMemAlloc return NULL!", __func__);
         return NULL;
@@ -243,7 +252,7 @@ Service *InitService(struct ServiceDef *def, const ServiceCfg *cfg)
     service->SendOneWayMessage = SideCarSendOneWayMessage;
     service->Destroy = DestroyService;
 
-    SideCarPrivateData *privateData = (SideCarPrivateData *)OsalMemCalloc(sizeof(SideCarPrivateData));
+    privateData = (SideCarPrivateData *)OsalMemCalloc(sizeof(SideCarPrivateData));
     if (privateData == NULL) {
         OsalMemFree(service);
         HDF_LOGE("%s:OsalMemAlloc return NULL!", __func__);
@@ -254,7 +263,7 @@ Service *InitService(struct ServiceDef *def, const ServiceCfg *cfg)
     service->privateData = (void *)privateData;
     privateData = NULL;
 
-    ErrorCode errCode = RegistLocalService(cfg->dispatcherId, def);
+    errCode = RegistLocalService(cfg->dispatcherId, def);
     if (errCode != ME_SUCCESS) {
         OsalMemFree(service->privateData);
         service->privateData = NULL;

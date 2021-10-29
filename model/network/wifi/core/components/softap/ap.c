@@ -29,12 +29,10 @@ static uint32_t ChangeBeacon(struct NetDevice *netDev, WifiApSetting *apSettings
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
-
     if (netDev == NULL || apSettings == NULL) {
         HDF_LOGE("%s: parameter null", __func__);
         return HDF_FAILURE;
     }
-
     beaconConf.interval = apSettings->beaconInterval;
     beaconConf.DTIMPeriod = apSettings->dtimPeriod;
     beaconConf.hiddenSSID = (apSettings->hiddenSsid == 1);
@@ -42,24 +40,24 @@ static uint32_t ChangeBeacon(struct NetDevice *netDev, WifiApSetting *apSettings
     beaconConf.headIEsLength = apSettings->beaconData.headLen;
     beaconConf.tailIEs = apSettings->beaconData.tail;
     beaconConf.tailIEsLength = apSettings->beaconData.tailLen;
-
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->apOps, ConfigBeacon);
     return chipDriver->apOps->ConfigBeacon(netDev, &beaconConf);
 }
 
 static int32_t StartAp(struct NetDevice *netDev, WifiApSetting *apSettings)
 {
-    HDF_LOGE("%s:starting ap...", __func__);
     struct WlanAPConf apConf = { 0 };
     int32_t ret;
-    struct HdfChipDriver *chipDriver = GetChipDriver(netDev);
+    struct HdfChipDriver *chipDriver = NULL;
+    errno_t err;
+    HDF_LOGI("%s:starting ap...", __func__);
+    chipDriver = GetChipDriver(netDev);
     if (chipDriver == NULL) {
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
-
     apConf.band = IEEE80211_BAND_2GHZ;
-    errno_t err = memcpy_s(apConf.ssidConf.ssid, IEEE80211_MAX_SSID_LEN, apSettings->ssid, apSettings->ssidLen);
+    err = memcpy_s(apConf.ssidConf.ssid, IEEE80211_MAX_SSID_LEN, apSettings->ssid, apSettings->ssidLen);
     if (err != EOK) {
         HDF_LOGE("%s: memcpy_s failed!ret=%d", __func__, err);
         return HDF_FAILURE;
@@ -68,20 +66,17 @@ static int32_t StartAp(struct NetDevice *netDev, WifiApSetting *apSettings)
     apConf.centerFreq1 = apSettings->freqParams.centerFreq1;
     apConf.channel = apSettings->freqParams.channel;
     apConf.width = apSettings->freqParams.bandwidth;
-
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->apOps, ConfigAp);
     ret = chipDriver->apOps->ConfigAp(netDev, &apConf);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:ConfigAp failed!ret=%d", __func__, ret);
         return HDF_FAILURE;
     }
-
     ret = ChangeBeacon(netDev, apSettings);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:ChangeBeacon failed!ret=%d", __func__, ret);
         return HDF_FAILURE;
     }
-
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->apOps, StartAp);
     ret = chipDriver->apOps->StartAp(netDev);
     if (ret != HDF_SUCCESS) {
@@ -99,14 +94,12 @@ static uint32_t StopAp(struct NetDevice *netDev)
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
-
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->apOps, StopAp);
     ret = chipDriver->apOps->StopAp(netDev);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("StopAp:failed, error[%d]", ret);
         return ret;
     }
-
     return NetIfSetStatus(netDev, NETIF_DOWN);
 }
 
@@ -139,7 +132,6 @@ static uint32_t GetAssociatedStasCount(struct NetDevice *netDev, uint32_t *num)
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
-
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->apOps, GetAssociatedStasCount);
     return chipDriver->apOps->GetAssociatedStasCount(netDev, num);
 }
@@ -161,7 +153,6 @@ static int32_t WifiCmdSetAp(const RequestContext *context, struct HdfSBuf *reqDa
     uint32_t settingLen = 0;
     const char *ifName = NULL;
     struct NetDevice *netdev = NULL;
-
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -199,7 +190,6 @@ static int32_t WifiCmdSetAp(const RequestContext *context, struct HdfSBuf *reqDa
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-
     HDF_LOGI("%s:%s starting AP ...", __func__, ifName);
     return StartAp(netdev, apSettings);
 }
@@ -208,7 +198,6 @@ static int32_t WifiCmdStopAp(const RequestContext *context, struct HdfSBuf *reqD
 {
     const char *ifName = NULL;
     struct NetDevice *netdev = NULL;
-
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -220,13 +209,11 @@ static int32_t WifiCmdStopAp(const RequestContext *context, struct HdfSBuf *reqD
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
         return HDF_FAILURE;
     }
-
     netdev = NetDeviceGetInstByName(ifName);
     if (netdev == NULL) {
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-
     HDF_LOGI("%s:%s stopping AP ...", __func__, ifName);
     return StopAp(netdev);
 }
@@ -237,7 +224,6 @@ static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf
     WifiApSetting *apSettings = NULL;
     uint32_t settingLen = 0;
     const char *ifName = NULL;
-
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -275,7 +261,6 @@ static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-
     return ChangeBeacon(netdev, apSettings);
 }
 
@@ -286,7 +271,6 @@ static int32_t WifiCmdStaRemove(const RequestContext *context, struct HdfSBuf *r
     const char *ifName = NULL;
     uint32_t dataSize = 0;
     int32_t ret;
-
     (void)context;
     (void)rspData;
     if (reqData == NULL) {
@@ -298,20 +282,17 @@ static int32_t WifiCmdStaRemove(const RequestContext *context, struct HdfSBuf *r
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
         return HDF_FAILURE;
     }
-
     netdev = NetDeviceGetInstByName(ifName);
     if (netdev == NULL) {
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-
     params.subtype = 0;
     params.reasonCode = 0;
     if (!HdfSbufReadBuffer(reqData, (const void **)&params.mac, &dataSize) || dataSize != ETH_ADDR_LEN) {
         HDF_LOGE("%s: %s!ParamName=%s,readSize=%u", __func__, ERROR_DESC_READ_REQ_FAILED, "mac", dataSize);
         return HDF_FAILURE;
     }
-
     ret = DelStation(netdev, &params);
     HDF_LOGI("%s:del station XX:XX:XX:XX:XX:%02X ret=%d", __func__, params.mac[ETH_ADDR_LEN - 1], ret);
     return ret;
@@ -321,7 +302,6 @@ static int32_t GetAssociatedStas(struct NetDevice *netdev, uint32_t num, struct 
 {
     int32_t ret;
     WifiStaInfo *staInfo = NULL;
-
     staInfo = (WifiStaInfo *)OsalMemCalloc(sizeof(WifiStaInfo) * num);
     if (staInfo == NULL) {
         HDF_LOGE("%s: OsalMemCalloc failed!", __func__);
@@ -348,7 +328,6 @@ static int32_t WifiCmdGetAssociatedStas(const RequestContext *context, struct Hd
     struct NetDevice *netdev = NULL;
     const char *ifName = NULL;
     uint32_t num;
-
     (void)context;
     if (reqData == NULL || rspData == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -389,7 +368,6 @@ static int32_t WifiCmdSetCountryCode(const RequestContext *context, struct HdfSB
     const char *ifName = NULL;
     const char *code = NULL;
     uint32_t replayDataSize;
-
     (void)context;
     if (reqData == NULL || rspData == NULL) {
         return HDF_ERR_INVALID_PARAM;

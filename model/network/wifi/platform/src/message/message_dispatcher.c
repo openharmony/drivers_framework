@@ -61,6 +61,7 @@ void ReleaseMessageMapper(struct ServiceDef *mapper)
 
 struct MessageDef *GetMsgDef(const struct ServiceDef *serviceDef, uint32_t commandId)
 {
+    struct MessageDef *msgDef = NULL;
     if (serviceDef == NULL || serviceDef->messages == NULL) {
         HDF_LOGE("%s:input is NULL!", __func__);
         return NULL;
@@ -70,7 +71,7 @@ struct MessageDef *GetMsgDef(const struct ServiceDef *serviceDef, uint32_t comma
         return NULL;
     }
 
-    struct MessageDef *msgDef = serviceDef->messages + commandId;
+    msgDef = serviceDef->messages + commandId;
     if (msgDef->handler == NULL) {
         HDF_LOGE("%s:command has no handler!", __func__);
         return NULL;
@@ -103,11 +104,12 @@ ErrorCode AppendToLocalDispatcher(MessageDispatcher *dispatcher, const uint8_t p
 
 void SetToResponse(MessageContext *context)
 {
+    ServiceId senderId;
     if (context->requestType != MESSAGE_TYPE_ASYNC_REQ && context->requestType != MESSAGE_TYPE_SYNC_REQ) {
         HDF_LOGE("Only sync and async message can send response!type=%u", context->requestType);
         return;
     }
-    ServiceId senderId = context->senderId;
+    senderId = context->senderId;
     context->senderId = context->receiverId;
     context->receiverId = senderId;
     context->requestType = MESSAGE_RSP_START + context->requestType - MESSAGE_REQ_START;
@@ -128,11 +130,12 @@ static void HandleAsyncResponse(MessageContext *context)
 
 static void HandleSyncResponse(MessageContext *context)
 {
+    HDF_STATUS status;
     if (context == NULL) {
         HDF_LOGE("Input context is NULL!");
         return;
     }
-    HDF_STATUS status = OsalSemPost(&context->rspSemaphore);
+    status = OsalSemPost(&context->rspSemaphore);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Send semaphore failed!CMD=%u,Sender=%u,Receiver=%u", context->commandId, context->senderId,
             context->receiverId);
@@ -229,11 +232,13 @@ static void ReleaseAllMessage(MessageDispatcher *dispatcher)
 
 static int RunDispatcher(void *para)
 {
+    MessageDispatcher *dispatcher = NULL;
+    MessageContext *context = NULL;
     if (para == NULL) {
         HDF_LOGE("Start dispatcher failed! cause:%s\n", "input para is NULL");
         return ME_ERROR_NULL_PTR;
     }
-    MessageDispatcher *dispatcher = (MessageDispatcher *)para;
+    dispatcher = (MessageDispatcher *)para;
     if (dispatcher->messageQueue == NULL) {
         HDF_LOGE("Start dispatcher failed! cause:%s\n", "message queue is NULL");
         return ME_ERROR_NULL_PTR;
@@ -253,7 +258,7 @@ static int RunDispatcher(void *para)
         dispatcher->status = ME_STATUS_RUNNING;
     }
     while (dispatcher->status == ME_STATUS_RUNNING) {
-        MessageContext *context = PopPriorityQueue(dispatcher->messageQueue, QUEUE_OPER_TIMEOUT);
+        context = PopPriorityQueue(dispatcher->messageQueue, QUEUE_OPER_TIMEOUT);
         if (context == NULL) {
             continue;
         }
@@ -273,14 +278,20 @@ static int RunDispatcher(void *para)
 
 static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
 {
+    HDF_STATUS status;
+    ErrorCode errCode;
+    LocalMessageDispatcher *localDispatcher = NULL;
+
     if (dispatcher == NULL) {
         return ME_ERROR_NULL_PTR;
     }
-    HDF_STATUS status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
+
+    status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
-    ErrorCode errCode = ME_SUCCESS;
+    
+    errCode = ME_SUCCESS;
     do {
         if (dispatcher->status != ME_STATUS_STOPPED) {
             errCode = ME_ERROR_WRONG_STATUS;
@@ -292,7 +303,7 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
             .priority = OSAL_THREAD_PRI_DEFAULT,
             .stackSize = 0x2000,
         };
-        LocalMessageDispatcher *localDispatcher = (LocalMessageDispatcher *)dispatcher;
+        localDispatcher = (LocalMessageDispatcher *)dispatcher;
         status = OsalThreadCreate(&localDispatcher->dispatcherThread, RunDispatcher, localDispatcher);
         if (status != HDF_SUCCESS) {
             HDF_LOGE("%s:OsalThreadCreate failed!status=%d", __func__, status);
@@ -300,6 +311,7 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
             errCode = ME_ERROR_CREATE_THREAD_FAILED;
             break;
         }
+
         status = OsalThreadStart(&localDispatcher->dispatcherThread, &config);
         if (status != HDF_SUCCESS) {
             HDF_LOGE("%s:OsalThreadStart failed!status=%d", __func__, status);
@@ -327,11 +339,11 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
 
 static void ShutdownDispatcher(MessageDispatcher *dispatcher)
 {
+    HDF_STATUS status;
     if (dispatcher == NULL) {
         return;
     }
-
-    HDF_STATUS status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
+    status = OsalMutexTimedLock(&dispatcher->mutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Get lock failed!status=%d", status);
         return;
@@ -354,6 +366,7 @@ static void ShutdownDispatcher(MessageDispatcher *dispatcher)
 IMPLEMENT_SHARED_OBJ(MessageDispatcher);
 static void DestroyLocalDispatcher(MessageDispatcher *dispatcher)
 {
+    int32_t ret;
     if (dispatcher == NULL) {
         return;
     }
@@ -365,7 +378,7 @@ static void DestroyLocalDispatcher(MessageDispatcher *dispatcher)
         dispatcher->messageQueue = NULL;
     }
 
-    int32_t ret = OsalMutexDestroy(&dispatcher->mutex);
+    ret = OsalMutexDestroy(&dispatcher->mutex);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:Release mutex failed.ret=%d", __func__, ret);
     }
@@ -375,16 +388,17 @@ static void DestroyLocalDispatcher(MessageDispatcher *dispatcher)
 
 ErrorCode CreateLocalDispatcher(MessageDispatcher **dispatcher, const DispatcherConfig *config)
 {
+    LocalMessageDispatcher *localDispatcher = NULL;
+    int32_t ret;
+    ErrorCode errCode;
     if (dispatcher == NULL || config == NULL) {
         return ME_ERROR_NULL_PTR;
     }
 
-    LocalMessageDispatcher *localDispatcher = (LocalMessageDispatcher *)OsalMemCalloc(sizeof(LocalMessageDispatcher));
+    localDispatcher = (LocalMessageDispatcher *)OsalMemCalloc(sizeof(LocalMessageDispatcher));
     if (localDispatcher == NULL) {
         return ME_ERROR_RES_LAKE;
     }
-
-    ErrorCode errCode;
     do {
         localDispatcher->status = ME_STATUS_STOPPED;
         localDispatcher->AppendMessage = AppendToLocalDispatcher;
@@ -397,7 +411,7 @@ ErrorCode CreateLocalDispatcher(MessageDispatcher **dispatcher, const Dispatcher
             break;
         }
 
-        int32_t ret = OsalMutexInit(&localDispatcher->mutex);
+        ret = OsalMutexInit(&localDispatcher->mutex);
         if (ret != HDF_SUCCESS) {
             errCode = ME_ERROR_OPER_MUTEX_FAILED;
             break;
