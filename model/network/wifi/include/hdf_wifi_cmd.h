@@ -254,6 +254,7 @@ typedef struct {
     int32_t centerFreq1;
     int32_t centerFreq2;
     int32_t bandwidth;
+    uint8_t band;
 } WifiFreqParams;
 
 typedef struct {

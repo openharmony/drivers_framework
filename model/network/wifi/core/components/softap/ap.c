@@ -56,7 +56,6 @@ static int32_t StartAp(struct NetDevice *netDev, WifiApSetting *apSettings)
         HDF_LOGE("%s:bad net device found!", __func__);
         return HDF_FAILURE;
     }
-    apConf.band = IEEE80211_BAND_2GHZ;
     err = memcpy_s(apConf.ssidConf.ssid, IEEE80211_MAX_SSID_LEN, apSettings->ssid, apSettings->ssidLen);
     if (err != EOK) {
         HDF_LOGE("%s: memcpy_s failed!ret=%d", __func__, err);
@@ -66,6 +65,7 @@ static int32_t StartAp(struct NetDevice *netDev, WifiApSetting *apSettings)
     apConf.centerFreq1 = apSettings->freqParams.centerFreq1;
     apConf.channel = apSettings->freqParams.channel;
     apConf.width = apSettings->freqParams.bandwidth;
+    apConf.band = apSettings->freqParams.band;
     RETURN_IF_CHIPOPS_NOT_IMPLEMENT(chipDriver->apOps, ConfigAp);
     ret = chipDriver->apOps->ConfigAp(netDev, &apConf);
     if (ret != HDF_SUCCESS) {
