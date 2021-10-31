@@ -21,7 +21,7 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define I3C_BUS_MAX              16
+#define I3C_CNTLR_MAX   20
 #define I3C_ADDR_MAX             127
 #define I3C_IBI_MAX              10
 #define ADDRS_STATUS_BITS        2
@@ -32,27 +32,49 @@ extern "C" {
 #define ADDR_STATUS_BIT1_MASK    0x2
 #define ADDR_STATUS_MASK         0x3
 
+
+#define I3C_RESERVED_ADDR_7H00    0x00
+#define I3C_RESERVED_ADDR_7H01    0x01
+#define I3C_RESERVED_ADDR_7H02    0x02
+#define I3C_RESERVED_ADDR_7H3E    0x3e
+#define I3C_RESERVED_ADDR_7H5E    0x5e
+#define I3C_RESERVED_ADDR_7H6E    0x6e
+#define I3C_RESERVED_ADDR_7H76    0x76
+#define I3C_RESERVED_ADDR_7H78    0x78
+#define I3C_RESERVED_ADDR_7H79    0x79
+#define I3C_RESERVED_ADDR_7H7A    0x7a
+#define I3C_RESERVED_ADDR_7H7B    0x7b
+#define I3C_RESERVED_ADDR_7H7C    0x7c
+#define I3C_RESERVED_ADDR_7H7D    0x7d
+#define I3C_RESERVED_ADDR_7H7E    0x7e
+#define I3C_RESERVED_ADDR_7H7F    0x7f
+
+#define I3C_HOT_JOIN_ADDR   I3C_RESERVED_ADDR_7H02
+#define I3C_BROADCAST_ADDR  I3C_RESERVED_ADDR_7H7E
+
+#define CHECK_RESERVED_ADDR(addr)                                                   \
+        ({((addr == I3C_RESERVED_ADDR_7H00) || (addr == I3C_RESERVED_ADDR_7H01) ||  \
+           (addr == I3C_RESERVED_ADDR_7H02) || (addr == I3C_RESERVED_ADDR_7H3E) ||  \
+           (addr == I3C_RESERVED_ADDR_7H5E) || (addr == I3C_RESERVED_ADDR_7H6E) ||  \
+           (addr == I3C_RESERVED_ADDR_7H76) || (addr == I3C_RESERVED_ADDR_7H78) ||  \
+           (addr == I3C_RESERVED_ADDR_7H79) || (addr == I3C_RESERVED_ADDR_7H7A) ||  \
+           (addr == I3C_RESERVED_ADDR_7H7B) || (addr == I3C_RESERVED_ADDR_7H7C) ||  \
+           (addr == I3C_RESERVED_ADDR_7H7D) || (addr == I3C_RESERVED_ADDR_7H7D) ||  \
+           (addr == I3C_RESERVED_ADDR_7H7F)) ? I3C_ADDR_RESERVED : I3C_ADDR_FREE;}) \
+
 struct I3cCntlr;
 struct I3cMethod;
 struct I3cLockMethod;
 struct I3cDevice;
 struct I3cVendor;
-struct I3cConfig;
-
-enum I3cBusMode {
-    I3C_BUS_SDR_MODE = 0,
-    I3C_BUS_HDR_MODE,
-};
 
 enum I3cDeviceType {
+    /** I2C device */
     I3C_CNTLR_I2C_DEVICE = 0,
-    I3C_CNTLR_I3C_CONV_DEVICE,
-    I3C_CNTLR_I3C_SM_DEVICE,     // secondary master I3C device
-};
-
-struct I3cConfig {
-    enum I3cBusMode busMode;
-    struct I3cDevice *curMaster;  
+    /** legacy I2C device */
+    I3C_CNTLR_I2C_LEGACY_DEVICE,
+    /** I3C device */
+    I3C_CNTLR_I3C_DEVICE,
 };
 
 struct I3cCntlr {
@@ -67,16 +89,18 @@ struct I3cCntlr {
     void *priv;
 };
 
+/* vendor information of I3C device */
 struct I3cVendor {
-    uint32_t vendor_mipi_id;
-    uint32_t vendor_version_id;
-    uint32_t vendor_product_id;
+    uint32_t vendorMipiId;
+    uint32_t vendorVersionId;
+    uint32_t vendorProductId;
 };
 
+/* In-bind Interrupt infomation */
 struct I3cIbiInfo {
-    I3cIbiFunc irqFunc;
-    int32_t payload;
-    void *irqData;
+    I3cIbiFunc ibiFunc;
+    uint32_t payload;
+    uint8_t *data;
 };
 
 struct I3cDevice {
@@ -95,16 +119,85 @@ struct I3cDevice {
 };
 
 struct I3cMethod {
-    int32_t (*doDaa)(struct I3cCntlr cntlr);
+    /**
+     * @brief Send a CCC(Common Command Code), which is implemented by a specific vendor driver.
+     *
+     * @param cntlr Indicates the I3C controller device.
+     * @param ccc Indicates the {@link I3cCccCmd}(Common Command Code) structure.
+     *
+     * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+     * @since 1.0
+     */
+    int32_t (*sendCccCmd)(struct I3cCntlr *cntlr, struct I3cCccCmd *ccc);
 
-    int32_t (*sendCccCmd)(struct I3cCntlr *cntlr, struct I3cCccCmd ccc);
-
+    /**
+     * @brief Execute one or more I3C messages in I3C mode, which is implemented by a specific vendor driver.
+     *
+     * @param cntlr Indicates the I3C controller device.
+     * @param msgs Indicates the {@link I3cMsg} message array.
+     * @param count Indicates the length of the message array.
+     *
+     * @return Returns the number of transferred message structures on success; Returns a negative value otherwise.
+     *
+     * @see I3cMsg
+     * @since 1.0
+     */
     int32_t (*Transfer)(struct I3cCntlr *cntlr, struct I3cMsg *msgs, int16_t count);
 
+    /**
+     * @brief Execute one or more I3C messages in I2C mode, which is implemented by a specific vendor driver.
+     *
+     * @param cntlr Indicates the I3C controller device.
+     * @param msgs Indicates the {@link I3cMsg} message array.
+     * @param count Indicates the length of the message array.
+     *
+     * @return Returns the number of transferred message structures on success; Returns a negative value otherwise.
+     *
+     * @see I3cMsg
+     * @since 1.0
+     */
     int32_t (*i2cTransfer)(struct I3cCntlr *cntlr, struct I3cMsg *msgs, int16_t count);
 
-    int32_t (*requestIbi)(struct I3cDevice *dev, I3cIbiFunc func, uint32_t payload);
+    /**
+     * @brief Set configurations of an I3C controller.
+     *
+     * @param cntlr Indicates the I3C controller to set.
+     * @param config Indicates the pointer of configuration structure.
+     *
+     * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+     * @since 1.0
+     */
+    int32_t (*setConfig)(struct I3cCntlr *cntlr, struct I3cConfig *config);
 
+    /**
+     * @brief Get configurations of an I3C controller.
+     *
+     * @param cntlr Indicates the I3C controller to get configurations.
+     * @param config Indicates the pointer of configuration structure.
+     *
+     * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+     * @since 1.0
+     */
+    int32_t (*getConfig)(struct I3cCntlr *cntlr, struct I3cConfig *config);
+
+    /**
+     * @brief Requeset an IBI(in-bind interrupt) for an I3C device which is supported.
+     *
+     * @param device Indicates the I3C device.
+     *
+     * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+     * @since 1.0
+     */
+    int32_t (*requestIbi)(struct I3cDevice *dev);
+
+    /**
+     * @brief Free an IBI(in-bind interrupt).
+     *
+     * @param device Indicates the I3C device.
+     *
+     * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+     * @since 1.0
+     */
     void (*freeIbi)(struct I3cDevice *dev);
 };
 
@@ -114,7 +207,7 @@ struct I3cLockMethod {
      *
      * @param cntlr Indicates the I3C controller to access.
      *
-     * @return Returns 0 on success; returns a negative value otherwise.
+     * @return Returns <b>0</b> on success; Returns a negative value otherwise.
      * @since 1.0
      */
     int32_t (*lock)(struct I3cCntlr *cntlr);
@@ -149,38 +242,180 @@ enum I3cAddrStatus {
     I3C_ADDR_I3C_DEVICE,
 };
 
-int32_t I3cCntlrGetConfig(struct I3cCntlr *cntlr, struct I3cConfig *config);
+enum I3cDeviceSupportIbi {
+    I3C_DEVICE_NOT_SUPPORT_IBI = 0,
+    I3C_DEVICE_SUPPORT_IBI,
+};
 
+/**
+ * @brief Set the config of a I3C controller.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param config Indicates the pointer of the configuration structure.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
 int32_t I3cCntlrSetConfig(struct I3cCntlr *cntlr, struct I3cConfig *config);
 
+/**
+ * @brief Get the config of a I3C controller.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param config Indicates the pointer of the configuration structure.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
+int32_t I3cCntlrGetConfig(struct I3cCntlr *cntlr, struct I3cConfig *config);
+
+/**
+ * @brief Requeset an IBI(in-bind interrupt) for an I3C device which is supported.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param addr Indicates the address of device to requeset IBI(In-Band Interrupt).
+ * @param func Indicates the call back function of the IBI.
+ * @param payload Indicates the length of payload data, in bytes.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
 int32_t I3cCntlrRequestIbi(struct I3cCntlr *cntlr, uint16_t addr, I3cIbiFunc func, uint32_t payload);
 
+/**
+ * @brief Free the IBI(in-bind interrupt) which is Requeseted by {@link I3cCntlrRequestIbi}.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param addr Indicates the address of device to requeset IBI(In-Band Interrupt).
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
 int32_t I3cCntlrFreeIbi(struct I3cCntlr *cntlr, uint16_t addr);
 
-int32_t I3cCntlrSendCccCmd(struct I3cCntlr *cntlr, struct I3cCccCmd ccc);
+/**
+ * @brief Send a CCC (Common Command Code) to an I3C device which is supported.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param ccc The pointer of CCC (Common Command Code) structure to send.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
+int32_t I3cCntlrSendCccCmd(struct I3cCntlr *cntlr, struct I3cCccCmd *ccc);
 
+/**
+ * @brief Execute one or more I3C messages in I2C mode.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param msgs Indicates the {@link I3cMsg} message array.
+ * @param count Indicates the length of the message array.
+ *
+ * @return Returns the number of transferred message structures on success; Returns a negative value otherwise.
+ *
+ * @see I3cMsg
+ * @since 1.0
+ */
 int32_t I3cCntlrI2cTransfer(struct I3cCntlr *cntlr, struct I3cMsg *msgs, int16_t count);
 
+/**
+ * @brief Execute one or more I3C messages in I3C mode.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param msgs Indicates the {@link I3cMsg} message array.
+ * @param count Indicates the length of the message array.
+ *
+ * @return Returns the number of transferred message structures on success; Returns a negative value otherwise.
+ *
+ * @see I3cMsg
+ * @since 1.0
+ */
 int32_t I3cCntlrTransfer(struct I3cCntlr *cntlr, struct I3cMsg *msgs, int16_t count);
 
-int32_t I3cCntlrDaa(struct I3cCntlr *cntlr);
-
+/**
+ * @brief Add an I3C device or an I2C device to device list.
+ *
+ * @param device Indicates the I3C device or I2C device.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
 int32_t I3cDeviceAdd(struct I3cDevice *device);
 
+/**
+ * @brief Remove an I3C device or an I2C device from device list.
+ *
+ * @param device Indicates the I3C device or I2C device.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
 void I3cDeviceRemove(struct I3cDevice *device);
 
+/**
+ * @brief Find and return an I3C controller by number, with ref count.
+ *
+ * @param number Indicates the I3C controller to get.
+ *
+ * @return Returns an I3C controller object on success; Returns <b>NULL</b> otherwise.
+ *
+ * @since 1.0
+ */
 struct I3cCntlr *I3cCntlrGet(int16_t number);
 
+/**
+ * @brief Release an I3C controller obtained by {@link I3cCntlrGet}.
+ *
+ * @param number Indicates the I3C controller to get.
+ *
+ * @since 1.0
+ */
 void I3cCntlrPut(struct I3cCntlr *cntlr);
 
+/**
+ * @brief Add an I3C controller to controller list.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
 int32_t I3cCntlrAdd(struct I3cCntlr *cntlr);
 
+/**
+ * @brief Remove an I3C controller from controller list.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
 void I3cCntlrRemove(struct I3cCntlr *cntlr);
 
-void I3cCntlrIrqCallback(struct I3cCntlr *cntlr, uint16_t addr);
+/**
+ * @brief Get an I3C device by addr.
+ *
+ * @param cntlr Indicates the I3C controller device.
+ * @param addr Indicates the address of the device which you would like to get.
+ *
+ * @return Returns <b>0</b> on success; Returns a negative value otherwise.
+ * @since 1.0
+ */
+struct I3cDevice *GetDeviceByAddr(struct I3cCntlr *cntlr, uint16_t addr);
+
+/**
+ * @brief IBI(In-bind Interrupt) callback function.
+ *
+ * @param device Indicates the device that generated the IBI.
+ *
+ * @return Returns an I3C device object on success; Returns <b>NULL</b> otherwise.
+ *
+ * @since 1.0
+ */
+int32_t I3cCntlrIbiCallback(struct I3cDevice *device);
 
 enum I3cIoCmd {
-    I3c_Io_I2cTransfer = 0,
+    I3C_IO_I2C_TRANSFER = 0,
     I3C_IO_PRIV_TRANSFER,
     I3C_IO_OPEN,
     I3C_IO_CLOSE,

@@ -9,7 +9,8 @@
 #include "i3c_core.h"
 #include "i3c_if.h"
 #include "hdf_log.h"
-#define HDF_LOG_TAG adc_if_c
+
+#define HDF_LOG_TAG i3c_if_c
 
 DevHandle I3cOpen(int16_t number)
 {
@@ -50,11 +51,6 @@ int32_t I3cTransfer(DevHandle handle, struct I3cMsg *msgs, int16_t count, enum T
     }
 
     return ret;
-}
-
-int32_t I3cDaa(DevHandle handle)
-{
-    return I3cCntlrDaa((struct I3cCntlr *)handle);
 }
 
 int32_t I3cSetConfig(DevHandle handle, struct I3cConfig *config)
