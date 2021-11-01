@@ -52,6 +52,13 @@
 enum SensorBusType {
     SENSOR_BUS_I2C = 0,
     SENSOR_BUS_SPI = 1,
+    SENSOR_BUS_GPIO = 2,
+};
+
+enum SensorGpioNum {
+    SENSOR_GPIO_NUM1 = 0,
+    SENSOR_GPIO_NUM2 = 1,
+    SENSOR_GPIO_NUM_MAX = 2,
 };
 
 struct SensorI2cCfg {
@@ -73,6 +80,7 @@ struct SensorBusCfg {
     union {
         struct SensorI2cCfg i2cCfg;
         struct SensorSpiCfg spiCfg;
+        uint32_t GpioNum[SENSOR_GPIO_NUM_MAX];
     };
 };
 

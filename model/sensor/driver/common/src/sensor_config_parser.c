@@ -358,6 +358,11 @@ static int32_t ParseSensorBus(struct DeviceResourceIface *parser, const struct D
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "busNum");
         ret = parser->GetUint32(busNode, "busAddr", &config->busCfg.spiCfg.csNum, 0);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "busAddr");
+    } else if (config->busCfg.busType == SENSOR_BUS_GPIO) {
+        ret = parser->GetUint32(busNode, "gpioIrq1", &config->busCfg.GpioNum[SENSOR_GPIO_NUM1], 0);
+        CHECK_PARSER_RESULT_RETURN_VALUE(ret, "gpioIrq1");
+        ret = parser->GetUint32(busNode, "gpioIrq2", &config->busCfg.GpioNum[SENSOR_GPIO_NUM2], 0);
+        CHECK_PARSER_RESULT_RETURN_VALUE(ret, "gpioIrq2");
     }
 
     return HDF_SUCCESS;
