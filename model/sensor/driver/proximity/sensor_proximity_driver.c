@@ -88,8 +88,8 @@ static int32_t InitProximityData(struct ProximityDrvData *drvData)
     }
 
     drvData->interval = SENSOR_TIMER_MIN_TIME;
-    drvData->initStatus = true;
     drvData->enable = false;
+    drvData->detectFlag = false;
 
     return HDF_SUCCESS;
 }

@@ -15,11 +15,10 @@
 #include "sensor_platform_if.h"
 
 #define PROXIMITY_DEFAULT_SAMPLING_200_MS    200000000
-#define PROXIMITY_CHIP_NAME_STK3338        "stk3338"
+#define PROXIMITY_CHIP_NAME_APDS9960        "apds9960"
 
 struct ProximityData {
-    int16_t data;
-    uint8_t stateFlag;
+    uint32_t stateFlag;
 };
 
 struct ProximityOpsCall {
