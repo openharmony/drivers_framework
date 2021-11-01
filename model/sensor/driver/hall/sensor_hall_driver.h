@@ -15,12 +15,6 @@
 
 #define HALL_CHIP_NAME_AK8789    "ak8789"
 
-enum HallGpioIrq {
-    HALL_NORTH_POLARITY_GPIO = 0,
-    HALL_SOUTH_POLARITY_GPIO = 1,
-    HALL_POLARITY_GPIO_MAX = 2,
-};
-
 struct HallOpsCall {
     int32_t (*Init)(struct SensorCfgData *data);
     int32_t (*ReadData)(struct SensorCfgData *data);
@@ -36,7 +30,7 @@ struct HallDrvData {
     int64_t interval;
     struct SensorCfgData *hallCfg;
     struct HallOpsCall ops;
-    int32_t GpioIrq[HALL_POLARITY_GPIO_MAX];
+    uint16_t status;
 };
 
 int32_t HallRegisterChipOps(const struct HallOpsCall *ops);
