@@ -17,25 +17,28 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-int32_t AudioSocTestRegisterDai(void);
 int32_t AudioSocTestRegisterPlatform(void);
-int32_t AudioTestRegisterCodec(void);
-int32_t AudioTestBindDaiLink(void);
-int32_t AudioTestSocDeviceRegister(void);
-int32_t AudioTestSocRegisterDsp(void);
+int32_t AudioSocTestRegisterDai(void);
 int32_t AudioTestRegisterAccessory(void);
-int32_t AudioTestUpdateRegBits(void);
-int32_t AudioTestAiaoUpdateRegBits(void);
+int32_t AudioTestRegisterCodec(void);
+int32_t AudioTestRegisterDsp(void);
+int32_t AudioTestSocDeviceRegister(void);
+int32_t AudioTestBindDaiLink(void);
+int32_t AudioTestUpdateCodecRegBits(void);
+int32_t AudioTestUpdateAccessoryRegBits(void);
 int32_t AudioTestKcontrolGetCodec(void);
-int32_t AudioTestAddControls(void);
+int32_t AudioTestKcontrolGetAccessory(void);
 int32_t AudioTestAddControl(void);
-int32_t AudioTestDeviceReadReg(void);
-int32_t AudioTestAiaoDeviceReadReg(void);
-int32_t AudioTestInfoCtrlSw(void);
-int32_t AudioTestGetCtrlSw(void);
-int32_t AudioTestPutCtrlSw(void);
-int32_t AiaoTestGetCtrlSw(void);
-int32_t AiaoTestPutCtrlSw(void);
+int32_t AudioTestAddControls(void);
+int32_t AudioTestCodecReadReg(void);
+int32_t AudioTestAccessoryReadReg(void);
+int32_t AudioTestCodecWriteReg(void);
+int32_t AudioTestAccessoryWriteReg(void);
+int32_t AudioTestInfoCtrlOps(void);
+int32_t AudioTestCodecGetCtrlOps(void);
+int32_t AudioTestAccessoryGetCtrlOps(void);
+int32_t AudioTestCodecSetCtrlOps(void);
+int32_t AudioTestAccessorySetCtrlOps(void);
 
 #ifdef __cplusplus
 #if __cplusplus

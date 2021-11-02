@@ -26,11 +26,6 @@ extern "C" {
 #define AUDIODRV_CTL_ELEM_IFACE_PGA 5 /* PGA device */
 #define AUDIODRV_CTL_ELEM_IFACE_AIAO 6 /* AIAO device */
 
-struct VirtualAddress {
-    unsigned long acodecVir;
-    unsigned long aiaoVir;
-};
-
 struct CodecDevice {
     const char *devCodecName;
     struct CodecData *devData;
@@ -44,16 +39,17 @@ struct CodecData {
     const char *drvCodecName;
     /* Codec driver callbacks */
     int32_t (*Init)(struct AudioCard *, struct CodecDevice *);
-    int32_t (*Read)(const struct CodecDevice *, uint32_t, uint32_t *);
-    int32_t (*Write)(const struct CodecDevice *, uint32_t, uint32_t);
-    int32_t (*AiaoRead)(const struct CodecDevice *, uint32_t, uint32_t *);
-    int32_t (*AiaoWrite)(const struct CodecDevice *, uint32_t, uint32_t);
-    const struct AudioKcontrol *controls;
+    int32_t (*Read)(unsigned long, uint32_t, uint32_t *);
+    int32_t (*Write)(unsigned long, uint32_t, uint32_t);
+    struct AudioKcontrol *controls;
     int numControls;
-    const struct AudioSapmComponent *sapmComponents;
+    struct AudioSapmComponent *sapmComponents;
     int numSapmComponent;
     const struct AudioSapmRoute *sapmRoutes;
     int numSapmRoutes;
+    unsigned long virtualAddress; // IoRemap Address
+    struct AudioRegCfgData *regConfig;
+    struct AudioRegCfgGroupNode **regCfgGroup;
 };
 
 /* Codec host is defined in codec driver */
@@ -75,6 +71,7 @@ enum AudioRegParams {
     INTERNALLY_CODEC_ENABLE,
     RENDER_CHANNEL_MODE,
     CAPTRUE_CHANNEL_MODE,
+    S_NORMAL_AP01_P_HIFI,
 };
 
 enum SapmRegParams {

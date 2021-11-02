@@ -52,6 +52,7 @@ struct AudioMixerControl {
     uint32_t shift;
     uint32_t rshift; /* right sound channel reg shift */
     uint32_t invert;
+    uint32_t value;
 };
 
 struct AudioKcontrol {

@@ -5,22 +5,26 @@
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
-
 #include "audio_parse_test.h"
 #include "audio_parse.h"
+#include "devsvc_manager_clnt.h"
 
 #define HDF_LOG_TAG audio_parse_test
+#define TEST_PARSE_SERVICE_NAME "hdf_audio_codec_dev0"
 
 int32_t AudioFillTestConfigData(void)
 {
-    int32_t ret;
-    struct HdfDeviceObject *device = NULL;
-    struct AudioConfigData *configData = NULL;
     HDF_LOGI("%s: enter", __func__);
 
-    ret = AudioFillConfigData(device, configData);
-    if (ret == HDF_SUCCESS) {
-        HDF_LOGE("%s: AudioFillConfigData fail! ret = %d", __func__, ret);
+    if (AudioFillConfigData(NULL, NULL) == HDF_SUCCESS) {
+        HDF_LOGE("%s_[%d]: AudioFillConfigData fail", __func__, __LINE__);
+        return HDF_FAILURE;
+    }
+
+    struct HdfDeviceObject *device = DevSvcManagerClntGetDeviceObject(TEST_PARSE_SERVICE_NAME);
+    struct AudioConfigData configData;
+    if (AudioFillConfigData(device, &configData) != HDF_SUCCESS) {
+        HDF_LOGE("%s_[%d]: AudioFillConfigData fail", __func__, __LINE__);
         return HDF_FAILURE;
     }
 

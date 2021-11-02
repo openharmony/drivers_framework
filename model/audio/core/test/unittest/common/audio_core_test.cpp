@@ -92,18 +92,6 @@ HWTEST_F(AudioCoreTest, AudioCoreTest_UpdateAccessoryRegBits, TestSize.Level1)
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioCoreTest, AudioCoreTest_UpdateCodecAiaoRegBits, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTUPDATECODECAIAOREGBITS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioCoreTest, AudioCoreTest_UpdateAccessoryAiaoRegBits, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTUPDATEACCESSORYAIAOREGBITS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
 HWTEST_F(AudioCoreTest, AudioCoreTest_KcontrolGetCodec, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTKCONTROLGETCODEC, -1};
@@ -140,18 +128,6 @@ HWTEST_F(AudioCoreTest, AudioCoreTest_AccessoryReadReg, TestSize.Level1)
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioCoreTest, AudioCoreTest_CodecAiaoReadReg, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTCODECAIAOREADREG, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioCoreTest, AudioCoreTest_AccessoryAiaoReadReg, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTACCESSORYAIAOREADREG, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
 HWTEST_F(AudioCoreTest, AudioCoreTest_CodecWriteReg, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTCODECWRITEREG, -1};
@@ -161,18 +137,6 @@ HWTEST_F(AudioCoreTest, AudioCoreTest_CodecWriteReg, TestSize.Level1)
 HWTEST_F(AudioCoreTest, AudioCoreTest_AccessoryWriteReg, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTACCESSORYWRITEREG, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioCoreTest, AudioCoreTest_CodecAiaoWriteReg, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTCODECAIAOWRITEREG, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioCoreTest, AudioCoreTest_AccessoryAiaoWriteReg, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTACCESSORYAIAOWRITEREG, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
@@ -194,18 +158,6 @@ HWTEST_F(AudioCoreTest, AudioCoreTest_AccessoryGetCtrlOps, TestSize.Level1)
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioCoreTest, AudioCoreTest_CodecAiaoGetCtrlOps, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTCODECAIAOGETCTRLOPS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioCoreTest, AudioCoreTest_AccessoryAiaoGetCtrlOps, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTACCESSORYAIAOGETCTRLOPS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
 HWTEST_F(AudioCoreTest, AudioCoreTest_CodecSetCtrlOps, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTCODECSETCTRLOPS, -1};
@@ -215,18 +167,6 @@ HWTEST_F(AudioCoreTest, AudioCoreTest_CodecSetCtrlOps, TestSize.Level1)
 HWTEST_F(AudioCoreTest, AudioCoreTest_AccessorySetCtrlOps, TestSize.Level1)
 {
     struct HdfTestMsg msg = {g_testAudioType, TESTACCESSORYSETCTRLOPS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioCoreTest, AudioCoreTest_CodecAiaoSetCtrlOps, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTCODECAIAOSETCTRLOPS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioCoreTest, AudioCoreTest_AccessoryAiaoSetCtrlOps, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TESTACCESSORYAIAOSETCTRLOPS, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 }

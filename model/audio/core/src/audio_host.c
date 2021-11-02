@@ -11,6 +11,7 @@
 #include "audio_core.h"
 #include "audio_parse.h"
 #include "audio_sapm.h"
+#include "audio_driver_log.h"
 
 #define HDF_LOG_TAG audio_host
 
@@ -164,7 +165,7 @@ static int32_t AudioDspDevInit(const struct AudioCard *audioCard)
     return HDF_SUCCESS;
 }
 
-static int32_t AudioCodecDaiDevInit(const struct AudioCard *audioCard)
+static int32_t AudioCodecDaiDevInit(struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *codecDai = NULL;
@@ -194,7 +195,7 @@ static int32_t AudioCodecDaiDevInit(const struct AudioCard *audioCard)
     return HDF_SUCCESS;
 }
 
-static int32_t AudioAccessoryDaiDevInit(const struct AudioCard *audioCard)
+static int32_t AudioAccessoryDaiDevInit(struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *accessoryDai = NULL;
@@ -224,7 +225,7 @@ static int32_t AudioAccessoryDaiDevInit(const struct AudioCard *audioCard)
     return HDF_SUCCESS;
 }
 
-static int32_t AudioCpuDaiDevInit(const struct AudioCard *audioCard)
+static int32_t AudioCpuDaiDevInit(struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *cpuDai = NULL;
@@ -254,7 +255,7 @@ static int32_t AudioCpuDaiDevInit(const struct AudioCard *audioCard)
     return HDF_SUCCESS;
 }
 
-static int32_t AudioDspDaiDevInit(const struct AudioCard *audioCard)
+static int32_t AudioDspDaiDevInit(struct AudioCard *audioCard)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct DaiDevice *dspDai = NULL;
@@ -295,22 +296,18 @@ static int32_t AudioInitDaiLink(struct AudioCard *audioCard)
 
     if (AudioPlatformDevInit(audioCard) || AudioCpuDaiDevInit(audioCard)) {
         ADM_LOG_ERR("Platform and CpuDai init fail.");
-        return HDF_ERR_IO;
     }
 
     if ((AudioCodecDevInit(audioCard) || AudioCodecDaiDevInit(audioCard))) {
-        ADM_LOG_ERR("codec init fail.");
-        return HDF_ERR_IO;
+        ADM_LOG_ERR("codec Device init fail.");
     }
 
     if (AudioAccessoryDevInit(audioCard) || AudioAccessoryDaiDevInit(audioCard)) {
-        ADM_LOG_ERR("Accessory init fail.");
-        return HDF_ERR_IO;
+        ADM_LOG_ERR("Accessory Device init fail.");
     }
 
     if (AudioDspDevInit(audioCard) || AudioDspDaiDevInit(audioCard)) {
-        ADM_LOG_ERR("Dsp Dai init fail.");
-        return HDF_ERR_IO;
+        ADM_LOG_ERR("Dsp Device init fail.");
     }
 
     ADM_LOG_DEBUG("success.");
@@ -386,6 +383,8 @@ static int32_t AudioDriverInit(struct HdfDeviceObject *device)
         ADM_LOG_ERR("AudioFillConfigData fail ret=%d", ret);
         return HDF_ERR_IO;
     }
+
+    audioCard->standbyMode = AUDIO_SAPM_TURN_STANDBY_LATER;
 
     /* Bind specific codec、platform and dai device */
     ret = AudioBindDaiLink(audioCard, &(audioCard->configData));
