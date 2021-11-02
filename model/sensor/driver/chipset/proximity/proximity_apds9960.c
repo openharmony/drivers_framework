@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 189278427@qq.com
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -31,8 +31,6 @@ struct Apds9960DrvData *Apds9960GetDrvData(void)
 
 static int32_t ReadApds9960RawData(struct SensorCfgData *data, struct ProximityData *rawData, int64_t *timestamp)
 {
-    uint8_t tmp;
-    uint8_t ldata;
     OsalTimespec time;
 
     (void)memset_s(&time, sizeof(time), 0, sizeof(time));
@@ -45,20 +43,16 @@ static int32_t ReadApds9960RawData(struct SensorCfgData *data, struct ProximityD
     }
     *timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT; /* unit nanosecond */
 
-    int32_t ret = ReadSensor(&data->busCfg, APDS9960_PROXIMITY_DATA_ADDR, &tmp, sizeof(uint8_t));
+    int32_t ret = ReadSensor(&data->busCfg, APDS9960_PROXIMITY_DATA_ADDR, &rawData->stateFlag, sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
-    if (tmp <= APDS9960_PROXIMITY_THRESHOLD) {
-        rawData->stateFlag = 5;    //near state
-    } else {
-        rawData->stateFlag = 0;    //far state
-    }
     return ret;
 }
 
 int32_t ReadApds9960Data(struct SensorCfgData *data)
 {
     int32_t ret;
+    int32_t tmp;
     struct ProximityData rawData = { 5 };
     struct SensorReportEvent event;
 
@@ -72,8 +66,15 @@ int32_t ReadApds9960Data(struct SensorCfgData *data)
     event.sensorId = SENSOR_TAG_PROXIMITY;
     event.option = 0;
     event.mode = SENSOR_WORK_MODE_ON_CHANGE;
-    event.dataLen = sizeof(rawData);
-    event.data = (uint8_t *)&rawData;
+
+    if (rawData.stateFlag <= APDS9960_PROXIMITY_THRESHOLD) {
+        tmp = 5;    //far state
+    } else {
+        tmp = 0;    //near state
+    }
+
+    event.dataLen = sizeof(tmp);
+    event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);
 
     if (ret != HDF_SUCCESS) {

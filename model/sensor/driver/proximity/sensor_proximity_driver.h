@@ -18,7 +18,7 @@
 #define PROXIMITY_CHIP_NAME_APDS9960        "apds9960"
 
 struct ProximityData {
-    uint32_t stateFlag;
+    uint8_t stateFlag;
 };
 
 struct ProximityOpsCall {
