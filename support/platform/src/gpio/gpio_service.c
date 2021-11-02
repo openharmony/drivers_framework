@@ -198,8 +198,8 @@ static void GpioManagerRelease(struct HdfDeviceObject *device)
     }
 
     gpioMgr->device.hdfDev = NULL;
-    device->service = NULL;
     device->service->Dispatch = NULL;
+    device->service = NULL;
     HDF_LOGI("GpioManagerRelease: done");
 }
 
