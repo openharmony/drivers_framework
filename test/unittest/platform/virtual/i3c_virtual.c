@@ -6,7 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "i3c_core.h"
+#include "i3c/i3c_core.h"
 #include "device_resource_if.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
