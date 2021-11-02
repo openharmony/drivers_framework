@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 189278427@qq.com
+ * Copyright (c) 2021 xu
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
