@@ -41,7 +41,7 @@ int32_t HallRegisterChipOps(const struct HallOpsCall *ops)
     return HDF_SUCCESS;
 }
 
-void ReadGpioData(struct SensorCfgData *data)
+void ReadGpioData()
 {
     int32_t ret;
     uint16_t tmp;
@@ -50,8 +50,6 @@ void ReadGpioData(struct SensorCfgData *data)
 
     struct HallDrvData *drvData = HallGetDrvData();
     CHECK_NULL_PTR_RETURN(drvData);
-
-    CHECK_NULL_PTR_RETURN(data);
 
     (void)memset_s(&event, sizeof(event), 0, sizeof(event));
     (void)memset_s(&time, sizeof(time), 0, sizeof(time));
@@ -83,7 +81,7 @@ static void HallDataWorkEntry(void *arg)
     CHECK_NULL_PTR_RETURN(drvData);
 
     if (drvData->ops.ReadData == NULL) {
-        ReadGpioData(drvData->hallCfg);
+        ReadGpioData();
         HDF_LOGI("%s: Hall ReadData function NULL", __func__);
     } else if (drvData->ops.ReadData(drvData->hallCfg) != HDF_SUCCESS) {
         HDF_LOGE("%s: Hall read data failed", __func__);
@@ -104,9 +102,9 @@ static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
         HDF_LOGE("%s: Read hall gpio value failed", __func__);
     }
     if (valRead == GPIO_VAL_LOW) {
-        drvData->status = 0;
-    } else if(valRead == GPIO_VAL_HIGH) {
         drvData->status = 1;
+    } else if(valRead == GPIO_VAL_HIGH) {
+        drvData->status = 0;
     }
 
     if (!HdfAddWork(&drvData->hallWorkQueue, &drvData->hallWork)) {
@@ -130,9 +128,9 @@ static int32_t HallSouthPolarityIrqFunc(uint16_t gpio, void *data)
         HDF_LOGE("%s: Read hall gpio value failed", __func__);
     }
     if (valRead == GPIO_VAL_LOW) {
-        drvData->status = 0;
-    } else if(valRead == GPIO_VAL_HIGH) {
         drvData->status = 1;
+    } else if(valRead == GPIO_VAL_HIGH) {
+        drvData->status = 0;
     }
 
     if (!HdfAddWork(&drvData->hallWorkQueue, &drvData->hallWork)) {
@@ -174,7 +172,6 @@ static int32_t SetHallEnable(void)
     }
 
     mode = OSAL_IRQF_TRIGGER_RISING | OSAL_IRQF_TRIGGER_FALLING;
-    HDF_LOGE("%s: mode:%0x\n", __func__, mode);
     if (drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM1] >= 0) {
         ret = GpioSetIrq(drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM1], mode,
             HallNorthPolarityIrqFunc, drvData);
