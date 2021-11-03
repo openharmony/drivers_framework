@@ -298,7 +298,7 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
             break;
         }
         dispatcher->status = ME_STATUS_STARTTING;
-         config .name = "MessageDispatcher";
+        config .name = "MessageDispatcher";
         config.priority = OSAL_THREAD_PRI_DEFAULT;
         config .stackSize = 0x2000;
         localDispatcher = (LocalMessageDispatcher *)dispatcher;
