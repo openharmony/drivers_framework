@@ -682,9 +682,9 @@ static ErrorCode DoShutdownMessageRouter(void)
 
 ErrorCode ShutdownMessageRouter()
 {
-    HDF_LOGW("%s:Shutdown router...", __func__);
     HDF_STATUS status;
     ErrorCode errCode;
+    HDF_LOGW("%s:Shutdown router...", __func__);
     status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
     if (status != HDF_SUCCESS) {
         HDF_LOGE("Unable to get lock!status=%d", status);

@@ -281,7 +281,7 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
     HDF_STATUS status;
     ErrorCode errCode;
     LocalMessageDispatcher *localDispatcher = NULL;
-
+    struct OsalThreadParam config;
     if (dispatcher == NULL) {
         return ME_ERROR_NULL_PTR;
     }
@@ -298,11 +298,9 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
             break;
         }
         dispatcher->status = ME_STATUS_STARTTING;
-        struct OsalThreadParam config = {
-            .name = "MessageDispatcher",
-            .priority = OSAL_THREAD_PRI_DEFAULT,
-            .stackSize = 0x2000,
-        };
+         config .name = "MessageDispatcher";
+        config.priority = OSAL_THREAD_PRI_DEFAULT;
+        config .stackSize = 0x2000;
         localDispatcher = (LocalMessageDispatcher *)dispatcher;
         status = OsalThreadCreate(&localDispatcher->dispatcherThread, RunDispatcher, localDispatcher);
         if (status != HDF_SUCCESS) {

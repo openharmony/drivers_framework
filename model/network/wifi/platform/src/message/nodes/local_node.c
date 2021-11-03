@@ -34,6 +34,7 @@ static void HandleRequestMessage(const RemoteService *service, MessageContext *c
     LocalNodeService *localNodeService = NULL;
     localNodeService = (LocalNodeService *)service;
     struct MessageDef messageDef = { NULL, 0 };
+	
     if (context == NULL || service == NULL) {
         HDF_LOGE("%s:input is NULL", __func__);
         return;
@@ -50,8 +51,8 @@ static void HandleRequestMessage(const RemoteService *service, MessageContext *c
 
 static void HandleResponseMessage(const RemoteService *service, MessageContext *context)
 {
-    (void)service;
     HDF_STATUS status;
+    (void)service;
     if (context->requestType < MESSAGE_RSP_START) {
         return;
     }
@@ -135,8 +136,8 @@ static void DestroyLocalNodeRemoteService(RemoteService *service)
 RemoteService *CreateLocalNodeService(MessageNode *node, MessageDispatcher *dispatcher, struct ServiceDef *mapper)
 {
     LocalNodeService *service = NULL;
-    (void)node;
     ErrorCode errCode;
+    (void)node;
     if (mapper == NULL) {
         return NULL;
     }

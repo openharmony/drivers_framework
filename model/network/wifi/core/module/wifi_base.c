@@ -768,11 +768,12 @@ static int32_t WifiCmdSendAction(const RequestContext *context, struct HdfSBuf *
 
 static int32_t WifiCmdGetNetworkInfo(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
-    (void)context;
-    (void)reqData;
-    uint32_t netDevNum = 1;
+    uint32_t netDevNum;
     char *defaultIfName = "wlan0";
     uint8_t supportMode[PROTOCOL_80211_IFTYPE_NUM] = {0};
+    netDevNum = 1;
+    (void)context;
+    (void)reqData;
 
     if (!HdfSbufWriteUint32(rspData, netDevNum)) {
         HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
@@ -808,8 +809,8 @@ static int32_t WifiCmdIsSupportCombo(const RequestContext *context, struct HdfSB
 
 static int32_t WifiCmdGetSupportCombo(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
-    (void)context;
     uint8_t isComboValid;
+    (void)context;
     if (reqData == NULL || rspData == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
@@ -1265,13 +1266,13 @@ static uint32_t GetIftype(struct NetDevice *netdev, uint8_t *iftype)
 #define MAX_NETDEVICE_COUNT 20
 static int32_t WifiCmdGetNetDevInfo(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
-    (void)context;
-    (void)reqData;
     uint32_t i;
     uint32_t netdevNum;
     uint8_t iftype;
     struct NetDevice *netDev = NULL;
-
+    (void)context;
+    (void)reqData;
+	
     netdevNum = NetDevGetRegisterCount();
     if (!HdfSbufWriteUint32(rspData, netdevNum)) {
         HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
