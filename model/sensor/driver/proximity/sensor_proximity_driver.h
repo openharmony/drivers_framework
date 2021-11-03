@@ -14,9 +14,6 @@
 #include "sensor_config_parser.h"
 #include "sensor_platform_if.h"
 
-#define PROXIMITY_DEFAULT_SAMPLING_200_MS    200000000
-#define PROXIMITY_CHIP_NAME_APDS9960        "apds9960"
-
 struct ProximityData {
     uint8_t stateFlag;
 };
