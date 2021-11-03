@@ -146,7 +146,7 @@ int32_t MessageQueueTest003(void)
     
     do {
         config.name = "PushQueueWithDelay";
-        config .priority = OSAL_THREAD_PRI_DEFAULT;
+        config.priority = OSAL_THREAD_PRI_DEFAULT;
         config.stackSize = 0x1000;
         status = OsalThreadCreate(&pushThread, RunPushQueue, queue);
         if (status != HDF_SUCCESS) {
