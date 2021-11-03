@@ -8,12 +8,12 @@
 
 #ifndef AUDIO_ACCESSORY_BASE_H
 #define AUDIO_ACCESSORY_BASE_H
+#include "audio_control.h"
 #include "audio_core.h"
 #include "audio_host.h"
-#include "audio_sapm.h"
 #include "audio_parse.h"
-#include "audio_control.h"
 #include "audio_platform_base.h"
+#include "audio_sapm.h"
 
 #ifdef __cplusplus
 #if __cplusplus
