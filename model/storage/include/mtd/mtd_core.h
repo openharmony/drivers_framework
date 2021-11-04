@@ -18,7 +18,7 @@
 #define MTD_FLASH_ID_LEN_MAX 8
 #define MTD_DEVICE_NUM_MAX   3
 
-// #define MTD_DEBUG /* open this macro for debug */
+// #define MTD_DEBUG /* open this macro for debug
 
 struct MtdDevice;
 struct MtdDeviceMethod;
