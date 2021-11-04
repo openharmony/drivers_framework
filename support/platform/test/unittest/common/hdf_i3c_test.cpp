@@ -29,7 +29,6 @@ public:
 
 void HdfI3cTest::SetUpTestCase()
 {
-    int32_t ret;
     struct HdfTestMsg msg = {TEST_PAL_I3C_TYPE, I3C_TEST_CMD_SETUP_ALL, -1};
     HdfTestOpenService();
     HdfTestSendMsgToService(&msg);
@@ -37,7 +36,6 @@ void HdfI3cTest::SetUpTestCase()
 
 void HdfI3cTest::TearDownTestCase()
 {
-    int32_t ret;
     struct HdfTestMsg msg = {TEST_PAL_I3C_TYPE, I3C_TEST_CMD_TEARDOWN_ALL, -1};
     HdfTestSendMsgToService(&msg);
     HdfTestCloseService();

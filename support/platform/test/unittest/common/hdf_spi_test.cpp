@@ -27,18 +27,6 @@ enum HdfTestCaseCmd {
     SPI_PERFORMANCE_TEST,
 };
 
-/*enum HdfTestCaseCmd {
-    SPI_SET_CFG_TEST = 0,
-    SPI_TRANSFER_TEST,
-    SPI_WRITE_TEST,
-    SPI_READ_TEST,
-    SPI_DMA_TEST,
-    SPI_INTERRUPT_TEST,
-    SPI_RELIABILITY_TEST,
-    SPI_PERFORMANCE_TEST,
-};
-*/
-
 class HdfLiteSpiTest : public testing::Test {
 public:
     static void SetUpTestCase();
