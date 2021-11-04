@@ -136,19 +136,18 @@ int32_t MessageQueueTest003(void)
     void *p = NULL;
     PriorityQueue *queue = NULL;
     int32_t status;
+    struct OsalThreadParam config;
+    OSAL_DECLARE_THREAD(pushThread);
     queue = CreatePriorityQueue(TEST_QUEUE_SIZE, NO_PRIORITY);
     if (queue == NULL) {
         HDF_LOGE("%s:Create queue failed!", __func__);
         return -1;
     }
-    OSAL_DECLARE_THREAD(pushThread);
+    
     do {
-        struct OsalThreadParam config = {
-            .name = "PushQueueWithDelay",
-            .priority = OSAL_THREAD_PRI_DEFAULT,
-            .stackSize = 0x1000,
-        };
-
+        config.name = "PushQueueWithDelay";
+        config.priority = OSAL_THREAD_PRI_DEFAULT;
+        config.stackSize = 0x1000;
         status = OsalThreadCreate(&pushThread, RunPushQueue, queue);
         if (status != HDF_SUCCESS) {
             HDF_LOGE("%s:OsalThreadCreate failed!status=%d", __func__, status);
