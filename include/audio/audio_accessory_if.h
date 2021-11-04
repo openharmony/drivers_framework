@@ -46,11 +46,9 @@ struct AccessoryData {
     int32_t (*Init)(struct AudioCard *, const struct AccessoryDevice *device);
     int32_t (*Read)(const struct AccessoryDevice *, uint32_t, uint32_t *);
     int32_t (*Write)(const struct AccessoryDevice *, uint32_t, uint32_t);
-    int32_t (*AiaoRead)(const struct AccessoryDevice *, uint32_t, uint32_t *);
-    int32_t (*AiaoWrite)(const struct AccessoryDevice *, uint32_t, uint32_t);
-
     const struct AudioKcontrol *controls;
     int numControls;
+    struct AudioRegCfgData* regConfig;
 };
 
 #ifdef __cplusplus

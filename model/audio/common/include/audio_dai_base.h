@@ -6,10 +6,12 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef AUDIO_HOST_TEST_H
-#define AUDIO_HOST_TEST_H
+#ifndef AUDIO_DAI_BASE_H
+#define AUDIO_DAI_BASE_H
 
-#include "hdf_types.h"
+#include "audio_codec_if.h"
+#include "audio_core.h"
+#include "osal_io.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -17,8 +19,10 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-int32_t AudioKcontrolTestGetCodec(void);
-int32_t GetCardTestInstance(void);
+struct DaiData *DaiDataFromCard(const struct AudioCard *card);
+int32_t DaiGetConfigInfo(const struct HdfDeviceObject *device, struct DaiData *data);
+int32_t DaiCheckSampleRate(unsigned int sampleRates);
+int32_t DaiSetConfigInfo(struct DaiData *data);
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -26,4 +30,4 @@ int32_t GetCardTestInstance(void);
 #endif
 #endif /* __cplusplus */
 
-#endif /* AUDIO_HOST_TEST_H */
+#endif

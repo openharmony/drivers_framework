@@ -27,14 +27,3 @@ int32_t AudioControlDispatchTestStreamDispatch(void)
     HDF_LOGI("%s: success", __func__);
     return HDF_SUCCESS;
 }
-
-int32_t AudioControlDispatchTestStreamHostDestroy(void)
-{
-    struct StreamHost *host = NULL;
-    HDF_LOGI("%s: enter", __func__);
-
-    StreamHostDestroy(host);
-
-    HDF_LOGI("%s: success", __func__);
-    return HDF_SUCCESS;
-}

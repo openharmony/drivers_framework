@@ -8,9 +8,12 @@
 
 #ifndef AUDIO_ACCESSORY_BASE_H
 #define AUDIO_ACCESSORY_BASE_H
-
-#include "audio_host.h"
 #include "audio_control.h"
+#include "audio_core.h"
+#include "audio_host.h"
+#include "audio_parse.h"
+#include "audio_platform_base.h"
+#include "audio_sapm.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -48,17 +51,30 @@ enum I2sFrequencyRegVal {
     I2S_SAMPLE_FREQUENCY_REG_VAL_96000 = 0xB    /* 96kHz sample_rate */
 };
 
-enum I2sFormatRegVal {
-    I2S_SAMPLE_FORMAT_REG_VAL_MSB_24    = 0x2,    /*  MSB-justified data up to 24 bits */
-    I2S_SAMPLE_FORMAT_REG_VAL_24        = 0x3,    /*  I2S data up to 24 bits */
-    I2S_SAMPLE_FORMAT_REG_VAL_LSB_16    = 0x4,    /*  LSB-justified 16-bit data */
-    I2S_SAMPLE_FORMAT_REG_VAL_LSB_18    = 0x5,    /*  LSB-justified 18-bit data */
-    I2S_SAMPLE_FORMAT_REG_VAL_LSB_20    = 0x6,    /*  LSB-justified 20-bit data */
-    I2S_SAMPLE_FORMAT_REG_VAL_LSB_24    = 0x7,    /*  LSB-justified 24-bit data */
+struct AccessoryTransferData {
+    uint16_t i2cDevAddr;
+    uint16_t i2cBusNumber;
+    uint32_t accessoryCfgCtrlCount;
+    struct AudioRegCfgGroupNode **accessoryRegCfgGroupNode;
+    struct AudioKcontrol *accessoryControls;
 };
 
-int32_t FormatToBitWidth(enum AudioFormat format, uint16_t *bitWidth);
-int32_t RateToFrequency(uint32_t rate, uint16_t *freq);
+struct DaiParamsVal {
+    uint32_t frequencyVal;
+    uint32_t formatVal;
+    uint32_t channelVal;
+};
+
+int32_t AccessoryI2cReadWrite(struct AudioAddrConfig *regAttr, uint16_t rwFlag);
+int32_t AccessoryRegBitsRead(struct AudioMixerControl *regAttr, uint32_t *regValue);
+int32_t AccessoryRegBitsUpdate(struct AudioMixerControl regAttr);
+
+int32_t AcessoryDeviceFrequencyParse(uint32_t rate, uint16_t *freq);
+int32_t AccessoryDaiParamsUpdate(struct DaiParamsVal daiParamsVal);
+int32_t AccessoryDeviceCfgGet(struct AccessoryData *data, struct AccessoryTransferData *transferData);
+int32_t AccessoryDeviceCtrlRegInit(void);
+int32_t AccessoryDeviceRegRead(const struct AccessoryDevice *codec, uint32_t reg, uint32_t *value);
+int32_t AccessoryDeviceRegWrite(const struct AccessoryDevice *codec, uint32_t reg, uint32_t value);
 
 #ifdef __cplusplus
 #if __cplusplus

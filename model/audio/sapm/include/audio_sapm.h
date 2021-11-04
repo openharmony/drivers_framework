@@ -39,6 +39,7 @@ enum AudioSapmType {
     AUDIO_SAPM_INPUT = 0,       /* input pin */
     AUDIO_SAPM_OUTPUT,          /* output pin */
     AUDIO_SAPM_MUX,             /* selects 1 analog signal from many inputs */
+    AUDIO_SAPM_DEMUX,           /* connects the input to one of multiple outputs */
     AUDIO_SAPM_VIRT_MUX,        /* virtual version of snd_soc_dapm_mux */
     AUDIO_SAPM_VALUE_MUX,       /* selects 1 analog signal from many inputs */
     AUDIO_SAPM_MIXER,           /* mixes several analog signals together */
@@ -57,8 +58,12 @@ enum AudioSapmType {
     AUDIO_SAPM_PRE,             /* machine specific pre component - exec first */
     AUDIO_SAPM_POST,            /* machine specific post component - exec last */
     AUDIO_SAPM_SUPPLY,          /* power/clock supply */
+    AUDIO_SAPM_REGULATOR_SUPPLY, /* external regulator */
+    AUDIO_SAPM_CLOCK_SUPPLY,    /* external clock */
     AUDIO_SAPM_AIF_IN,          /* audio interface input */
     AUDIO_SAPM_AIF_OUT,         /* audio interface output */
+    AUDIO_SAPM_SIGGEN,          /* signal generator */
+    AUDIO_SAPM_SINK,
 };
 
 /* component has no PM register bit */

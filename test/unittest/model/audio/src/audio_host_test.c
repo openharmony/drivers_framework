@@ -8,21 +8,28 @@
 
 #include "audio_host_test.h"
 #include "audio_host.h"
+#include "devsvc_manager_clnt.h"
 
 #define HDF_LOG_TAG audio_host_test
+#define KCONTROL_TEST_SERVICE_NAME "dsp_service_0"
 
 int32_t AudioKcontrolTestGetCodec(void)
 {
-    struct HdfDeviceObject *device = NULL;
-    struct AudioHost *audioHost = NULL;
     HDF_LOGI("%s: enter", __func__);
 
-    audioHost = AudioHostCreateAndBind(device);
-    if (audioHost != NULL) {
-        HDF_LOGE("%s: codecDevice is not NULL", __func__);
+    if (AudioHostCreateAndBind(NULL) != NULL) {
+        HDF_LOGE("%s_[%d] codecDevice is not NULL", __func__, __LINE__);
         return HDF_FAILURE;
     }
 
+    struct HdfDeviceObject *device = DevSvcManagerClntGetDeviceObject(KCONTROL_TEST_SERVICE_NAME);
+    struct AudioHost *audioHost = AudioHostCreateAndBind(device);
+    if (audioHost == NULL) {
+        HDF_LOGE("%s_[%d] codecDevice is NULL", __func__, __LINE__);
+        return HDF_FAILURE;
+    }
+
+    OsalMemFree(audioHost);
     HDF_LOGI("%s: success", __func__);
     return HDF_SUCCESS;
 }
@@ -49,16 +56,6 @@ int32_t GetCardTestInstance(void)
         }
     }
 
-    HDF_LOGI("%s: success", __func__);
-    return HDF_SUCCESS;
-}
-
-int32_t AudioHostTestDestroy(void)
-{
-    struct AudioHost *host = NULL;
-    HDF_LOGI("%s: enter", __func__);
-
-    AudioHostDestroy(host);
     HDF_LOGI("%s: success", __func__);
     return HDF_SUCCESS;
 }

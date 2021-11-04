@@ -8,6 +8,7 @@
 
 #include "audio_control_dispatch.h"
 #include "audio_control.h"
+#include "audio_driver_log.h"
 
 #define HDF_LOG_TAG audio_control_dispatch
 
@@ -126,7 +127,6 @@ static int32_t ControlHostElemRead(const struct HdfDeviceIoClient *client, struc
     struct AudioCtrlElemValue elemValue;
     struct AudioCtrlElemId id;
     int32_t result;
-    ADM_LOG_DEBUG("entry.");
 
     if ((client == NULL) || (reqData == NULL) || (rspData == NULL)) {
         ADM_LOG_ERR("Input ElemRead params check error: client=%p, reqData=%p, rspData=%p.", client, reqData, rspData);
@@ -148,6 +148,7 @@ static int32_t ControlHostElemRead(const struct HdfDeviceIoClient *client, struc
         ADM_LOG_ERR("ElemRead request itemName failed!");
         return HDF_FAILURE;
     }
+    ADM_LOG_DEBUG("itemName: %s cardServiceName: %s iface: %d ", id.itemName, id.cardServiceName, id.iface);
 
     kctrl = AudioGetKctrlInstance(&id);
     if (kctrl == NULL || kctrl->Get == NULL) {
@@ -170,7 +171,6 @@ static int32_t ControlHostElemRead(const struct HdfDeviceIoClient *client, struc
         ADM_LOG_ERR("Write response data value[1]=%d failed!", elemValue.value[1]);
         return HDF_FAILURE;
     }
-    ADM_LOG_DEBUG("success.");
     return HDF_SUCCESS;
 }
 
@@ -180,7 +180,6 @@ static int32_t ControlHostElemWrite(const struct HdfDeviceIoClient *client,
     struct AudioKcontrol *kctrl = NULL;
     struct AudioCtrlElemValue elemValue;
     int32_t result;
-    ADM_LOG_DEBUG("entry.");
 
     if ((client == NULL) || (reqData == NULL)) {
         ADM_LOG_ERR("Input params check error: client=%p, reqData=%p.", client, reqData);
@@ -209,6 +208,10 @@ static int32_t ControlHostElemWrite(const struct HdfDeviceIoClient *client,
         return HDF_FAILURE;
     }
 
+    ADM_LOG_DEBUG("itemName: %s cardServiceName: %s iface: %d value: %d ", elemValue.id.itemName,
+        elemValue.id.cardServiceName,
+        elemValue.id.iface, elemValue.value[0]);
+
     kctrl = AudioGetKctrlInstance(&elemValue.id);
     if (kctrl == NULL || kctrl->Set == NULL) {
         ADM_LOG_ERR("Find kctrl or Set fail!");
@@ -220,7 +223,6 @@ static int32_t ControlHostElemWrite(const struct HdfDeviceIoClient *client,
         ADM_LOG_ERR("Get control value fail result=%d", result);
         return HDF_FAILURE;
     }
-    ADM_LOG_DEBUG("success.");
     return HDF_SUCCESS;
 }
 

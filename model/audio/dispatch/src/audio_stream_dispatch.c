@@ -7,6 +7,8 @@
  */
 
 #include "audio_stream_dispatch.h"
+#include "audio_platform_base.h"
+#include "audio_driver_log.h"
 
 #define HDF_LOG_TAG audio_stream_dispatch
 
@@ -33,7 +35,7 @@ int32_t HwCpuDaiDispatch(const struct AudioCard *audioCard, const struct AudioPc
      * If not, skip the if statement and execute in sequence.
      */
     if (cpuDai->devData->ops->HwParams != NULL) {
-        int ret = cpuDai->devData->ops->HwParams(audioCard, params, cpuDai);
+        int ret = cpuDai->devData->ops->HwParams(audioCard, params);
         if (ret < 0) {
             ADM_LOG_ERR("cpuDai hardware params fail ret=%d", ret);
             return HDF_ERR_IO;
@@ -68,7 +70,7 @@ int32_t HwCodecDaiDispatch(const struct AudioCard *audioCard, const struct Audio
      * If not, skip the if statement and execute in sequence.
      */
     if (codecDai->devData->ops->HwParams != NULL) {
-        int ret = codecDai->devData->ops->HwParams(audioCard, params, codecDai);
+        int ret = codecDai->devData->ops->HwParams(audioCard, params);
         if (ret < 0) {
             ADM_LOG_ERR("codecDai hardware params fail ret=%d", ret);
             return HDF_ERR_IO;
@@ -91,21 +93,13 @@ int32_t HwPlatfromDispatch(const struct AudioCard *audioCard, const struct Audio
         return HDF_FAILURE;
     }
 
-    struct PlatformDevice *platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL) {
-        ADM_LOG_ERR("platform param is NULL.");
-        return HDF_FAILURE;
-    }
-
     /* If there are HwParams function, it will be executed directly.
      * If not, skip the if statement and execute in sequence.
      */
-    if (platform->devData->ops->HwParams != NULL) {
-        int ret = platform->devData->ops->HwParams(audioCard, params);
-        if (ret < 0) {
-            ADM_LOG_ERR("platform hardware params fail ret=%d", ret);
-            return HDF_ERR_IO;
-        }
+    int ret = AudioHwParams(audioCard, params);
+    if (ret < 0) {
+        ADM_LOG_ERR("platform hardware params fail ret=%d", ret);
+        return HDF_ERR_IO;
     }
 
     return HDF_SUCCESS;
@@ -119,11 +113,68 @@ int32_t HwParamsDispatch(const struct AudioCard *audioCard, const struct AudioPc
     }
 
     /* Traverse through each driver method; Enter if you have, if not, exectue in order */
-    if (HwCodecDaiDispatch(audioCard, params) ||
-        HwCpuDaiDispatch(audioCard, params) ||
-        HwPlatfromDispatch(audioCard, params)) {
-        ADM_LOG_ERR("hardware params fail.");
+    if (HwCodecDaiDispatch(audioCard, params) != HDF_SUCCESS) {
+        ADM_LOG_ERR("codec dai hardware params fail.");
         return HDF_FAILURE;
+    }
+
+    if (HwCpuDaiDispatch(audioCard, params) != HDF_SUCCESS) {
+        ADM_LOG_ERR("cpu dai hardware params fail.");
+        return HDF_FAILURE;
+    }
+
+    if (HwPlatfromDispatch(audioCard, params) != HDF_SUCCESS) {
+        ADM_LOG_ERR("platform dai hardware params fail.");
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioDaiDeviceStartup(struct AudioCard *audioCard)
+{
+    struct DaiDevice *cpuDai = NULL;
+    struct DaiDevice *codecDai = NULL;
+    struct DaiDevice *accessoryDai = NULL;
+    int ret;
+
+    if (audioCard == NULL || audioCard->rtd == NULL) {
+        ADM_LOG_ERR("audioCard is null.");
+        return HDF_FAILURE;
+    }
+    cpuDai = audioCard->rtd->cpuDai;
+    if (cpuDai != NULL && cpuDai->devData != NULL && cpuDai->devData->ops != NULL &&
+        cpuDai->devData->ops->Startup != NULL) {
+        ret = cpuDai->devData->ops->Startup(audioCard, cpuDai);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("cpuDai Startup fail.");
+            return HDF_FAILURE;
+        }
+    } else {
+        ADM_LOG_DEBUG("cpu dai startup is null.");
+    }
+
+    codecDai = audioCard->rtd->codecDai;
+    if (codecDai != NULL && codecDai->devData != NULL && codecDai->devData->ops != NULL &&
+        codecDai->devData->ops->Startup != NULL) {
+        ret = codecDai->devData->ops->Startup(audioCard, codecDai);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("codecDai Startup fail.");
+            return HDF_FAILURE;
+        }
+    } else {
+        ADM_LOG_DEBUG("codec dai startup is null.");
+    }
+
+    accessoryDai = audioCard->rtd->accessoryDai;
+    if (accessoryDai != NULL && accessoryDai->devData != NULL && accessoryDai->devData->ops != NULL &&
+        accessoryDai->devData->ops->Startup != NULL) {
+        ret = accessoryDai->devData->ops->Startup(audioCard, accessoryDai);
+        if (ret != HDF_SUCCESS) {
+            ADM_LOG_ERR("accessoryDai Startup fail.");
+            return HDF_FAILURE;
+        }
+    } else {
+        ADM_LOG_DEBUG("accessory dai startup is null.");
     }
     return HDF_SUCCESS;
 }
@@ -205,10 +256,8 @@ int32_t StreamHostHwParams(const struct HdfDeviceIoClient *client, struct HdfSBu
     struct HdfSBuf *reply)
 {
     struct AudioPcmHwParams params;
-    struct StreamHost *streamHost = NULL;
     struct AudioCard *audioCard = NULL;
-    char *cardName = NULL;
-    int ret = HDF_SUCCESS;
+    int ret;
     ADM_LOG_DEBUG("entry.");
 
     if ((client == NULL || client->device == NULL) || (data == NULL)) {
@@ -217,28 +266,11 @@ int32_t StreamHostHwParams(const struct HdfDeviceIoClient *client, struct HdfSBu
     }
     (void)reply;
 
-    streamHost = StreamHostFromDevice(client->device);
-    if (streamHost == NULL) {
-        ADM_LOG_ERR("renderHost is NULL");
-        return HDF_FAILURE;
-    }
-
-    cardName = (char *)OsalMemCalloc(sizeof(char) * BUFF_SIZE_MAX);
-    if (cardName == NULL) {
-        ADM_LOG_ERR("malloc cardServiceName fail!");
-        return HDF_FAILURE;
-    }
-    streamHost->priv = cardName;
-
     (void)memset_s(&params, sizeof(struct AudioPcmHwParams), 0, sizeof(struct AudioPcmHwParams));
+
     ret = HwParamsDataAnalysis(data, &params);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("hwparams data analysis failed ret=%d", ret);
-        return HDF_FAILURE;
-    }
-
-    if (memcpy_s(cardName, BUFF_SIZE_MAX, params.cardServiceName, BUFF_SIZE_MAX) != EOK) {
-        ADM_LOG_ERR("memcpy cardName failed.");
         return HDF_FAILURE;
     }
 
@@ -292,8 +324,6 @@ static struct AudioCard *StreamHostGetCardInstance(const struct HdfDeviceIoClien
 int32_t StreamHostCapturePrepare(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
     struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
@@ -307,20 +337,12 @@ int32_t StreamHostCapturePrepare(const struct HdfDeviceIoClient *client, struct 
     (void)reply;
 
     audioCard = StreamHostGetCardInstance(client);
-    if (audioCard == NULL || audioCard->rtd == NULL) {
+    if (audioCard == NULL) {
         ADM_LOG_ERR("CapturePrepare get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->CapturePrepare == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->CapturePrepare(audioCard);
+    ret = AudioCapturePrepare(audioCard);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform CapturePrepare fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -330,11 +352,73 @@ int32_t StreamHostCapturePrepare(const struct HdfDeviceIoClient *client, struct 
     return HDF_SUCCESS;
 }
 
+int32_t StreamHostCaptureOpen(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
+    struct HdfSBuf *reply)
+{
+    char *cardName = NULL;
+    const char *carNameTemp = NULL;
+    struct StreamHost *streamHost = NULL;
+    struct AudioCard *audioCard = NULL;
+
+    ADM_LOG_DEBUG("entry.");
+
+    if (client == NULL) {
+        ADM_LOG_ERR("StreamHostCaptureOpen input param is NULL.");
+        return HDF_FAILURE;
+    }
+
+    (void)reply;
+
+    cardName = (char *)OsalMemCalloc(sizeof(char) * BUFF_SIZE_MAX);
+    if (cardName == NULL) {
+        ADM_LOG_ERR("malloc cardServiceName fail!");
+        return HDF_FAILURE;
+    }
+
+    streamHost = StreamHostFromDevice(client->device);
+    if (streamHost == NULL) {
+        OsalMemFree(cardName);
+        ADM_LOG_ERR("renderHost is NULL");
+        return HDF_FAILURE;
+    }
+
+    if (!(carNameTemp = HdfSbufReadString(data))) {
+        OsalMemFree(cardName);
+        ADM_LOG_ERR("read request cardServiceName failed!");
+        return HDF_FAILURE;
+    }
+
+    if (strncpy_s(cardName, BUFF_SIZE_MAX - 1, carNameTemp, strlen(carNameTemp) + 1) != EOK) {
+        ADM_LOG_ERR("memcpy cardName failed.");
+        OsalMemFree(cardName);
+        return HDF_FAILURE;
+    }
+    ADM_LOG_DEBUG("card name: %s.", cardName);
+    streamHost->priv = cardName;
+
+    audioCard = StreamHostGetCardInstance(client);
+    if (audioCard == NULL) {
+        ADM_LOG_ERR("StreamHostCaptureOpen get card instance or rtd fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioCaptureOpen(audioCard) != HDF_SUCCESS) {
+        ADM_LOG_ERR("platform CaptureOpen fail");
+        return HDF_ERR_IO;
+    }
+
+    if (AudioDaiDeviceStartup(audioCard) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Dai Device Startup fail.");
+        return HDF_FAILURE;
+    }
+
+    ADM_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}
+
 int32_t StreamHostRenderPrepare(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
     struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
@@ -352,16 +436,8 @@ int32_t StreamHostRenderPrepare(const struct HdfDeviceIoClient *client, struct H
         ADM_LOG_ERR("RenderPrepare get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->RenderPrepare == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->RenderPrepare(audioCard);
+    ret = AudioRenderPrepare(audioCard);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform RenderPrepare fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -371,51 +447,101 @@ int32_t StreamHostRenderPrepare(const struct HdfDeviceIoClient *client, struct H
     return HDF_SUCCESS;
 }
 
+int32_t StreamHostRenderOpen(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
+    struct HdfSBuf *reply)
+{
+    char *cardName = NULL;
+    const char *carNameTemp = NULL;
+    struct StreamHost *streamHost = NULL;
+    struct AudioCard *audioCard = NULL;
+
+    ADM_LOG_DEBUG("entry.");
+
+    if (client == NULL) {
+        ADM_LOG_ERR("StreamHostRenderOpen input param is NULL.");
+        return HDF_FAILURE;
+    }
+
+    (void)reply;
+
+    cardName = (char *)OsalMemCalloc(sizeof(char) * BUFF_SIZE_MAX);
+    if (cardName == NULL) {
+        ADM_LOG_ERR("malloc cardServiceName fail!");
+        return HDF_FAILURE;
+    }
+
+    streamHost = StreamHostFromDevice(client->device);
+    if (streamHost == NULL) {
+        ADM_LOG_ERR("renderHost is NULL");
+        OsalMemFree(cardName);
+        return HDF_FAILURE;
+    }
+
+    if (!(carNameTemp = HdfSbufReadString(data))) {
+        ADM_LOG_ERR("read request cardServiceName failed!");
+        OsalMemFree(cardName);
+        return HDF_FAILURE;
+    }
+
+    if (strncpy_s(cardName, BUFF_SIZE_MAX - 1, carNameTemp, strlen(carNameTemp) + 1) != EOK) {
+        ADM_LOG_ERR("memcpy cardName failed.");
+        OsalMemFree(cardName);
+        return HDF_FAILURE;
+    }
+
+    ADM_LOG_DEBUG("card name: %s.", cardName);
+
+    streamHost->priv = cardName;
+
+    audioCard = StreamHostGetCardInstance(client);
+    if (audioCard == NULL || audioCard->rtd == NULL) {
+        ADM_LOG_ERR("StreamHostRenderOpen get card instance or rtd fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioRenderOpen(audioCard) != HDF_SUCCESS) {
+        ADM_LOG_ERR("platform RenderOpen fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioDaiDeviceStartup(audioCard) != HDF_SUCCESS) {
+        ADM_LOG_ERR("Dai Device Startup fail.");
+        return HDF_FAILURE;
+    }
+
+    ADM_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}
+
 static int32_t StreamTransferWrite(const struct AudioCard *audioCard, struct AudioTxData *transfer)
 {
-    struct PlatformDevice *platform = NULL;
-    int32_t ret = HDF_SUCCESS;
+    int32_t ret;
 
-    if (audioCard == NULL || audioCard->rtd == NULL || transfer == NULL) {
+    if (audioCard == NULL || transfer == NULL) {
         ADM_LOG_ERR("input param is NULL.");
         return HDF_FAILURE;
     }
 
-    platform = audioCard->rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->Write == NULL) {
-        ADM_LOG_ERR("audioCard platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->Write(audioCard, transfer);
+    ret = AudioPcmWrite(audioCard, transfer);
     if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("platform write fail ret=%d", ret);
+        ADM_LOG_ERR("pcm write fail ret=%d", ret);
         return HDF_FAILURE;
     }
 
     return HDF_SUCCESS;
 }
 
-static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, const struct AudioTxMmapData *txMmapData)
+static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, const struct AudioMmapData *txMmapData)
 {
-    struct PlatformDevice *platform = NULL;
-    int32_t ret = HDF_SUCCESS;
+    int32_t ret;
     ADM_LOG_DEBUG("entry.");
 
-    if (audioCard == NULL || audioCard->rtd == NULL || txMmapData == NULL) {
+    if (audioCard == NULL || txMmapData == NULL) {
         ADM_LOG_ERR("input param is NULL.");
         return HDF_FAILURE;
     }
 
-    platform = audioCard->rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->Write == NULL) {
-        ADM_LOG_ERR("audioCard platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->MmapWrite(audioCard, txMmapData);
+    ret = AudioPcmMmapWrite(audioCard, txMmapData);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform write fail ret=%d", ret);
         return HDF_FAILURE;
@@ -425,25 +551,17 @@ static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, const 
     return HDF_SUCCESS;
 }
 
-static int32_t StreamTransferMmapRead(const struct AudioCard *audioCard, const struct AudioRxMmapData *rxMmapData)
+static int32_t StreamTransferMmapRead(const struct AudioCard *audioCard, const struct AudioMmapData *rxMmapData)
 {
-    struct PlatformDevice *platform = NULL;
-    int32_t ret = HDF_SUCCESS;
+    int32_t ret;
     ADM_LOG_DEBUG("entry.");
 
-    if (audioCard == NULL || audioCard->rtd == NULL || rxMmapData == NULL) {
+    if (audioCard == NULL || rxMmapData == NULL) {
         ADM_LOG_ERR("input param is NULL.");
         return HDF_FAILURE;
     }
 
-    platform = audioCard->rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->MmapRead == NULL) {
-        ADM_LOG_ERR("audioCard platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->MmapRead(audioCard, rxMmapData);
+    ret = AudioPcmMmapRead(audioCard, rxMmapData);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform read fail ret=%d", ret);
         return HDF_FAILURE;
@@ -497,8 +615,6 @@ int32_t StreamHostWrite(const struct HdfDeviceIoClient *client, struct HdfSBuf *
 
 int32_t StreamHostRead(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     struct AudioRxData rxData;
     int ret = HDF_SUCCESS;
@@ -511,22 +627,14 @@ int32_t StreamHostRead(const struct HdfDeviceIoClient *client, struct HdfSBuf *d
     (void)data;
 
     audioCard = StreamHostGetCardInstance(client);
-    if (audioCard == NULL || audioCard->rtd == NULL) {
+    if (audioCard == NULL) {
         ADM_LOG_ERR("get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL ||
-        platform->devData->ops == NULL || platform->devData->ops->Read == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->Read(audioCard, &rxData);
+    ret = AudioPcmRead(audioCard, &rxData);
     if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("platform read fail ret=%d", ret);
+        ADM_LOG_ERR("pcm read fail ret=%d", ret);
         return HDF_FAILURE;
     }
 
@@ -551,7 +659,7 @@ int32_t StreamHostRead(const struct HdfDeviceIoClient *client, struct HdfSBuf *d
 
 int32_t StreamHostMmapWrite(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioTxMmapData txMmapData;
+    struct AudioMmapData txMmapData;
     struct AudioCard *audioCard = NULL;
     uint64_t mAddress = 0;
     ADM_LOG_DEBUG("entry.");
@@ -603,16 +711,16 @@ int32_t StreamHostMmapPositionWrite(const struct HdfDeviceIoClient *client, stru
         return HDF_FAILURE;
     }
     audioCard = StreamHostGetCardInstance(client);
-    if (audioCard == NULL || audioCard->rtd == NULL || audioCard->rtd->platform == NULL) {
+    if (audioCard == NULL) {
         ADM_LOG_ERR("audioCard instance is NULL.");
         return HDF_FAILURE;
     }
-    struct PlatformHost *platformHost = PlatformHostFromDevice(audioCard->rtd->platform->device);
-    if (platformHost == NULL) {
+    struct PlatformData *platformData = PlatformDataFromCard(audioCard);
+    if (platformData == NULL) {
         ADM_LOG_ERR("platformHost instance is NULL.");
         return HDF_FAILURE;
     }
-    if (!HdfSbufWriteUint64(reply, platformHost->renderBufInfo.framesPosition)) {
+    if (!HdfSbufWriteUint64(reply, platformData->renderBufInfo.framesPosition)) {
         ADM_LOG_ERR("render mmap write position fail!");
         return HDF_FAILURE;
     }
@@ -624,7 +732,7 @@ int32_t StreamHostMmapRead(const struct HdfDeviceIoClient *client, struct HdfSBu
 {
     uint64_t mAddress = 0;
     struct AudioCard *audioCard = NULL;
-    struct AudioRxMmapData rxMmapData;
+    struct AudioMmapData rxMmapData;
     ADM_LOG_DEBUG("entry.");
     if (client == NULL || reply == NULL) {
         ADM_LOG_ERR("input param is NULL.");
@@ -674,16 +782,16 @@ int32_t StreamHostMmapPositionRead(const struct HdfDeviceIoClient *client, struc
         return HDF_FAILURE;
     }
     audioCard = StreamHostGetCardInstance(client);
-    if (audioCard == NULL || audioCard->rtd == NULL || audioCard->rtd->platform == NULL) {
+    if (audioCard == NULL) {
         ADM_LOG_ERR("audioCard is NULL.");
         return HDF_FAILURE;
     }
-    struct PlatformHost *platformHost = PlatformHostFromDevice(audioCard->rtd->platform->device);
-    if (platformHost == NULL) {
+    struct PlatformData *platformData = PlatformDataFromCard(audioCard);
+    if (platformData == NULL) {
         ADM_LOG_ERR("platformHost is NULL.");
         return HDF_FAILURE;
     }
-    if (!HdfSbufWriteUint64(reply, platformHost->captureBufInfo.framesPosition)) {
+    if (!HdfSbufWriteUint64(reply, platformData->captureBufInfo.framesPosition)) {
         ADM_LOG_ERR("render mmap write position fail!");
         return HDF_FAILURE;
     }
@@ -694,7 +802,8 @@ int32_t StreamHostMmapPositionRead(const struct HdfDeviceIoClient *client, struc
 int32_t StreamHostRenderStart(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
+    struct DaiDevice *cpuDai = NULL;
+    struct DaiDevice *codecDai = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
@@ -713,15 +822,21 @@ int32_t StreamHostRenderStart(const struct HdfDeviceIoClient *client, struct Hdf
         return HDF_FAILURE;
     }
     rtd = audioCard->rtd;
+    audioCard->standbyMode = AUDIO_SAPM_TURN_STANDBY_LATER;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->RenderStart == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
+    cpuDai = rtd->cpuDai;
+    if (cpuDai != NULL && cpuDai->devData != NULL && cpuDai->devData->ops != NULL &&
+        cpuDai->devData->ops->Trigger != NULL) {
+        cpuDai->devData->ops->Trigger(audioCard, AUDIO_DRV_PCM_IOCTRL_RENDER_START, cpuDai);
     }
 
-    ret = platform->devData->ops->RenderStart(audioCard);
+    codecDai = rtd->codecDai;
+    if (codecDai != NULL && codecDai->devData != NULL && codecDai->devData->ops != NULL &&
+        codecDai->devData->ops->Trigger != NULL) {
+        codecDai->devData->ops->Trigger(audioCard, AUDIO_DRV_PCM_IOCTRL_RENDER_START, codecDai);
+    }
+
+    ret = AudioRenderTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_RENDER_START);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform render start fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -733,8 +848,6 @@ int32_t StreamHostRenderStart(const struct HdfDeviceIoClient *client, struct Hdf
 
 int32_t StreamHostCaptureStart(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
@@ -752,16 +865,9 @@ int32_t StreamHostCaptureStart(const struct HdfDeviceIoClient *client, struct Hd
         ADM_LOG_ERR("CaptureStart get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
+    audioCard->standbyMode = AUDIO_SAPM_TURN_STANDBY_LATER;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->CaptureStart == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->CaptureStart(audioCard);
+    ret = AudioCaptureTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_CAPTURE_START);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform capture start fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -774,14 +880,47 @@ int32_t StreamHostCaptureStart(const struct HdfDeviceIoClient *client, struct Hd
 int32_t StreamHostRenderStop(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
     struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
         ADM_LOG_ERR("RenderStop input param is NULL.");
+        return HDF_FAILURE;
+    }
+
+    (void)reply;
+
+    audioCard = StreamHostGetCardInstance(client);
+    if (audioCard == NULL || audioCard->rtd == NULL) {
+        ADM_LOG_ERR("RenderStop get card instance or rtd fail.");
+        return HDF_FAILURE;
+    }
+
+    if (!HdfSbufReadUint32(data, &audioCard->standbyMode)) {
+        ADM_LOG_ERR("read request streamType failed!");
+        return HDF_FAILURE;
+    }
+
+    ret = AudioRenderTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_RENDER_STOP);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("platform render stop fail ret=%d", ret);
+        return HDF_ERR_IO;
+    }
+
+    ADM_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}
+
+int32_t StreamHostRenderClose(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
+    struct HdfSBuf *reply)
+{
+    struct AudioCard *audioCard = NULL;
+    int ret;
+    ADM_LOG_DEBUG("entry.");
+
+    if (client == NULL) {
+        ADM_LOG_ERR("RenderClose input param is NULL.");
         return HDF_FAILURE;
     }
 
@@ -793,18 +932,10 @@ int32_t StreamHostRenderStop(const struct HdfDeviceIoClient *client, struct HdfS
         ADM_LOG_ERR("RenderStop get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->RenderStop == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->RenderStop(audioCard);
+    ret = AudioRenderClose(audioCard);
     if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("platform render stop fail ret=%d", ret);
+        ADM_LOG_ERR("platform RenderClose fail ret=%d", ret);
         return HDF_ERR_IO;
     }
 
@@ -812,16 +943,49 @@ int32_t StreamHostRenderStop(const struct HdfDeviceIoClient *client, struct HdfS
     return HDF_SUCCESS;
 }
 
+
 int32_t StreamHostCaptureStop(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
         ADM_LOG_ERR("CaptureStop input param is NULL.");
+        return HDF_FAILURE;
+    }
+
+    (void)reply;
+
+    audioCard = StreamHostGetCardInstance(client);
+    if (audioCard == NULL || audioCard->rtd == NULL) {
+        ADM_LOG_ERR("CaptureStop get card instance or rtd fail.");
+        return HDF_FAILURE;
+    }
+
+    if (!HdfSbufReadUint32(data, &audioCard->standbyMode)) {
+        ADM_LOG_ERR("read request streamType failed!");
+        return HDF_FAILURE;
+    }
+
+    ret = AudioCaptureTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_CAPTURE_STOP);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("platform capture stop fail ret=%d", ret);
+        return HDF_ERR_IO;
+    }
+
+    ADM_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}
+
+int32_t StreamHostCaptureClose(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    struct AudioCard *audioCard = NULL;
+    int ret;
+    ADM_LOG_DEBUG("entry.");
+
+    if (client == NULL) {
+        ADM_LOG_ERR("CaptureClose input param is NULL.");
         return HDF_FAILURE;
     }
 
@@ -833,18 +997,10 @@ int32_t StreamHostCaptureStop(const struct HdfDeviceIoClient *client, struct Hdf
         ADM_LOG_ERR("CaptureStop get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->CaptureStop == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->CaptureStop(audioCard);
+    ret = AudioCaptureClose(audioCard);
     if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("platform capture stop fail ret=%d", ret);
+        ADM_LOG_ERR("platform capture close fail ret=%d", ret);
         return HDF_ERR_IO;
     }
 
@@ -852,10 +1008,9 @@ int32_t StreamHostCaptureStop(const struct HdfDeviceIoClient *client, struct Hdf
     return HDF_SUCCESS;
 }
 
+
 int32_t StreamHostRenderPause(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
@@ -873,16 +1028,8 @@ int32_t StreamHostRenderPause(const struct HdfDeviceIoClient *client, struct Hdf
         ADM_LOG_ERR("RenderPause get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->RenderPause == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->RenderPause(audioCard);
+    ret = AudioRenderTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_RENDER_PAUSE);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform render pause fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -895,8 +1042,6 @@ int32_t StreamHostRenderPause(const struct HdfDeviceIoClient *client, struct Hdf
 int32_t StreamHostCapturePause(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
     struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
@@ -914,16 +1059,8 @@ int32_t StreamHostCapturePause(const struct HdfDeviceIoClient *client, struct Hd
         ADM_LOG_ERR("CapturePause get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->CapturePause == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->CapturePause(audioCard);
+    ret = AudioCaptureTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_CAPTURE_PAUSE);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform captur pause fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -936,10 +1073,8 @@ int32_t StreamHostCapturePause(const struct HdfDeviceIoClient *client, struct Hd
 int32_t StreamHostRenderResume(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
     struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
-    int ret = HDF_SUCCESS;
+    int ret;
     ADM_LOG_DEBUG("entry.");
 
     if (client == NULL) {
@@ -955,16 +1090,8 @@ int32_t StreamHostRenderResume(const struct HdfDeviceIoClient *client, struct Hd
         ADM_LOG_ERR("RenderResume get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->RenderResume == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->RenderResume(audioCard);
+    ret = AudioRenderTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_RENDER_RESUME);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform RenderResume fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -977,8 +1104,6 @@ int32_t StreamHostRenderResume(const struct HdfDeviceIoClient *client, struct Hd
 int32_t StreamHostCaptureResume(const struct HdfDeviceIoClient *client, struct HdfSBuf *data,
     struct HdfSBuf *reply)
 {
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct PlatformDevice *platform = NULL;
     struct AudioCard *audioCard = NULL;
     int ret = HDF_SUCCESS;
     ADM_LOG_DEBUG("entry.");
@@ -996,16 +1121,8 @@ int32_t StreamHostCaptureResume(const struct HdfDeviceIoClient *client, struct H
         ADM_LOG_ERR("CaptureResume get card instance or rtd fail.");
         return HDF_FAILURE;
     }
-    rtd = audioCard->rtd;
 
-    platform = rtd->platform;
-    if (platform == NULL || platform->devData == NULL || platform->devData->ops == NULL ||
-        platform->devData->ops->CaptureResume == NULL) {
-        ADM_LOG_ERR("audioCard rtd platform is NULL.");
-        return HDF_FAILURE;
-    }
-
-    ret = platform->devData->ops->CaptureResume(audioCard);
+    ret = AudioCaptureTrigger(audioCard, AUDIO_DRV_PCM_IOCTRL_CAPTURE_RESUME);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("platform CaptureResume fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -1136,10 +1253,14 @@ static struct StreamDispCmdHandleList g_streamDispCmdHandle[] = {
     {AUDIO_DRV_PCM_IOCTRL_HW_PARAMS, StreamHostHwParams},
     {AUDIO_DRV_PCM_IOCTRL_RENDER_PREPARE, StreamHostRenderPrepare},
     {AUDIO_DRV_PCM_IOCTRL_CAPTURE_PREPARE, StreamHostCapturePrepare},
+    {AUDIO_DRV_PCM_IOCTRL_RENDER_OPEN, StreamHostRenderOpen},
+    {AUDIO_DRV_PCM_IOCTRL_RENDER_CLOSE, StreamHostRenderClose},
     {AUDIO_DRV_PCM_IOCTRL_WRITE, StreamHostWrite},
     {AUDIO_DRV_PCM_IOCTRL_READ, StreamHostRead},
     {AUDIO_DRV_PCM_IOCTRL_RENDER_START, StreamHostRenderStart},
     {AUDIO_DRV_PCM_IOCTRL_RENDER_STOP, StreamHostRenderStop},
+    {AUDIO_DRV_PCM_IOCTRL_CAPTURE_OPEN, StreamHostCaptureOpen},
+    {AUDIO_DRV_PCM_IOCTRL_CAPTURE_CLOSE, StreamHostCaptureClose},
     {AUDIO_DRV_PCM_IOCTRL_CAPTURE_START, StreamHostCaptureStart},
     {AUDIO_DRV_PCM_IOCTRL_CAPTURE_STOP, StreamHostCaptureStop},
     {AUDIO_DRV_PCM_IOCTRL_RENDER_PAUSE, StreamHostRenderPause},
@@ -1150,9 +1271,6 @@ static struct StreamDispCmdHandleList g_streamDispCmdHandle[] = {
     {AUDIO_DRV_PCM_IOCTL_MMAP_BUFFER_CAPTURE, StreamHostMmapRead},
     {AUDIO_DRV_PCM_IOCTL_MMAP_POSITION, StreamHostMmapPositionWrite},
     {AUDIO_DRV_PCM_IOCTL_MMAP_POSITION_CAPTURE, StreamHostMmapPositionRead},
-    {AUDIO_DRV_PCM_IOCTRL_DSP_DECODE, StreamHostDspDecode},
-    {AUDIO_DRV_PCM_IOCTRL_DSP_ENCODE, StreamHostDspEncode},
-    {AUDIO_DRV_PCM_IOCTRL_DSP_EQUALIZER, StreamHostDspEqualizer},
 };
 
 int32_t StreamDispatch(struct HdfDeviceIoClient *client, int cmdId,

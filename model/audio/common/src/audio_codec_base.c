@@ -7,99 +7,26 @@
  */
 
 #include "audio_codec_base.h"
+#include "audio_parse.h"
+#include "audio_driver_log.h"
+#include "audio_sapm.h"
 
 #define HDF_LOG_TAG audio_codec_base
 
-int32_t CodecDeviceReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
+int32_t CodecDeviceReadReg(unsigned long virtualAddress, uint32_t reg, uint32_t *val)
 {
-    unsigned long acodecVir;
-    struct VirtualAddress *virtualAdd = NULL;
-    AUDIO_DRIVER_LOG_DEBUG("entry");
-
-    if ((codec == NULL) || (codec->device == NULL) || (val == NULL)) {
-        AUDIO_DRIVER_LOG_ERR("input param codec or codec->device is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
+    if (val == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param val is null.");
+        return HDF_FAILURE;
     }
-    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
-    if (virtualAdd == NULL) {
-        AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    acodecVir = virtualAdd->acodecVir;
-    *val = OSAL_READL((void *)(volatile uintptr_t)(acodecVir + reg));
 
-    AUDIO_DRIVER_LOG_DEBUG("success");
+    *val = OSAL_READL((void *)((uintptr_t)(virtualAddress + reg)));
     return HDF_SUCCESS;
 }
 
-int32_t CodecDeviceWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t value)
+int32_t CodecDeviceWriteReg(unsigned long virtualAddress, uint32_t reg, uint32_t value)
 {
-    unsigned long acodecVir;
-    struct VirtualAddress *virtualAdd = NULL;
-    AUDIO_DRIVER_LOG_DEBUG("entry");
-
-    if ((codec == NULL) || (codec->device == NULL)) {
-        AUDIO_DRIVER_LOG_ERR("param  codec or codec->device is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
-    if (virtualAdd == NULL) {
-        AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    acodecVir = virtualAdd->acodecVir;
-    OSAL_WRITEL(value, (void *)(volatile uintptr_t)(acodecVir + reg));
-
-    AUDIO_DRIVER_LOG_DEBUG("success");
-    return HDF_SUCCESS;
-}
-
-int32_t CodecAiaoDeviceReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
-{
-    unsigned long aiaoVir;
-    struct VirtualAddress *virtualAdd = NULL;
-    AUDIO_DRIVER_LOG_DEBUG("entry");
-
-    if ((codec == NULL) || (codec->device == NULL) || (val == NULL)) {
-        AUDIO_DRIVER_LOG_ERR("codec or codec->device is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
-    if (virtualAdd == NULL) {
-        AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    aiaoVir = virtualAdd->aiaoVir;
-    *val = OSAL_READL((void *)(volatile uintptr_t)(aiaoVir + reg));
-
-    AUDIO_DRIVER_LOG_DEBUG("success");
-    return HDF_SUCCESS;
-}
-
-int32_t CodecAiaoDeviceWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t value)
-{
-    unsigned long aiaoVir;
-    struct VirtualAddress *virtualAdd = NULL;
-    AUDIO_DRIVER_LOG_DEBUG("entry");
-
-    if ((codec == NULL) || (codec->device == NULL)) {
-        AUDIO_DRIVER_LOG_ERR("codec or codec->device is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    virtualAdd = (struct VirtualAddress *)((volatile uintptr_t)codec->device->priv);
-    if (virtualAdd == NULL) {
-        AUDIO_DRIVER_LOG_ERR("virtualAdd is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    aiaoVir = virtualAdd->aiaoVir;
-    OSAL_WRITEL(value, (void *)(volatile uintptr_t)(aiaoVir + reg));
-
-    AUDIO_DRIVER_LOG_DEBUG("success");
+    OSAL_WRITEL(value, (void *)((uintptr_t)(virtualAddress + reg)));
     return HDF_SUCCESS;
 }
 
@@ -160,6 +87,213 @@ int32_t CodecGetDaiName(const struct HdfDeviceObject *device, const char **drvDa
     if (ret != HDF_SUCCESS) {
         AUDIO_DRIVER_LOG_ERR("read codecDaiName fail!");
         return ret;
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t CodecGetConfigInfo(const struct HdfDeviceObject *device, struct CodecData *codecData)
+{
+    if (device == NULL || codecData == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param is null!");
+        return HDF_FAILURE;
+    }
+
+    if (codecData->regConfig != NULL) {
+        ADM_LOG_ERR("g_codecData regConfig  fail!");
+        return HDF_FAILURE;
+    }
+
+    codecData->regConfig = (struct AudioRegCfgData *)OsalMemCalloc(sizeof(*(codecData->regConfig)));
+    if (codecData->regConfig == NULL) {
+        ADM_LOG_ERR("malloc AudioRegCfgData fail!");
+        return HDF_FAILURE;
+    }
+
+    if (CodecGetRegConfig(device, codecData->regConfig) != HDF_SUCCESS) {
+        ADM_LOG_ERR("CodecGetRegConfig fail!");
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t SapmCtrlToSapmComp(struct AudioSapmComponent *sapmComponents, 
+    struct AudioSapmCtrlConfig *sapmCompItem, uint16_t index)
+{
+    if (sapmComponents == NULL || sapmCompItem == NULL) {
+        AUDIO_DRIVER_LOG_ERR("input para is NULL.");
+        return HDF_FAILURE;
+    }
+    
+    sapmComponents[index].componentName =
+        g_audioSapmCompNameList[sapmCompItem[index].compNameIndex];
+    sapmComponents[index].reg      = sapmCompItem[index].reg;
+    sapmComponents[index].sapmType = sapmCompItem[index].sapmType;
+    sapmComponents[index].mask     = sapmCompItem[index].mask;
+    sapmComponents[index].shift    = sapmCompItem[index].shift;
+    sapmComponents[index].invert   = sapmCompItem[index].invert;
+    sapmComponents[index].kcontrolsNum = sapmCompItem[index].kcontrolsNum;
+
+    return HDF_SUCCESS;
+}
+
+static int32_t CodecSetSapmConfigInfo(struct CodecData *codeData,struct AudioRegCfgGroupNode ** regCfgGroup)
+{
+    uint16_t index;
+
+    if (codeData == NULL || regCfgGroup == NULL) {
+        AUDIO_DRIVER_LOG_ERR("input para is NULL.");
+        return HDF_FAILURE;
+    }
+
+    struct AudioSapmCtrlConfig *sapmCompItem      = regCfgGroup[AUDIO_SAPM_COMP_GROUP]->sapmCompItem;
+    struct AudioControlConfig  *sapmCtrlItem      = regCfgGroup[AUDIO_SAPM_CFG_GROUP]->ctrlCfgItem;
+    struct AudioMixerControl   *ctlSapmRegCfgItem = regCfgGroup[AUDIO_CTRL_SAPM_PATAM_GROUP]->regCfgItem;
+
+    if (sapmCompItem == NULL || sapmCtrlItem == NULL || ctlSapmRegCfgItem == NULL) {
+        AUDIO_DRIVER_LOG_ERR("sapmCompItem, sapmCtrlItem, ctlSapmRegCfgItem is NULL.");
+        return HDF_FAILURE;
+    }
+
+    struct AudioKcontrol *audioSapmControls = (struct AudioKcontrol *)OsalMemCalloc
+        (regCfgGroup[AUDIO_SAPM_CFG_GROUP]->itemNum * sizeof(struct AudioKcontrol));
+    if (audioSapmControls == NULL) {
+        AUDIO_DRIVER_LOG_ERR("OsalMemCalloc failed.");
+        return HDF_FAILURE;
+    }
+    for (index = 0; index < regCfgGroup[AUDIO_SAPM_CFG_GROUP]->itemNum; index++) {
+        audioSapmControls[index].iface = sapmCtrlItem[index].iface;
+        audioSapmControls[index].name = g_audioSapmCfgNameList[sapmCtrlItem[index].arrayIndex];
+        audioSapmControls[index].privateValue = (unsigned long)&ctlSapmRegCfgItem[index];
+        audioSapmControls[index].Info = AudioInfoCtrlOps;
+        audioSapmControls[index].Get  = AudioCodecSapmGetCtrlOps;
+        audioSapmControls[index].Set  = AudioCodecSapmSetCtrlOps;
+    }
+
+    codeData->numSapmComponent = regCfgGroup[AUDIO_SAPM_COMP_GROUP]->itemNum;
+    codeData->sapmComponents = (struct AudioSapmComponent *)
+        OsalMemCalloc(codeData->numSapmComponent * sizeof(struct AudioSapmComponent));
+    if (codeData->sapmComponents == NULL) {
+        OsalMemFree(audioSapmControls);
+        AUDIO_DRIVER_LOG_ERR("OsalMemCalloc failed.");
+        return HDF_FAILURE;
+    }
+
+    for (index = 0; index < codeData->numSapmComponent; index++) {
+         if (SapmCtrlToSapmComp(codeData->sapmComponents ,sapmCompItem, index)) {
+            OsalMemFree(audioSapmControls);
+            return HDF_FAILURE;
+         }
+
+        if (sapmCompItem[index].kcontrolsNum) {
+            codeData->sapmComponents[index].kcontrolNews =
+                &audioSapmControls[sapmCompItem[index].kcontrolNews - 1];
+        }
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData)
+{
+    uint16_t index;
+
+    if (codeData == NULL || daiData == NULL || codeData->regConfig == NULL) {
+        AUDIO_DRIVER_LOG_ERR("input para is NULL.");
+        return HDF_FAILURE;
+    }
+
+    struct AudioIdInfo   *audioIdInfo = &(codeData->regConfig->audioIdInfo);
+    struct AudioRegCfgGroupNode **regCfgGroup = codeData->regConfig->audioRegParams;
+    daiData->regCfgGroup = regCfgGroup;
+    codeData->regCfgGroup = regCfgGroup;
+    if (audioIdInfo == NULL || regCfgGroup == NULL) {
+        AUDIO_DRIVER_LOG_ERR("audioIdInfo or regCfgGroup is NULL.");
+        return HDF_FAILURE;
+    }
+
+    struct AudioControlConfig  *compItem          = regCfgGroup[AUDIO_CTRL_CFG_GROUP]->ctrlCfgItem;
+    struct AudioMixerControl   *ctlRegCfgItem     = regCfgGroup[AUDIO_CTRL_PATAM_GROUP]->regCfgItem;
+    if (compItem == NULL || ctlRegCfgItem == NULL) {
+        AUDIO_DRIVER_LOG_ERR("compItem or ctlRegCfgItem is NULL.");
+        return HDF_FAILURE;
+    }
+
+    codeData->numControls = regCfgGroup[AUDIO_CTRL_CFG_GROUP]->itemNum;
+    codeData->controls =
+        (struct AudioKcontrol *)OsalMemCalloc(codeData->numControls * sizeof(struct AudioKcontrol));
+    if (codeData->controls == NULL) {
+        AUDIO_DRIVER_LOG_ERR("OsalMemCalloc failed.");
+        return HDF_FAILURE;
+    }
+
+    for (index = 0; index < codeData->numControls; index++) {
+        codeData->controls[index].iface   = compItem[index].iface;
+        codeData->controls[index].name    = g_audioControlsList[compItem[index].arrayIndex];
+        codeData->controls[index].Info    = AudioInfoCtrlOps;
+        codeData->controls[index].privateValue = (unsigned long)&ctlRegCfgItem[index];
+        if (compItem[index].enable) {
+            codeData->controls[index].Get = AudioCodecGetCtrlOps;
+            codeData->controls[index].Set = AudioCodecSetCtrlOps;
+        }
+    }
+
+    codeData->virtualAddress = (uintptr_t)OsalIoRemap(audioIdInfo->chipIdRegister, audioIdInfo->chipIdSize);
+
+    if (CodecSetSapmConfigInfo(codeData, regCfgGroup) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t CodecSetCtlFunc(struct CodecData *codeData, void *aiaoGetCtrl, void *aiaoSetCtrl)
+{
+    uint32_t index = 0;
+    if (codeData == NULL || codeData->regConfig == NULL ||
+        aiaoGetCtrl == NULL || aiaoSetCtrl == NULL) {
+        AUDIO_DRIVER_LOG_ERR("input para is NULL.");
+        return HDF_FAILURE;
+    }
+    struct AudioRegCfgGroupNode **regCfgGroup = codeData->regConfig->audioRegParams;
+    struct AudioControlConfig    *compItem    = regCfgGroup[AUDIO_CTRL_CFG_GROUP]->ctrlCfgItem;
+    if (regCfgGroup == NULL || compItem == NULL) {
+        AUDIO_DRIVER_LOG_ERR("regCfgGroup or compItem is NULL.");
+        return HDF_FAILURE;
+    }
+
+    for (index = 0; index < codeData->numControls; index++) {
+        if (!compItem[index].enable) {
+            codeData->controls[index].Get = aiaoGetCtrl;
+            codeData->controls[index].Set = aiaoSetCtrl;
+        }
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t AccessoryGetConfigInfo(const struct HdfDeviceObject *device, struct AccessoryData *codecData)
+{
+    if (device == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param is null!");
+        return HDF_FAILURE;
+    }
+
+    if (codecData->regConfig != NULL) {
+        ADM_LOG_ERR("g_codecData regConfig  fail!");
+        return HDF_FAILURE;
+    }
+
+    codecData->regConfig = (struct AudioRegCfgData *)OsalMemCalloc(sizeof(*(codecData->regConfig)));
+    if (codecData->regConfig == NULL) {
+        ADM_LOG_ERR("malloc AudioRegCfgData fail!");
+        return HDF_FAILURE;
+    }
+
+    if (CodecGetRegConfig(device, codecData->regConfig) != HDF_SUCCESS) {
+        ADM_LOG_ERR("CodecGetRegConfig fail!");
+        return HDF_FAILURE;
     }
 
     return HDF_SUCCESS;

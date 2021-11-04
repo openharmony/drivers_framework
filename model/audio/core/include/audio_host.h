@@ -24,27 +24,6 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#ifdef __LITEOS__
-#define ADM_LOG_DEBUG(fmt, arg...) do { \
-    } while (0)
-#else
-#define ADM_LOG_DEBUG(fmt, arg...) do { \
-    HDF_LOGD("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
-    } while (0)
-#endif
-
-#define ADM_LOG_ERR(fmt, arg...) do { \
-    HDF_LOGE("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
-    } while (0)
-
-#define ADM_LOG_INFO(fmt, arg...) do { \
-    HDF_LOGI("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
-    } while (0)
-
-#define ADM_LOG_WARNING(fmt, arg...) do { \
-    HDF_LOGW("[%s][line:%d]: " fmt, __func__, __LINE__, ##arg); \
-    } while (0)
-
 #define BUFF_SIZE_MAX 64
 
 #define AUDIO_LIST_HEAD_INIT(name) { &(name), &(name) }
@@ -68,6 +47,30 @@ enum AudioFormat {
     AUDIO_FORMAT_G726       = 0x2000003u, /**< audio G726 */
 };
 
+typedef enum {
+    AUDIO_SAMPLE_RATE_8000   = 8000,    /* 8kHz sample_rate */
+    AUDIO_SAMPLE_RATE_12000  = 12000,   /* 12kHz sample_rate */
+    AUDIO_SAMPLE_RATE_11025  = 11025,   /* 11.025kHz sample_rate */
+    AUDIO_SAMPLE_RATE_16000  = 16000,   /* 16kHz sample_rate */
+    AUDIO_SAMPLE_RATE_22050  = 22050,   /* 22.050kHz sample_rate */
+    AUDIO_SAMPLE_RATE_24000  = 24000,   /* 24kHz sample_rate */
+    AUDIO_SAMPLE_RATE_32000  = 32000,   /* 32kHz sample_rate */
+    AUDIO_SAMPLE_RATE_44100  = 44100,   /* 44.1kHz sample_rate */
+    AUDIO_SAMPLE_RATE_48000  = 48000,   /* 48kHz sample_rate */
+    AUDIO_SAMPLE_RATE_64000  = 64000,   /* 64kHz sample_rate */
+    AUDIO_SAMPLE_RATE_96000  = 96000,   /* 96kHz sample_rate */
+    AUDIO_SAMPLE_RATE_BUTT,
+} AudioSampleRate;
+
+enum AuidoBitWidth {
+    BIT_WIDTH8  =  8,      /* 8 bit witdth */
+    BIT_WIDTH16 =  16,     /* 16 bit witdth */
+    BIT_WIDTH18 =  18,     /* 18 bit witdth */
+    BIT_WIDTH20 =  20,     /* 20 bit witdth */
+    BIT_WIDTH24 =  24,     /* 24 bit witdth */
+    BIT_WIDTH32 =  32,     /* 32 bit witdth */
+};
+
 struct AudioConfigData {
     const char *cardServiceName;
     const char *codecName;
@@ -78,6 +81,12 @@ struct AudioConfigData {
     const char *accessoryDaiName;
     const char *dspName;
     const char *dspDaiName;
+};
+
+enum AudioSapmTurnStandbyMode {
+    AUDIO_SAPM_TURN_STANDBY_LATER = 0,
+    AUDIO_SAPM_TURN_STANDBY_NOW,
+    AUDIO_SAPM_TURN_STANDBY_BUTT,
 };
 
 struct AudioCard {
@@ -95,6 +104,7 @@ struct AudioCard {
     struct DListHead components; /* all components for this card */
     struct DListHead paths; /* all paths for this card */
     struct DListHead sapmDirty; /* all dirty for this card */
+    enum AudioSapmTurnStandbyMode standbyMode;
     bool sapmSleepState;
     bool sapmStandbyState;
     bool sapmMonitorState;
@@ -109,6 +119,23 @@ enum CriBuffStatus {
 enum AudioStreamType {
     AUDIO_CAPTURE_STREAM = 0,
     AUDIO_RENDER_STREAM,
+};
+
+struct PcmInfo {
+    enum AudioStreamType streamType;
+    /* The number of channels in a frame */
+    uint32_t channels;
+    /* The number of frames per second */
+    uint32_t rate;
+    uint32_t bitWidth;
+    uint32_t frameSize;
+    bool isBigEndian;
+    bool isSignedData;
+    uint32_t startThreshold;
+    uint32_t stopThreshold;
+    uint32_t silenceThreshold;
+    uint32_t totalStreamSize;
+    uint32_t interleaved;
 };
 
 struct AudioPcmHwParams {
@@ -153,16 +180,7 @@ struct AudioRxData {
     unsigned long frames; /* frames number */
 };
 
-struct AudioTxMmapData {
-    void *memoryAddress;                 /**< Pointer to the mmap buffer */
-    int32_t memoryFd;                    /**< File descriptor of the mmap buffer */
-    int32_t totalBufferFrames;           /**< Total size of the mmap buffer (unit: frame )*/
-    int32_t transferFrameSize;           /**< Transfer size (unit: frame) */
-    int32_t isShareable;                 /**< Whether the mmap buffer can be shared among processes */
-    uint32_t offset;
-};
-
-struct AudioRxMmapData {
+struct AudioMmapData {
     void *memoryAddress;                 /**< Pointer to the mmap buffer */
     int32_t memoryFd;                    /**< File descriptor of the mmap buffer */
     int32_t totalBufferFrames;           /**< Total size of the mmap buffer (unit: frame )*/

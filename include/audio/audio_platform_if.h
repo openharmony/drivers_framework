@@ -44,6 +44,12 @@ extern "C" {
 #define GPIO_BASE_ADDR 0x120D0000
 #define BASE_ADDR_REMAP_SIZE 0x10000
 
+enum PcmStatus {
+    PCM_STOP = 0,
+    PCM_PAUSE,
+    PCM_START,
+};
+
 struct CircleBufInfo {
     uint32_t cirBufSize;
     uint32_t trafBufSize;
@@ -54,48 +60,47 @@ struct CircleBufInfo {
     uint32_t *virtAddr;
     uint32_t wbufOffSet;
     uint32_t wptrOffSet;
-    uint32_t runStatus;
+    uint32_t rbufOffSet;
+    uint32_t rptrOffSet;
+    enum PcmStatus runStatus;
     uint32_t chnId;
     uint32_t enable;
     struct OsalMutex buffMutex;
-    uint64_t framesPosition;
+    uint32_t framesPosition;
+    uint32_t pointer;
+    uint32_t periodsMax;
+    uint32_t periodsMin;
+    uint32_t cirBufMax;
+    uint32_t curTrafSize;
 };
 
-struct PcmInfo {
-    /* The number of channels in a frame */
-    uint32_t channels;
-    /* The number of frames per second */
-    uint32_t rate;
-    uint32_t bitWidth;
-    uint32_t frameSize;
-    bool isBigEndian;
-    bool isSignedData;
-    uint32_t startThreshold;
-    uint32_t stopThreshold;
-    uint32_t silenceThreshold;
-    uint32_t totalStreamSize;
+struct PlatformData {
+    const char *drvPlatformName;
+    /* platform driver callbacks */
+    int32_t (*PlatformInit)(const struct AudioCard *, const struct PlatformDevice *);
+    /* platform stream ops */
+    struct AudioDmaOps *ops;
+    struct CircleBufInfo renderBufInfo;
+    struct CircleBufInfo captureBufInfo;
+    struct PcmInfo pcmInfo;
+    bool platformInitFlag;
+    struct AudioMmapData mmapData;
+    uint32_t mmapLoopCount;
+    void *dmaPrv;
 };
 
-/* platform related definitions */
-struct AudioPlatformOps {
-    int32_t (*HwParams)(const struct AudioCard *, const struct AudioPcmHwParams *);
-    int32_t (*RenderTrigger)(struct AudioCard *, int);
-    int32_t (*CaptureTrigger)(struct AudioCard *, int);
-    uint32_t (*Pointer)(struct AudioCard *);
-    int32_t (*Write)(const struct AudioCard *, struct AudioTxData *);
-    int32_t (*Read)(const struct AudioCard *, struct AudioRxData *);
-    int32_t (*MmapWrite)(const struct AudioCard *, const struct AudioTxMmapData *);
-    int32_t (*MmapRead)(const struct AudioCard *, const struct AudioRxMmapData *);
-    int32_t (*RenderPrepare)(const struct AudioCard *);
-    int32_t (*CapturePrepare)(const struct AudioCard *);
-    int32_t (*RenderStart)(struct AudioCard *);
-    int32_t (*CaptureStart)(struct AudioCard *);
-    int32_t (*RenderStop)(struct AudioCard *);
-    int32_t (*CaptureStop)(struct AudioCard *);
-    int32_t (*RenderPause)(struct AudioCard *);
-    int32_t (*CapturePause)(struct AudioCard *);
-    int32_t (*RenderResume)(struct AudioCard *);
-    int32_t (*CaptureResume)(struct AudioCard *);
+/* dma related definitions */
+struct AudioDmaOps {
+    int32_t (*DmaBufAlloc)(struct PlatformData *, enum AudioStreamType);
+    int32_t (*DmaBufFree)(struct PlatformData *,  enum AudioStreamType);
+    int32_t (*DmaRequestChannel)(struct PlatformData *);
+    int32_t (*DmaConfigChannel)(struct PlatformData *);
+    int32_t (*DmaPrep)(struct PlatformData *);
+    int32_t (*DmaSubmit)(struct PlatformData *);
+    int32_t (*DmaPending)(struct PlatformData *);
+    int32_t (*DmaPause)(struct PlatformData *);
+    int32_t (*DmaResume)(struct PlatformData *);
+    int32_t (*DmaPointer)(struct PlatformData *, uint32_t *);
 };
 
 struct PlatformDevice {
@@ -105,26 +110,11 @@ struct PlatformDevice {
     struct DListHead list;
 };
 
-struct PlatformData {
-    const char *drvPlatformName;
-    /* platform driver callbacks */
-    int32_t (*PlatformInit)(const struct AudioCard *, const struct PlatformDevice *);
-    /* pcm creation and destruction */
-    int32_t (*PcmNew)(struct PlatformDevice *);
-    void (*PcmFree)(struct PlatformDevice *);
-    /* platform stream ops */
-    struct AudioPlatformOps *ops;
-};
-
 /* Platform host is defined in platform driver */
 struct PlatformHost {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
     void *priv;
-    bool platformInitFlag;
-    struct CircleBufInfo renderBufInfo;
-    struct CircleBufInfo captureBufInfo;
-    struct PcmInfo pcmInfo;
 };
 
 static inline struct PlatformHost *PlatformHostFromDevice(struct HdfDeviceObject *device)
