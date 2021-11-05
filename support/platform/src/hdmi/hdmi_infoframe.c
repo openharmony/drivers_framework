@@ -568,7 +568,7 @@ int32_t HdmiAudioInfoframeSend(struct HdmiInfoframe *frame, bool enable)
     return HdmiInfoframeSend(frame, &infoframe);
 }
 
-static void HdmiFillDrmInfoframe(struct HdmiDrmInfoframe *drm, struct HdmiHdrAttr *HdrAttr)
+static void HdmiFillDrmInfoframe(struct HdmiDrmInfoframe *drm, struct HdmiHdrAttr *hdrAttr)
 {
     if (memset_s(drm, sizeof(struct HdmiDrmInfoframe), 0, sizeof(struct HdmiDrmInfoframe)) != EOK) {
         HDF_LOGE("fill vsif, memset_s fail.");
@@ -577,9 +577,9 @@ static void HdmiFillDrmInfoframe(struct HdmiDrmInfoframe *drm, struct HdmiHdrAtt
     drm->type = HDMI_INFOFRAME_PACKET_TYPE_DRM;
     drm->len = HDMI_DRM_INFOFRAME_LEN;
     drm->verNum = HDMI_DRM_INFOFRAME_VERSION;
-    drm->eotfType = HdrAttr->eotfType;
-    drm->metadataType = HdrAttr->metadataType;
-    drm->des = HdrAttr->descriptor;
+    drm->eotfType = hdrAttr->eotfType;
+    drm->metadataType = hdrAttr->metadataType;
+    drm->des = hdrAttr->descriptor;
 }
 
 int32_t HdmiDrmInfoframeSend(struct HdmiInfoframe *frame, bool enable)
