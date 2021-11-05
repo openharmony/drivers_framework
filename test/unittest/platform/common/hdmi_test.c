@@ -9,7 +9,6 @@
 #include "device_resource_if.h"
 #include "hdf_base.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
 #include "osal_time.h"
 #include "hdmi_if.h"
 #include "hdmi_test.h"
