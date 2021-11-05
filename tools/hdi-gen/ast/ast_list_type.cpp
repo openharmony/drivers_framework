@@ -7,6 +7,7 @@
  */
 
 #include "ast/ast_list_type.h"
+#include "util/options.h"
 
 namespace OHOS {
 namespace HDI {
@@ -93,7 +94,12 @@ void ASTListType::EmitCWriteVar(const String& parcelName, const String& name, co
     sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
-    sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(prefix).AppendFormat("for (i = 0; i < %s; i++) {\n", lenName.string());
+    } else {
+        sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+    }
 
     String elementName = "";
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT
@@ -122,12 +128,14 @@ void ASTListType::EmitCProxyReadVar(const String& parcelName, const String& name
     EmitCMallocVar(name, lenName, true, gotoLabel, sb, prefix);
     sb.Append("\n");
 
-    sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(prefix).AppendFormat("for (i = 0; i < *%s; i++) {\n", lenName.string());
+    } else {
+        sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < *%s; i++) {\n", lenName.string());
+    }
+
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        String cpName = String::Format("%sCp", name.string());
-        elementType_->EmitCProxyReadVar(parcelName, cpName, true, gotoLabel, sb, prefix + g_tab);
-        sb.Append(prefix).Append(g_tab).AppendFormat("(*%s)[i] = strdup(%sCp);\n",
-            name.string(), name.string());
+        EmitCProxyReadStrElement(parcelName, name, gotoLabel, sb, prefix);
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String element = String::Format("&(*%s)[i]", name.string());
         elementType_->EmitCProxyReadVar(parcelName, element, true, gotoLabel, sb, prefix + g_tab);
@@ -165,11 +173,14 @@ void ASTListType::EmitCStubReadVar(const String& parcelName, const String& name,
     EmitCMallocVar(name, lenName, false, "errors", sb, prefix + g_tab);
     sb.Append("\n");
 
-    sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(prefix + g_tab).AppendFormat("for (i = 0; i < %s; i++) {\n", lenName.string());
+    } else {
+        sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+    }
+
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        String element = String::Format("%sCp", name.string());
-        elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("%s[i] = strdup(%sCp);\n", name.string(), name.string());
+        EmitCStubReadStrElement(parcelName, name, sb, prefix);
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String element = String::Format("&%s[i]", name.string());
         elementType_->EmitCStubReadVar(parcelName, element, sb, prefix + g_tab + g_tab);
@@ -229,7 +240,12 @@ void ASTListType::EmitCMarshalling(const String& name, StringBuilder& sb, const 
         "HDF_LOGE(\"%%{public}s: write %sLen failed!\", __func__);\n", name.string());
     sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
-    sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
+
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(prefix).AppendFormat("for (i = 0; i < %sLen; i++) {\n", name.string());
+    } else {
+        sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %sLen; i++) {\n", name.string());
+    }
 
     String elementName = String::Format("(%s)[i]", name.string());
     elementType_->EmitCMarshalling(elementName, sb, prefix + g_tab);
@@ -256,12 +272,32 @@ void ASTListType::EmitCUnMarshalling(const String& name, StringBuilder& sb, cons
     sb.Append(newPrefix).Append("}\n");
 
     freeObjStatements.push_back(String::Format("OsalMemFree(%s);\n", name.string()));
-    sb.Append(newPrefix).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(newPrefix).AppendFormat("for (i = 0; i < %s; i++) {\n", lenName.string());
+    } else {
+        sb.Append(newPrefix).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+    }
+
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
         String element = String::Format("%sElement", name.string());
         elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
-        sb.Append(newPrefix).Append(g_tab).AppendFormat("%s[i] = strdup(%s);\n",
-            name.string(), element.string());
+        if (Options::GetInstance().DoGenerateKernelCode()) {
+            sb.Append(newPrefix).AppendFormat("%s[i] = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
+                name.string(), element.string());
+            sb.Append(newPrefix).AppendFormat("if (%s[i] == NULL) {\n", name.string());
+            sb.Append(newPrefix + g_tab).AppendFormat("goto errors;\n");
+            sb.Append(newPrefix).Append("}\n\n");
+            sb.Append(newPrefix).AppendFormat("if (strcpy_s((%s)[i], (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
+                name.string(), element.string(), element.string());
+            sb.Append(newPrefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+                element.string());
+            sb.Append(newPrefix + g_tab).Append("goto errors;\n");
+            sb.Append(newPrefix).Append("}\n");
+        } else {
+            sb.Append(newPrefix).Append(g_tab).AppendFormat("%s[i] = strdup(%s);\n",
+                name.string(), element.string());
+        }
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String element = String::Format("&%s[i]", name.string());
         elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
@@ -338,9 +374,13 @@ void ASTListType::EmitMemoryRecycle(const String& name, bool isClient, bool owne
     String lenName = isClient ? String::Format("*%sLen", name.string()) : String::Format("%sLen", name.string());
 
     sb.Append(prefix).AppendFormat("if (%s > 0 && %s != NULL) {\n", lenName.string(), varName.string());
-    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING
-        || elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-        sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+    if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING || elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
+        if (Options::GetInstance().DoGenerateKernelCode()) {
+            sb.Append(prefix + g_tab).AppendFormat("for (i = 0; i < %s; i++) {\n", lenName.string());
+        } else {
+            sb.Append(prefix + g_tab).AppendFormat("for (uint32_t i = 0; i < %s; i++) {\n", lenName.string());
+        }
+
         String elementName = isClient ? String::Format("(%s)[i]", varName.string()) :
             String::Format("%s[i]", varName.string());
         elementType_->EmitMemoryRecycle(elementName, false, false, sb, prefix + g_tab + g_tab);
@@ -400,6 +440,59 @@ void ASTListType::EmitCMallocVar(const String& name, const String& lenName, bool
     sb.Append(prefix + g_tab).AppendFormat("ec = HDF_ERR_MALLOC_FAIL;\n");
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).AppendFormat("}\n");
+}
+
+void ASTListType::EmitCProxyReadStrElement(const String& parcelName, const String& name, const String& gotoLabel,
+    StringBuilder& sb, const String& prefix) const
+{
+    String cpName = String::Format("%sCp", name.string());
+    elementType_->EmitCProxyReadVar(parcelName, cpName, true, gotoLabel, sb, prefix + g_tab);
+    sb.Append("\n");
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(prefix + g_tab).AppendFormat("(*%s)[i] = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
+            name.string(), cpName.string());
+        sb.Append(prefix + g_tab).AppendFormat("if ((*%s)[i] == NULL) {\n", name.string());
+        sb.Append(prefix + g_tab + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+        sb.Append(prefix + g_tab).Append("}\n\n");
+        sb.Append(prefix + g_tab).AppendFormat("if (strcpy_s((*%s)[i], (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
+            name.string(), cpName.string(), cpName.string());
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+            cpName.string());
+        sb.Append(prefix + g_tab + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+        sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+        sb.Append(prefix + g_tab).Append("}\n");
+    } else {
+        sb.Append(prefix + g_tab).AppendFormat("(*%s)[i] = strdup(%sCp);\n",
+            name.string(), name.string());
+    }
+}
+
+void ASTListType::EmitCStubReadStrElement(const String& parcelName, const String& name, StringBuilder& sb,
+    const String& prefix) const
+{
+    String element = String::Format("%sCp", name.string());
+    String newPrefix = prefix + g_tab + g_tab;
+    elementType_->EmitCStubReadVar(parcelName, element, sb, newPrefix);
+    sb.Append("\n");
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(newPrefix).AppendFormat("%s[i] = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
+            name.string(), element.string());
+        sb.Append(newPrefix).AppendFormat("if (%s[i] == NULL) {\n", name.string());
+        sb.Append(newPrefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(newPrefix + g_tab).AppendFormat("goto errors;\n");
+        sb.Append(newPrefix).Append("}\n\n");
+
+        sb.Append(newPrefix).AppendFormat("if (strcpy_s((%s)[i], (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
+            name.string(), element.string(), element.string());
+        sb.Append(newPrefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+            element.string());
+        sb.Append(newPrefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+        sb.Append(newPrefix + g_tab).Append("goto errors;\n");
+        sb.Append(newPrefix).Append("}\n");
+    } else {
+        sb.Append(newPrefix).AppendFormat("%s[i] = strdup(%sCp);\n", name.string(), name.string());
+    }
 }
 } // namespace HDI
 } // namespace OHOS

@@ -15,11 +15,11 @@ namespace HDI {
 bool CClientInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
-        directory_ = String::Format("%s/%s/client/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/client/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else {
         return false;
     }
@@ -87,13 +87,23 @@ void CClientInterfaceCodeEmitter::EmitImportInclusions(StringBuilder& sb)
 
 void CClientInterfaceCodeEmitter::EmitForwardDecls(StringBuilder& sb)
 {
-    sb.Append("struct HdfRemoteService;\n");
+    if (isKernelCode_) {
+        sb.Append("struct HdfIoService;\n");
+    } else {
+        sb.Append("struct HdfRemoteService;\n");
+    }
 }
 
 void CClientInterfaceCodeEmitter::EmitInterfaceDecl(StringBuilder& sb)
 {
     sb.AppendFormat("struct %s {\n", interfaceName_.string());
-    sb.Append(g_tab).Append("struct HdfRemoteService *remote;\n");
+
+    if (isKernelCode_) {
+        sb.Append(g_tab).Append("struct HdfIoService *serv;\n");
+    } else {
+        sb.Append(g_tab).Append("struct HdfRemoteService *remote;\n");
+    }
+
     sb.Append("\n");
     EmitInterfaceMethodsDecl(sb, g_tab);
     sb.Append("};\n");

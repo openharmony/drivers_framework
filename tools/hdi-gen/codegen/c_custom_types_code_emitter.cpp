@@ -8,6 +8,7 @@
 
 #include "codegen/c_custom_types_code_emitter.h"
 #include "util/file.h"
+#include "util/options.h"
 #include "util/logger.h"
 
 namespace OHOS {
@@ -18,7 +19,8 @@ bool CCustomTypesCodeEmitter::ResolveDirectory(const String& targetDirectory)
         return false;
     }
 
-    directory_ = String::Format("%s/%s/", targetDirectory.string(), FileName(ast_->GetPackageName()).string());
+    directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
+        FileName(ast_->GetPackageName()).string()));
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CCustomTypesCodeEmitter", "Create '%s' failed!", directory_.string());
         return false;
@@ -210,6 +212,18 @@ void CCustomTypesCodeEmitter::EmitCustomTypeMarshallingImpl(StringBuilder& sb, c
     sb.AppendFormat("bool %sBlockMarshalling(struct HdfSBuf *data, const %s *%s)\n",
         type->GetName().string(), type->EmitCType().string(), objName.string());
     sb.Append("{\n");
+
+    for (size_t i = 0; i < type->GetMemberNumber(); i++) {
+        AutoPtr<ASTType> memberType = type->GetMemberType(i);
+        if (isKernelCode_) {
+            if (memberType->GetTypeKind() == TypeKind::TYPE_ARRAY ||
+                memberType->GetTypeKind() == TypeKind::TYPE_LIST) {
+                sb.Append(g_tab).Append("uint32_t i = 0;\n");
+                break;
+            }
+        }
+    }
+
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         String memberName = type->GetMemberName(i);
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
@@ -230,6 +244,17 @@ void CCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& sb,
     sb.AppendFormat("bool %sBlockUnmarshalling(struct HdfSBuf *data, %s *%s)\n",
         type->GetName().string(), type->EmitCType().string(), objName.string());
     sb.Append("{\n");
+
+    if (isKernelCode_) {
+        for (size_t i = 0; i < type->GetMemberNumber(); i++) {
+            AutoPtr<ASTType> memberType = type->GetMemberType(i);
+            if (memberType->GetTypeKind() == TypeKind::TYPE_ARRAY ||
+                memberType->GetTypeKind() == TypeKind::TYPE_LIST) {
+                sb.Append(g_tab).Append("uint32_t i = 0;\n");
+                break;
+            }
+        }
+    }
 
     sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
     sb.Append(g_tab).Append(g_tab).Append("return false;\n");
@@ -256,7 +281,22 @@ void CCustomTypesCodeEmitter::EmitMemberUnmarshalling(const AutoPtr<ASTType>& ty
         case TypeKind::TYPE_STRING: {
             String tmpName = String::Format("%sCp", memberName.string());
             type->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
-            sb.Append(g_tab).AppendFormat("%s = strdup(%s);\n", varName.string(), tmpName.string());
+
+            if (Options::GetInstance().DoGenerateKernelCode()) {
+                sb.Append(g_tab).AppendFormat("%s = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
+                    varName.string(), tmpName.string());
+                sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", varName.string());
+                sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
+                sb.Append(g_tab).Append("}\n");
+
+                sb.Append(g_tab).AppendFormat("if (strcpy_s(%s, (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
+                    varName.string(), tmpName.string(), tmpName.string());
+                sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
+                sb.Append(g_tab).Append("}\n");
+            } else {
+                sb.Append(g_tab).AppendFormat("%s = strdup(%s);\n", varName.string(), tmpName.string());
+            }
+
             sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", varName.string());
             sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
             sb.Append(g_tab).Append("}\n");
@@ -317,6 +357,17 @@ void CCustomTypesCodeEmitter::EmitCustomTypeFreeImpl(StringBuilder& sb, const Au
     sb.AppendFormat("void %sFree(%s *%s, bool freeSelf)\n",
         type->GetName().string(), type->EmitCType().string(), objName.string());
     sb.Append("{\n");
+
+    if (isKernelCode_) {
+        for (size_t i = 0; i < type->GetMemberNumber(); i++) {
+            AutoPtr<ASTType> memberType = type->GetMemberType(i);
+            if (NeedEmitInitVar(memberType)) {
+                sb.Append(g_tab).Append("uint32_t i = 0;\n");
+                break;
+            }
+        }
+    }
+
     sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
     sb.Append(g_tab).Append(g_tab).Append("return;\n");
     sb.Append(g_tab).Append("}\n");
@@ -328,6 +379,29 @@ void CCustomTypesCodeEmitter::EmitCustomTypeFreeImpl(StringBuilder& sb, const Au
     sb.Append(g_tab).Append(g_tab).Append("OsalMemFree(dataBlock);\n");
     sb.Append(g_tab).Append("}\n");
     sb.Append("}\n");
+}
+
+bool CCustomTypesCodeEmitter::NeedEmitInitVar(const AutoPtr<ASTType>& type)
+{
+    if (type == nullptr) {
+        return false;
+    }
+
+    if (type->IsArrayType()) {
+        AutoPtr<ASTArrayType> ArrType = dynamic_cast<ASTArrayType*>(type.Get());
+        AutoPtr<ASTType> elementType = ArrType->GetElementType();
+        if (elementType->IsStringType() || elementType->IsStructType()) {
+            return true;
+        }
+    } else if (type->IsListType()) {
+        AutoPtr<ASTListType> ListType = dynamic_cast<ASTListType*>(type.Get());
+        AutoPtr<ASTType> elementType = ListType->GetElementType();
+        if (elementType->IsStringType() || elementType->IsStructType()) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void CCustomTypesCodeEmitter::EmitCustomTypeMemoryRecycle(const AutoPtr<ASTStructType>& type, const String& name,

@@ -1,46 +1,24 @@
-TARGET = hdi-gen
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+#
+# HDF is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
 
-PWD:=$(shell pwd)
-export BUILD_DIR = $(PWD)/build
-export BOUNDS_CHECK_LIB := $(abspath ../../../../third_party/bounds_checking_function)
-export INCLUDES = -I$(PWD) -I$(BOUNDS_CHECK_LIB)/include
-export CXXFLAGS = -std=c++14 -O2
+export TARGET:=hdi-gen
+export CXXFLAGS = -std=c++14 -O2 -w
 export Q := @
 export MAKEFLAGS += --no-print-directory
 
-BOUNDS_CHECK_SOURCE := $(wildcard $(BOUNDS_CHECK_LIB)/src/*.c)
-BOUNDS_CHECK_BUILD := $(BUILD_DIR)/bounds_checking_function
-BOUNDS_CHECK_OBJS := $(addprefix $(BOUNDS_CHECK_BUILD)/, $(patsubst %.c, %.o, $(notdir $(BOUNDS_CHECK_SOURCE))))
-BOUNDS_CHECK_TARGET := $(BOUNDS_CHECK_BUILD)/bounds_checking_function.a
+MAKE_FILE_NAME = MakefileLinux
+ifeq ($(findstring ;, $(PATH)), ;)
+	MAKE_FILE_NAME := MakefileWin
+endif
 
-SOURCE := $(wildcard *.cpp)
-OBJS := $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp, %.o, $(SOURCE)))
-
-SUBDIRS = util ast parser codegen
-LIBS = $(BUILD_DIR)/codegen/codegen.a $(BUILD_DIR)/parser/parser.a $(BUILD_DIR)/ast/ast.a $(BUILD_DIR)/util/util.a
-
-all:$(TARGET)
-
-$(TARGET): $(OBJS) | $(BOUNDS_CHECK_TARGET)
-	$(Q) for subdir in $(SUBDIRS); do \
-		$(MAKE) -C $$subdir || exit 1; \
-	done
-	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ $(LIBS) $(BOUNDS_CHECK_TARGET)
-	$(Q) echo $(TARGET):build successful.
-
-$(OBJS):$(SOURCE)
-	$(Q) mkdir -p $(BUILD_DIR)
-	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
-
-$(BOUNDS_CHECK_TARGET):$(BOUNDS_CHECK_OBJS)
-	$(Q) echo $(BOUNDS_CHECK_TARGET)
-	$(Q) ar -rc $@ $^
-
-$(BOUNDS_CHECK_BUILD)/%.o : $(BOUNDS_CHECK_LIB)/src/%.c
-	$(Q) mkdir -p $(BOUNDS_CHECK_BUILD)
-	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
+all:
+	$(Q) echo start build $(TARGET) ...
+	$(Q) $(MAKE) -f $(MAKE_FILE_NAME)
 
 clean:
-	$(Q) rm -rf $(BUILD_DIR) $(TARGET)
+	$(Q) $(MAKE) -f $(MAKE_FILE_NAME) clean
 
-.PHONY:all clean
+.PHONY: clean

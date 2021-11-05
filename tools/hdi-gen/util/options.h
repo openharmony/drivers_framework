@@ -55,6 +55,11 @@ public:
         return doGenerateCode_;
     }
 
+    inline bool DoGenerateKernelCode() const
+    {
+        return doModeKernel_;
+    }
+
     inline bool HasErrors() const
     {
         return !errors_.empty();
@@ -68,6 +73,11 @@ public:
     inline String GetTargetLanguage() const
     {
         return targetLanguage_;
+    }
+
+    inline String GetCodePart() const
+    {
+        return codePart_;
     }
 
     inline String GetGenerationDirectory() const
@@ -85,6 +95,7 @@ private:
     Options() : program_(),
         sourceFilePath_(),
         targetLanguage_(),
+        codePart_("all"),
         generationDirectory_(),
         illegalOptions_(),
         errors_(),
@@ -107,6 +118,7 @@ private:
     String program_;
     String sourceFilePath_;
     String targetLanguage_;
+    String codePart_;
     String generationDirectory_;
     String illegalOptions_;
     std::vector<String> errors_;
@@ -117,6 +129,8 @@ private:
     bool doDumpAST_ = false;
     bool doGetHashKey_ = false;
     bool doGenerateCode_ = false;
+    bool doModeKernel_ = false;
+    bool doGeneratePart_ = false;
     bool doOutDir_ = false;
 };
 } // namespace HDI

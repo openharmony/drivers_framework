@@ -7,7 +7,6 @@
  */
 
 #include "codegen/code_generator.h"
-#include "codegen/generator_factory.h"
 #include "parser/module_parser.h"
 #include "util/file.h"
 #include "util/logger.h"
@@ -57,9 +56,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    AutoPtr<CodeGenerator> codeGen = GeneratorFactory::GetInstance().GetCodeGenerator(astModule,
-        options.GetTargetLanguage(), options.GetGenerationDirectory());
-    if (!codeGen->Generate()) {
+    if (!CodeGenerator(astModule).Generate()) {
         Logger::E("hdi-gen", "Generate \"%s\" codes failed.", options.GetTargetLanguage().string());
         return -1;
     }

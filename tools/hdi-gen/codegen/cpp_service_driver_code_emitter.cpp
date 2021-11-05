@@ -18,7 +18,8 @@ bool CppServiceDriverCodeEmitter::ResolveDirectory(const String& targetDirectory
         return false;
     }
 
-    directory_ = String::Format("%s/%s/server/", targetDirectory.string(), FileName(ast_->GetPackageName()).string());
+    directory_ = File::AdapterPath(String::Format("%s/%s/server/", targetDirectory.string(),
+        FileName(ast_->GetPackageName()).string()));
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CppServiceDriverCodeEmitter", "Create '%s' failed!", directory_.string());
         return false;
@@ -147,7 +148,13 @@ void CppServiceDriverCodeEmitter::EmitDriverRelease(StringBuilder& sb)
 {
     sb.AppendFormat("void Hdf%sDriverRelease(struct HdfDeviceObject *deviceObject)", infName_.string());
     sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverRelease enter.\");\n", interfaceName_.string());
+    sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverRelease enter.\");\n\n", interfaceName_.string());
+    sb.Append(g_tab).AppendFormat("struct Hdf%sService *hdf%sService = CONTAINER_OF(\n",
+        infName_.string(), infName_.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("deviceObject->service, struct Hdf%sService, ioservice);\n",
+        infName_.string());
+    sb.Append(g_tab).AppendFormat("%sStubRelease(hdf%sService->instance);\n", infName_.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("OsalMemFree(hdf%sService);\n", infName_.string());
     sb.Append("}\n");
 }
 

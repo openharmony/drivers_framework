@@ -18,7 +18,8 @@ bool CppCustomTypesCodeEmitter::ResolveDirectory(const String& targetDirectory)
         return false;
     }
 
-    directory_ = String::Format("%s/%s/", targetDirectory.string(), FileName(ast_->GetPackageName()).string());
+    directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
+        FileName(ast_->GetPackageName()).string()));
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CppCustomTypesCodeEmitter", "Create '%s' failed!", directory_.string());
         return false;
