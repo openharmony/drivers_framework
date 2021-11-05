@@ -19,15 +19,6 @@ extern "C" {
 
 int32_t DspGetServiceName(const struct HdfDeviceObject *device, const char **drvDspName);
 int32_t DspGetDaiName(const struct HdfDeviceObject *device, const char **drvDaiName);
-int32_t DspLinkDeviceInit(struct AudioCard *card, const struct DaiDevice *device);
-int32_t DspDeviceInit(const struct DspDevice *device);
-int32_t DspDeviceReadReg(const struct DspDevice *device, uint8_t *buf, uint32_t len);
-int32_t DspDeviceWriteReg(const struct DspDevice *device, uint8_t *buf, uint32_t len);
-int32_t DspLinkStartup(const struct AudioCard *card, const struct DaiDevice *device);
-int32_t DspLinkHwParams(const struct AudioCard *card, const struct AudioPcmHwParams *param);
-int32_t DspDecodeAudioStream(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device);
-int32_t DspEncodeAudioStream(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device);
-int32_t DspEqualizerActive(const struct AudioCard *card, const uint8_t *buf, const struct DspDevice *device);
 
 #ifdef __cplusplus
 #if __cplusplus

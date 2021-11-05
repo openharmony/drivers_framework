@@ -365,7 +365,7 @@ static int32_t AudioDriverInit(struct HdfDeviceObject *device)
         ADM_LOG_ERR("device is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
-    audioHost = AudioHostFromDevice(device);
+    audioHost = (struct AudioHost *)device->service;
     if (audioHost == NULL) {
         ADM_LOG_ERR("audioHost is NULL.");
         return HDF_FAILURE;
@@ -432,7 +432,7 @@ static void AudioDriverRelease(struct HdfDeviceObject *device)
         ADM_LOG_ERR("device is NULL.");
         return;
     }
-    audioHost = AudioHostFromDevice(device);
+    audioHost = (struct AudioHost *)device->service;
     if (audioHost == NULL) {
         ADM_LOG_ERR("audioHost is NULL.");
         return;

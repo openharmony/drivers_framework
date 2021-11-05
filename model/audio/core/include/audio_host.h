@@ -24,8 +24,6 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define BUFF_SIZE_MAX 64
-
 #define AUDIO_LIST_HEAD_INIT(name) { &(name), &(name) }
 
 #define AUDIO_LIST_HEAD(name) \
@@ -206,16 +204,6 @@ struct AudioRuntimeDeivces       {
 };
 
 struct AudioHost *AudioHostCreateAndBind(struct HdfDeviceObject *device);
-
-static inline struct HdfDeviceObject *AudioHostToDevice(struct AudioHost *host)
-{
-    return (host == NULL) ? NULL : host->device;
-}
-
-static inline struct AudioHost *AudioHostFromDevice(struct HdfDeviceObject *device)
-{
-    return (device == NULL) ? NULL : (struct AudioHost *)device->service;
-}
 
 /* Get a sound card instance */
 struct AudioCard *GetCardInstance(const char *serviceName);

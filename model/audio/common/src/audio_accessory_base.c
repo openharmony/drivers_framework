@@ -399,3 +399,29 @@ int32_t AccessoryDeviceRegWrite(const struct AccessoryDevice *codec, uint32_t re
     AUDIO_DRIVER_LOG_DEBUG("success");
     return HDF_SUCCESS;
 }
+
+int32_t AccessoryGetConfigInfo(const struct HdfDeviceObject *device, struct AccessoryData *accessoryData)
+{
+    if (device == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param is null!");
+        return HDF_FAILURE;
+    }
+
+    if (accessoryData->regConfig != NULL) {
+        ADM_LOG_ERR("g_codecData regConfig  fail!");
+        return HDF_FAILURE;
+    }
+
+    accessoryData->regConfig = (struct AudioRegCfgData *)OsalMemCalloc(sizeof(*(accessoryData->regConfig)));
+    if (accessoryData->regConfig == NULL) {
+        ADM_LOG_ERR("malloc AudioRegCfgData fail!");
+        return HDF_FAILURE;
+    }
+
+    if (CodecGetRegConfig(device, accessoryData->regConfig) != HDF_SUCCESS) {
+        ADM_LOG_ERR("CodecGetRegConfig fail!");
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}

@@ -39,15 +39,15 @@ void AudioHostTest::TearDown()
 {
 }
 
-HWTEST_F(AudioHostTest, AudioHostTest_GetCodec, TestSize.Level1)
+HWTEST_F(AudioHostTest, AudioHostTest_AudioHostCreateAndBind, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTGETCODEC, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOHOSTCREATEANDBIND, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioHostTest, AudioHostTest_GetAudioServiceName, TestSize.Level1)
+HWTEST_F(AudioHostTest, AudioHostTest_GetCardInstance, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTGETCARDINSTANCE, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TEST_GETCARDINSTANCE, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 }

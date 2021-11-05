@@ -17,9 +17,6 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-
-#define AUDIODRV_CTRL_ELEM_TYPE_INTEGER 2 /* integer type */
-
 enum ControlDispMethodCmd {
     AUDIODRV_CTRL_IOCTRL_ELEM_INFO,
     AUDIODRV_CTRL_IOCTRL_ELEM_READ,
@@ -27,12 +24,9 @@ enum ControlDispMethodCmd {
     AUDIODRV_CTRL_IOCTRL_ELEM_BUTT,
 };
 
-typedef int32_t (*ControlDispCmdHandle)(const struct HdfDeviceIoClient *client,
-    struct HdfSBuf *data, struct HdfSBuf *reply);
-
 struct ControlDispCmdHandleList {
     enum ControlDispMethodCmd cmd;
-    ControlDispCmdHandle func;
+    int32_t (*func)(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply);
 };
 
 struct ControlHost {
@@ -40,11 +34,6 @@ struct ControlHost {
     struct HdfDeviceObject *device;
     void *priv;
 };
-
-static inline struct ControlHost *ControlHostFromDevice(struct HdfDeviceObject *device)
-{
-    return (device == NULL) ? NULL : (struct ControlHost *)device->service;
-}
 
 #ifdef __cplusplus
 #if __cplusplus

@@ -11,8 +11,9 @@
 #include "hdf_uhdf_test.h"
 
 using namespace testing::ext;
+
 namespace {
-class AudioStreamDispatchTest : public testing::Test {
+class AudioDspBaseTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
@@ -20,27 +21,33 @@ public:
     void TearDown();
 };
 
-void AudioStreamDispatchTest::SetUpTestCase()
+void AudioDspBaseTest::SetUpTestCase()
 {
     HdfTestOpenService();
 }
 
-void AudioStreamDispatchTest::TearDownTestCase()
+void AudioDspBaseTest::TearDownTestCase()
 {
     HdfTestCloseService();
 }
 
-void AudioStreamDispatchTest::SetUp()
+void AudioDspBaseTest::SetUp()
 {
 }
 
-void AudioStreamDispatchTest::TearDown()
+void AudioDspBaseTest::TearDown()
 {
 }
 
-HWTEST_F(AudioStreamDispatchTest, AudioStreamDispatchTest001, TestSize.Level1)
+HWTEST_F(AudioDspBaseTest, AudioDspBaseTest_DspGetServiceName, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTSTREAMDISPATCH, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TESTDSPGETSERVICENAME, -1};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+HWTEST_F(AudioDspBaseTest, AudioDspBaseTest_DspGetDaiName, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {g_testAudioType, TESTDSPGETDAINAME, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 }

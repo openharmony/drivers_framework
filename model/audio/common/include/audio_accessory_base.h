@@ -75,6 +75,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *data, struct AccessoryTransf
 int32_t AccessoryDeviceCtrlRegInit(void);
 int32_t AccessoryDeviceRegRead(const struct AccessoryDevice *codec, uint32_t reg, uint32_t *value);
 int32_t AccessoryDeviceRegWrite(const struct AccessoryDevice *codec, uint32_t reg, uint32_t value);
+int32_t AccessoryGetConfigInfo(const struct HdfDeviceObject *device, struct AccessoryData *accessoryData);
 
 #ifdef __cplusplus
 #if __cplusplus

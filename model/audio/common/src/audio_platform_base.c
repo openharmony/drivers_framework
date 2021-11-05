@@ -426,7 +426,6 @@ static int32_t MmapWriteData(struct PlatformData *data, char *tmpBuf)
 
     if (data->renderBufInfo.trafBufSize > data->renderBufInfo.cirBufSize) {
         AUDIO_DRIVER_LOG_ERR("transferFrameSize is tool big.");
-        OsalMemFree(tmpBuf);
         return HDF_FAILURE;
     }
 
@@ -435,7 +434,6 @@ static int32_t MmapWriteData(struct PlatformData *data, char *tmpBuf)
         data->renderBufInfo.trafBufSize);
     if (ret != EOK) {
         AUDIO_DRIVER_LOG_ERR("CopyFromUser failed.");
-        OsalMemFree(tmpBuf);
         return HDF_FAILURE;
     }
 
@@ -443,10 +441,9 @@ static int32_t MmapWriteData(struct PlatformData *data, char *tmpBuf)
         tmpBuf, data->renderBufInfo.trafBufSize);
     if (ret != 0) {
         AUDIO_DRIVER_LOG_ERR("memcpy_s failed.");
-        OsalMemFree(tmpBuf);
         return HDF_FAILURE;
     }
-    
+
     data->renderBufInfo.wptrOffSet = wPtr + data->renderBufInfo.trafBufSize;
     data->renderBufInfo.wbufOffSet += data->renderBufInfo.trafBufSize;
     data->renderBufInfo.framesPosition += data->renderBufInfo.trafBufSize / data->pcmInfo.frameSize;
@@ -864,7 +861,7 @@ int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
     }
 
     switch (cmd) {
-        case AUDIO_DRV_PCM_IOCTRL_RENDER_START:
+        case AUDIO_DRV_PCM_IOCTL_RENDER_START:
             if (AudioDmaSubmit(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
                 return HDF_FAILURE;
@@ -881,7 +878,7 @@ int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
 
             data->renderBufInfo.runStatus = PCM_START;
             break;
-        case AUDIO_DRV_PCM_IOCTRL_RENDER_STOP:
+        case AUDIO_DRV_PCM_IOCTL_RENDER_STOP:
             if (AudioDmaPause(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
                 return HDF_FAILURE;
@@ -893,7 +890,7 @@ int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
 
             data->renderBufInfo.runStatus = PCM_STOP;
             break;
-        case AUDIO_DRV_PCM_IOCTRL_RENDER_PAUSE:
+        case AUDIO_DRV_PCM_IOCTL_RENDER_PAUSE:
             if (AudioDmaPause(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
                 return HDF_FAILURE;
@@ -905,7 +902,7 @@ int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
 
             data->renderBufInfo.runStatus = PCM_PAUSE;
             break;
-        case AUDIO_DRV_PCM_IOCTRL_RENDER_RESUME:
+        case AUDIO_DRV_PCM_IOCTL_RENDER_RESUME:
             if (AudioDmaResume(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
                 return HDF_FAILURE;
@@ -941,7 +938,7 @@ int32_t AudioCaptureTrigger(struct AudioCard *card, int cmd)
     }
 
     switch (cmd) {
-        case AUDIO_DRV_PCM_IOCTRL_CAPTURE_START:
+        case AUDIO_DRV_PCM_IOCTL_CAPTURE_START:
             if (AudioDmaSubmit(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
                 return HDF_FAILURE;
@@ -957,7 +954,7 @@ int32_t AudioCaptureTrigger(struct AudioCard *card, int cmd)
 
             data->captureBufInfo.runStatus = PCM_START;
             break;
-        case AUDIO_DRV_PCM_IOCTRL_CAPTURE_STOP:
+        case AUDIO_DRV_PCM_IOCTL_CAPTURE_STOP:
             if (AudioDmaPause(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
                 return HDF_FAILURE;
@@ -968,7 +965,7 @@ int32_t AudioCaptureTrigger(struct AudioCard *card, int cmd)
             }
             data->captureBufInfo.runStatus = PCM_STOP;
             break;
-        case AUDIO_DRV_PCM_IOCTRL_CAPTURE_PAUSE:
+        case AUDIO_DRV_PCM_IOCTL_CAPTURE_PAUSE:
             if (AudioDmaPause(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
                 return HDF_FAILURE;
@@ -980,7 +977,7 @@ int32_t AudioCaptureTrigger(struct AudioCard *card, int cmd)
 
             data->captureBufInfo.runStatus = PCM_PAUSE;
             break;
-        case AUDIO_DRV_PCM_IOCTRL_CAPTURE_RESUME:
+        case AUDIO_DRV_PCM_IOCTL_CAPTURE_RESUME:
             if (AudioDmaResume(data) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
                 return HDF_FAILURE;
@@ -1022,15 +1019,15 @@ int32_t AudioHwParams(const struct AudioCard *card, const struct AudioPcmHwParam
         return HDF_FAILURE;
     }
 
-    if (AudioDmaRequestChannel(platformData) != HDF_SUCCESS) {
-        AUDIO_DRIVER_LOG_ERR("Dma Request Channel fail.");
-        return HDF_FAILURE;
-    }
-
     if (AudioFramatToBitWidth(param->format, &platformData->pcmInfo.bitWidth) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
     if (AudioSetPcmInfo(platformData, param) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+
+    if (AudioDmaRequestChannel(platformData) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("Dma Request Channel fail.");
         return HDF_FAILURE;
     }
 

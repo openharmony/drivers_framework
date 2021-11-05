@@ -45,7 +45,7 @@ struct DaiData {
     struct AudioKcontrol *controls;
     int numControls;
     bool daiInitFlag;
-    uint32_t regDaiBase;
+    unsigned long regVirtualAddr;
     struct AudioRegCfgData *regConfig;
     struct AudioRegCfgGroupNode **regCfgGroup;
     struct OsalMutex mutex;

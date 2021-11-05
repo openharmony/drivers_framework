@@ -10,24 +10,44 @@
 #include "devsvc_manager_clnt.h"
 
 #define HDF_LOG_TAG audio_parse_test
-#define TEST_PARSE_SERVICE_NAME "hdf_audio_codec_dev0"
 
-int32_t AudioFillTestConfigData(void)
+int32_t AudioFillConfigDataTest(void)
 {
-    HDF_LOGI("%s: enter", __func__);
+    struct HdfDeviceObject *device = NULL;
+    struct AudioConfigData configData;
+    HDF_LOGI("enter");
 
     if (AudioFillConfigData(NULL, NULL) == HDF_SUCCESS) {
-        HDF_LOGE("%s_[%d]: AudioFillConfigData fail", __func__, __LINE__);
+        HDF_LOGE("AudioFillConfigData fail");
         return HDF_FAILURE;
     }
 
-    struct HdfDeviceObject *device = DevSvcManagerClntGetDeviceObject(TEST_PARSE_SERVICE_NAME);
-    struct AudioConfigData configData;
+    device = DevSvcManagerClntGetDeviceObject("hdf_audio_codec_dev0");
     if (AudioFillConfigData(device, &configData) != HDF_SUCCESS) {
-        HDF_LOGE("%s_[%d]: AudioFillConfigData fail", __func__, __LINE__);
+        HDF_LOGE("AudioFillConfigData fail");
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("%s: success", __func__);
+    HDF_LOGI("success");
+    return HDF_SUCCESS;
+}
+
+int32_t CodecGetRegConfigTest(void)
+{
+    struct HdfDeviceObject *device = NULL;
+    struct AudioRegCfgData regCfgData;
+    HDF_LOGI("enter");
+
+    if (CodecGetRegConfig(NULL, NULL) == HDF_SUCCESS) {
+        HDF_LOGE("AudioFillConfigData fail");
+        return HDF_FAILURE;
+    }
+
+    device = DevSvcManagerClntGetDeviceObject("hdf_audio_codec_dev0");
+    if (CodecGetRegConfig(device, &regCfgData) != HDF_SUCCESS) {
+        HDF_LOGE("AudioFillConfigData fail");
+    }
+
+    HDF_LOGI("success");
     return HDF_SUCCESS;
 }
