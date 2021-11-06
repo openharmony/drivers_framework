@@ -6,20 +6,20 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdf_io_service.h"
+#include "hdf_log.h"
+#include "hdf_power_state.h"
+#include "hdf_uhdf_test.h"
+#include "osal_time.h"
+#include "sample_driver_test.h"
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
-#include <string>
-#include <inttypes.h>
-#include <unistd.h>
 #include <gtest/gtest.h>
-#include "hdf_uhdf_test.h"
-#include "hdf_io_service.h"
-#include "osal_time.h"
-#include "sample_driver_test.h"
-#include "hdf_log.h"
-#include "hdf_power_state.h"
+#include <inttypes.h>
+#include <string>
+#include <unistd.h>
 
 using namespace testing::ext;
 
@@ -58,7 +58,9 @@ void IoServiceTest::SetUpTestCase()
     listener1.listener.priv = (void *)"listener1";
 }
 
-void IoServiceTest::TearDownTestCase() {}
+void IoServiceTest::TearDownTestCase()
+{
+}
 
 void IoServiceTest::SetUp()
 {
@@ -67,15 +69,17 @@ void IoServiceTest::SetUp()
     eventCount = 0;
 }
 
-void IoServiceTest::TearDown() {}
+void IoServiceTest::TearDown()
+{
+}
 
 int IoServiceTest::OnDevEventReceived(struct HdfDevEventlistener *listener, struct HdfIoService *service, uint32_t id,
     struct HdfSBuf *data)
 {
     OsalTimespec time;
     OsalGetTime(&time);
-    HDF_LOGE("%s: received event[%d] from %s at %" PRIu64 ".%" PRIu64 "", (char *)listener->priv, eventCount++, (char *)service->priv,
-        time.sec, time.usec);
+    HDF_LOGE("%s: received event[%d] from %s at %" PRIu64 ".%" PRIu64 "", (char *)listener->priv, eventCount++,
+        (char *)service->priv, time.sec, time.usec);
 
     const char *string = HdfSbufReadString(data);
     if (string == nullptr) {
@@ -88,7 +92,7 @@ int IoServiceTest::OnDevEventReceived(struct HdfDevEventlistener *listener, stru
     return 0;
 }
 
-static int SendEvent(struct HdfIoService *serv, const char *eventData)
+static int SendEvent(struct HdfIoService *serv, const char *eventData, bool broadcast)
 {
     OsalTimespec time;
     OsalGetTime(&time);
@@ -107,6 +111,7 @@ static int SendEvent(struct HdfIoService *serv, const char *eventData)
         return HDF_DEV_ERR_NO_MEMORY;
     }
 
+    uint32_t cmdId = broadcast ? SAMPLE_DRIVER_SENDEVENT_BROADCAST_DEVICE : SAMPLE_DRIVER_SENDEVENT_SINGLE_DEVICE;
     do {
         if (!HdfSbufWriteString(data, eventData)) {
             HDF_LOGE("fail to write sbuf");
@@ -114,7 +119,7 @@ static int SendEvent(struct HdfIoService *serv, const char *eventData)
             break;
         }
 
-        ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_SENDEVENT_SINGLE_DEVICE, data, reply);
+        ret = serv->dispatcher->Dispatch(&serv->object, cmdId, data, reply);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("fail to send service call");
             break;
@@ -170,7 +175,7 @@ HWTEST_F(IoServiceTest, HdfIoService002, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -189,7 +194,7 @@ HWTEST_F(IoServiceTest, HdfIoService002, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -224,7 +229,7 @@ HWTEST_F(IoServiceTest, HdfIoService003, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -242,7 +247,7 @@ HWTEST_F(IoServiceTest, HdfIoService003, TestSize.Level0)
     ret = HdfDeviceRegisterEventListener(serv, &listener1.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -268,7 +273,7 @@ HWTEST_F(IoServiceTest, HdfIoService004, TestSize.Level0)
 
     int ret = HdfDeviceRegisterEventListener(serv1, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
-    ret = SendEvent(serv1, testSvcName);
+    ret = SendEvent(serv1, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -300,7 +305,7 @@ HWTEST_F(IoServiceTest, HdfIoService005, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -311,14 +316,13 @@ HWTEST_F(IoServiceTest, HdfIoService005, TestSize.Level0)
     ret = HdfIoServiceGroupAddService(group, serv);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
     ASSERT_EQ(2, listener0.eventCount);
     HdfIoServiceGroupRecycle(group);
 }
-
 
 /* *
  * @tc.name: HdfIoService006
@@ -348,13 +352,13 @@ HWTEST_F(IoServiceTest, HdfIoService006, TestSize.Level0)
     ret = HdfIoServiceGroupAddService(group, serv1);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
     ASSERT_EQ(1, listener0.eventCount);
 
-    ret = SendEvent(serv1, testSvcName);
+    ret = SendEvent(serv1, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -362,13 +366,13 @@ HWTEST_F(IoServiceTest, HdfIoService006, TestSize.Level0)
 
     HdfIoServiceGroupRemoveService(group, serv);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
     ASSERT_EQ(2, listener0.eventCount);
 
-    ret = SendEvent(serv1, testSvcName);
+    ret = SendEvent(serv1, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -377,7 +381,7 @@ HWTEST_F(IoServiceTest, HdfIoService006, TestSize.Level0)
     ret = HdfIoServiceGroupAddService(group, serv);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -387,7 +391,6 @@ HWTEST_F(IoServiceTest, HdfIoService006, TestSize.Level0)
     HdfIoServiceRecycle(serv);
     HdfIoServiceRecycle(serv1);
 }
-
 
 /* *
  * @tc.name: HdfIoService007
@@ -410,7 +413,7 @@ HWTEST_F(IoServiceTest, HdfIoService007, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -447,7 +450,7 @@ HWTEST_F(IoServiceTest, HdfIoService008, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -487,7 +490,7 @@ HWTEST_F(IoServiceTest, HdfIoService009, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -524,7 +527,7 @@ HWTEST_F(IoServiceTest, HdfIoService010, TestSize.Level0)
     ret = HdfIoServiceGroupRegisterListener(group, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -555,7 +558,7 @@ HWTEST_F(IoServiceTest, HdfIoService011, TestSize.Level0)
     int ret = HdfDeviceRegisterEventListener(serv, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -584,7 +587,7 @@ HWTEST_F(IoServiceTest, HdfIoService012, TestSize.Level0)
     int ret = HdfDeviceRegisterEventListener(serv, &listener0.listener);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    ret = SendEvent(serv, testSvcName);
+    ret = SendEvent(serv, testSvcName, false);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     usleep(eventWaitTimeUs);
@@ -632,4 +635,43 @@ HWTEST_F(IoServiceTest, HdfIoService013, TestSize.Level0)
     ASSERT_EQ(ret, HDF_SUCCESS);
     HdfIoServiceRecycle(serv);
     HdfSBufRecycle(data);
+}
+
+/* *
+ * @tc.name: HdfIoService014
+ * @tc.desc: multiple clients listen to a service
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(IoServiceTest, HdfIoService014, TestSize.Level0)
+{
+    struct HdfIoServiceGroup *group = HdfIoServiceGroupObtain();
+    ASSERT_NE(group, nullptr);
+
+    struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
+    ASSERT_NE(serv, nullptr);
+    serv->priv = (void *)"serv";
+
+    struct HdfIoService *serv1 = HdfIoServiceBind(testSvcName);
+    ASSERT_NE(serv1, nullptr);
+    serv1->priv = (void *)"serv1";
+
+    int ret = HdfDeviceRegisterEventListener(serv, &listener0.listener);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    ret = HdfDeviceRegisterEventListener(serv1, &listener1.listener);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    ret = SendEvent(serv, testSvcName, true);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    usleep(eventWaitTimeUs);
+    ASSERT_EQ(1, listener0.eventCount);
+    ASSERT_EQ(1, listener1.eventCount);
+
+    ret = HdfDeviceUnregisterEventListener(serv, &listener0.listener);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    ret = HdfDeviceUnregisterEventListener(serv, &listener0.listener);
+    EXPECT_NE(ret, HDF_SUCCESS);
 }
