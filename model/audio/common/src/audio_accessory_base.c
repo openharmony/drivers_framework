@@ -146,7 +146,7 @@ int32_t AccessoryRegBitsRead(struct AudioMixerControl *regAttr, uint32_t *regVal
 {
     int32_t ret;
     struct AudioAddrConfig regVal;
-    if (regAttr == NULL || regAttr->reg < 0) {
+    if (regAttr == NULL || regAttr->reg < 0 || regValue == NULL) {
         AUDIO_DRIVER_LOG_ERR("input invalid parameter.");
         return HDF_ERR_INVALID_PARAM;
     }
@@ -402,7 +402,7 @@ int32_t AccessoryDeviceRegWrite(const struct AccessoryDevice *codec, uint32_t re
 
 int32_t AccessoryGetConfigInfo(const struct HdfDeviceObject *device, struct AccessoryData *accessoryData)
 {
-    if (device == NULL) {
+    if (device == NULL || accessoryData == NULL) {
         AUDIO_DRIVER_LOG_ERR("param is null!");
         return HDF_FAILURE;
     }

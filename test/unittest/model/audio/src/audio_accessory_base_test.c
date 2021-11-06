@@ -12,42 +12,18 @@
 
 #define HDF_LOG_TAG audio_accessory_base_test
 
-static struct AudioMixerControl g_TestReg = {
-    .min = 0,
-    .max = 0,
-    .platformMax = 0,
-    .mask = 0,
-    .reg = 0,
-    .rreg = 0,
-    .shift= 0,
-    .rshift = 0,
-    .invert = 0,
-    .value = 0,
-};
-
 int32_t AccessoryI2cReadWriteTest(void)
 {
-    struct AudioAddrConfig addrConfig;
-
     if (AccessoryI2cReadWrite(NULL, 0) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
-    if (AccessoryI2cReadWrite(&addrConfig, 0) == HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
     return HDF_SUCCESS;
 }
 
 int32_t AccessoryRegBitsReadTest(void)
 {
-    uint32_t regValue = 0;
-
     if (AccessoryRegBitsRead(NULL, NULL) == HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-
-    if (AccessoryRegBitsRead(&g_TestReg, &regValue) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
@@ -56,8 +32,10 @@ int32_t AccessoryRegBitsReadTest(void)
 
 int32_t AccessoryRegBitsUpdateTest(void)
 {
-    if (AccessoryRegBitsUpdate(g_TestReg) == HDF_SUCCESS) {
-        return HDF_FAILURE;
+    struct AudioMixerControl regValue;
+    regValue.reg = 1; // 1 is test reg
+    if (AccessoryRegBitsUpdate(regValue) == HDF_SUCCESS) {
+        HDF_LOGE("%s_[%d] AccessoryDaiParamsUpdate fail", __func__, __LINE__);
     }
 
     return HDF_SUCCESS;
@@ -66,12 +44,7 @@ int32_t AccessoryRegBitsUpdateTest(void)
 
 int32_t AcessoryDeviceFrequencyParseTest(void)
 {
-    uint16_t freq = 0;
     if (AcessoryDeviceFrequencyParse(0, NULL) == HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-
-    if (AcessoryDeviceFrequencyParse(0, &freq) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
@@ -82,9 +55,9 @@ int32_t AccessoryDaiParamsUpdateTest(void)
 {
     struct DaiParamsVal value;
 
-    value.channelVal = 1; // 1 is dma channel
+    value.frequencyVal = 1; // 1 is dma channel
     if (AccessoryDaiParamsUpdate(value) == HDF_SUCCESS) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s_[%d] AccessoryDaiParamsUpdate fail", __func__, __LINE__);
     }
 
     return HDF_SUCCESS;
@@ -92,25 +65,17 @@ int32_t AccessoryDaiParamsUpdateTest(void)
 
 int32_t AccessoryDeviceCfgGetTest(void)
 {
-
-    struct AccessoryData accessoryData;
-    struct AccessoryTransferData accessoryTransferData;
     if (AccessoryDeviceCfgGet(NULL, NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
-    memset(&accessoryData, 0, sizeof(struct AccessoryData));
-    memset(&accessoryTransferData, 0, sizeof(struct AccessoryTransferData));
-    if (AccessoryDeviceCfgGet(&accessoryData, &accessoryTransferData) == HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
     return HDF_SUCCESS;
 }
 
 int32_t AccessoryDeviceCtrlRegInitTest(void)
 {
     if (AccessoryDeviceCtrlRegInit() == HDF_SUCCESS) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s_[%d] AccessoryDeviceCtrlRegInitTest fail", __func__, __LINE__);
     }
 
     return HDF_SUCCESS;
@@ -121,11 +86,11 @@ int32_t AccessoryDeviceRegReadTest(void)
     uint32_t val;
     struct AccessoryDevice codec;
     if (AccessoryDeviceRegRead(NULL, 0, NULL) == HDF_SUCCESS) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s_[%d] AccessoryDeviceRegRead fail", __func__, __LINE__);
     }
 
     if (AccessoryDeviceRegRead(&codec, 0, &val) == HDF_SUCCESS) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s_[%d] AccessoryDeviceRegRead fail", __func__, __LINE__);
     }
     return HDF_SUCCESS;
 }
@@ -134,11 +99,11 @@ int32_t AccessoryDeviceRegWriteTest(void)
 {
     struct AccessoryDevice codec;
     if (AccessoryDeviceRegWrite(NULL, 0, 0) == HDF_SUCCESS) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s_[%d] AccessoryDeviceRegWrite fail", __func__, __LINE__);;
     }
 
     if (AccessoryDeviceRegWrite(&codec, 0, 0) == HDF_SUCCESS) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s_[%d] AccessoryDeviceRegWrite fail", __func__, __LINE__);
     }
     return HDF_SUCCESS;
 }
@@ -153,7 +118,7 @@ int32_t AccessoryGetConfigInfoTest(void)
     }
 
     if (AccessoryGetConfigInfo(&device, &codecData) == HDF_SUCCESS) {
-        return HDF_FAILURE;
+        HDF_LOGE("%s_[%d] AccessoryGetConfigInfo fail", __func__, __LINE__);
     }
 
     return HDF_SUCCESS;
