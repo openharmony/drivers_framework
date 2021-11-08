@@ -191,8 +191,7 @@ int32_t I3cTestTransfer(void *param)
     struct I3cTester *tester = NULL;
     int32_t ret;
     tester = I3cTesterGet();
-/* *((int32_t *)param) = 1;
-return HDF_SUCCESS; */
+
     if (tester == NULL) {
         HDF_LOGE("%s: Get tester failed!", __func__);
         *((int32_t *)param) = 1;
@@ -415,7 +414,7 @@ static struct I3cTestEntry g_multiThreadEntry[] = {
 int32_t I3cTestMultiThread(void *param)
 {
     uint32_t i;
-    int32_t ret = HDF_ERR_NOT_SUPPORT;
+    int32_t ret;
 
     for (i = 0; i < sizeof(g_multiThreadEntry) / sizeof(g_multiThreadEntry[0]); i++) {
         if (g_multiThreadEntry[i].func == NULL) {
@@ -444,6 +443,10 @@ int32_t I3cTestReliability(void *param)
         return HDF_ERR_INVALID_OBJECT;
     }
     config = (struct I3cConfig *)OsalMemCalloc(sizeof(*config));
+    if (config == NULL) {
+        HDF_LOGE("func:%s config is NULL!",__func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
     config->busMode = I3C_BUS_HDR_MODE;
     config->curMaster = NULL;
     // invalid handle
@@ -504,25 +507,4 @@ int32_t I3cTestExecute(int cmd)
 __EXIT__:
     HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     return ret;
-}
-
-void I3cTestExecuteAll(void)
-{
-    int32_t i;
-    int32_t ret;
-    int32_t fails = 0;
-
-    /* setup env for all test cases */
-    (void)I3cTestExecute(I3C_TEST_CMD_SETUP_ALL);
-
-    for (i = 0; i < I3C_TEST_CMD_SETUP_ALL; i++) {
-        ret = I3cTestExecute(i);
-        fails += (ret != HDF_SUCCESS) ? 1 : 0;
-    }
-
-    /* teardown env for all test cases */
-    (void)I3cTestExecute(I3C_TEST_CMD_TEARDOWN_ALL);
-
-    HDF_LOGI("I3cTestExecuteALL: **********PASS:%d  FAIL:%d************\n\n",
-        I3C_TEST_CMD_RELIABILITY + 1 - fails, fails);
 }

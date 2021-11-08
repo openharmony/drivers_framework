@@ -66,7 +66,8 @@ static inline uint16_t VirtualI3cGetIbiDeviceAddr(void)
     return ibiSimulator.deviceAddr;
 }
 
-static int32_t VirtualI3cXferI2cOneMsgPolling(const struct VirtualI3cCntlr *virtual, const struct VirtualI3cTransferData *td)
+static int32_t VirtualI3cXferI2cOneMsgPolling(const struct VirtualI3cCntlr *virtual,
+                                              const struct VirtualI3cTransferData *td)
 {
     struct I3cMsg *msg = &td->msgs[td->index];
 
@@ -191,6 +192,10 @@ static void VirtualI3cHotJoin(struct VirtualI3cCntlr *virtual)
 
     deviceAddr = VirtualI3cGetIbiDeviceAddr();
     device = (struct I3cDevice *)OsalMemCalloc(sizeof(*device));
+    if (device == NULL) {
+        HDF_LOGE("func:%s device is NULL!",__func__);
+        return;
+    }
     device->cntlr = &virtual->cntlr;
     device->addr = deviceAddr;
     device->type = I3C_CNTLR_I3C_DEVICE;
@@ -247,11 +252,15 @@ static int32_t I3cIbiHandle(uint32_t irq, void *data)
         return VirtualI3cReservedAddrWorker(virtual, ibiAddr);
     } else {
         HDF_LOGD("%s: Calling I3cCntlrIbiCallback...", __func__);
+        device = GetDeviceByAddr(&virtual->cntlr, ibiAddr);
+        if (device == NULL) {
+            HDF_LOGE("func:%s device is NULL!",__func__);
+            return HDF_ERR_MALLOC_FAIL;
+        }
         if (device->ibi->payload > VIRTUAL_I3C_TEST_STR_LEN) {
             /* Put the string "Hello I3C!" into IBI buffer */
             *device->ibi->data = *testStr;
         }
-        device = GetDeviceByAddr(&virtual->cntlr, ibiAddr);
         return I3cCntlrIbiCallback(device);
     }
 
@@ -264,14 +273,17 @@ static inline void SoftInterruptTrigger(struct VirtualI3cCntlr *virtual, uint16_
     VirtualI3cSetIbiSimulator(I3C_HOT_JOIN_ADDR, ibiDeviceAddr);
     HDF_LOGE("%s: IrqNum: %d", __func__, virtual->IrqNum);
 
-    (void)I3cIbiHandle(virtual->IrqNum, (void *)virtual);                // Simulate soft interrupt through direct call
+    /* Simulate soft interrupt through direct call */
+    if (I3cIbiHandle(virtual->IrqNum, (void *)virtual) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Call I3cIbiHandle failed!", __func__);
+    }
 }
 
 static int32_t VirtualI3cHotJoinSimulator(void)
 {
     uint16_t busId;
     struct I3cCntlr *cntlr = NULL;
-    struct VirtualI3cCntlr *virtual;
+    struct VirtualI3cCntlr *virtual = NULL;
 
     for (busId = 0; busId < I3C_CNTLR_MAX; busId++) {
         cntlr = I3cCntlrGet(busId);

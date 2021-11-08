@@ -87,7 +87,9 @@ static int32_t HdmiEdidVendorInfoPhase(struct HdmiEdid *edid)
     struct HdmiEdidFirstBlockInfo *block = (struct HdmiEdidFirstBlockInfo *)edid->raw;
 
     /* Manufacturer Name */
-    data = (block->vendorName[UINT8_ARRAY_TElEMENT_0] << HDMI_EDID_MANUFACRURER_NAME_SHIFT) | (block->vendorName[UINT8_ARRAY_TElEMENT_1]);
+    data = (block->vendorName[UINT8_ARRAY_TElEMENT_0] <<
+            HDMI_EDID_MANUFACRURER_NAME_SHIFT) |
+            (block->vendorName[UINT8_ARRAY_TElEMENT_1]);
     for (i = 0; i < HDMI_EDID_MANUFACRURER_NAME_MAX_LEN - 1; i++) {
         tmpData = (data & (HDMI_EDID_MANUFACRURER_NAME_CHAR_MARK << (HDMI_EDID_MANUFACRURER_NAME_CHAR_SHIFT * i)));
         tmpData = (tmpData >> (HDMI_EDID_MANUFACRURER_NAME_CHAR_SHIFT * i));
@@ -98,7 +100,9 @@ static int32_t HdmiEdidVendorInfoPhase(struct HdmiEdid *edid)
     }
 
     /* Product Code */
-    data = (block->productCode[UINT8_ARRAY_TElEMENT_1] << HDMI_EDID_PRODUCT_CODE_SHIFT) | (block->productCode[UINT8_ARRAY_TElEMENT_0]);
+    data = (block->productCode[UINT8_ARRAY_TElEMENT_1] <<
+            HDMI_EDID_PRODUCT_CODE_SHIFT) |
+            (block->productCode[UINT8_ARRAY_TElEMENT_0]);
     sinkCap->vendorInfo.productCode = data;
 
     /* Serial Number */
@@ -225,11 +229,14 @@ static int32_t HdmiEdidStandardTimingPhase(struct HdmiEdid *edid)
      * Unused fields in this section shall be set to 01h, 01h.
      */
     for (i = 0; i < HDMI_EDID_STANDARD_TIMING_COUNT;  i++) {
-        if (data[UINT8_ARRAY_TElEMENT_0] != HDMI_EDID_STANDARD_TIMING_UNUSED_FLAG || data[UINT8_ARRAY_TElEMENT_1] != HDMI_EDID_STANDARD_TIMING_UNUSED_FLAG) {
-            sinkCap->stdTimingsInfo[i].horizPixel = (data[UINT8_ARRAY_TElEMENT_0] + HDMI_EDID_STANDARD_TIMING_HORIZ_PIXEL_BASE) *
-                HDMI_EDID_STANDARD_TIMING_HORIZ_PIXEL_FACTOR;
-            sinkCap->stdTimingsInfo[i].refreshRate = (data[UINT8_ARRAY_TElEMENT_1] & HDMI_EDID_STANDARD_TIMING_REFRESH_RATE_MARK) +
-                HDMI_EDID_STANDARD_TIMING_REFRESH_RATE_BASE;
+        if (data[UINT8_ARRAY_TElEMENT_0] != HDMI_EDID_STANDARD_TIMING_UNUSED_FLAG ||
+            data[UINT8_ARRAY_TElEMENT_1] != HDMI_EDID_STANDARD_TIMING_UNUSED_FLAG) {
+            sinkCap->stdTimingsInfo[i].horizPixel = (data[UINT8_ARRAY_TElEMENT_0] +
+                                                     HDMI_EDID_STANDARD_TIMING_HORIZ_PIXEL_BASE) *
+                                                     HDMI_EDID_STANDARD_TIMING_HORIZ_PIXEL_FACTOR;
+            sinkCap->stdTimingsInfo[i].refreshRate = (data[UINT8_ARRAY_TElEMENT_1] &
+                                                      HDMI_EDID_STANDARD_TIMING_REFRESH_RATE_MARK) +
+                                                      HDMI_EDID_STANDARD_TIMING_REFRESH_RATE_BASE;
             aspectRatio =  (data[UINT8_ARRAY_TElEMENT_1] & HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_MARK) >>
                 HDMI_EDID_STANDARD_TIMING_ASPECT_RATE_SHIFT;
             sinkCap->stdTimingsInfo[i].vertPixel =
@@ -297,7 +304,9 @@ static void HdmiEdidDetailedTimingDescriptorPhase(struct HdmiSinkDeviceCapabilit
     }
 
     perTiming = &cap->preTimingInfo[cap->preTimingCnt];
-    pixelClock = (block->pixelClk[UINT8_ARRAY_TElEMENT_1] << HDMI_ONE_BYTE_SHIFT) | (block->pixelClk[UINT8_ARRAY_TElEMENT_0]);
+    pixelClock = (block->pixelClk[UINT8_ARRAY_TElEMENT_1] <<
+                  HDMI_ONE_BYTE_SHIFT) |
+                  (block->pixelClk[UINT8_ARRAY_TElEMENT_0]);
     if (pixelClock == 0) {
         HDF_LOGD(" pixel clock is 0. preTimingCnt = %d", cap->preTimingCnt);
         return;
@@ -341,7 +350,9 @@ static void HdmiEdidDetailedTiming(struct HdmiSinkDeviceCapability *sinkCap, uin
     /*
      * Monitor Descriptor flag: data0/data1/data2 is 0x00.
      */
-    if (data[UINT8_ARRAY_TElEMENT_0] == 0x00 && data[UINT8_ARRAY_TElEMENT_1] == 0x00 && data[UINT8_ARRAY_TElEMENT_2] == 0x00) {
+    if (data[UINT8_ARRAY_TElEMENT_0] == 0x00 &&
+        data[UINT8_ARRAY_TElEMENT_1] == 0x00 &&
+        data[UINT8_ARRAY_TElEMENT_2] == 0x00) {
         HdmiEdidMonitorDescriptorPhase(sinkCap, data, len);
         return;
     }
@@ -515,9 +526,13 @@ static int32_t HdmiEdidExtAudioDataBlockPhase(struct HdmiSinkDeviceCapability *s
         sinkCap->audioInfo[sinkCap->audioInfoCnt].channels =
             (data[UINT8_ARRAY_TElEMENT_0] & HDMI_EDID_EXTENSION_AUDIO_MAX_CHANNEL_MARK) + 1;
         /* byte1: Sample Rate */
-        HdmiEdidExtAdbSampleRatePhase(&(sinkCap->audioInfo[sinkCap->audioInfoCnt]), data[UINT8_ARRAY_TElEMENT_1], formatCode);
+        HdmiEdidExtAdbSampleRatePhase(&(sinkCap->audioInfo[sinkCap->audioInfoCnt]),
+                                      data[UINT8_ARRAY_TElEMENT_1],
+                                      formatCode);
         /* byte2: bit depth or maximum bit rate */
-        HdmiEdidExtAdbDepthAndMaxRatePhase(&(sinkCap->audioInfo[sinkCap->audioInfoCnt]), data[UINT8_ARRAY_TElEMENT_2], formatCode);
+        HdmiEdidExtAdbDepthAndMaxRatePhase(&(sinkCap->audioInfo[sinkCap->audioInfoCnt]),
+                                           data[UINT8_ARRAY_TElEMENT_2],
+                                           formatCode);
         sinkCap->audioInfoCnt++;
     }
     return HDF_SUCCESS;
@@ -712,11 +727,14 @@ static void HdmiEdidVsdbVicAnd3dInfoPhase(struct HdmiSinkDeviceCapability *sinkC
         return;
     }
     sinkCap->vsdbInfo._3dPresent = (data[UINT8_ARRAY_TElEMENT_12] & HDMI_BIT7_MARK) ? true : false;
-    sinkCap->vsdbInfo._3dMultiPresent =
-        (data[UINT8_ARRAY_TElEMENT_12] & HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_MARK) >> HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_SHIFT;
+    sinkCap->vsdbInfo._3dMultiPresent = (data[UINT8_ARRAY_TElEMENT_12] &
+                                         HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_MARK) >>
+                                         HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_SHIFT;
 
     if (len >= 14) {
-        hdmiVicLen = (data[UINT8_ARRAY_TElEMENT_13] & HDMI_EDID_EXTENSION_VSDB_VIC_LEN_MARK) >> HDMI_EDID_EXTENSION_VSDB_VIC_LEN_SHIFT;
+        hdmiVicLen = (data[UINT8_ARRAY_TElEMENT_13] &
+                      HDMI_EDID_EXTENSION_VSDB_VIC_LEN_MARK) >>
+                      HDMI_EDID_EXTENSION_VSDB_VIC_LEN_SHIFT;
         hdmi3dLen = (data[UINT8_ARRAY_TElEMENT_13] & HDMI_EDID_EXTENSION_VSDB_3D_LEN_MARK);
     }
 
@@ -1021,33 +1039,49 @@ static void HdmiEdidExtUseExtDataBlockVsvdbPhase(struct HdmiSinkDeviceCapability
         return;
     }
     sinkCap->dolbyCap.oui = oui;
-    sinkCap->dolbyCap.version = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_EDID_VSVDB_DOLBY_VERSION_MARK) >> HDMI_EDID_VSVDB_DOLBY_VERSION_SHIFT;
+    sinkCap->dolbyCap.version = (data[UINT8_ARRAY_TElEMENT_4] &
+                                 HDMI_EDID_VSVDB_DOLBY_VERSION_MARK) >> HDMI_EDID_VSVDB_DOLBY_VERSION_SHIFT;
     sinkCap->dolbyCap.yuv422 = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT0_MARK) ? true : false;
     sinkCap->dolbyCap.b2160p60 = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT1_MARK) ? true : false;
     if (sinkCap->dolbyCap.version == HDMI_EDID_VSVDB_DOLBY_VERSION_0) {
         sinkCap->dolbyCap.globalDimming = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT2_MARK) ? true : false;
-        sinkCap->dolbyCap.redX = ((data[UINT8_ARRAY_TElEMENT_5] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
-            (data[UINT8_ARRAY_TElEMENT_6] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.redY = (data[UINT8_ARRAY_TElEMENT_5] & HDMI_LOWER_NIBBLE_MARK) | (data[UINT8_ARRAY_TElEMENT_7] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.greenX = ((data[UINT8_ARRAY_TElEMENT_8] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
-            (data[UINT8_ARRAY_TElEMENT_9] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.greenY = (data[UINT8_ARRAY_TElEMENT_8] & HDMI_LOWER_NIBBLE_MARK) | (data[UINT8_ARRAY_TElEMENT_10] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.blueX = ((data[UINT8_ARRAY_TElEMENT_11] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
-            (data[UINT8_ARRAY_TElEMENT_12] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.blueY = (data[UINT8_ARRAY_TElEMENT_11] & HDMI_LOWER_NIBBLE_MARK) | (data[UINT8_ARRAY_TElEMENT_13] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.whiteX = ((data[UINT8_ARRAY_TElEMENT_14] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
-            (data[UINT8_ARRAY_TElEMENT_15] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.whiteY = (data[UINT8_ARRAY_TElEMENT_14] & HDMI_LOWER_NIBBLE_MARK) | (data[UINT8_ARRAY_TElEMENT_16] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.minLuminance = ((data[UINT8_ARRAY_TElEMENT_17] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT) |
-            (data[UINT8_ARRAY_TElEMENT_18] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.maxLuminance =
-            (data[UINT8_ARRAY_TElEMENT_17] & HDMI_LOWER_NIBBLE_MARK) | (data[UINT8_ARRAY_TElEMENT_19] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.dMajorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
+        sinkCap->dolbyCap.redX = ((data[UINT8_ARRAY_TElEMENT_5] &
+                                   HDMI_UPPER_NIBBLE_MARK) >>
+                                   HDMI_NIBBLE_SHIFT) |
+                                   (data[UINT8_ARRAY_TElEMENT_6] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.redY = (data[UINT8_ARRAY_TElEMENT_5] &
+                                  HDMI_LOWER_NIBBLE_MARK) |
+                                  (data[UINT8_ARRAY_TElEMENT_7] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.greenX = ((data[UINT8_ARRAY_TElEMENT_8] & HDMI_UPPER_NIBBLE_MARK) >>
+                                     HDMI_NIBBLE_SHIFT) |
+                                     (data[UINT8_ARRAY_TElEMENT_9] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.greenY = (data[UINT8_ARRAY_TElEMENT_8] &
+                                    HDMI_LOWER_NIBBLE_MARK) |
+                                    (data[UINT8_ARRAY_TElEMENT_10] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.blueX = ((data[UINT8_ARRAY_TElEMENT_11] & HDMI_UPPER_NIBBLE_MARK) >>
+                                    HDMI_NIBBLE_SHIFT) |
+                                    (data[UINT8_ARRAY_TElEMENT_12] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.blueY = (data[UINT8_ARRAY_TElEMENT_11] &
+                                   HDMI_LOWER_NIBBLE_MARK) |
+                                   (data[UINT8_ARRAY_TElEMENT_13] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.whiteX = ((data[UINT8_ARRAY_TElEMENT_14] & HDMI_UPPER_NIBBLE_MARK) >>
+                                     HDMI_NIBBLE_SHIFT) |
+                                     (data[UINT8_ARRAY_TElEMENT_15] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.whiteY = (data[UINT8_ARRAY_TElEMENT_14] & HDMI_LOWER_NIBBLE_MARK) |
+                                    (data[UINT8_ARRAY_TElEMENT_16] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.minLuminance = ((data[UINT8_ARRAY_TElEMENT_17] & HDMI_UPPER_NIBBLE_MARK) >>
+                                           HDMI_NIBBLE_SHIFT) |
+                                           (data[UINT8_ARRAY_TElEMENT_18] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.maxLuminance = (data[UINT8_ARRAY_TElEMENT_17] & HDMI_LOWER_NIBBLE_MARK) |
+                                          (data[UINT8_ARRAY_TElEMENT_19] << HDMI_NIBBLE_SHIFT);
+        sinkCap->dolbyCap.dMajorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_UPPER_NIBBLE_MARK) >>
+                                       HDMI_NIBBLE_SHIFT;
         sinkCap->dolbyCap.dMinorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_LOWER_NIBBLE_MARK);
         return;
     }
     if (sinkCap->dolbyCap.version == HDMI_EDID_VSVDB_DOLBY_VERSION_1) {
-        sinkCap->dolbyCap.dmVer = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_EDID_VSVDB_DOLBY_DM_VER_MARK) >> HDMI_EDID_VSVDB_DOLBY_DM_VER_SHIFT;
+        sinkCap->dolbyCap.dmVer = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_EDID_VSVDB_DOLBY_DM_VER_MARK) >>
+                                   HDMI_EDID_VSVDB_DOLBY_DM_VER_SHIFT;
         sinkCap->dolbyCap.globalDimming = (data[UINT8_ARRAY_TElEMENT_5] & HDMI_BIT0_MARK) ? true : false;
         sinkCap->dolbyCap.maxLuminance = ((data[UINT8_ARRAY_TElEMENT_5] >> 1) & HDMI_EDID_VSVDB_DOLBY_LOWER_7BIT_MARK);
         sinkCap->dolbyCap.colorimetry = (data[UINT8_ARRAY_TElEMENT_6] & HDMI_BIT0_MARK) ? true : false;

@@ -279,7 +279,7 @@ static inline size_t DmacAlignedTransMax(size_t maxSize, uint8_t srcWidth, uint8
     size_t ret;
     uint8_t maxWidth = (srcWidth >= destWidth) ? srcWidth : destWidth;
 
-    ret = (maxWidth == 0) ? maxSize : maxSize - (maxSize % maxWidth);
+    ret = ((maxWidth == 0) ? maxSize : (maxSize - (maxSize % maxWidth)));
 #ifdef DMA_CORE_DEBUG
     HDF_LOGD("%s: max:%zu, srcwidth:%u, dstwidth:%u, alignedmax:%zu", __func__, maxSize, srcWidth, destWidth, ret);
 #endif
