@@ -109,7 +109,7 @@ static bool UsbDdkPnpLoaderMatchDevice(const struct UsbPnpNotifyMatchInfoTable *
 static void UsbDdkPnpLoaderMatchHandle(const struct UsbPnpNotifyMatchInfoTable *dev,
     int8_t index, struct UsbPnpMatchIdTable *id, bool flag)
 {
-    if ((id->pnpMatchFlag == false) && (flag == true)) {
+    if ((!id->pnpMatchFlag) && flag) {
         if (!(id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_CLASS)) {
             id->interfaceClass[id->interfaceClassLength++] = dev->interfaceInfo[index].interfaceClass;
         }
@@ -170,7 +170,8 @@ static bool UsbDdkPnpLoaderMatchFlag(const struct UsbPnpNotifyMatchInfoTable *de
     bool ret = true;
     uint32_t offset;
 
-    if (UsbDdkPnpLoaderMatchFlagFirst(id) == false) {
+    if (!UsbDdkPnpLoaderMatchFlagFirst(id)) {
+        ret = false;
         goto OUT;
     }
 
@@ -282,11 +283,11 @@ static bool UsbDdkPnpLoaderMatchOneIdIntf(const struct UsbPnpNotifyMatchInfoTabl
     }
 
     maskFlag = UsbDdkPnpLoaderMatchInterface(dev, index, id);
-    if (UsbDdkPnpLoaderMatchFlag(dev, index, id, maskFlag) != true) {
+    if (!UsbDdkPnpLoaderMatchFlag(dev, index, id, maskFlag)) {
         return false;
     }
 
-    if (id->pnpMatchFlag == false) {
+    if (!id->pnpMatchFlag) {
         id->pnpMatchFlag = true;
     } else {
         return false;
