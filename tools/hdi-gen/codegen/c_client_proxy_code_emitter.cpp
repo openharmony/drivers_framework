@@ -15,11 +15,11 @@ namespace HDI {
 bool CClientProxyCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
-        directory_ = String::Format("%s/%s/client/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/client/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else {
         return false;
     }
@@ -91,7 +91,11 @@ void CClientProxyCodeEmitter::EmitProxySourceFile()
     EmitProxyConstruction(sb);
     if (!isCallbackInterface()) {
         sb.Append("\n");
-        EmitProxyGetMethodImpl(sb);
+        if (isKernelCode_) {
+            EmitKernelProxyGetMethodImpl(sb);
+        } else {
+            EmitProxyGetMethodImpl(sb);
+        }
         sb.Append("\n");
         EmitProxyReleaseMethodImpl(sb);
     } else {
@@ -127,7 +131,12 @@ void CClientProxyCodeEmitter::EmitProxyStdlibInclusions(StringBuilder& sb)
     sb.Append("#include <hdf_log.h>\n");
     sb.Append("#include <hdf_sbuf.h>\n");
     sb.Append("#include <osal_mem.h>\n");
-    sb.Append("#include <servmgr_hdi.h>\n");
+
+    if (isKernelCode_) {
+        sb.Append("#include <hdf_io_service_if.h>\n");
+    } else {
+        sb.Append("#include <servmgr_hdi.h>\n");
+    }
 
     const AST::TypeStringMap& types = ast_->GetTypes();
     for (const auto& pair : types) {
@@ -145,13 +154,21 @@ void CClientProxyCodeEmitter::EmitProxyCallMethodImpl(StringBuilder& sb)
         infName_.string(), interfaceName_.string());
     sb.Append(g_tab).Append("struct HdfSBuf *reply)\n");
     sb.Append("{\n");
-    sb.Append(g_tab).Append("if (self->remote == NULL\n");
-    sb.Append(g_tab).Append(g_tab).Append("|| self->remote->dispatcher == NULL\n");
-    sb.Append(g_tab).Append(g_tab).Append("|| self->remote->dispatcher->Dispatch == NULL) {\n");
+
+    String remoteName = isKernelCode_ ? "serv" : "remote";
+    sb.Append(g_tab).AppendFormat("if (self->%s == NULL\n", remoteName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("|| self->%s->dispatcher == NULL\n", remoteName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("|| self->%s->dispatcher->Dispatch == NULL) {\n", remoteName.string());
     sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: obj is null\", __func__);\n");
     sb.Append(g_tab).Append(g_tab).Append("return HDF_ERR_INVALID_OBJECT;\n");
     sb.Append(g_tab).Append("}\n");
-    sb.Append(g_tab).Append("return self->remote->dispatcher->Dispatch(self->remote, id, data, reply);\n");
+
+    if (isKernelCode_) {
+        sb.Append(g_tab).Append("return self->serv->dispatcher->Dispatch");
+        sb.Append("((struct HdfObject *)&(self->serv->object), id, data, reply);\n");
+    } else {
+        sb.Append(g_tab).Append("return self->remote->dispatcher->Dispatch(self->remote, id, data, reply);\n");
+    }
     sb.Append("}\n");
 }
 
@@ -195,8 +212,21 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
 {
     sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).Append("int32_t ec = HDF_FAILURE;\n");
-    sb.Append("\n");
 
+    // Local variable definitions must precede all execution statements.
+    if (isKernelCode_) {
+        for (size_t i = 0; i < method->GetParameterNumber(); i++) {
+            AutoPtr<ASTParameter> param = method->GetParameter(i);
+            AutoPtr<ASTType> type = param->GetType();
+            if (type->GetTypeKind() == TypeKind::TYPE_ARRAY ||
+                type->GetTypeKind() == TypeKind::TYPE_LIST) {
+                sb.Append(prefix + g_tab).Append("uint32_t i = 0;\n");
+                break;
+            }
+        }
+    }
+
+    sb.Append("\n");
     EmitCreateBuf(sb, prefix + g_tab);
     sb.Append("\n");
 
@@ -236,10 +266,15 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
 
 void CClientProxyCodeEmitter::EmitCreateBuf(StringBuilder& sb, const String& prefix)
 {
-    sb.Append(prefix).Append("struct HdfSBuf *data = HdfSBufTypedObtain(SBUF_IPC);\n");
-    sb.Append(prefix).Append("struct HdfSBuf *reply = HdfSBufTypedObtain(SBUF_IPC);\n");
-    sb.Append("\n");
+    if (isKernelCode_) {
+        sb.Append(prefix).Append("struct HdfSBuf *data = HdfSBufObtainDefaultSize();\n");
+        sb.Append(prefix).Append("struct HdfSBuf *reply = HdfSBufObtainDefaultSize();\n");
+    } else {
+        sb.Append(prefix).Append("struct HdfSBuf *data = HdfSBufTypedObtain(SBUF_IPC);\n");
+        sb.Append(prefix).Append("struct HdfSBuf *reply = HdfSBufTypedObtain(SBUF_IPC);\n");
+    }
 
+    sb.Append("\n");
     sb.Append(prefix).Append("if (data == NULL || reply == NULL) {\n");
     sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
     sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
@@ -265,7 +300,24 @@ void CClientProxyCodeEmitter::EmitReadProxyMethodParameter(const AutoPtr<ASTPara
         String cloneName = String::Format("%sCopy", param->GetName().string());
         type->EmitCProxyReadVar(parcelName, cloneName, false, gotoLabel, sb, prefix);
         String leftVar = String::Format("*%s", param->GetName().string());
-        sb.Append(prefix).AppendFormat("%s = strdup(%s);\n", leftVar.string(), cloneName.string());
+        if (isKernelCode_) {
+            sb.Append("\n");
+            sb.Append(prefix).AppendFormat("%s = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
+                leftVar.string(), cloneName.string());
+            sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", leftVar.string());
+            sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+            sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+            sb.Append(prefix).Append("}\n\n");
+            sb.Append(prefix).AppendFormat("if (strcpy_s(%s, (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
+                leftVar.string(), cloneName.string(), cloneName.string());
+            sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+                leftVar.string());
+            sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+            sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+            sb.Append(prefix).Append("}\n");
+        } else {
+            sb.Append(prefix).AppendFormat("%s = strdup(%s);\n", leftVar.string(), cloneName.string());
+        }
     } else if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String name = String::Format("*%s", param->GetName().string());
         sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemAlloc(sizeof(%s));\n",
@@ -371,6 +423,35 @@ void CClientProxyCodeEmitter::EmitProxyGetMethodImpl(StringBuilder& sb)
     sb.Append("}\n");
 }
 
+void CClientProxyCodeEmitter::EmitKernelProxyGetMethodImpl(StringBuilder& sb)
+{
+    sb.AppendFormat("struct %s *Hdi%sGet()\n", interfaceName_.string(), infName_.string());
+    sb.Append("{\n");
+    sb.Append(g_tab).AppendFormat("struct HdfIoService *serv = ");
+    sb.AppendFormat("HdfIoServiceBind(\"%s\");\n", infName_.string());
+    sb.Append(g_tab).Append("if (serv == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: %sService not found!\", __func__);\n", infName_.string());
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append("\n");
+
+    sb.Append(g_tab).AppendFormat("struct %s *%sClient = (struct %s *)OsalMemAlloc(sizeof(struct %s));\n",
+        interfaceName_.string(), infName_.string(), interfaceName_.string(), interfaceName_.string());
+    sb.Append(g_tab).AppendFormat("if (%sClient == NULL) {\n", infName_.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: malloc %s instance failed!\", __func__);\n", interfaceName_.string());
+    sb.Append(g_tab).Append(g_tab).Append("HdfIoServiceRecycle(serv);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append("\n");
+
+    sb.Append(g_tab).AppendFormat("%sClient->serv = serv;\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("%sConstruct(%sClient);\n", infName_.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("return %sClient;\n", infName_.string());
+    sb.Append("}\n");
+}
+
 void CClientProxyCodeEmitter::EmitProxyReleaseMethodImpl(StringBuilder& sb)
 {
     sb.AppendFormat("void Hdi%sRelease(struct %s *instance)\n", infName_.string(), interfaceName_.string());
@@ -379,7 +460,11 @@ void CClientProxyCodeEmitter::EmitProxyReleaseMethodImpl(StringBuilder& sb)
     sb.Append(g_tab).Append(g_tab).Append("return;\n");
     sb.Append(g_tab).Append("}\n");
 
-    sb.Append(g_tab).Append("HdfRemoteServiceRecycle(instance->remote);\n");
+    if (isKernelCode_) {
+        sb.Append(g_tab).Append("HdfIoServiceRecycle(instance->serv);\n");
+    } else {
+        sb.Append(g_tab).Append("HdfRemoteServiceRecycle(instance->remote);\n");
+    }
     sb.Append(g_tab).Append("OsalMemFree(instance);\n");
     sb.Append("}\n");
 }

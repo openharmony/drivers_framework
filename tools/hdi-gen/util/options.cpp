@@ -20,9 +20,13 @@ const char* Options::optSupportArgs = "c:d:";
 static struct option g_longOpts[] = {
     {"help", no_argument, nullptr, 'h'},
     {"version", no_argument, nullptr, 'v'},
+    {"mode-k", no_argument, nullptr, 'k'},
+    {"mode-u", no_argument, nullptr, 'u'},
     {"gen-c", no_argument, nullptr, 'C'},
     {"gen-cpp", no_argument, nullptr, 'P'},
     {"gen-java", no_argument, nullptr, 'J'},
+    {"client", no_argument, nullptr, 'a'},
+    {"server", no_argument, nullptr, 'b'},
     {"hash", no_argument, nullptr, 'H'},
     {"dump-ast", no_argument, nullptr, 'D'},
     {nullptr, 0, nullptr, 0}
@@ -34,7 +38,7 @@ Options& Options::GetInstance()
     return option;
 }
 
-Options& Options::Parse(int argc, char * const argv[])
+Options& Options::Parse(int argc, char* const argv[])
 {
     program_ = argv[0];
     opterr = 1;
@@ -57,6 +61,12 @@ Options& Options::Parse(int argc, char * const argv[])
             case 'v':
                 doShowVersion_ = true;
                 break;
+            case 'k':
+                doModeKernel_ = true;
+                break;
+            case 'u':
+                doModeKernel_ = false;
+                break;
             case 'C':
                 doGenerateCode_ = true;
                 targetLanguage_ = "c";
@@ -68,6 +78,14 @@ Options& Options::Parse(int argc, char * const argv[])
             case 'J':
                 doGenerateCode_ = true;
                 targetLanguage_ = "java";
+                break;
+            case 'a':
+                doGeneratePart_ = true;
+                codePart_ = "client";
+                break;
+            case 'b':
+                doGeneratePart_ = true;
+                codePart_ = "server";
                 break;
             case 'H':
                 doGetHashKey_ = true;
@@ -139,9 +157,13 @@ void Options::ShowUsage() const
            "  --hash            Display hash key of the idl file\n"
            "  --dump-ast        Display the AST of the compiled file\n"
            "  -c                Compile the .idl file\n"
+           "  --mode-k          Generate kernel-mode ioservice stub code\n"
+           "  --mode-u          Generate user-mode ioservice stub code\n"
            "  --gen-c           Generate C codes\n"
            "  --gen-cpp         Generate C++ codes\n"
            "  --gen-java        Generate Java codes\n"
+           "  --client          Generate client codes\n"
+           "  --server          Generate server codes\n"
            "  -d <directory>    Place generated codes into <directory>\n");
 }
 } // namespace HDI

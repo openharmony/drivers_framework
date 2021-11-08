@@ -15,11 +15,11 @@ namespace HDI {
 bool CServiceInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
-        directory_ = String::Format("%s/%s/server/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/server/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else {
         return false;
     }
@@ -139,7 +139,7 @@ void CServiceInterfaceCodeEmitter::EmitInterfaceMethod(const AutoPtr<ASTMethod>&
 
 void CServiceInterfaceCodeEmitter::EmitInterfaceInstanceMethodDecl(StringBuilder& sb)
 {
-    sb.AppendFormat("struct %s *Hdi%sInstance();\n", interfaceName_.string(), infName_.string());
+    sb.AppendFormat("struct %s *Hdi%sInstance(void);\n", interfaceName_.string(), infName_.string());
 }
 
 void CServiceInterfaceCodeEmitter::EmitInterfaceReleaseMethodDecl(StringBuilder& sb)

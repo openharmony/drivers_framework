@@ -81,6 +81,12 @@ private:
     void EmitCMallocVar(const String& name, const String& lenName, bool isClient, const String& gotoLabel,
         StringBuilder& sb, const String& prefix) const;
 
+    void EmitCProxyReadStrElement(const String& parcelName, const String& name, const String& gotoLabel,
+        StringBuilder& sb, const String& prefix) const;
+
+    void EmitCStubReadStrElement(const String& parcelName, const String& name, StringBuilder& sb,
+        const String& prefix) const;
+
     AutoPtr<ASTType> elementType_;
 };
 } // namespace HDI

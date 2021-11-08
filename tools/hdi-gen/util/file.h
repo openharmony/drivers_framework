@@ -60,6 +60,8 @@ public:
 
     static bool CreateParentDir(const String& path);
 
+    static String AdapterPath(const String& path);
+
     size_t GetHashKey();
 
     static constexpr unsigned int READ = 0x1;

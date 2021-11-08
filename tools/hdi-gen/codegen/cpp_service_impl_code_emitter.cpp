@@ -15,11 +15,11 @@ namespace HDI {
 bool CppServiceImplCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
-        directory_ = String::Format("%s/%s/server/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/server/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string());
+        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
+            FileName(ast_->GetPackageName()).string()));
     } else {
         return false;
     }

@@ -182,16 +182,26 @@ bool File::CreateParentDir(const String& path)
     }
 
     int pos = 1;
-    while ((pos = path.IndexOf('/', pos)) != -1) {
-        String partPath = path.Substring(0, pos);
 
+#ifndef __MINGW32__
+    char Separator = '/';
+#else
+    char Separator = '\\';
+#endif
+
+    while ((pos = path.IndexOf(Separator, pos)) != -1) {
+        String partPath = path.Substring(0, pos);
         struct stat st;
         if (stat(partPath.string(), &st) < 0) {
             if (errno != ENOENT) {
                 return false;
             }
 
+#ifndef __MINGW32__
             if (mkdir(partPath.string(), S_IRWXU | S_IRWXG | S_IRWXO) < 0) {
+#else
+            if (mkdir(partPath.string()) < 0) {
+#endif
                 return false;
             }
         } else if (!S_ISDIR(st.st_mode)) {
@@ -200,6 +210,15 @@ bool File::CreateParentDir(const String& path)
         pos += 1;
     }
     return true;
+}
+
+String File::AdapterPath(const String& path)
+{
+#ifndef __MINGW32__
+    return path;
+#else
+    return path.Replace('/', '\\');
+#endif
 }
 
 size_t File::GetHashKey()

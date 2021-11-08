@@ -10,6 +10,7 @@
 #define OHOS_HDI_JAVA_CODE_EMITTER_H
 
 #include "ast/ast.h"
+#include "codegen/code_emitter.h"
 #include "util/autoptr.h"
 #include "util/light_refcount_base.h"
 #include "util/string.h"
@@ -17,22 +18,12 @@
 
 namespace OHOS {
 namespace HDI {
-class JavaCodeEmitter : public LightRefCountBase {
+class JavaCodeEmitter : public CodeEmitter {
 public:
     virtual ~JavaCodeEmitter() = default;
 
-    bool OutPut(const AutoPtr<AST>& ast, const String& targetDirectory);
-
     static String FileName(const String& name);
 protected:
-    bool Reset(const AutoPtr<AST>& ast, const String& targetDirectory);
-
-    void CleanData();
-
-    virtual bool ResolveDirectory(const String& targetDirectory) = 0;
-
-    virtual void EmitCode() = 0;
-
     bool CreateDirectory();
 
     void EmitLicense(StringBuilder& sb);
@@ -46,16 +37,6 @@ protected:
     String ConstantName(const String& name);
 
     String SpecificationParam(StringBuilder& paramSb, const String& prefix);
-
-    AutoPtr<AST> ast_ = nullptr;
-    AutoPtr<ASTInterfaceType> interface_ = nullptr;
-    String directory_;
-
-    String interfaceName_;
-    String interfaceFullName_;
-    String infName_;
-    String proxyName_;
-    String proxyFullName_;
 };
 } // namespace HDI
 } // namespace OHOS

@@ -59,6 +59,8 @@ private:
 
     void EmitCustomTypeFreeImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type);
 
+    bool NeedEmitInitVar(const AutoPtr<ASTType>& type);
+
     void EmitCustomTypeMemoryRecycle(const AutoPtr<ASTStructType>& type, const String& name, StringBuilder& sb,
         const String& prefix);
 

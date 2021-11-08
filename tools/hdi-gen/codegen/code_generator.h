@@ -9,21 +9,31 @@
 #ifndef OHOS_HDI_CODEGENERATOR_H
 #define OHOS_HDI_CODEGENERATOR_H
 
+#include "codegen/code_emitter.h"
 #include "ast/ast_module.h"
 
 namespace OHOS {
 namespace HDI {
+using CodeEmitMap = std::unordered_map<String, AutoPtr<CodeEmitter>, StringHashFunc, StringEqualFunc>;
+
 class CodeGenerator : public LightRefCountBase {
 public:
-    CodeGenerator(const AutoPtr<ASTModule>& astModule, const String& targetDirectory)
-        : LightRefCountBase(), astModule_(astModule), targetDirectory_(targetDirectory) {}
+    explicit CodeGenerator(const AutoPtr<ASTModule>& astModule)
+        : LightRefCountBase(), astModule_(astModule), targetDirectory_() {}
 
-    virtual ~CodeGenerator() = default;
+    bool Generate();
+private:
+    void GenerateCCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart,
+        bool isKernel);
+    void GenerateCppCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart);
+    void GenerateJavaCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart);
 
-    virtual bool Generate() = 0;
-protected:
     AutoPtr<ASTModule> astModule_;
     String targetDirectory_;
+
+    static CodeEmitMap cCodeEmitters_;
+    static CodeEmitMap cppCodeEmitters_;
+    static CodeEmitMap javaCodeEmitters_;
 };
 } // namespace HDI
 } // namespace OHOS

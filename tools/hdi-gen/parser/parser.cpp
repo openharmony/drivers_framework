@@ -1223,6 +1223,20 @@ bool Parser::CheckType(int lineNo, int columnNo, const AutoPtr<ASTType>& type)
             LogError(lineNo, columnNo, String::Format("The sequenceable type is not supported by c language."));
             return false;
         }
+
+        if (options_.DoGenerateKernelCode()) {
+            switch (type->GetTypeKind()) {
+                case TypeKind::TYPE_FLOAT:
+                case TypeKind::TYPE_DOUBLE:
+                case TypeKind::TYPE_FILEDESCRIPTOR:
+                case TypeKind::TYPE_INTERFACE:
+                    LogError(lineNo, columnNo, String::Format("The '%s' type is not supported by c language.",
+                        lexer_->DumpToken().string()));
+                    break;
+                default:
+                    break;
+            }
+        }
     } else if (options_.GetTargetLanguage().Equals("java")) {
         switch (type->GetTypeKind()) {
             case TypeKind::TYPE_UCHAR:
@@ -1354,8 +1368,14 @@ bool Parser::IsValidTypeName(const String& typeName)
 */
 bool Parser::CheckPackageName(const String& filePath, const String& packageName)
 {
-    String pkgToPath = packageName.Replace('.', '/');
-    int index = filePath.LastIndexOf('/');
+#ifndef __MINGW32__
+    char delimiter = '/';
+#else
+    char delimiter = '\\';
+#endif
+
+    String pkgToPath = packageName.Replace('.', delimiter);
+    int index = filePath.LastIndexOf(delimiter);
     if (index == -1) {
         return false;
     }

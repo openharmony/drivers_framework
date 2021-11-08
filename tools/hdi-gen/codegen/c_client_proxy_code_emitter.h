@@ -54,6 +54,8 @@ private:
 
     void EmitProxyGetMethodImpl(StringBuilder& sb);
 
+    void EmitKernelProxyGetMethodImpl(StringBuilder& sb);
+
     void EmitProxyReleaseMethodImpl(StringBuilder& sb);
 
     void EmitCbProxyObtainMethodImpl(StringBuilder& sb);
