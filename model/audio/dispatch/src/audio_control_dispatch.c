@@ -312,7 +312,7 @@ static void AudioControlRelease(struct HdfDeviceObject *device)
         return;
     }
 
-    controlHost = ControlHostFromDevice(device);
+    controlHost = (struct ControlHost *)device->service;
     if (controlHost == NULL) {
         ADM_LOG_ERR("controlHost is NULL.");
         return;

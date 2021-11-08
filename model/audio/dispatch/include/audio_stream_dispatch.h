@@ -21,39 +21,37 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define AUDIO_SERVICE_NAME_MAX_LEN 32
-
 enum StreamDispMethodCmd {
-    AUDIO_DRV_PCM_IOCTRL_HW_PARAMS,
-    AUDIO_DRV_PCM_IOCTRL_RENDER_PREPARE,
-    AUDIO_DRV_PCM_IOCTRL_CAPTURE_PREPARE,
-    AUDIO_DRV_PCM_IOCTRL_WRITE,
-    AUDIO_DRV_PCM_IOCTRL_READ,
-    AUDIO_DRV_PCM_IOCTRL_RENDER_START,
-    AUDIO_DRV_PCM_IOCTRL_RENDER_STOP,
-    AUDIO_DRV_PCM_IOCTRL_CAPTURE_START,
-    AUDIO_DRV_PCM_IOCTRL_CAPTURE_STOP,
-    AUDIO_DRV_PCM_IOCTRL_RENDER_PAUSE,
-    AUDIO_DRV_PCM_IOCTRL_CAPTURE_PAUSE,
-    AUDIO_DRV_PCM_IOCTRL_RENDER_RESUME,
-    AUDIO_DRV_PCM_IOCTRL_CAPTURE_RESUME,
+    AUDIO_DRV_PCM_IOCTL_HW_PARAMS,
+    AUDIO_DRV_PCM_IOCTL_RENDER_PREPARE,
+    AUDIO_DRV_PCM_IOCTL_CAPTURE_PREPARE,
+    AUDIO_DRV_PCM_IOCTL_WRITE,
+    AUDIO_DRV_PCM_IOCTL_READ,
+    AUDIO_DRV_PCM_IOCTL_RENDER_START,
+    AUDIO_DRV_PCM_IOCTL_RENDER_STOP,
+    AUDIO_DRV_PCM_IOCTL_CAPTURE_START,
+    AUDIO_DRV_PCM_IOCTL_CAPTURE_STOP,
+    AUDIO_DRV_PCM_IOCTL_RENDER_PAUSE,
+    AUDIO_DRV_PCM_IOCTL_CAPTURE_PAUSE,
+    AUDIO_DRV_PCM_IOCTL_RENDER_RESUME,
+    AUDIO_DRV_PCM_IOCTL_CAPTURE_RESUME,
     AUDIO_DRV_PCM_IOCTL_MMAP_BUFFER,
     AUDIO_DRV_PCM_IOCTL_MMAP_BUFFER_CAPTURE,
     AUDIO_DRV_PCM_IOCTL_MMAP_POSITION,
     AUDIO_DRV_PCM_IOCTL_MMAP_POSITION_CAPTURE,
-    AUDIO_DRV_PCM_IOCTRL_RENDER_OPEN,
-    AUDIO_DRV_PCM_IOCTRL_RENDER_CLOSE,
-    AUDIO_DRV_PCM_IOCTRL_CAPTURE_OPEN,
-    AUDIO_DRV_PCM_IOCTRL_CAPTURE_CLOSE,
-    AUDIO_DRV_PCM_IOCTRL_BUTT,
+    AUDIO_DRV_PCM_IOCTL_RENDER_OPEN,
+    AUDIO_DRV_PCM_IOCTL_RENDER_CLOSE,
+    AUDIO_DRV_PCM_IOCTL_CAPTURE_OPEN,
+    AUDIO_DRV_PCM_IOCTL_CAPTURE_CLOSE,
+    AUDIO_DRV_PCM_IOCTL_DSPDECODE,
+    AUDIO_DRV_PCM_IOCTL_DSPENCODE,
+    AUDIO_DRV_PCM_IOCTL_DSPEQUALIZER,
+    AUDIO_DRV_PCM_IOCTL_BUTT,
 };
-
-typedef int32_t (*StreamDispCmdHandle)(const struct HdfDeviceIoClient *client,
-    struct HdfSBuf *data, struct HdfSBuf *reply);
 
 struct StreamDispCmdHandleList {
     enum StreamDispMethodCmd cmd;
-    StreamDispCmdHandle func;
+    int32_t (*func)(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply);
 };
 
 struct StreamHost {
@@ -61,14 +59,6 @@ struct StreamHost {
     struct HdfDeviceObject *device;
     void *priv;
 };
-
-static inline struct StreamHost *StreamHostFromDevice(struct HdfDeviceObject *device)
-{
-    return (device == NULL) ? NULL : (struct StreamHost *)device->service;
-}
-
-int32_t StreamDispatch(struct HdfDeviceIoClient *client, int cmdId,
-                       struct HdfSBuf *data, struct HdfSBuf *reply);
 
 #ifdef __cplusplus
 #if __cplusplus

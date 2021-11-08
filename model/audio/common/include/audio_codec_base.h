@@ -19,16 +19,11 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-int32_t CodecDeviceReadReg(unsigned long virtualAddress, uint32_t reg, uint32_t *value);
-int32_t CodecDeviceWriteReg(unsigned long virtualAddress, uint32_t reg, uint32_t value);
 int32_t CodecGetServiceName(const struct HdfDeviceObject *device, const char **drvCodecName);
 int32_t CodecGetDaiName(const struct HdfDeviceObject *device, const char **drvDaiName);
 int32_t CodecGetConfigInfo(const struct HdfDeviceObject *device, struct CodecData *codecData);
 int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData);
 int32_t CodecSetCtlFunc(struct CodecData *codeData, void *aiaoGetCtrl, void *aiaoSetCtrl);
-
-
-int32_t AccessoryGetConfigInfo(const struct HdfDeviceObject *device, struct AccessoryData *codecData);
 
 #ifdef __cplusplus
 #if __cplusplus

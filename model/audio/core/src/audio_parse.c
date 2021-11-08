@@ -57,6 +57,7 @@ static char *g_audioRegGroupName[AUDIO_GROUP_MAX] = {
     "ctrlSapmParamsSeqConfig",
     "daiStartupSeqConfig",
     "daiParamsSeqConfig",
+    "daiTriggerSeqConfig",
     "controlsConfig",
     "sapmComponent",
     "sapmConfig"
@@ -364,6 +365,7 @@ static int32_t ParseAudioRegGroup(struct DeviceResourceIface *parser,
             ret = ParseAudioAddrItem(parser, regCfgNode, group);
             break;
         case AUDIO_DAI_PATAM_GROUP:
+        case AUDIO_DAI_TRIGGER_GROUP:
         case AUDIO_CTRL_PATAM_GROUP:
         case AUDIO_CTRL_SAPM_PATAM_GROUP:
         case AUDIO_DAI_STARTUP_PATAM_GROUP:

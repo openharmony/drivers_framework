@@ -17,23 +17,6 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define SAPM_POLL_TIME 10000        /* 10s */
-#define SAPM_SLEEP_TIME (3 * 60000) /* 3min */
-
-#define MIXER_REG_ADDR 10 /* mixer address -- Temporarily defined as this value */
-
-#define SAPM_POWER_DOWN 0
-#define SAPM_POWER_UP 1
-
-#define CONNECT_CODEC_PIN 1
-#define UNCONNECT_CODEC_PIN 0
-
-#define EXIST_EXTERNAL_WIDGET 1
-#define UNEXIST_EXTERNAL_WIDGET 1
-
-#define CONNECT_SINK_AND_SOURCE 1
-#define UNCONNECT_SINK_AND_SOURCE 0
-
 /* sapm widget types */
 enum AudioSapmType {
     AUDIO_SAPM_INPUT = 0,       /* input pin */
@@ -65,27 +48,6 @@ enum AudioSapmType {
     AUDIO_SAPM_SIGGEN,          /* signal generator */
     AUDIO_SAPM_SINK,
 };
-
-/* component has no PM register bit */
-#define AUDIO_SAPM_NOPM    (-1)
-
-/* dapm stream operations */
-#define AUDIO_SAPM_STREAM_NOP           0x0
-#define AUDIO_SAPM_STREAM_START         0x1
-#define AUDIO_SAPM_STREAM_STOP          0x2
-#define AUDIO_SAPM_STREAM_SUSPEND       0x4
-#define AUDIO_SAPM_STREAM_RESUME        0x8
-#define AUDIO_SAPM_STREAM_PAUSE_PUSH    0x10
-#define AUDIO_SAPM_STREAM_PAUSE_RELEASE 0x20
-
-/* sapm event types */
-#define AUDIO_SAPM_PRE_PMU    0x1     /* before component power up */
-#define AUDIO_SAPM_POST_PMU   0x2     /* after component power up */
-#define AUDIO_SAPM_PRE_PMD    0x4     /* before component power down */
-#define AUDIO_SAPM_POST_PMD   0x8     /* after component power down */
-#define AUDIO_SAPM_PRE_REG    0x10    /* before audio path setup */
-#define AUDIO_SAPM_POST_REG   0x20    /* after audio path setup */
-#define AUDIO_SAPM_PRE_POST_PMD (AUDIO_SAPM_PRE_PMD | AUDIO_SAPM_POST_PMD)
 
 enum AudioBiasLevel {
     AUDIO_BIAS_OFF = 0,
@@ -206,9 +168,7 @@ int32_t AudioSapmNewComponents(struct AudioCard *audioCard,
 int32_t AudioSapmAddRoutes(struct AudioCard *audioCard,
     const struct AudioSapmRoute *route, int32_t routeMaxNum);
 int32_t AudioSapmNewControls(struct AudioCard *audioCard);
-int AudioSapmPowerComponents(struct AudioCard *audioCard);
 int32_t AudioSapmSleep(const struct AudioCard *audioCard);
-uint64_t AudioSapmRefreshTime(bool bRefresh);
 int32_t AudioSampPowerUp(const struct AudioCard *card);
 int32_t AudioSampSetPowerMonitor(struct AudioCard *card, bool powerMonitorState);
 

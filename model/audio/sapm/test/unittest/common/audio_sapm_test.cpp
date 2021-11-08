@@ -38,33 +38,64 @@ void AudioSapmTest::TearDown()
 {
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest001, TestSize.Level1)
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioSapmNewComponents, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTNEWCOMPONENT, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOSAPMNEWCOMPONENTS, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest002, TestSize.Level1)
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioSapmAddRoutes, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTADDROUTES, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOSAPMADDROUTES, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest003, TestSize.Level1)
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioSapmNewControls, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTNEWCONTROLS, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOSAPMNEWCONTROLS, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest004, TestSize.Level1)
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioSapmSleep, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTPOWERCOMPONET, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOSAPMSLEEP, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-HWTEST_F(AudioSapmTest, AudioSapmTest005, TestSize.Level1)
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioSampPowerUp, TestSize.Level1)
 {
-    struct HdfTestMsg msg = {g_testAudioType, TESTREFRESHTIME, -1};
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOSAMPPOWERUP, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
+
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioSampSetPowerMonitor, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOSAMPSETPOWERMONITOR, -1};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioCodecSapmSetCtrlOps, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOCODECSAPMSETCTRLOPS, -1};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioCodecSapmGetCtrlOps, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOCODECSAPMGETCTRLOPS, -1};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioAccessorySapmSetCtrlOps, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOACCESSORYSAPMSETCTRLOPS, -1};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+HWTEST_F(AudioSapmTest, AudioSapmTest_AudioAccessorySapmGetCtrlOps, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOACCESSORYSAPMGETCTRLOPS, -1};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
 }

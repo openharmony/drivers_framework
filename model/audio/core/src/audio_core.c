@@ -12,11 +12,33 @@
 
 #define HDF_LOG_TAG audio_core
 
+#define CHANNEL_MAX_NUM 2
+#define CHANNEL_MIN_NUM 1
+#define AUDIO_DAI_LINK_COMPLETE 1
+#define AUDIO_DAI_LINK_UNCOMPLETE 0
+
 AUDIO_LIST_HEAD(daiController);
 AUDIO_LIST_HEAD(platformController);
 AUDIO_LIST_HEAD(codecController);
 AUDIO_LIST_HEAD(dspController);
 AUDIO_LIST_HEAD(accessoryController);
+
+int32_t AudioDeviceReadReg(unsigned long virtualAddress, uint32_t reg, uint32_t *val)
+{
+    if (val == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param val is null.");
+        return HDF_FAILURE;
+    }
+
+    *val = OSAL_READL((void *)((uintptr_t)(virtualAddress + reg)));
+    return HDF_SUCCESS;
+}
+
+int32_t AudioDeviceWriteReg(unsigned long virtualAddress, uint32_t reg, uint32_t value)
+{
+    OSAL_WRITEL(value, (void *)((uintptr_t)(virtualAddress + reg)));
+    return HDF_SUCCESS;
+}
 
 int32_t AudioSocRegisterPlatform(struct HdfDeviceObject *device, struct PlatformData *platformData)
 {
@@ -42,12 +64,12 @@ int32_t AudioSocRegisterPlatform(struct HdfDeviceObject *device, struct Platform
     return HDF_SUCCESS;
 }
 
-int32_t AudioSocRegisterDai(struct HdfDeviceObject *device, struct DaiData *data)
+int32_t AudioSocRegisterDai(struct HdfDeviceObject *device, struct DaiData *daiData)
 {
     struct DaiDevice *dai = NULL;
 
-    if ((device == NULL) || (data == NULL)) {
-        ADM_LOG_ERR("Input params check error: device=%p, data=%p.", device, data);
+    if ((device == NULL) || (daiData == NULL)) {
+        ADM_LOG_ERR("Input params check error: device=%p, daiData=%p.", device, daiData);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -57,8 +79,8 @@ int32_t AudioSocRegisterDai(struct HdfDeviceObject *device, struct DaiData *data
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    dai->devDaiName = data->drvDaiName;
-    dai->devData = data;
+    dai->devDaiName = daiData->drvDaiName;
+    dai->devData = daiData;
     dai->device = device;
     DListInsertHead(&dai->list, &daiController);
     ADM_LOG_INFO("Register [%s] success.", dai->devDaiName);
@@ -66,13 +88,14 @@ int32_t AudioSocRegisterDai(struct HdfDeviceObject *device, struct DaiData *data
     return HDF_SUCCESS;
 }
 
-int32_t AudioRegisterAccessory(struct HdfDeviceObject *device, struct AccessoryData *data, struct DaiData *daiData)
+int32_t AudioRegisterAccessory(struct HdfDeviceObject *device,
+    struct AccessoryData *accessoryData, struct DaiData *daiData)
 {
     struct AccessoryDevice *accessory = NULL;
     int32_t ret;
 
-    if (device == NULL || data == NULL || daiData == NULL) {
-        ADM_LOG_ERR("Input params check error: device=%p, data=%p, daiData=%p.", device, data, daiData);
+    if (device == NULL || accessoryData == NULL || daiData == NULL) {
+        ADM_LOG_ERR("Input params check error: device=%p, accessoryData=%p, daiData=%p.", device, accessoryData, daiData);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -83,11 +106,11 @@ int32_t AudioRegisterAccessory(struct HdfDeviceObject *device, struct AccessoryD
     }
 
     OsalMutexInit(&accessory->mutex);
-    accessory->devAccessoryName = data->drvAccessoryName;
-    accessory->devData = data;
+    accessory->devAccessoryName = accessoryData->drvAccessoryName;
+    accessory->devData = accessoryData;
     accessory->device = device;
 
-    ret = AudioSocDeviceRegister(device, (void *)daiData, AUDIO_DAI_DEVICE);
+    ret = AudioSocRegisterDai(device, daiData);
     if (ret != HDF_SUCCESS) {
         OsalMemFree(accessory);
         ADM_LOG_ERR("Register accessory device fail ret=%d", ret);
@@ -121,7 +144,7 @@ int32_t AudioRegisterCodec(struct HdfDeviceObject *device, struct CodecData *cod
     codec->devData = codecData;
     codec->device = device;
 
-    ret = AudioSocDeviceRegister(device, (void *)daiData, AUDIO_DAI_DEVICE);
+    ret = AudioSocRegisterDai(device, daiData);
     if (ret != HDF_SUCCESS) {
         OsalIoUnmap((void *)((uintptr_t)(void*)&(codec->devData->virtualAddress)));
         OsalMemFree(codec);
@@ -155,7 +178,7 @@ int32_t AudioRegisterDsp(struct HdfDeviceObject *device, struct DspData *dspData
     dspDev->devData = dspData;
     dspDev->device = device;
 
-    ret = AudioSocDeviceRegister(device, (void *)DaiData, AUDIO_DAI_DEVICE);
+    ret = AudioSocRegisterDai(device, DaiData );
     if (ret != HDF_SUCCESS) {
         OsalMemFree(dspDev);
         ADM_LOG_ERR("Register dai device fail ret=%d", ret);
@@ -167,47 +190,7 @@ int32_t AudioRegisterDsp(struct HdfDeviceObject *device, struct DspData *dspData
     return HDF_SUCCESS;
 }
 
-int32_t AudioSocDeviceRegister(struct HdfDeviceObject *device, void *data, enum AudioDeviceType deviceType)
-{
-    struct PlatformData *platformData = NULL;
-    struct DaiData *daiData = NULL;
-    int32_t ret;
-
-    if ((device == NULL) || (data == NULL) || (deviceType >= AUDIO_DEVICE_BUTT) || (deviceType < 0)) {
-        ADM_LOG_ERR("Input params check error: device=%p, data=%p, deviceType=%d.",
-            device, data, deviceType);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    switch (deviceType) {
-        case AUDIO_DAI_DEVICE: {
-            daiData = (struct DaiData *)data;
-            ret = AudioSocRegisterDai(device, daiData);
-            if (ret != HDF_SUCCESS) {
-                ADM_LOG_ERR("Register dai device fail ret=%d", ret);
-                return HDF_FAILURE;
-            }
-            break;
-        }
-        case AUDIO_PLATFORM_DEVICE: {
-            platformData = (struct PlatformData *)data;
-            ret = AudioSocRegisterPlatform(device, platformData);
-            if (ret != HDF_SUCCESS) {
-                ADM_LOG_ERR("Register dma device fail ret=%d", ret);
-                return HDF_FAILURE;
-            }
-            break;
-        }
-        default: {
-            ADM_LOG_ERR("Invalid device type.");
-            return HDF_FAILURE;
-        }
-    }
-
-    return HDF_SUCCESS;
-}
-
-int32_t AudioSeekPlatformDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+static int32_t AudioSeekPlatformDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     struct PlatformDevice *platform = NULL;
     if (rtd == NULL || configData == NULL) {
@@ -230,7 +213,7 @@ int32_t AudioSeekPlatformDevice(struct AudioRuntimeDeivces *rtd, const struct Au
     return HDF_SUCCESS;
 }
 
-int32_t AudioSeekCpuDaiDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+static int32_t AudioSeekCpuDaiDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     struct DaiDevice *cpuDai = NULL;
     if (rtd == NULL || configData == NULL) {
@@ -257,7 +240,7 @@ int32_t AudioSeekCpuDaiDevice(struct AudioRuntimeDeivces *rtd, const struct Audi
     return HDF_SUCCESS;
 }
 
-int32_t AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+static int32_t AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     struct CodecDevice *codec = NULL;
     struct DaiDevice *codecDai = NULL;
@@ -288,7 +271,7 @@ int32_t AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struct Audio
     return HDF_SUCCESS;
 }
 
-int32_t AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+static int32_t AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     struct AccessoryDevice *accessory = NULL;
     struct DaiDevice *accessoryDai = NULL;
@@ -321,7 +304,7 @@ int32_t AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const struct A
     return HDF_SUCCESS;
 }
 
-int32_t AudioSeekDspDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
+static int32_t AudioSeekDspDevice(struct AudioRuntimeDeivces *rtd, const struct AudioConfigData *configData)
 {
     struct DspDevice *dsp = NULL;
     struct DaiDevice *dspDai = NULL;
@@ -608,7 +591,7 @@ int32_t AudioDaiReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *val
         ADM_LOG_ERR("Input param is NULL.");
         return HDF_FAILURE;
     }
-    virtualAddress = dai->devData->regDaiBase;
+    virtualAddress = dai->devData->regVirtualAddr;
     ret = dai->devData->Read(virtualAddress, reg, val);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("dai device read fail.");
@@ -625,7 +608,7 @@ int32_t AudioDaiWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t val
         ADM_LOG_ERR("Input param codec is NULL.");
         return HDF_FAILURE;
     }
-    virtualAddress = dai->devData->regDaiBase;
+    virtualAddress = dai->devData->regVirtualAddr;
     ret = dai->devData->Write(virtualAddress, reg, val);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("dai device write fail.");

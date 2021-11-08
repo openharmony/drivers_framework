@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef AUDIO_PARSE_TEST_H
-#define AUDIO_PARSE_TEST_H
+#ifndef AUDIO_CODEC_BASE_TEST_H
+#define AUDIO_CODEC_BASE_TEST_H
 
 #include "hdf_types.h"
 
@@ -17,8 +17,11 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-int32_t AudioFillConfigDataTest(void);
-int32_t CodecGetRegConfigTest(void);
+int32_t CodecGetServiceNameTest(void);
+int32_t CodecGetDaiNameTest(void);
+int32_t CodecGetConfigInfoTest(void);
+int32_t CodecSetConfigInfoTest(void);
+int32_t CodecSetCtlFuncTest(void);
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -26,4 +29,4 @@ int32_t CodecGetRegConfigTest(void);
 #endif
 #endif /* __cplusplus */
 
-#endif /* AUDIO_PARSE_TEST_H */
+#endif /* AUDIO_CODEC_BASE_TEST_H */

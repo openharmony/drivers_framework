@@ -17,11 +17,17 @@ extern "C"
 {
 #endif
 #endif
-int32_t AudioSapmTestNewComponents(void);
-int32_t AudioSapmTestAddRoutes(void);
-int32_t AudioSapmTestNewControls(void);
-int32_t AudioSapmTestPowerComponents(void);
-int32_t AudioSapmTestRefreshTime(void);
+
+int32_t AudioSapmNewComponentsTest(void);
+int32_t AudioSapmAddRoutesTest(void);
+int32_t AudioSapmNewControlsTest(void);
+int32_t AudioSapmSleepTest(void);
+int32_t AudioSampPowerUpTest(void);
+int32_t AudioSampSetPowerMonitorTest(void);
+int32_t AudioCodecSapmSetCtrlOpsTest(void);
+int32_t AudioCodecSapmGetCtrlOpsTest(void);
+int32_t AudioAccessorySapmSetCtrlOpsTest(void);
+int32_t AudioAccessorySapmGetCtrlOpsTest(void);
 
 #ifdef __cplusplus
 #if __cplusplus

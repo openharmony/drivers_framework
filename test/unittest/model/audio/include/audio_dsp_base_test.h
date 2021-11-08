@@ -6,24 +6,24 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef AUDIO_STREAM_DISPATCH_TEST_H
-#define AUDIO_STREAM_DISPATCH_TEST_H
+#ifndef AUDIO_DSP_BASE_TEST_H
+#define AUDIO_DSP_BASE_TEST_H
 
 #include "hdf_types.h"
 
 #ifdef __cplusplus
 #if __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
-#endif
-int32_t AudioControlDispatchTestStreamDispatch(void);
-int32_t AudioControlDispatchTestStreamHostDestroy(void);
+#endif /* __cplusplus */
+
+int32_t DspGetServiceNameTest(void);
+int32_t DspGetDaiNameTest(void);
 
 #ifdef __cplusplus
 #if __cplusplus
 }
 #endif
-#endif
+#endif /* __cplusplus */
 
-#endif
+#endif /* AUDIO_DSP_BASE_TEST_H */

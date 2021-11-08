@@ -14,7 +14,23 @@
 
 #define HDF_LOG_TAG audio_sapm
 
+#define SAPM_POLL_TIME 10000        /* 10s */
+#define SAPM_SLEEP_TIME (3 * 60000) /* 3min */
+
+#define SAPM_POWER_DOWN 0
+#define SAPM_POWER_UP 1
+
+#define CONNECT_CODEC_PIN 1
+#define UNCONNECT_CODEC_PIN 0
+
+#define EXIST_EXTERNAL_WIDGET 1
+#define UNEXIST_EXTERNAL_WIDGET 1
+
+#define CONNECT_SINK_AND_SOURCE 1
+#define UNCONNECT_SINK_AND_SOURCE 0
+
 static void AudioSapmEnterSleep(uintptr_t para);
+static uint64_t AudioSapmRefreshTime(bool bRefresh);
 
 /* power up sequences */
 static int32_t g_audioSapmPowerUpSeq[] = {
@@ -940,7 +956,7 @@ static void AudioSapmPowerDownSeqRun(const struct DListHead *list)
     return;
 }
 
-int AudioSapmPowerComponents(struct AudioCard *audioCard)
+static int AudioSapmPowerComponents(struct AudioCard *audioCard)
 {
     struct AudioSapmComponent *sapmComponent = NULL;
     struct DListHead upList;
@@ -1254,13 +1270,14 @@ int32_t AudioAccessorySapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const
     return HDF_SUCCESS;
 }
 
-uint64_t AudioSapmRefreshTime(bool bRefresh)
+static uint64_t AudioSapmRefreshTime(bool bRefresh)
 {
     static uint64_t time = 0;
 
     if (bRefresh) {
         time = OsalGetSysTimeMs();
         g_audioSapmIsSleep = false;
+        g_audioSapmIsStandby = false;
     }
     return time;
 }

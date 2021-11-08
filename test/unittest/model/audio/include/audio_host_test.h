@@ -17,8 +17,8 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-int32_t AudioKcontrolTestGetCodec(void);
-int32_t GetCardTestInstance(void);
+int32_t AudioHostCreateAndBindTest(void);
+int32_t GetCardInstanceTest(void);
 
 #ifdef __cplusplus
 #if __cplusplus

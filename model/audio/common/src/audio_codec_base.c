@@ -13,23 +13,6 @@
 
 #define HDF_LOG_TAG audio_codec_base
 
-int32_t CodecDeviceReadReg(unsigned long virtualAddress, uint32_t reg, uint32_t *val)
-{
-    if (val == NULL) {
-        AUDIO_DRIVER_LOG_ERR("param val is null.");
-        return HDF_FAILURE;
-    }
-
-    *val = OSAL_READL((void *)((uintptr_t)(virtualAddress + reg)));
-    return HDF_SUCCESS;
-}
-
-int32_t CodecDeviceWriteReg(unsigned long virtualAddress, uint32_t reg, uint32_t value)
-{
-    OSAL_WRITEL(value, (void *)((uintptr_t)(virtualAddress + reg)));
-    return HDF_SUCCESS;
-}
-
 int32_t CodecGetServiceName(const struct HdfDeviceObject *device, const char **drvCodecName)
 {
     const struct DeviceResourceNode *node = NULL;
@@ -268,32 +251,6 @@ int32_t CodecSetCtlFunc(struct CodecData *codeData, void *aiaoGetCtrl, void *aia
             codeData->controls[index].Get = aiaoGetCtrl;
             codeData->controls[index].Set = aiaoSetCtrl;
         }
-    }
-
-    return HDF_SUCCESS;
-}
-
-int32_t AccessoryGetConfigInfo(const struct HdfDeviceObject *device, struct AccessoryData *codecData)
-{
-    if (device == NULL) {
-        AUDIO_DRIVER_LOG_ERR("param is null!");
-        return HDF_FAILURE;
-    }
-
-    if (codecData->regConfig != NULL) {
-        ADM_LOG_ERR("g_codecData regConfig  fail!");
-        return HDF_FAILURE;
-    }
-
-    codecData->regConfig = (struct AudioRegCfgData *)OsalMemCalloc(sizeof(*(codecData->regConfig)));
-    if (codecData->regConfig == NULL) {
-        ADM_LOG_ERR("malloc AudioRegCfgData fail!");
-        return HDF_FAILURE;
-    }
-
-    if (CodecGetRegConfig(device, codecData->regConfig) != HDF_SUCCESS) {
-        ADM_LOG_ERR("CodecGetRegConfig fail!");
-        return HDF_FAILURE;
     }
 
     return HDF_SUCCESS;

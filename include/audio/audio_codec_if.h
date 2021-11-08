@@ -56,8 +56,7 @@ struct CodecData {
 struct CodecHost {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
-    unsigned long priv;
-    unsigned long aiaoPriv;
+    void *priv;
 };
 
 enum AudioRegParams {
