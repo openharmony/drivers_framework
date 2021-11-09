@@ -1,0 +1,67 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+#
+# HDF is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
+
+template("hc_gen") {
+  assert(defined(invoker.sources), "sources are must")
+  action_foreach(target_name) {
+    deps = [ "//drivers/framework/tools/hc-gen:build_hc_gen" ]
+    script = "/usr/bin/env"
+    if (defined(ohos_lite)) {
+      script = "//build/lite/run_shell_cmd.py"
+    }
+    sources = invoker.sources
+    if (defined(invoker.hc_gen_hex) && invoker.hc_gen_hex) {
+      hc_flags = [
+        "-b",
+        "-i",
+        "-a",
+      ]
+      output_suffix = "_hex.c"
+      output_suffix2 = ".hcb"
+    } else if (defined(invoker.hc_gen_c) && invoker.hc_gen_c) {
+      hc_flags = [ "-t" ]
+      output_suffix = ".c"
+      output_suffix2 = ".h"
+    } else {
+      hc_flags = []
+      output_suffix = ".hcb"
+    }
+    if (defined(invoker.outputs)) {
+      outputs = invoker.outputs
+    } else {
+      outputs = [ "$target_gen_dir/{{source_name_part}}$output_suffix" ]
+    }
+    if (defined(output_suffix2)) {
+      outputs += [ "$target_gen_dir/{{source_name_part}}$output_suffix2" ]
+    }
+    assert(get_path_info(outputs[0], "file") ==
+               "{{source_name_part}}$output_suffix",
+           "unexpected outputs: " + outputs[0])
+    output_dir = get_path_info(outputs[0], "dir")
+    args = [ rebase_path(get_path_info("//drivers/framework/tools/hc-gen/",
+                                       "out_dir") + "/hc-gen") ]
+    args += hc_flags
+    args += [
+      "-o",
+      rebase_path("$output_dir/{{source_name_part}}"),
+      "{{source}}",
+    ]
+  }
+}
+
+template("hc_gen_c") {
+  hc_gen_c = true
+  hc_gen(target_name) {
+    forward_variables_from(invoker, "*")
+  }
+}
+
+template("hc_gen_hex") {
+  hc_gen_hex = true
+  hc_gen(target_name) {
+    forward_variables_from(invoker, "*")
+  }
+}
