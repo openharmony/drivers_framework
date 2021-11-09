@@ -300,7 +300,7 @@ BASE_CONFIG_EXIT:
     (void)memset_s(&drvData->alsCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&drvData->alsCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->alsCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
-    return NULL;
+    return drvData->alsCfg;
 }
 
 void AlsReleaseCfgData(struct SensorCfgData *alsCfg)
@@ -346,7 +346,7 @@ void AlsReleaseDriver(struct HdfDeviceObject *device)
     struct AlsDrvData *drvData = (struct AlsDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->detectFlag) {
+    if (drvData->detectFlag && drvData->alsCfg != NULL) {
         AlsReleaseCfgData(drvData->alsCfg);
     }
 
