@@ -1,0 +1,23 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+#
+# HDF is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
+
+import("//drivers/adapter/khdf/liteos/hdf.gni")
+
+module_switch = defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO_SAMPLE)
+module_name = "hdf_gpio_sample"
+hdf_driver(module_name) {
+  FRAMEWORK_GPIO_ROOT = "//drivers/framework/sample/platform/gpio/src"
+  sources = [
+    "$FRAMEWORK_GPIO_ROOT/gpio_dispatch_sample.c",
+    "$FRAMEWORK_GPIO_ROOT/gpio_pl061_sample.c",
+    "$FRAMEWORK_GPIO_ROOT/gpio_sample.c",
+  ]
+
+  include_dirs = [
+    "//drivers/framework/sample/platform/gpio/include/",
+    "//drivers/framework/support/platform/include/gpio",
+  ]
+}

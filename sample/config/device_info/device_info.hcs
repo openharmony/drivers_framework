@@ -1,0 +1,38 @@
+root {
+    device_info {
+        platform :: host {
+            hostName = "platform_host";
+            priority = 50;
+            device_gpio :: device {
+                device1 :: deviceNode {
+                    policy = 2;
+                    priority = 10;
+                    permission = 0660;
+                    moduleName = "GPIO_SAMPLE";
+                    serviceName = "GPIO_SAMPLE";
+                    deviceMatchAttr = "sample_gpio";
+                }
+            }
+            device_uart :: device {
+                device5 :: deviceNode {
+                    policy = 2;
+                    priority = 10;
+                    permission = 0660;
+                    moduleName = "UART_SAMPLE";
+                    serviceName = "HDF_PLATFORM_UART_5";
+                    deviceMatchAttr = "sample_uart_5";
+                }
+            }
+            device_spi :: device {
+                device3 :: deviceNode {
+                    policy = 2;
+                    priority = 60;
+                    permission = 0660;
+                    moduleName = "SPI_SAMPLE";
+                    serviceName = "HDF_PLATFORM_SPI_3";
+                    deviceMatchAttr = "sample_spi_3";
+                }
+            }
+        }
+    }
+}
