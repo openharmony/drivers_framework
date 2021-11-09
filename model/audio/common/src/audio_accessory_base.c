@@ -166,7 +166,7 @@ int32_t AccessoryRegBitsRead(struct AudioMixerControl *regAttr, uint32_t *regVal
         regAttr->value = regAttr->max - regAttr->value;
     }
     AUDIO_DRIVER_LOG_DEBUG("regAddr=0x%x, regValue=0x%x, currBitsValue=0x%x",
-        regAttr->reg, regVal.value,regAttr->value);
+        regAttr->reg, regVal.value, regAttr->value);
     AUDIO_DRIVER_LOG_DEBUG("mask=0x%x, shift=%d, max=0x%x,min=0x%x, invert=%d",
         regAttr->mask, regAttr->shift, regAttr->max, regAttr->min, regAttr->invert);
     AUDIO_DRIVER_LOG_DEBUG("success.");

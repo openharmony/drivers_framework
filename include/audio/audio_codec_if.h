@@ -18,66 +18,91 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define AUDIODRV_CTL_ELEM_IFACE_DAC 0 /* virtual dac device */
-#define AUDIODRV_CTL_ELEM_IFACE_ADC 1 /* virtual adc device */
-#define AUDIODRV_CTL_ELEM_IFACE_GAIN 2 /* virtual adc device */
-#define AUDIODRV_CTL_ELEM_IFACE_MIXER 3 /* virtual mixer device */
-#define AUDIODRV_CTL_ELEM_IFACE_ACODEC 4 /* Acodec device */
-#define AUDIODRV_CTL_ELEM_IFACE_PGA 5 /* PGA device */
-#define AUDIODRV_CTL_ELEM_IFACE_AIAO 6 /* AIAO device */
-
+/**
+ * @brief Defines Codec device name and data.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct CodecDevice {
-    const char *devCodecName;
-    struct CodecData *devData;
-    struct HdfDeviceObject *device;
-    struct DListHead list;
-    struct OsalMutex mutex;
+    const char *devCodecName;       /**< Codec device name */
+    struct CodecData *devData;      /**< Codec module private data */
+    struct HdfDeviceObject *device; /**< HDF device */
+    struct DListHead list;          /**< Codec list */
+    struct OsalMutex mutex;         /**< Codec mutex */
 };
 
-/* codec related definitions */
+/**
+ * @brief Defines Codec private data.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct CodecData {
-    const char *drvCodecName;
-    /* Codec driver callbacks */
-    int32_t (*Init)(struct AudioCard *, struct CodecDevice *);
-    int32_t (*Read)(unsigned long, uint32_t, uint32_t *);
-    int32_t (*Write)(unsigned long, uint32_t, uint32_t);
-    struct AudioKcontrol *controls;
-    int numControls;
-    struct AudioSapmComponent *sapmComponents;
-    int numSapmComponent;
-    const struct AudioSapmRoute *sapmRoutes;
-    int numSapmRoutes;
-    unsigned long virtualAddress; // IoRemap Address
-    struct AudioRegCfgData *regConfig;
-    struct AudioRegCfgGroupNode **regCfgGroup;
+    const char *drvCodecName;                  /**< Codec driver name */
+
+    /**
+     * @brief Defines Codec device init.
+     *
+     * @param audioCard Indicates a audio card device.
+     * @param codec Indicates a codec device.
+     *
+     * @return Returns <b>0</b> if codec device init success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*Init)(struct AudioCard *audioCard, struct CodecDevice *codec);
+
+    /**
+     * @brief Defines Codec device reg read.
+     *
+     * @param virtualAddress Indicates base reg IoRemap address.
+     * @param reg Indicates reg offset.
+     * @param value Indicates read reg value.
+     *
+     * @return Returns <b>0</b> if codec device read reg success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*Read)(unsigned long virtualAddress, uint32_t reg, uint32_t *value);
+
+    /**
+     * @brief Defines Codec device reg write.
+     *
+     * @param virtualAddress Indicates base reg IoRemap address.
+     * @param reg Indicates reg offset.
+     * @param value Indicates write reg value.
+     *
+     * @return Returns <b>0</b> if codec device write reg success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*Write)(unsigned long virtualAddress, uint32_t reg, uint32_t value);
+
+    struct AudioKcontrol *controls;            /**< Codec control structure array pointer */
+    int numControls;                           /**< Number of array elements of Codec controls */
+    struct AudioSapmComponent *sapmComponents; /**< Codec power management component array pointer */
+    int numSapmComponent;                      /**< Number of array elements of codec power management component */
+    const struct AudioSapmRoute *sapmRoutes;   /**< Codec power management route array pointer */
+    int numSapmRoutes;                         /**< Number of power management route array elements */
+    unsigned long virtualAddress;              /**< Codec base reg IoRemap address */
+    struct AudioRegCfgData *regConfig;         /**< Codec registers configured in HCS */
+    struct AudioRegCfgGroupNode **regCfgGroup; /**< Codec register group configured in HCS */
 };
 
-/* Codec host is defined in codec driver */
+/**
+ * @brief Defines Codec host in audio driver.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct CodecHost {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    void *priv;
-};
-
-enum AudioRegParams {
-    PLAYBACK_VOLUME = 0,
-    CAPTURE_VOLUME,
-    PLAYBACK_MUTE,
-    CAPTURE_MUTE,
-    LEFT_GAIN,
-    RIGHT_GAIN,
-    EXTERNAL_CODEC_ENABLE,
-    INTERNALLY_CODEC_ENABLE,
-    RENDER_CHANNEL_MODE,
-    CAPTRUE_CHANNEL_MODE,
-    S_NORMAL_AP01_P_HIFI,
-};
-
-enum SapmRegParams {
-    LPGA_MIC = 0,
-    RPGA_MIC,
-    DACL2DACR,
-    DACR2DACL,
+    struct IDeviceIoService service; /**< Services provided by codec */
+    struct HdfDeviceObject *device;  /**< HDF device */
+    void *priv;                      /**< Codec private data interface */
 };
 
 #ifdef __cplusplus

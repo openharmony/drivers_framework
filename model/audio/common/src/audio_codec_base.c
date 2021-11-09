@@ -121,7 +121,7 @@ static int32_t SapmCtrlToSapmComp(struct AudioSapmComponent *sapmComponents,
     return HDF_SUCCESS;
 }
 
-static int32_t CodecSetSapmConfigInfo(struct CodecData *codeData,struct AudioRegCfgGroupNode ** regCfgGroup)
+static int32_t CodecSetSapmConfigInfo(struct CodecData *codeData, struct AudioRegCfgGroupNode **regCfgGroup)
 {
     uint16_t index;
 
@@ -139,8 +139,8 @@ static int32_t CodecSetSapmConfigInfo(struct CodecData *codeData,struct AudioReg
         return HDF_FAILURE;
     }
 
-    struct AudioKcontrol *audioSapmControls = (struct AudioKcontrol *)OsalMemCalloc
-        (regCfgGroup[AUDIO_SAPM_CFG_GROUP]->itemNum * sizeof(struct AudioKcontrol));
+    struct AudioKcontrol *audioSapmControls = (struct AudioKcontrol *)OsalMemCalloc(
+        regCfgGroup[AUDIO_SAPM_CFG_GROUP]->itemNum * sizeof(struct AudioKcontrol));
     if (audioSapmControls == NULL) {
         AUDIO_DRIVER_LOG_ERR("OsalMemCalloc failed.");
         return HDF_FAILURE;
@@ -164,10 +164,10 @@ static int32_t CodecSetSapmConfigInfo(struct CodecData *codeData,struct AudioReg
     }
 
     for (index = 0; index < codeData->numSapmComponent; index++) {
-         if (SapmCtrlToSapmComp(codeData->sapmComponents ,sapmCompItem, index)) {
+        if (SapmCtrlToSapmComp(codeData->sapmComponents, sapmCompItem, index)) {
             OsalMemFree(audioSapmControls);
             return HDF_FAILURE;
-         }
+        }
 
         if (sapmCompItem[index].kcontrolsNum) {
             codeData->sapmComponents[index].kcontrolNews =
@@ -233,7 +233,7 @@ int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData)
 
 int32_t CodecSetCtlFunc(struct CodecData *codeData, void *aiaoGetCtrl, void *aiaoSetCtrl)
 {
-    uint32_t index = 0;
+    uint32_t index;
     if (codeData == NULL || codeData->regConfig == NULL ||
         aiaoGetCtrl == NULL || aiaoSetCtrl == NULL) {
         AUDIO_DRIVER_LOG_ERR("input para is NULL.");

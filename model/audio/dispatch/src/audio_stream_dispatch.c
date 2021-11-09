@@ -1326,12 +1326,12 @@ static int32_t StreamHostDspDecode(const struct HdfDeviceIoClient *client, struc
     rtd = audioCard->rtd;
 
     dspDev = rtd->dsp;
-    if (dspDev == NULL || dspDev->devData == NULL || dspDev->devData->decode == NULL) {
+    if (dspDev == NULL || dspDev->devData == NULL || dspDev->devData->Decode == NULL) {
         ADM_LOG_ERR("audioCard rtd dsp is NULL.");
         return HDF_FAILURE;
     }
 
-    ret = dspDev->devData->decode(audioCard, (void*)data, dspDev);
+    ret = dspDev->devData->Decode(audioCard, (void*)data, dspDev);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("DeCode render pause failed ret=%d", ret);
         return HDF_ERR_IO;
@@ -1365,12 +1365,12 @@ static int32_t StreamHostDspEncode(const struct HdfDeviceIoClient *client, struc
     rtd = audioCard->rtd;
 
     dspDev = rtd->dsp;
-    if (dspDev == NULL || dspDev->devData == NULL || dspDev->devData->encode == NULL) {
+    if (dspDev == NULL || dspDev->devData == NULL || dspDev->devData->Encode == NULL) {
         ADM_LOG_ERR("audioCard rtd dsp is NULL.");
         return HDF_FAILURE;
     }
 
-    ret = dspDev->devData->encode(audioCard, (void*)data, dspDev);
+    ret = dspDev->devData->Encode(audioCard, (void*)data, dspDev);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("EnCode render pause failed ret=%d", ret);
         return HDF_ERR_IO;

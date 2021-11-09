@@ -86,5 +86,3 @@ int32_t AudioDmaPointer(struct PlatformData *data, uint32_t *pointer)
     }
     return HDF_FAILURE;
 }
-
-

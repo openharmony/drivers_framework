@@ -9,7 +9,6 @@
 #ifndef AUDIO_PLATFORM_BASE_H
 #define AUDIO_PLATFORM_BASE_H
 
-#include "audio_platform_if.h"
 #include "audio_host.h"
 
 #ifdef __cplusplus
@@ -29,6 +28,36 @@ enum DataBitWidth {
     DATA_BIT_WIDTH20 =  20,     /* 20 bit witdth */
     DATA_BIT_WIDTH24 =  24,     /* 24 bit witdth */
     DATA_BIT_WIDTH32 =  32,     /* 32 bit witdth */
+};
+
+enum PcmStatus {
+    PCM_STOP = 0, /* pcm stream stop flag */
+    PCM_PAUSE,    /* pcm stream pause flag */
+    PCM_START,    /* pcm stream start flag */
+};
+
+struct CircleBufInfo {
+    uint32_t cirBufSize;        /* Current DMA cache size */
+    uint32_t trafBufSize;       /* PCM data per transmission default size */
+    uint32_t period;            /* not used */
+    uint32_t periodSize;        /* DMA cache period size */
+    uint32_t periodCount;       /* Number of DMA cache periods */
+    unsigned long phyAddr;      /* DMA cache physical address */
+    uint32_t *virtAddr;         /* DMA cache virtual address */
+    uint32_t wbufOffSet;        /* DMA cache write address offset */
+    uint32_t wptrOffSet;        /* DMA cache write pointer offset */
+    uint32_t rbufOffSet;        /* DMA cache read address offset */
+    uint32_t rptrOffSet;        /* DMA cache read pointer offset */
+    enum PcmStatus runStatus;   /* PCM status */
+    uint32_t chnId;             /* Channel ID */
+    uint32_t enable;            /* Enable identification */
+    struct OsalMutex buffMutex; /* mutex */
+    uint32_t framesPosition;    /* Frame position */
+    uint32_t pointer;           /* Read/write pointer position during playback and recording */
+    uint32_t periodsMax;        /* Maximum number of periods */
+    uint32_t periodsMin;        /* Minimum number of periods */
+    uint32_t cirBufMax;         /* Size of DMA cache requested */
+    uint32_t curTrafSize;       /* The size of each actual transmission of PCM data */
 };
 
 unsigned int SysReadl(unsigned long addr);

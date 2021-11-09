@@ -324,7 +324,7 @@ static int32_t ParseAudioAddrItem(struct DeviceResourceIface *parser, const stru
 }
 
 static int32_t ParseAudioRegGroup(struct DeviceResourceIface *parser,
-    const struct DeviceResourceNode *regCfgNode, struct AudioRegCfgGroupNode** groupNode, uint32_t index)
+    const struct DeviceResourceNode *regCfgNode, struct AudioRegCfgGroupNode **groupNode, uint32_t index)
 {
     int32_t ret = HDF_FAILURE;
     struct AudioRegCfgGroupNode *group = NULL;
@@ -335,18 +335,6 @@ static int32_t ParseAudioRegGroup(struct DeviceResourceIface *parser,
         return HDF_FAILURE;
     }
 
-    group = *groupNode;
-    if (group != NULL) {
-        if (group->regCfgItem != NULL) {
-            OsalMemFree(group->regCfgItem);
-        }
-
-        if (group->ctrlCfgItem != NULL) {
-            OsalMemFree(group->ctrlCfgItem);
-        }
-        OsalMemFree(group);
-    }
-
     group = (struct AudioRegCfgGroupNode*)OsalMemCalloc(sizeof(*group));
     if (group == NULL) {
         ADM_LOG_ERR("malloc audio reg config group failed");
@@ -355,7 +343,7 @@ static int32_t ParseAudioRegGroup(struct DeviceResourceIface *parser,
     *groupNode = group;
     (*groupNode)->groupIndex = index;
 
-    switch(index){
+    switch (index) {
         case AUDIO_CTRL_CFG_GROUP:
         case AUDIO_SAPM_CFG_GROUP:
             ret = ParseAudioCtrlItem(parser, regCfgNode, group);
