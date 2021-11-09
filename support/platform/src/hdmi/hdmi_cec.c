@@ -147,7 +147,8 @@ static struct HdmiCecMsgLenInfo *HdmiCecGetMsgLenInfo(uint8_t opcode)
 
 static bool HdmiCecCheckTimerStatusMsgLen(struct HdmiCecMsg *msg)
 {
-    uint8_t info = (msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0xf);  /* Progremmed Info or Not Progremmed Error Info. */
+    /* Progremmed Info or Not Progremmed Error Info. */
+    uint8_t info = (msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0xf);  
 
     /* Progremmed Indicator Check. */
     if ((msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0x10) > 0) {
@@ -354,7 +355,7 @@ static void HdmiCecEncodingDigitalServiceId(uint8_t *data, uint8_t len, struct H
     data[DATA_ZEROTH_OFFSET_ELEMENT] = (digital->method << HDMI_CEC_DIGITAL_SERVICE_ID_METHOD_SHIFT) | (digital->system);
     if (digital->method == HDMI_CEC_SERVICE_ID_METHOD_BY_CHANNEL) {
         data[DATA_FIRST_OFFSET_ELEMENT] = (digital->systemData.channel.format << HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
-             (digital->systemData.channel.major >> HDMI_ONE_BYTE_SHIFT);
+                                          (digital->systemData.channel.major >> HDMI_ONE_BYTE_SHIFT);
         data[DATA_SECOND_OFFSET_ELEMENT] = digital->systemData.channel.major & HDMI_ONE_BYTE_MARK;
         data[DATA_THIRD_OFFSET_ELEMENT] = digital->systemData.channel.minor >> HDMI_ONE_BYTE_SHIFT;
         data[DATA_FORTH_OFFSET_ELEMENT] = digital->systemData.channel.minor & HDMI_ONE_BYTE_MARK;
@@ -403,7 +404,9 @@ static void HdmiCecEncodingRecordOnDigital(struct HdmiCecMsg *msg, struct HdmiCe
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_RECORD_ON_DIGITAL_MSG_PARAM_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_RECORD_ON;
     msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = HDMI_CEC_RECORD_SRC_DIGITAL;
-    HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]), HDMI_CEC_DIGITAL_SERVICE_ID_LEN, digital);
+    HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]),
+                                    HDMI_CEC_DIGITAL_SERVICE_ID_LEN,
+                                    digital);
 }
 
 static void HdmiCecEncodingRecordOnAnalog(struct HdmiCecMsg *msg,
@@ -509,7 +512,9 @@ void HdmiCecEncodingClearAnalogueTimerMsg(struct HdmiCecMsg *msg, struct HdmiCec
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_ANALOGUE_TIMER_INFO_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CLEAR_ANALOGUE_TIMER;
-    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_ANALOGUE_TIMER_INFO_LEN, info);
+    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]),
+                                     HDMI_CEC_ANALOGUE_TIMER_INFO_LEN,
+                                     info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
     }
@@ -521,14 +526,18 @@ static void HdmiCecEncodingDigitalTimerInfo(uint8_t *data, uint8_t len, struct H
         return;
     }
     HdmiCecEncodingCommTimerInfo(data, HDMI_CEC_COMM_TIMER_INFO_LEN, &(info->commInfo));
-    HdmiCecEncodingDigitalServiceId(&data[DATA_SEVENTH_OFFSET_ELEMENT], len - HDMI_CEC_COMM_TIMER_INFO_LEN, &(info->id));
+    HdmiCecEncodingDigitalServiceId(&data[DATA_SEVENTH_OFFSET_ELEMENT],
+                                    len - HDMI_CEC_COMM_TIMER_INFO_LEN,
+                                    &(info->id));
 }
 
 void HdmiCecEncodingClearDigitalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecDigitalTimerInfo *info, bool response)
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_DIGITAL_TIMER_INFO_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CLEAR_DIGITAL_TIMER;
-    HdmiCecEncodingDigitalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_DIGITAL_TIMER_INFO_LEN, info);
+    HdmiCecEncodingDigitalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]),
+                                    HDMI_CEC_DIGITAL_TIMER_INFO_LEN,
+                                    info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
     }
@@ -550,7 +559,9 @@ void HdmiCecEncodingClearExternalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCec
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_EXTERNAL_TIMER_INFO_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_CLEAR_EXTERNAL_TIMER;
-    HdmiCecEncodingExternalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_EXTERNAL_TIMER_INFO_LEN, info);
+    HdmiCecEncodingExternalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]),
+                                     HDMI_CEC_EXTERNAL_TIMER_INFO_LEN,
+                                     info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_CLEARED_STATUS;
     }
@@ -560,7 +571,9 @@ void HdmiCecEncodingSetAnalogueTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecAn
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_ANALOGUE_TIMER_INFO_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_ANALOGUE_TIMER;
-    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_ANALOGUE_TIMER_INFO_LEN, info);
+    HdmiCecEncodingAnalogueTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]),
+                                     HDMI_CEC_ANALOGUE_TIMER_INFO_LEN,
+                                     info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_STATUS;
     }
@@ -570,7 +583,9 @@ void HdmiCecEncodingSetDigitalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecDig
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_DIGITAL_TIMER_INFO_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_DIGITAL_TIMER;
-    HdmiCecEncodingDigitalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_DIGITAL_TIMER_INFO_LEN, info);
+    HdmiCecEncodingDigitalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]),
+                                    HDMI_CEC_DIGITAL_TIMER_INFO_LEN,
+                                    info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_STATUS;
     }
@@ -580,7 +595,9 @@ void HdmiCecEncodingSetExternalTimerMsg(struct HdmiCecMsg *msg, struct HdmiCecEx
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_EXTERNAL_TIMER_INFO_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_EXTERNAL_TIMER;
-    HdmiCecEncodingExternalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_EXTERNAL_TIMER_INFO_LEN, info);
+    HdmiCecEncodingExternalTimerInfo(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]),
+                                     HDMI_CEC_EXTERNAL_TIMER_INFO_LEN,
+                                     info);
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_TIMER_STATUS;
     }
@@ -792,7 +809,9 @@ void HdmiCecEncodingSelectDigitalServiceMsg(struct HdmiCecMsg *msg, struct HdmiC
 {
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SELECT_DIGITAL_SERVICE;
-    HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN, digital);
+    HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]),
+                                    HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN,
+                                    digital);
 }
 
 void HdmiCecEncodingTunerDeviceStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecTunerDeviceInfo *info)
@@ -807,8 +826,9 @@ void HdmiCecEncodingTunerDeviceStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecT
         msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = info->data.analog.bcstSystem;
     } else {
         msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TUNER_DEVICE_STATUS_MSG_DIG_PARAM_LEN);
-        HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]), HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN,
-            &(info->data.digital));
+        HdmiCecEncodingDigitalServiceId(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]),
+                                        HDMI_CEC_SELECT_DIGITAL_SERVICE_MSG_PARAM_LEN,
+                                        &(info->data.digital));
     }
 }
 
@@ -983,8 +1003,9 @@ void HdmiCecEncodingUserControlPrtessedMsg(struct HdmiCecMsg *msg, struct HdmiCe
             break;
         case HDMI_CEC_UI_CMD_TUNE_FUNCTION:
             msg->len += HDMI_CEC_CHANNEL_IDENTIFIER_LEN;
-            msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (cmd->addOperands.channel.format << HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
-                (cmd->addOperands.channel.major >> HDMI_ONE_BYTE_SHIFT);
+            msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (cmd->addOperands.channel.format <<
+                                                          HDMI_CEC_CHANNEL_NUMBER_FORMAT_SHIFT) |
+                                                          (cmd->addOperands.channel.major >> HDMI_ONE_BYTE_SHIFT);
             msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (cmd->addOperands.channel.major & HDMI_ONE_BYTE_MARK);
             msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT] = (cmd->addOperands.channel.minor >> HDMI_ONE_BYTE_SHIFT);
             msg->data[HDMI_CEC_MSG_DATA_SIXTH_ELEMENT] = (cmd->addOperands.channel.minor & HDMI_ONE_BYTE_MARK);
@@ -1427,7 +1448,8 @@ static bool HdmiCecMsgIgnore(uint8_t opcode, bool unregistered, bool broadcast)
 static void HdmiCecHandleReportPhyAddressMsg(struct HdmiCntlr *cntlr,
     struct HdmiCecMsg *msg, struct HdmiCecMsg *txMsg)
 {
-    uint16_t phyAddr = ((msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] << HDMI_ONE_BYTE_SHIFT) | msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]);
+    uint16_t phyAddr = ((msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] << HDMI_ONE_BYTE_SHIFT) |
+                        msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]);
     (void)cntlr;
     (void)txMsg;
 

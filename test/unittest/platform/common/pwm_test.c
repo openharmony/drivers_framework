@@ -44,7 +44,7 @@ static int32_t PwmSetConfigTest(struct PwmTest *test)
 
     HDF_LOGI("%s: enter. Test [PwmSetConfig].", __func__);
     number = test->cfg.number;
-    test->cfg.number = (number > 0) ? 0: TEST_WAVES_NUMBER;
+    test->cfg.number = ((number > 0) ? 0: TEST_WAVES_NUMBER);
     HDF_LOGI("%s: Set number %u.", __func__, test->cfg.number);
     ret = PwmSetConfig(test->handle, &(test->cfg));
     if (ret != HDF_SUCCESS) {
@@ -333,11 +333,11 @@ static int32_t PwmTestEntry(struct PwmTest *test, int32_t cmd)
     }
     // At first test case.
     if (cmd == PWM_SET_PERIOD_TEST) {
-       ret = PwmGetConfig(test->handle, &(test->originCfg));
-       if (ret != HDF_SUCCESS) {
-           HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-           return HDF_FAILURE;
-       }
+        ret = PwmGetConfig(test->handle, &(test->originCfg));
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
+            return HDF_FAILURE;
+        }
     }
     for (i = 0; i < sizeof(g_pwmTestFunc) / sizeof(g_pwmTestFunc[0]); i++) {
         if (cmd == g_pwmTestFunc[i].type && g_pwmTestFunc[i].Func != NULL) {

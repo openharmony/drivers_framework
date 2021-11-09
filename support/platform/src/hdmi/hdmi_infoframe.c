@@ -69,14 +69,17 @@ static int32_t HdmiInfoframePacketVsEncoding(union HdmiInfoframeInfo *infoframe,
         data[UINT8_ARRAY_TElEMENT_6] = HDMI_IEEE_OUI_1_4_3RD;
         vsifContent = &(vs->vsifContent.vsif);
         userContent = &(vs->vsifContent.userVsif);
-        data[UINT8_ARRAY_TElEMENT_7] = (vsifContent->format & HDMI_VENDOR_1_4_FORMAT_MARK) << HDMI_VENDOR_1_4_FORMAT_SHIFT;
+        data[UINT8_ARRAY_TElEMENT_7] = (vsifContent->format & HDMI_VENDOR_1_4_FORMAT_MARK) <<
+                                        HDMI_VENDOR_1_4_FORMAT_SHIFT;
         if (vsifContent->format == HDMI_VS_VIDEO_FORMAT_4K) {
             data[UINT8_ARRAY_TElEMENT_8] = vsifContent->vic;
             return HDF_SUCCESS;
         } else if (vsifContent->format == HDMI_VS_VIDEO_FORMAT_3D) {
-            data[UINT8_ARRAY_TElEMENT_8] = (vsifContent->_3dStruct & HDMI_VENDOR_3D_STRUCTURE_MARK) << HDMI_VENDOR_3D_STRUCTURE_SHIFT;
+            data[UINT8_ARRAY_TElEMENT_8] = (vsifContent->_3dStruct & HDMI_VENDOR_3D_STRUCTURE_MARK) <<
+                                            HDMI_VENDOR_3D_STRUCTURE_SHIFT;
         }
-        data[UINT8_ARRAY_TElEMENT_9] = (vsifContent->_3dExtData & HDMI_VENDOR_3D_EXT_DATA_MARK) << HDMI_VENDOR_3D_EXT_DATA_SHIFT;
+        data[UINT8_ARRAY_TElEMENT_9] = (vsifContent->_3dExtData & HDMI_VENDOR_3D_EXT_DATA_MARK) <<
+                                        HDMI_VENDOR_3D_EXT_DATA_SHIFT;
         if (vsifContent->_3dMetaPresent == false) {
             if (userContent->len == 0 || (userContent->len + lenght) > len) {
                 return HDF_SUCCESS;

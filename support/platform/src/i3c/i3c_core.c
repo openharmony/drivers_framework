@@ -277,7 +277,7 @@ int32_t I3cDeviceAdd(struct I3cDevice *device)
     head = I3cDeviceListGet();
     DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, head, struct I3cDevice, list) {
         if (pos == NULL) { // empty list
-             break;
+            break;
         }
         if ((pos->pid == device->pid) && (pos->cntlr == device->cntlr)) {
             I3cDeviceListPut();
@@ -475,7 +475,6 @@ int32_t I3cCntlrI2cTransfer(struct I3cCntlr *cntlr, struct I3cMsg *msgs, int16_t
         return HDF_ERR_INVALID_OBJECT;
     }
 
-
     if (cntlr->ops == NULL || cntlr->ops->i2cTransfer == NULL) {
         HDF_LOGE("%s: ops or i2ctransfer is null", __func__);
         return HDF_ERR_NOT_SUPPORT;
@@ -590,6 +589,10 @@ int32_t I3cCntlrRequestIbi(struct I3cCntlr *cntlr, uint16_t addr, I3cIbiFunc fun
             continue;
         }
         ibi = (struct I3cIbiInfo *)OsalMemCalloc(sizeof(*ibi));
+        if (ibi == NULL) {
+            HDF_LOGE("func:%s ibi is NULL!",__func__);
+            return HDF_ERR_MALLOC_FAIL;
+        }
         ibi->ibiFunc = func;
         ibi->payload = payload;
         ibi->data = (uint8_t *)OsalMemCalloc(sizeof(uint8_t) * payload);
