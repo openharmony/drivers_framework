@@ -39,7 +39,8 @@ int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec,
     const struct AudioMixerControl *mixerControl, uint32_t value);
 int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
     const struct AudioMixerControl *mixerControl, uint32_t value);
-int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, struct AudioMixerControl *mixerControl, uint32_t value);
+int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, const struct AudioMixerControl *mixerControl,
+    uint32_t value);
 
 struct DaiDevice *AudioKcontrolGetCpuDai(const struct AudioKcontrol *kcontrol);
 struct CodecDevice *AudioKcontrolGetCodec(const struct AudioKcontrol *kcontrol);

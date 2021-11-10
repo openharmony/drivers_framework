@@ -68,7 +68,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaBufAlloc)(struct PlatformData *platformData, enum AudioStreamType streamType);
+    int32_t (*DmaBufAlloc)(struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines dma buffer free.
@@ -81,7 +81,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaBufFree)(struct PlatformData *platformData,  enum AudioStreamType streamType);
+    int32_t (*DmaBufFree)(struct PlatformData *platformData,  const enum AudioStreamType streamType);
 
     /**
      * @brief Defines dma request channel.
@@ -93,7 +93,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaRequestChannel)(struct PlatformData *platformData);
+    int32_t (*DmaRequestChannel)(const struct PlatformData *platformData);
 
     /**
      * @brief Defines dma channel config.
@@ -105,7 +105,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaConfigChannel)(struct PlatformData *platformData);
+    int32_t (*DmaConfigChannel)(const struct PlatformData *platformData);
 
     /**
      * @brief Defines dma prepare function.
@@ -117,7 +117,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaPrep)(struct PlatformData *platformData);
+    int32_t (*DmaPrep)(const struct PlatformData *platformData);
 
     /**
      * @brief Defines dma submit function.
@@ -129,7 +129,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaSubmit)(struct PlatformData *platformData);
+    int32_t (*DmaSubmit)(const struct PlatformData *platformData);
 
     /**
      * @brief Defines dma pending function.
@@ -165,7 +165,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaResume)(struct PlatformData *platformData);
+    int32_t (*DmaResume)(const struct PlatformData *platformData);
 
     /**
      * @brief Defines Get the function of the current playback or recording position.

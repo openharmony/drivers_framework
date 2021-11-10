@@ -120,7 +120,7 @@ struct DspData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Read)(const struct DspDevice *dsp, void *msgs, uint32_t len);
+    int32_t (*Read)(const struct DspDevice *dsp, const void *msgs, const uint32_t len);
 
     /**
      * @brief Defines Dsp device msgs write.
@@ -134,7 +134,7 @@ struct DspData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Write)(const struct DspDevice *dsp, void *msgs, uint32_t len);
+    int32_t (*Write)(const struct DspDevice *dsp, const void *msgs, const uint32_t len);
 
     /**
      * @brief Defines Dsp device decode.

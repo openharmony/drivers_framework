@@ -439,7 +439,7 @@ int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
     return HDF_SUCCESS;
 }
 
-int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, struct AudioMixerControl *mixerControl, uint32_t value)
+int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, const struct AudioMixerControl *mixerControl, uint32_t value)
 {
     int32_t ret;
     uint32_t curValue = 0;

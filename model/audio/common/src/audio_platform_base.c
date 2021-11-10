@@ -207,14 +207,14 @@ int32_t AudioSetCaptureBufInfo(struct PlatformData *data, const struct AudioPcmH
 
 int32_t AudioWriteProcBigEndian(const struct PlatformData *data, struct AudioTxData *txData)
 {
-    uint64_t buffSize;
+    uint32_t buffSize;
 
     if (data == NULL || txData == NULL || txData->buf == NULL) {
         AUDIO_DRIVER_LOG_ERR("input param is null.");
         return HDF_FAILURE;
     }
 
-    buffSize = txData->frames * data->pcmInfo.frameSize;
+    buffSize = (uint32_t)txData->frames * data->pcmInfo.frameSize;
     if (data->pcmInfo.isBigEndian) {
         if (AudioDataBigEndianChange(txData->buf, buffSize, data->pcmInfo.bitWidth) != HDF_SUCCESS) {
             AUDIO_DRIVER_LOG_ERR("AudioDataBigEndianChange: failed.");
@@ -228,12 +228,11 @@ static enum CriBuffStatus AudioDmaBuffStatus(const struct AudioCard *card)
 {
     uint32_t dataAvailable;
     uint32_t residual;
-    uint32_t pointer;
-    struct PlatformData *data = NULL;
+    uint32_t pointer = 0;
     uint32_t wptr;
     uint32_t rptr;
 
-    data = PlatformDataFromCard(card);
+    struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL || data->ops == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -468,7 +467,7 @@ static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
         return HDF_FAILURE;
     }
 
-    uint32_t totalSize = data->mmapData.totalBufferFrames * data->pcmInfo.frameSize;
+    uint32_t totalSize = (uint32_t)data->mmapData.totalBufferFrames * data->pcmInfo.frameSize;
     uint32_t lastBuffSize = ((totalSize % MIN_PERIOD_SIZE) == 0) ? MIN_PERIOD_SIZE : (totalSize % MIN_PERIOD_SIZE);
     uint32_t loopTimes = (lastBuffSize == MIN_PERIOD_SIZE) ?
         (totalSize / MIN_PERIOD_SIZE) : (totalSize / MIN_PERIOD_SIZE + 1);
@@ -596,21 +595,21 @@ int32_t AudioMmapReadTransfer(const struct AudioCard *card, const struct AudioMm
     uint32_t offset = 0;
     enum CriBuffStatus status;
     uint32_t timeout = 0;
-    struct PlatformData *data = NULL;
 
-    if (!card || !rxMmapData || !rxMmapData->memoryAddress || rxMmapData->totalBufferFrames <= 0) {
+    if (card == NULL || rxMmapData == NULL || rxMmapData->memoryAddress == NULL ||
+        rxMmapData->totalBufferFrames <= 0) {
         AUDIO_DRIVER_LOG_ERR("param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = PlatformDataFromCard(card);
+    struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
     }
 
     uint32_t frameSize = data->pcmInfo.frameSize;
-    uint32_t totalSize = rxMmapData->totalBufferFrames * frameSize;
+    uint32_t totalSize = (uint32_t)rxMmapData->totalBufferFrames * frameSize;
     data->captureBufInfo.pointer = 0;
     data->captureBufInfo.curTrafSize = data->captureBufInfo.trafBufSize;
     if (data->captureBufInfo.virtAddr == NULL) {

@@ -98,6 +98,10 @@ int32_t DaiSetConfigInfo(struct DaiData *data)
 
     for (index = 0; index < data->numControls; index++) {
         data->controls[index].iface    = item[index].iface;
+        if (item[index].arrayIndex >= AUDIO_CTRL_LIST_MAX) {
+            AUDIO_DRIVER_LOG_ERR("Array super index.");
+            return HDF_FAILURE;
+        }
         data->controls[index].name     = g_audioControlsList[item[index].arrayIndex];
         data->controls[index].Info     = AudioInfoCtrlOps;
         data->controls[index].privateValue = (unsigned long)&patRegCfgItemTmp[index];

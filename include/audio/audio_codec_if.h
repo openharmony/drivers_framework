@@ -52,7 +52,7 @@ struct CodecData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Init)(struct AudioCard *audioCard, struct CodecDevice *codec);
+    int32_t (*Init)(struct AudioCard *audioCard, const struct CodecDevice *codec);
 
     /**
      * @brief Defines Codec device reg read.
