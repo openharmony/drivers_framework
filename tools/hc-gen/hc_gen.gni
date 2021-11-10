@@ -6,7 +6,19 @@
 
 template("hc_gen") {
   assert(defined(invoker.sources), "sources are must")
-  action_foreach(target_name) {
+  if (defined(invoker.outputs)) {
+    foreach(o, invoker.outputs) {
+      if (o == string_replace(o, "{{", "")) {
+        specified_output_name = true
+      }
+    }
+  }
+  if (defined(specified_output_name) && specified_output_name) {
+    target_type = "action"
+  } else {
+    target_type = "action_foreach"
+  }
+  target(target_type, target_name) {
     deps = [ "//drivers/framework/tools/hc-gen:build_hc_gen" ]
     script = "/usr/bin/env"
     if (defined(ohos_lite)) {
@@ -35,19 +47,20 @@ template("hc_gen") {
       outputs = [ "$target_gen_dir/{{source_name_part}}$output_suffix" ]
     }
     if (defined(output_suffix2)) {
-      outputs += [ "$target_gen_dir/{{source_name_part}}$output_suffix2" ]
+      outputs += [ string_replace(outputs[0], output_suffix, output_suffix2) ]
     }
-    assert(get_path_info(outputs[0], "file") ==
-               "{{source_name_part}}$output_suffix",
-           "unexpected outputs: " + outputs[0])
-    output_dir = get_path_info(outputs[0], "dir")
+    if (target_type == "action") {
+      src = rebase_path(sources[0], root_build_dir)
+    } else {
+      src = "{{source}}"
+    }
     args = [ rebase_path(get_path_info("//drivers/framework/tools/hc-gen/",
                                        "out_dir") + "/hc-gen") ]
     args += hc_flags
     args += [
       "-o",
-      rebase_path("$output_dir/{{source_name_part}}"),
-      "{{source}}",
+      rebase_path(string_replace(outputs[0], output_suffix, "")),
+      src,
     ]
   }
 }
