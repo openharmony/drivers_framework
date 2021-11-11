@@ -30,19 +30,19 @@ private:
 
     bool TemplateNodeSeparate();
 
-	std::string GenFullName(uint32_t depth, const std::shared_ptr<AstObject> &node, const std::string &sep);
+    std::string GenFullName(uint32_t depth, const std::shared_ptr<AstObject> &node, const std::string &sep);
 
-	bool GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &node);
+    bool GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &node);
 
     bool NodeWalk();
 
-	bool HeaderTopOutput();
+    bool HeaderTopOutput();
 
-	bool HeaderBottomOutput();
+    bool HeaderBottomOutput();
 
-	const std::string &ToUpperString(std::string &str);
+    const std::string &ToUpperString(std::string &str);
 
-	bool GenArray(const std::string &name, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node);
+    bool GenArray(const std::string &name, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node);
 
     std::string GenRefObjName(uint32_t depth, const std::shared_ptr<AstObject> &object);
 
@@ -50,7 +50,7 @@ private:
 
     std::ofstream ofs_;
     std::string outFileName_;
-	std::map<int, std::string> nodeNameMap_;
+    std::map<int, std::string> nodeNameMap_;
 };
 } // Hardware
 } // OHOS
