@@ -188,7 +188,8 @@ int32_t Lsm303InitDriver(struct HdfDeviceObject *device)
     }
 
     drvData->sensorCfg = MagneticCreateCfgData(device->property);
-    if (drvData->sensorCfg == NULL) {
+    if (drvData->sensorCfg == NULL || drvData->sensorCfg->root == NULL) {
+        HDF_LOGD("%s: Creating magneticcfg failed because detection failed", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
 
@@ -216,8 +217,10 @@ void Lsm303ReleaseDriver(struct HdfDeviceObject *device)
     struct Lsm303DrvData *drvData = (struct Lsm303DrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    MagneticReleaseCfgData(drvData->sensorCfg);
-    drvData->sensorCfg = NULL;
+    if (drvData->sensorCfg != NULL) {
+        MagneticReleaseCfgData(drvData->sensorCfg);
+        drvData->sensorCfg = NULL;
+    }
     OsalMemFree(drvData);
 }
 

@@ -303,7 +303,7 @@ BASE_CONFIG_EXIT:
         0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&drvData->proximityCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->proximityCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
-    return NULL;
+    return drvData->proximityCfg;
 }
 
 void ProximityReleaseCfgData(struct SensorCfgData *proximityCfg)
@@ -351,7 +351,7 @@ void ProximityReleaseDriver(struct HdfDeviceObject *device)
     struct ProximityDrvData *drvData = (struct ProximityDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->detectFlag) {
+    if (drvData->detectFlag && drvData->proximityCfg != NULL) {
         ProximityReleaseCfgData(drvData->proximityCfg);
     }
 
