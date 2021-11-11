@@ -38,6 +38,7 @@ import argparse
 from .hdf_command_handler_base import HdfCommandHandlerBase
 from .hdf_command_error_code import CommandErrorCode
 from .hdf_dot_config_file import HdfDotConfigFile
+from .hdf_model_enable_operation import EnableOperation
 from .hdf_vendor_kconfig_file import HdfVendorKconfigFile
 from .hdf_vendor_mk_file import HdfVendorMkFile
 from .hdf_lite_mk_file import HdfLiteMkFile
@@ -60,7 +61,9 @@ class HdfSetHandler(HdfCommandHandlerBase):
             'current_vendor': self._set_current_vendor_handler,
             'current_board': self._set_current_board_handler,
             'vendor_new_name': self._set_vendor_new_name_handler,
-            'drivers_state': self._set_drivers_state_handler
+            'drivers_state': self._set_drivers_state_handler,
+            'model_enable': self._enable_operation,
+            'model_disable': self._disable_operation,
         }
         self.parser.add_argument("--action_type",
                                  help=' '.join(self.handlers.keys()),
@@ -68,6 +71,7 @@ class HdfSetHandler(HdfCommandHandlerBase):
         self.parser.add_argument("--root_dir", required=True)
         self.parser.add_argument("--vendor_name")
         self.parser.add_argument("--board_name")
+        self.parser.add_argument("--module_name")
         self.parser.add_argument("--new_vendor_name")
         self.parser.add_argument("--all_drivers", nargs='*',
                                  action=ConfigItemsAction)
@@ -142,3 +146,19 @@ class HdfSetHandler(HdfCommandHandlerBase):
         dot_config.save()
         for orig_dot_config_ in orig_dot_configs:
             orig_dot_config_.save()
+
+    def _enable_operation(self):
+        self.check_arg_raise_if_not_exist("root_dir")
+        self.check_arg_raise_if_not_exist("vendor_name")
+        self.check_arg_raise_if_not_exist("board_name")
+        self.check_arg_raise_if_not_exist("module_name")
+        root, vendor, model, _, board, _ = self.get_args()
+        return EnableOperation(root=root, vendor=vendor, board=board, model=model).operation_enable()
+
+    def _disable_operation(self):
+        self.check_arg_raise_if_not_exist("root_dir")
+        self.check_arg_raise_if_not_exist("vendor_name")
+        self.check_arg_raise_if_not_exist("board_name")
+        self.check_arg_raise_if_not_exist("module_name")
+        root, vendor, model, _, board, _ = self.get_args()
+        return EnableOperation(root=root, vendor=vendor, board=board, model=model).operation_disable()

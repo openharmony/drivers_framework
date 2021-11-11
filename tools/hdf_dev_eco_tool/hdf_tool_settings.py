@@ -122,3 +122,7 @@ class HdfToolSettings(object):
             if board_name in self.settings[key]:
                 return self.settings[key][board_name]["patch_and_config"]
         return ''
+
+    def get_board_list(self):
+        key = self.supported_boards_key
+        return list(self.settings[key].keys())

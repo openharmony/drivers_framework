@@ -10,11 +10,6 @@
         "hispark_taurus_linux": {
             "patch_and_config": ["hi3516dv300.patch", "hi3516dv300_small_defconfig", "hi3516dv300_standard_defconfig",
                       "small_common_defconfig", "standard_common_defconfig"]
-        },
-        "hispark_aries": {
-            "board_parent_path": "vendor/hisilicon/hispark_aries",
-            "dot_config_path": "kernel/liteos_a/tools/build/config",
-            "dot_configs": ["hispark_aries_clang_release.config", "hispark_aries_release.config", "hispark_aries_debug_shell.config"]
         }
     },
     "drivers_path_relative_to_vendor": "drivers/framework",

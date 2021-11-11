@@ -1,34 +1,32 @@
-#include "hdf_device_desc.h"  // HDF框架对驱动开放相关能力接口的头文件
-#include "hdf_log.h"          // HDF 框架提供的日志接口头文件
+#include "hdf_device_desc.h"  // Header file that describes the APIs provided by the HDF to the driver.
+#include "hdf_log.h"          // Header file that describes the log APIs provided by the HDF.
 
-#define HDF_LOG_TAG ${driver_lower_case}_driver   // 打印日志所包含的标签，如果不定义则用默认定义的HDF_TAG标签
+#define HDF_LOG_TAG ${driver_lower_case}_driver   // Tag contained in logs. If no tag is not specified, the default HDF_TAG is used.
 
-//驱动服务结构的定义
+// The driver service struct definition
 struct ITestDriverService {
-    struct IDeviceIoService ioService;       // 服务结构的首个成员必须是IDeviceIoService类型的成员
-    //以下可添加自定义的驱动的服务接口
+    struct IDeviceIoService ioService;       // The first member of the service structure must be a member of type IDeviceIoService
 };
 
-//驱动对外提供的服务能力，将相关的服务接口绑定到HDF框架
+// The driver service interface must be bound to the HDF for you to use the service capability.
 static int32_t Hdf${driver_upper_camel_case}DriverBind(struct HdfDeviceObject *deviceObject) {
-    // deviceObject为HDF框架给每一个驱动创建的设备对象，用来保存设备相关的私有数据和服务接口
     HDF_LOGI("${driver_lower_case} driver bind success");
     return 0;
 }
 
-// 驱动自身业务初始的接口
+// Initialize the driver service.
 static int32_t Hdf${driver_upper_camel_case}DriverInit(struct HdfDeviceObject *deviceObject) {
     HDF_LOGI("Hello world");
     return 0;
 }
 
-// 驱动资源释放的接口
+// Release the driver resources.
 static void Hdf${driver_upper_camel_case}DriverRelease(struct HdfDeviceObject *deviceObject) {
     HDF_LOGI("${driver_lower_case} driver Release success");
     return;
 }
 
-// 定义驱动入口的对象，必须为HdfDriverEntry（在hdf_device_desc.h中定义）类型的全局变量
+// Define the object of the driver entry. The object must be a global variable of the HdfDriverEntry type (defined in hdf_device_desc.h).
 struct HdfDriverEntry g_${driver_lower_case}DriverEntry = {
     .moduleVersion = 1,
     .moduleName = "${driver_lower_case}_driver",
@@ -37,5 +35,5 @@ struct HdfDriverEntry g_${driver_lower_case}DriverEntry = {
     .Release = Hdf${driver_upper_camel_case}DriverRelease,
 };
 
-// 调用HDF_INIT将驱动入口注册到HDF框架中，在加载驱动时HDF框架会先调用Bind函数,再调用Init函数加载该驱动，当Init调用异常时，HDF框架会调用Release释放驱动资源并退出。
+// Call HDF_INIT to register the driver entry with the HDF framework. When loading the driver, call the Bind function and then the Init function. If the Init function fails to be called, the HDF will call Release to release the driver resource and exit.
 HDF_INIT(g_${driver_lower_case}DriverEntry);

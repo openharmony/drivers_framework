@@ -35,7 +35,9 @@ import os
 import json
 
 from .hdf_command_handler_base import HdfCommandHandlerBase
+from .hdf_linux_scann import HdfLinuxScan
 from .hdf_lite_mk_file import HdfLiteMkFile
+from .hdf_liteos_scann import HdfLiteScan
 from .hdf_vendor_kconfig_file import HdfVendorKconfigFile
 from .hdf_module_kconfig_file import HdfModuleKconfigFile
 from .hdf_driver_config_file import HdfDriverConfigFile
@@ -64,6 +66,7 @@ class HdfGetHandler(HdfCommandHandlerBase):
             'drv_config_file': self._get_drv_config_file_handler,
             'hdf_tool_core_version': self._get_version_handler,
             'model_list': self._get_model_dict,
+            'model_scan': self._mode_scan,
             'version': self.__get_version,
         }
         self.parser.add_argument("--action_type",
@@ -213,3 +216,13 @@ class HdfGetHandler(HdfCommandHandlerBase):
             else:
                 model_file_path[key] = path_dict
         return model_file_path
+
+    def _mode_scan(self):
+        self.check_arg_raise_if_not_exist("root_dir")
+        self.check_arg_raise_if_not_exist("vendor_name")
+        self.check_arg_raise_if_not_exist("board_name")
+        root, vendor, _, _, board, _ = self.get_args()
+        if board.split("_")[-1] != "linux":
+            return HdfLiteScan(root=root, vendor=vendor, board=board).get_model_scan()
+        else:
+            return HdfLinuxScan(root=root, vendor=vendor, board=board).get_model_scan()
