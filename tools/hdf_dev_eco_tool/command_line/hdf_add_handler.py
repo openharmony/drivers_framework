@@ -63,12 +63,12 @@ class HdfAddHandler(HdfCommandHandlerBase):
         self.parser.add_argument("--action_type",
                                  help=' '.join(self.handlers.keys()),
                                  required=True)
-        self.parser.add_argument("--root_dir", required=True)       # 路径
-        self.parser.add_argument("--vendor_name")                   # 厂商
-        self.parser.add_argument("--module_name")                   # 模块名
-        self.parser.add_argument("--driver_name")                   # 驱动名称
-        self.parser.add_argument("--board_name")                    # 板子名称
-        self.parser.add_argument("--kernel_name")                   # 内核名称
+        self.parser.add_argument("--root_dir", required=True)
+        self.parser.add_argument("--vendor_name")
+        self.parser.add_argument("--module_name")
+        self.parser.add_argument("--driver_name")
+        self.parser.add_argument("--board_name")
+        self.parser.add_argument("--kernel_name")
         self.args = self.parser.parse_args(args)
 
     @staticmethod
@@ -114,90 +114,98 @@ class HdfAddHandler(HdfCommandHandlerBase):
 
         args_tuple = self.get_args()
         root, vendor, module, driver, board, kernel = args_tuple
-        converter = hdf_utils.WordsConverter(self.args.module_name)
-        driver_name_converter = hdf_utils.WordsConverter(self.args.driver_name)
-        framework_hdf = hdf_utils.get_vendor_hdf_dir_framework(root)
-        if not os.path.exists(framework_hdf):
-            raise HdfToolException(
-                ' framework model path  "%s" not exist' %
-                framework_hdf, CommandErrorCode.TARGET_NOT_EXIST)
-        # 在 framework 目录下创建对应的 module 的文件目录用于存放 .c 驱动文件
-        framework_drv_root_dir = hdf_utils.get_drv_root_dir(
-            root, vendor, module)
-        if os.path.exists(framework_drv_root_dir):
-            raise HdfToolException('module "%s" already exist' % module,
-                                   CommandErrorCode.TARGET_ALREADY_EXIST)
-        os.makedirs(framework_drv_root_dir)
+        board_list = HdfToolSettings().get_board_list()
+        if board in board_list:
+            converter = hdf_utils.WordsConverter(self.args.module_name)
+            driver_name_converter = hdf_utils.WordsConverter(
+                self.args.driver_name)
+            framework_hdf = hdf_utils.get_vendor_hdf_dir_framework(root)
+            if not os.path.exists(framework_hdf):
+                raise HdfToolException(
+                    ' framework model path  "%s" not exist' %
+                    framework_hdf, CommandErrorCode.TARGET_NOT_EXIST)
+            # framework create file .c
+            framework_drv_root_dir = hdf_utils.get_drv_root_dir(
+                root, vendor, module)
+            if os.path.exists(framework_drv_root_dir):
+                raise HdfToolException('module "%s" already exist' % module,
+                                       CommandErrorCode.TARGET_ALREADY_EXIST)
+            os.makedirs(framework_drv_root_dir)
 
-        # 创建 .c 模板驱动
-        state, driver_file_path = self._add_driver_handler(*args_tuple)
-        if not state:
-            raise HdfToolException(
-                'create drivers file fail  "%s" ' %
-                driver_file_path.split("\\")[-1])
-        adapter_hdf = hdf_utils.get_vendor_hdf_dir_adapter(root, kernel)
-        if not os.path.exists(adapter_hdf):
-            raise HdfToolException(
-                ' adapter model path  "%s" not exist' %
-                adapter_hdf, CommandErrorCode.TARGET_NOT_EXIST)
+            # create .c template driver file
+            state, driver_file_path = self._add_driver_handler(*args_tuple)
+            if not state:
+                raise HdfToolException(
+                    'create drivers file fail  "%s" ' %
+                    driver_file_path.split("\\")[-1])
+            adapter_hdf = hdf_utils.get_vendor_hdf_dir_adapter(root, kernel)
+            if not os.path.exists(adapter_hdf):
+                raise HdfToolException(
+                    ' adapter model path  "%s" not exist' %
+                    adapter_hdf, CommandErrorCode.TARGET_NOT_EXIST)
 
-        # 创建 adapter 路径下的 module 文件夹
-        adapter_model_path = os.path.join(adapter_hdf, 'model', module)
-        if not os.path.exists(adapter_model_path):
-            os.makedirs(adapter_model_path)
+            # create module folder under the adapter path
+            adapter_model_path = os.path.join(adapter_hdf, 'model', module)
+            if not os.path.exists(adapter_model_path):
+                os.makedirs(adapter_model_path)
 
-        data_model = {
-            "module_upper_case": converter.upper_case(),
-            "module_lower_case": converter.lower_case(),
-            "driver_file_name": ("%s_driver.c" %
-                                 driver_name_converter.lower_case()),
-            "driver_name": driver_name_converter.lower_case()
-        }
-        # 创建 adapter 下的 module中的三个文件
-        if kernel == 'liteos':
-            file_path, model_level_config_file_path = \
-                self._add_module_handler_liteos(
-                    framework_hdf, adapter_model_path,
-                    data_model, converter, *args_tuple)
-        elif kernel == "linux":
-            file_path, model_level_config_file_path = \
-                self._add_module_handler_linux(
-                    framework_hdf, adapter_model_path,
-                    data_model, *args_tuple)
+            data_model = {
+                "module_upper_case": converter.upper_case(),
+                "module_lower_case": converter.lower_case(),
+                "driver_file_name": ("%s_driver.c" %
+                                     driver_name_converter.lower_case()),
+                "driver_name": driver_name_converter.lower_case()
+            }
+
+            # create files in the module under the adapter
+            if kernel == 'liteos':
+                file_path, model_level_config_file_path = \
+                    self._add_module_handler_liteos(
+                        framework_hdf, adapter_model_path,
+                        data_model, converter, *args_tuple)
+
+            elif kernel == "linux":
+                file_path, model_level_config_file_path = \
+                    self._add_module_handler_linux(
+                        framework_hdf, adapter_model_path,
+                        data_model, *args_tuple)
+            else:
+                file_path = {}
+                model_level_config_file_path = {}
+            config_item = {
+                'module_name': module,
+                'module_path': file_path,
+                'driver_name': "%s_driver.c" % driver,
+                'driver_file_path': driver_file_path,
+                'enabled': True
+            }
+            config_file_out = {
+                'module_name': module,
+                'module_path': file_path,
+                'driver_name': "%s_driver.c" % driver,
+                'driver_file_path': driver_file_path,
+                'module_level_config_path': model_level_config_file_path
+            }
+            config_file = hdf_utils.read_file(
+                os.path.join('resources', 'create_model.config'))
+            config_file_json = json.loads(config_file)
+            config_file_json[module] = config_file_out
+            if platform.system() == "Windows":
+                config_file_replace = json.dumps(config_file_json, indent=4).\
+                    replace(root.replace('\\', '\\\\') + '\\\\', "")
+                hdf_utils.write_file(
+                    os.path.join('resources', 'create_model.config'),
+                    config_file_replace.replace('\\\\', '/'))
+            if platform.system() == "Linux":
+                config_file_replace = json.dumps(config_file_json, indent=4).\
+                    replace(root + '/', "")
+                hdf_utils.write_file(
+                    os.path.join('resources', 'create_model.config'),
+                    config_file_replace)
+            return json.dumps(config_item)
         else:
-            file_path = {}
-            model_level_config_file_path = {}
-        config_item = {
-            'module_name': module,
-            'module_path': file_path,
-            'driver_name': "%s_driver.c" % driver,
-            'driver_file_path': driver_file_path,
-            'enabled': True
-        }
-        config_file_out = {
-            'module_name': module,
-            'module_path': file_path,
-            'driver_name': driver_file_path.split("\\")[-1],
-            'driver_file_path': driver_file_path,
-            'module_level_config_path': model_level_config_file_path
-        }
-        config_file = hdf_utils.read_file(
-            os.path.join('resources', 'create_model.config'))
-        config_file_json = json.loads(config_file)
-        config_file_json[module] = config_file_out
-        if platform.system() == "Windows":
-            config_file_replace = json.dumps(config_file_json, indent=4).\
-                replace(root.replace('\\', '\\\\') + '\\\\', "")
-            hdf_utils.write_file(
-                os.path.join('resources', 'create_model.config'),
-                config_file_replace.replace('\\\\', '/'))
-        if platform.system() == "Linux":
-            config_file_replace = json.dumps(config_file_json, indent=4).\
-                replace(root + '/', "")
-            hdf_utils.write_file(
-                os.path.join('resources', 'create_model.config'),
-                config_file_replace)
-        return json.dumps(config_item)
+            raise HdfToolException(
+                'supported boards name : %s not exits ' % board)
 
     def _add_module_handler_liteos(self, framework_hdf, adapter_model_path,
                                    data_model, converter,  *args_tuple):
@@ -205,8 +213,9 @@ class HdfAddHandler(HdfCommandHandlerBase):
         liteos_file_path = {}
         liteos_level_config_file_path = {}
         liteos_file_name = ['BUILD.gn', 'Kconfig', 'Makefile']
-        template_path = "/".join([framework_hdf] + ["tools",
-                    "hdf_dev_eco_tool", "resources", "templates", "lite"])
+        template_path = "/".join([framework_hdf] +
+                                 ["tools", "hdf_dev_eco_tool",
+                                  "resources", "templates", "lite"])
         for file_name in liteos_file_name:
             for i in os.listdir(template_path):
                 if i.find(file_name.split(".")[0]) > 0:
@@ -214,29 +223,28 @@ class HdfAddHandler(HdfCommandHandlerBase):
                     self._render(os.path.join(template_path, i),
                                  out_path, data_model)
                     liteos_file_path[file_name] = out_path
-        # 修改 liteos 下的 Kconfig 文件
+
+        # Modify Kconfig file
         vendor_k = HdfVendorKconfigFile(root, vendor, kernel, path="")
         vendor_k_path = vendor_k.add_module([module, 'Kconfig'])
         liteos_level_config_file_path[module+"_Kconfig"] = vendor_k_path
 
-        # 修改 liteos 下的 hdf_lite.mk 文件
+        # Modify hdf_lite.mk file
         vendor_mk = HdfVendorMkFile(root, vendor)
         vendor_mk_path = vendor_mk.add_module(module)
         liteos_level_config_file_path[module + "_hdf_lite"] = vendor_mk_path
 
-        # 修改 liteos 下的 Build.gn 文件
+        # Modify Build.gn file
         vendor_gn = HdfVendorBuildFile(root, vendor)
         vendor_gn_path = vendor_gn.add_module(module)
         liteos_level_config_file_path[module + "Build"] = vendor_gn_path
 
-        # 修改  vendor/hisilicon/hispark_taurus/hdf_config/
-        # device_info 下的 device_info.hcs 文件
+        # Modify config file
         device_info = HdfDeviceInfoHcsFile(
             root, vendor, module, board, driver, path="")
         hcs_file_path = device_info.add_model_hcs_file_config()
         liteos_file_path["devices_info.hcs"] = hcs_file_path
 
-        # 修改 dot_configs 的配置文件
         dot_file_list = hdf_utils.get_dot_configs_path(root, vendor, board)
         template_string = "LOSCFG_DRIVERS_HDF_${module_upper_case}=y\n"
         new_demo_config = Template(template_string).substitute(
@@ -267,24 +275,24 @@ class HdfAddHandler(HdfCommandHandlerBase):
                     self._render(os.path.join(template_path, i),
                                  out_path, data_model)
                     linux_file_path[file_name] = out_path
-        # 修改 linux 下的 Kconfig 文件
+
+        # Modify Kconfig file
         vendor_k = HdfVendorKconfigFile(root, vendor, kernel, path="")
         vendor_k_path = vendor_k.add_module([module, 'Kconfig'])
         linux_level_config_file_path[module + "_Kconfig"] = vendor_k_path
 
-        # 修改 linux 下的 Makefile 文件
+        # Modify Makefile file
         vendor_mk = HdfVendorMakeFile(root, vendor, kernel, path='')
         vendor_mk_path = vendor_mk.add_module(data_model)
         linux_level_config_file_path[module + "_Makefile"] = vendor_mk_path
 
-        # 修改  vendor/hisilicon/hispark_taurus_linux/
-        # hdf_config/device_info 下的 device_info.hcs 文件
+        # device_info.hcs
         device_info = HdfDeviceInfoHcsFile(
             root, vendor, module, board, driver, path="")
         hcs_file_path = device_info.add_model_hcs_file_config()
         linux_file_path["devices_info.hcs"] = hcs_file_path
 
-        # 修改 dot_configs 的配置文件
+        # dot_configs config file
         template_string = "CONFIG_DRIVERS_HDF_${module_upper_case}=y\n"
         new_demo_config = Template(template_string).substitute(data_model)
         defconfig_patch = HdfDefconfigAndPatch(

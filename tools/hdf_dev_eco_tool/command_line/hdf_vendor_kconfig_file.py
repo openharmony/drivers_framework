@@ -91,7 +91,7 @@ class HdfVendorKconfigFile(object):
 
     def add_module(self, module_to_k_path_parts):
         module_k_part = '/'.join(module_to_k_path_parts)
-        index, line = self._find_line(module_k_part)
+        index, line = self._find_line("model/"+module_k_part)
         if line:
             return
         line = '\n%s/%s"\n' % (self.line_prefix, module_k_part)

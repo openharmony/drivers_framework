@@ -66,7 +66,7 @@ class HdfDefconfigAndPatch(object):
             if not os.path.isdir(new_path):
                 self.find_file(new_path, files)
             else:
-                self.add_module(new_path, files=[])
+                self.add_module(new_path, files=files)
         return files
 
     def delete_module(self, path):
@@ -98,6 +98,7 @@ class HdfDefconfigAndPatch(object):
                 if line.find("CONFIG_DRIVERS_HDF_INPUT=y") >= 0:
                     insert_index = index
                 elif line.find(self.new_demo_config) >= 0:
+                    files.remove(path)
                     state = True
             if not state:
                 if path.split(".")[-1] != "patch":
@@ -108,3 +109,4 @@ class HdfDefconfigAndPatch(object):
                                 "+" + self.new_demo_config)
             with open(path, "w", encoding=codetype) as fwrite:
                 fwrite.writelines(data)
+        return files

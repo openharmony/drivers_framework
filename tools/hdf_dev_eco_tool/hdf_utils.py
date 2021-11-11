@@ -240,7 +240,7 @@ def get_dot_configs_path(root, vendor, board):
     return [os.path.join(path, i) for i in os.listdir(path)]
 
 
-def get_module_dir(root, vendor, module):
+def get_module_dir(root, vendor, module=""):
     return os.path.join(get_vendor_hdf_dir_framework(root), 'model', module)
 
 
