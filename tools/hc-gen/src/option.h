@@ -39,6 +39,8 @@ public:
 
     bool ShouldGenTextConfig() const;
 
+    bool ShouldGenMacroConfig() const;
+
     bool ShouldGenBinaryConfig() const;
 
     bool ShouldGenHexDump() const;
@@ -70,6 +72,7 @@ private:
     bool showVersion_ = false;
     bool shouldAlign_ = false;
     bool shouldGenTextConfig_ = false;
+    bool shouldGenMacroConfig_ = false;
     bool shouldGenByteCodeConfig_ = true;
     bool showGenHexDump_ = false;
     bool shouldDecompile_ = false;

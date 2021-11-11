@@ -169,6 +169,32 @@ def build_text(hcgen_path, case_name):
         os.rename(target_file + '.h', target_file + '.h.gen')
     return True
 
+def build_macro(hcgen_path, case_name):
+    source_file = os.path.join(WORK_DIR, case_name, 'case.hcs')
+    target_file = os.path.join(WORK_DIR, case_name, 'macro')
+    command = "%s -m -o %s %s" % (hcgen_path, target_file, source_file)
+    status, output = subprocess.getstatusoutput(command)
+    if case_name.endswith('_ei'):
+        if status == 0:
+            print("CASE_ERROR:error identify case "
+                  + case_name + " expect build fail but success at macro mode")
+            print(output)
+            return False
+    elif status != 0:
+        print("CASE_ERROR:case " + case_name
+              + " expect build success but failed at macro mode")
+        print(output)
+        return False
+    output = output.replace(WORK_DIR, ".").replace('\\', '/') \
+        .replace(ERROR_COLOR_PREFIX, "") \
+        .replace(ERROR_COLOR_END, "").strip()
+
+    save_compile_result('macro', case_name, status, output)
+
+    if status == 0:
+        os.rename(target_file + '.h', target_file + '.h.gen')
+    return True
+
 
 def build_cases(hcgen_path, cases):
     index = 1
@@ -177,7 +203,8 @@ def build_cases(hcgen_path, cases):
         print('[%02d/%d] build %s' % (index, len(cases), case))
         text_compile = build_text(hcgen_path, case)
         binary_compile = build_binary(hcgen_path, case)
-        if not text_compile or not binary_compile:
+        macro_compile = build_macro(hcgen_path, case)
+        if not text_compile or not binary_compile or not macro_compile:
             failed_cases.append(case)
         index += 1
 
