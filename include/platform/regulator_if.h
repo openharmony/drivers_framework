@@ -6,25 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-/**
- * @addtogroup REGULATOR
- * @{
- *
- * @Brief Provides regulator APIs, such as enabling and setting voltage / current.
- *
- * The REGULATOR module abstracts the regulator functions of different system platforms and provides stable APIs for drivers.
- * You can use this module to create / release the regulator device handle, enable regulator, set voltage, current, disable, etc.
- *
- * @since 1.0
- */
-
-/**
- * @file regulator_if.h
- *
- * @brief Declares standard regulator APIs.
- *
- * @since 1.0
- */
 
 #ifndef REGULATOR_IF_H
 #define REGULATOR_IF_H
@@ -37,21 +18,17 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-/**
- * @brief Enumerates regulator disableMode.
- *
- * To disable the mode using the regulator, call the {@ link RegulatorDisable} function.
- *
- * @since 1.0
- */
-
-enum RegulatorDisableMode {
-    NORMAL_DISABLE,
-    DEFERRED_DISABLE,
-    FORCE_DISABLE,
-    MAX_DISABLE_MODE,
+/* regulator status on or off */
+enum RegulatorStatus {
+    REGULATOR_STATUS_ON = 1,
+    REGULATOR_STATUS_OFF,
 };
 
+/* regulator mode, set voltage or current */
+enum RegulatorChangeMode {
+    REGULATOR_CHANGE_VOLTAGE = 1,
+    REGULATOR_CHANGE_CURRENT,
+};
 /**
  * @brief Gets a regulator.
  *
@@ -63,24 +40,21 @@ enum RegulatorDisableMode {
  *
  * @since 1.0
  */
-DevHandle RegulatorGet(const char *name);
-
+DevHandle RegulatorOpen(const char *name);
 /**
  * @brief Releases a regulator.
  *
- * If you no longer need the regulator, call this function to turn it off and release its device handle to prevent.
- * Use memory resources unnecessarily.
+ * If you no longer need the regulator, call this function to  release it
  *
  * @param handle Represents a pointer to the regulator device handle.
  *
  * @since 1.0
  */
-void RegulatorPut(DevHandle handle);
-
+void RegulatorClose(DevHandle handle);
 /**
  * @brief Enables a regulator.
  *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
  * @return <b>0</b> If the regulator enables successfully; Otherwise, a negative value is returned.
  *
  * @attention That if the regulator has been enabled before calling this function, calling this function will succeed.
@@ -88,115 +62,84 @@ void RegulatorPut(DevHandle handle);
  * @since 1.0
  */
 int32_t RegulatorEnable(DevHandle handle);
-
 /**
  * @brief Disable a regulator.
  *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
- * @param disableMode  There are three disabled modes.
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
  * @return <b>0</b> If the regulator disable successfully; Otherwise, a negative value is returned.
  *
- * @attention If the regulator device AlwaysOn is true, disabling may fail, depending on the specific mode.
+ * @attention If the regulator status alwayson is true or there is regulator child  not disable, disabling  fail
  * 
  * @since 1.0
  */
-int32_t RegulatorDisable(DevHandle handle,int32_t disableMode);
-
+int32_t RegulatorDisable(DevHandle handle);
 /**
- * @brief Determine whether a regulator is enabled.
+ * @brief Force disable a regulator.
  *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
- * @return <b>0</b> If the regulator isEnabled successfully; Otherwise, a negative value is returned.
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
+ * @return <b>0</b> If the regulator disable successfully; Otherwise, a negative value is returned.
  *
+ * @attention No matter whether the status of the regulator is alwayson or the status of the child is enable, the regulator is disabled.
+ * 
  * @since 1.0
  */
-int32_t RegulatorIsEnabled(DevHandle handle);
-
+int32_t RegulatorForceDisable(DevHandle handle);
 /**
- * @brief Set the voltage value of a regulator.
+ * @brief Set the output voltage range of a regulator.
  *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
+ * @param minUv  Represents minimum voltage
+ * @param minUv  Represents maximum voltage
  * @return <b>0</b> If the regulator setVoltage successfully; Otherwise, a negative value is returned.
  *
- * @attention If the set voltage is not within the range, the setting fails.
+ * @attention If the set voltage is not within the contrants, the setting fails.
  * 
  * @since 1.0
  */
-int32_t RegulatorSetVoltage(DevHandle handle, int32_t voltage);
-
+int32_t RegulatorSetVoltage(DevHandle handle, uint32_t minUv, uint32_t maxUv);
 /**
  * @brief Get a regulator voltage.
  *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
  * @param voltage Voltage obtained.
  * @return <b>0</b> If the regulator get voltage successfully; Otherwise, a negative value is returned.
  * 
  * @since 1.0
  */
-int32_t RegulatorGetVoltage(DevHandle handle, int32_t *voltage);
-
-/**
- * @brief Set regulator voltage range
- *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
- * @param vmin Minimum value of regulator voltage
- * @param vmax Maximum regulator voltage
- * @return <b>0</b> If the regulator set voltage range successfully; Otherwise, a negative value is returned.
- *
- * @attention If the setting range exceeds the limit, the setting fails
- * 
- * @since 1.0
- */
-int32_t RegulatorSetVoltageRange(DevHandle handle, int32_t vmin, int32_t vmax);
-
-/**
- * @brief Set the current value of a regulator
- *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
- * @return <b>0</b> If the regulator setCurrent successfully; Otherwise, a negative value is returned.
- *
- * @attention If the set current is not within the range, the setting fails
- * 
- * @since 1.0
- */
-int32_t RegulatorSetCurrent(DevHandle handle, int32_t current);
-
-/**
- * @brief Get a regulator current
- *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
- * @param voltage Current obtained
- * @return <b>0</b> If the regulator getCurrent successfully; Otherwise, a negative value is returned.
- * 
- * @since 1.0
- */
-int32_t RegulatorGetCurrent(DevHandle handle, int32_t *current);
-
+int32_t RegulatorGetVoltage(DevHandle handle, uint32_t *voltage);
 /**
  * @brief Set regulator current range
  *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
- * @param cmin Minimum value of regulator current
- * @param cmax Maximum regulator current
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
+ * @param minUa Minimum  current
+ * @param maxUa Maximum  current
  * @return <b>0</b> If the regulator set current range successfully; Otherwise, a negative value is returned.
  *
  * @attention If the setting range exceeds the limit, the setting fails
  * 
  * @since 1.0
  */
-int32_t RegulatorSetCurrentRange(DevHandle handle, int32_t cmin, int32_t cmax);
-
+int32_t RegulatorSetCurrent(DevHandle handle, uint32_t minUa, uint32_t maxUa);
+/**
+ * @brief Get a regulator current
+ *
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
+ * @param voltage Current obtained
+ * @return <b>0</b> If the regulator getCurrent successfully; Otherwise, a negative value is returned.
+ * 
+ * @since 1.0
+ */
+int32_t RegulatorGetCurrent(DevHandle handle, uint32_t *current);
 /**
  * @brief Get a regulator status
  *
- * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorGet}.
- * @param status Status obtained
+ * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
+ * @param status Status obtained, enable or disable
  * @return <b>0</b> If the regulator get status successfully; Otherwise, a negative value is returned.
  * 
  * @since 1.0
  */
-int32_t RegulatorGetStatus(DevHandle handle, int32_t *status);
-
+int32_t RegulatorGetStatus(DevHandle handle, uint32_t *status);
 #ifdef __cplusplus
 #if __cplusplus
 }
