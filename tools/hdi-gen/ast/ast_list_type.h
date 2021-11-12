@@ -85,6 +85,9 @@ private:
     void EmitCStubReadStrElement(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix) const;
 
+    void EmitCStringElementUnMarshalling(const String& name, StringBuilder& sb, const String& newPrefix,
+        std::vector<String>& freeObjStatements) const;
+
     AutoPtr<ASTType> elementType_ = nullptr;
 };
 } // namespace HDI

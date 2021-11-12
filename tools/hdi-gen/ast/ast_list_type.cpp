@@ -280,24 +280,7 @@ void ASTListType::EmitCUnMarshalling(const String& name, StringBuilder& sb, cons
     }
 
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRING) {
-        String element = String::Format("%sElement", name.string());
-        elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
-        if (Options::GetInstance().DoGenerateKernelCode()) {
-            sb.Append(newPrefix).AppendFormat("%s[i] = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
-                name.string(), element.string());
-            sb.Append(newPrefix).AppendFormat("if (%s[i] == NULL) {\n", name.string());
-            sb.Append(newPrefix + g_tab).AppendFormat("goto errors;\n");
-            sb.Append(newPrefix).Append("}\n\n");
-            sb.Append(newPrefix).AppendFormat("if (strcpy_s((%s)[i], (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
-                name.string(), element.string(), element.string());
-            sb.Append(newPrefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
-                element.string());
-            sb.Append(newPrefix + g_tab).Append("goto errors;\n");
-            sb.Append(newPrefix).Append("}\n");
-        } else {
-            sb.Append(newPrefix).Append(g_tab).AppendFormat("%s[i] = strdup(%s);\n",
-                name.string(), element.string());
-        }
+        EmitCStringElementUnMarshalling(name, sb, newPrefix, freeObjStatements);
     } else if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
         String element = String::Format("&%s[i]", name.string());
         elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
@@ -315,6 +298,29 @@ void ASTListType::EmitCUnMarshalling(const String& name, StringBuilder& sb, cons
     sb.Append(newPrefix).Append("}\n");
     sb.Append(prefix).Append("}\n");
     freeObjStatements.pop_back();
+}
+
+void ASTListType::EmitCStringElementUnMarshalling(const String& name, StringBuilder& sb, const String& newPrefix,
+    std::vector<String>& freeObjStatements) const
+{
+    String element = String::Format("%sElement", name.string());
+    elementType_->EmitCUnMarshalling(element, sb, newPrefix + g_tab, freeObjStatements);
+    if (Options::GetInstance().DoGenerateKernelCode()) {
+        sb.Append(newPrefix).AppendFormat("%s[i] = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
+            name.string(), element.string());
+        sb.Append(newPrefix).AppendFormat("if (%s[i] == NULL) {\n", name.string());
+        sb.Append(newPrefix + g_tab).AppendFormat("goto errors;\n");
+        sb.Append(newPrefix).Append("}\n\n");
+        sb.Append(newPrefix).AppendFormat("if (strcpy_s((%s)[i], (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
+            name.string(), element.string(), element.string());
+        sb.Append(newPrefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+            element.string());
+        sb.Append(newPrefix + g_tab).Append("goto errors;\n");
+        sb.Append(newPrefix).Append("}\n");
+    } else {
+        sb.Append(newPrefix).Append(g_tab).AppendFormat("%s[i] = strdup(%s);\n",
+            name.string(), element.string());
+    }
 }
 
 void ASTListType::EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,

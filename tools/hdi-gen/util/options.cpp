@@ -46,61 +46,73 @@ Options& Options::Parse(int argc, char* const argv[])
     int optIndex = 0;
 
     while ((op = getopt_long(argc, argv, optSupportArgs, g_longOpts, &optIndex)) != OPT_END) {
-        switch (op) {
-            case 'c':
-                doCompile_ = true;
-                sourceFilePath_ = optarg;
-                break;
-            case 'd':
-                doOutDir_ = true;
-                generationDirectory_ = optarg;
-                break;
-            case 'h':
-                doShowUsage_ = true;
-                break;
-            case 'v':
-                doShowVersion_ = true;
-                break;
-            case 'k':
-                doModeKernel_ = true;
-                break;
-            case 'u':
-                doModeKernel_ = false;
-                break;
-            case 'C':
-                doGenerateCode_ = true;
-                targetLanguage_ = "c";
-                break;
-            case 'P':
-                doGenerateCode_ = true;
-                targetLanguage_ = "cpp";
-                break;
-            case 'J':
-                doGenerateCode_ = true;
-                targetLanguage_ = "java";
-                break;
-            case 'a':
-                doGeneratePart_ = true;
-                codePart_ = "client";
-                break;
-            case 'b':
-                doGeneratePart_ = true;
-                codePart_ = "server";
-                break;
-            case 'H':
-                doGetHashKey_ = true;
-                break;
-            case 'D':
-                doDumpAST_ = true;
-                break;
-            case '?':
-            default:
-                doShowUsage_ = true;
-                break;
-        }
+        SetOptionData(op);
     }
     CheckOptions();
     return *this;
+}
+
+void Options::SetOptionData(char op)
+{
+    switch (op) {
+        case 'c':
+            doCompile_ = true;
+            sourceFilePath_ = optarg;
+            break;
+        case 'd':
+            doOutDir_ = true;
+            generationDirectory_ = optarg;
+            break;
+        case 'h':
+            doShowUsage_ = true;
+            break;
+        case 'v':
+            doShowVersion_ = true;
+            break;
+        case 'k':
+            doModeKernel_ = true;
+            break;
+        case 'u':
+            doModeKernel_ = false;
+            break;
+        case 'C':
+            SetLanguage("c");
+            break;
+        case 'P':
+            SetLanguage("cpp");
+            break;
+        case 'J':
+            SetLanguage("java");
+            break;
+        case 'a':
+            SetCodePart("client");
+            break;
+        case 'b':
+            SetCodePart("server");
+            break;
+        case 'H':
+            doGetHashKey_ = true;
+            break;
+        case 'D':
+            doDumpAST_ = true;
+            break;
+        case '?':
+        default:
+            doShowUsage_ = true;
+            break;
+    }
+}
+
+void Options::SetLanguage(String language)
+{
+    doGenerateCode_ = true;
+    targetLanguage_ = language;
+}
+
+void Options::SetCodePart(String part)
+{
+    doGeneratePart_ = true;
+    codePart_ = part;
 }
 
 void Options::CheckOptions()

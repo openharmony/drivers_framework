@@ -84,7 +84,6 @@ void CppServiceStubCodeEmitter::EmitStubDecl(StringBuilder& sb)
     EmitStubUsingNamespace(sb);
     sb.Append("\n");
     sb.AppendFormat("class %s {\n", stubName_.string());
-    sb.Append("public:\n");
     EmitStubBody(sb, g_tab);
     sb.Append("};\n");
 
