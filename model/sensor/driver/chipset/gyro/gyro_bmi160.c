@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -8,10 +8,20 @@
 
 #include "gyro_bmi160.h"
 #include <securec.h>
+#include "osal_mem.h"
 #include "osal_time.h"
 #include "sensor_gyro_driver.h"
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
+
+#define HDF_LOG_TAG    gyro_bmi160_c
+
+static struct Bmi160DrvData *g_bmi160DrvData = NULL;
+
+struct Bmi160DrvData *Bmi160GetDrvData(void)
+{
+    return g_bmi160DrvData;
+}
 
 /* IO config for int-pin and I2C-pin */
 #define SENSOR_I2C6_DATA_REG_ADDR 0x114f004c
@@ -95,8 +105,7 @@ int32_t ReadBmi160GyroData(struct SensorCfgData *data)
     ret = ReportSensorEvent(&event);
     return ret;
 }
-
-static int32_t InitBmi160Gyro(struct SensorCfgData *data)
+static int32_t InitBmi160(struct SensorCfgData *data)
 {
     int32_t ret;
 
@@ -123,30 +132,94 @@ static int32_t InitGyroPreConfig(void)
     return HDF_SUCCESS;
 }
 
-int32_t DetectGyroBim160Chip(struct SensorCfgData *data)
+static int32_t DispatchBMI160(struct HdfDeviceIoClient *client,
+    int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    (void)client;
+    (void)cmd;
+    (void)data;
+    (void)reply;
+
+    return HDF_SUCCESS;
+}
+
+int32_t Bmi160BindDriver(struct HdfDeviceObject *device)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
+
+    struct Bmi160DrvData *drvData = (struct Bmi160DrvData *)OsalMemCalloc(sizeof(*drvData));
+    if (drvData == NULL) {
+        HDF_LOGE("%s: Malloc Bmi160 drv data fail", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    drvData->ioService.Dispatch = DispatchBMI160;
+    drvData->device = device;
+    device->service = &drvData->ioService;
+    g_bmi160DrvData = drvData;
+
+    return HDF_SUCCESS;
+}
+
+int32_t Bmi160InitDriver(struct HdfDeviceObject *device)
 {
     int32_t ret;
     struct GyroOpsCall ops;
-    CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
-    if (strcmp(GYRO_CHIP_NAME_BMI160, data->sensorAttr.chipName) != 0) {
-        return HDF_SUCCESS;
-    }
+    CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
+    struct Bmi160DrvData *drvData = (struct Bmi160DrvData *)device->service;
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+
     ret = InitGyroPreConfig();
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: init  BMI160 bus mux config", __func__);
+        HDF_LOGE("%s: Init  BMI160 bus mux config", __func__);
         return HDF_FAILURE;
     }
-    if (DetectSensorDevice(data) != HDF_SUCCESS) {
-        return HDF_FAILURE;
+
+    drvData->sensorCfg = GyroCreateCfgData(device->property);
+    if (drvData->sensorCfg == NULL || drvData->sensorCfg->root == NULL) {
+        HDF_LOGD("%s: Creating gyrocfg failed because detection failed", __func__);
+        return HDF_ERR_NOT_SUPPORT;
     }
-    ops.Init = InitBmi160Gyro;
+    
+    ops.Init = NULL;
     ops.ReadData = ReadBmi160GyroData;
-    ret = RegisterGyroChipOps(&ops);
+    ret = GyroRegisterChipOps(&ops);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: register BMI160 gyro failed", __func__);
-        (void)ReleaseSensorBusHandle(&data->busCfg);
+        HDF_LOGE("%s: Register BMI160 gyro failed", __func__);
         return HDF_FAILURE;
     }
+
+    ret = InitBmi160(drvData->sensorCfg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init BMI160 gyro failed", __func__);
+        return HDF_FAILURE;
+    }
+
     return HDF_SUCCESS;
 }
+
+void Bmi160ReleaseDriver(struct HdfDeviceObject *device)
+{
+    CHECK_NULL_PTR_RETURN(device);
+
+    struct Bmi160DrvData *drvData = (struct Bmi160DrvData *)device->service;
+    CHECK_NULL_PTR_RETURN(drvData);
+
+    if (drvData->sensorCfg != NULL) {
+        GyroReleaseCfgData(drvData->sensorCfg);
+        drvData->sensorCfg = NULL;
+    }
+    
+    OsalMemFree(drvData);
+}
+
+struct HdfDriverEntry g_gyroBmi160DevEntry = {
+    .moduleVersion = 1,
+    .moduleName = "HDF_SENSOR_GYRO_BMI160",
+    .Bind = Bmi160BindDriver,
+    .Init = Bmi160InitDriver,
+    .Release = Bmi160ReleaseDriver,
+};
+
+HDF_INIT(g_gyroBmi160DevEntry);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -8,7 +8,6 @@
 
 #include "sensor_gyro_driver.h"
 #include <securec.h>
-#include "gyro_bmi160.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_math.h"
@@ -21,10 +20,6 @@
 
 #define HDF_GYRO_WORK_QUEUE_NAME    "hdf_gyro_work_queue"
 
-static struct GyroDetectIfList g_gyroDetectIfList[] = {
-    {GYRO_CHIP_NAME_BMI160, DetectGyroBim160Chip},
-};
-
 static struct GyroDrvData *g_gyroDrvData = NULL;
 
 static struct GyroDrvData *GyroGetDrvData(void)
@@ -34,14 +29,13 @@ static struct GyroDrvData *GyroGetDrvData(void)
 
 static struct SensorRegCfgGroupNode *g_regCfgGroup[SENSOR_GROUP_MAX] = { NULL };
 
-int32_t RegisterGyroChipOps(const struct GyroOpsCall *ops)
+int32_t GyroRegisterChipOps(const struct GyroOpsCall *ops)
 {
-    struct GyroDrvData *drvData = NULL;
+    struct GyroDrvData *drvData = GyroGetDrvData();
 
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(ops, HDF_ERR_INVALID_PARAM);
 
-    drvData = GyroGetDrvData();
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
     drvData->ops.Init = ops->Init;
     drvData->ops.ReadData = ops->ReadData;
     return HDF_SUCCESS;
@@ -49,15 +43,17 @@ int32_t RegisterGyroChipOps(const struct GyroOpsCall *ops)
 
 static void GyroDataWorkEntry(void *arg)
 {
-    int32_t ret;
-    struct GyroDrvData *drvData = (struct GyroDrvData *)arg;
-    CHECK_NULL_PTR_RETURN(drvData);
-    CHECK_NULL_PTR_RETURN(drvData->ops.ReadData);
+    struct GyroDrvData *drvData = NULL;
 
-    ret = drvData->ops.ReadData(drvData->gyroCfg);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro read data failed", __func__);
+    drvData = (struct GyroDrvData *)arg;
+    CHECK_NULL_PTR_RETURN(drvData);
+
+    if (drvData->ops.ReadData == NULL) {
+        HDF_LOGI("%s: Gyro ReadData function NULl", __func__);
         return;
+    }
+    if (drvData->ops.ReadData(drvData->gyroCfg) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Gyro read data failed", __func__);
     }
 }
 
@@ -69,48 +65,32 @@ static void GyroTimerEntry(uintptr_t arg)
     CHECK_NULL_PTR_RETURN(drvData);
 
     if (!HdfAddWork(&drvData->gyroWorkQueue, &drvData->gyroWork)) {
-        HDF_LOGE("%s: gyro add work queue failed", __func__);
+        HDF_LOGE("%s: Gyro add work queue failed", __func__);
     }
 
     interval = OsalDivS64(drvData->interval, (SENSOR_CONVERT_UNIT * SENSOR_CONVERT_UNIT));
     interval = (interval < SENSOR_TIMER_MIN_TIME) ? SENSOR_TIMER_MIN_TIME : interval;
     ret = OsalTimerSetTimeout(&drvData->gyroTimer, interval);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro modify time failed", __func__);
+        HDF_LOGE("%s: Gyro modify time failed", __func__);
     }
 }
 
-static int32_t InitGyroData(void)
+static int32_t InitGyroData(struct GyroDrvData *drvData)
 {
-    struct GyroDrvData *drvData = GyroGetDrvData();
-    int32_t ret;
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
-
-    if (drvData->initStatus) {
-        return HDF_SUCCESS;
-    }
-
     if (HdfWorkQueueInit(&drvData->gyroWorkQueue, HDF_GYRO_WORK_QUEUE_NAME) != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro init work queue failed", __func__);
+        HDF_LOGE("%s: Gyro init work queue failed", __func__);
         return HDF_FAILURE;
     }
 
     if (HdfWorkInit(&drvData->gyroWork, GyroDataWorkEntry, drvData) != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro create thread failed", __func__);
-        return HDF_FAILURE;
-    }
-
-    CHECK_NULL_PTR_RETURN_VALUE(drvData->ops.Init, HDF_ERR_INVALID_PARAM);
-
-    ret = drvData->ops.Init(drvData->gyroCfg);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro create thread failed", __func__);
+        HDF_LOGE("%s: Gyro create thread failed", __func__);
         return HDF_FAILURE;
     }
 
     drvData->interval = SENSOR_TIMER_MIN_TIME;
-    drvData->initStatus = true;
     drvData->enable = false;
+    drvData->detectFlag = false;
 
     return HDF_SUCCESS;
 }
@@ -124,25 +104,25 @@ static int32_t SetGyroEnable(void)
     CHECK_NULL_PTR_RETURN_VALUE(drvData->gyroCfg, HDF_ERR_INVALID_PARAM);
 
     if (drvData->enable) {
-        HDF_LOGE("%s: gyro sensor is enabled", __func__);
+        HDF_LOGE("%s: Gyro sensor is enabled", __func__);
         return HDF_SUCCESS;
     }
 
     ret = SetSensorRegCfgArray(&drvData->gyroCfg->busCfg, drvData->gyroCfg->regCfgGroup[SENSOR_ENABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro sensor enable config failed", __func__);
+        HDF_LOGE("%s: Gyro sensor enable config failed", __func__);
         return ret;
     }
 
     ret = OsalTimerCreate(&drvData->gyroTimer, SENSOR_TIMER_MIN_TIME, GyroTimerEntry, (uintptr_t)drvData);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro create timer failed[%d]", __func__, ret);
+        HDF_LOGE("%s: Gyro create timer failed[%d]", __func__, ret);
         return ret;
     }
 
     ret = OsalTimerStartLoop(&drvData->gyroTimer);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro start timer failed[%d]", __func__, ret);
+        HDF_LOGE("%s: Gyro start timer failed[%d]", __func__, ret);
         return ret;
     }
     drvData->enable = true;
@@ -159,22 +139,23 @@ static int32_t SetGyroDisable(void)
     CHECK_NULL_PTR_RETURN_VALUE(drvData->gyroCfg, HDF_ERR_INVALID_PARAM);
 
     if (!drvData->enable) {
-        HDF_LOGE("%s: gyro sensor had disable", __func__);
+        HDF_LOGE("%s: Gyro sensor had disable", __func__);
         return HDF_SUCCESS;
     }
 
     ret = SetSensorRegCfgArray(&drvData->gyroCfg->busCfg, drvData->gyroCfg->regCfgGroup[SENSOR_DISABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro sensor disable config failed", __func__);
+        HDF_LOGE("%s: Gyro sensor disable config failed", __func__);
         return ret;
     }
 
     ret = OsalTimerDelete(&drvData->gyroTimer);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro delete timer failed", __func__);
+        HDF_LOGE("%s: Gyro delete timer failed", __func__);
         return ret;
     }
     drvData->enable = false;
+
     return HDF_SUCCESS;
 }
 
@@ -214,13 +195,13 @@ static int32_t DispatchGyro(struct HdfDeviceIoClient *client,
     return HDF_SUCCESS;
 }
 
-int32_t BindGyroDriver(struct HdfDeviceObject *device)
+int32_t GyroBindDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
 
     struct GyroDrvData *drvData = (struct GyroDrvData *)OsalMemCalloc(sizeof(*drvData));
     if (drvData == NULL) {
-        HDF_LOGE("%s: malloc gyro drv data fail!", __func__);
+        HDF_LOGE("%s: Malloc gyro drv data fail!", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
 
@@ -231,11 +212,9 @@ int32_t BindGyroDriver(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-static int32_t InitGyroOps(struct SensorDeviceInfo *deviceInfo)
+static int32_t InitGyroOps(struct SensorCfgData *config, struct SensorDeviceInfo *deviceInfo)
 {
-    struct GyroDrvData *drvData = GyroGetDrvData();
-
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+    CHECK_NULL_PTR_RETURN_VALUE(config, HDF_ERR_INVALID_PARAM);
 
     deviceInfo->ops.Enable = SetGyroEnable;
     deviceInfo->ops.Disable = SetGyroDisable;
@@ -244,149 +223,148 @@ static int32_t InitGyroOps(struct SensorDeviceInfo *deviceInfo)
     deviceInfo->ops.SetOption = SetGyroOption;
 
     if (memcpy_s(&deviceInfo->sensorInfo, sizeof(deviceInfo->sensorInfo),
-        &drvData->gyroCfg->sensorInfo, sizeof(drvData->gyroCfg->sensorInfo)) != EOK) {
-        HDF_LOGE("%s: copy sensor info failed", __func__);
+        &config->sensorInfo, sizeof(config->sensorInfo)) != EOK) {
+        HDF_LOGE("%s: Copy sensor info failed", __func__);
         return HDF_FAILURE;
     }
 
     return HDF_SUCCESS;
 }
 
-static int32_t InitGyroAfterConfig(void)
+static int32_t InitGyroAfterDetected(struct SensorCfgData *config)
 {
     struct SensorDeviceInfo deviceInfo;
+    CHECK_NULL_PTR_RETURN_VALUE(config, HDF_ERR_INVALID_PARAM);
 
-    if (InitGyroData() != HDF_SUCCESS) {
-        HDF_LOGE("%s: init gyro config failed", __func__);
-        return HDF_FAILURE;
-    }
-
-    if (InitGyroOps(&deviceInfo) != HDF_SUCCESS) {
-        HDF_LOGE("%s: init gyro ops failed", __func__);
+    if (InitGyroOps(config, &deviceInfo) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init gyro ops failed", __func__);
         return HDF_FAILURE;
     }
 
     if (AddSensorDevice(&deviceInfo) != HDF_SUCCESS) {
-        HDF_LOGE("%s: add gyro device failed", __func__);
+        HDF_LOGE("%s: Add gyro device failed", __func__);
         return HDF_FAILURE;
     }
 
+    if (ParseSensorRegConfig(config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Parse sensor register failed", __func__);
+        (void)DeleteSensorDevice(&config->sensorInfo);
+        ReleaseSensorAllRegConfig(config);
+        return HDF_FAILURE;
+    }
     return HDF_SUCCESS;
 }
 
-static int32_t DetectGyroChip(void)
+struct SensorCfgData *GyroCreateCfgData(const struct DeviceResourceNode *node)
 {
-    int32_t num;
-    int32_t ret;
-    int32_t loop;
     struct GyroDrvData *drvData = GyroGetDrvData();
 
-    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
-    CHECK_NULL_PTR_RETURN_VALUE(drvData->gyroCfg, HDF_ERR_INVALID_PARAM);
-
-    num = sizeof(g_gyroDetectIfList) / sizeof(g_gyroDetectIfList[0]);
-    for (loop = 0; loop < num; ++loop) {
-        if (g_gyroDetectIfList[loop].DetectChip != NULL) {
-            ret = g_gyroDetectIfList[loop].DetectChip(drvData->gyroCfg);
-            if (ret == HDF_SUCCESS) {
-                drvData->detectFlag = true;
-                return HDF_SUCCESS;
-            }
-        }
+    if (drvData == NULL || node == NULL) {
+        HDF_LOGE("%s: Gyro node pointer NULL", __func__);
+        return NULL;
     }
 
-    HDF_LOGE("%s: detect gyro device failed", __func__);
-    drvData->detectFlag = false;
-    return HDF_FAILURE;
+    if (drvData->detectFlag) {
+        HDF_LOGE("%s: Gyro sensor have detected", __func__);
+        return NULL;
+    }
+
+    if (drvData->gyroCfg == NULL) {
+        HDF_LOGE("%s: Gyro gyroCfg pointer NULL", __func__);
+        return NULL;
+    }
+
+    if (GetSensorBaseConfigData(node, drvData->gyroCfg) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Get sensor base config failed", __func__);
+        goto BASE_CONFIG_EXIT;
+    }
+
+    if (DetectSensorDevice(drvData->gyroCfg) != HDF_SUCCESS) {
+        HDF_LOGI("%s: Gyro sensor detect device no exist", __func__);
+        drvData->detectFlag = false;
+        goto BASE_CONFIG_EXIT;
+    }
+
+    drvData->detectFlag = true;
+    if (InitGyroAfterDetected(drvData->gyroCfg) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Gyro sensor detect device no exist", __func__);
+        goto INIT_EXIT;
+    }
+    return drvData->gyroCfg;
+
+INIT_EXIT:
+    (void)ReleaseSensorBusHandle(&drvData->gyroCfg->busCfg);
+BASE_CONFIG_EXIT:
+    drvData->gyroCfg->root = NULL;
+    (void)memset_s(&drvData->gyroCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
+    (void)memset_s(&drvData->gyroCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
+    (void)memset_s(&drvData->gyroCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
+    return drvData->gyroCfg;
 }
 
-int32_t InitGyroDriver(struct HdfDeviceObject *device)
+void GyroReleaseCfgData(struct SensorCfgData *gyroCfg)
 {
+    CHECK_NULL_PTR_RETURN(gyroCfg);
+
+    (void)DeleteSensorDevice(&gyroCfg->sensorInfo);
+    ReleaseSensorAllRegConfig(gyroCfg);
+    (void)ReleaseSensorBusHandle(&gyroCfg->busCfg);
+
+    gyroCfg->root = NULL;
+    (void)memset_s(&gyroCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
+    (void)memset_s(&gyroCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
+    (void)memset_s(&gyroCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
+}
+
+int32_t GyroInitDriver(struct HdfDeviceObject *device)
+{
+    HDF_LOGE("%s: cclog ----> 1111111111111111 ", __func__);
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
     struct GyroDrvData *drvData = (struct GyroDrvData *)device->service;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
-    if (drvData->detectFlag) {
-        HDF_LOGE("%s: gyro sensor have detected", __func__);
-        return HDF_SUCCESS;
+    if (InitGyroData(drvData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Init gyro config failed", __func__);
+        return HDF_FAILURE;
     }
 
     drvData->gyroCfg = (struct SensorCfgData *)OsalMemCalloc(sizeof(*drvData->gyroCfg));
     if (drvData->gyroCfg == NULL) {
-        HDF_LOGE("%s: malloc sensor config data failed", __func__);
+        HDF_LOGE("%s: Malloc gyro config data failed", __func__);
         return HDF_FAILURE;
     }
 
     drvData->gyroCfg->regCfgGroup = &g_regCfgGroup[0];
 
-    if (GetSensorBaseConfigData(device->property, drvData->gyroCfg) != HDF_SUCCESS) {
-        HDF_LOGE("%s: get sensor base config failed", __func__);
-        goto BASE_CONFIG_EXIT;
-    }
-
-    // if return failure, hdf framework go to next detect sensor
-    if (DetectGyroChip() != HDF_SUCCESS) {
-        HDF_LOGE("%s: gyro sensor detect device no exist", __func__);
-        goto DETECT_CHIP_EXIT;
-    }
-    drvData->detectFlag = true;
-
-    if (ParseSensorRegConfig(drvData->gyroCfg) != HDF_SUCCESS) {
-        HDF_LOGE("%s: detect sensor device failed", __func__);
-        goto REG_CONFIG_EXIT;
-    }
-
-    if (InitGyroAfterConfig() != HDF_SUCCESS) {
-        HDF_LOGE("%s: init gyro after config failed", __func__);
-        goto INIT_EXIT;
-    }
-
-    HDF_LOGI("%s: init gyro driver success", __func__);
+    HDF_LOGI("%s: Init gyro driver success", __func__);
     return HDF_SUCCESS;
-
-INIT_EXIT:
-    (void)DeleteSensorDevice(&drvData->gyroCfg->sensorInfo);
-REG_CONFIG_EXIT:
-    ReleaseSensorAllRegConfig(drvData->gyroCfg);
-    (void)ReleaseSensorBusHandle(&drvData->gyroCfg->busCfg);
-DETECT_CHIP_EXIT:
-    drvData->detectFlag = false;
-BASE_CONFIG_EXIT:
-    drvData->gyroCfg->root = NULL;
-    drvData->gyroCfg->regCfgGroup = NULL;
-    OsalMemFree(drvData->gyroCfg);
-    drvData->gyroCfg = NULL;
-    return HDF_FAILURE;
 }
 
-void ReleaseGyroDriver(struct HdfDeviceObject *device)
+void GyroReleaseDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN(device);
 
     struct GyroDrvData *drvData = (struct GyroDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    (void)DeleteSensorDevice(&drvData->gyroCfg->sensorInfo);
-    drvData->detectFlag = false;
-
-    if (drvData->gyroCfg != NULL) {
-        drvData->gyroCfg->root = NULL;
-        drvData->gyroCfg->regCfgGroup = NULL;
-        ReleaseSensorAllRegConfig(drvData->gyroCfg);
-        (void)ReleaseSensorBusHandle(&drvData->gyroCfg->busCfg);
-        OsalMemFree(drvData->gyroCfg);
-        drvData->gyroCfg = NULL;
+    if (drvData->detectFlag && drvData->gyroCfg != NULL) {
+        GyroReleaseCfgData(drvData->gyroCfg);
     }
 
-    drvData->initStatus = false;
+    OsalMemFree(drvData->gyroCfg);
+    drvData->gyroCfg = NULL;
+
+    HdfWorkDestroy(&drvData->gyroWork);
+    HdfWorkQueueDestroy(&drvData->gyroWorkQueue);
+    OsalMemFree(drvData);
 }
 
 struct HdfDriverEntry g_sensorGyroDevEntry = {
     .moduleVersion = 1,
     .moduleName = "HDF_SENSOR_GYRO",
-    .Bind = BindGyroDriver,
-    .Init = InitGyroDriver,
-    .Release = ReleaseGyroDriver,
+    .Bind = GyroBindDriver,
+    .Init = GyroInitDriver,
+    .Release = GyroReleaseDriver,
 };
 
 HDF_INIT(g_sensorGyroDevEntry);
