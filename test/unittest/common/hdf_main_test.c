@@ -23,6 +23,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I2S) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I2S)
 #include "hdf_i2s_entry_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_REGULATOR) || defined(CONFIG_DRIVERS_HDF_PLATFORM_REGULATOR)
+#include "hdf_regulator_entry_test.h"
+#endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_ADC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_ADC)
 #include "hdf_adc_entry_test.h"
 #endif
@@ -85,6 +88,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I2S) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I2S)
     { TEST_PAL_I2S_TYPE, HdfI2sUnitTestEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_REGULATOR) || defined(CONFIG_DRIVERS_HDF_PLATFORM_REGULATOR)
+    { TEST_PAL_REGULATOR_TYPE, HdfRegulatorUnitTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_ADC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_ADC)
     { TEST_PAL_ADC_TYPE, HdfAdcTestEntry },
