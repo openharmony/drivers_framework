@@ -209,7 +209,12 @@ static int32_t I2sReadTest(struct I2sTest *test)
         return HDF_FAILURE;
     }
 
-    if (memcpy_s(test->wbuf, test->len, test->rbuf, test->len) != EOK) {
+    if (test->len > I2S_DATA_BUF_SIZE) {
+        HDF_LOGE("%s:I2sRead read data too large \n", __func__);
+        return HDF_FAILURE;
+    }
+
+    if (memcpy_s(test->wbuf, I2S_DATA_BUF_SIZE, test->rbuf, test->len) != EOK) {
         HDF_LOGE("%s: memcpy buf failed", __func__);
         return HDF_ERR_IO;
     }

@@ -585,9 +585,11 @@ static int32_t HdmiEdidExtVideoDataBlockPhase(struct HdmiSinkDeviceCapability *s
 static void HdmiEdidVsdbCecPhyAddrPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data, uint8_t len)
 {
     if (len >= 5) {
-        sinkCap->vsdbInfo.cecAddr.phyAddrA = (data[UINT8_ARRAY_TElEMENT_3] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
+        sinkCap->vsdbInfo.cecAddr.phyAddrA = (data[UINT8_ARRAY_TElEMENT_3] & HDMI_UPPER_NIBBLE_MARK) >>
+                                              HDMI_NIBBLE_SHIFT;
         sinkCap->vsdbInfo.cecAddr.phyAddrB = (data[UINT8_ARRAY_TElEMENT_3] & HDMI_LOWER_NIBBLE_MARK);
-        sinkCap->vsdbInfo.cecAddr.phyAddrC = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
+        sinkCap->vsdbInfo.cecAddr.phyAddrC = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_UPPER_NIBBLE_MARK) >>
+                                              HDMI_NIBBLE_SHIFT;
         sinkCap->vsdbInfo.cecAddr.phyAddrD = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_LOWER_NIBBLE_MARK);
         sinkCap->vsdbInfo.cecAddr.addrValid =
             (sinkCap->vsdbInfo.cecAddr.phyAddrA != HDMI_EDID_EXTENSION_VSDB_CEC_INVALID_ADDR) &&
@@ -683,7 +685,7 @@ static void HdmiEdidVsdb3dStructureInfoPhase(struct HdmiSinkDeviceCapability *si
      * If 3D_Multi_present is 1 or 2, 3D_Struct_ALL_15...0 is present and assigns 3D formats to
      * all of the VICs listed in the first 16 entries in the EDID.
      */
-    if ((sinkCap->vsdbInfo._3dMultiPresent & HDMI_EDID_EXTENSION_VSDB_3D_STR_INVALID_MARK) == 0) {
+    if (((sinkCap->vsdbInfo._3dMultiPresent) & HDMI_EDID_EXTENSION_VSDB_3D_STR_INVALID_MARK) == 0) {
         return;
     }
     /* see hdmi spec 1.4 table H-8. */
@@ -728,13 +730,13 @@ static void HdmiEdidVsdbVicAnd3dInfoPhase(struct HdmiSinkDeviceCapability *sinkC
     }
     sinkCap->vsdbInfo._3dPresent = (data[UINT8_ARRAY_TElEMENT_12] & HDMI_BIT7_MARK) ? true : false;
     sinkCap->vsdbInfo._3dMultiPresent = (data[UINT8_ARRAY_TElEMENT_12] &
-                                         HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_MARK) >>
-                                         HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_SHIFT;
+                                        HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_MARK) >>
+                                        HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_SHIFT;
 
     if (len >= 14) {
         hdmiVicLen = (data[UINT8_ARRAY_TElEMENT_13] &
-                      HDMI_EDID_EXTENSION_VSDB_VIC_LEN_MARK) >>
-                      HDMI_EDID_EXTENSION_VSDB_VIC_LEN_SHIFT;
+                     HDMI_EDID_EXTENSION_VSDB_VIC_LEN_MARK) >>
+                     HDMI_EDID_EXTENSION_VSDB_VIC_LEN_SHIFT;
         hdmi3dLen = (data[UINT8_ARRAY_TElEMENT_13] & HDMI_EDID_EXTENSION_VSDB_3D_LEN_MARK);
     }
 
@@ -801,7 +803,8 @@ static void HdmiEdidHfVsdb21Phase(struct HdmiSinkDeviceCapability *sinkCap, uint
     sinkCap->hfVsdbInfo.dscInfo.dsc20bpc = (data[UINT8_ARRAY_TElEMENT_10] & HDMI_BIT1_MARK) ? true : false;
     sinkCap->hfVsdbInfo.dscInfo.dsc16bpc = (data[UINT8_ARRAY_TElEMENT_10] & HDMI_BIT0_MARK) ? true : false;
     sinkCap->hfVsdbInfo.dscInfo.dscMaxSlices = (data[UINT8_ARRAY_TElEMENT_11] & HDMI_LOWER_NIBBLE_MARK);
-    sinkCap->hfVsdbInfo.dscInfo.dscMaxFrlRate = (data[UINT8_ARRAY_TElEMENT_11] & HDMI_UPPER_NIBBLE_MARK) >> HDMI_NIBBLE_SHIFT;
+    sinkCap->hfVsdbInfo.dscInfo.dscMaxFrlRate = (data[UINT8_ARRAY_TElEMENT_11] & HDMI_UPPER_NIBBLE_MARK) >>
+                                                HDMI_NIBBLE_SHIFT;
     sinkCap->hfVsdbInfo.dscInfo.dscTotalChunkKBytes = (data[UINT8_ARRAY_TElEMENT_12] & 0x3F);
 }
 

@@ -406,7 +406,7 @@ struct HdmiEdidExtVsdbInfo {
     uint8_t interlacedVideoLatency;
     uint8_t interlacedAudioLatency;
     bool _3dPresent;
-    bool _3dMultiPresent;
+    uint8_t _3dMultiPresent;
     bool support3dType[HDMI_VS_VIDEO_3D_BUTT];
 };
 
