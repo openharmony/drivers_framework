@@ -589,20 +589,6 @@ struct HdfMac80211BaseOps {
      */
     int32_t (*GetHwCapability)(NetDevice *netDev, struct WlanHwCapability **capability);
 
-    int32_t (*RemainOnChannel)(NetDevice *netDev, WifiOnChannel *onChannel);
-
-    int32_t (*CancelRemainOnChannel)(NetDevice *netDev);
-
-    int32_t (*ProbeReqReport)(NetDevice *netDev, int32_t report);
-
-    int32_t (*AddIf)(NetDevice *netDev, WifiIfAdd *ifAdd);
-
-    int32_t (*RemoveIf)(NetDevice *netDev, WifiIfRemove *ifRemove);
-
-    int32_t (*SetApWpsP2pIe)(NetDevice *netDev, WifiAppIe *appIe);
-
-    int32_t (*GetDriverFlag)(struct NetDevice *netDev, WifiGetDrvFlags **params);
-
     int32_t (*SendAction)(struct NetDevice *netDev, WifiActionData *actionData);
 
     int32_t (*GetIftype)(struct NetDevice *netDev, uint8_t *iftype);
@@ -790,6 +776,22 @@ struct HdfMac80211APOps {
      * @version 1.0
      */
     int32_t (*GetAssociatedStasInfo)(NetDevice *netDev, WifiStaInfo *staInfo, uint32_t num);
+};
+
+struct HdfMac80211P2POps {
+    int32_t (*RemainOnChannel)(NetDevice *netDev, WifiOnChannel *onChannel);
+
+    int32_t (*CancelRemainOnChannel)(NetDevice *netDev);
+
+    int32_t (*ProbeReqReport)(NetDevice *netDev, int32_t report);
+
+    int32_t (*AddIf)(NetDevice *netDev, WifiIfAdd *ifAdd);
+
+    int32_t (*RemoveIf)(NetDevice *netDev, WifiIfRemove *ifRemove);
+
+    int32_t (*SetApWpsP2pIe)(NetDevice *netDev, WifiAppIe *appIe);
+
+    int32_t (*GetDriverFlag)(struct NetDevice *netDev, WifiGetDrvFlags **params);
 };
 
 #endif // WIFI_MAC80211_OPS_H

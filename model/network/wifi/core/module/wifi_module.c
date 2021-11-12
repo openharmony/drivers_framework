@@ -10,6 +10,7 @@
 #include "wifi_base.h"
 #include "ap.h"
 #include "sta.h"
+#include "p2p.h"
 #include "hdf_wlan_config.h"
 #include "securec.h"
 
@@ -39,6 +40,7 @@ static int32_t InitFeatures(struct WifiModule *module)
 
     module->feList.fe[HDF_WIFI_FEATURE_AP] = GetWifiApFeature();
     module->feList.fe[HDF_WIFI_FEATURE_STA] = GetWifiStaFeature();
+    module->feList.fe[HDF_WIFI_FEATURE_P2P] = GetWifiP2pFeature();
 
     for (i = 0; i < HDF_WIFI_FEATURE_NUM; i++) {
         if ((module->moduleConfig.hslConfig->featureMap & (1 << i)) && module->feList.fe[i] != NULL) {

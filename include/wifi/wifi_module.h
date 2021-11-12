@@ -163,6 +163,7 @@ struct HdfChipDriver {
     struct HdfMac80211BaseOps *ops;         /**< MAC address for the basic feature */
     struct HdfMac80211STAOps *staOps;       /**< MAC address for the STA feature */
     struct HdfMac80211APOps *apOps;         /**< MAC address for the AP feature */
+    struct HdfMac80211P2POps *p2pOps;         /**< MAC address for the P2Pfeature */
     void *priv;                             /**< Private data of the chip driver */
     /**
      * @brief Initializes a chip driver.
