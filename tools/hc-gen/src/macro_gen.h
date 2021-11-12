@@ -46,8 +46,6 @@ private:
 
     std::string GenRefObjName(uint32_t depth, const std::shared_ptr<AstObject> &object);
 
-    const std::string &TypeToStr(uint32_t type);
-
     std::ofstream ofs_;
     std::string outFileName_;
     std::map<int, std::string> nodeNameMap_;
