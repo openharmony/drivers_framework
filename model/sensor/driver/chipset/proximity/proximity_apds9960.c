@@ -156,7 +156,8 @@ int32_t Apds996InitDriver(struct HdfDeviceObject *device)
     }
 
     drvData->sensorCfg = ProximityCreateCfgData(device->property);
-    if (drvData->sensorCfg == NULL) {
+    if (drvData->sensorCfg == NULL || drvData->sensorCfg->root == NULL) {
+        HDF_LOGD("%s: Creating proximitycfg failed because detection failed", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
 
@@ -185,8 +186,10 @@ void Apds996ReleaseDriver(struct HdfDeviceObject *device)
     struct Apds9960DrvData *drvData = (struct Apds9960DrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    ProximityReleaseCfgData(drvData->sensorCfg);
-    drvData->sensorCfg = NULL;
+    if (drvData->sensorCfg != NULL) {
+        ProximityReleaseCfgData(drvData->sensorCfg);
+        drvData->sensorCfg = NULL;
+    }
     OsalMemFree(drvData);
 }
 

@@ -308,7 +308,7 @@ BASE_CONFIG_EXIT:
     (void)memset_s(&drvData->magneticCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->magneticCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
     
-    return NULL;
+    return drvData->magneticCfg;
 }
 
 void MagneticReleaseCfgData(struct SensorCfgData *magneticCfg)
@@ -355,7 +355,7 @@ void MagneticReleaseDriver(struct HdfDeviceObject *device)
     struct MagneticDrvData *drvData = (struct MagneticDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->detectFlag) {
+    if (drvData->detectFlag && drvData->magneticCfg != NULL) {
         MagneticReleaseCfgData(drvData->magneticCfg);
     }
 
