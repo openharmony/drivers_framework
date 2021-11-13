@@ -118,15 +118,14 @@ std::string MacroGen::GenFullName(uint32_t depth, const std::shared_ptr<AstObjec
 bool MacroGen::GenArray(const std::string &arrName, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node)
 {
     static uint32_t index = 0;
-    std::string tmp(arrName);
     const uint32_t ELEMENT_PER_LINE = 8;
 
     if (index == 0) {
-        ofs_ << "#define " << tmp.append("_data {");
+        ofs_ << "#define " << arrName << "_data {";
     }
 
     if (index % ELEMENT_PER_LINE == 0) {
-        ofs_ << " \\\n    ";
+        ofs_ << " \\\n" << TAB;
     }
 
     if (type == PARSEROP_STRING) {
@@ -177,9 +176,9 @@ bool MacroGen::GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &
         for (iter = subList.begin(); iter != subList.end(); iter++) {
             index--;
             if (index) {
-                ofs_ << "    " << "func(" << *iter << ") \\\n";
+                ofs_ << TAB << "func(" << *iter << ") \\\n";
             } else {
-                ofs_ << "    " << "func(" << *iter << ")\n";
+                ofs_ << TAB << "func(" << *iter << ")\n";
             }
         }
         ofs_ << std::endl;
@@ -189,9 +188,9 @@ bool MacroGen::GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &
         for (iter = subList.begin(); iter != subList.end(); iter++) {
             index--;
             if (index) {
-                ofs_ << "    " << "func(" << *iter << ", __VA_ARGS__) \\\n";
+                ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__) \\\n";
             } else {
-                ofs_ << "    " << "func(" << *iter << ", __VA_ARGS__)\n";
+                ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__)\n";
             }
         }
         ofs_ << std::endl;

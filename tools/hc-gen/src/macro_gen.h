@@ -24,7 +24,6 @@ public:
     ~MacroGen() override = default;
 
     bool Output() override;
-
 private:
     bool Initialize();
 
