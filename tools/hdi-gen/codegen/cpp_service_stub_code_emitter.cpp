@@ -313,7 +313,7 @@ void CppServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& met
 
     sb.Append(prefix).Append("if (ec != HDF_SUCCESS) {\n");
     sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s failed, error code is %%d\", ec);\n", method->GetName().string());
+        "HDF_LOGE(\"%%{public}s failed, error code is %%d\", __func__, ec);\n", method->GetName().string());
     sb.Append(prefix + g_tab).Append("return ec;\n");
     sb.Append(prefix).Append("}\n");
 }
