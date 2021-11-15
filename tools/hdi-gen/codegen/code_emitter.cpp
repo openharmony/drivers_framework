@@ -12,7 +12,6 @@
 
 namespace OHOS {
 namespace HDI {
-
 bool CodeEmitter::OutPut(const AutoPtr<AST>& ast, const String& targetDirectory, bool isKernelCode)
 {
     if (!Reset(ast, targetDirectory, isKernelCode)) {

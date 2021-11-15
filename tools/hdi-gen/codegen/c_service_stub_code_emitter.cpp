@@ -214,26 +214,7 @@ void CServiceStubCodeEmitter::EmitReadStubMethodParameter(const AutoPtr<ASTParam
     AutoPtr<ASTType> type = param->GetType();
 
     if (type->GetTypeKind() == TypeKind::TYPE_STRING) {
-        String cloneName = String::Format("%sCp", param->GetName().string());
-        type->EmitCStubReadVar(parcelName, cloneName, sb, prefix);
-        if (isKernelCode_) {
-            sb.Append("\n");
-            sb.Append(prefix).AppendFormat("%s = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
-                param->GetName().string(), cloneName.string());
-            sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", param->GetName().string());
-            sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-            sb.Append(prefix + g_tab).Append("goto errors;\n");
-            sb.Append(prefix).Append("}\n\n");
-            sb.Append(prefix).AppendFormat("if (strcpy_s(%s, (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
-                param->GetName().string(), cloneName.string(), cloneName.string());
-            sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
-                param->GetName().string());
-            sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-            sb.Append(prefix + g_tab).Append("goto errors;\n");
-            sb.Append(prefix).Append("}\n");
-        } else {
-            sb.Append(prefix).AppendFormat("%s = strdup(%s);\n", param->GetName().string(), cloneName.string());
-        }
+        EmitReadCStringStubMethodParameter(param, parcelName, sb, prefix, type);
     } else if (type->GetTypeKind() == TypeKind::TYPE_INTERFACE) {
         type->EmitCStubReadVar(parcelName, param->GetName(), sb, prefix);
     } else if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
@@ -262,6 +243,31 @@ void CServiceStubCodeEmitter::EmitReadStubMethodParameter(const AutoPtr<ASTParam
     } else {
         String name = String::Format("&%s", param->GetName().string());
         type->EmitCStubReadVar(parcelName, name, sb, prefix);
+    }
+}
+
+void CServiceStubCodeEmitter::EmitReadCStringStubMethodParameter(const AutoPtr<ASTParameter>& param,
+    const String& parcelName, StringBuilder& sb, const String& prefix,  AutoPtr<ASTType>& type)
+{
+    String cloneName = String::Format("%sCp", param->GetName().string());
+    type->EmitCStubReadVar(parcelName, cloneName, sb, prefix);
+    if (isKernelCode_) {
+        sb.Append("\n");
+        sb.Append(prefix).AppendFormat("%s = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
+            param->GetName().string(), cloneName.string());
+        sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", param->GetName().string());
+        sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+        sb.Append(prefix + g_tab).Append("goto errors;\n");
+        sb.Append(prefix).Append("}\n\n");
+        sb.Append(prefix).AppendFormat("if (strcpy_s(%s, (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
+            param->GetName().string(), cloneName.string(), cloneName.string());
+        sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+            param->GetName().string());
+        sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+        sb.Append(prefix + g_tab).Append("goto errors;\n");
+        sb.Append(prefix).Append("}\n");
+    } else {
+        sb.Append(prefix).AppendFormat("%s = strdup(%s);\n", param->GetName().string(), cloneName.string());
     }
 }
 

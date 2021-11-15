@@ -106,7 +106,13 @@ private:
         doGetHashKey_(false),
         doGenerateCode_(false),
         doOutDir_(false) {}
-    
+
+    void SetOptionData(char op);
+
+    void SetLanguage(String language);
+
+    void SetCodePart(String part);
+
     void CheckOptions();
 
     static const char* optSupportArgs;

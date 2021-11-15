@@ -171,6 +171,5 @@ void CodeGenerator::GenerateJavaCode(const AutoPtr<AST>& ast, const String& outD
             break;
     }
 }
-
 } // namespace HDI
 } // namespace OHOS
