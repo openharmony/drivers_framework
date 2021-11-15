@@ -225,7 +225,7 @@ int32_t HdmiHdrAttrHandle(struct HdmiHdr *hdr, struct HdmiHdrAttr *curAttr)
     if (ret != HDF_SUCCESS) {
         return ret;
     }
-    (void)HdmiDrmInfoframeSend(&(cntlr->infoframe), (commAttr->enableHdmi & commAttr->drm));
+    (void)HdmiDrmInfoframeSend(&(cntlr->infoframe), (commAttr->enableHdmi && commAttr->drm));
 
 _SEND_INFOFRAME:
     (void)HdmiAviInfoframeSend(&(cntlr->infoframe), (commAttr->enableHdmi && commAttr->avi));

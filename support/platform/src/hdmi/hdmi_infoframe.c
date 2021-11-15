@@ -78,7 +78,7 @@ static int32_t HdmiInfoframePacketVsEncoding(union HdmiInfoframeInfo *infoframe,
             data[UINT8_ARRAY_TElEMENT_8] = (vsifContent->_3dStruct & HDMI_VENDOR_3D_STRUCTURE_MARK) <<
                                             HDMI_VENDOR_3D_STRUCTURE_SHIFT;
         }
-        data[UINT8_ARRAY_TElEMENT_9] = (vsifContent->_3dExtData & HDMI_VENDOR_3D_EXT_DATA_MARK) <<
+        data[UINT8_ARRAY_TElEMENT_9] = ((uint8_t)vsifContent->_3dExtData & HDMI_VENDOR_3D_EXT_DATA_MARK) <<
                                         HDMI_VENDOR_3D_EXT_DATA_SHIFT;
         if (vsifContent->_3dMetaPresent == false) {
             if (userContent->len == 0 || (userContent->len + lenght) > len) {
@@ -127,11 +127,14 @@ static int32_t HdmiInfoframePacketAviEncoding(union HdmiInfoframeInfo *infoframe
     }
     /* PB2 */
     buff[UINT8_ARRAY_TElEMENT_1] |= (avi->colorimetry & HDMI_AVI_COLORIMETRY_MARK) << HDMI_AVI_COLORIMETRY_SHIFT;
-    buff[UINT8_ARRAY_TElEMENT_1] |= (avi->pictureAspect & HDMI_AVI_PICTURE_ASPECT_RATE_MARK) << HDMI_AVI_PICTURE_ASPECT_RATE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_1] |= (avi->pictureAspect & HDMI_AVI_PICTURE_ASPECT_RATE_MARK) <<
+                                    HDMI_AVI_PICTURE_ASPECT_RATE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_1] |= (avi->activeAspect & HDMI_AVI_ACTIVE_FORMAT_ASPECT_RATE_MARK);
     /* PB3 */
-    buff[UINT8_ARRAY_TElEMENT_2] |= (avi->extColorimetry & HDMI_AVI_EXT_COLORIMETRY_MARK) << HDMI_AVI_EXT_COLORIMETRY_SHIFT;
-    buff[UINT8_ARRAY_TElEMENT_2] |= (avi->range & HDMI_AVI_EXT_QUANTIZATION_RANGE_MARK) << HDMI_AVI_EXT_QUANTIZATION_RANGE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_2] |= (avi->extColorimetry & HDMI_AVI_EXT_COLORIMETRY_MARK) <<
+                                    HDMI_AVI_EXT_COLORIMETRY_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_2] |= (avi->range & HDMI_AVI_EXT_QUANTIZATION_RANGE_MARK) <<
+                                    HDMI_AVI_EXT_QUANTIZATION_RANGE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_2] |= (avi->nups & HDMI_AVI_NUPS_RANGE_MARK);
     if (avi->itc == true) {
         buff[UINT8_ARRAY_TElEMENT_2] |= (1 << HDMI_AVI_IT_CONTENT_SHIFT);
@@ -139,8 +142,9 @@ static int32_t HdmiInfoframePacketAviEncoding(union HdmiInfoframeInfo *infoframe
     /* PB4 */
     buff[UINT8_ARRAY_TElEMENT_3] = avi->vic;
     /* PB5 */
-    buff[UINT8_ARRAY_TElEMENT_4] |= (avi->yccRange & HDMI_AVI_YCC_QUANTIZATION_RANGE_MARK) << HDMI_AVI_YCC_QUANTIZATION_RANGE_SHIFT;
-    buff[UINT8_ARRAY_TElEMENT_4] |= (avi->itcType & HDMI_AVI_IT_CONTENT_TYPE_MARK) << HDMI_AVI_IT_CONTENT_TYPE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_4] |= (avi->yccRange & HDMI_AVI_YCC_QUANTIZATION_RANGE_MARK) <<
+                                    HDMI_AVI_YCC_QUANTIZATION_RANGE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)avi->itcType & HDMI_AVI_IT_CONTENT_TYPE_MARK) << HDMI_AVI_IT_CONTENT_TYPE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_4] |= (avi->pixelRepetitionFactor & HDMI_AVI_PIXEL_REPETION_FACTOR_MARK);
     /* PB6 */
     buff[UINT8_ARRAY_TElEMENT_5] = (uint8_t)(avi->topBar & HDMI_AVI_BAR_MODE_MARK);
@@ -220,14 +224,16 @@ static int32_t HdmiInfoframePacketAudioEncoding(union HdmiInfoframeInfo *infofra
     buff[UINT8_ARRAY_TElEMENT_0] |= (audio->codingType & HDMI_AUDIO_CODING_TYPE_MARK) << HDMI_AUDIO_CODING_TYPE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_0] |= (audio->channelCount & HDMI_AUDIO_CHANNEL_COUNT_MARK);
     /* PB2 */
-    buff[UINT8_ARRAY_TElEMENT_1] |= (audio->sampleFreq & HDMI_AUDIO_SAMPLE_FREQUENCY_MARK) << HDMI_AUDIO_SAMPLE_FREQUENCY_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_1] |= (audio->sampleFreq & HDMI_AUDIO_SAMPLE_FREQUENCY_MARK) <<
+                                    HDMI_AUDIO_SAMPLE_FREQUENCY_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_1] |= (audio->sampleSize & HDMI_AUDIO_SAMPLE_SIZE_MARK);
     /* PB3 */
-    buff[UINT8_ARRAY_TElEMENT_2] |= (audio->codingExtType & HDMI_AUDIO_CXT_MARK);
+    buff[UINT8_ARRAY_TElEMENT_2] |= ((uint8_t)audio->codingExtType & HDMI_AUDIO_CXT_MARK);
     /* PB4 */
     buff[UINT8_ARRAY_TElEMENT_3] |= audio->channelAllocation;
     /* PB5 */
-    buff[UINT8_ARRAY_TElEMENT_4] |= (audio->levelShiftValue & HDMI_AUDIO_LEVEL_SHIFT_VALUE_MARK) << HDMI_AUDIO_LEVEL_SHIFT_VALUE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_4] |= (audio->levelShiftValue & HDMI_AUDIO_LEVEL_SHIFT_VALUE_MARK) <<
+                                    HDMI_AUDIO_LEVEL_SHIFT_VALUE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_4] |= (audio->playBackLevel & HDMI_AUDIO_LEF_PLAYBACK_LEVEL_MARK);
     if (audio->dmInh == true) {
         buff[UINT8_ARRAY_TElEMENT_4] |= (1 << HDMI_AUDIO_DM_INH_SHIFT);
@@ -262,27 +268,33 @@ static int32_t HdmiInfoframePacketDrmEncoding(union HdmiInfoframeInfo *infoframe
     /* PB3 */
     buff[UINT8_ARRAY_TElEMENT_2] = (uint8_t)(des->displayPrimaries0X & HDMI_DRM_METADATA_MARK);
     /* PB4 */
-    buff[UINT8_ARRAY_TElEMENT_3] = (uint8_t)((des->displayPrimaries0X >> HDMI_DRM_METADATA_SHIFT) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_3] = (uint8_t)((des->displayPrimaries0X >> HDMI_DRM_METADATA_SHIFT) &
+                                             HDMI_DRM_METADATA_MARK);
     /* PB5 */
     buff[UINT8_ARRAY_TElEMENT_4] = (uint8_t)(des->displayPrimaries0Y & HDMI_DRM_METADATA_MARK);
     /* PB6 */
-    buff[UINT8_ARRAY_TElEMENT_5] = (uint8_t)((des->displayPrimaries0Y & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_5] = (uint8_t)((des->displayPrimaries0Y & HDMI_DRM_METADATA_MARK) &
+                                             HDMI_DRM_METADATA_MARK);
     /* PB7 */
     buff[UINT8_ARRAY_TElEMENT_6] = (uint8_t)(des->displayPrimaries1X & HDMI_DRM_METADATA_MARK);
     /* PB8 */
-    buff[UINT8_ARRAY_TElEMENT_7] = (uint8_t)((des->displayPrimaries1X & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_7] = (uint8_t)((des->displayPrimaries1X & HDMI_DRM_METADATA_MARK) &
+                                             HDMI_DRM_METADATA_MARK);
     /* PB9 */
     buff[UINT8_ARRAY_TElEMENT_8] = (uint8_t)(des->displayPrimaries1Y & HDMI_DRM_METADATA_MARK);
     /* PB10 */
-    buff[UINT8_ARRAY_TElEMENT_9] = (uint8_t)((des->displayPrimaries1Y & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_9] = (uint8_t)((des->displayPrimaries1Y & HDMI_DRM_METADATA_MARK) &
+                                             HDMI_DRM_METADATA_MARK);
     /* PB11 */
     buff[UINT8_ARRAY_TElEMENT_10] = (uint8_t)(des->displayPrimaries2X & HDMI_DRM_METADATA_MARK);
     /* PB12 */
-    buff[UINT8_ARRAY_TElEMENT_11] = (uint8_t)((des->displayPrimaries2X & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_11] = (uint8_t)((des->displayPrimaries2X & HDMI_DRM_METADATA_MARK) &
+                                              HDMI_DRM_METADATA_MARK);
     /* PB13 */
     buff[UINT8_ARRAY_TElEMENT_12] = (uint8_t)(des->displayPrimaries2Y & HDMI_DRM_METADATA_MARK);
     /* PB14 */
-    buff[UINT8_ARRAY_TElEMENT_13] = (uint8_t)((des->displayPrimaries2Y & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_13] = (uint8_t)((des->displayPrimaries2Y & HDMI_DRM_METADATA_MARK) &
+                                              HDMI_DRM_METADATA_MARK);
     /* PB15 */
     buff[UINT8_ARRAY_TElEMENT_14] = (uint8_t)(des->whitePointX & HDMI_DRM_METADATA_MARK);
     /* PB16 */
@@ -294,19 +306,23 @@ static int32_t HdmiInfoframePacketDrmEncoding(union HdmiInfoframeInfo *infoframe
     /* PB19 */
     buff[UINT8_ARRAY_TElEMENT_18] = (uint8_t)(des->maxDisplayMasteringLuminance & HDMI_DRM_METADATA_MARK);
     /* PB20 */
-    buff[UINT8_ARRAY_TElEMENT_19] = (uint8_t)((des->maxDisplayMasteringLuminance & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_19] = (uint8_t)((des->maxDisplayMasteringLuminance & HDMI_DRM_METADATA_MARK) &
+                                              HDMI_DRM_METADATA_MARK);
     /* PB21 */
     buff[UINT8_ARRAY_TElEMENT_20] = (uint8_t)(des->minDisplayMasteringLuminance & HDMI_DRM_METADATA_MARK);
     /* PB22 */
-    buff[UINT8_ARRAY_TElEMENT_21] = (uint8_t)((des->minDisplayMasteringLuminance & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_21] = (uint8_t)((des->minDisplayMasteringLuminance & HDMI_DRM_METADATA_MARK) &
+                                              HDMI_DRM_METADATA_MARK);
     /* PB23 */
     buff[UINT8_ARRAY_TElEMENT_22] = (uint8_t)(des->maxContentLightLevel & HDMI_DRM_METADATA_MARK);
     /* PB24 */
-    buff[UINT8_ARRAY_TElEMENT_23] = (uint8_t)((des->maxContentLightLevel & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_23] = (uint8_t)((des->maxContentLightLevel & HDMI_DRM_METADATA_MARK) &
+                                              HDMI_DRM_METADATA_MARK);
     /* PB25 */
     buff[UINT8_ARRAY_TElEMENT_24] = (uint8_t)(des->maxFrameAverageLightLevel & HDMI_DRM_METADATA_MARK);
     /* PB26 */
-    buff[UINT8_ARRAY_TElEMENT_25] = (uint8_t)((des->maxFrameAverageLightLevel & HDMI_DRM_METADATA_MARK) & HDMI_DRM_METADATA_MARK);
+    buff[UINT8_ARRAY_TElEMENT_25] = (uint8_t)((des->maxFrameAverageLightLevel & HDMI_DRM_METADATA_MARK) &
+                                              HDMI_DRM_METADATA_MARK);
     HdmiInfoframeFillCheckSum(data, lenght);
     return HDF_SUCCESS;
 }
@@ -704,8 +720,9 @@ int32_t HdmiVsInfoframeSend(struct HdmiInfoframe *frame, bool enable, bool dolby
     return HdmiInfoframeSend(frame, &infoframe);
 }
 
-static void HdmiFillSpdInfoframe(struct HdmiSpdInfoframe *spd, char *vendorName,
-    char *productName, enum HdmiSpdSdi sdi)
+static void HdmiFillSpdInfoframe(struct HdmiSpdInfoframe *spd,
+                                 const char *vendorName, const char *productName,
+                                 enum HdmiSpdSdi sdi)
 {
     uint32_t len, length;
 
