@@ -37,10 +37,14 @@ template("hc_gen") {
       hc_flags = [ "-t" ]
       output_suffix = ".c"
       output_suffix2 = ".h"
+    } else if (defined(invoker.hc_gen_macro) && invoker.hc_gen_macro) {
+      hc_flags = [ "-m" ]
+      output_suffix = ".h"
     } else {
       hc_flags = []
       output_suffix = ".hcb"
     }
+
     if (defined(invoker.outputs)) {
       outputs = invoker.outputs
     } else {
@@ -54,6 +58,7 @@ template("hc_gen") {
     } else {
       src = "{{source}}"
     }
+
     args = [ rebase_path(get_path_info("//drivers/framework/tools/hc-gen/",
                                        "out_dir") + "/hc-gen") ]
     args += hc_flags
@@ -74,6 +79,13 @@ template("hc_gen_c") {
 
 template("hc_gen_hex") {
   hc_gen_hex = true
+  hc_gen(target_name) {
+    forward_variables_from(invoker, "*")
+  }
+}
+
+template("hc_gen_macro") {
+  hc_gen_macro = true
   hc_gen(target_name) {
     forward_variables_from(invoker, "*")
   }

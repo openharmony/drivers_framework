@@ -8,6 +8,7 @@
 
 #include "hcs_parser_test.h"
 #include "hcs_config_test.h"
+#include "hcs_macro_cases.h"
 
 // add test case entry
 HdfTestCaseList g_hdfConfigTestCaseList[] = {
@@ -52,6 +53,20 @@ HdfTestCaseList g_hdfConfigTestCaseList[] = {
     { HDF_GET_STRING_ARRAY_ELEM_ATTR_VALUE_002, HcsTestGetStringArrayElemFail },
     { HDF_GET_NODE_BY_ATTR_REF_001, HcsTestGetNodeAttrRefSuccess },
     { HDF_GET_NODE_BY_ATTR_REF_002, HcsTestGetNodeAttrRefFail },
+    { HDF_MACRO_GET_ONE_NODE, HcsMacroGetOneNode },
+    { HDF_MACRO_CHECK_NODE_EXISTS, HcsMacroCheckNodeExists },
+    { HDF_MACRO_CHECK_NODE_NOT_EXISTS, HcsMacroCheckNodeNotExists },
+    { HDF_MACRO_GET_ONE_NODE_PROP, HcsMacroCheckPropExists },
+    { HDF_MACRO_CHECK_NODE_PROP_EXISTS, HcsMacroCheckPropNotExists },
+    { HDF_MACRO_CHECK_NODE_PROP_NOT_EXISTS, HcsMacroGetOneNodeProp },
+    { HDF_MACRO_TRAVERSAL_ONE_NODE, HcsMacroTraversalOneNode },
+    { HDF_MACRO_GET_ARRAY_SIZE, HcsMacroGetArraySize },
+    { HDF_MACRO_GET_ONE_ARRAY_ELEMENT, HcsMacroGetArrayElement },
+    { HDF_MACRO_TRAVERSAL_ONE_ARRAY, HcsMacroTraversalOneArray },
+    { HDF_MACRO_TRAVERSAL_ALL_ARRAY, HcsMacroTraversalAllArray },
+    { HDF_MACRO_TRAVERSAL_NODE_CHILD, HcsMacroTraversalOneNodeChild },
+    { HDF_MACRO_TRAVERSAL_NODE_CHILD_VARGS, HcsMacroTraversalOneNodeChildVargs },
+    { HDF_MACRO_GET_ONE_FILE, HcsMacroGetOneFile },
 };
 
 int32_t HdfConfigEntry(HdfTestMsg *msg)

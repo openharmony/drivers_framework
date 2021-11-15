@@ -64,6 +64,20 @@ enum HdfTestCaseCmd {
     HDF_GET_STRING_ARRAY_ELEM_ATTR_VALUE_002,
     HDF_GET_NODE_BY_ATTR_REF_001,
     HDF_GET_NODE_BY_ATTR_REF_002,
+    HDF_MACRO_GET_ONE_NODE,
+    HDF_MACRO_CHECK_NODE_EXISTS,
+    HDF_MACRO_CHECK_NODE_NOT_EXISTS,
+    HDF_MACRO_GET_ONE_NODE_PROP,
+    HDF_MACRO_CHECK_NODE_PROP_EXISTS,
+    HDF_MACRO_CHECK_NODE_PROP_NOT_EXISTS,
+    HDF_MACRO_TRAVERSAL_ONE_NODE,
+    HDF_MACRO_GET_ARRAY_SIZE,
+    HDF_MACRO_GET_ONE_ARRAY_ELEMENT,
+    HDF_MACRO_TRAVERSAL_ONE_ARRAY,
+    HDF_MACRO_TRAVERSAL_ALL_ARRAY,
+    HDF_MACRO_TRAVERSAL_NODE_CHILD,
+    HDF_MACRO_TRAVERSAL_NODE_CHILD_VARGS,
+    HDF_MACRO_GET_ONE_FILE,
 };
 
 class HdfConfigTest : public testing::Test {
@@ -582,7 +596,176 @@ HWTEST_F(HdfConfigTest, HslTestGetNodeAttrRefSuccess001, TestSize.Level1)
 HWTEST_F(HdfConfigTest, HslTestGetNodeAttrRefFail001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_GET_NODE_BY_ATTR_REF_002, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_GET_ONE_NODE test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroGetOneNode, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_GET_ONE_NODE, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_CHECK_NODE_EXISTS test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroCheckNodeExists, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_CHECK_NODE_EXISTS, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_CHECK_NODE_NOT_EXISTS test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroCheckNodeNotExists, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_CHECK_NODE_NOT_EXISTS, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_GET_ONE_NODE_PROP test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroGetOneNodeProp, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_GET_ONE_NODE_PROP, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_CHECK_NODE_PROP_EXISTS test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroCheckNodePropExists, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_CHECK_NODE_PROP_EXISTS, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_CHECK_NODE_PROP_NOT_EXISTS test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroCheckNodePropNotExists, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_CHECK_NODE_PROP_NOT_EXISTS, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_TRAVERSAL_ONE_NODE test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroTraversalOneNode, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_TRAVERSAL_ONE_NODE, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_GET_ARRAY_SIZE test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroGetArraySize, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_GET_ARRAY_SIZE, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_GET_ONE_ARRAY_ELEMENT test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroGetOneArrayElevent, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_GET_ONE_ARRAY_ELEMENT, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_TRAVERSAL_ONE_ARRAY test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroTraversalOneArray, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_TRAVERSAL_ONE_ARRAY, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_TRAVERSAL_ALL_ARRAY test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroTraversalAllArray, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_TRAVERSAL_ALL_ARRAY, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_TRAVERSAL_NODE_CHILD test
+ * @tc.type: FUNC
+ * @tc.require: AR000GGTQK
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroTraversalNodeChild, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_TRAVERSAL_NODE_CHILD, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_TRAVERSAL_NODE_CHILD_VARGS test
+ * @tc.type: FUNC
+ * @tc.require: SR000GGTQI
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroTraversalNodeChildVargs, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_TRAVERSAL_NODE_CHILD_VARGS, HDF_MSG_RESULT_DEFAULT};
+    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+}
+
+/**
+ * @tc.name: HslTestMacroGetOneNode
+ * @tc.desc: HDF_MACRO_GET_ONE_FILE test
+ * @tc.type: FUNC
+ * @tc.require: SR000GGTQI
+ */
+HWTEST_F(HdfConfigTest, HslTestMacroTraversalOneFile, TestSize.Level1)
+{
+    struct HdfTestMsg msg = {TEST_CONFIG_TYPE, HDF_MACRO_GET_ONE_FILE, HDF_MSG_RESULT_DEFAULT};
     printf("HdfConfigTest last enter\n\r");
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
+
 };

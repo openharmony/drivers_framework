@@ -8,6 +8,7 @@
 
 #include "bytecode_gen.h"
 #include "decompile.h"
+#include "macro_gen.h"
 #include "option.h"
 #include "parser.h"
 #include "text_gen.h"
@@ -50,6 +51,11 @@ int main(int argc, char *argv[])
 
     if (option.ShouldGenTextConfig()) {
         if (!TextGen(parser.GetAst()).Output()) {
+            return EFAIL;
+        }
+    }
+    if (option.ShouldGenMacroConfig()) {
+        if (!MacroGen(parser.GetAst()).Output()) {
             return EFAIL;
         }
     }

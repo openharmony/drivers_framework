@@ -27,7 +27,7 @@ Option &Option::Instance()
 }
 
 static constexpr int OPTION_END = -1;
-static constexpr const char *HCS_SUPPORT_ARGS = "o:ap:bditvVh";
+static constexpr const char *HCS_SUPPORT_ARGS = "o:ap:bditmvVh";
 
 Option &Option::Parse(int argc, char **argv)
 {
@@ -71,6 +71,12 @@ bool Option::ParseOptions(int argc, char **argv)
             case 't':
                 shouldGenTextConfig_ = true;
                 shouldGenByteCodeConfig_ = false;
+                shouldGenMacroConfig_ = false;
+                break;
+            case 'm':
+                shouldGenTextConfig_ = false;
+                shouldGenByteCodeConfig_ = false;
+                shouldGenMacroConfig_ = true;
                 break;
             case 'p':
                 symbolNamePrefix_ = optarg;
@@ -111,6 +117,7 @@ void Option::ShowUsage()
     ShowOption("-a", "hcb align with four bytes");
     ShowOption("-b", "output binary output, default enable");
     ShowOption("-t", "output config in C language source file style");
+    ShowOption("-m", "output config in macro file style");
     ShowOption("-i", "output binary hex dump in C language source file style");
     ShowOption("-p <prefix>", "prefix of generated symbol name");
     ShowOption("-d", "decompile hcb to hcs");
@@ -153,6 +160,11 @@ bool Option::ShouldAlign() const
 bool Option::ShouldGenTextConfig() const
 {
     return shouldGenTextConfig_;
+}
+
+bool Option::ShouldGenMacroConfig() const
+{
+    return shouldGenMacroConfig_;
 }
 
 bool Option::ShouldGenBinaryConfig() const
