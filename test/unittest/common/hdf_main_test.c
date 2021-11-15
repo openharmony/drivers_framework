@@ -17,6 +17,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)
 #include "hdf_gpio_entry_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PIN) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PIN)
+#include "hdf_pin_entry_test.h"
+#endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I2C) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I2C)
 #include "hdf_i2c_entry_test.h"
 #endif
@@ -82,6 +85,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM) || defined(CONFIG_DRIVERS_HDF_PLATFORM)
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)
     { TEST_PAL_GPIO_TYPE, HdfGpioTestEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PIN) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PIN)
+    { TEST_PAL_PIN_TYPE, HdfPinTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I2C) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I2C)
     { TEST_PAL_I2C_TYPE, HdfI2cTestEntry },

@@ -34,7 +34,7 @@ enum HdfTestSubModuleCmd {
     TEST_PAL_I2C_TYPE       = 0,
     TEST_PAL_SPI_TYPE       = 1,
     TEST_PAL_GPIO_TYPE      = 2,
-    TEST_PAL_PINCTRL_TYPE   = 3,
+    TEST_PAL_PIN_TYPE       = 3,
     TEST_PAL_CLOCK_TYPE     = 4,
     TEST_PAL_REGULATOR_TYPE = 5,
     TEST_PAL_MIPI_DSI_TYPE  = 6,
