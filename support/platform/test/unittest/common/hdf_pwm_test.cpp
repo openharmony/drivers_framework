@@ -6,13 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <fcntl.h>
 #include <gtest/gtest.h>
-#include <string>
-#include <unistd.h>
 #include "hdf_uhdf_test.h"
 
 using namespace testing::ext;

@@ -10,7 +10,6 @@
 #define PWM_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
 #include "pwm_if.h"
 
 enum PwmTestCmd {
@@ -31,6 +30,7 @@ struct PwmTest {
     int32_t (*TestEntry)(struct PwmTest *test, int32_t cmd);
     uint32_t num;
     struct PwmConfig cfg;
+    struct PwmConfig originCfg;
     DevHandle handle;
 };
 
