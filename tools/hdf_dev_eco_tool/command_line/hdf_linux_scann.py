@@ -46,23 +46,25 @@ class HdfLinuxScan(object):
         self.board = board
         self.kernel = "linux"
 
-        self.Makefile_path = hdf_utils.get_vendor_makefile_path(
+        self.makefile_path = hdf_utils.get_vendor_makefile_path(
             root, kernel="linux")
-        if not os.path.exists(self.Makefile_path):
-            raise HdfToolException('Makefile: %s not exist' % self.Makefile_path,
-                                   CommandErrorCode.TARGET_NOT_EXIST)
+        if not os.path.exists(self.makefile_path):
+            raise HdfToolException(
+                'Makefile: %s not exist' % self.makefile_path,
+                CommandErrorCode.TARGET_NOT_EXIST)
 
         self.framework_dir = hdf_utils.get_module_dir(self.root, vendor)
         if not os.path.exists(self.framework_dir):
-            raise HdfToolException('file: %s not exist' % self.framework_dir,
-                                   CommandErrorCode.TARGET_NOT_EXIST)
+            raise HdfToolException(
+                'file: %s not exist' % self.framework_dir,
+                CommandErrorCode.TARGET_NOT_EXIST)
 
         self.hcs_path = hdf_utils.get_hcs_file_path(
             self.root, self.vendor, self.board)
         if not os.path.exists(self.hcs_path):
             raise HdfToolException('file: %s not exist' % self.hcs_path,
                                    CommandErrorCode.TARGET_NOT_EXIST)
-        self.contents = hdf_utils.read_file_lines(self.Makefile_path)
+        self.contents = hdf_utils.read_file_lines(self.makefile_path)
         self.re_temp2 = r'model/[a-z 0-9]+'
 
     def scan_makefile(self):
