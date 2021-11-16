@@ -26,20 +26,23 @@ void HdfSampleDriverRelease(struct HdfDeviceObject *deviceObject)
 
 int32_t SampleDriverRegisterDevice(struct HdfSBuf *data)
 {
+    const char *moduleName = NULL;
+    const char *serviceName = NULL;
+    struct HdfDeviceObject *devObj = NULL;
     if (data == NULL) {
         return HDF_FAILURE;
     }
 
-    const char *moduleName = HdfSbufReadString(data);
+    moduleName = HdfSbufReadString(data);
     if (moduleName == NULL) {
         return HDF_FAILURE;
     }
-    const char *serviceName = HdfSbufReadString(data);
+    serviceName = HdfSbufReadString(data);
     if (serviceName == NULL) {
         return HDF_FAILURE;
     }
 
-    struct HdfDeviceObject *devObj = HdfRegisterDevice(moduleName, serviceName, NULL);
+    devObj = HdfRegisterDevice(moduleName, serviceName, NULL);
     if (devObj == NULL) {
         return HDF_FAILURE;
     }
@@ -48,15 +51,17 @@ int32_t SampleDriverRegisterDevice(struct HdfSBuf *data)
 
 int32_t SampleDriverUnregisterDevice(struct HdfSBuf *data)
 {
+    const char *moduleName = NULL;
+    const char *serviceName = NULL;
     if (data == NULL) {
         return HDF_FAILURE;
     }
 
-    const char *moduleName = HdfSbufReadString(data);
+    moduleName = HdfSbufReadString(data);
     if (moduleName == NULL) {
         return HDF_FAILURE;
     }
-    const char *serviceName = HdfSbufReadString(data);
+    serviceName = HdfSbufReadString(data);
     if (serviceName == NULL) {
         return HDF_FAILURE;
     }
@@ -71,11 +76,12 @@ int32_t SampleDriverSendEvent(struct HdfDeviceIoClient *client, int id, struct H
 
 int32_t SampleDriverPowerStateInject(uint32_t powerState)
 {
+    int ret;
     struct IDevmgrService *devmgrService = DevmgrServiceGetInstance();
     if (devmgrService == NULL || devmgrService->PowerStateChange == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-    int ret = devmgrService->PowerStateChange(devmgrService, powerState);
+    ret = devmgrService->PowerStateChange(devmgrService, powerState);
 
     HDF_LOGI("%s: inject power state(%d) done, ret = %d", __func__, powerState, ret);
     return ret;
@@ -83,11 +89,11 @@ int32_t SampleDriverPowerStateInject(uint32_t powerState)
 
 int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
+    uint32_t powerState = 0;
     int32_t ret = HDF_SUCCESS;
     if (reply == NULL || client == NULL) {
         return HDF_FAILURE;
     }
-    uint32_t powerState = 0;
     switch (cmdId) {
         case SAMPLE_DRIVER_REGISTER_DEVICE: {
             ret = SampleDriverRegisterDevice(data);
@@ -118,15 +124,16 @@ int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct
 
 int HdfSampleDriverBind(struct HdfDeviceObject *deviceObject)
 {
-    HDF_LOGD("%s::enter", __func__);
-    if (deviceObject == NULL) {
-        return HDF_FAILURE;
-    }
     static struct IDeviceIoService testService = {
         .Dispatch = SampleDriverDispatch,
         .Open = NULL,
         .Release = NULL,
     };
+    HDF_LOGD("%s::enter", __func__);
+    if (deviceObject == NULL) {
+        return HDF_FAILURE;
+    }
+
     deviceObject->service = &testService;
     return HDF_SUCCESS;
 }
@@ -162,6 +169,8 @@ struct SampleDriverPmListener {
 
 int HdfSampleDriverInit(struct HdfDeviceObject *deviceObject)
 {
+    static struct SampleDriverPmListener pmListener = {0};
+    int ret;
     HDF_LOGI("%s::enter!", __func__);
     if (deviceObject == NULL) {
         HDF_LOGE("%s::ptr is null!", __func__);
@@ -169,13 +178,12 @@ int HdfSampleDriverInit(struct HdfDeviceObject *deviceObject)
     }
     HDF_LOGD("%s:Init success", __func__);
 
-    static struct SampleDriverPmListener pmListener = {0};
     pmListener.powerListener.DozeResume = HdfSampleDozeResume;
     pmListener.powerListener.DozeSuspend = HdfSampleDozeSuspend;
     pmListener.powerListener.Resume = HdfSampleResume;
     pmListener.powerListener.Suspend = HdfSampleSuspend;
 
-    int ret = HdfPmRegisterPowerListener(deviceObject, &pmListener.powerListener);
+    ret = HdfPmRegisterPowerListener(deviceObject, &pmListener.powerListener);
     HDF_LOGI("%s:register power listener, ret = %d", __func__, ret);
 
     return HDF_SUCCESS;

@@ -136,7 +136,6 @@ void DevSvcManagerClntRemoveService(const char *svcName)
 
     serviceManager = devSvcMgrClnt->devSvcMgrIf;
     if (serviceManager == NULL || serviceManager->RemoveService == NULL) {
-        HDF_LOGE("failed to remove service, method not implement");
         return;
     }
     serviceManager->RemoveService(serviceManager, svcName);

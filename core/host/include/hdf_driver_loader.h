@@ -15,9 +15,8 @@
 
 struct IDriverLoader {
     struct HdfObject object;
-    struct HdfDriverEntry *(*GetDriverEntry)(const struct HdfDeviceInfo *deviceInfo);
-    struct HdfDeviceNode *(*LoadNode)(struct IDriverLoader *, const struct HdfDeviceInfo *deviceInfo);
-    void (*UnLoadNode)(struct IDriverLoader *, const struct HdfDeviceInfo *deviceInfo);
+    struct HdfDriver *(*GetDriver)(const char *driverName);
+    void (*ReclaimDriver)(struct HdfDriver *driver);
 };
 
 struct HdfDriverLoader {
@@ -28,7 +27,7 @@ struct HdfObject *HdfDriverLoaderCreate(void);
 void HdfDriverLoaderConstruct(struct HdfDriverLoader *inst);
 void HdfDriverLoaderRelease(struct HdfObject *object);
 struct IDriverLoader *HdfDriverLoaderGetInstance(void);
-struct HdfDriverEntry *HdfDriverLoaderGetDriverEntry(const struct HdfDeviceInfo *deviceInfo);
+struct HdfDriver *HdfDriverLoaderGetDriver(const char *moduleName);
 struct HdfDeviceNode *HdfDriverLoaderLoadNode(
     struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo);
 void HdfDriverLoaderUnLoadNode(struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo);

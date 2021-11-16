@@ -17,82 +17,52 @@
 
 #define HDF_LOG_TAG driver_loader
 
-struct HdfDeviceNode *HdfDriverLoaderLoadNode(
-    struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo)
+int32_t HdfDriverEntryConstruct()
 {
+    int i;
     struct HdfDriverEntry *driverEntry = NULL;
-    struct HdfDeviceNode *devNode = NULL;
-    if ((loader == NULL) || (loader->GetDriverEntry == NULL)) {
-        HDF_LOGE("failed to load node, loader is invalid");
-        return NULL;
+    size_t *addrBegin = NULL;
+    int32_t count = 0;
+
+    count = (int32_t)(((uint8_t *)(HDF_DRIVER_END()) - (uint8_t *)(HDF_DRIVER_BEGIN())) / sizeof(size_t));
+    if (count <= 0) {
+        HDF_LOGE("%s: no hdf driver exist", __func__);
+        return HDF_FAILURE;
     }
 
-    driverEntry = loader->GetDriverEntry(deviceInfo);
-    if (driverEntry == NULL) {
-        HDF_LOGE("failed to load node, deviceEntry is null");
-        return NULL;
-    }
-
-    devNode = HdfDeviceNodeNewInstance();
-    if (devNode == NULL) {
-        HDF_LOGE("failed to load node, device node is null");
-        return NULL;
-    }
-
-    devNode->driverEntry = driverEntry;
-    devNode->deviceInfo = deviceInfo;
-    devNode->deviceObject.property = HcsGetNodeByMatchAttr(HdfGetRootNode(), deviceInfo->deviceMatchAttr);
-    devNode->deviceObject.priv = (void *)(deviceInfo->private);
-    if (devNode->deviceObject.property == NULL) {
-        HDF_LOGW("failed to load node, property is null, match attr is: %s", deviceInfo->deviceMatchAttr);
-    }
-
-    if ((deviceInfo->policy == SERVICE_POLICY_PUBLIC) || (deviceInfo->policy == SERVICE_POLICY_CAPACITY)) {
-        if (driverEntry->Bind == NULL) {
-            HDF_LOGE("driver bind method is null");
-            HdfDeviceNodeFreeInstance(devNode);
-            return NULL;
+    addrBegin = (size_t *)(HDF_DRIVER_BEGIN());
+    for (i = 0; i < count; i++) {
+        driverEntry = (struct HdfDriverEntry *)(*addrBegin);
+        if (HdfRegisterDriverEntry(driverEntry) != HDF_SUCCESS) {
+            HDF_LOGE("failed to register driver %s, skip and try another", driverEntry ? driverEntry->moduleName : "");
+            continue;
         }
-        if (driverEntry->Bind(&devNode->deviceObject) != 0) {
-            HDF_LOGE("bind driver failed");
-            HdfDeviceNodeFreeInstance(devNode);
-            return NULL;
-        }
+        addrBegin++;
     }
-    return devNode;
+    return HDF_SUCCESS;
 }
 
-void HdfDriverLoaderUnLoadNode(struct IDriverLoader *loader, const struct HdfDeviceInfo *deviceInfo)
+struct HdfDriver *HdfDriverLoaderGetDriver(const char *moduleName)
 {
-    struct HdfDriverEntry *driverEntry = NULL;
-    struct HdfDeviceObject *deviceObject = NULL;
-    if ((loader == NULL) || (loader->GetDriverEntry == NULL)) {
-        HDF_LOGE("failed to unload service, loader invalid");
-        return;
+    if (moduleName == NULL) {
+        HDF_LOGE("%s: failed to get device entry, moduleName is NULL", __func__);
+        return NULL;
     }
 
-    driverEntry = loader->GetDriverEntry(deviceInfo);
-    if (driverEntry == NULL) {
-        HDF_LOGE("failed to unload service, driverEntry is null");
-        return;
-    }
-    if (driverEntry->Release == NULL) {
-        HDF_LOGI("device release func is null");
-        return;
-    }
-    deviceObject = DevSvcManagerClntGetDeviceObject(deviceInfo->svcName);
-    if (deviceObject != NULL) {
-        driverEntry->Release(deviceObject);
-    }
+    return HdfDriverManagerGetDriver(moduleName);
+}
+
+void HdfDriverLoaderReclaimDriver(struct HdfDriver *driver)
+{
+    // kernel driver do not need release
+    (void)driver;
 }
 
 void HdfDriverLoaderConstruct(struct HdfDriverLoader *inst)
 {
     if (inst != NULL) {
-        struct IDriverLoader *driverLoaderIf = (struct IDriverLoader *)inst;
-        driverLoaderIf->LoadNode = HdfDriverLoaderLoadNode;
-        driverLoaderIf->UnLoadNode = HdfDriverLoaderUnLoadNode;
-        driverLoaderIf->GetDriverEntry = HdfDriverLoaderGetDriverEntry;
+        inst->super.GetDriver = HdfDriverLoaderGetDriver;
+        inst->super.ReclaimDriver = HdfDriverLoaderReclaimDriver;
     }
 }
 
@@ -101,6 +71,9 @@ struct HdfObject *HdfDriverLoaderCreate()
     static bool isDriverLoaderInit = false;
     static struct HdfDriverLoader driverLoader;
     if (!isDriverLoaderInit) {
+        if (HdfDriverEntryConstruct() != HDF_SUCCESS) {
+            return NULL;
+        }
         HdfDriverLoaderConstruct(&driverLoader);
         isDriverLoaderInit = true;
     }

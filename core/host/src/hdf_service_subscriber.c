@@ -7,15 +7,16 @@
  */
 
 #include "hdf_service_subscriber.h"
+#include "hdf_device.h"
 #include "osal_mem.h"
 
-struct HdfServiceSubscriber *HdfServiceSubscriberObtain(struct SubscriberCallback callback, uint32_t matchId)
+struct HdfServiceSubscriber *HdfServiceSubscriberObtain(struct SubscriberCallback callback, devid_t devid)
 {
     struct HdfServiceSubscriber *serviceSubscriber =
         (struct HdfServiceSubscriber *)OsalMemCalloc(sizeof(struct HdfServiceSubscriber));
     if (serviceSubscriber != NULL) {
         serviceSubscriber->state = HDF_SUBSCRIBER_STATE_PENDING;
-        serviceSubscriber->matchId = matchId;
+        serviceSubscriber->devId = devid;
         serviceSubscriber->callback = callback;
     }
     return serviceSubscriber;

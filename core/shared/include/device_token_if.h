@@ -10,9 +10,11 @@
 #define DEVICE_TOKEN_IF_H
 
 #include "hdf_object.h"
+#include "hdf_device.h"
 
 struct IHdfDeviceToken {
     struct HdfObject object;
+    devid_t devid;
 };
 
 #endif /* DEVICE_TOKEN_IF_H */

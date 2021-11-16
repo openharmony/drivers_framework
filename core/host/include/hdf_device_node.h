@@ -13,6 +13,7 @@
 #include "hdf_device_info.h"
 #include "hdf_device_desc.h"
 #include "hdf_dlist.h"
+#include "hdf_driver.h"
 #include "hdf_pm.h"
 
 struct HdfDeviceNode;
@@ -20,8 +21,10 @@ struct DevHostService;
 
 struct IDeviceNode {
     struct HdfObject object;
-    int (*PublishService)(struct HdfDeviceNode *, const char *);
-    int (*LaunchNode)(struct HdfDeviceNode *, struct IHdfDevice *);
+    int (*PublishService)(struct HdfDeviceNode *devNode);
+    int (*RemoveService)(struct HdfDeviceNode *devNode);
+    int (*LaunchNode)(struct HdfDeviceNode *devNode);
+    int (*ReleaseNode)(struct HdfDeviceNode *devNode);
 };
 
 struct HdfDeviceNode {
@@ -31,20 +34,32 @@ struct HdfDeviceNode {
     struct DevHostService *hostService;
     struct HdfDeviceObject deviceObject;
     struct IHdfDeviceToken *token;
-    struct HdfDriverEntry *driverEntry;
-    const struct HdfDeviceInfo *deviceInfo;
+    struct HdfDriver *driver;
+    const struct HdfDevice *device;
+    char *servName;
+    devid_t devId;
+    uint16_t policy;
+    uint16_t permission;
+    uint8_t devStatus;
+    bool servStatus;
+};
+
+enum DevNodeStaus {
+    DEVNODE_NONE = 0,
+    DEVNODE_INITED,
+    DEVNODE_LAUNCHED,
 };
 
 int HdfDeviceNodeAddPowerStateListener(
     struct HdfDeviceNode *devNode, const struct IPowerEventListener *listener);
 void HdfDeviceNodeRemovePowerStateListener(
     struct HdfDeviceNode *devNode, const struct IPowerEventListener *listener);
-void HdfDeviceNodeConstruct(struct HdfDeviceNode *service);
-void HdfDeviceNodeDestruct(struct HdfDeviceNode *service);
-struct HdfDeviceNode *HdfDeviceNodeNewInstance(void);
-void HdfDeviceNodeFreeInstance(struct HdfDeviceNode *service);
+void HdfDeviceNodeConstruct(struct HdfDeviceNode *devNode);
+void HdfDeviceNodeDestruct(struct HdfDeviceNode *devNode);
+struct HdfDeviceNode *HdfDeviceNodeNewInstance(const struct HdfDeviceInfo *deviceInfo, struct HdfDriver *driver);
+void HdfDeviceNodeFreeInstance(struct HdfDeviceNode *devNode);
 void HdfDeviceNodeDelete(struct HdfDeviceNode *devNode);
-int HdfDeviceNodePublishPublicService(struct HdfDeviceNode *service, const char *svcName);
-void HdfDeviceNodeReclaimService(const char *svcName);
+int HdfDeviceNodePublishPublicService(struct HdfDeviceNode *devNode);
+int HdfDeviceNodeRemoveService(struct HdfDeviceNode *devNode);
 
 #endif /* HDF_DEVICE_NODE_H */

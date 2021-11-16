@@ -33,7 +33,7 @@ static int DevmgrServiceActiveDevice(struct DevHostServiceClnt *hostClnt,
         }
         return ret;
     } else if (!isLoad && (deviceInfo->preload != DEVICE_PRELOAD_DISABLE)) {
-        devHostSvcIf->DelDevice(devHostSvcIf, deviceInfo);
+        devHostSvcIf->DelDevice(devHostSvcIf, deviceInfo->deviceId);
         deviceInfo->preload = DEVICE_PRELOAD_DISABLE;
         return HDF_SUCCESS;
     } else {
@@ -117,7 +117,7 @@ static struct DevHostServiceClnt *DevmgrServiceFindDeviceHost(struct IDevmgrServ
     return NULL;
 }
 
-static void DevmgrServiceUpdateStatus(struct DevHostServiceClnt *hostClnt, uint16_t deviceId, uint16_t status)
+static void DevmgrServiceUpdateStatus(struct DevHostServiceClnt *hostClnt, devid_t devId, uint16_t status)
 {
     struct HdfSListIterator it;
     struct HdfDeviceInfo *deviceInfo = NULL;
@@ -125,27 +125,23 @@ static void DevmgrServiceUpdateStatus(struct DevHostServiceClnt *hostClnt, uint1
     HdfSListIteratorInit(&it, hostClnt->deviceInfos);
     while (HdfSListIteratorHasNext(&it)) {
         deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&it);
-        if (deviceInfo->deviceId == deviceId) {
+        if (deviceInfo->deviceId == devId) {
             deviceInfo->status = status;
             HDF_LOGD("%s host:%s %u device:%s %u status:%u", __func__, hostClnt->hostName,
-                hostClnt->hostId, deviceInfo->svcName, deviceId, deviceInfo->status);
+                hostClnt->hostId, deviceInfo->svcName, devId, deviceInfo->status);
             return;
         }
     }
-    HDF_LOGE("%s: not find device %u in host %u", __func__, deviceId, hostClnt->hostId);
+    HDF_LOGE("%s: not find device %u in host %u", __func__, devId, hostClnt->hostId);
     return;
 }
 
-static int DevmgrServiceAttachDevice(
-    struct IDevmgrService *inst, const struct HdfDeviceInfo *deviceInfo, struct IHdfDeviceToken *token)
+static int DevmgrServiceAttachDevice(struct IDevmgrService *inst, struct IHdfDeviceToken *token)
 {
     struct DevHostServiceClnt *hostClnt = NULL;
     struct DeviceTokenClnt *tokenClnt = NULL;
-    if (deviceInfo == NULL) {
-        HDF_LOGE("failed to attach device, deviceInfo is null");
-        return HDF_FAILURE;
-    }
-    hostClnt = DevmgrServiceFindDeviceHost(inst, deviceInfo->hostId);
+
+    hostClnt = DevmgrServiceFindDeviceHost(inst, HOSTID(token->devid));
     if (hostClnt == NULL) {
         HDF_LOGE("failed to attach device, hostClnt is null");
         return HDF_FAILURE;
@@ -156,9 +152,36 @@ static int DevmgrServiceAttachDevice(
         return HDF_FAILURE;
     }
 
-    tokenClnt->deviceInfo = deviceInfo;
-    DevmgrServiceUpdateStatus(hostClnt, deviceInfo->deviceId, HDF_SERVICE_USABLE);
+    DevmgrServiceUpdateStatus(hostClnt, token->devid, HDF_SERVICE_USABLE);
     HdfSListAdd(&hostClnt->devices, &tokenClnt->node);
+    return HDF_SUCCESS;
+}
+
+static bool HdfSListHostSearchDeviceTokenComparer(struct HdfSListNode *tokenNode, uint32_t devid)
+{
+    struct DeviceTokenClnt *tokenClnt = CONTAINER_OF(tokenNode, struct DeviceTokenClnt, node);
+    return tokenClnt->tokenIf->devid == devid;
+}
+
+static int DevmgrServiceDetachDevice(struct IDevmgrService *inst, devid_t devid)
+{
+    struct DevHostServiceClnt *hostClnt = NULL;
+    struct DeviceTokenClnt *tokenClnt = NULL;
+    struct HdfSListNode *tokenClntNode = NULL;
+
+    hostClnt = DevmgrServiceFindDeviceHost(inst, HOSTID(devid));
+    if (hostClnt == NULL) {
+        HDF_LOGE("failed to attach device, hostClnt is null");
+        return HDF_FAILURE;
+    }
+    tokenClntNode = HdfSListSearch(&hostClnt->devices, devid, HdfSListHostSearchDeviceTokenComparer);
+    if (tokenClntNode == NULL) {
+        HDF_LOGE("devmgr detach device %x not found", devid);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+    tokenClnt = CONTAINER_OF(tokenClntNode, struct DeviceTokenClnt, node);
+    DevmgrServiceUpdateStatus(hostClnt, devid, HDF_SERVICE_UNUSABLE);
+    HdfSListRemove(&hostClnt->devices, &tokenClnt->node);
     return HDF_SUCCESS;
 }
 
@@ -281,6 +304,7 @@ bool DevmgrServiceConstruct(struct DevmgrService *inst)
     devMgrSvcIf = (struct IDevmgrService *)inst;
     if (devMgrSvcIf != NULL) {
         devMgrSvcIf->AttachDevice = DevmgrServiceAttachDevice;
+        devMgrSvcIf->DetachDevice = DevmgrServiceDetachDevice;
         devMgrSvcIf->AttachDeviceHost = DevmgrServiceAttachDeviceHost;
         devMgrSvcIf->StartService = DevmgrServiceStartService;
         devMgrSvcIf->PowerStateChange = DevmgrServicePowerStateChange;
@@ -323,7 +347,7 @@ void DevmgrServiceRelease(struct HdfObject *object)
     }
     DLIST_FOR_EACH_ENTRY_SAFE(hostClnt, hostClntTmp, &devmgrService->hosts, struct DevHostServiceClnt, node) {
         DListRemove(&hostClnt->node);
-        DevHostServiceClntDelete(hostClnt);	
+        DevHostServiceClntDelete(hostClnt);
     }
 
     OsalMutexDestroy(&devmgrService->devMgrMutex);

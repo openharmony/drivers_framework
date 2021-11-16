@@ -20,28 +20,80 @@
 
 static int HdfDeviceAttach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode)
 {
+    int ret;
     struct HdfDevice *device = (struct HdfDevice *)devInst;
     struct IDeviceNode *nodeIf = (struct IDeviceNode *)devNode;
     if (device == NULL || nodeIf == NULL || nodeIf->LaunchNode == NULL) {
         HDF_LOGE("failed to attach device, input params invalid");
         return HDF_ERR_INVALID_PARAM;
     }
-    DListInsertTail(&devNode->entry, &device->devNodes);
-    return nodeIf->LaunchNode(devNode, devInst);
+
+    ret = nodeIf->LaunchNode(devNode);
+    if (ret == HDF_SUCCESS) {
+        DListInsertTail(&devNode->entry, &device->devNodes);
+    }
+
+    return ret;
+}
+
+static int HdfDeviceDetach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode)
+{
+    struct HdfDevice *device = NULL;
+    if (devInst == NULL || devNode == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    device = CONTAINER_OF(devInst, struct HdfDevice, super);
+    if (device->deviceId != DEVICEID(devNode->devId)) {
+        HDF_LOGE("%s: device %x detach unknown devnode %x", __func__, device->deviceId, devNode->devId);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+    DListRemove(&devNode->entry);
+    HdfDeviceNodeFreeInstance(devNode);
+
+    return HDF_SUCCESS;
+}
+
+static struct HdfDeviceNode *HdfDeviceGetDeviceNode(struct IHdfDevice *device, devid_t devid)
+{
+    struct HdfDeviceNode *devNode = NULL;
+    struct HdfDevice *dev = CONTAINER_OF(device, struct HdfDevice, super);
+    DLIST_FOR_EACH_ENTRY(devNode, &dev->devNodes, struct HdfDeviceNode, entry) {
+        if (devNode->devId == devid) {
+            return devNode;
+        };
+    }
+    return NULL;
+}
+
+static int HdfDeviceDetachWithDevid(struct IHdfDevice *device, devid_t devid)
+{
+    struct HdfDevice *dev = CONTAINER_OF(device, struct HdfDevice, super);
+    struct HdfDeviceNode *devNode = HdfDeviceGetDeviceNode(device, devid);
+    if (devNode == NULL) {
+        HDF_LOGE("detach device node %x not in device %x", devid, dev->deviceId);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+
+    return HdfDeviceDetach(device, devNode);
 }
 
 void HdfDeviceConstruct(struct HdfDevice *device)
 {
     device->super.Attach = HdfDeviceAttach;
+    device->super.Detach = HdfDeviceDetach;
+    device->super.DetachWithDevid = HdfDeviceDetachWithDevid;
+    device->super.GetDeviceNode = HdfDeviceGetDeviceNode;
+
     DListHeadInit(&device->devNodes);
 }
 
 void HdfDeviceDestruct(struct HdfDevice *device)
 {
     struct HdfDeviceNode *devNode = NULL;
-    struct HdfDeviceNode *devNodeTmp = NULL;
-    DLIST_FOR_EACH_ENTRY_SAFE(devNode, devNodeTmp, &device->devNodes, struct HdfDeviceNode, entry) {
-        HdfDeviceNodeDelete(devNode);
+    struct HdfDeviceNode *tmp = NULL;
+    DLIST_FOR_EACH_ENTRY_SAFE(devNode, tmp, &device->devNodes, struct HdfDeviceNode, entry) {
+        HdfDeviceNodeFreeInstance(devNode);
     }
     DListHeadInit(&device->devNodes);
 }
@@ -76,13 +128,3 @@ void HdfDeviceFreeInstance(struct HdfDevice *device)
         HdfObjectManagerFreeObject(&device->super.object);
     }
 }
-
-void HdfDeviceDelete(struct HdfSListNode *listEntry)
-{
-    if (listEntry != NULL) {
-        struct HdfDevice *device = (struct HdfDevice *)HDF_SLIST_CONTAINER_OF(
-            struct HdfSListNode, listEntry, struct HdfDevice, node);
-        HdfDeviceFreeInstance(device);
-    }
-}
-

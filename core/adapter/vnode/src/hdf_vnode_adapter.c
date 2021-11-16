@@ -643,7 +643,7 @@ int32_t HdfDeviceSendEvent(const struct HdfDeviceObject *deviceObject, uint32_t 
     }
 
     deviceNode = CONTAINER_OF(deviceObject, struct HdfDeviceNode, deviceObject);
-    if (deviceNode->deviceInfo->policy != SERVICE_POLICY_CAPACITY) {
+    if (deviceNode->policy != SERVICE_POLICY_CAPACITY) {
         return HDF_ERR_NOT_SUPPORT;
     }
 

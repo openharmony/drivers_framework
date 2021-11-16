@@ -19,7 +19,8 @@ struct DevmgrServiceClnt {
 
 struct DevmgrServiceClnt *DevmgrServiceClntGetInstance(void);
 void DevmgrServiceClntFreeInstance(struct DevmgrServiceClnt *inst);
-int DevmgrServiceClntAttachDevice(const struct HdfDeviceInfo *deviceInfo, struct IHdfDeviceToken *deviceToken);
+int DevmgrServiceClntAttachDevice(struct IHdfDeviceToken *deviceToken);
+int DevmgrServiceClntDetachDevice(devid_t devid);
 int DevmgrServiceClntAttachDeviceHost(uint16_t hostId, struct IDevHostService *hostService);
 
 #endif /* DEVMGR_SERVICE_CLIENT_H */
