@@ -6,12 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "audio_host.h"
 #include "audio_core.h"
-#include "audio_parse.h"
 #include "audio_driver_log.h"
-#include "audio_dai_if.h"
-#include "osal_io.h"
 
 struct DaiData *DaiDataFromCard(const struct AudioCard *card)
 {
@@ -102,6 +98,10 @@ int32_t DaiSetConfigInfo(struct DaiData *data)
 
     for (index = 0; index < data->numControls; index++) {
         data->controls[index].iface    = item[index].iface;
+        if (item[index].arrayIndex >= AUDIO_CTRL_LIST_MAX) {
+            AUDIO_DRIVER_LOG_ERR("Array super index.");
+            return HDF_FAILURE;
+        }
         data->controls[index].name     = g_audioControlsList[item[index].arrayIndex];
         data->controls[index].Info     = AudioInfoCtrlOps;
         data->controls[index].privateValue = (unsigned long)&patRegCfgItemTmp[index];

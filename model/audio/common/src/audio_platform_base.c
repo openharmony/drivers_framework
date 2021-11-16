@@ -207,14 +207,14 @@ int32_t AudioSetCaptureBufInfo(struct PlatformData *data, const struct AudioPcmH
 
 int32_t AudioWriteProcBigEndian(const struct PlatformData *data, struct AudioTxData *txData)
 {
-    uint64_t buffSize;
+    uint32_t buffSize;
 
     if (data == NULL || txData == NULL || txData->buf == NULL) {
         AUDIO_DRIVER_LOG_ERR("input param is null.");
         return HDF_FAILURE;
     }
 
-    buffSize = txData->frames * data->pcmInfo.frameSize;
+    buffSize = (uint32_t)txData->frames * data->pcmInfo.frameSize;
     if (data->pcmInfo.isBigEndian) {
         if (AudioDataBigEndianChange(txData->buf, buffSize, data->pcmInfo.bitWidth) != HDF_SUCCESS) {
             AUDIO_DRIVER_LOG_ERR("AudioDataBigEndianChange: failed.");
@@ -228,12 +228,11 @@ static enum CriBuffStatus AudioDmaBuffStatus(const struct AudioCard *card)
 {
     uint32_t dataAvailable;
     uint32_t residual;
-    uint32_t pointer;
-    struct PlatformData *data = NULL;
+    uint32_t pointer = 0;
     uint32_t wptr;
     uint32_t rptr;
 
-    data = PlatformDataFromCard(card);
+    struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL || data->ops == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -361,7 +360,7 @@ static int32_t PcmReadData(struct PlatformData *data, struct AudioRxData *rxData
     if (!data->pcmInfo.isBigEndian) {
         if (rxData->buf == NULL ||
             AudioDataBigEndianChange(rxData->buf, data->captureBufInfo.curTrafSize,
-                                     data->pcmInfo.bitWidth) != HDF_SUCCESS) {
+                data->pcmInfo.bitWidth) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("AudioDataBigEndianChange: failed.");
                 return HDF_FAILURE;
         }
@@ -468,9 +467,10 @@ static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
         return HDF_FAILURE;
     }
 
-    uint32_t totalSize = data->mmapData.totalBufferFrames * data->pcmInfo.frameSize;
+    uint32_t totalSize = (uint32_t)data->mmapData.totalBufferFrames * data->pcmInfo.frameSize;
     uint32_t lastBuffSize = ((totalSize % MIN_PERIOD_SIZE) == 0) ? MIN_PERIOD_SIZE : (totalSize % MIN_PERIOD_SIZE);
-    uint32_t loopTimes = (lastBuffSize == MIN_PERIOD_SIZE) ? (totalSize / MIN_PERIOD_SIZE) : (totalSize / MIN_PERIOD_SIZE + 1);
+    uint32_t loopTimes = (lastBuffSize == MIN_PERIOD_SIZE) ?
+        (totalSize / MIN_PERIOD_SIZE) : (totalSize / MIN_PERIOD_SIZE + 1);
     data->mmapLoopCount = 0;
     char *tmpBuf = OsalMemCalloc(MIN_PERIOD_SIZE);
 
@@ -573,13 +573,13 @@ static int32_t MmapReadData(struct PlatformData *data, const struct AudioMmapDat
                 return HDF_FAILURE;
         }
     }
-    
+
     if (CopyToUser((char *)rxMmapData->memoryAddress + offset,
-                   (char *)(data->captureBufInfo.virtAddr) + rPtr, data->captureBufInfo.curTrafSize) != 0) {
-            AUDIO_DRIVER_LOG_ERR("CopyToUser failed.");
-            return HDF_FAILURE;
+        (char *)(data->captureBufInfo.virtAddr) + rPtr, data->captureBufInfo.curTrafSize) != 0) {
+        AUDIO_DRIVER_LOG_ERR("CopyToUser failed.");
+        return HDF_FAILURE;
     }
-    
+
     // 4. update rptr
     data->captureBufInfo.rptrOffSet += data->captureBufInfo.curTrafSize;
     if (data->captureBufInfo.rptrOffSet >= data->captureBufInfo.cirBufSize) {
@@ -595,21 +595,21 @@ int32_t AudioMmapReadTransfer(const struct AudioCard *card, const struct AudioMm
     uint32_t offset = 0;
     enum CriBuffStatus status;
     uint32_t timeout = 0;
-    struct PlatformData *data = NULL;
 
-    if (!card || !rxMmapData || !rxMmapData->memoryAddress || rxMmapData->totalBufferFrames <= 0) {
+    if (card == NULL || rxMmapData == NULL || rxMmapData->memoryAddress == NULL ||
+        rxMmapData->totalBufferFrames <= 0) {
         AUDIO_DRIVER_LOG_ERR("param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = PlatformDataFromCard(card);
+    struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
     }
 
     uint32_t frameSize = data->pcmInfo.frameSize;
-    uint32_t totalSize = rxMmapData->totalBufferFrames * frameSize;
+    uint32_t totalSize = (uint32_t)rxMmapData->totalBufferFrames * frameSize;
     data->captureBufInfo.pointer = 0;
     data->captureBufInfo.curTrafSize = data->captureBufInfo.trafBufSize;
     if (data->captureBufInfo.virtAddr == NULL) {
@@ -642,7 +642,6 @@ int32_t AudioMmapReadTransfer(const struct AudioCard *card, const struct AudioMm
             AUDIO_DRIVER_LOG_ERR("MmapReadData fail.");
             return HDF_FAILURE;
         }
-
         offset += data->captureBufInfo.curTrafSize;
 
     } while (offset < totalSize && data->captureBufInfo.runStatus != 0);
@@ -847,13 +846,75 @@ int32_t AudioCaptureClose(const struct AudioCard *card)
     return AudioCaptureBuffFree(platformData);
 }
 
-int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
+static int32_t AudioPcmPending(struct AudioCard *card)
 {
-    if (card == NULL) {
-        AUDIO_DRIVER_LOG_ERR("param is invalid.");
-        return HDF_ERR_INVALID_PARAM;
+    struct PlatformData *data = PlatformDataFromCard(card);
+    if (data == NULL) {
+        AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
+        return HDF_FAILURE;
     }
 
+    if (AudioDmaSubmit(data) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioDmaPending(data) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSampSetPowerMonitor(card, false) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioPcmPause(struct AudioCard *card)
+{
+    struct PlatformData *data = PlatformDataFromCard(card);
+    if (data == NULL) {
+        AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioDmaPause(data) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSampSetPowerMonitor(card, true) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioPcmResume(struct AudioCard *card)
+{
+    struct PlatformData *data = PlatformDataFromCard(card);
+    if (data == NULL) {
+        AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioDmaResume(data) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSampPowerUp(card) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+    if (AudioSampSetPowerMonitor(card, false) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
+{
     struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
@@ -862,56 +923,32 @@ int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
 
     switch (cmd) {
         case AUDIO_DRV_PCM_IOCTL_RENDER_START:
-            if (AudioDmaSubmit(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
-                return HDF_FAILURE;
-            }
-
-            if (AudioDmaPending(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
-                return HDF_FAILURE;
-            }
-
-            if (AudioSampSetPowerMonitor(card, false) != HDF_SUCCESS) {
+            if (AudioPcmPending(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmPending fail.");
                 return HDF_FAILURE;
             }
 
             data->renderBufInfo.runStatus = PCM_START;
             break;
         case AUDIO_DRV_PCM_IOCTL_RENDER_STOP:
-            if (AudioDmaPause(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
-                return HDF_FAILURE;
-            }
-
-            if (AudioSampSetPowerMonitor(card, true) != HDF_SUCCESS) {
+            if (AudioPcmPause(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmPause fail.");
                 return HDF_FAILURE;
             }
 
             data->renderBufInfo.runStatus = PCM_STOP;
             break;
         case AUDIO_DRV_PCM_IOCTL_RENDER_PAUSE:
-            if (AudioDmaPause(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
-                return HDF_FAILURE;
-            }
-
-            if (AudioSampSetPowerMonitor(card, true) != HDF_SUCCESS) {
+            if (AudioPcmPause(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmPause fail.");
                 return HDF_FAILURE;
             }
 
             data->renderBufInfo.runStatus = PCM_PAUSE;
             break;
         case AUDIO_DRV_PCM_IOCTL_RENDER_RESUME:
-            if (AudioDmaResume(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
-                return HDF_FAILURE;
-            }
-
-            if (AudioSampPowerUp(card) != HDF_SUCCESS) {
-                return HDF_FAILURE;
-            }
-            if (AudioSampSetPowerMonitor(card, false) != HDF_SUCCESS) {
+            if (AudioPcmResume(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmResume fail.");
                 return HDF_FAILURE;
             }
 
@@ -926,11 +963,6 @@ int32_t AudioRenderTrigger(struct AudioCard *card, int cmd)
 
 int32_t AudioCaptureTrigger(struct AudioCard *card, int cmd)
 {
-    if (card == NULL) {
-        AUDIO_DRIVER_LOG_ERR("param is invalid.");
-        return HDF_ERR_INVALID_PARAM;
-    }
-
     struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
@@ -939,56 +971,35 @@ int32_t AudioCaptureTrigger(struct AudioCard *card, int cmd)
 
     switch (cmd) {
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_START:
-            if (AudioDmaSubmit(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
-                return HDF_FAILURE;
-            }
-            if (AudioDmaPending(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPending fail.");
-                return HDF_FAILURE;
-            }
-
-            if (AudioSampSetPowerMonitor(card, false) != HDF_SUCCESS) {
+            if (AudioPcmPending(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmPending fail.");
                 return HDF_FAILURE;
             }
 
             data->captureBufInfo.runStatus = PCM_START;
             break;
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_STOP:
-            if (AudioDmaPause(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
+            if (AudioPcmPause(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmPause fail.");
                 return HDF_FAILURE;
             }
 
-            if (AudioSampSetPowerMonitor(card, true) != HDF_SUCCESS) {
-                return HDF_FAILURE;
-            }
             data->captureBufInfo.runStatus = PCM_STOP;
             break;
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_PAUSE:
-            if (AudioDmaPause(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
-                return HDF_FAILURE;
-            }
-
-            if (AudioSampSetPowerMonitor(card, true) != HDF_SUCCESS) {
+            if (AudioPcmPause(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmPause fail.");
                 return HDF_FAILURE;
             }
 
             data->captureBufInfo.runStatus = PCM_PAUSE;
             break;
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_RESUME:
-            if (AudioDmaResume(data) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("DmaPause fail.");
+            if (AudioPcmResume(card) != HDF_SUCCESS) {
+                AUDIO_DRIVER_LOG_ERR("AudioPcmResume fail.");
                 return HDF_FAILURE;
             }
 
-            if (AudioSampPowerUp(card) != HDF_SUCCESS) {
-                return HDF_FAILURE;
-            }
-            if (AudioSampSetPowerMonitor(card, false) != HDF_SUCCESS) {
-                return HDF_FAILURE;
-            }
             data->captureBufInfo.runStatus = PCM_START;
             break;
         default:
@@ -1136,5 +1147,3 @@ int32_t AudioPcmPointer(const struct AudioCard *card, uint32_t *pointer)
 
     return HDF_SUCCESS;
 }
-
-

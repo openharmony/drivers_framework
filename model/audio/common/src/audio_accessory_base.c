@@ -108,6 +108,8 @@ int32_t AccessoryI2cReadWrite(struct AudioAddrConfig *regAttr, uint16_t rwFlag)
     int16_t transferMsgCount = 1;
     uint8_t regs[I2C_REG_LEN];
     struct I2cMsg msgs[I2C_MSG_NUM];
+    (void)memset_s(msgs, sizeof(struct I2cMsg) * I2C_MSG_NUM, 0, sizeof(struct I2cMsg) * I2C_MSG_NUM);
+
     AUDIO_DRIVER_LOG_DEBUG("entry.\n");
     if (regAttr == NULL || rwFlag < 0 || rwFlag > 1) {
         AUDIO_DRIVER_LOG_ERR("invalid parameter.");
@@ -166,7 +168,7 @@ int32_t AccessoryRegBitsRead(struct AudioMixerControl *regAttr, uint32_t *regVal
         regAttr->value = regAttr->max - regAttr->value;
     }
     AUDIO_DRIVER_LOG_DEBUG("regAddr=0x%x, regValue=0x%x, currBitsValue=0x%x",
-        regAttr->reg, regVal.value,regAttr->value);
+        regAttr->reg, regVal.value, regAttr->value);
     AUDIO_DRIVER_LOG_DEBUG("mask=0x%x, shift=%d, max=0x%x,min=0x%x, invert=%d",
         regAttr->mask, regAttr->shift, regAttr->max, regAttr->min, regAttr->invert);
     AUDIO_DRIVER_LOG_DEBUG("success.");
@@ -298,9 +300,10 @@ int32_t AcessoryDeviceFrequencyParse(uint32_t rate, uint16_t *freq)
 int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
     struct AccessoryTransferData *accessoryTransferData)
 {
-    int32_t ret, index;
-    struct AudioControlConfig *ctlcfgItem = NULL;
-    uint32_t audioCfgCtrlCount;
+    int32_t ret;
+    int32_t index;
+    int32_t audioCfgCtrlCount;
+
     ret = (accessoryData == NULL || accessoryData->regConfig == NULL || accessoryTransferData == NULL);
     if (ret) {
         AUDIO_DRIVER_LOG_ERR("input para is NULL.");
@@ -317,7 +320,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
         AUDIO_DRIVER_LOG_ERR("parsing params is NULL.");
         return HDF_FAILURE;
     }
-    ctlcfgItem = g_audioRegCfgGroupNode[AUDIO_CTRL_CFG_GROUP]->ctrlCfgItem;
+    struct AudioControlConfig *ctlcfgItem = g_audioRegCfgGroupNode[AUDIO_CTRL_CFG_GROUP]->ctrlCfgItem;
     audioCfgCtrlCount = g_audioRegCfgGroupNode[AUDIO_CTRL_CFG_GROUP]->itemNum;
     g_audioControls = (struct AudioKcontrol *)OsalMemCalloc(audioCfgCtrlCount * sizeof(struct AudioKcontrol));
     accessoryTransferData->accessoryRegCfgGroupNode = g_audioRegCfgGroupNode;

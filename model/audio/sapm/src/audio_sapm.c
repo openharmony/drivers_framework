@@ -84,7 +84,7 @@ static int32_t ConnectedInputEndPoint(const struct AudioSapmComponent *sapmCompo
 {
     struct AudioSapmpath *path = NULL;
     int32_t count = 0;
-    int32_t endPointVal = 1;
+    const int32_t endPointVal = 1;
 
     if (sapmComponent == NULL) {
         ADM_LOG_ERR("input param sapmComponent is NULL.");
@@ -114,7 +114,7 @@ static int32_t ConnectedOutputEndPoint(const struct AudioSapmComponent *sapmComp
 {
     struct AudioSapmpath *path = NULL;
     int32_t count = 0;
-    int32_t endPointVal = 1;
+    const int32_t endPointVal = 1;
 
     if (sapmComponent == NULL) {
         ADM_LOG_ERR("input param sapmComponent is NULL.");
@@ -404,7 +404,7 @@ static void MuxSetPathStatus(const struct AudioSapmComponent *sapmComponent, str
     int32_t ret;
     uint32_t val = 0;
     int32_t item;
-    uint32_t reg = 0;
+    const uint32_t reg = 0;
     uint32_t shift;
 
     if ((sapmComponent == NULL || sapmComponent->codec == NULL) || (path == NULL || path->name == NULL) ||
@@ -443,7 +443,7 @@ static void MuxValueSetPathStatus(const struct AudioSapmComponent *sapmComponent
     int32_t ret;
     uint32_t val = 0;
     uint32_t item;
-    uint32_t reg = 0;
+    const uint32_t reg = 0;
     uint32_t shift;
     if ((sapmComponent == NULL || sapmComponent->codec == NULL) || (path == NULL || path->name == NULL) ||
         (enumKtl == NULL || enumKtl->texts == NULL)) {
@@ -756,7 +756,7 @@ int32_t AudioSapmAddRoutes(struct AudioCard *audioCard, const struct AudioSapmRo
     return HDF_SUCCESS;
 }
 
-int32_t AudioSapmNewMixerControls(struct AudioSapmComponent *sapmComponent, struct AudioCard *audioCard)
+int32_t AudioSapmNewMixerControls(const struct AudioSapmComponent *sapmComponent, struct AudioCard *audioCard)
 {
     struct AudioSapmpath *path = NULL;
     int32_t i;
@@ -768,7 +768,8 @@ int32_t AudioSapmNewMixerControls(struct AudioSapmComponent *sapmComponent, stru
 
     for (i = 0; i < sapmComponent->kcontrolsNum; i++) {
         DLIST_FOR_EACH_ENTRY(path, &sapmComponent->sources, struct AudioSapmpath, listSink) {
-            if (path->name == NULL || sapmComponent->kcontrolNews[i].name == NULL) {
+            if (path->name == NULL || sapmComponent->kcontrolNews == NULL
+                || sapmComponent->kcontrolNews[i].name == NULL) {
                 continue;
             }
 
@@ -958,6 +959,7 @@ static void AudioSapmPowerDownSeqRun(const struct DListHead *list)
 
 static int AudioSapmPowerComponents(struct AudioCard *audioCard)
 {
+    int32_t ret;
     struct AudioSapmComponent *sapmComponent = NULL;
     struct DListHead upList;
     struct DListHead downList;
@@ -978,7 +980,10 @@ static int AudioSapmPowerComponents(struct AudioCard *audioCard)
         }
 
         if (g_audioSapmIsStandby && sapmComponent->PowerClockOp != NULL) {
-            sapmComponent->PowerClockOp(sapmComponent);
+            ret = sapmComponent->PowerClockOp(sapmComponent);
+            if (ret != HDF_SUCCESS) {
+                continue;
+            }
         }
 
         AudioSapmSetPower(audioCard, sapmComponent, sapmComponent->newPower, &upList, &downList);
@@ -1327,7 +1332,7 @@ int32_t AudioSampSetPowerMonitor(struct AudioCard *card, bool powerMonitorState)
     return HDF_SUCCESS;
 }
 
-static void AudioSapmEnterSleepSub(uintptr_t para, struct AudioSapmComponent *sapmComponent)
+static void AudioSapmEnterSleepSub(const uintptr_t para, struct AudioSapmComponent *sapmComponent)
 {
     struct DListHead downList;
     struct AudioCard *audioCard = (struct AudioCard *)para;

@@ -10,6 +10,7 @@
 #define AUDIO_PLATFORM_IF_H
 
 #include "audio_host.h"
+#include "audio_platform_base.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -17,110 +18,193 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define I2S_IOCFG2_BASE1 0x0020
-#define I2S_IOCFG2_BASE2 0x0024
-#define I2S_IOCFG2_BASE3 0x0028
-#define I2S_IOCFG2_BASE4 0x002C
-#define I2S_IOCFG2_BASE5 0x0030
-
-#define I2S_IOCFG2_BASE1_VAL 0x663
-#define I2S_IOCFG2_BASE2_VAL 0x673
-#define I2S_IOCFG2_BASE3_VAL 0x573
-#define I2S_IOCFG2_BASE4_VAL 0x473
-#define I2S_IOCFG2_BASE5_VAL 0x433
-
-#define I2S_IOCFG3_BASE1 0x44
-#define I2S_IOCFG3_BASE1_VAL 0x0600
-
-#define GPIO_BASE1 0x2010
-#define GPIO_BASE2 0x2400
-#define GPIO_BASE3 0x2010
-
-#define GPIO_BASE2_VAL 0x000000ff
-#define GPIO_BASE3_VAL 0x00000000
-
-#define IOCFG2_BASE_ADDR 0x112F0000
-#define IOCFG3_BASE_ADDR 0x10FF0000
-#define GPIO_BASE_ADDR 0x120D0000
-#define BASE_ADDR_REMAP_SIZE 0x10000
-
-enum PcmStatus {
-    PCM_STOP = 0,
-    PCM_PAUSE,
-    PCM_START,
-};
-
-struct CircleBufInfo {
-    uint32_t cirBufSize;
-    uint32_t trafBufSize;
-    uint32_t period;
-    uint32_t periodSize;
-    uint32_t periodCount;
-    unsigned long phyAddr;
-    uint32_t *virtAddr;
-    uint32_t wbufOffSet;
-    uint32_t wptrOffSet;
-    uint32_t rbufOffSet;
-    uint32_t rptrOffSet;
-    enum PcmStatus runStatus;
-    uint32_t chnId;
-    uint32_t enable;
-    struct OsalMutex buffMutex;
-    uint32_t framesPosition;
-    uint32_t pointer;
-    uint32_t periodsMax;
-    uint32_t periodsMin;
-    uint32_t cirBufMax;
-    uint32_t curTrafSize;
-};
-
+/**
+ * @brief Defines paltform private data.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct PlatformData {
-    const char *drvPlatformName;
-    /* platform driver callbacks */
-    int32_t (*PlatformInit)(const struct AudioCard *, const struct PlatformDevice *);
-    /* platform stream ops */
-    struct AudioDmaOps *ops;
-    struct CircleBufInfo renderBufInfo;
-    struct CircleBufInfo captureBufInfo;
-    struct PcmInfo pcmInfo;
-    bool platformInitFlag;
-    struct AudioMmapData mmapData;
-    uint32_t mmapLoopCount;
-    void *dmaPrv;
+    const char *drvPlatformName;         /**< Platform module name */
+
+    /**
+     * @brief Defines platform device init.
+     *
+     * @param audioCard Indicates a audio card device.
+     * @param platform Indicates a platform device.
+     *
+     * @return Returns <b>0</b> if Platform device init success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*PlatformInit)(const struct AudioCard *audioCard, const struct PlatformDevice *platform);
+
+    struct AudioDmaOps *ops;             /**< Platform module private data */
+    struct CircleBufInfo renderBufInfo;  /**< Render pcm stream transfer */
+    struct CircleBufInfo captureBufInfo; /**< Capture pcm stream transfer */
+    struct PcmInfo pcmInfo;              /**< Pcm stream info */
+    bool platformInitFlag;               /**< Platform init flag */
+    struct AudioMmapData mmapData;       /**< Mmap mode transfer data */
+    uint32_t mmapLoopCount;              /**< Loop count for mmap mode pcm stream */
+    void *dmaPrv;                        /**< Platform dma private data */
 };
 
-/* dma related definitions */
+/**
+ * @brief Defines Dma operation function set.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct AudioDmaOps {
-    int32_t (*DmaBufAlloc)(struct PlatformData *, enum AudioStreamType);
-    int32_t (*DmaBufFree)(struct PlatformData *,  enum AudioStreamType);
-    int32_t (*DmaRequestChannel)(struct PlatformData *);
-    int32_t (*DmaConfigChannel)(struct PlatformData *);
-    int32_t (*DmaPrep)(struct PlatformData *);
-    int32_t (*DmaSubmit)(struct PlatformData *);
-    int32_t (*DmaPending)(struct PlatformData *);
-    int32_t (*DmaPause)(struct PlatformData *);
-    int32_t (*DmaResume)(struct PlatformData *);
-    int32_t (*DmaPointer)(struct PlatformData *, uint32_t *);
+    /**
+     * @brief Defines Dma buff alloc.
+     *
+     * @param platformData Indicates dma device.
+     * @param streamType Indicates capture or render.
+     *
+     * @return Returns <b>0</b> if dma buffer alloc success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaBufAlloc)(struct PlatformData *platformData, const enum AudioStreamType streamType);
+
+    /**
+     * @brief Defines dma buffer free.
+     *
+     * @param platformData Indicates dma device.
+     * @param streamType Indicates capture or render.
+     *
+     * @return Returns <b>0</b> if dma buffer free success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaBufFree)(struct PlatformData *platformData,  const enum AudioStreamType streamType);
+
+    /**
+     * @brief Defines dma request channel.
+     *
+     * @param platformData Indicates dma device.
+     *
+     * @return Returns <b>0</b> if dma request channel success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaRequestChannel)(const struct PlatformData *platformData);
+
+    /**
+     * @brief Defines dma channel config.
+     *
+     * @param platformData Indicates dma device.
+     *
+     * @return Returns <b>0</b> if dma channel config set success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaConfigChannel)(const struct PlatformData *platformData);
+
+    /**
+     * @brief Defines dma prepare function.
+     *
+     * @param platformData Indicates dma device.
+     *
+     * @return Returns <b>0</b> if dma device prep set success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaPrep)(const struct PlatformData *platformData);
+
+    /**
+     * @brief Defines dma submit function.
+     *
+     * @param platformData Indicates dma device.
+     *
+     * @return Returns <b>0</b> if dma device submit succes; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaSubmit)(const struct PlatformData *platformData);
+
+    /**
+     * @brief Defines dma pending function.
+     *
+     * @param platformData Indicates dma device.
+     *
+     * @return Returns <b>0</b> if dma pending success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaPending)(struct PlatformData *platformData);
+
+    /**
+     * @brief Defines pcm stream transfer pause.
+     *
+     * @param platformData Indicates dma device.
+     *
+     * @return Returns <b>0</b> if pcm stream transfer pause success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaPause)(struct PlatformData *platformData);
+
+    /**
+     * @brief Defines pcm stream transfer resume.
+     *
+     * @param platformData Indicates dma device.
+     *
+     * @return Returns <b>0</b> if pcm stream transfer resume success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaResume)(const struct PlatformData *platformData);
+
+    /**
+     * @brief Defines Get the function of the current playback or recording position.
+     *
+     * @param platformData Indicates dma device.
+     * @param pointer Indicates dma pointer.
+     *
+     * @return Returns <b>0</b> if dma device pointer position get success; returns a non-zero value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*DmaPointer)(struct PlatformData *platformData, uint32_t *pointer);
 };
 
+/**
+ * @brief Defines Dai device name and data.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct PlatformDevice {
-    const char *devPlatformName;
-    struct PlatformData *devData;
-    struct HdfDeviceObject *device;
-    struct DListHead list;
+    const char *devPlatformName;    /**< Platform device name */
+    struct PlatformData *devData;   /**< Platform module private data */
+    struct HdfDeviceObject *device; /**< HDF device */
+    struct DListHead list;          /**< Platform list */
 };
 
-/* Platform host is defined in platform driver */
+/**
+ * @brief Defines Platform host in audio driver.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
 struct PlatformHost {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    void *priv;
+    struct IDeviceIoService service; /**< Services provided by patform */
+    struct HdfDeviceObject *device;  /**< HDF device */
+    void *priv;                      /**< Platform private data interface */
 };
-
-static inline struct PlatformHost *PlatformHostFromDevice(struct HdfDeviceObject *device)
-{
-    return (device == NULL) ? NULL : (struct PlatformHost *)device->service;
-}
 
 #ifdef __cplusplus
 #if __cplusplus
