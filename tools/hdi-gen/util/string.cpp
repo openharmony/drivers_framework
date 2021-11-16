@@ -328,28 +328,31 @@ int String::LastIndexOfInternal(const char* string, int fromIndex) const
 
     int stringLastIndex = stringLen - 1;
     char stringLastChar = string[stringLastIndex];
-    int min = stringLen - 1;
-    int i = min + fromIndex;
+    int leftIndex = stringLen - 1;
+    int index = leftIndex + fromIndex;
 
-startSearchLastChar:
     while (true) {
-        while (i >= min && string_[i] != stringLastChar) {
-            i--;
+        while (index >= leftIndex && string_[index] != stringLastChar) {
+            index--;
         }
-        if (i < min) {
+        if (index < leftIndex) {
             return -1;
         }
-        int j = i - 1;
-        int start = j - (stringLen - 1);
-        int k = stringLastIndex - 1;
 
-        while (j > start) {
-            if (string_[j--] != string[k--]) {
-                i--;
-                goto startSearchLastChar;
+        int compareIndex = index - 1;
+        int start = compareIndex - (stringLen - 1);
+        int strIndex = stringLastIndex - 1;
+
+        while (compareIndex > start) {
+            if (string_[compareIndex--] != string[strIndex--]) {
+                index--;
+                break;
             }
         }
-        return start + 1;
+
+        if (compareIndex == start) {
+            return start + 1;
+        }
     }
 }
 
