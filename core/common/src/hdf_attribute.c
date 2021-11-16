@@ -247,6 +247,8 @@ static bool GetDeviceNodeInfo(const struct DeviceResourceNode *deviceNode, struc
 struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *hostName)
 {
     uint16_t deviceIdx = 0;
+    uint8_t deviceNnodeIdx = 0;
+    struct HdfDeviceInfo *deviceNodeInfo = NULL;
     const struct DeviceResourceNode *hostNode = GetHostNode(hostName);
     struct HdfSList *deviceList = NULL;
     const struct DeviceResourceNode *device = NULL;
@@ -261,7 +263,8 @@ struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *h
     while (device != NULL) {
         const struct DeviceResourceNode *deviceNode = device->child;
         while (deviceNode != NULL) {
-            struct HdfDeviceInfo *deviceNodeInfo = HdfDeviceInfoNewInstance();
+            deviceNnodeIdx = 0;
+            deviceNodeInfo = HdfDeviceInfoNewInstance();
             if (deviceNodeInfo == NULL) {
                 HdfSListFlush(deviceList, HdfDeviceInfoDelete);
                 OsalMemFree(deviceList);
@@ -282,10 +285,12 @@ struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *h
                 deviceNode = deviceNode->sibling;
                 continue;
             }
-            deviceNodeInfo->deviceId = deviceIdx++;
+            deviceNodeInfo->deviceId = MK_DEVID(hostId, deviceIdx, deviceNnodeIdx);
+            deviceNnodeIdx++;
             deviceNode = deviceNode->sibling;
         }
         device = device->sibling;
+        deviceIdx++;
     }
     if (HdfSListCount(deviceList) == 0) {
         OsalMemFree(deviceList);

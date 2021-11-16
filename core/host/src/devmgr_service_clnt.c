@@ -31,7 +31,7 @@ int DevmgrServiceClntAttachDeviceHost(uint16_t hostId, struct IDevHostService *h
     return devMgrSvcIf->AttachDeviceHost(devMgrSvcIf, hostId, hostService);
 }
 
-int DevmgrServiceClntAttachDevice(const struct HdfDeviceInfo *deviceInfo, struct IHdfDeviceToken *deviceToken)
+int DevmgrServiceClntAttachDevice(struct IHdfDeviceToken *deviceToken)
 {
     struct IDevmgrService *devMgrSvcIf = NULL;
     struct DevmgrServiceClnt *inst = DevmgrServiceClntGetInstance();
@@ -45,7 +45,22 @@ int DevmgrServiceClntAttachDevice(const struct HdfDeviceInfo *deviceInfo, struct
         HDF_LOGE("devmgr client failed to attach device, dmsOps->AttachDevice is nul");
         return HDF_FAILURE;
     }
-    return devMgrSvcIf->AttachDevice(devMgrSvcIf, deviceInfo, deviceToken);
+    return devMgrSvcIf->AttachDevice(devMgrSvcIf, deviceToken);
+}
+int DevmgrServiceClntDetachDevice(devid_t devid)
+{
+    struct IDevmgrService *devMgrSvcIf = NULL;
+    struct DevmgrServiceClnt *inst = DevmgrServiceClntGetInstance();
+    if (inst == NULL || inst->devMgrSvcIf == NULL) {
+        HDF_LOGE("devmgr client failed to deatch device, inst is null");
+        return HDF_FAILURE;
+    }
+
+    devMgrSvcIf = inst->devMgrSvcIf;
+    if (devMgrSvcIf->DetachDevice == NULL) {
+        return HDF_FAILURE;
+    }
+    return devMgrSvcIf->DetachDevice(devMgrSvcIf, devid);
 }
 
 struct DevmgrServiceClnt *DevmgrServiceClntGetInstance()
@@ -64,4 +79,3 @@ void DevmgrServiceClntFreeInstance(struct DevmgrServiceClnt *inst)
         inst->devMgrSvcIf = NULL;
     }
 }
-

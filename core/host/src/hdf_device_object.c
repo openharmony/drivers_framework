@@ -9,6 +9,7 @@
 #include "hdf_device_object.h"
 #include "hdf_base.h"
 #include "hdf_device_node.h"
+#include "devhost_service.h"
 #include "hdf_log.h"
 #include "hdf_observer_record.h"
 #include "hdf_service_observer.h"
@@ -19,12 +20,10 @@
 int32_t HdfDeviceSubscribeService(
     struct HdfDeviceObject *deviceObject, const char *serviceName, struct SubscriberCallback callback)
 {
-    uint32_t matchId;
     struct DevHostService *hostService = NULL;
-    const struct HdfDeviceInfo *deviceInfo = NULL;
     struct HdfDeviceNode *devNode = NULL;
     if (deviceObject == NULL || serviceName == NULL) {
-        HDF_LOGE("failed to subscribe service, deviceObject/serviceName is null");
+        HDF_LOGE("failed to subscribe service, serviceName is null");
         return HDF_FAILURE;
     }
     devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
@@ -34,31 +33,20 @@ int32_t HdfDeviceSubscribeService(
         HDF_LOGE("failed to subscribe service, hostService is null");
         return HDF_FAILURE;
     }
-    deviceInfo = devNode->deviceInfo;
-    if (deviceInfo == NULL) {
-        HDF_LOGE("failed to subscribe service, deviceInfo is null");
-        return HDF_FAILURE;
-    }
-    matchId = HdfMakeHardwareId(deviceInfo->hostId, deviceInfo->deviceId);
-    return HdfServiceObserverSubscribeService(&hostService->observer, serviceName, matchId, callback);
+
+    return HdfServiceObserverSubscribeService(&hostService->observer, serviceName, devNode->devId, callback);
 }
 
 const char *HdfDeviceGetServiceName(const struct HdfDeviceObject *deviceObject)
 {
     struct HdfDeviceNode *devNode = NULL;
-    const struct HdfDeviceInfo *deviceInfo = NULL;
     if (deviceObject == NULL) {
         HDF_LOGE("failed to get service name, deviceObject is invalid");
         return NULL;
     }
     devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
         struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
-    deviceInfo = devNode->deviceInfo;
-    if (deviceInfo == NULL) {
-        HDF_LOGE("failed to get service name, deviceInfo is null");
-        return NULL;
-    }
-    return deviceInfo->svcName;
+    return devNode->servName;
 }
 
 int HdfPmRegisterPowerListener(struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener)
@@ -134,7 +122,7 @@ void HdfPmSetMode(struct HdfDeviceObject *deviceObject, uint32_t mode)
 bool HdfDeviceSetClass(struct HdfDeviceObject *deviceObject, DeviceClass deviceClass)
 {
     if ((deviceObject == NULL) || (deviceClass >= DEVICE_CLASS_MAX) ||
-        (deviceClass < DEVICE_CLASS_DEFAULT)) {
+        (deviceClass >= DEVICE_CLASS_MAX)) {
         return false;
     }
     deviceObject->deviceClass = deviceClass;

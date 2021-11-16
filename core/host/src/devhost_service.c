@@ -11,6 +11,7 @@
 #include "devsvc_manager_clnt.h"
 #include "hdf_base.h"
 #include "hdf_driver_loader.h"
+#include "hdf_driver.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 #include "osal_mem.h"
@@ -34,16 +35,15 @@ static struct HdfDevice *DevHostServiceFindDevice(struct DevHostService *hostSer
     return NULL;
 }
 
-static void DevHostServiceFreeDevice(struct DevHostService *hostService, uint16_t deviceId)
+static void DevHostServiceFreeDevice(struct DevHostService *hostService, struct HdfDevice *device)
 {
-    struct HdfDevice *device = DevHostServiceFindDevice(hostService, deviceId);
     if (device != NULL) {
         DListRemove(&device->node);
         HdfDeviceFreeInstance(device);
     }
 }
 
-static struct HdfDevice *DevHostServiceGetDevice(struct DevHostService *inst, uint16_t deviceId)
+static struct HdfDevice *DevHostServiceQueryOrAddDevice(struct DevHostService *inst, uint16_t deviceId)
 {
     struct HdfDevice *device = DevHostServiceFindDevice(inst, deviceId);
     if (device == NULL) {
@@ -64,79 +64,88 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
     int ret = HDF_FAILURE;
     struct HdfDevice *device = NULL;
     struct HdfDeviceNode *devNode = NULL;
+    struct HdfDriver *driver = NULL;
     struct DevHostService *hostService = CONTAINER_OF(inst, struct DevHostService, super);
     struct IDriverLoader *driverLoader = HdfDriverLoaderGetInstance();
 
-    if (inst == NULL || deviceInfo == NULL || driverLoader == NULL || driverLoader->LoadNode == NULL) {
+    if (inst == NULL || deviceInfo == NULL || driverLoader == NULL || driverLoader->GetDriver == NULL) {
         HDF_LOGE("failed to add device, input param is null");
         return ret;
     }
 
-    device = DevHostServiceGetDevice(hostService, deviceInfo->deviceId);
+    device = DevHostServiceQueryOrAddDevice(hostService, DEVICEID(deviceInfo->deviceId));
     if (device == NULL || device->super.Attach == NULL) {
         ret = HDF_DEV_ERR_NO_DEVICE;
         goto error;
     }
 
-    devNode = driverLoader->LoadNode(driverLoader, deviceInfo);
-    if (devNode == NULL) {
-        ret = HDF_DEV_ERR_NO_DEVICE_SERVICE;
+    driver = driverLoader->GetDriver(deviceInfo->moduleName);
+    if (driver == NULL) {
+        ret = HDF_DEV_ERR_NODATA;
         goto error;
     }
+
+    devNode = HdfDeviceNodeNewInstance(deviceInfo, driver);
+    if (devNode == NULL) {
+        driverLoader->ReclaimDriver(driver);
+        ret = HDF_DEV_ERR_NO_MEMORY;
+        goto error;
+    }
+
     devNode->hostService = hostService;
+    devNode->device = device;
+    devNode->driver = driver;
     ret = device->super.Attach(&device->super, devNode);
     if (ret != HDF_SUCCESS) {
+        HdfDeviceNodeFreeInstance(devNode);
         goto error;
     }
     return HDF_SUCCESS;
 
 error:
-    DevHostServiceFreeDevice(hostService, device->deviceId);
+    driverLoader->ReclaimDriver(driver);
+    DevHostServiceFreeDevice(hostService, device);
     return ret;
 }
 
-static struct HdfDeviceNode *DevHostServiceSeparateDeviceNode(struct DListHead *deviceNodes,
-    const struct HdfDeviceInfo *deviceInfo)
-{
-    struct HdfDeviceNode *deviceNode = NULL;
-    DLIST_FOR_EACH_ENTRY(deviceNode, deviceNodes, struct HdfDeviceNode, entry) {
-        if (strcmp(deviceNode->deviceInfo->svcName, deviceInfo->svcName) == 0 &&
-            strcmp(deviceNode->deviceInfo->moduleName, deviceInfo->moduleName) == 0) {
-            DListRemove(&deviceNode->entry);
-            return deviceNode;
-        }
-    }
-    return NULL;
-}
-
-int DevHostServiceDelDevice(struct IDevHostService *inst, const struct HdfDeviceInfo *deviceInfo)
+int DevHostServiceDelDevice(struct IDevHostService *inst, devid_t devId)
 {
     struct HdfDevice *device = NULL;
     struct DevHostService *hostService = (struct DevHostService *)inst;
-    struct IDriverLoader *driverLoader =  HdfDriverLoaderGetInstance();
     struct HdfDeviceNode *devNode = NULL;
+    struct HdfDriver *driver = NULL;
+    struct IDriverLoader *driverLoader =  HdfDriverLoaderGetInstance();
 
-    if ((deviceInfo == NULL) || (driverLoader == NULL) || (driverLoader->UnLoadNode == NULL)) {
+    if (driverLoader == NULL || driverLoader->ReclaimDriver == NULL) {
         HDF_LOGE("failed to del device, input param is null");
         return HDF_FAILURE;
     }
 
-    device = DevHostServiceFindDevice(hostService, deviceInfo->deviceId);
+    device = DevHostServiceFindDevice(hostService, DEVICEID(devId));
     if (device == NULL) {
         HDF_LOGW("failed to del device, device is not exist");
         return HDF_SUCCESS;
     }
 
-    driverLoader->UnLoadNode(driverLoader, deviceInfo);
-    devNode = DevHostServiceSeparateDeviceNode(&device->devNodes, deviceInfo);
-    if (device->super.Detach != NULL) {
-        device->super.Detach(&device->super, devNode);
-    } else {
-        HdfDeviceNodeFreeInstance(devNode);
+    devNode = device->super.GetDeviceNode(&device->super, devId);
+    if (devNode == NULL) {
+        return HDF_DEV_ERR_NO_DEVICE;
     }
-    DevSvcManagerClntRemoveService(deviceInfo->svcName);
+    driver = devNode->driver;
+
+    // device detach will release device node, do not use devNode after this
+    if (device->super.Detach != NULL) {
+        if (device->super.Detach(&device->super, devNode) != HDF_SUCCESS) {
+            HDF_LOGE("failed to del device %x", devId);
+            return HDF_FAILURE;
+        }
+    }
+
+    // remove driver instance or close driver library
+    driverLoader->ReclaimDriver(driver);
+
     if (DListIsEmpty(&device->devNodes)) {
-        DevHostServiceFreeDevice(hostService, device->deviceId);
+        DevHostServiceFreeDevice(hostService, device);
     }
     return HDF_SUCCESS;
 }
@@ -163,7 +172,7 @@ static int ApplyDevicesPowerState(struct HdfDevice *device, uint32_t state)
             if (deviceNode->powerToken != NULL) {
                 ret = PowerStateChange(deviceNode->powerToken, state);
                 if (ret != HDF_SUCCESS) {
-                    HDF_LOGE("device %s failed to resume(%d)", deviceNode->driverEntry->moduleName, state);
+                    HDF_LOGE("device %s failed to resume(%d)", deviceNode->driver->entry->moduleName, state);
                 }
             }
         }
@@ -172,7 +181,7 @@ static int ApplyDevicesPowerState(struct HdfDevice *device, uint32_t state)
             if (deviceNode->powerToken != NULL) {
                 ret = PowerStateChange(deviceNode->powerToken, state);
                 if (ret != HDF_SUCCESS) {
-                    HDF_LOGE("device %s failed to suspend(%d)", deviceNode->driverEntry->moduleName, state);
+                    HDF_LOGE("device %s failed to suspend(%d)", deviceNode->driver->entry->moduleName, state);
                 }
             }
         }

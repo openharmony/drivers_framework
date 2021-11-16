@@ -23,6 +23,7 @@ struct HdfCString {
 uint32_t HdfStringMakeHashKey(const char *key, uint32_t mask);
 struct HdfCString *HdfCStringObtain(const char *str);
 void HdfCStringRecycle(struct HdfCString *inst);
+char *HdfStringCopy(const char *src);
 
 #ifdef __cplusplus
 }

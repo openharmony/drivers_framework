@@ -54,3 +54,27 @@ void HdfCStringRecycle(struct HdfCString *inst)
         OsalMemFree(inst);
     }
 }
+
+char *HdfStringCopy(const char *src)
+{
+    char *newStr = NULL;
+    size_t srcSize;
+    size_t dstSize;
+
+    if (src == NULL) {
+        return NULL;
+    }
+    srcSize = strlen(src);
+    dstSize = srcSize + 1;
+    newStr = OsalMemAlloc(dstSize);
+    if (newStr == NULL) {
+        return NULL;
+    }
+
+    if (strncpy_s(newStr, dstSize, src, srcSize) != EOK) {
+        OsalMemFree(newStr);
+        newStr = NULL;
+    }
+
+    return newStr;
+}

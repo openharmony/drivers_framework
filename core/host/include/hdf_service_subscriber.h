@@ -9,13 +9,14 @@
 #ifndef HDF_SERVICE_SUBSCRIBER_H
 #define HDF_SERVICE_SUBSCRIBER_H
 
+#include "hdf_device.h"
 #include "hdf_device_desc.h"
 #include "hdf_slist.h"
 
 struct HdfServiceSubscriber {
     struct HdfSListNode entry;
     uint32_t state;
-    uint32_t matchId;
+    uint32_t devId;
     struct SubscriberCallback callback;
 };
 
@@ -24,7 +25,7 @@ enum {
     HDF_SUBSCRIBER_STATE_READY
 };
 
-struct HdfServiceSubscriber *HdfServiceSubscriberObtain(struct SubscriberCallback callback, uint32_t matchId);
+struct HdfServiceSubscriber *HdfServiceSubscriberObtain(struct SubscriberCallback callback, devid_t devid);
 void HdfServiceSubscriberRecycle(struct HdfServiceSubscriber *subscriber);
 void HdfServiceSubscriberDelete(struct HdfSListNode *listEntry);
 

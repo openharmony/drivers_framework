@@ -14,11 +14,6 @@
 #define HDF_LOG_TAG observer_record
 #define HALF_INT_LEN 16
 
-uint32_t HdfMakeHardwareId(uint16_t hostId, uint16_t deviceId)
-{
-    return ((uint32_t)hostId << HALF_INT_LEN) | deviceId;
-}
-
 struct HdfServiceObserverRecord *HdfServiceObserverRecordObtain(uint32_t serviceKey)
 {
     struct HdfServiceObserverRecord *observerRecord =
@@ -59,7 +54,7 @@ bool HdfServiceObserverRecordCompare(struct HdfSListNode *listEntry, uint32_t se
 }
 
 void HdfServiceObserverRecordNotifySubscribers(
-    struct HdfServiceObserverRecord *record, uint32_t matchId, uint16_t policy)
+    struct HdfServiceObserverRecord *record, uint32_t devId, uint16_t policy)
 {
     struct HdfSListIterator it;
     if (record == NULL) {
@@ -72,7 +67,7 @@ void HdfServiceObserverRecordNotifySubscribers(
     while (HdfSListIteratorHasNext(&it)) {
         struct HdfServiceSubscriber *subscriber =
             (struct HdfServiceSubscriber *)HdfSListIteratorNext(&it);
-        if ((matchId == subscriber->matchId) || (policy != SERVICE_POLICY_PRIVATE)) {
+        if (devId == subscriber->devId || policy != SERVICE_POLICY_PRIVATE) {
             subscriber->state = HDF_SUBSCRIBER_STATE_READY;
             if (subscriber->callback.OnServiceConnected != NULL) {
                 subscriber->callback.OnServiceConnected(subscriber->callback.deviceObject, record->publisher);

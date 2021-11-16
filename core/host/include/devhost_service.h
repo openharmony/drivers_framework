@@ -27,7 +27,7 @@ struct DevHostService {
 void DevHostServiceConstruct(struct DevHostService *service);
 void DevHostServiceDestruct(struct DevHostService *service);
 int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDeviceInfo *deviceInfo);
-int DevHostServiceDelDevice(struct IDevHostService *inst, const struct HdfDeviceInfo *deviceInfo);
+int DevHostServiceDelDevice(struct IDevHostService *inst, devid_t devId);
 struct IDevHostService *DevHostServiceNewInstance(uint16_t hostId, const char *hostName);
 void DevHostServiceFreeInstance(struct IDevHostService *service);
 struct HdfObject *DevHostServiceCreate(void);

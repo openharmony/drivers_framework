@@ -20,7 +20,6 @@
 static int DeviceNodeExtDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct IDeviceIoService *deviceMethod = NULL;
-    const struct HdfDeviceInfo *deviceInfo = NULL;
     struct HdfDeviceNode *devNode = NULL;
     uint64_t ioClientPtr = 0;
 
@@ -39,12 +38,8 @@ static int DeviceNodeExtDispatch(struct HdfObject *stub, int code, struct HdfSBu
         HDF_LOGE("device ext dispatch: device service interface is null");
         return HDF_FAILURE;
     }
-    deviceInfo = devNode->deviceInfo;
-    if (deviceInfo == NULL) {
-        HDF_LOGE("device ext dispatch: device deviceInfo is null");
-        return HDF_FAILURE;
-    }
-    if (deviceInfo->policy == SERVICE_POLICY_CAPACITY) {
+
+    if (devNode->policy == SERVICE_POLICY_CAPACITY) {
         if (deviceMethod->Dispatch == NULL) {
             HDF_LOGE("device ext dispatch: remote service dispatch method is null");
             return HDF_FAILURE;
@@ -54,42 +49,59 @@ static int DeviceNodeExtDispatch(struct HdfObject *stub, int code, struct HdfSBu
     return HDF_FAILURE;
 }
 
-static int DeviceNodeExtPublishService(struct HdfDeviceNode *inst, const char *serviceName)
+static int DeviceNodeExtPublishService(struct HdfDeviceNode *devNode)
 {
-    const struct HdfDeviceInfo *deviceInfo = NULL;
     struct HdfDeviceObject *deviceObject = NULL;
-    struct DeviceNodeExt *devNodeExt = (struct DeviceNodeExt *)inst;
+    struct DeviceNodeExt *devNodeExt = (struct DeviceNodeExt *)devNode;
     int ret;
+    static struct HdfIoDispatcher dispatcher = { .Dispatch = DeviceNodeExtDispatch };
+
     if (devNodeExt == NULL) {
         return HDF_FAILURE;
     }
-    ret = HdfDeviceNodePublishPublicService(inst, serviceName);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("failed to publish device service, ret is %d", ret);
-        return HDF_FAILURE;
-    }
 
-    deviceInfo = inst->deviceInfo;
     deviceObject = &devNodeExt->super.deviceObject;
-    if ((deviceObject->service == NULL) || (deviceInfo == NULL)) {
-        HDF_LOGE("Device service interface or deviceInfo is null");
+    if (deviceObject->service == NULL) {
+        HDF_LOGE("device service interface is null");
         return HDF_FAILURE;
     }
-    if (deviceInfo->policy == SERVICE_POLICY_CAPACITY) {
-        devNodeExt->ioService = HdfIoServicePublish(serviceName, deviceInfo->permission);
+    if (devNode->policy == SERVICE_POLICY_CAPACITY) {
+        devNodeExt->ioService = HdfIoServicePublish(devNode->servName, devNode->permission);
         if (devNodeExt->ioService != NULL) {
-            static struct HdfIoDispatcher dispatcher = {
-                .Dispatch = DeviceNodeExtDispatch
-            };
-            devNodeExt->ioService->target = (struct HdfObject*)(&inst->deviceObject);
+            devNodeExt->ioService->target = (struct HdfObject *)(deviceObject);
             devNodeExt->ioService->dispatcher = &dispatcher;
         } else {
-            HDF_LOGE("Device remote service bind failed");
-            HdfDeviceNodeReclaimService(serviceName);
-            return HDF_FAILURE;
+            HDF_LOGE("device remote service publish failed");
+            return HDF_DEV_ERR_NO_DEVICE_SERVICE;
         }
     }
+
+    // base(device node) publish inner service
+    ret = HdfDeviceNodePublishPublicService(devNode);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("failed to publish device service, ret is %d", ret);
+        HdfIoServiceRemove(devNodeExt->ioService);
+        devNodeExt->ioService = NULL;
+        return ret;
+    }
+
     return HDF_SUCCESS;
+}
+
+int DeviceNodeExtRemoveService(struct HdfDeviceNode *devNode)
+{
+    struct DeviceNodeExt *devNodeExt = CONTAINER_OF(devNode, struct DeviceNodeExt, super);
+    if (devNode == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    if (devNode->policy == SERVICE_POLICY_CAPACITY) {
+        HdfIoServiceRemove(devNodeExt->ioService);
+        devNodeExt->ioService = NULL;
+    }
+
+    // remove inner service published by base
+    return HdfDeviceNodeRemoveService(devNode);
 }
 
 static void DeviceNodeExtConstruct(struct DeviceNodeExt *inst)
@@ -98,13 +110,19 @@ static void DeviceNodeExtConstruct(struct DeviceNodeExt *inst)
     if (nodeIf != NULL) {
         HdfDeviceNodeConstruct(&inst->super);
         nodeIf->PublishService = DeviceNodeExtPublishService;
+        nodeIf->RemoveService = DeviceNodeExtRemoveService;
     }
+}
+
+static void DeviceNodeExtDestruct(struct DeviceNodeExt *devnode)
+{
+    DeviceNodeExtRemoveService(&devnode->super);
+    HdfDeviceNodeDestruct(&devnode->super);
 }
 
 struct HdfObject *DeviceNodeExtCreate()
 {
-    struct DeviceNodeExt *instance =
-        (struct DeviceNodeExt *)OsalMemCalloc(sizeof(struct DeviceNodeExt));
+    struct DeviceNodeExt *instance = (struct DeviceNodeExt *)OsalMemCalloc(sizeof(struct DeviceNodeExt));
     if (instance != NULL) {
         DeviceNodeExtConstruct(instance);
         instance->ioService = NULL;
@@ -114,13 +132,9 @@ struct HdfObject *DeviceNodeExtCreate()
 
 void DeviceNodeExtRelease(struct HdfObject *object)
 {
-    struct DeviceNodeExt *instance = (struct DeviceNodeExt *)object;
-    if (instance != NULL) {
-        if (instance->ioService != NULL) {
-            HdfIoServiceRemove(instance->ioService);
-        }
-        HdfDeviceNodeDestruct(&instance->super);
-        OsalMemFree(instance);
+    struct DeviceNodeExt *devnode = (struct DeviceNodeExt *)object;
+    if (devnode != NULL) {
+        DeviceNodeExtDestruct(devnode);
+        OsalMemFree(devnode);
     }
 }
-
