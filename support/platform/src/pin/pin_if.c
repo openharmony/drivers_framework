@@ -7,9 +7,7 @@
  */
 
 #include "pin_if.h"
-#include "devsvc_manager_clnt.h"
 #include "pin_core.h"
-#include "hdf_base.h"
 #include "hdf_log.h"
 
 #define HDF_LOG_TAG pin_if

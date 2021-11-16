@@ -38,7 +38,7 @@ struct RegulatorNode *RegulatorNodeOpen(const char *name)
     }
 
     DLIST_FOR_EACH_ENTRY(pos, &manager->regulatorHead, struct RegulatorNode, node) {
-        if(strcmp(name, pos->regulatorInfo.name) == 0) {
+        if (strcmp(name, pos->regulatorInfo.name) == 0) {
             HDF_LOGD("RegulatorNodeOpen:[%s] SUCCESS", name);
             (void)OsalMutexUnlock(&manager->lock);
             return pos;
@@ -121,10 +121,11 @@ int32_t RegulatorNodeSetParent(struct RegulatorNode *node)
     HDF_LOGE("%s: the node %s no need to set parent", __func__, node->regulatorInfo.name);
     return HDF_SUCCESS;
 }
-/**********************************
-*1. complete up and down management topology
-*2. process alwayson
-***********************************/
+
+/**
+  * complete up and down management topology
+  * process alwayson
+  */
 int32_t RegulatorNodeInitProcess(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
@@ -139,7 +140,7 @@ int32_t RegulatorNodeInitProcess(struct RegulatorNode *node)
     if (node->regulatorInfo.constraints.alwaysOn) {
         if (node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_CURRENT) {
             RegulatorNodeSetCurrent(node, node->regulatorInfo.constraints.minUa, node->regulatorInfo.constraints.maxUa);
-        } else if(node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_VOLTAGE) {
+        } else if (node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_VOLTAGE) {
             RegulatorNodeSetVoltage(node, node->regulatorInfo.constraints.minUv, node->regulatorInfo.constraints.maxUv);
         }
         RegulatorNodeEnable(node);
@@ -244,8 +245,8 @@ int32_t RegulatorNodeEnable(struct RegulatorNode *node)
         return HDF_ERR_DEVICE_BUSY;
     }
 
-    if((node->regulatorInfo.parentName != NULL) && (strlen(node->regulatorInfo.parentName) > 0)) {
-        struct RegulatorNode * parent = RegulatorTreeGetParent(node->regulatorInfo.name);
+    if ((node->regulatorInfo.parentName != NULL) && (strlen(node->regulatorInfo.parentName) > 0)) {
+        struct RegulatorNode *parent = RegulatorTreeGetParent(node->regulatorInfo.name);
         if (parent == NULL) {
             (void)OsalMutexUnlock(&node->lock);
             HDF_LOGE("RegulatorNodeEnable: %s failed", node->regulatorInfo.name);
@@ -286,7 +287,7 @@ static int32_t RegulatorNodeDisable(struct RegulatorNode *node)
         return HDF_ERR_DEVICE_BUSY;
     }
 
-    if(!RegulatorTreeIsAllChildDisable(node->regulatorInfo.name)){
+    if (!RegulatorTreeIsAllChildDisable(node->regulatorInfo.name)) {
         (void)OsalMutexUnlock(&node->lock);
         HDF_LOGE("RegulatorNodeDisable:there is %s child not disable ", node->regulatorInfo.name);
         return HDF_FAILURE;
@@ -303,8 +304,8 @@ static int32_t RegulatorNodeDisable(struct RegulatorNode *node)
     HDF_LOGD("RegulatorNodeDisable:disable %s success", node->regulatorInfo.name);
 
     // set parent
-    if(strlen(node->regulatorInfo.parentName) != 0) {
-        struct RegulatorNode * parent = RegulatorTreeGetParent(node->regulatorInfo.name);
+    if (strlen(node->regulatorInfo.parentName) != 0) {
+        struct RegulatorNode *parent = RegulatorTreeGetParent(node->regulatorInfo.name);
         if (parent == NULL) {
             (void)OsalMutexUnlock(&node->lock);
             HDF_LOGE("RegulatorNodeDisable: %s failed", node->regulatorInfo.name);
@@ -353,8 +354,8 @@ int32_t RegulatorNodeForceDisable(struct RegulatorNode *node)
     HDF_LOGD(":regulator %s force disable success", node->regulatorInfo.name);
 
     // set parent
-    if(strlen(node->regulatorInfo.parentName) != 0) {
-        struct RegulatorNode * parent = RegulatorTreeGetParent(node->regulatorInfo.name);
+    if (strlen(node->regulatorInfo.parentName) != 0) {
+        struct RegulatorNode *parent = RegulatorTreeGetParent(node->regulatorInfo.name);
         if (parent == NULL) {
             (void)OsalMutexUnlock(&node->lock);
             HDF_LOGE(": %s failed", node->regulatorInfo.name);

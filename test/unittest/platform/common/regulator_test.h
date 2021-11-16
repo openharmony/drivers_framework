@@ -13,9 +13,12 @@
 #include "hdf_platform.h"
 
 #ifdef REGULATOR_TEST_PRINTK_OPEN
-#define REGULATOR_TEST_PRINT_LOG_DBG(fmt, arg...) dprintf("[HDF]-[REGULATOR]:[%s][%d]---" fmt "\r\n", __func__, __LINE__, ##arg)
-#define REGULATOR_TEST_PRINT_LOG_INF(fmt, arg...) dprintf("[HDF]-[REGULATOR]:[%s][%d]---" fmt "\r\n", __func__, __LINE__, ##arg)
-#define REGULATOR_TEST_PRINT_LOG_ERR(fmt, arg...) dprintf("[HDF]-[REGULATOR]:[%s][%d]---" fmt "\r\n", __func__, __LINE__, ##arg)
+#define REGULATOR_TEST_PRINT_LOG_DBG(fmt, arg...) \
+dprintf("[HDF]-[REGULATOR]:[%s][%d]---" fmt "\r\n", __func__, __LINE__, ##arg)
+#define REGULATOR_TEST_PRINT_LOG_INF(fmt, arg...) \
+dprintf("[HDF]-[REGULATOR]:[%s][%d]---" fmt "\r\n", __func__, __LINE__, ##arg)
+#define REGULATOR_TEST_PRINT_LOG_ERR(fmt, arg...) \
+dprintf("[HDF]-[REGULATOR]:[%s][%d]---" fmt "\r\n", __func__, __LINE__, ##arg)
 #else
 #define REGULATOR_TEST_PRINT_LOG_DBG(fmt, arg...) HDF_LOGD_WRAPPER("[HDF]-[REGULATOR]:" fmt "\r\n",  ##arg)
 #define REGULATOR_TEST_PRINT_LOG_INF(fmt, arg...) HDF_LOGI_WRAPPER("[HDF]-[REGULATOR]:" fmt "\r\n",  ##arg)

@@ -590,7 +590,7 @@ int32_t I3cCntlrRequestIbi(struct I3cCntlr *cntlr, uint16_t addr, I3cIbiFunc fun
         }
         ibi = (struct I3cIbiInfo *)OsalMemCalloc(sizeof(*ibi));
         if (ibi == NULL) {
-            HDF_LOGE("func:%s ibi is NULL!",__func__);
+            HDF_LOGE("func:%s ibi is NULL!", __func__);
             return HDF_ERR_MALLOC_FAIL;
         }
         ibi->ibiFunc = func;
@@ -672,7 +672,6 @@ int32_t I3cCntlrIbiCallback(struct I3cDevice *device)
     if (device->dynaAddr != 0) {
         (void)device->ibi->ibiFunc(device->cntlr, device->dynaAddr, *ibiData);
         OsalMemFree(ibiData);
-
     } else {
         (void)device->ibi->ibiFunc(device->cntlr, device->addr, *ibiData);
         OsalMemFree(ibiData);

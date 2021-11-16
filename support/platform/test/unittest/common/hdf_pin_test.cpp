@@ -31,7 +31,6 @@ void HdfPinTest::SetUpTestCase()
     struct HdfTestMsg msg = {TEST_PAL_PIN_TYPE, PIN_TEST_CMD_SETUP_ALL, -1};
     HdfTestOpenService();
     HdfTestSendMsgToService(&msg);
-
 }
 
 void HdfPinTest::TearDownTestCase()
@@ -39,7 +38,6 @@ void HdfPinTest::TearDownTestCase()
     struct HdfTestMsg msg = {TEST_PAL_PIN_TYPE, PIN_TEST_CMD_TEARDOWN_ALL, -1};
     HdfTestSendMsgToService(&msg);
     HdfTestCloseService();
-
 }
 
 void HdfPinTest::SetUp()
@@ -61,19 +59,7 @@ HWTEST_F(HdfPinTest, PinSetGetPull001, TestSize.Level1)
     struct HdfTestMsg msg = {TEST_PAL_PIN_TYPE, PIN_TEST_CMD_SETGETPULL, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
-  
-/**
-  * @tc.name: PinTestGetPinPull001
-  * @tc.desc: Pin get pin Pull test
-  * @tc.type: FUNC
-  * @tc.require: NA
-  */
-/*HWTEST_F(HdfPinTest, PinGetPull001, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {TEST_PAL_PIN_TYPE, PIN_TEST_CMD_GETPULL, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-*/
+
 /**
   * @tc.name: PinTestSetGetStrength001
   * @tc.desc: Pin set get pin Strength test
@@ -85,19 +71,7 @@ HWTEST_F(HdfPinTest, PinSetGetStrength001, TestSize.Level1)
     struct HdfTestMsg msg = {TEST_PAL_PIN_TYPE, PIN_TEST_CMD_SETGETSTRENGTH, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
-  
-/**
-  * @tc.name: PinTestGetStrength001
-  * @tc.desc: Pin get pin Strength test
-  * @tc.type: FUNC
-  * @tc.require: NA
-  */
-/*HWTEST_F(HdfPinTest, PinGetStrength001, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {TEST_PAL_PIN_TYPE, PIN_TEST_CMD_GETSTRENGTH, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-*/
+
 /**
   * @tc.name: PinSetGetPinFunc001
   * @tc.desc: Pin set get pin func test
@@ -110,18 +84,6 @@ HWTEST_F(HdfPinTest, PinSetGetPinFunc001, TestSize.Level1)
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
 
-/**
-  * @tc.name: PinGetPinFunc001
-  * @tc.desc: Pin getpinfunc test
-  * @tc.type: FUNC
-  * @tc.require: NA
-  */
-/*HWTEST_F(HdfPinTest, PinGetPinFunc001, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {TEST_PAL_PIN_TYPE, PIN_TEST_CMD_GETFUNC, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-*/
 /**
  * @tc.name: PinReliabilityTest001
  * @tc.desc: Pin function test

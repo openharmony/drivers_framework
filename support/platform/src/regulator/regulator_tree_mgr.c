@@ -39,7 +39,7 @@ void RegulatorChildListDestroy(struct RegulatorTreeInfo *pRegulator)
         OsalMemFree(nodeInfo);
     }
 }
-struct RegulatorNode * RegulatorTreeGetParent(const char *name)
+struct RegulatorNode *RegulatorTreeGetParent(const char *name)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, NULL);
 
@@ -264,7 +264,7 @@ int RegulatorTreeSet(const char *name, struct RegulatorNode *child, struct Regul
     }
 
     HDF_LOGI("RegulatorTreeSet: set [%s], parent[%s]  success!", 
-    name, parent->regulatorInfo.name);
+            name, parent->regulatorInfo.name);
     return HDF_SUCCESS;
 }
 static void RegulatorTreePrintChild(const char *name, struct DListHead *childHead)
@@ -327,7 +327,9 @@ int RegulatorTreeNodeRemoveAll(void)
 
 int RegulatorTreeManagerDestory(void)
 {
-    RegulatorTreeNodeRemoveAll();
+    if (RegulatorTreeNodeRemoveAll() != HDF_SUCCESS) {
+        HDF_LOGE("func:%s RegulatorTreeNodeRemoveAll failed", __func__);
+    }
 
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
@@ -339,7 +341,8 @@ int RegulatorTreeManagerDestory(void)
 
 int RegulatorTreeManagerInit(void)
 {
-    struct RegulatorTreeManager * manager = (struct RegulatorTreeManager *)OsalMemCalloc(sizeof(struct RegulatorTreeManager));
+    struct RegulatorTreeManager *manager =
+        (struct RegulatorTreeManager *)OsalMemCalloc(sizeof(struct RegulatorTreeManager));
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
 
     if (OsalMutexInit(&manager->lock) != HDF_SUCCESS) {

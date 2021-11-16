@@ -7,13 +7,9 @@
  */
 
 #include "regulator_test.h"
-#include <unistd.h>
 #include "device_resource_if.h"
-#include "hdf_base.h"
 #include "hdf_log.h"
 #include "regulator_if.h"
-#include "osal_mem.h"
-#include "osal_test_type.h"
 #include "osal_thread.h"
 #include "osal_time.h"
 
@@ -22,6 +18,17 @@
 struct RegulatorTestFunc {
     enum RegulatorTestCmd type;
     int32_t (*Func)(struct RegulatorTest *test);
+};
+
+enum RegulatorVoltage {
+    VOLTAGE_50_UV = 50,
+    VOLTAGE_250_UV = 250,
+    VOLTAGE_2500_UV = 2500,
+};
+
+enum RegulatorCurrent {
+    CURRENT_50_UA = 50,
+    CURRENT_250_UA = 250,
 };
 
 static int32_t RegulatorEnableTest(struct RegulatorTest *test)
@@ -160,7 +167,7 @@ static int RegulatorTestThreadFunc(void *param)
         return HDF_FAILURE;
     }
 
-    if (RegulatorSetVoltage(handle, 250, 2500) != HDF_SUCCESS) {
+    if (RegulatorSetVoltage(handle, VOLTAGE_250_UV, VOLTAGE_2500_UV) != HDF_SUCCESS) {
         HDF_LOGE("%s:test fail", __func__);
         RegulatorClose(handle);
         *((int32_t *)param) = 1;
@@ -233,8 +240,8 @@ int32_t RegulatorTestReliability(struct RegulatorTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    RegulatorSetVoltage(test->handle, 250, 50);
-    RegulatorSetCurrent(test->handle, 250, 50);
+    RegulatorSetVoltage(test->handle, VOLTAGE_250_UV, VOLTAGE_50_UV);
+    RegulatorSetCurrent(test->handle, CURRENT_250_UA, CURRENT_50_UA);
     RegulatorGetCurrent(test->handle, NULL);
     return HDF_SUCCESS;
 }

@@ -79,7 +79,8 @@ int32_t RegulatorDisable(DevHandle handle);
  * @param handle  Represents a pointer to the regulator handle, which is obtained through {@ link RegulatorOpen}.
  * @return <b>0</b> If the regulator disable successfully; Otherwise, a negative value is returned.
  *
- * @attention No matter whether the status of the regulator is alwayson or the status of the child is enable, the regulator is disabled.
+ * @attention No matter whether the status of the regulator is alwayson or the status of the child is enable,
+ *            the regulator is disabled.
  * 
  * @since 1.0
  */

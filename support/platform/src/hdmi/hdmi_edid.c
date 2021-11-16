@@ -1026,8 +1026,62 @@ static void HdmiEdidExtUseExtDataBlockHdrSmdbPhase(struct HdmiSinkDeviceCapabili
     }
 }
 
+static void HdmiEdidDolbyCapVersionZeroPhase(struct HdmiSinkDeviceCapability *sinkCap,uint8_t *data)
+{
+    sinkCap->dolbyCap.globalDimming = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT2_MARK) ? true : false;
+    sinkCap->dolbyCap.redX = ((data[UINT8_ARRAY_TElEMENT_5] &
+                                HDMI_UPPER_NIBBLE_MARK) >>
+                                HDMI_NIBBLE_SHIFT) |
+                                (data[UINT8_ARRAY_TElEMENT_6] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.redY = (data[UINT8_ARRAY_TElEMENT_5] &
+                                HDMI_LOWER_NIBBLE_MARK) |
+                                (data[UINT8_ARRAY_TElEMENT_7] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.greenX = ((data[UINT8_ARRAY_TElEMENT_8] & HDMI_UPPER_NIBBLE_MARK) >>
+                                    HDMI_NIBBLE_SHIFT) |
+                                    (data[UINT8_ARRAY_TElEMENT_9] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.greenY = (data[UINT8_ARRAY_TElEMENT_8] &
+                                HDMI_LOWER_NIBBLE_MARK) |
+                                (data[UINT8_ARRAY_TElEMENT_10] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.blueX = ((data[UINT8_ARRAY_TElEMENT_11] & HDMI_UPPER_NIBBLE_MARK) >>
+                                HDMI_NIBBLE_SHIFT) |
+                                (data[UINT8_ARRAY_TElEMENT_12] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.blueY = (data[UINT8_ARRAY_TElEMENT_11] &
+                                HDMI_LOWER_NIBBLE_MARK) |
+                                (data[UINT8_ARRAY_TElEMENT_13] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.whiteX = ((data[UINT8_ARRAY_TElEMENT_14] & HDMI_UPPER_NIBBLE_MARK) >>
+                                    HDMI_NIBBLE_SHIFT) |
+                                    (data[UINT8_ARRAY_TElEMENT_15] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.whiteY = (data[UINT8_ARRAY_TElEMENT_14] & HDMI_LOWER_NIBBLE_MARK) |
+                                (data[UINT8_ARRAY_TElEMENT_16] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.minLuminance = ((data[UINT8_ARRAY_TElEMENT_17] & HDMI_UPPER_NIBBLE_MARK) >>
+                                        HDMI_NIBBLE_SHIFT) |
+                                        (data[UINT8_ARRAY_TElEMENT_18] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.maxLuminance = (data[UINT8_ARRAY_TElEMENT_17] & HDMI_LOWER_NIBBLE_MARK) |
+                                        (data[UINT8_ARRAY_TElEMENT_19] << HDMI_NIBBLE_SHIFT);
+    sinkCap->dolbyCap.dMajorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_UPPER_NIBBLE_MARK) >>
+                                    HDMI_NIBBLE_SHIFT;
+    sinkCap->dolbyCap.dMinorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_LOWER_NIBBLE_MARK);
+}
+
+static void HdmiEdidDolbyCapVersionOnePhase(struct HdmiSinkDeviceCapability *sinkCap,uint8_t *data)
+{
+    sinkCap->dolbyCap.dmVer = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_EDID_VSVDB_DOLBY_DM_VER_MARK) >>
+                                HDMI_EDID_VSVDB_DOLBY_DM_VER_SHIFT;
+    sinkCap->dolbyCap.globalDimming = (data[UINT8_ARRAY_TElEMENT_5] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->dolbyCap.maxLuminance = ((data[UINT8_ARRAY_TElEMENT_5] >> 1) & HDMI_EDID_VSVDB_DOLBY_LOWER_7BIT_MARK);
+    sinkCap->dolbyCap.colorimetry = (data[UINT8_ARRAY_TElEMENT_6] & HDMI_BIT0_MARK) ? true : false;
+    sinkCap->dolbyCap.minLuminance = ((data[UINT8_ARRAY_TElEMENT_6] >> 1) & HDMI_EDID_VSVDB_DOLBY_LOWER_7BIT_MARK);
+    sinkCap->dolbyCap.redX = data[UINT8_ARRAY_TElEMENT_8];
+    sinkCap->dolbyCap.redY = data[UINT8_ARRAY_TElEMENT_9];
+    sinkCap->dolbyCap.greenX = data[UINT8_ARRAY_TElEMENT_10];
+    sinkCap->dolbyCap.greenY = data[UINT8_ARRAY_TElEMENT_11];
+    sinkCap->dolbyCap.blueX = data[UINT8_ARRAY_TElEMENT_12];
+    sinkCap->dolbyCap.blueY = data[UINT8_ARRAY_TElEMENT_13];
+}
+
 static void HdmiEdidExtUseExtDataBlockVsvdbPhase(struct HdmiSinkDeviceCapability *sinkCap,
-    uint8_t *data, uint8_t len)
+                                                 uint8_t *data,
+                                                 uint8_t len)
 {
     uint32_t oui;
 
@@ -1047,54 +1101,11 @@ static void HdmiEdidExtUseExtDataBlockVsvdbPhase(struct HdmiSinkDeviceCapability
     sinkCap->dolbyCap.yuv422 = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT0_MARK) ? true : false;
     sinkCap->dolbyCap.b2160p60 = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT1_MARK) ? true : false;
     if (sinkCap->dolbyCap.version == HDMI_EDID_VSVDB_DOLBY_VERSION_0) {
-        sinkCap->dolbyCap.globalDimming = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT2_MARK) ? true : false;
-        sinkCap->dolbyCap.redX = ((data[UINT8_ARRAY_TElEMENT_5] &
-                                   HDMI_UPPER_NIBBLE_MARK) >>
-                                   HDMI_NIBBLE_SHIFT) |
-                                   (data[UINT8_ARRAY_TElEMENT_6] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.redY = (data[UINT8_ARRAY_TElEMENT_5] &
-                                  HDMI_LOWER_NIBBLE_MARK) |
-                                  (data[UINT8_ARRAY_TElEMENT_7] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.greenX = ((data[UINT8_ARRAY_TElEMENT_8] & HDMI_UPPER_NIBBLE_MARK) >>
-                                     HDMI_NIBBLE_SHIFT) |
-                                     (data[UINT8_ARRAY_TElEMENT_9] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.greenY = (data[UINT8_ARRAY_TElEMENT_8] &
-                                    HDMI_LOWER_NIBBLE_MARK) |
-                                    (data[UINT8_ARRAY_TElEMENT_10] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.blueX = ((data[UINT8_ARRAY_TElEMENT_11] & HDMI_UPPER_NIBBLE_MARK) >>
-                                    HDMI_NIBBLE_SHIFT) |
-                                    (data[UINT8_ARRAY_TElEMENT_12] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.blueY = (data[UINT8_ARRAY_TElEMENT_11] &
-                                   HDMI_LOWER_NIBBLE_MARK) |
-                                   (data[UINT8_ARRAY_TElEMENT_13] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.whiteX = ((data[UINT8_ARRAY_TElEMENT_14] & HDMI_UPPER_NIBBLE_MARK) >>
-                                     HDMI_NIBBLE_SHIFT) |
-                                     (data[UINT8_ARRAY_TElEMENT_15] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.whiteY = (data[UINT8_ARRAY_TElEMENT_14] & HDMI_LOWER_NIBBLE_MARK) |
-                                    (data[UINT8_ARRAY_TElEMENT_16] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.minLuminance = ((data[UINT8_ARRAY_TElEMENT_17] & HDMI_UPPER_NIBBLE_MARK) >>
-                                           HDMI_NIBBLE_SHIFT) |
-                                           (data[UINT8_ARRAY_TElEMENT_18] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.maxLuminance = (data[UINT8_ARRAY_TElEMENT_17] & HDMI_LOWER_NIBBLE_MARK) |
-                                          (data[UINT8_ARRAY_TElEMENT_19] << HDMI_NIBBLE_SHIFT);
-        sinkCap->dolbyCap.dMajorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_UPPER_NIBBLE_MARK) >>
-                                       HDMI_NIBBLE_SHIFT;
-        sinkCap->dolbyCap.dMinorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_LOWER_NIBBLE_MARK);
+        HdmiEdidDolbyCapVersionZeroPhase(sinkCap, data);
         return;
     }
     if (sinkCap->dolbyCap.version == HDMI_EDID_VSVDB_DOLBY_VERSION_1) {
-        sinkCap->dolbyCap.dmVer = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_EDID_VSVDB_DOLBY_DM_VER_MARK) >>
-                                   HDMI_EDID_VSVDB_DOLBY_DM_VER_SHIFT;
-        sinkCap->dolbyCap.globalDimming = (data[UINT8_ARRAY_TElEMENT_5] & HDMI_BIT0_MARK) ? true : false;
-        sinkCap->dolbyCap.maxLuminance = ((data[UINT8_ARRAY_TElEMENT_5] >> 1) & HDMI_EDID_VSVDB_DOLBY_LOWER_7BIT_MARK);
-        sinkCap->dolbyCap.colorimetry = (data[UINT8_ARRAY_TElEMENT_6] & HDMI_BIT0_MARK) ? true : false;
-        sinkCap->dolbyCap.minLuminance = ((data[UINT8_ARRAY_TElEMENT_6] >> 1) & HDMI_EDID_VSVDB_DOLBY_LOWER_7BIT_MARK);
-        sinkCap->dolbyCap.redX = data[UINT8_ARRAY_TElEMENT_8];
-        sinkCap->dolbyCap.redY = data[UINT8_ARRAY_TElEMENT_9];
-        sinkCap->dolbyCap.greenX = data[UINT8_ARRAY_TElEMENT_10];
-        sinkCap->dolbyCap.greenY = data[UINT8_ARRAY_TElEMENT_11];
-        sinkCap->dolbyCap.blueX = data[UINT8_ARRAY_TElEMENT_12];
-        sinkCap->dolbyCap.blueY = data[UINT8_ARRAY_TElEMENT_13];
+        HdmiEdidDolbyCapVersionOnePhase(sinkCap, data);
     }
 }
 

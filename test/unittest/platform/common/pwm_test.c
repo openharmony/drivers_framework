@@ -44,7 +44,7 @@ static int32_t PwmSetConfigTest(struct PwmTest *test)
 
     HDF_LOGI("%s: enter. Test [PwmSetConfig].", __func__);
     number = test->cfg.number;
-    test->cfg.number = ((number > 0) ? 0: TEST_WAVES_NUMBER);
+    test->cfg.number = ((number > 0) ? 0 : TEST_WAVES_NUMBER);
     HDF_LOGI("%s: Set number %u.", __func__, test->cfg.number);
     ret = PwmSetConfig(test->handle, &(test->cfg));
     if (ret != HDF_SUCCESS) {

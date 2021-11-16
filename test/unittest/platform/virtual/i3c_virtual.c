@@ -193,7 +193,7 @@ static void VirtualI3cHotJoin(struct VirtualI3cCntlr *virtual)
     deviceAddr = VirtualI3cGetIbiDeviceAddr();
     device = (struct I3cDevice *)OsalMemCalloc(sizeof(*device));
     if (device == NULL) {
-        HDF_LOGE("func:%s device is NULL!",__func__);
+        HDF_LOGE("func:%s device is NULL!", __func__);
         return;
     }
     device->cntlr = &virtual->cntlr;
@@ -254,7 +254,7 @@ static int32_t I3cIbiHandle(uint32_t irq, void *data)
         HDF_LOGD("%s: Calling I3cCntlrIbiCallback...", __func__);
         device = GetDeviceByAddr(&virtual->cntlr, ibiAddr);
         if (device == NULL) {
-            HDF_LOGE("func:%s device is NULL!",__func__);
+            HDF_LOGE("func:%s device is NULL!", __func__);
             return HDF_ERR_MALLOC_FAIL;
         }
         if (device->ibi->payload > VIRTUAL_I3C_TEST_STR_LEN) {

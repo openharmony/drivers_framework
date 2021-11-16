@@ -190,8 +190,8 @@ int32_t I3cTestTransfer(void *param)
 {
     struct I3cTester *tester = NULL;
     int32_t ret;
+    
     tester = I3cTesterGet();
-
     if (tester == NULL) {
         HDF_LOGE("%s: Get tester failed!", __func__);
         *((int32_t *)param) = 1;
@@ -444,7 +444,7 @@ int32_t I3cTestReliability(void *param)
     }
     config = (struct I3cConfig *)OsalMemCalloc(sizeof(*config));
     if (config == NULL) {
-        HDF_LOGE("func:%s config is NULL!",__func__);
+        HDF_LOGE("func:%s config is NULL!", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
     config->busMode = I3C_BUS_HDR_MODE;
