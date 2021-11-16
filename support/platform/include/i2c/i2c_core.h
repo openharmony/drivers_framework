@@ -12,6 +12,7 @@
 #include "hdf_base.h"
 #include "i2c_if.h"
 #include "osal_mutex.h"
+#include "platform_core.h"
 
 #ifdef __cplusplus
 #if __cplusplus

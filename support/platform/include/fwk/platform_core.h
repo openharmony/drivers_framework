@@ -12,6 +12,7 @@
 #include "hdf_base.h"
 
 #include "platform_device.h"
+#include "platform_log.h"
 #include "platform_errno.h"
 #include "platform_manager.h"
 #include "platform_queue.h"

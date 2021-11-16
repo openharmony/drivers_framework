@@ -15,7 +15,6 @@
 #include "osal_mem.h"
 #include "osal_spinlock.h"
 #include "osal_time.h"
-#include "plat_log.h"
 
 #define HDF_LOG_TAG                        i3c_virtual
 
