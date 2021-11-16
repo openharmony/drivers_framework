@@ -197,7 +197,7 @@ static int32_t HdfFocalChipInit(struct HdfDeviceObject *device)
     chipDev->chipName = chipCfg->chipName;
     chipDev->vendorName = chipCfg->vendorName;
 
-    if (RegisterChipDevice(chipDev) != HDF_SUCCESS) {
+    if (RegisterTouchChipDevice(chipDev) != HDF_SUCCESS) {
         goto EXIT1;
     }
     HDF_LOGI("%s: exit succ, chipName = %s", __func__, chipCfg->chipName);

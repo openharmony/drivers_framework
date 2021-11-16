@@ -107,6 +107,6 @@ typedef struct {
     const char *cmdValue;
 } InputExtraCmd;
 
-int32_t RegisterChipDevice(ChipDevice *chipDev);
+int32_t RegisterTouchChipDevice(ChipDevice *chipDev);
 
 #endif

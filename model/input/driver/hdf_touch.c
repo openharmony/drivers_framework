@@ -346,7 +346,7 @@ static int32_t DeviceBindDriver(ChipDevice *chipDev)
     return HDF_SUCCESS;
 }
 
-int32_t RegisterChipDevice(ChipDevice *chipDev)
+int32_t RegisterTouchChipDevice(ChipDevice *chipDev)
 {
     int32_t ret;
     InputDevice *inputDev = NULL;
