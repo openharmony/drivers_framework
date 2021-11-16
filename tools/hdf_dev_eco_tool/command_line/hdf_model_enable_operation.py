@@ -44,13 +44,18 @@ class EnableOperation(object):
         self.vendor = vendor
         self.board = board
         self.model = model
-        self.liteos_model_name = HdfLiteScan(self.root, self.vendor, self.board).scan_build()
-        self.linux_model_name = HdfLinuxScan(self.root, self.vendor, self.board).scan_makefile()
+        self.liteos_model_name = HdfLiteScan(
+            self.root, self.vendor, self.board).scan_build()
+        self.linux_model_name = HdfLinuxScan(
+            self.root, self.vendor, self.board).scan_makefile()
 
     def disable_model_liteos(self):
-        dot_file_list = hdf_utils.get_dot_configs_path(self.root, self.vendor, self.board)
-        old_template_string = "LOSCFG_DRIVERS_HDF_${module_upper_case}=y"
-        new_template_string = "LOSCFG_DRIVERS_HDF_${module_upper_case} is not set\n"
+        dot_file_list = hdf_utils.get_dot_configs_path(
+            self.root, self.vendor, self.board)
+        old_template_string = \
+            "LOSCFG_DRIVERS_HDF_${module_upper_case}=y"
+        new_template_string = \
+            "LOSCFG_DRIVERS_HDF_${module_upper_case} is not set\n"
         new_demo_config = Template(new_template_string).substitute(
             {"module_upper_case": self.model.upper()})
         old_demo_config = Template(old_template_string).substitute(
@@ -67,9 +72,12 @@ class EnableOperation(object):
         return True
 
     def enable_model_liteos(self):
-        dot_file_list = hdf_utils.get_dot_configs_path(self.root, self.vendor, self.board)
-        new_template_string = "LOSCFG_DRIVERS_HDF_${module_upper_case}=y\n"
-        old_template_string = "LOSCFG_DRIVERS_HDF_${module_upper_case} is not set"
+        dot_file_list = hdf_utils.get_dot_configs_path(
+            self.root, self.vendor, self.board)
+        new_template_string = \
+            "LOSCFG_DRIVERS_HDF_${module_upper_case}=y\n"
+        old_template_string = \
+            "LOSCFG_DRIVERS_HDF_${module_upper_case} is not set"
         new_demo_config = Template(new_template_string).substitute(
             {"module_upper_case": self.model.upper()})
         old_demo_config = Template(old_template_string).substitute(
@@ -132,7 +140,8 @@ class EnableOperation(object):
         file_path = []
         for roots, dirs, files in os.walk(patch):
             if endswitch == "defconfig":
-                files_list = list(filter(lambda x: x.split(split_sign)[-1] == endswitch, files))
+                files_list = list(filter(
+                    lambda x: x.split(split_sign)[-1] == endswitch, files))
             else:
                 files_list = list(filter(lambda x: x == endswitch, files))
             for file in files_list:
@@ -141,10 +150,12 @@ class EnableOperation(object):
 
     def _get_config_linux(self):
         config_path = self.get_config_config(kernel="linux")
-        config_path_list = self._get_file_patch(patch=config_path, endswitch="defconfig", split_sign="_")
+        config_path_list = self._get_file_patch(
+            patch=config_path, endswitch="defconfig", split_sign="_")
         
         patch_path = self.get_config_patch(kernel="linux")
-        patch_path_list = self._get_file_patch(patch=patch_path, endswitch="hi3516dv300.patch", split_sign=".")
+        patch_path_list = self._get_file_patch(
+            patch=patch_path, endswitch="hi3516dv300.patch", split_sign=".")
         config_path_list.extend(patch_path_list)
 
         return config_path_list
@@ -168,12 +179,17 @@ class EnableOperation(object):
         file_path_list = self._get_config_linux()
         for file_path in file_path_list:
             if file_path.split("_")[-1] == "defconfig":
-                old_template_string = "CONFIG_DRIVERS_HDF_${module_upper_case}=y"
-                new_template_string = "CONFIG_DRIVERS_HDF_${module_upper_case} is not set\n"
+                old_template_string = \
+                    "CONFIG_DRIVERS_HDF_${module_upper_case}=y"
+                new_template_string = \
+                    "CONFIG_DRIVERS_HDF_${module_upper_case} is not set\n"
             else:
-                old_template_string = "+CONFIG_DRIVERS_HDF_${module_upper_case}=y"
-                new_template_string = "+CONFIG_DRIVERS_HDF_${module_upper_case} is not set\n"
-            self._replace_operation(new_string=new_template_string, old_string=old_template_string,
+                old_template_string = \
+                    "+CONFIG_DRIVERS_HDF_${module_upper_case}=y"
+                new_template_string = \
+                    "+CONFIG_DRIVERS_HDF_${module_upper_case} is not set\n"
+            self._replace_operation(new_string=new_template_string,
+                                    old_string=old_template_string,
                                     file_path=file_path)
         return True
 
@@ -183,11 +199,16 @@ class EnableOperation(object):
         file_path_list = self._get_config_linux()
         for file_path in file_path_list:
             if file_path.split("_")[-1] == "defconfig":
-                new_template_string = "CONFIG_DRIVERS_HDF_${module_upper_case}=y\n"
-                old_template_string = "CONFIG_DRIVERS_HDF_${module_upper_case} is not set"
+                new_template_string \
+                    = "CONFIG_DRIVERS_HDF_${module_upper_case}=y\n"
+                old_template_string \
+                    = "CONFIG_DRIVERS_HDF_${module_upper_case} is not set"
             else:
-                new_template_string = "+CONFIG_DRIVERS_HDF_${module_upper_case}=y\n"
-                old_template_string = "+CONFIG_DRIVERS_HDF_${module_upper_case} is not set"
-            self._replace_operation(new_string=new_template_string, old_string=old_template_string,
+                new_template_string \
+                    = "+CONFIG_DRIVERS_HDF_${module_upper_case}=y\n"
+                old_template_string = \
+                    "+CONFIG_DRIVERS_HDF_${module_upper_case} is not set"
+            self._replace_operation(new_string=new_template_string,
+                                    old_string=old_template_string,
                                     file_path=file_path)
         return True

@@ -223,6 +223,8 @@ class HdfGetHandler(HdfCommandHandlerBase):
         self.check_arg_raise_if_not_exist("board_name")
         root, vendor, _, _, board, _ = self.get_args()
         if board.split("_")[-1] != "linux":
-            return HdfLiteScan(root=root, vendor=vendor, board=board).get_model_scan()
+            return HdfLiteScan(
+                root=root, vendor=vendor, board=board).get_model_scan()
         else:
-            return HdfLinuxScan(root=root, vendor=vendor, board=board).get_model_scan()
+            return HdfLinuxScan(
+                root=root, vendor=vendor, board=board).get_model_scan()
