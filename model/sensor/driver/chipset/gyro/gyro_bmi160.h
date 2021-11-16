@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -9,6 +9,7 @@
 #ifndef GYRO_BMI160_H
 #define GYRO_BMI160_H
 
+#include "sensor_gyro_driver.h"
 #include "sensor_config_parser.h"
 
 /* GYRO DATA REGISTERS ADDR */
@@ -50,5 +51,11 @@
 
 int32_t DetectGyroBim160Chip(struct SensorCfgData *data);
 int32_t ReadBmi160Data(struct SensorCfgData *data);
+
+struct Bmi160DrvData {
+    struct IDeviceIoService ioService;
+    struct HdfDeviceObject *device;
+    struct SensorCfgData *sensorCfg;
+};
 
 #endif /* GYRO_BMI160_H */
