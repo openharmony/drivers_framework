@@ -12,6 +12,7 @@
 #include "osal_spinlock.h"
 #include "hdf_base.h"
 #include "adc_if.h"
+#include "platform_core.h"
 
 #ifdef __cplusplus
 #if __cplusplus

@@ -13,7 +13,6 @@
 #include "osal_spinlock.h"
 #include "osal_time.h"
 #include "platform_core.h"
-#include "plat_log.h"
 
 #define HDF_LOG_TAG adc_core_c
 #define LOCK_WAIT_SECONDS_M 1
