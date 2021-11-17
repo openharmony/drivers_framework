@@ -21,13 +21,13 @@ extern "C" {
 #endif /* __cplusplus */
 
 struct RegulatorChildNode {
-    struct RegulatorNode * child;
+    struct RegulatorNode *child;
     struct DListHead node;
 };
 
 struct RegulatorTreeInfo {
     const char *name;                  /* regulator name */
-    struct RegulatorNode * parent;    /* regulator parent info */
+    struct RegulatorNode *parent;    /* regulator parent info */
     struct DListHead node;
     struct DListHead childHead;      /* child regulator list */
 };
@@ -42,7 +42,7 @@ int RegulatorTreeManagerDestory(void);
 int RegulatorTreeNodeRemoveAll(void);
 int RegulatorTreeSet(const char *name, struct RegulatorNode *child, struct RegulatorNode *parent);
 void RegulatorTreePrint(void);
-struct RegulatorNode * RegulatorTreeGetParent(const char *name);
+struct RegulatorNode *RegulatorTreeGetParent(const char *name);
 int32_t RegulatorTreeChildForceDisable(struct RegulatorNode *node);
 bool RegulatorTreeIsAllChildDisable(const char *name);
 

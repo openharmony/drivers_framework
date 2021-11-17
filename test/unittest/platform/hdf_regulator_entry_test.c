@@ -8,7 +8,6 @@
 
 #include "hdf_regulator_entry_test.h"
 #include "hdf_log.h"
-#include "regulator_if.h"
 #include "regulator_test.h"
 
 #define HDF_LOG_TAG hdf_regulator_entry_test

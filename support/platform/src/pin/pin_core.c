@@ -7,11 +7,7 @@
  */
 
 #include "pin_core.h"
-#include "hdf_device_desc.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
-#include "osal_sem.h"
-#include "securec.h"
 
 #define HDF_LOG_TAG pin_core
 
@@ -117,7 +113,7 @@ struct PinCntlr *PinCntlrGetByNumber(uint16_t number)
     list = PinCntlrListGet();
 
     DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, list, struct PinCntlr, list) {
-        if(cntlr->number == number) {
+        if (cntlr->number == number) {
             PinCntlrListPut();
             HDF_LOGI("%s: get cntlr by number success!", __func__);
             return cntlr;
@@ -174,8 +170,7 @@ void PinCntlrPutPin(struct PinDesc *desc)
     (void)desc;
 }
 
-int32_t PinCntlrSetPinPull(struct PinCntlr *cntlr, struct PinDesc *desc,
-        enum PinPullType pullType)
+int32_t PinCntlrSetPinPull(struct PinCntlr *cntlr, struct PinDesc *desc, enum PinPullType pullType)
 {
     int32_t ret;
     uint32_t index;
@@ -208,8 +203,7 @@ int32_t PinCntlrSetPinPull(struct PinCntlr *cntlr, struct PinDesc *desc,
     return ret;
 }
 
-int32_t PinCntlrGetPinPull(struct PinCntlr *cntlr, struct PinDesc *desc,
-        enum PinPullType *pullType)
+int32_t PinCntlrGetPinPull(struct PinCntlr *cntlr, struct PinDesc *desc, enum PinPullType *pullType)
 {
     int32_t ret;
     uint32_t index;
@@ -247,8 +241,7 @@ int32_t PinCntlrGetPinPull(struct PinCntlr *cntlr, struct PinDesc *desc,
     return ret;
 }
 
-int32_t PinCntlrSetPinStrength(struct PinCntlr *cntlr, struct PinDesc *desc,
-        uint32_t strength)
+int32_t PinCntlrSetPinStrength(struct PinCntlr *cntlr, struct PinDesc *desc, uint32_t strength)
 {
     int32_t ret;
     uint32_t index;
@@ -281,8 +274,7 @@ int32_t PinCntlrSetPinStrength(struct PinCntlr *cntlr, struct PinDesc *desc,
     return ret;
 }
 
-int32_t PinCntlrGetPinStrength(struct PinCntlr *cntlr, struct PinDesc *desc,
-        uint32_t *strength)
+int32_t PinCntlrGetPinStrength(struct PinCntlr *cntlr, struct PinDesc *desc, uint32_t *strength)
 {
     int32_t ret;
     uint32_t index;
@@ -320,8 +312,7 @@ int32_t PinCntlrGetPinStrength(struct PinCntlr *cntlr, struct PinDesc *desc,
     return ret;
 }
 
-int32_t PinCntlrSetPinFunc(struct PinCntlr *cntlr, struct PinDesc *desc,
-        const char *funcName)
+int32_t PinCntlrSetPinFunc(struct PinCntlr *cntlr, struct PinDesc *desc, const char *funcName)
 {
     int32_t ret;
     uint32_t index;
@@ -359,8 +350,7 @@ int32_t PinCntlrSetPinFunc(struct PinCntlr *cntlr, struct PinDesc *desc,
     return ret;
 }
 
-int32_t PinCntlrGetPinFunc(struct PinCntlr *cntlr, struct PinDesc *desc,
-        const char **funcName)
+int32_t PinCntlrGetPinFunc(struct PinCntlr *cntlr, struct PinDesc *desc, const char **funcName)
 {
     int32_t ret;
     uint32_t index;
