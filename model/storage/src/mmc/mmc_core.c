@@ -1101,7 +1101,8 @@ ssize_t MmcDeviceRead(struct MmcDevice *mmc, uint8_t *buf, size_t startSec, size
         }
         MmcDeviceFillRwInfo(&info, buf, false, curStartSec, readSec);
         if (mmc->cntlr->detecting == true) {
-            ret = HDF_FAILURE;
+            /* In SD device detecting, VFS will read/write SD. */
+            ret = MmcSendReadWriteBlocks(mmc->cntlr, &info);
         } else {
             cmd.data = &data;
             MmcSetupReadWriteBlocksCmd(mmc, &cmd, &info);
@@ -1146,7 +1147,8 @@ ssize_t MmcDeviceWrite(struct MmcDevice *mmc, uint8_t *buf, size_t startSec, siz
         }
         MmcDeviceFillRwInfo(&info, buf, true, curStartSec, writeSec);
         if (mmc->cntlr->detecting == true) {
-            ret = HDF_FAILURE;
+            /* In SD device detecting, VFS will read/write SD. */
+            ret = MmcSendReadWriteBlocks(mmc->cntlr, &info);
         } else {
             cmd.data = &data;
             MmcSetupReadWriteBlocksCmd(mmc, &cmd, &info);
