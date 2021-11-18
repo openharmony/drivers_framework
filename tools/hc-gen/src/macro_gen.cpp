@@ -34,9 +34,9 @@ const std::string &MacroGen::ToUpperString(std::string &str)
 bool MacroGen::HeaderTopOutput()
 {
     ofs_ << FILE_HEAD_COMMENT;
-    std::string headerMacro = std::string().append("HCS_CONFIG_").append(ToUpperString(outFileName_)).append("_HEADER_H");
-    ofs_ << "#ifndef " << headerMacro << '\n';
-    ofs_ << "#define " << headerMacro << '\n';
+    std::string defMacro = std::string().append("HCS_CONFIG_").append(ToUpperString(outFileName_)).append("_HEADER_H");
+    ofs_ << "#ifndef " << defMacro << '\n';
+    ofs_ << "#define " << defMacro << '\n';
     ofs_ << "\r\n#include \"hdf_base.h\"\n";
 
     return true;
@@ -44,8 +44,8 @@ bool MacroGen::HeaderTopOutput()
 
 bool MacroGen::HeaderBottomOutput()
 {
-    std::string headerMacro = std::string().append("HCS_CONFIG_").append(ToUpperString(outFileName_)).append("_HEADER_H");
-    ofs_ << "\n#endif // " << headerMacro << '\n';
+    std::string defMacro = std::string().append("HCS_CONFIG_").append(ToUpperString(outFileName_)).append("_HEADER_H");
+    ofs_ << "\n#endif // " << defMacro << '\n';
     ofs_.close();
     return true;
 }
@@ -115,7 +115,8 @@ std::string MacroGen::GenFullName(uint32_t depth, const std::shared_ptr<AstObjec
     return name;
 }
 
-bool MacroGen::GenArray(const std::string &arrName, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node)
+bool MacroGen::GenArray(const std::string &arrName, uint32_t &arrSize, uint32_t type,
+    const std::shared_ptr<AstObject> &node)
 {
     static uint32_t index = 0;
     const uint32_t ELEMENT_PER_LINE = 8;
@@ -152,14 +153,14 @@ bool MacroGen::GenArray(const std::string &arrName, uint32_t &arrSize, uint32_t 
 
 bool MacroGen::GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &node)
 {
-    std::list <std::string> subList;
+    std::list<std::string> subList;
     auto child = node->Child();
     uint32_t count = 0;
 
     Logger().Debug() << "node:" << node->Name() << " child:" << " depth:" << depth;
     while (child != nullptr) {
         if (child->IsNode()) {
-               Logger().Debug() << " " << child->Name();
+                Logger().Debug() << " " << child->Name();
             subList.push_back(GenFullName(depth + 1, child, "_"));
             count++;
         }
@@ -223,7 +224,8 @@ bool MacroGen::NodeWalk()
         static uint32_t arraySize = 0;
         static uint32_t arrayType = 0;
 
-        Logger().Debug() << "name,type:[" << current->Name() << "," << type << "] depth:" << depth << " arraySize:" << std::dec << arraySize << '\n';
+        Logger().Debug() << "name,type:[" << current->Name() << "," << type << "] depth:" << depth
+		    << " arraySize:" << std::dec << arraySize << '\n';
         switch (type) {
             case PARSEROP_UINT8:
             case PARSEROP_UINT16:

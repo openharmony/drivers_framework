@@ -767,5 +767,4 @@ HWTEST_F(HdfConfigTest, HslTestMacroTraversalOneFile, TestSize.Level1)
     printf("HdfConfigTest last enter\n\r");
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
-
 };
