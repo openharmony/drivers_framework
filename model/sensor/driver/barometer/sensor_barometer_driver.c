@@ -300,7 +300,7 @@ BASE_CONFIG_EXIT:
         sizeof(struct SensorBasicInfo));
     (void)memset_s(&drvData->barometerCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->barometerCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
-    return NULL;
+    return drvData->barometerCfg;
 }
 
 void BarometerReleaseCfgData(struct SensorCfgData *barometerCfg)
@@ -347,7 +347,7 @@ void BarometerReleaseDriver(struct HdfDeviceObject *device)
     struct BarometerDrvData *drvData = (struct BarometerDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->detectFlag) {
+    if (drvData->detectFlag && drvData->barometerCfg != NULL) {
         BarometerReleaseCfgData(drvData->barometerCfg);
     }
 

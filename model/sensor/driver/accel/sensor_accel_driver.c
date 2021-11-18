@@ -299,7 +299,7 @@ BASE_CONFIG_EXIT:
     (void)memset_s(&drvData->accelCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&drvData->accelCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->accelCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
-    return NULL;
+    return drvData->accelCfg;
 }
 
 void AccelReleaseCfgData(struct SensorCfgData *accelCfg)
@@ -346,7 +346,7 @@ void AccelReleaseDriver(struct HdfDeviceObject *device)
     struct AccelDrvData *drvData = (struct AccelDrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->detectFlag) {
+    if (drvData->detectFlag && drvData->accelCfg != NULL) {
         AccelReleaseCfgData(drvData->accelCfg);
     }
 
