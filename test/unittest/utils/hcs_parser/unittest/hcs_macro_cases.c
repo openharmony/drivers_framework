@@ -6,7 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hcs_config_test.h"
 #include "hdf_macro_test.h"
 #include "hdf_log.h"
 #include "hcs_macro.h"
@@ -27,6 +26,9 @@
 #define BOARD_ID_DATA_SIZE 2
 #define MODEM_ID_DATA_SIZE 2
 #define BOARD_ID_VALUE 8000
+#define FP_ONE_IDX 0
+#define FP_TWO_IDX 1
+#define FP_THREE_IDX 2
 
 #define CHECK_STRING_EQU(part1, part2) \
     if (strcmp(part1, part2)) { \
@@ -195,7 +197,7 @@ static int TraversalAudio(void)
 
 static int TraversalFPFingerInfo(void)
 {
-    int index = 0;
+    int index = FP_ONE_IDX;
     fp_deal_(HCS_NODE(FP_INFO_NODE, finger_info));
     return HDF_SUCCESS;
 }
@@ -218,27 +220,27 @@ static int TraversalFPAudio(void)
 
 static int TraversalFPOne(void)
 {
-    int index = 0;
+    int index = FP_ONE_IDX;
     fp_deal_(HCS_NODE(FP_INFO_NODE, fingerprint_one));
-    index = 0;
+    index = FP_ONE_IDX;
     fp_deal_vargs_(HCS_NODE(FP_INFO_NODE, fingerprint_one), fpData, index);
     return HDF_SUCCESS;
 }
 
 static int TraversalFPTwo(void)
 {
-    int index = 1;
+    int index = FP_TWO_IDX;
     fp_deal_(HCS_NODE(FP_INFO_NODE, fingerprint_two));
-    index = 1;
+    index = FP_TWO_IDX;
     fp_deal_vargs_(HCS_NODE(FP_INFO_NODE, fingerprint_two), fpData, index);
     return HDF_SUCCESS;
 }
 
 static int TraversalPringerprintThree(void)
 {
-    int index = 2;
+    int index = FP_THREE_IDX;
     fp_deal_(HCS_NODE(HCS_ROOT, fingerprint_three));
-    index = 2;
+    index = FP_THREE_IDX;
     fp_deal_vargs_(HCS_NODE(HCS_ROOT, fingerprint_three), fpData, index);
     return HDF_SUCCESS;
 }

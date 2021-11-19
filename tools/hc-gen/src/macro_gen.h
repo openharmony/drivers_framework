@@ -16,7 +16,6 @@
 
 namespace OHOS {
 namespace Hardware {
-
 class MacroGen : public Generator {
 public:
     explicit MacroGen(std::shared_ptr<Ast> ast);
