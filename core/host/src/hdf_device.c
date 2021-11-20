@@ -28,6 +28,13 @@ static int HdfDeviceAttach(struct IHdfDevice *devInst, struct HdfDeviceNode *dev
         return HDF_ERR_INVALID_PARAM;
     }
 
+    // for dynamic added device node, assign device id here
+    if (devNode->devId == 0) {
+        devNode->devId = MK_DEVID(HOSTID(device->deviceId), DEVICEID(device->deviceId),
+            DlistGetCount(&device->devNodes));
+        devNode->token->devid = devNode->devId;
+    }
+
     ret = nodeIf->LaunchNode(devNode);
     if (ret == HDF_SUCCESS) {
         DListInsertTail(&devNode->entry, &device->devNodes);
@@ -36,7 +43,7 @@ static int HdfDeviceAttach(struct IHdfDevice *devInst, struct HdfDeviceNode *dev
     return ret;
 }
 
-static int HdfDeviceDetach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode)
+int HdfDeviceDetach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode)
 {
     struct HdfDevice *device = NULL;
     if (devInst == NULL || devNode == NULL) {
@@ -48,8 +55,13 @@ static int HdfDeviceDetach(struct IHdfDevice *devInst, struct HdfDeviceNode *dev
         HDF_LOGE("%s: device %x detach unknown devnode %x", __func__, device->deviceId, devNode->devId);
         return HDF_DEV_ERR_NO_DEVICE;
     }
-    DListRemove(&devNode->entry);
-    HdfDeviceNodeFreeInstance(devNode);
+
+    if (devNode->entry.next != NULL) {
+        DListRemove(&devNode->entry);
+    }
+    if (devNode->super.UnlaunchNode != NULL) {
+        devNode->super.UnlaunchNode(devNode);
+    }
 
     return HDF_SUCCESS;
 }
@@ -100,8 +112,7 @@ void HdfDeviceDestruct(struct HdfDevice *device)
 
 struct HdfObject *HdfDeviceCreate()
 {
-    struct HdfDevice *device =
-        (struct HdfDevice *)OsalMemCalloc(sizeof(struct HdfDevice));
+    struct HdfDevice *device = (struct HdfDevice *)OsalMemCalloc(sizeof(struct HdfDevice));
     if (device != NULL) {
         HdfDeviceConstruct(device);
     }

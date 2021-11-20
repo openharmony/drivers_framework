@@ -16,6 +16,7 @@
 #include "hdf_cstring.h"
 #include "hdf_device_object.h"
 #include "hdf_device_token.h"
+#include "hdf_driver_loader.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 #include "hdf_observer_record.h"
@@ -59,6 +60,31 @@ static int HdfDeviceNodePublishService(struct HdfDeviceNode *devNode)
     return status;
 }
 
+int DeviveDriverBind(struct HdfDeviceNode *devNode)
+{
+    int ret;
+    const struct HdfDriverEntry *driverEntry = NULL;
+    if (devNode == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    driverEntry = devNode->driver->entry;
+    if (devNode->policy == SERVICE_POLICY_PUBLIC || devNode->policy == SERVICE_POLICY_CAPACITY) {
+        if (driverEntry->Bind == NULL) {
+            HDF_LOGE("driver %s bind method not implement", driverEntry->moduleName);
+            devNode->devStatus = DEVNODE_NONE;
+            return HDF_ERR_INVALID_OBJECT;
+        }
+        ret = driverEntry->Bind(&devNode->deviceObject);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("bind driver %s failed", driverEntry->moduleName);
+            return HDF_DEV_ERR_DEV_INIT_FAIL;
+        }
+    }
+
+    return HDF_SUCCESS;
+}
+
 int HdfDeviceLaunchNode(struct HdfDeviceNode *devNode)
 {
     const struct HdfDriverEntry *driverEntry = NULL;
@@ -68,25 +94,17 @@ int HdfDeviceLaunchNode(struct HdfDeviceNode *devNode)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    HDF_LOGI("launch devnode %s", devNode->servName);
+    HDF_LOGI("launch devnode %s", devNode->servName ? devNode->servName : "");
     driverEntry = devNode->driver->entry;
     if (driverEntry == NULL || driverEntry->Init == NULL) {
         HDF_LOGE("failed to launch service, deviceEntry invalid");
         return HDF_ERR_INVALID_PARAM;
     }
-
     devNode->devStatus = DEVNODE_LAUNCHED;
-    if (devNode->policy == SERVICE_POLICY_PUBLIC || devNode->policy == SERVICE_POLICY_CAPACITY) {
-        if (driverEntry->Bind == NULL) {
-            HDF_LOGE("driver %s bind method is null, ignore device service publish", driverEntry->moduleName);
-            devNode->devStatus = DEVNODE_NONE;
-            return HDF_ERR_INVALID_OBJECT;
-        }
-        ret = driverEntry->Bind(&devNode->deviceObject);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("bind driver %s failed", driverEntry->moduleName);
-            return HDF_DEV_ERR_DEV_INIT_FAIL;
-        }
+
+    ret = DeviveDriverBind(devNode);
+    if (ret != HDF_SUCCESS) {
+        return ret;
     }
 
     ret = driverEntry->Init(&devNode->deviceObject);
@@ -133,9 +151,10 @@ int HdfDeviceNodePublishPublicService(struct HdfDeviceNode *devNode)
 {
     int ret;
     if (devNode == NULL || devNode->deviceObject.service == NULL) {
-        HDF_LOGE("failed to publish public service: devNode is NULL");
+        HDF_LOGE("failed to publish public service, devNode is NULL");
         return HDF_FAILURE;
     }
+
     ret = DevSvcManagerClntAddService(devNode->servName, &devNode->deviceObject);
     if (ret == HDF_SUCCESS) {
         devNode->servStatus = true;
@@ -154,22 +173,11 @@ int HdfDeviceNodeRemoveService(struct HdfDeviceNode *devNode)
     return HDF_SUCCESS;
 }
 
-void HdfDeviceNodeConstruct(struct HdfDeviceNode *devNode)
-{
-    if (devNode != NULL) {
-        struct IDeviceNode *nodeIf = &devNode->super;
-        HdfDeviceObjectConstruct(&devNode->deviceObject);
-        devNode->token = HdfDeviceTokenNewInstance();
-        nodeIf->LaunchNode = HdfDeviceLaunchNode;
-        nodeIf->PublishService = HdfDeviceNodePublishPublicService;
-        nodeIf->RemoveService = HdfDeviceNodeRemoveService;
-    }
-}
-
-void HdfDeviceReleaseNode(struct HdfDeviceNode *devNode)
+static void HdfDeviceUnlaunchNode(struct HdfDeviceNode *devNode)
 {
     const struct HdfDriverEntry *driverEntry = NULL;
-    if (devNode == NULL) {
+    struct IDriverLoader *driverLoader = NULL;
+    if (devNode == NULL || devNode->devStatus != DEVNODE_LAUNCHED) {
         return;
     }
 
@@ -182,8 +190,31 @@ void HdfDeviceReleaseNode(struct HdfDeviceNode *devNode)
     }
 
     if (devNode->servStatus) {
-        HdfDeviceNodeRemoveService(devNode);
-        DevmgrServiceClntDetachDevice(devNode->devId);
+        devNode->super.RemoveService(devNode);
+    }
+    DevmgrServiceClntDetachDevice(devNode->devId);
+
+    // release driver object or close driver library
+    driverLoader = HdfDriverLoaderGetInstance();
+    if (driverLoader != NULL) {
+        driverLoader->ReclaimDriver(devNode->driver);
+        devNode->driver = NULL;
+    } else {
+        HDF_LOGE("failed to get driver loader");
+    }
+    devNode->devStatus = DEVNODE_INITED;
+}
+
+void HdfDeviceNodeConstruct(struct HdfDeviceNode *devNode)
+{
+    if (devNode != NULL) {
+        struct IDeviceNode *nodeIf = &devNode->super;
+        HdfDeviceObjectConstruct(&devNode->deviceObject);
+        devNode->token = HdfDeviceTokenNewInstance();
+        nodeIf->LaunchNode = HdfDeviceLaunchNode;
+        nodeIf->PublishService = HdfDeviceNodePublishPublicService;
+        nodeIf->RemoveService = HdfDeviceNodeRemoveService;
+        nodeIf->UnlaunchNode = HdfDeviceUnlaunchNode;
     }
 }
 
@@ -195,13 +226,14 @@ void HdfDeviceNodeDestruct(struct HdfDeviceNode *devNode)
     HDF_LOGI("release devnode %s", devNode->servName);
     switch (devNode->devStatus) {
         case DEVNODE_LAUNCHED:
-            HdfDeviceReleaseNode(devNode);
+            HdfDeviceUnlaunchNode(devNode);
+        case DEVNODE_INITED: // fall-through
             HdfDeviceTokenFreeInstance(devNode->token);
             devNode->token = NULL;
-        case DEVNODE_INITED: // fall-through
             PowerStateTokenFreeInstance(devNode->powerToken);
             devNode->powerToken = NULL;
             OsalMemFree(devNode->servName);
+            OsalMemFree(devNode->driverName);
             devNode->servName = NULL;
             break;
         case DEVNODE_NONE:
@@ -231,8 +263,7 @@ struct HdfDeviceNode *HdfDeviceNodeNewInstance(const struct HdfDeviceInfo *devic
     if (devNode->servName == NULL) {
         return NULL;
     }
-    devNode->deviceObject.property = HcsGetNodeByMatchAttr(HdfGetRootNode(), deviceInfo->deviceMatchAttr);
-    devNode->deviceObject.priv = (void *)(deviceInfo->private);
+    devNode->deviceObject.property = HcsGetNodeByMatchAttr(HdfGetHcsRootNode(), deviceInfo->deviceMatchAttr);
     if (devNode->deviceObject.property == NULL) {
         HDF_LOGD("node %s property empty, match attr: %s", deviceInfo->moduleName, deviceInfo->deviceMatchAttr);
     }

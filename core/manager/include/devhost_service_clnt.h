@@ -16,7 +16,8 @@
 struct DevHostServiceClnt {
     struct DListHead node;
     struct HdfSList devices;
-    struct HdfSList *deviceInfos;
+    struct HdfSList unloadDevInfos;
+    struct HdfSList dynamicDevInfos;
     Map *deviceHashMap;
     struct IDevHostService *hostService;
     uint16_t devCount;

@@ -29,7 +29,6 @@ void HdfDeviceInfoConstruct(struct HdfDeviceInfo *deviceInfo)
     deviceInfo->svcName = NULL;
     deviceInfo->moduleName = NULL;
     deviceInfo->deviceMatchAttr = NULL;
-    deviceInfo->private = NULL;
 }
 
 struct HdfDeviceInfo *HdfDeviceInfoNewInstance()
@@ -40,19 +39,13 @@ struct HdfDeviceInfo *HdfDeviceInfoNewInstance()
         HdfDeviceInfoConstruct(deviceInfo);
         return deviceInfo;
     }
-    HDF_LOGE("Create device deviceInfo failed");
+    HDF_LOGE("failed to create deviceInfo, oom");
     return NULL;
 }
 
 void HdfDeviceInfoFreeInstance(struct HdfDeviceInfo *deviceInfo)
 {
     if (deviceInfo != NULL) {
-        if (deviceInfo->isDynamic && deviceInfo->svcName != NULL) {
-            OsalMemFree((void *)deviceInfo->svcName);
-        }
-        if (deviceInfo->private != NULL) {
-            OsalMemFree((void *)deviceInfo->private);
-        }
         OsalMemFree(deviceInfo);
     }
 }

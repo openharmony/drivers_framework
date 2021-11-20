@@ -12,6 +12,7 @@
 #include "hcs_tree_if.h"
 #include "hdf_attribute_manager.h"
 #include "hdf_base.h"
+#include "hdf_device_object.h"
 #include "hdf_log.h"
 #include "hdf_sbuf.h"
 #include "osal_mem.h"
@@ -104,6 +105,84 @@ static bool UsbDdkPnpLoaderMatchDevice(const struct UsbPnpNotifyMatchInfoTable *
     }
 
     return true;
+}
+
+// Need optimize this device object array later, should bind device object to usb deivce
+#define REGISTER_DEV_MAX 16
+static struct HdfDeviceObject *g_resistedDevice[REGISTER_DEV_MAX] = {0};
+static int SaveRegistedDevice(struct HdfDeviceObject *dev)
+{
+    for (size_t i = 0; i < REGISTER_DEV_MAX; i++) {
+        if (g_resistedDevice[i] == NULL) {
+            g_resistedDevice[i] = dev;
+            return HDF_SUCCESS;
+        }
+    }
+
+    return HDF_FAILURE;
+}
+
+static struct HdfDeviceObject *GetRegistedDevice(const char *serviceName)
+{
+    struct HdfDeviceObject *dev = NULL;
+    for (size_t i = 0; i < REGISTER_DEV_MAX; i++) {
+        if (g_resistedDevice[i] == NULL) {
+            continue;
+        }
+        if (!strcmp(HdfDeviceGetServiceName(g_resistedDevice[i]), serviceName)) {
+            dev = g_resistedDevice[i];
+            g_resistedDevice[i] = NULL;
+            break;
+        }
+    }
+
+    return dev;
+}
+
+int32_t UsbPnpManagerRegisterDevice(struct UsbPnpManagerDeviceInfo *managerInfo)
+{
+    int ret = HDF_FAILURE;
+    struct HdfDeviceObject *devObj = HdfDeviceObjectAlloc(managerInfo->usbPnpManager, managerInfo->moduleName);
+    if (devObj == NULL) {
+        HDF_LOGE("%s: failed to alloc device object", __func__);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+
+    devObj->priv = (void *)managerInfo->privateData;
+    ret = HdfDeviceObjectRegister(devObj);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: failed to regitst device %s", __func__, managerInfo->serviceName);
+        HdfDeviceObjectRelease(devObj);
+        return ret;
+    }
+    ret = HdfDeviceObjectPublishService(devObj, managerInfo->serviceName, SERVICE_POLICY_CAPACITY, 0664);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: failed to regitst device %s", __func__, managerInfo->serviceName);
+        HdfDeviceObjectRelease(devObj);
+    }
+    // need optimize this code to remove SaveRegistedDevice function later
+    SaveRegistedDevice(devObj);
+    return ret;
+}
+
+int32_t UsbPnpManagerUnregisterDevice(struct UsbPnpManagerDeviceInfo *managerInfo)
+{
+    // need optimize this code to remove GetRegistedDevice function later
+    struct HdfDeviceObject *devObj = GetRegistedDevice(managerInfo->serviceName);
+    if (devObj == NULL) {
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+    HdfDeviceObjectRelease(devObj);
+    return HDF_SUCCESS;
+}
+
+int32_t UsbPnpManagerRegisterOrUnregisterDevice(struct UsbPnpManagerDeviceInfo *managerInfo)
+{
+    if (managerInfo == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    return managerInfo->isReg ? UsbPnpManagerRegisterDevice(managerInfo) : UsbPnpManagerUnregisterDevice(managerInfo);
 }
 
 static void UsbDdkPnpLoaderMatchHandle(const struct UsbPnpNotifyMatchInfoTable *dev,
@@ -212,7 +291,7 @@ OUT:
 static bool UsbDdkPnpLoaderMatchInterface(const struct UsbPnpNotifyMatchInfoTable *dev,
     int8_t index, struct UsbPnpMatchIdTable *id)
 {
-    uint32_t i;
+    int32_t i;
     bool maskFlag = true;
 
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_CLASS) {
@@ -585,8 +664,8 @@ static struct UsbPnpMatchIdTable **UsbDdkPnpLoaderPnpMatch(void)
     return UsbDdkPnpLoaderParseDeviceId(usbPnpNode);
 }
 
-static int32_t UsbDdkPnpLoaderDispatchPnpDevice(
-    const struct IDevmgrService *devmgrSvc, struct HdfSBuf *data, bool isReg)
+static int32_t UsbDdkPnpLoaderDispatchPnpDevice(struct HdfDeviceObject *usbPnpManagerDevice,
+    struct HdfSBuf *data, bool isReg)
 {
     uint32_t infoSize = 0;
     struct UsbPnpNotifyServiceInfo *privateData = NULL;
@@ -611,14 +690,14 @@ static int32_t UsbDdkPnpLoaderDispatchPnpDevice(
         privateData = NULL;
     }
 
-    managerInfo.devmgrSvc = (struct IDevmgrService *)devmgrSvc;
+    managerInfo.usbPnpManager = usbPnpManagerDevice;
     managerInfo.moduleName = moduleName;
     managerInfo.serviceName = serviceName;
     managerInfo.deviceMatchAttr = deviceMatchAttr;
     managerInfo.privateData = privateData;
     managerInfo.isReg = isReg;
 
-    return UsbPnpManagerRegisterOrUnregisterDevice(managerInfo);
+    return UsbPnpManagerRegisterOrUnregisterDevice(&managerInfo);
 }
 
 static int UsbDdkPnpLoaderDeviceListAdd(const struct UsbPnpNotifyMatchInfoTable *info,
@@ -685,7 +764,7 @@ static struct UsbPnpDeviceListTable *UsbDdkPnpLoaderAddInterface(
     return NULL;
 }
 
-static int UsbDdkPnpLoaderrAddPnpDevice(const struct IDevmgrService *devmgrSvc,
+static int UsbDdkPnpLoaderrAddPnpDevice(struct HdfDeviceObject *usbPnpManagerDevice,
     const struct UsbPnpNotifyMatchInfoTable *infoTable, const struct UsbPnpMatchIdTable *idTable, uint32_t cmdId)
 {
     int ret;
@@ -700,8 +779,8 @@ static int UsbDdkPnpLoaderrAddPnpDevice(const struct IDevmgrService *devmgrSvc,
         return HDF_SUCCESS;
     }
 
-    serviceInfo.length = sizeof(struct UsbPnpNotifyServiceInfo) - (USB_PNP_INFO_MAX_INTERFACES
-        - idTable->interfaceLength);
+    serviceInfo.length = sizeof(struct UsbPnpNotifyServiceInfo) -
+        (USB_PNP_INFO_MAX_INTERFACES - idTable->interfaceLength);
     serviceInfo.devNum = infoTable->devNum;
     serviceInfo.busNum = infoTable->busNum;
     serviceInfo.interfaceLength = idTable->interfaceLength;
@@ -715,7 +794,7 @@ static int UsbDdkPnpLoaderrAddPnpDevice(const struct IDevmgrService *devmgrSvc,
         goto ERROR;
     }
 
-    ret = UsbDdkPnpLoaderDispatchPnpDevice(devmgrSvc, pnpData, true);
+    ret = UsbDdkPnpLoaderDispatchPnpDevice(usbPnpManagerDevice, pnpData, true);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s:%d handle failed, %s-%s cmdId is %d, ret=%d",
             __func__, __LINE__, idTable->moduleName, idTable->serviceName, cmdId, ret);
@@ -740,7 +819,7 @@ ERROR:
     return ret;
 }
 
-static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, const struct IDevmgrService *devmgrSvc,
+static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, struct HdfDeviceObject *usbPnpManagerDevice,
     const struct UsbPnpNotifyMatchInfoTable *infoTable, struct UsbPnpMatchIdTable **matchIdTable)
 {
     int ret;
@@ -760,14 +839,14 @@ static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, const struct
             idTable=%p, moduleName=%s, serviceName=%s",
             __func__, __LINE__, index, tableCount, idTable, idTable->moduleName, idTable->serviceName);
 
-        ret = UsbDdkPnpLoaderrAddPnpDevice(devmgrSvc, infoTable, idTable, cmdId);
+        ret = UsbDdkPnpLoaderrAddPnpDevice(usbPnpManagerDevice, infoTable, idTable, cmdId);
         if (ret != HDF_SUCCESS) {
             continue;
         }
     }
 }
 
-static int UsbDdkPnpLoaderRemoveHandle(const struct IDevmgrService *devmgrSvc,
+static int UsbDdkPnpLoaderRemoveHandle(struct HdfDeviceObject *usbPnpManager,
     struct UsbPnpDeviceListTable *deviceListTablePos)
 {
     struct UsbPnpNotifyServiceInfo serviceInfo;
@@ -789,7 +868,7 @@ static int UsbDdkPnpLoaderRemoveHandle(const struct IDevmgrService *devmgrSvc,
     }
 
     if (deviceListTablePos->status != USB_PNP_REMOVE_STATUS) {
-        ret = UsbDdkPnpLoaderDispatchPnpDevice(devmgrSvc, pnpData, false);
+        ret = UsbDdkPnpLoaderDispatchPnpDevice(usbPnpManager, pnpData, false);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:%d UsbDdkPnpLoaderDispatchPnpDevice faile ret=%d",
                 __func__, __LINE__, ret);
@@ -803,7 +882,7 @@ ERROR:
     return ret;
 }
 
-static int UsbDdkPnpLoaderRemoveDevice(const struct IDevmgrService *devmgrSvc,
+static int UsbDdkPnpLoaderRemoveDevice(struct HdfDeviceObject *usbPnpManager,
     struct UsbPnpRemoveInfo removeInfo, uint32_t cmdId)
 {
     int ret = HDF_SUCCESS;
@@ -833,7 +912,7 @@ static int UsbDdkPnpLoaderRemoveDevice(const struct IDevmgrService *devmgrSvc,
             }
             findFlag = true;
 
-            ret = UsbDdkPnpLoaderRemoveHandle(devmgrSvc, deviceListTablePos);
+            ret = UsbDdkPnpLoaderRemoveHandle(usbPnpManager, deviceListTablePos);
             if (ret != HDF_SUCCESS) {
                 break;
             }
@@ -855,8 +934,8 @@ static int UsbDdkPnpLoaderRemoveDevice(const struct IDevmgrService *devmgrSvc,
     return ret;
 }
 
-static int UsbDdkPnpLoaderDevice(const struct UsbPnpNotifyMatchInfoTable *infoTable,
-    const struct IDevmgrService *super, uint32_t id)
+static int UsbDdkPnpLoaderDevice(struct HdfDeviceObject *usbPnpManagerDevice,
+    const struct UsbPnpNotifyMatchInfoTable *infoTable, uint32_t id)
 {
     int8_t i;
     int32_t tableCount;
@@ -868,7 +947,7 @@ static int UsbDdkPnpLoaderDevice(const struct UsbPnpNotifyMatchInfoTable *infoTa
     }
 
     for (i = 0; i < infoTable->numInfos; i++) {
-        UsbDdkPnpLoaderAddDevice(id, i, super, infoTable, g_usbPnpMatchIdTable);
+        UsbDdkPnpLoaderAddDevice(id, i, usbPnpManagerDevice, infoTable, g_usbPnpMatchIdTable);
     }
 
     for (tableCount = 0, idTable = g_usbPnpMatchIdTable[0]; idTable != NULL;
@@ -942,14 +1021,14 @@ OUT:
     return ret;
 }
 
-int UsbDdkPnpLoaderEventReceived(void *priv, uint32_t id, struct HdfSBuf *data)
+int UsbDdkPnpLoaderEventReceived(void *usbPnpManagerPtr, uint32_t id, struct HdfSBuf *data)
 {
     int ret;
     bool flag = false;
     uint32_t infoSize;
     struct UsbPnpNotifyMatchInfoTable *infoTable = NULL;
-    struct IDevmgrService *super = (struct IDevmgrService *)priv;
     struct UsbPnpRemoveInfo removeInfo;
+    struct HdfDeviceObject *usbPnpManagerDevice = (struct HdfDeviceObject *)usbPnpManagerPtr;
 
     flag = HdfSbufReadBuffer(data, (const void **)(&infoTable), &infoSize);
     if ((flag == false) || (infoTable == NULL)) {
@@ -971,7 +1050,7 @@ int UsbDdkPnpLoaderEventReceived(void *priv, uint32_t id, struct HdfSBuf *data)
 #if USB_PNP_NOTIFY_TEST_MODE == true
         case USB_PNP_NOTIFY_ADD_TEST:
 #endif
-            ret = UsbDdkPnpLoaderDevice(infoTable, super, id);
+            ret = UsbDdkPnpLoaderDevice(usbPnpManagerDevice, infoTable, id);
             break;
         case USB_PNP_NOTIFY_REMOVE_INTERFACE:
         case USB_PNP_NOTIFY_REMOVE_DEVICE:
@@ -983,7 +1062,7 @@ int UsbDdkPnpLoaderEventReceived(void *priv, uint32_t id, struct HdfSBuf *data)
             removeInfo.devNum = infoTable->devNum;
             removeInfo.busNum = infoTable->busNum;
             removeInfo.interfaceNum = infoTable->interfaceInfo[0].interfaceNumber;
-            ret = UsbDdkPnpLoaderRemoveDevice(super, removeInfo, id);
+            ret = UsbDdkPnpLoaderRemoveDevice(usbPnpManagerDevice, removeInfo, id);
             break;
         default:
             ret = HDF_ERR_INVALID_PARAM;

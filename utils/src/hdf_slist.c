@@ -225,7 +225,7 @@ bool HdfSListIteratorHasNext(struct HdfSListIterator *iterator)
 
 struct HdfSListNode *HdfSListIteratorNext(struct HdfSListIterator *iterator)
 {
-    if ((iterator == NULL) || (iterator->curr == NULL) || (iterator->prev == NULL)) {
+    if (iterator == NULL || iterator->curr == NULL || iterator->prev == NULL) {
         return NULL;
     }
 
@@ -246,7 +246,7 @@ struct HdfSListNode *HdfSListIteratorNext(struct HdfSListIterator *iterator)
 
 void HdfSListIteratorRemove(struct HdfSListIterator *iterator)
 {
-    if ((iterator == NULL) || (iterator->curr == NULL) || (iterator->prev == NULL)) {
+    if (iterator == NULL || iterator->curr == NULL || iterator->prev == NULL) {
         return;
     }
 

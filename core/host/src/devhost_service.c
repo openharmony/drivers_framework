@@ -21,15 +21,15 @@
 
 static struct HdfDevice *DevHostServiceFindDevice(struct DevHostService *hostService, uint16_t deviceId)
 {
-    struct HdfDevice *deviceNode = NULL;
+    struct HdfDevice *device = NULL;
     if (hostService == NULL) {
         HDF_LOGE("failed to find driver, hostService is null");
         return NULL;
     }
 
-    DLIST_FOR_EACH_ENTRY(deviceNode, &hostService->devices, struct HdfDevice, node) {
-        if (deviceNode->deviceId == deviceId) {
-            return deviceNode;
+    DLIST_FOR_EACH_ENTRY(device, &hostService->devices, struct HdfDevice, node) {
+        if (DEVICEID(device->deviceId) == deviceId) {
+            return device;
         }
     }
     return NULL;
@@ -53,7 +53,7 @@ static struct HdfDevice *DevHostServiceQueryOrAddDevice(struct DevHostService *i
             return NULL;
         }
         device->hostId = inst->hostId;
-        device->deviceId = deviceId;
+        device->deviceId = MK_DEVID(inst->hostId, deviceId, 0);
         DListInsertHead(&device->node, &inst->devices);
     }
     return device;
@@ -88,8 +88,7 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
     devNode = HdfDeviceNodeNewInstance(deviceInfo, driver);
     if (devNode == NULL) {
         driverLoader->ReclaimDriver(driver);
-        ret = HDF_DEV_ERR_NO_MEMORY;
-        goto error;
+        return HDF_DEV_ERR_NO_MEMORY;
     }
 
     devNode->hostService = hostService;
@@ -103,8 +102,10 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
     return HDF_SUCCESS;
 
 error:
-    driverLoader->ReclaimDriver(driver);
-    DevHostServiceFreeDevice(hostService, device);
+    if (DListIsEmpty(&device->devNodes)) {
+        DevHostServiceFreeDevice(hostService, device);
+    }
+
     return ret;
 }
 
@@ -113,13 +114,6 @@ int DevHostServiceDelDevice(struct IDevHostService *inst, devid_t devId)
     struct HdfDevice *device = NULL;
     struct DevHostService *hostService = (struct DevHostService *)inst;
     struct HdfDeviceNode *devNode = NULL;
-    struct HdfDriver *driver = NULL;
-    struct IDriverLoader *driverLoader =  HdfDriverLoaderGetInstance();
-
-    if (driverLoader == NULL || driverLoader->ReclaimDriver == NULL) {
-        HDF_LOGE("failed to del device, input param is null");
-        return HDF_FAILURE;
-    }
 
     device = DevHostServiceFindDevice(hostService, DEVICEID(devId));
     if (device == NULL) {
@@ -129,20 +123,20 @@ int DevHostServiceDelDevice(struct IDevHostService *inst, devid_t devId)
 
     devNode = device->super.GetDeviceNode(&device->super, devId);
     if (devNode == NULL) {
+        HDF_LOGI("failed to del device %u, not exist", devId);
         return HDF_DEV_ERR_NO_DEVICE;
     }
-    driver = devNode->driver;
 
-    // device detach will release device node, do not use devNode after this
-    if (device->super.Detach != NULL) {
-        if (device->super.Detach(&device->super, devNode) != HDF_SUCCESS) {
-            HDF_LOGE("failed to del device %x", devId);
-            return HDF_FAILURE;
-        }
+    if (device->super.Detach == NULL) {
+        HDF_LOGE("failed to del device %u, invalid device", devId);
+        return HDF_ERR_INVALID_OBJECT;
     }
 
-    // remove driver instance or close driver library
-    driverLoader->ReclaimDriver(driver);
+    if (device->super.Detach(&device->super, devNode) != HDF_SUCCESS) {
+        HDF_LOGE("failed to detach device %u", devId);
+        return HDF_FAILURE;
+    }
+    HdfDeviceNodeFreeInstance(devNode);
 
     if (DListIsEmpty(&device->devNodes)) {
         DevHostServiceFreeDevice(hostService, device);

@@ -6,13 +6,14 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <securec.h>
-#include "osal_mem.h"
-#include "devsvc_manager_clnt.h"
-#include "hdf_base.h"
-#include "hdf_log.h"
-#include "event_hub.h"
 #include "hdf_input_device_manager.h"
+#include "devsvc_manager_clnt.h"
+#include "event_hub.h"
+#include "hdf_base.h"
+#include "hdf_device_object.h"
+#include "hdf_log.h"
+#include "osal_mem.h"
+#include <securec.h>
 
 #define NODE_MODE            0660
 #define SERVICE_NAME_LEN     24
@@ -52,10 +53,24 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
         return NULL;
     }
 
-    hdfDev = HdfRegisterDevice(moduleName, svcName, NULL);
+    hdfDev = HdfDeviceObjectAlloc(g_inputManager->hdfDevObj, moduleName);
     if (hdfDev == NULL) {
-        HDF_LOGE("%s: HdfRegisterDevice failed", __func__);
+        HDF_LOGE("%s: failed to alloc device object", __func__);
+        return NULL;
     }
+    ret = HdfDeviceObjectRegister(hdfDev);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: failed to regitst device %s", __func__, moduleName);
+        HdfDeviceObjectRelease(hdfDev);
+        return NULL;
+    }
+    ret = HdfDeviceObjectPublishService(hdfDev, svcName, SERVICE_POLICY_CAPACITY, 0664);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: failed to regitst device %s", __func__, moduleName);
+        HdfDeviceObjectRelease(hdfDev);
+        return NULL;
+    }
+    inputDev->hdfDevObj = hdfDev;
     HDF_LOGI("%s: svcName is %s, devName = %s", __func__, svcName, inputDev->devName);
     return hdfDev;
 }
@@ -103,21 +118,9 @@ static int32_t CreateDeviceNode(InputDevice *inputDev)
 
 static void DeleteDeviceNode(InputDevice *inputDev)
 {
-    int32_t len;
-    int32_t ret;
     if (IsHidDevice(inputDev->devType)) {
-        char svcName[SERVICE_NAME_LEN] = {0};
-        const char *moduleName = "HDF_HID";
-
-        len = (inputDev->devId < PLACEHOLDER_LIMIT) ? 1 : PLACEHOLDER_LENGTH;
-        ret = snprintf_s(svcName, SERVICE_NAME_LEN, strlen("hdf_input_event") + len, "%s%u",
-            "hdf_input_event", inputDev->devId);
-        if (ret < 0) {
-            HDF_LOGE("%s: snprintf_s failed", __func__);
-            return;
-        }
-        HDF_LOGI("%s: svcName is %s, devName = %s", __func__, svcName, inputDev->devName);
-        HdfUnregisterDevice(moduleName, svcName);
+        HDF_LOGI("remove input device: hdf_input_event%u", inputDev->devId);
+        HdfDeviceObjectRelease(inputDev->hdfDevObj);
     }
 
     HDF_LOGI("%s: delete node succ, devId is %d", __func__, inputDev->devId);

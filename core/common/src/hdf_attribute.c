@@ -32,37 +32,7 @@
 #define ATTR_DEV_MATCHATTR "deviceMatchAttr"
 #define MANAGER_NODE_MATCH_ATTR "hdf_manager"
 
-static struct DeviceResourceNode *g_hcsTreeRoot = NULL;
-
-void HdfGetBuildInConfigData(const unsigned char **data, unsigned int *size);
-
-static bool CreateHcsToTree(void)
-{
-    uint32_t length;
-    const unsigned char *hcsBlob = NULL;
-    HdfGetBuildInConfigData(&hcsBlob, &length);
-    if (!HcsCheckBlobFormat((const char *)hcsBlob, length)) {
-        return false;
-    }
-    if (!HcsDecompile((const char *)hcsBlob, HBC_HEADER_LENGTH, &g_hcsTreeRoot)) {
-        return false;
-    }
-    return true;
-}
-
-const struct DeviceResourceNode *HcsGetRootNode(void)
-{
-    if ((g_hcsTreeRoot == NULL) && !CreateHcsToTree()) {
-        HDF_LOGE("%s: failed", __func__);
-        return NULL;
-    }
-    return g_hcsTreeRoot;
-}
-
-const struct DeviceResourceNode *HdfGetRootNode(void)
-{
-    return HcsGetRootNode();
-}
+#define DEFATLT_DEV_PRIORITY 100
 
 static bool HdfHostListCompare(struct HdfSListNode *listEntryFirst, struct HdfSListNode *listEntrySecond)
 {
@@ -107,14 +77,14 @@ bool HdfAttributeManagerGetHostList(struct HdfSList *hostList)
         return false;
     }
 
-    hdfManagerNode = GetHdfManagerNode(HcsGetRootNode());
+    hdfManagerNode = GetHdfManagerNode(HdfGetHcsRootNode());
     if (hdfManagerNode == NULL) {
         HDF_LOGE("%s: get hdf manager node is null", __func__);
         return false;
     }
 
     hostNode = hdfManagerNode->child;
-    while (hostNode != NULL) {
+    for (; hostNode != NULL; hostNode = hostNode->sibling) {
         struct HdfHostInfo *hostInfo = HdfHostInfoNewInstance();
         if (hostInfo == NULL) {
             HdfSListFlush(hostList, HdfHostInfoDelete);
@@ -123,17 +93,14 @@ bool HdfAttributeManagerGetHostList(struct HdfSList *hostList)
         }
         if (!GetHostInfo(hostNode, hostInfo)) {
             HdfHostInfoFreeInstance(hostInfo);
-            hostNode = hostNode->sibling;
             continue;
         }
         hostInfo->hostId = hostId;
         if (!HdfSListAddOrder(hostList, &hostInfo->node, HdfHostListCompare)) {
             HdfHostInfoFreeInstance(hostInfo);
-            hostNode = hostNode->sibling;
             continue;
         }
         hostId++;
-        hostNode = hostNode->sibling;
     }
     return true;
 }
@@ -158,7 +125,7 @@ static const struct DeviceResourceNode *GetHostNode(const char *inHostName)
     if (inHostName == NULL) {
         return NULL;
     }
-    hdfManagerNode = GetHdfManagerNode(HcsGetRootNode());
+    hdfManagerNode = GetHdfManagerNode(HdfGetHcsRootNode());
     if (hdfManagerNode == NULL) {
         return NULL;
     }
@@ -178,7 +145,7 @@ static const struct DeviceResourceNode *GetHostNode(const char *inHostName)
 
 static bool CheckDeviceInfo(const struct HdfDeviceInfo *deviceNodeInfo)
 {
-    if (deviceNodeInfo->policy > SERVICE_POLICY_PRIVATE) {
+    if (deviceNodeInfo->policy >= SERVICE_POLICY_INVALID) {
         HDF_LOGE("%s: policy %u is invalid", __func__, deviceNodeInfo->policy);
         return false;
     }
@@ -188,7 +155,7 @@ static bool CheckDeviceInfo(const struct HdfDeviceInfo *deviceNodeInfo)
         return false;
     }
 
-    if (deviceNodeInfo->preload > DEVICE_PRELOAD_DISABLE) {
+    if (deviceNodeInfo->preload >= DEVICE_PRELOAD_INVALID) {
         HDF_LOGE("%s: preload %u is invalid", __func__, deviceNodeInfo->preload);
         return false;
     }
@@ -198,187 +165,82 @@ static bool CheckDeviceInfo(const struct HdfDeviceInfo *deviceNodeInfo)
 
 static bool GetDeviceNodeInfo(const struct DeviceResourceNode *deviceNode, struct HdfDeviceInfo *deviceNodeInfo)
 {
-    uint16_t readNum = 0;
-    const char *readString = NULL;
-    if (HcsGetUint16(deviceNode, ATTR_DEV_POLICY, &readNum, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to get policy", __func__);
-        return false;
-    }
-    deviceNodeInfo->policy = readNum;
+    HcsGetUint16(deviceNode, ATTR_DEV_POLICY, &deviceNodeInfo->policy, 0);
+    HcsGetUint16(deviceNode, ATTR_DEV_PRIORITY, &deviceNodeInfo->priority, DEFATLT_DEV_PRIORITY);
+    HcsGetUint16(deviceNode, ATTR_DEV_PRELOAD, &deviceNodeInfo->preload, 0);
+    HcsGetUint16(deviceNode, ATTR_DEV_PERMISSION, &deviceNodeInfo->permission, 0);
+    HcsGetString(deviceNode, ATTR_DEV_MATCHATTR, &deviceNodeInfo->deviceMatchAttr, NULL);
 
-    if (HcsGetUint16(deviceNode, ATTR_DEV_PRIORITY, &readNum, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to get priority", __func__);
-        return false;
-    }
-    deviceNodeInfo->priority = readNum;
-
-    if (HcsGetUint16(deviceNode, ATTR_DEV_PRELOAD, &readNum, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to get preload", __func__);
-        return false;
-    }
-    deviceNodeInfo->preload = readNum;
-
-    if (HcsGetUint16(deviceNode, ATTR_DEV_PERMISSION, &readNum, 0) != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to get permission", __func__);
-        return false;
-    }
-    deviceNodeInfo->permission = readNum;
-
-    if (HcsGetString(deviceNode, ATTR_DEV_MODULENAME, &readString, NULL) != HDF_SUCCESS) {
+    if (HcsGetString(deviceNode, ATTR_DEV_MODULENAME, &deviceNodeInfo->moduleName, NULL) != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to get module name", __func__);
         return false;
     }
-    deviceNodeInfo->moduleName = readString;
 
-    if (HcsGetString(deviceNode, ATTR_DEV_SVCNAME, &readString, NULL) != HDF_SUCCESS) {
+    if (HcsGetString(deviceNode, ATTR_DEV_SVCNAME, &deviceNodeInfo->svcName, NULL) != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to get service name", __func__);
         return false;
     }
-    deviceNodeInfo->svcName = readString;
 
-    if (HcsGetString(deviceNode, ATTR_DEV_MATCHATTR, &readString, NULL) != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to get matchattr name", __func__);
-        return false;
-    }
-    deviceNodeInfo->deviceMatchAttr = readString;
     return CheckDeviceInfo(deviceNodeInfo);
 }
 
-struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *hostName)
+static bool GetDevcieNodeList(const struct DeviceResourceNode *device,
+    struct DevHostServiceClnt *hostClnt, uint16_t deviceIdx)
+{
+    uint8_t deviceNnodeIdx = 0;
+    uint16_t hostId = hostClnt->hostId;
+    struct HdfDeviceInfo *deviceNodeInfo = NULL;
+    const struct DeviceResourceNode *devNodeResource = device->child;
+
+    for (; devNodeResource != NULL; devNodeResource = devNodeResource->sibling) {
+        deviceNodeInfo = HdfDeviceInfoNewInstance();
+        if (deviceNodeInfo == NULL) {
+            return false;
+        }
+        if (!GetDeviceNodeInfo(devNodeResource, deviceNodeInfo)) {
+            HdfDeviceInfoFreeInstance(deviceNodeInfo);
+            HDF_LOGE("%s: failed to parse device node info, ignore", __func__);
+            continue;
+        }
+
+        deviceNodeInfo->hostId = hostId;
+        deviceNodeInfo->deviceId = MK_DEVID(hostId, deviceIdx, deviceNnodeIdx);
+        if (deviceNodeInfo->preload != DEVICE_PRELOAD_DISABLE) {
+            if (!HdfSListAddOrder(&hostClnt->unloadDevInfos, &deviceNodeInfo->node, HdfDeviceListCompare)) {
+                HDF_LOGE("%s: failed to add device info to list %s", __func__, deviceNodeInfo->svcName);
+                HdfDeviceInfoFreeInstance(deviceNodeInfo);
+                continue;
+            }
+        } else {
+            HdfSListAdd(&hostClnt->dynamicDevInfos, &deviceNodeInfo->node);
+        }
+
+        deviceNnodeIdx++;
+    }
+    return deviceNnodeIdx > 0;
+}
+
+int HdfAttributeManagerGetDeviceList(struct DevHostServiceClnt *hostClnt)
 {
     uint16_t deviceIdx = 0;
-    uint8_t deviceNnodeIdx = 0;
-    struct HdfDeviceInfo *deviceNodeInfo = NULL;
-    const struct DeviceResourceNode *hostNode = GetHostNode(hostName);
-    struct HdfSList *deviceList = NULL;
+    const struct DeviceResourceNode *hostNode = NULL;
     const struct DeviceResourceNode *device = NULL;
+    int ret = HDF_DEV_ERR_NO_DEVICE;
+
+    if (hostClnt == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    hostNode = GetHostNode(hostClnt->hostName);
     if (hostNode == NULL) {
-        return NULL;
-    }
-    deviceList = (struct HdfSList *)OsalMemCalloc(sizeof(struct HdfSList));
-    if (deviceList == NULL) {
-        return NULL;
-    }
-    device = hostNode->child;
-    while (device != NULL) {
-        const struct DeviceResourceNode *deviceNode = device->child;
-        while (deviceNode != NULL) {
-            deviceNnodeIdx = 0;
-            deviceNodeInfo = HdfDeviceInfoNewInstance();
-            if (deviceNodeInfo == NULL) {
-                HdfSListFlush(deviceList, HdfDeviceInfoDelete);
-                OsalMemFree(deviceList);
-                return NULL;
-            }
-            deviceNodeInfo->hostId = hostId;
-            if (!GetDeviceNodeInfo(deviceNode, deviceNodeInfo)) {
-                HdfDeviceInfoFreeInstance(deviceNodeInfo);
-                HDF_LOGE("%s: failed to get device", __func__);
-                deviceNodeInfo = NULL;
-                deviceNode = deviceNode->sibling;
-                continue;
-            }
-            if (!HdfSListAddOrder(deviceList, &deviceNodeInfo->node, HdfDeviceListCompare)) {
-                HDF_LOGE("%s: failed to add device %s", __func__, deviceNodeInfo->svcName);
-                HdfDeviceInfoFreeInstance(deviceNodeInfo);
-                deviceNodeInfo = NULL;
-                deviceNode = deviceNode->sibling;
-                continue;
-            }
-            deviceNodeInfo->deviceId = MK_DEVID(hostId, deviceIdx, deviceNnodeIdx);
-            deviceNnodeIdx++;
-            deviceNode = deviceNode->sibling;
-        }
-        device = device->sibling;
-        deviceIdx++;
-    }
-    if (HdfSListCount(deviceList) == 0) {
-        OsalMemFree(deviceList);
-        return NULL;
-    }
-    return deviceList;
-}
-
-bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const void *privateData)
-{
-    struct HdfSListIterator itDeviceInfo;
-    struct HdfDeviceInfo *deviceInfo = NULL;
-    struct DevHostServiceClnt *hostClnt = NULL;
-    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
-    struct HdfDeviceInfo *deviceNodeInfo = NULL;
-    char *svcName = NULL;
-    if (devMgrSvc == NULL || moduleName == NULL || serviceName == NULL) {
-        return false;
+        return ret;
     }
 
-    deviceNodeInfo = HdfDeviceInfoNewInstance();
-    if (deviceNodeInfo == NULL) {
-        return false;
-    }
-    DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
-        HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
-        while (HdfSListIteratorHasNext(&itDeviceInfo)) {
-            deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
-            if (deviceInfo->moduleName == NULL) {
-                continue;
-            }
-            if (strcmp(deviceInfo->moduleName, moduleName) == 0) {
-                deviceInfo->isDynamic = true;
-                deviceNodeInfo->hostId = deviceInfo->hostId;
-                deviceNodeInfo->deviceId = hostClnt->devCount;
-                deviceNodeInfo->policy = deviceInfo->policy;
-                deviceNodeInfo->priority = deviceInfo->priority;
-                deviceNodeInfo->preload = DEVICE_PRELOAD_DISABLE;
-                deviceNodeInfo->permission = deviceInfo->permission;
-                deviceNodeInfo->deviceMatchAttr = deviceInfo->deviceMatchAttr;
-                deviceNodeInfo->moduleName = deviceInfo->moduleName;
-                svcName = OsalMemCalloc(strlen(serviceName) + 1);
-                if (svcName == NULL) {
-                    break;
-                }
-                if (strcpy_s(svcName, strlen(serviceName) + 1, serviceName) != EOK) {
-                    HDF_LOGE("%s: failed to copy string", __func__);
-                    OsalMemFree(svcName);
-                    break;
-                }
-                deviceNodeInfo->svcName = svcName;
-#ifdef LOSCFG_DRIVERS_HDF_USB_PNP_NOTIFY
-                if (!UsbPnpManagerAddPrivateData(deviceNodeInfo, privateData)) {
-                    break;
-                }
-#endif
-                HdfSListAdd(hostClnt->deviceInfos, &deviceNodeInfo->node);
-                hostClnt->devCount++;
-                return true;
-            }
+    for(device = hostNode->child; device != NULL; device = device->sibling, deviceIdx++) {
+        if (!GetDevcieNodeList(device, hostClnt, deviceIdx)) {
+            return ret;
         }
     }
-    HdfDeviceInfoFreeInstance(deviceNodeInfo);
-    return false;
+
+    return HDF_SUCCESS;
 }
-
-void HdfDeviceListDel(const char *moduleName, const char *serviceName)
-{
-    struct HdfSListIterator itDeviceInfo;
-    struct HdfDeviceInfo *deviceInfo = NULL;
-    struct DevHostServiceClnt *hostClnt = NULL;
-    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
-    if (devMgrSvc == NULL || moduleName == NULL || serviceName == NULL) {
-        return;
-    }
-
-    DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
-        HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
-        while (HdfSListIteratorHasNext(&itDeviceInfo)) {
-            deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
-            if ((strcmp(deviceInfo->moduleName, moduleName) == 0) &&
-                (strcmp(deviceInfo->svcName, serviceName) == 0)) {
-                HdfSListRemove(hostClnt->deviceInfos, &deviceInfo->node);
-                HdfDeviceInfoFreeInstance(deviceInfo);
-                hostClnt->devCount--;
-                return;
-            }
-        }
-    }
-}
-

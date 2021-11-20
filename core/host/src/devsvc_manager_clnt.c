@@ -67,30 +67,6 @@ struct HdfDeviceObject *DevSvcManagerClntGetDeviceObject(const char *svcName)
     return serviceManager->GetObject(serviceManager, svcName);
 }
 
-struct HdfDeviceObject *HdfRegisterDevice(const char *moduleName, const char *serviceName, const void *privateData)
-{
-    int ret;
-    if (!HdfDeviceListAdd(moduleName, serviceName, privateData)) {
-        HDF_LOGE("%s device info add failed!", __func__);
-        return NULL;
-    }
-    ret = DevmgrServiceLoadDevice(serviceName);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s load device %s failed!", __func__, serviceName);
-        HdfDeviceListDel(moduleName, serviceName);
-        return NULL;
-    }
-    return DevSvcManagerClntGetDeviceObject(serviceName);
-}
-
-void HdfUnregisterDevice(const char *moduleName, const char *serviceName)
-{
-    if (DevmgrServiceUnLoadDevice(serviceName) != HDF_SUCCESS) {
-        HDF_LOGE("%s:failed to unload device %s !", __func__, serviceName);
-    }
-    HdfDeviceListDel(moduleName, serviceName);
-}
-
 int DevSvcManagerClntSubscribeService(const char *svcName, struct SubscriberCallback callback)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();

@@ -96,7 +96,7 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
     EXPECT_TRUE((timeAfter - timeBefore) < 100);
 
     struct HdfIoService *ioService1 = HdfIoServiceBind("sample_service1");
-    EXPECT_TRUE(ioService1 != NULL);
+    ASSERT_TRUE(ioService1 != NULL);
     HdfIoServiceRecycle(ioService1);
 
     ret = ioService->dispatcher->Dispatch(&ioService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, NULL);
@@ -117,21 +117,26 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
   */
 HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
 {
-    struct HdfSBuf *data = HdfSBufObtain(1000);
+    struct HdfSBuf *data = HdfSBufObtain(2000);
     ASSERT_TRUE(data != NULL);
-    int32_t ret = HdfGetServiceNameByDeviceClass(DEVICE_CLASS_DEFAULT, data);
-    EXPECT_TRUE(ret == HDF_SUCCESS);
+
     bool flag = false;
-    const char *svcName = NULL;
-    while(true) {
-        svcName = HdfSbufReadString(data);
-        if (svcName == NULL) {
-            break;
+    for (size_t i = DEVICE_CLASS_DEFAULT; i < DEVICE_CLASS_MAX; i++) {
+        int32_t ret = HdfGetServiceNameByDeviceClass((DeviceClass)i, data);
+        std::cout << "clasee " << i << " device list:" << std::endl;
+        EXPECT_TRUE(ret == HDF_SUCCESS);
+        const char *svcName = NULL;
+        while(true) {
+            svcName = HdfSbufReadString(data);
+            if (svcName == NULL) {
+                break;
+            }
+            std::cout << svcName << std::endl;
+            if (strcmp(svcName, "sample_service") == 0) {
+                flag = true;
+            }
         }
-        if (strcmp(svcName, "sample_service") == 0) {
-            flag = true;
-            break;
-        }
+        HdfSbufFlush(data);
     }
     HdfSBufRecycle(data);
     EXPECT_TRUE(flag);

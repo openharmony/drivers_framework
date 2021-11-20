@@ -78,7 +78,7 @@ struct UsbPnpRemoveInfo {
     uint8_t interfaceNum;
 };
 
-int UsbDdkPnpLoaderEventReceived(void *priv, uint32_t id, struct HdfSBuf *data);
+int UsbDdkPnpLoaderEventReceived(void *usbPnpManagerPtr, uint32_t id, struct HdfSBuf *data);
 int UsbDdkPnpLoaderEventHandle(void);
 
 #endif /* USB_DDK_PNP_LOADER_H */

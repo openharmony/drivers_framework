@@ -9,6 +9,7 @@
 #include "devmgr_service_start.h"
 #include "devhost_service_clnt.h"
 #include "devmgr_service.h"
+#include "devsvc_manager.h"
 #include "devsvc_manager_clnt.h"
 #include "hdf_base.h"
 #include "hdf_device_node.h"
@@ -20,30 +21,14 @@
 
 static int g_isQuickLoad = DEV_MGR_SLOW_LOAD;
 
-static void GetDeviceServiceNameByClass(DeviceClass deviceClass, struct HdfSBuf *reply)
+static void GetDeviceServiceNameByClass(struct HdfSBuf *reply, DeviceClass deviceClass)
 {
-    struct HdfSListIterator itDeviceInfo;
-    struct HdfDeviceInfo *deviceInfo = NULL;
-    struct DevHostServiceClnt *hostClnt = NULL;
-    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
-    if (devMgrSvc == NULL || reply == NULL) {
+    if (reply == NULL) {
         return;
     }
 
     HdfSbufFlush(reply);
-    DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
-        HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
-        while (HdfSListIteratorHasNext(&itDeviceInfo)) {
-            deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
-            if (deviceInfo->policy == SERVICE_POLICY_CAPACITY) {
-                struct HdfDeviceObject *deviceObject = DevSvcManagerClntGetDeviceObject(deviceInfo->svcName);
-                if (deviceObject == NULL || (deviceObject->deviceClass != deviceClass)) {
-                    continue;
-                }
-                HdfSbufWriteString(reply, deviceInfo->svcName);
-            }
-        }
-    }
+    DevSvcManagerListService(reply, deviceClass);
     HdfSbufWriteString(reply, NULL);
 }
 
@@ -84,7 +69,7 @@ int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data
                 HDF_LOGE("%s: failed to get deviceClass", __func__);
                 break;
             }
-            GetDeviceServiceNameByClass(deviceClass, reply);
+            GetDeviceServiceNameByClass(reply, deviceClass);
             ret = HDF_SUCCESS;
             break;
         default:

@@ -7,10 +7,13 @@
  */
 
 #include "hdf_device_object.h"
-#include "hdf_base.h"
-#include "hdf_device_node.h"
 #include "devhost_service.h"
+#include "hdf_base.h"
+#include "hdf_cstring.h"
+#include "hdf_device_node.h"
+#include "hdf_driver_loader.h"
 #include "hdf_log.h"
+#include "hdf_object_manager.h"
 #include "hdf_observer_record.h"
 #include "hdf_service_observer.h"
 #include "power_state_token.h"
@@ -121,8 +124,7 @@ void HdfPmSetMode(struct HdfDeviceObject *deviceObject, uint32_t mode)
 
 bool HdfDeviceSetClass(struct HdfDeviceObject *deviceObject, DeviceClass deviceClass)
 {
-    if ((deviceObject == NULL) || (deviceClass >= DEVICE_CLASS_MAX) ||
-        (deviceClass >= DEVICE_CLASS_MAX)) {
+    if ((deviceObject == NULL) || (deviceClass >= DEVICE_CLASS_MAX) || (deviceClass >= DEVICE_CLASS_MAX)) {
         return false;
     }
     deviceObject->deviceClass = deviceClass;
@@ -136,4 +138,126 @@ void HdfDeviceObjectConstruct(struct HdfDeviceObject *deviceObject)
         deviceObject->service = NULL;
         deviceObject->deviceClass = DEVICE_CLASS_DEFAULT;
     }
+}
+
+struct HdfDeviceObject *HdfDeviceObjectAlloc(struct HdfDeviceObject *parent, const char *driverName)
+{
+    struct HdfDeviceNode *newNode = NULL;
+    struct HdfDeviceNode *parentDevNode = CONTAINER_OF(parent, struct HdfDeviceNode, deviceObject);
+
+    if (parent == NULL) {
+        HDF_LOGE("failed to alloc device, parent invalid");
+        return NULL;
+    }
+
+    if (parentDevNode->devStatus != DEVNODE_LAUNCHED) {
+        HDF_LOGE("failed to alloc device, parent status invalid %u", parentDevNode->devStatus);
+        return NULL;
+    }
+
+    newNode = (struct HdfDeviceNode *)HdfObjectManagerGetObject(HDF_OBJECT_ID_DEVICE_SERVICE);
+    if (newNode == NULL) {
+        return NULL;
+    }
+    newNode->driverName = HdfStringCopy(driverName);
+    if (newNode->driverName == NULL) {
+        HdfDeviceNodeFreeInstance(newNode);
+        return NULL;
+    }
+
+    newNode->hostService = parentDevNode->hostService;
+    newNode->device = parentDevNode->device;
+
+    return &newNode->deviceObject;
+}
+
+void HdfDeviceObjectRelease(struct HdfDeviceObject *dev)
+{
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    if (dev == NULL) {
+        return;
+    }
+
+    if (devNode->device != NULL && devNode->device->super.Detach != NULL) {
+        devNode->device->super.Detach(&devNode->device->super, devNode);
+    }
+    HdfDeviceNodeFreeInstance(devNode);
+}
+
+int HdfDeviceObjectRegister(struct HdfDeviceObject *dev)
+{
+    int ret = HDF_FAILURE;
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    struct IDriverLoader *driverLoader = HdfDriverLoaderGetInstance();
+
+    if (dev == NULL || devNode->driverName == NULL || devNode->device == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    devNode->driver = driverLoader->GetDriver(devNode->driverName);
+    if (devNode->driver == NULL) {
+        HDF_LOGE("can not found driver %s", devNode->driverName);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+
+    ret = devNode->device->super.Attach(&devNode->device->super, devNode);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("faild to attach device %s", devNode->driverName);
+        return HDF_DEV_ERR_ATTACHDEV_FAIL;
+    }
+
+    return ret;
+}
+
+int HdfDeviceObjectUnRegister(struct HdfDeviceObject *dev)
+{
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    if (devNode == NULL || devNode->device == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    return devNode->device->super.Detach(&devNode->device->super, devNode);
+}
+
+int HdfDeviceObjectPublishService(struct HdfDeviceObject *dev, const char *servName, uint8_t policy, uint32_t perm)
+{
+    int ret;
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    if (dev == NULL || servName == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    if (policy <= SERVICE_POLICY_NONE || policy >= SERVICE_POLICY_INVALID) {
+        return HDF_DEV_ERR_NO_DEVICE_SERVICE;
+    }
+
+    if (devNode->servStatus) {
+        HDF_LOGE("failed to publish public service, repeat publish");
+        return HDF_FAILURE;
+    }
+
+    devNode->servName = HdfStringCopy(servName);
+    if (devNode->servName == NULL) {
+        return HDF_DEV_ERR_NO_MEMORY;
+    }
+
+    devNode->policy = policy;
+    devNode->permission = perm;
+
+    ret = DeviveDriverBind(devNode);
+    if (ret != HDF_SUCCESS) {
+        return ret;
+    }
+
+    return devNode->super.PublishService(devNode);
+}
+
+int HdfDeviceObjectRemoveService(struct HdfDeviceObject *dev)
+{
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    if (dev == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    return devNode->super.RemoveService(devNode);
 }

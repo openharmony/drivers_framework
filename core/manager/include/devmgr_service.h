@@ -24,8 +24,6 @@ bool DevmgrServiceConstruct(struct DevmgrService *inst);
 struct HdfObject *DevmgrServiceCreate(void);
 void DevmgrServiceRelease(struct HdfObject *object);
 struct IDevmgrService *DevmgrServiceGetInstance(void);
-int DevmgrServiceLoadDevice(const char *svcName);
-int DevmgrServiceUnLoadDevice(const char *svcName);
 int32_t DevmgrServiceLoadLeftDriver(struct DevmgrService *devMgrSvc);
 
 #endif /* DEVICE_MANAGER_SERVICE_H */

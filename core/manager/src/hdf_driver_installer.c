@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdf_attribute_manager.h"
 #include "hdf_driver_installer.h"
 #include "devhost_service.h"
 #include "hdf_base.h"

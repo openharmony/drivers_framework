@@ -10,11 +10,10 @@
 #define HDF_ATTRIBUTE_MANAGER_H
 
 #include "hdf_slist.h"
+#include "devhost_service_clnt.h"
 
-const struct DeviceResourceNode *HdfGetRootNode(void);
+const struct DeviceResourceNode *HdfGetHcsRootNode(void);
 bool HdfAttributeManagerGetHostList(struct HdfSList *hostList);
-struct HdfSList *HdfAttributeManagerGetDeviceList(uint16_t hostId, const char *hostName);
-bool HdfDeviceListAdd(const char *moduleName, const char *serviceName, const void *privateData);
-void HdfDeviceListDel(const char *moduleName, const char *serviceName);
+int HdfAttributeManagerGetDeviceList(struct DevHostServiceClnt *hostClnt);
 
 #endif /* HDF_ATTRIBUTE_MANAGER_H */
