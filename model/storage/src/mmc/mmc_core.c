@@ -235,7 +235,7 @@ static int32_t MmcCntlrInit(struct MmcCntlr *cntlr)
 
     cntlr->service.Dispatch = MmcIoDispatch;
     cntlr->hdfDevObj->service = &(cntlr->service);
-    cntlr->device.magic = cntlr->index;
+    cntlr->device.number = cntlr->index;
     cntlr->device.hdfDev = cntlr->hdfDevObj;
     return HDF_SUCCESS;
 }
@@ -990,7 +990,7 @@ int32_t MmcDeviceAdd(struct MmcDevice *mmc)
         HDF_LOGE("MmcDeviceAdd: invalid erase size:%u", mmc->eraseSize);
         return HDF_ERR_INVALID_PARAM;
     }
-    mmc->device.magic = mmc->cntlr->device.magic + MMC_CNTLR_NR_MAX;
+    mmc->device.number = mmc->cntlr->device.number + MMC_CNTLR_NR_MAX;
 
     if (MmcCntlrGet(mmc->cntlr) == NULL) {
         return HDF_PLT_ERR_DEV_GET;

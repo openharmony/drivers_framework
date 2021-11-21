@@ -10,12 +10,11 @@
 #include "gpio/gpio_core.h"
 #include "gpio/gpio_service.h"
 #include "hdf_device_desc.h"
-#include "hdf_log.h"
 #include "platform_core.h"
 
 #define HDF_LOG_TAG gpio_service
 
-static int32_t GpioManagerIoRead(struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t GpioServiceIoRead(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
     uint16_t gpio;
@@ -26,25 +25,25 @@ static int32_t GpioManagerIoRead(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
 
     if (!HdfSbufReadUint16(data, &gpio)) {
-        HDF_LOGE("%s: read gpio number failed", __func__);
+        PLAT_LOGE("%s: read gpio number failed", __func__);
         return HDF_ERR_IO;
     }
 
     ret = GpioRead(gpio, &value);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read gpio failed:%d", __func__, ret);
+        PLAT_LOGE("%s: read gpio failed:%d", __func__, ret);
         return ret;
     }
 
     if (!HdfSbufWriteUint16(reply, value)) {
-        HDF_LOGE("%s: write subf failed:%d", __func__, ret);
+        PLAT_LOGE("%s: write subf failed:%d", __func__, ret);
         return ret;
     }
 
     return ret;
 }
 
-static int32_t GpioManagerIoWrite(struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t GpioServiceIoWrite(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
     uint16_t gpio;
@@ -55,25 +54,25 @@ static int32_t GpioManagerIoWrite(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
 
     if (!HdfSbufReadUint16(data, &gpio)) {
-        HDF_LOGE("%s: read gpio number failed", __func__);
+        PLAT_LOGE("%s: read gpio number failed", __func__);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufReadUint16(data, &value)) {
-        HDF_LOGE("%s: read gpio value failed", __func__);
+        PLAT_LOGE("%s: read gpio value failed", __func__);
         return HDF_ERR_IO;
     }
 
     ret = GpioWrite(gpio, value);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write gpio failed:%d", __func__, ret);
+        PLAT_LOGE("%s: write gpio failed:%d", __func__, ret);
         return ret;
     }
 
     return ret;
 }
 
-static int32_t GpioManagerIoGetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t GpioServiceIoGetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
     uint16_t gpio;
@@ -84,25 +83,25 @@ static int32_t GpioManagerIoGetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
 
     if (!HdfSbufReadUint16(data, &gpio)) {
-        HDF_LOGE("%s: read gpio number failed", __func__);
+        PLAT_LOGE("%s: read gpio number failed", __func__);
         return HDF_ERR_IO;
     }
 
     ret = GpioGetDir(gpio, &dir);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: get gpio dir failed:%d", __func__, ret);
+        PLAT_LOGE("%s: get gpio dir failed:%d", __func__, ret);
         return ret;
     }
 
     if (!HdfSbufWriteUint16(reply, dir)) {
-        HDF_LOGE("%s: write subf failed:%d", __func__, ret);
+        PLAT_LOGE("%s: write subf failed:%d", __func__, ret);
         return ret;
     }
 
     return ret;
 }
 
-static int32_t GpioManagerIoSetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t GpioServiceIoSetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
     uint16_t gpio;
@@ -113,38 +112,38 @@ static int32_t GpioManagerIoSetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
 
     if (!HdfSbufReadUint16(data, &gpio)) {
-        HDF_LOGE("%s: read gpio number failed", __func__);
+        PLAT_LOGE("%s: read gpio number failed", __func__);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufReadUint16(data, &dir)) {
-        HDF_LOGE("%s: read gpio dir failed", __func__);
+        PLAT_LOGE("%s: read gpio dir failed", __func__);
         return HDF_ERR_IO;
     }
 
     ret = GpioSetDir(gpio, dir);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: set gpio dir failed:%d", __func__, ret);
+        PLAT_LOGE("%s: set gpio dir failed:%d", __func__, ret);
         return ret;
     }
 
     return ret;
 }
 
-static int32_t GpioManagerDispatch(struct HdfDeviceIoClient *client, int cmd,
+static int32_t GpioServiceDispatch(struct HdfDeviceIoClient *client, int cmd,
     struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
 
     switch (cmd) {
         case GPIO_IO_READ:
-            return GpioManagerIoRead(data, reply);
+            return GpioServiceIoRead(data, reply);
         case GPIO_IO_WRITE:
-            return GpioManagerIoWrite(data, reply);
+            return GpioServiceIoWrite(data, reply);
         case GPIO_IO_GETDIR:
-            return GpioManagerIoGetDir(data, reply);
+            return GpioServiceIoGetDir(data, reply);
         case GPIO_IO_SETDIR:
-            return GpioManagerIoSetDir(data, reply);
+            return GpioServiceIoSetDir(data, reply);
         default:
             ret = HDF_ERR_NOT_SUPPORT;
             break;
@@ -152,62 +151,72 @@ static int32_t GpioManagerDispatch(struct HdfDeviceIoClient *client, int cmd,
     return ret;
 }
 
-static int32_t GpioManagerBind(struct HdfDeviceObject *device)
+static int32_t GpioServiceBind(struct HdfDeviceObject *device)
 {   
-    struct GpioManager *gpioMgr = NULL;
+    int32_t ret;
+    struct PlatformManager *gpioMgr = NULL;
 
-    HDF_LOGI("GpioManagerBind: enter");
+    PLAT_LOGI("GpioServiceBind: enter");
     if (device == NULL) {
-        HDF_LOGE("GpioManagerBind: device is NULL");
+        PLAT_LOGE("GpioServiceBind: device is NULL");
         return HDF_ERR_INVALID_OBJECT;
     }
 
     gpioMgr = GpioManagerGet();
     if (gpioMgr == NULL) {
-        HDF_LOGE("GpioManagerBind: get gpio manager failed");
+        PLAT_LOGE("GpioServiceBind: get gpio manager failed");
         return HDF_PLT_ERR_DEV_GET;
     }
 
-    gpioMgr->device.hdfDev = device;
-    device->service = &gpioMgr->service;
-    device->service->Dispatch = GpioManagerDispatch;
-    HDF_LOGI("GpioManagerBind: success");
+    ret = PlatformDeviceCreateService(&gpioMgr->device, GpioServiceDispatch);
+    if (ret != HDF_SUCCESS) {
+        PLAT_LOGE("GpioServiceBind: create gpio service failed:%d", ret);
+        return ret;
+    }
+
+    ret = PlatformDeviceBind(&gpioMgr->device, device);
+    if (ret != HDF_SUCCESS) {
+        PLAT_LOGE("GpioServiceBind: bind gpio device failed:%d", ret);
+        (void)PlatformDeviceDestroyService(&gpioMgr->device);
+        return ret;
+    }
+
+    PLAT_LOGI("GpioServiceBind: success");
     return HDF_SUCCESS;
 }
 
-static int32_t GpioManagerInit(struct HdfDeviceObject *device)
+static int32_t GpioServiceInit(struct HdfDeviceObject *device)
 {
     (void)device;
     return HDF_SUCCESS;
 }
 
-static void GpioManagerRelease(struct HdfDeviceObject *device)
+static void GpioServiceRelease(struct HdfDeviceObject *device)
 {
-    struct GpioManager *gpioMgr = NULL;
+    struct PlatformManager *gpioMgr = NULL;
 
-    HDF_LOGI("GpioManagerRelease: enter");
+    PLAT_LOGI("GpioServiceRelease: enter");
     if (device == NULL) {
-        HDF_LOGI("GpioManagerRelease: device is null");
+        PLAT_LOGI("GpioServiceRelease: device is null");
         return;
     }
 
     gpioMgr = GpioManagerGet();
     if (gpioMgr == NULL) {
-        HDF_LOGE("GpioManagerBind: get gpio manager failed");
+        PLAT_LOGE("GpioServiceBind: get gpio manager failed");
         return;
     }
 
-    gpioMgr->device.hdfDev = NULL;
-    device->service->Dispatch = NULL;
-    device->service = NULL;
-    HDF_LOGI("GpioManagerRelease: done");
+    (void)PlatformDeviceDestroyService(&gpioMgr->device);
+    (void)PlatformDeviceUnbind(&gpioMgr->device);
+    PLAT_LOGI("GpioServiceRelease: done");
 }
 
-struct HdfDriverEntry g_gpioManagerEntry = {
+struct HdfDriverEntry g_gpioServiceEntry = {
     .moduleVersion = 1,
-    .Bind = GpioManagerBind,
-    .Init = GpioManagerInit,
-    .Release = GpioManagerRelease,
+    .Bind = GpioServiceBind,
+    .Init = GpioServiceInit,
+    .Release = GpioServiceRelease,
     .moduleName = "HDF_PLATFORM_GPIO_MANAGER",
 };
-HDF_INIT(g_gpioManagerEntry);
+HDF_INIT(g_gpioServiceEntry);

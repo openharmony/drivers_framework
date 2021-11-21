@@ -17,4 +17,9 @@
 #define PLAT_LOGV(fmt, arg...) HDF_LOGV(fmt, ##arg)
 #endif
 
+#define PLAT_LOGD(fmt, arg...) HDF_LOGD(fmt, ##arg)
+#define PLAT_LOGI(fmt, arg...) HDF_LOGI(fmt, ##arg)
+#define PLAT_LOGW(fmt, arg...) HDF_LOGW(fmt, ##arg)
+#define PLAT_LOGE(fmt, arg...) HDF_LOGE(fmt, ##arg)
+
 #endif /* PLATFORM_LOG_H */

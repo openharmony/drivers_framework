@@ -23,6 +23,10 @@ static void PlatformManagerInit(struct PlatformManager *manager)
 
     OsalSpinInit(&manager->spin);
     DListHeadInit(&manager->devices);
+    PlatformDeviceInit(&manager->device);
+    PlatformDeviceGet(&manager->device);
+    manager->add = NULL;
+    manager->del = NULL;
 }
 
 struct PlatformManager *PlatformManagerCreate(const char *name)
@@ -62,37 +66,58 @@ struct PlatformManager *PlatformManagerGet(enum PlatformModuleType module)
     return manager;
 }
 
-int32_t PlatformManagerAddDevice(struct PlatformManager *manager, struct PlatformDevice *device)
+static int32_t PlatformManagerAddDeviceDefault(struct PlatformManager *manager, struct PlatformDevice *device)
 {
     struct PlatformDevice *tmp = NULL;
     bool repeatId = false;
-
-    if (manager == NULL || device == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    device->manager = manager;
 
     if (PlatformDeviceGet(device) == NULL) { // keep a reference by manager
         return HDF_PLT_ERR_DEV_GET;
     }
 
-    (void)OsalSpinLock(&manager->spin);
     DLIST_FOR_EACH_ENTRY(tmp, &manager->devices, struct PlatformDevice, node) {
-        if (tmp != NULL && tmp->magic == device->magic) {
+        if (tmp != NULL && tmp->number == device->number) {
             repeatId = true;
-            HDF_LOGE("PlatformManagerAddDevice: repeated magic:%u!", device->magic);
+            HDF_LOGE("PlatformManagerAddDevice: repeated number:%u!", device->number);
             break;
         }
     }
     if (!repeatId) {
         DListInsertTail(&device->node, &manager->devices);
+        device->manager = manager;
+    } else {
+        PlatformDevicePut(device);
+    }
+
+    return repeatId ? HDF_PLT_ERR_ID_REPEAT : HDF_SUCCESS;
+}
+
+int32_t PlatformManagerAddDevice(struct PlatformManager *manager, struct PlatformDevice *device)
+{
+    int32_t ret;
+
+    if (manager == NULL || device == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    (void)OsalSpinLock(&manager->spin);
+    if (manager->add != NULL) {
+        ret = manager->add(manager, device);
+    } else {
+        ret = PlatformManagerAddDeviceDefault(manager, device);
     }
     (void)OsalSpinUnlock(&manager->spin);
 
-    if (repeatId) {
-        PlatformDevicePut(device);
+    return ret;
+}
+
+static int32_t PlatformManagerDelDeviceDefault(struct PlatformManager *manager, struct PlatformDevice *device)
+{
+    if (!DListIsEmpty(&device->node)) {
+        DListRemove(&device->node);
     }
-    return repeatId ? HDF_PLT_ERR_ID_REPEAT : HDF_SUCCESS;
+    PlatformDevicePut(device);  // put the reference hold by manager
+    return HDF_SUCCESS;
 }
 
 void PlatformManagerDelDevice(struct PlatformManager *manager, struct PlatformDevice *device)
@@ -107,11 +132,12 @@ void PlatformManagerDelDevice(struct PlatformManager *manager, struct PlatformDe
     }
 
     (void)OsalSpinLock(&manager->spin);
-    if (!DListIsEmpty(&device->node)) {
-        DListRemove(&device->node);
+    if (manager->del != NULL) {
+        (void)manager->del(manager, device);
+    } else {
+        (void)PlatformManagerDelDeviceDefault(manager, device);
     }
     (void)OsalSpinUnlock(&manager->spin);
-    PlatformDevicePut(device);  // put the reference hold by manager
 }
 
 struct PlatformDevice *PlatformManagerFindDevice(struct PlatformManager *manager, void *data,
@@ -139,17 +165,17 @@ struct PlatformDevice *PlatformManagerFindDevice(struct PlatformManager *manager
     return pdevice;
 }
 
-static bool PlatformDeviceMatchByMagic(struct PlatformDevice *device, void *data)
+static bool PlatformDeviceMatchByNumber(struct PlatformDevice *device, void *data)
 {
-    uint32_t magic = (uint32_t)(uintptr_t)data;
+    uint32_t number = (uint32_t)(uintptr_t)data;
 
-    return (device != NULL && device->magic == magic);
+    return (device != NULL && device->number == number);
 }
 
-struct PlatformDevice *PlatformManagerGetDeviceByMagic(struct PlatformManager *manager, uint32_t magic)
+struct PlatformDevice *PlatformManagerGetDeviceByNumber(struct PlatformManager *manager, uint32_t number)
 {
     if (manager == NULL) {
         return NULL;
     }
-    return PlatformManagerFindDevice(manager, (void *)(uintptr_t)magic, PlatformDeviceMatchByMagic);
+    return PlatformManagerFindDevice(manager, (void *)(uintptr_t)number, PlatformDeviceMatchByNumber);
 }

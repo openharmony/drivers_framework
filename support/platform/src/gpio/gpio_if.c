@@ -11,16 +11,15 @@
 #ifdef __USER__
 #include "gpio/gpio_service.h"
 #include "hdf_io_service_if.h"
-#include "platform_errno.h"
+#include "platform_core.h"
 #else
 #include "devsvc_manager_clnt.h"
 #include "gpio/gpio_core.h"
 #endif
 
 #include "hdf_base.h"
-#include "hdf_log.h"
 
-#define HDF_LOG_TAG gpio_if
+#define PLAT_LOG_TAG gpio_if
 
 #ifdef __USER__
 
@@ -33,7 +32,7 @@ static void *GpioManagerServiceGet(void)
     }
     manager = (void *)HdfIoServiceBind("HDF_PLATFORM_GPIO_MANAGER");
     if (manager == NULL) {
-        HDF_LOGE("%s: failed to get gpio manager service!", __func__);
+        PLAT_LOGE("%s: failed to get gpio manager service!", __func__);
     }
     return manager;
 }
@@ -62,7 +61,7 @@ int32_t GpioRead(uint16_t gpio, uint16_t *val)
     }
 
     if (!HdfSbufWriteUint16(data, (uint16_t)gpio)) {
-        HDF_LOGE("%s: write gpio number failed!", __func__);
+        PLAT_LOGE("%s: write gpio number failed!", __func__);
         HdfSBufRecycle(data);
         HdfSBufRecycle(reply);
         return HDF_ERR_IO;
@@ -70,14 +69,14 @@ int32_t GpioRead(uint16_t gpio, uint16_t *val)
 
     ret = service->dispatcher->Dispatch(&service->object, GPIO_IO_READ, data, reply);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: service call failed:%d", __func__, ret);
+        PLAT_LOGE("%s: service call failed:%d", __func__, ret);
         HdfSBufRecycle(data);
         HdfSBufRecycle(reply);
         return ret;
     }
 
     if (!HdfSbufReadUint16(reply, val)) {
-        HDF_LOGE("%s: read sbuf failed", __func__);
+        PLAT_LOGE("%s: read sbuf failed", __func__);
         HdfSBufRecycle(data);
         HdfSBufRecycle(reply);
         return HDF_ERR_IO;
@@ -105,20 +104,20 @@ int32_t GpioWrite(uint16_t gpio, uint16_t val)
     }
 
     if (!HdfSbufWriteUint16(data, (uint16_t)gpio)) {
-        HDF_LOGE("%s: write gpio number failed!", __func__);
+        PLAT_LOGE("%s: write gpio number failed!", __func__);
         HdfSBufRecycle(data);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufWriteUint16(data, (uint16_t)val)) {
-        HDF_LOGE("%s: write gpio value failed!", __func__);
+        PLAT_LOGE("%s: write gpio value failed!", __func__);
         HdfSBufRecycle(data);
         return HDF_ERR_IO;
     }
 
     ret = service->dispatcher->Dispatch(&service->object, GPIO_IO_WRITE, data, NULL);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: service call failed:%d", __func__, ret);
+        PLAT_LOGE("%s: service call failed:%d", __func__, ret);
         HdfSBufRecycle(data);
         return ret;
     }
@@ -151,7 +150,7 @@ int32_t GpioGetDir(uint16_t gpio, uint16_t *dir)
     }
 
     if (!HdfSbufWriteUint16(data, (uint16_t)gpio)) {
-        HDF_LOGE("%s: write gpio number failed!", __func__);
+        PLAT_LOGE("%s: write gpio number failed!", __func__);
         HdfSBufRecycle(data);
         HdfSBufRecycle(reply);
         return HDF_ERR_IO;
@@ -159,14 +158,14 @@ int32_t GpioGetDir(uint16_t gpio, uint16_t *dir)
 
     ret = service->dispatcher->Dispatch(&service->object, GPIO_IO_GETDIR, data, reply);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: service call failed:%d", __func__, ret);
+        PLAT_LOGE("%s: service call failed:%d", __func__, ret);
         HdfSBufRecycle(data);
         HdfSBufRecycle(reply);
         return ret;
     }
 
     if (!HdfSbufReadUint16(reply, dir)) {
-        HDF_LOGE("%s: read sbuf failed", __func__);
+        PLAT_LOGE("%s: read sbuf failed", __func__);
         HdfSBufRecycle(data);
         HdfSBufRecycle(reply);
         return HDF_ERR_IO;
@@ -194,20 +193,20 @@ int32_t GpioSetDir(uint16_t gpio, uint16_t dir)
     }
 
     if (!HdfSbufWriteUint16(data, (uint16_t)gpio)) {
-        HDF_LOGE("%s: write gpio number failed!", __func__);
+        PLAT_LOGE("%s: write gpio number failed!", __func__);
         HdfSBufRecycle(data);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufWriteUint16(data, (uint16_t)dir)) {
-        HDF_LOGE("%s: write gpio value failed!", __func__);
+        PLAT_LOGE("%s: write gpio value failed!", __func__);
         HdfSBufRecycle(data);
         return HDF_ERR_IO;
     }
 
     ret = service->dispatcher->Dispatch(&service->object, GPIO_IO_SETDIR, data, NULL);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: service call failed:%d", __func__, ret);
+        PLAT_LOGE("%s: service call failed:%d", __func__, ret);
         HdfSBufRecycle(data);
         return ret;
     }

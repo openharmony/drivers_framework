@@ -22,9 +22,12 @@ extern "C" {
 
 enum PlatformModuleType;
 struct PlatformManager {
+    struct PlatformDevice device;
     const char *name;          /* name of the manager */
     struct DListHead devices;  /* list to keep all it's device instances */
     OsalSpinlock spin;         /* for member protection */
+    int32_t (*add)(struct PlatformManager *manager, struct PlatformDevice *device);
+    int32_t (*del)(struct PlatformManager *manager, struct PlatformDevice *device);
 };
 
 /**
@@ -92,17 +95,17 @@ struct PlatformDevice *PlatformManagerFindDevice(struct PlatformManager *manager
     bool (*match)(struct PlatformDevice *pdevice, void *data));
 
 /**
- * @brief Get a platform device from the manager by magic.
+ * @brief Get a platform device from the manager by number.
  *
  * The device got will be returned with reference count increased.
  *
  * @param manager Indicates the pointer to the platform manager.
- * @param magic Indicates the magic number of the target platform device.
+ * @param number Indicates the number number of the target platform device.
  *
  * @return Returns the pointer to the paltform device on success; returns NULL otherwise.
  * @since 1.0
  */
-struct PlatformDevice *PlatformManagerGetDeviceByMagic(struct PlatformManager *manager, uint32_t magic);
+struct PlatformDevice *PlatformManagerGetDeviceByNumber(struct PlatformManager *manager, uint32_t number);
 
 #ifdef __cplusplus
 #if __cplusplus
