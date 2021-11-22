@@ -229,6 +229,7 @@ static void DmacFreeChannel(struct DmaCntlr *cntlr, uint16_t channel)
     }
 
     OsalSpinLockIrqSave(&cntlr->lock, &flags);
+    DmacFreeLli(&cntlr->channelList[channel]);
     cntlr->channelList[channel].useStatus = DMAC_CHN_VACANCY;
     OsalSpinUnlockIrqRestore(&cntlr->lock, &flags);
 }
