@@ -248,6 +248,9 @@ static ChipDevice *ChipDeviceInstance(void)
 
 static void FreeChipConfig(TouchChipCfg *config)
 {
+    if (config == NULL) {
+        HDF_LOGE("%s: param is null", __func__);
+    }
     if (config->pwrSeq.pwrOn.buf != NULL) {
         OsalMemFree(config->pwrSeq.pwrOn.buf);
     }
@@ -315,7 +318,9 @@ static void HdfGoodixChipRelease(struct HdfDeviceObject *device)
     }
 
     chipDev = (ChipDevice *)device->priv;
-    FreeChipConfig(chipDev->chipCfg);
+    if (chipDev->chipCfg != NULL) {
+        FreeChipConfig(chipDev->chipCfg);
+    }
     OsalMemFree(chipDev);
 
     HDF_LOGI("%s: goodix chip is release", __func__);
