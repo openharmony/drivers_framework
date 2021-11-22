@@ -34,11 +34,8 @@ struct GpioInfo;
  * @since 1.0
  */
 struct GpioCntlr {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
+    struct PlatformDevice device;
     struct GpioMethod *ops;
-    struct DListHead list;
-    OsalSpinlock spin;
     uint16_t start;
     uint16_t count;
     struct GpioInfo *ginfos;
@@ -137,6 +134,8 @@ int32_t GpioCntlrDisableIrq(struct GpioCntlr *cntlr, uint16_t local);
 
 void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local);
 
+struct PlatformManager *GpioManagerGet(void);
+
 struct GpioCntlr *GpioGetCntlr(uint16_t gpio);
 
 static inline uint16_t GpioToLocal(uint16_t gpio)
@@ -149,15 +148,6 @@ static inline uint16_t GpioGetLocalNumber(struct GpioCntlr *cntlr, uint16_t gpio
 {
     return (cntlr == NULL) ? gpio : (gpio - cntlr->start);
 }
-
-struct GpioManager {
-    struct IDeviceIoService service;
-    struct PlatformDevice device;
-    struct PlatformManager manager;
-    struct DListHead cntlrList;
-};
-
-struct GpioManager *GpioManagerGet(void);
 
 #ifdef __cplusplus
 #if __cplusplus

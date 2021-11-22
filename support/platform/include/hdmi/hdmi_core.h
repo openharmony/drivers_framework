@@ -235,7 +235,7 @@ static inline void HdmiCntlrUnlock(struct HdmiCntlr *cntlr)
 
 static inline struct HdmiCntlr *HdmiCntlrGetByBusNum(uint16_t num)
 {
-    struct PlatformDevice *device = PlatformManagerGetDeviceByMagic(PlatformManagerGet(PLATFORM_MODULE_HDMI), num);
+    struct PlatformDevice *device = PlatformManagerGetDeviceByNumber(PlatformManagerGet(PLATFORM_MODULE_HDMI), num);
 
     if (device == NULL) {
         return NULL;

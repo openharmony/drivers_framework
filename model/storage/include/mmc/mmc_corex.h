@@ -110,7 +110,7 @@ static inline struct MmcCntlr *MmcCntlrGet(struct MmcCntlr *cntlr)
 
 static inline struct MmcCntlr *MmcCntlrGetByNr(uint16_t number)
 {
-    struct PlatformDevice *device = PlatformManagerGetDeviceByMagic(PlatformManagerGet(PLATFORM_MODULE_MMC), number);
+    struct PlatformDevice *device = PlatformManagerGetDeviceByNumber(PlatformManagerGet(PLATFORM_MODULE_MMC), number);
 
     if (device == NULL) {
         return NULL;

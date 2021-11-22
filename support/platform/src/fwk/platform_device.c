@@ -22,8 +22,6 @@ static void PlatformDeviceOnFirstGet(struct HdfSRef *sref)
 static void PlatformDeviceOnLastPut(struct HdfSRef *sref)
 {
     struct PlatformDevice *device = NULL;
-    struct PlatformNotifierNode *pos = NULL;
-    struct PlatformNotifierNode *tmp = NULL;
 
     if (sref == NULL) {
         return;
@@ -34,16 +32,9 @@ static void PlatformDeviceOnLastPut(struct HdfSRef *sref)
         HDF_LOGE("PlatformDeviceOnLastPut: get device is NULL!");
         return;
     }
-    (void)OsalSpinLock(&device->spin);
     device->ready = false;
 
-    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &device->notifiers, struct PlatformNotifierNode, node) {
-        if (pos->notifier != NULL && pos->notifier->handle != NULL) {
-            pos->notifier->handle(device, PLAT_EVENT_DEAD, pos->notifier->data);
-        }
-    }
-
-    (void)OsalSpinUnlock(&device->spin);
+    (void)PlatformDeviceNotify(device, PLAT_EVENT_DEAD);
 }
 
 struct IHdfSRefListener g_platObjListener = {
@@ -184,6 +175,23 @@ void PlatformDeviceClearNotifier(struct PlatformDevice *device)
     PlatformDeviceRemoveNotifier(device, NULL);
 }
 
+int32_t PlatformDeviceNotify(struct PlatformDevice *device, int32_t event)
+{
+    struct PlatformNotifierNode *pos = NULL;
+    struct PlatformNotifierNode *tmp = NULL;
+
+    (void)OsalSpinLock(&device->spin);
+
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &device->notifiers, struct PlatformNotifierNode, node) {
+        if (pos->notifier != NULL && pos->notifier->handle != NULL) {
+            pos->notifier->handle(device, event, pos->notifier->data);
+        }
+    }
+
+    (void)OsalSpinUnlock(&device->spin);
+    return HDF_SUCCESS;
+}
+
 int32_t PlatformDeviceAdd(struct PlatformDevice *device)
 {
     struct PlatformManager *manager = NULL;
@@ -214,4 +222,73 @@ void PlatformDeviceDel(struct PlatformDevice *device)
     }
     PlatformManagerDelDevice(manager, device);
     PlatformDeviceUninit(device);
+}
+
+int32_t PlatformDeviceCreateService(struct PlatformDevice *device,
+    int32_t (*dispatch)(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply))
+{
+    if (device == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (device->service != NULL) {
+        HDF_LOGE("%s: service already creatted!", __func__);
+        return HDF_FAILURE;
+    }
+
+    device->service = (struct IDeviceIoService *)OsalMemCalloc(sizeof(*(device->service)));
+    if (device->service == NULL) {
+        HDF_LOGE("%s: alloc service failed!", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    device->service->Dispatch = dispatch;
+    return HDF_SUCCESS;
+}
+
+int32_t PlatformDeviceDestroyService(struct PlatformDevice *device)
+{
+    if (device == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (device->service != NULL) {
+        HDF_LOGE("%s: service not creatted!", __func__);
+        return HDF_FAILURE;
+    }
+
+    OsalMemFree(device->service);
+    device->service = NULL;
+    return HDF_SUCCESS;
+}
+
+int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject *hdfDevice)
+{
+    if (device == NULL || hdfDevice == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (device->hdfDev != NULL) {
+        HDF_LOGE("%s: already bind a hdf device!", __func__);
+        return HDF_FAILURE;
+    }
+
+    device->hdfDev = hdfDevice;
+    hdfDevice->service = device->service;
+    return HDF_SUCCESS;
+}
+
+int32_t PlatformDeviceUnbind(struct PlatformDevice *device)
+{
+    if (device == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (device->hdfDev == NULL) {
+        HDF_LOGE("%s: no hdf device binded!", __func__);
+        return HDF_FAILURE;
+    }
+
+    device->hdfDev->service = NULL;
+    device->hdfDev = NULL;
+    return HDF_SUCCESS;
 }

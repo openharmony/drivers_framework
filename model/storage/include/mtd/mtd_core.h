@@ -210,7 +210,7 @@ static inline struct MtdDevice *MtdDeviceGet(struct MtdDevice *mtdDevice)
  */
 static inline struct MtdDevice *MtdDeviceGetByNum(int16_t num)
 {
-    struct PlatformDevice *device = PlatformManagerGetDeviceByMagic(MtdManagerGet(), num);
+    struct PlatformDevice *device = PlatformManagerGetDeviceByNumber(MtdManagerGet(), num);
 
     if (device != NULL) {
         return CONTAINER_OF(device, struct MtdDevice, device);

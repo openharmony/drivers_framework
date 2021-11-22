@@ -135,7 +135,7 @@ int32_t MtdDeviceAdd(struct MtdDevice *mtdDevice)
     }
 
     mtdDevice->device.manager = MtdManagerGet();
-    mtdDevice->device.magic = mtdDevice->index;
+    mtdDevice->device.number = mtdDevice->index;
     ret = PlatformDeviceAdd(&mtdDevice->device);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: mtd device add fail", __func__);

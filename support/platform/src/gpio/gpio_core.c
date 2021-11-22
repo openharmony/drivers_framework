@@ -7,14 +7,12 @@
  */
 
 #include "gpio/gpio_core.h"
-#include "hdf_log.h"
 #include "osal_mem.h"
 #include "platform_core.h"
 #include "securec.h"
 
 #define HDF_LOG_TAG gpio_core
 
-#define MAX_CNT_PER_CNTLR          1024
 #define GPIO_IRQ_STACK_SIZE        10000
 #define GPIO_IRQ_THREAD_NAME_LEN   32
 
@@ -29,174 +27,6 @@ struct GpioIrqBridge {
     struct GpioCntlr *cntlr;
     bool stop;
 };
-
-static struct GpioManager g_gpioManager;
-
-struct GpioManager *GpioManagerGet(void)
-{
-    static struct GpioManager *manager = NULL;
-
-    if (manager == NULL) {
-        manager = &g_gpioManager;
-
-        manager->manager.name = "PLATFORM_GPIO_MANAGER";
-        OsalSpinInit(&manager->manager.spin);
-        DListHeadInit(&manager->manager.devices);
-
-        PlatformDeviceInit(&manager->device);
-        PlatformDeviceGet(&manager->device);
-        HDF_LOGI("%s: gpio manager init done", __func__);
-    }
-
-    return manager;
-}
-
-static uint16_t GpioCntlrQueryStart(struct GpioCntlr *cntlr, struct DListHead *list)
-{
-    uint16_t freeStart;
-    uint16_t freeCount;
-    struct GpioCntlr *iterLast = NULL;
-    struct GpioCntlr *iterCur = NULL;
-    struct GpioCntlr *tmp = NULL;
-
-    DLIST_FOR_EACH_ENTRY_SAFE(iterCur, tmp, list, struct GpioCntlr, list) {
-        if (iterLast == NULL) {
-            freeStart = 0;
-            freeCount = iterCur->start;
-        } else {
-            freeStart = iterLast->start + iterLast->count;
-            freeCount = iterCur->start - freeStart;
-        }
-
-        if (cntlr->start < freeStart) {
-            HDF_LOGE("GpioCntlrQueryStart: start:%u not available(freeStart:%u, freeCount:%u)",
-                cntlr->start, freeStart, freeCount);
-            return GPIO_NUM_MAX;
-        }
-
-        if ((cntlr->start + cntlr->count) <= (freeStart + freeCount)) {
-            return freeStart;
-        }
-
-        iterLast = iterCur;
-    }
-    if (iterLast == NULL) { // empty list
-        return cntlr->start;
-    }
-    if (cntlr->start >= (iterLast->start + iterLast->count)) {
-        return iterLast->start + iterLast->count;
-    }
-    HDF_LOGE("GpioCntlrQueryStart: start:%u not available(lastStart:%u, lastCount:%u)",
-        cntlr->start, iterLast->start, iterLast->count);
-    return GPIO_NUM_MAX;
-}
-
-int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
-{
-    uint16_t start;
-    struct GpioManager *gpioMgr = NULL;
-
-    if (cntlr == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    if (cntlr->device == NULL) {
-        HDF_LOGE("GpioCntlrAdd: no device associated!");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    if (cntlr->ops == NULL) {
-        HDF_LOGE("GpioCntlrAdd: no ops supplied!");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    if (cntlr->count >= MAX_CNT_PER_CNTLR) {
-        HDF_LOGE("GpioCntlrAdd: invalid gpio count:%u", cntlr->count);
-        return HDF_ERR_INVALID_PARAM;
-    }
-
-    if (cntlr->ginfos == NULL) {
-        cntlr->ginfos = OsalMemCalloc(sizeof(*cntlr->ginfos) * cntlr->count);
-        if (cntlr->ginfos == NULL) {
-            return HDF_ERR_MALLOC_FAIL;
-        }
-    }
-
-    gpioMgr = GpioManagerGet();
-    if (gpioMgr == NULL) {
-        HDF_LOGE("GpioCntlrAdd: get gpio manager failed");
-        return HDF_PLT_ERR_DEV_GET;
-    }
-    (void)OsalSpinLock(&gpioMgr->manager.spin);
-    if ((start = GpioCntlrQueryStart(cntlr, &gpioMgr->manager.devices)) >= GPIO_NUM_MAX) {
-        HDF_LOGE("GpioCntlrAdd: query range for start:%d fail:%d", cntlr->start, start);
-        (void)OsalSpinUnlock(&gpioMgr->manager.spin);
-        return HDF_ERR_INVALID_PARAM;
-    }
-
-    cntlr->start = start;
-    OsalSpinInit(&cntlr->spin);
-    DListHeadInit(&cntlr->list);
-    DListInsertTail(&cntlr->list, &gpioMgr->manager.devices);
-    (void)OsalSpinUnlock(&gpioMgr->manager.spin);
-    HDF_LOGI("GpioCntlrAdd: start:%u count:%u", cntlr->start, cntlr->count);
-
-    return HDF_SUCCESS;
-}
-
-void GpioCntlrRemove(struct GpioCntlr *cntlr)
-{
-    struct GpioManager *gpioMgr = NULL;
-
-    if (cntlr == NULL) {
-        return;
-    }
-
-    if (cntlr->device == NULL) {
-        HDF_LOGE("GpioCntlrRemove: no device associated!");
-        return;
-    }
-
-    gpioMgr = GpioManagerGet();
-    if (gpioMgr == NULL) {
-        HDF_LOGE("GpioCntlrRemove: get gpio manager failed");
-        return;
-    }
-
-    cntlr->device->service = NULL;
-    (void)OsalSpinLock(&gpioMgr->manager.spin);
-    DListRemove(&cntlr->list);
-    (void)OsalSpinUnlock(&gpioMgr->manager.spin);
-    if (cntlr->ginfos != NULL) {
-        OsalMemFree(cntlr->ginfos);
-        cntlr->ginfos = NULL;
-    }
-    (void)OsalSpinDestroy(&cntlr->spin);
-}
-
-struct GpioCntlr *GpioGetCntlr(uint16_t gpio)
-{
-    struct GpioCntlr *cntlr = NULL;
-    struct GpioCntlr *tmp = NULL;
-    struct GpioManager *gpioMgr = NULL;
-
-    gpioMgr = GpioManagerGet();
-    if (gpioMgr == NULL) {
-        HDF_LOGE("GpioCntlrRemove: get gpio manager failed");
-        return NULL;
-    }
-
-    (void)OsalSpinLock(&gpioMgr->manager.spin);
-    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, &gpioMgr->manager.devices, struct GpioCntlr, list) {
-        if (gpio >= cntlr->start && gpio < (cntlr->start + cntlr->count)) {
-            (void)OsalSpinUnlock(&gpioMgr->manager.spin);
-            return cntlr;
-        }
-    }
-    (void)OsalSpinUnlock(&gpioMgr->manager.spin);
-    HDF_LOGE("GpioGetCntlr: gpio %u not in any controllers!", gpio);
-    return NULL;
-}
 
 int32_t GpioCntlrWrite(struct GpioCntlr *cntlr, uint16_t local, uint16_t val)
 {
@@ -293,7 +123,7 @@ static int GpioIrqThreadWorker(void *data)
     (void)OsalSemDestroy(&bridge->sem);
     (void)OsalSpinDestroy(&bridge->spin);
     OsalMemFree(bridge);
-    HDF_LOGI("GpioIrqThreadWorker: normal exit!");
+    PLAT_LOGI("GpioIrqThreadWorker: normal exit!");
     return HDF_SUCCESS;
 }
 
@@ -317,23 +147,23 @@ static struct GpioIrqBridge *GpioIrqBridgeCreate(struct GpioCntlr *cntlr,
 
     if (snprintf_s(bridge->name, GPIO_IRQ_THREAD_NAME_LEN, GPIO_IRQ_THREAD_NAME_LEN - 1,
         "GPIO_IRQ_TSK_%d_%d", bridge->cntlr->start, bridge->local) < 0) {
-        HDF_LOGE("GpioIrqBridgeCreate: format thread name fail!");
+        PLAT_LOGE("GpioIrqBridgeCreate: format thread name fail!");
         goto __ERR_FORMAT_NAME;
     }
 
     if (OsalSpinInit(&bridge->spin) != HDF_SUCCESS) {
-        HDF_LOGE("GpioIrqBridgeCreate: init spin fail!");
+        PLAT_LOGE("GpioIrqBridgeCreate: init spin fail!");
         goto __ERR_INIT_SPIN;
     }
 
     if (OsalSemInit(&bridge->sem, 0) != HDF_SUCCESS) {
-        HDF_LOGE("GpioIrqBridgeCreate: init sem fail!");
+        PLAT_LOGE("GpioIrqBridgeCreate: init sem fail!");
         goto __ERR_INIT_SEM;
     }
 
     ret = OsalThreadCreate(&bridge->thread, (OsalThreadEntry)GpioIrqThreadWorker, (void *)bridge);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("GpioIrqBridgeCreate: create irq fail!");
+        PLAT_LOGE("GpioIrqBridgeCreate: create irq fail!");
         goto __ERR_CREATE_THREAD;
     }
 
@@ -341,7 +171,7 @@ static struct GpioIrqBridge *GpioIrqBridgeCreate(struct GpioCntlr *cntlr,
     cfg.priority = OSAL_THREAD_PRI_HIGH;
     cfg.stackSize = GPIO_IRQ_STACK_SIZE;
     if (OsalThreadStart(&bridge->thread, &cfg) != HDF_SUCCESS) {
-        HDF_LOGE("GpioIrqBridgeCreate: start irq thread fail:%d", ret);
+        PLAT_LOGE("GpioIrqBridgeCreate: start irq thread fail:%d", ret);
         goto __ERR_START_THREAD;
     }
     return bridge;
@@ -377,10 +207,10 @@ void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local)
         if (ginfo != NULL && ginfo->irqFunc != NULL) {
             (void)ginfo->irqFunc(local, ginfo->irqData);
         } else {
-            HDF_LOGW("GpioCntlrIrqCallback: ginfo or irqFunc is NULL!");
+            PLAT_LOGW("GpioCntlrIrqCallback: ginfo or irqFunc is NULL!");
         }
     } else {
-        HDF_LOGW("GpioCntlrIrqCallback: invalid cntlr(ginfos) or loal num:%u!", local);
+        PLAT_LOGW("GpioCntlrIrqCallback: invalid cntlr(ginfos) or loal num:%u!", local);
     }
 }
 
@@ -415,7 +245,7 @@ int32_t GpioCntlrSetIrq(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode, 
         }
     }
 
-    (void)OsalSpinLockIrqSave(&cntlr->spin, &flags);
+    (void)OsalSpinLockIrqSave(&cntlr->device.spin, &flags);
     oldFunc = cntlr->ginfos[local].irqFunc;
     oldData = cntlr->ginfos[local].irqData;
     cntlr->ginfos[local].irqFunc = theFunc;
@@ -433,7 +263,7 @@ int32_t GpioCntlrSetIrq(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode, 
             bridge = NULL;
         }
     }
-    (void)OsalSpinUnlockIrqRestore(&cntlr->spin, &flags);
+    (void)OsalSpinUnlockIrqRestore(&cntlr->device.spin, &flags);
     return ret;
 }
 
@@ -453,7 +283,7 @@ int32_t GpioCntlrUnsetIrq(struct GpioCntlr *cntlr, uint16_t local)
         return HDF_ERR_NOT_SUPPORT;
     }
 
-    (void)OsalSpinLockIrqSave(&cntlr->spin, &flags);
+    (void)OsalSpinLockIrqSave(&cntlr->device.spin, &flags);
     ret = cntlr->ops->unsetIrq(cntlr, local);
     if (ret == HDF_SUCCESS) {
         if (cntlr->ginfos[local].irqFunc == GpioIrqBridgeFunc) {
@@ -463,7 +293,7 @@ int32_t GpioCntlrUnsetIrq(struct GpioCntlr *cntlr, uint16_t local)
         cntlr->ginfos[local].irqFunc = NULL;
         cntlr->ginfos[local].irqData = NULL;
     }
-    (void)OsalSpinUnlockIrqRestore(&cntlr->spin, &flags);
+    (void)OsalSpinUnlockIrqRestore(&cntlr->device.spin, &flags);
     return ret;
 }
 
