@@ -42,22 +42,23 @@ int32_t AudioBytesToFramesTest(void)
 
 int32_t AudioDataBigEndianChangeTest(void)
 {
-    char test[32];
-    memset(&test, 1, 32);
+    const int dataLen = 32; //test data lenth
+    char test[dataLen];
+    memset(&test, 1, dataLen);
 
     if (AudioDataBigEndianChange(NULL, 0, 0) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
-    if (AudioDataBigEndianChange(test, 32, DATA_BIT_WIDTH8) != HDF_SUCCESS) {
+    if (AudioDataBigEndianChange(test, dataLen, DATA_BIT_WIDTH8) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
-    if (AudioDataBigEndianChange(test, 32, DATA_BIT_WIDTH24) != HDF_SUCCESS) {
+    if (AudioDataBigEndianChange(test, dataLen, DATA_BIT_WIDTH24) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
-    if (AudioDataBigEndianChange(test, 32, DATA_BIT_WIDTH16) != HDF_SUCCESS) {
+    if (AudioDataBigEndianChange(test, dataLen, DATA_BIT_WIDTH16) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
@@ -396,8 +397,6 @@ int32_t AudioCaptureTriggerTest(void)
     if (AudioCaptureTrigger(&card, AUDIO_DRV_PCM_IOCTL_CAPTURE_RESUME) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-
     return HDF_SUCCESS;
-
 }
 

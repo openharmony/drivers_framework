@@ -27,7 +27,7 @@ static HdfTestCaseList g_hdfAudioTestCaseList[] = {
     {AUDIO_ADM_TEST_GETCARDINSTANCE, GetCardInstanceTest},                           // audio ADM audio_host
 
     {AUDIO_ADM_TEST_AUDIOFILLCONFIGDATA, AudioFillConfigDataTest},                   // audio ADM audio_parse
-    {AUDIO_ADM_TEST_CODECGETREGCONFIG , CodecGetRegConfigTest},                      // audio ADM audio_parse
+    {AUDIO_ADM_TEST_CODECGETREGCONFIG, CodecGetRegConfigTest},                      // audio ADM audio_parse
 
     {AUDIO_ADM_TEST_AUDIODEVICEREADREG, AudioDeviceReadRegTest},                     // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIODEVICEWRITEREG, AudioDeviceWriteRegTest},                   // audio ADM audio_core
@@ -73,7 +73,6 @@ static HdfTestCaseList g_hdfAudioTestCaseList[] = {
     {AUDIO_ADM_TEST_AUDIOCODECSAPMGETCTRLOPS, AudioCodecSapmGetCtrlOpsTest},         // audio ADM audio_sapm
     {AUDIO_ADM_TEST_AUDIOACCESSORYSAPMSETCTRLOPS, AudioAccessorySapmSetCtrlOpsTest}, // audio ADM audio_sapm
     {AUDIO_ADM_TEST_AUDIOACCESSORYSAPMGETCTRLOPS, AudioAccessorySapmGetCtrlOpsTest}, // audio ADM audio_sapm
-
 
     {AUDIO_ADM_TEST_I2CREADWRITE, AccessoryI2cReadWriteTest},
     {AUDIO_ADM_TEST_REGBITSREAD, AccessoryRegBitsReadTest},

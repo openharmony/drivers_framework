@@ -97,5 +97,4 @@ HWTEST_F(AudioSapmTest, AudioSapmTest_AudioAccessorySapmGetCtrlOps, TestSize.Lev
     struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOACCESSORYSAPMGETCTRLOPS, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
-
 }

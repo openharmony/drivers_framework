@@ -95,7 +95,8 @@ int32_t AudioRegisterAccessory(struct HdfDeviceObject *device,
     int32_t ret;
 
     if (device == NULL || accessoryData == NULL || daiData == NULL) {
-        ADM_LOG_ERR("Input params check error: device=%p, accessoryData=%p, daiData=%p.", device, accessoryData, daiData);
+        ADM_LOG_ERR("Input params check error: device=%p, accessoryData=%p, daiData=%p.",
+            device, accessoryData, daiData);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -178,7 +179,7 @@ int32_t AudioRegisterDsp(struct HdfDeviceObject *device, struct DspData *dspData
     dspDev->devData = dspData;
     dspDev->device = device;
 
-    ret = AudioSocRegisterDai(device, DaiData );
+    ret = AudioSocRegisterDai(device, DaiData);
     if (ret != HDF_SUCCESS) {
         OsalMemFree(dspDev);
         ADM_LOG_ERR("Register dai device fail ret=%d", ret);

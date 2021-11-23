@@ -99,7 +99,7 @@ int32_t AccessoryDeviceRegWriteTest(void)
 {
     struct AccessoryDevice codec;
     if (AccessoryDeviceRegWrite(NULL, 0, 0) == HDF_SUCCESS) {
-        HDF_LOGE("%s_[%d] AccessoryDeviceRegWrite fail", __func__, __LINE__);;
+        HDF_LOGE("%s_[%d] AccessoryDeviceRegWrite fail", __func__, __LINE__);
     }
 
     if (AccessoryDeviceRegWrite(&codec, 0, 0) == HDF_SUCCESS) {

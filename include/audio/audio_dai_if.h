@@ -114,7 +114,7 @@ struct DaiData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Read)(unsigned long virtualAddress, uint32_t reg, uint32_t * value);
+    int32_t (*Read)(unsigned long virtualAddress, uint32_t reg, uint32_t *value);
 
     /**
      * @brief Defines Dai device reg write.

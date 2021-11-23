@@ -751,7 +751,7 @@ static int32_t StreamHostRead(const struct HdfDeviceIoClient *client, struct Hdf
         return HDF_FAILURE;
     }
 
-    if (rxData.bufSize !=0) {
+    if (rxData.bufSize != 0) {
         if (!HdfSbufWriteBuffer(reply, rxData.buf, (uint32_t)(rxData.bufSize))) {
             ADM_LOG_ERR("write request data buf failed!");
             return HDF_FAILURE;
@@ -816,7 +816,8 @@ static int32_t StreamHostMmapWrite(const struct HdfDeviceIoClient *client, struc
     ADM_LOG_DEBUG("success.");
     return HDF_SUCCESS;
 }
-static int32_t StreamHostMmapPositionWrite(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t StreamHostMmapPositionWrite(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioCard *audioCard = NULL;
     ADM_LOG_DEBUG("entry.");
@@ -891,7 +892,8 @@ static int32_t StreamHostMmapRead(const struct HdfDeviceIoClient *client, struct
     return HDF_SUCCESS;
 }
 
-static int32_t StreamHostMmapPositionRead(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t StreamHostMmapPositionRead(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioCard *audioCard = NULL;
     ADM_LOG_DEBUG("entry.");
@@ -968,7 +970,8 @@ static int32_t StreamTriggerRouteImpl(const struct AudioCard *audioCard, const s
     return HDF_SUCCESS;
 }
 
-static int32_t StreamHostRenderStart(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t StreamHostRenderStart(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct AudioCard *audioCard = NULL;
@@ -1001,7 +1004,8 @@ static int32_t StreamHostRenderStart(const struct HdfDeviceIoClient *client, str
     return HDF_SUCCESS;
 }
 
-static int32_t StreamHostCaptureStart(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t StreamHostCaptureStart(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct AudioCard *audioCard = NULL;
@@ -1104,7 +1108,8 @@ static int32_t StreamHostRenderClose(const struct HdfDeviceIoClient *client, str
 }
 
 
-static int32_t StreamHostCaptureStop(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t StreamHostCaptureStop(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct AudioCard *audioCard = NULL;
@@ -1144,7 +1149,8 @@ static int32_t StreamHostCaptureStop(const struct HdfDeviceIoClient *client, str
     return HDF_SUCCESS;
 }
 
-static int32_t StreamHostCaptureClose(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t StreamHostCaptureClose(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioCard *audioCard = NULL;
     int ret;
@@ -1175,7 +1181,8 @@ static int32_t StreamHostCaptureClose(const struct HdfDeviceIoClient *client, st
 }
 
 
-static int32_t StreamHostRenderPause(const struct HdfDeviceIoClient *client, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t StreamHostRenderPause(const struct HdfDeviceIoClient *client,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct AudioRuntimeDeivces *rtd = NULL;
     struct AudioCard *audioCard = NULL;
@@ -1462,8 +1469,8 @@ static struct StreamDispCmdHandleList g_streamDispCmdHandle[] = {
     {AUDIO_DRV_PCM_IOCTL_MMAP_POSITION, StreamHostMmapPositionWrite},
     {AUDIO_DRV_PCM_IOCTL_MMAP_POSITION_CAPTURE, StreamHostMmapPositionRead},
     {AUDIO_DRV_PCM_IOCTL_DSPDECODE, StreamHostDspDecode},
-    {AUDIO_DRV_PCM_IOCTL_DSPENCODE,StreamHostDspEncode},
-    {AUDIO_DRV_PCM_IOCTL_DSPEQUALIZER,StreamHostDspEqualizer},
+    {AUDIO_DRV_PCM_IOCTL_DSPENCODE, StreamHostDspEncode},
+    {AUDIO_DRV_PCM_IOCTL_DSPEQUALIZER, StreamHostDspEqualizer},
 };
 
 static int32_t StreamDispatch(struct HdfDeviceIoClient *client, int cmdId,

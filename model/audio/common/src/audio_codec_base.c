@@ -231,7 +231,7 @@ int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData)
     return HDF_SUCCESS;
 }
 
-int32_t CodecSetCtlFunc(struct CodecData *codeData,const void *aiaoGetCtrl,const void *aiaoSetCtrl)
+int32_t CodecSetCtlFunc(struct CodecData *codeData, const void *aiaoGetCtrl, const void *aiaoSetCtrl)
 {
     uint32_t index;
     if (codeData == NULL || codeData->regConfig == NULL ||
