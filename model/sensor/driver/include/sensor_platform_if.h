@@ -58,7 +58,8 @@ enum SensorBusType {
 enum SensorGpioNum {
     SENSOR_GPIO_NUM1 = 0,
     SENSOR_GPIO_NUM2 = 1,
-    SENSOR_GPIO_NUM_MAX = 2,
+    SENSOR_DELAYED_TIME = 2,
+    SENSOR_GPIO_NUM_MAX = 3,
 };
 
 struct SensorI2cCfg {

@@ -107,7 +107,7 @@ static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
         drvData->status = 0;
     }
 
-    if (!HdfAddWork(&drvData->hallWorkQueue, &drvData->hallWork)) {
+    if (!HdfAddDelayedWork(&drvData->hallWorkQueue, &drvData->hallWork, drvData->hallCfg->busCfg.GpioNum[SENSOR_DELAYED_TIME])) {
         HDF_LOGE("%s: Hall north add work queue failed", __func__);
     }
 
@@ -133,7 +133,7 @@ static int32_t HallSouthPolarityIrqFunc(uint16_t gpio, void *data)
         drvData->status = 0;
     }
 
-    if (!HdfAddWork(&drvData->hallWorkQueue, &drvData->hallWork)) {
+    if (!HdfAddDelayedWork(&drvData->hallWorkQueue, &drvData->hallWork,drvData->hallCfg->busCfg.GpioNum[SENSOR_DELAYED_TIME])) {
         HDF_LOGE("%s: Hall south add work queue failed", __func__);
     }
 
@@ -147,7 +147,7 @@ static int32_t InitHallData(struct HallDrvData *drvData)
         return HDF_FAILURE;
     }
 
-    if (HdfWorkInit(&drvData->hallWork, HallDataWorkEntry, drvData) != HDF_SUCCESS) {
+    if (HdfDelayedWorkInit(&drvData->hallWork, HallDataWorkEntry, drvData) != HDF_SUCCESS) {
         HDF_LOGE("%s: Hall create thread failed", __func__);
         return HDF_FAILURE;
     }
