@@ -248,6 +248,9 @@ static ChipDevice *ChipDeviceInstance(void)
 
 static void FreeChipConfig(TouchChipCfg *config)
 {
+    if (config == NULL) {
+        HDF_LOGE("%s: param is null", __func__);
+    }
     if (config->pwrSeq.pwrOn.buf != NULL) {
         OsalMemFree(config->pwrSeq.pwrOn.buf);
     }
@@ -291,6 +294,7 @@ static int32_t HdfGoodixChipInit(struct HdfDeviceObject *device)
     chipDev->ops = &g_gt911ChipOps;
     chipDev->chipName = chipCfg->chipName;
     chipDev->vendorName = chipCfg->vendorName;
+    device->priv = chipDev;
 
     if (RegisterTouchChipDevice(chipDev) != HDF_SUCCESS) {
         goto EXIT1;
@@ -305,10 +309,28 @@ EXIT:
     return HDF_FAILURE;
 }
 
+static void HdfGoodixChipRelease(struct HdfDeviceObject *device)
+{
+    ChipDevice *chipDev = NULL;
+    if (device == NULL || device->priv == NULL) {
+        HDF_LOGE("%s: param is null", __func__);
+        return;
+    }
+
+    chipDev = (ChipDevice *)device->priv;
+    if (chipDev->chipCfg != NULL) {
+        FreeChipConfig(chipDev->chipCfg);
+    }
+    OsalMemFree(chipDev);
+
+    HDF_LOGI("%s: goodix chip is release", __func__);
+}
+
 struct HdfDriverEntry g_touchGoodixChipEntry = {
     .moduleVersion = 1,
     .moduleName = "HDF_TOUCH_GT911",
     .Init = HdfGoodixChipInit,
+    .Release = HdfGoodixChipRelease,
 };
 
 HDF_INIT(g_touchGoodixChipEntry);
