@@ -47,7 +47,10 @@ enum SensorRegCfgIndex {
 
 struct SensorRegCfg {
     uint16_t regAddr;
-    uint16_t value;
+    union {
+        uint16_t value;
+        uint8_t *buff;
+    };
     uint16_t mask;
     uint16_t len;
     uint32_t delay : 12;
