@@ -16,8 +16,8 @@
 static struct AudioMixerControl g_audioTestReg = {
     .reg = 0x2004,  /* [0] output volume */
     .rreg = 0x2004, /* register value */
-    .shift = 8,     /* offset */
-    .rshift = 8,    /* right offset */
+    .shift = 8,     /* reg offset */
+    .rshift = 8,    /* right reg offset */
     .min = 0x28,    /* min value */
     .max = 0x7F,    /* max value */
     .mask = 0x7F,   /* mask value */
@@ -38,14 +38,14 @@ int32_t AudioDeviceReadRegTest(void)
 {
     int value;
     HDF_LOGI("%s: enter", __func__);
-    return AudioDeviceReadRegMock(0 ,0, &value);
+    return AudioDeviceReadRegMock(0 , 0, &value);
     HDF_LOGI("%s: success", __func__);
 }
 
 int32_t AudioDeviceWriteRegTest(void)
 {
     HDF_LOGI("%s: enter", __func__);
-    return AudioDeviceWriteRegMock(0 ,0, 0);;
+    return AudioDeviceWriteRegMock(0 , 0, 0);
     HDF_LOGI("%s: success", __func__);
 }
 

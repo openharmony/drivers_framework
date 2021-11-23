@@ -358,11 +358,10 @@ static int32_t PcmReadData(struct PlatformData *data, struct AudioRxData *rxData
 
     // 3. Big Small Exchange
     if (!data->pcmInfo.isBigEndian) {
-        if (rxData->buf == NULL ||
-            AudioDataBigEndianChange(rxData->buf, data->captureBufInfo.curTrafSize,
-                data->pcmInfo.bitWidth) != HDF_SUCCESS) {
-                AUDIO_DRIVER_LOG_ERR("AudioDataBigEndianChange: failed.");
-                return HDF_FAILURE;
+        if (rxData->buf == NULL || AudioDataBigEndianChange(rxData->buf,
+            data->captureBufInfo.curTrafSize, data->pcmInfo.bitWidth) != HDF_SUCCESS) {
+            AUDIO_DRIVER_LOG_ERR("AudioDataBigEndianChange: failed.");
+            return HDF_FAILURE;
         }
     }
 
@@ -643,7 +642,6 @@ int32_t AudioMmapReadTransfer(const struct AudioCard *card, const struct AudioMm
             return HDF_FAILURE;
         }
         offset += data->captureBufInfo.curTrafSize;
-
     } while (offset < totalSize && data->captureBufInfo.runStatus != 0);
     return HDF_SUCCESS;
 }

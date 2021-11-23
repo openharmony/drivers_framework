@@ -22,8 +22,8 @@ extern "C" {
 int32_t CodecGetServiceName(const struct HdfDeviceObject *device, const char **drvCodecName);
 int32_t CodecGetDaiName(const struct HdfDeviceObject *device, const char **drvDaiName);
 int32_t CodecGetConfigInfo(const struct HdfDeviceObject *device, struct CodecData *codecData);
-int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData);
-int32_t CodecSetCtlFunc(struct CodecData *codeData,const void *aiaoGetCtrl,const void *aiaoSetCtrl);
+int32_t CodecSetConfigInfo(struct CodecData *codeData, struct DaiData *daiData);
+int32_t CodecSetCtlFunc(struct CodecData *codeData, const void *aiaoGetCtrl, const void *aiaoSetCtrl);
 
 #ifdef __cplusplus
 #if __cplusplus
