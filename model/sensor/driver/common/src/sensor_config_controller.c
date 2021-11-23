@@ -174,7 +174,7 @@ static int32_t SensorOpsExtBuffRead(struct SensorBusCfg *busCfg, struct SensorRe
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read i2c reg");
     }
 
-    return ret;
+    return HDF_SUCCESS;
 }
 
 static int32_t SensorOpsExtBuffWrite(struct SensorBusCfg *busCfg, struct SensorRegCfg *cfgItem)
@@ -199,12 +199,12 @@ static int32_t SensorOpsExtBuffWrite(struct SensorBusCfg *busCfg, struct SensorR
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: write ext register failed", __func__);
             OsalMemFree(value);
-           return HDF_FAILURE;
+            return HDF_FAILURE;
         }
         OsalMemFree(value);
     }
 
-    return ret;
+    return HDF_SUCCESS;
 }
 
 static struct SensorOpsCall g_doOpsCall[] = {
@@ -252,7 +252,6 @@ int32_t SetSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorReg
 
 int32_t SetSensorRegCfgArrayByBuff(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group, uint8_t *buff, int16_t len)
 {
-    int32_t ret;
     int32_t num = 0;
     uint32_t count;
     uint8_t buffOffset = 0;
@@ -275,9 +274,6 @@ int32_t SetSensorRegCfgArrayByBuff(struct SensorBusCfg *busCfg, const struct Sen
         if (g_doOpsCall[cfgItem->opsType].ops != NULL && cfgItem->opsType > SENSOR_OPS_TYPE_UPDATE_BITWISE) {
             cfgItem->buff = buff + buffOffset;
             len -= (int16_t)cfgItem->len;
-
-            HDF_LOGE("%s: len = %d, regCfgItem = %d", __func__, len, cfgItem->len);
-
             if (len >= 0) {
                 if (g_doOpsCall[cfgItem->opsType].ops(busCfg, cfgItem) != HDF_SUCCESS) {
                     HDF_LOGE("%s: extbuff is read and write failed", __func__);
