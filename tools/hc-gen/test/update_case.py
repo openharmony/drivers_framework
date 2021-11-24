@@ -169,6 +169,7 @@ def build_text(hcgen_path, case_name):
         os.rename(target_file + '.h', target_file + '.h.gen')
     return True
 
+
 def build_macro(hcgen_path, case_name):
     source_file = os.path.join(WORK_DIR, case_name, 'case.hcs')
     target_file = os.path.join(WORK_DIR, case_name, 'macro')

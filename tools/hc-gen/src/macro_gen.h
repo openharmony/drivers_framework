@@ -47,6 +47,8 @@ private:
     std::ofstream ofs_;
     std::string outFileName_;
     std::map<int, std::string> nodeNameMap_;
+    void SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current, std::string &nodeName,
+        std::string &arrayName, uint32_t &arraySize, uint32_t &arrayType, uint32_t depth);
 };
 } // Hardware
 } // OHOS

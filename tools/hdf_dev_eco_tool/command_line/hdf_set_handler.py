@@ -153,7 +153,9 @@ class HdfSetHandler(HdfCommandHandlerBase):
         self.check_arg_raise_if_not_exist("board_name")
         self.check_arg_raise_if_not_exist("module_name")
         root, vendor, model, _, board, _ = self.get_args()
-        return EnableOperation(root=root, vendor=vendor, board=board, model=model).operation_enable()
+        return EnableOperation(
+            root=root, vendor=vendor, board=board,
+            model=model).operation_enable()
 
     def _disable_operation(self):
         self.check_arg_raise_if_not_exist("root_dir")
@@ -161,4 +163,6 @@ class HdfSetHandler(HdfCommandHandlerBase):
         self.check_arg_raise_if_not_exist("board_name")
         self.check_arg_raise_if_not_exist("module_name")
         root, vendor, model, _, board, _ = self.get_args()
-        return EnableOperation(root=root, vendor=vendor, board=board, model=model).operation_disable()
+        return EnableOperation(
+            root=root, vendor=vendor, board=board,
+            model=model).operation_disable()

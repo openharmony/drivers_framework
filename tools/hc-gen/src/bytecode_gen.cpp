@@ -15,7 +15,7 @@
 using namespace OHOS::Hardware;
 
 ByteCodeGen::ByteCodeGen(std::shared_ptr<Ast> ast) : Generator(ast),
-    needAlign_(false)
+    needAlign_(false), dummyOutput_(false), writeSize_(0)
 {
 }
 
