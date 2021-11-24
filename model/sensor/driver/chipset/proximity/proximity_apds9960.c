@@ -16,6 +16,8 @@
 
 #define HDF_LOG_TAG    proximity_apds9960_c
 
+#define PROXIMITY_STATE_FAR    5
+#define PROXIMITY_STATE_NEAR   0
 
 static struct Apds9960DrvData *g_apds9960DrvData = NULL;
 
@@ -68,15 +70,14 @@ int32_t ReadApds9960Data(struct SensorCfgData *data)
     event.mode = SENSOR_WORK_MODE_ON_CHANGE;
 
     if (rawData.stateFlag <= APDS9960_PROXIMITY_THRESHOLD) {
-        tmp = 5;    //far state
+        tmp = PROXIMITY_STATE_FAR;
     } else {
-        tmp = 0;    //near state
+        tmp = PROXIMITY_STATE_NEAR;
     }
 
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);
-
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: APDS9960 report data failed", __func__);
     }

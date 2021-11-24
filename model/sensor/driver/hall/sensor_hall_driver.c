@@ -98,12 +98,12 @@ static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
     ret = GpioRead(drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM1], (uint16_t *)&valRead);
-    if(ret != 0) {
+    if (ret != 0) {
         HDF_LOGE("%s: Read hall gpio value failed", __func__);
     }
     if (valRead == GPIO_VAL_LOW) {
         drvData->status = 1;
-    } else if(valRead == GPIO_VAL_HIGH) {
+    } else if (valRead == GPIO_VAL_HIGH) {
         drvData->status = 0;
     }
 
@@ -124,12 +124,12 @@ static int32_t HallSouthPolarityIrqFunc(uint16_t gpio, void *data)
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
     ret = GpioRead(drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM2], (uint16_t *)&valRead);
-    if(ret != 0) {
+    if (ret != 0) {
         HDF_LOGE("%s: Read hall gpio value failed", __func__);
     }
     if (valRead == GPIO_VAL_LOW) {
         drvData->status = 1;
-    } else if(valRead == GPIO_VAL_HIGH) {
+    } else if (valRead == GPIO_VAL_HIGH) {
         drvData->status = 0;
     }
 
