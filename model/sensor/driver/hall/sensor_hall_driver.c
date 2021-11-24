@@ -101,8 +101,8 @@ static int32_t ParserHallDelayedConfigData(const struct DeviceResourceNode *node
 
     CHECK_NULL_PTR_RETURN_VALUE(parser->GetChildNode, HDF_ERR_INVALID_PARAM);
 
-    const struct DeviceResourceNode *pinNode = parser->GetChildNode(node, "hallDelayedConfig");
-    CHECK_NULL_PTR_RETURN_VALUE(pinNode, HDF_ERR_INVALID_PARAM);
+    const struct DeviceResourceNode *delayedNode = parser->GetChildNode(node, "hallDelayedConfig");
+    CHECK_NULL_PTR_RETURN_VALUE(delayedNode, HDF_ERR_INVALID_PARAM);
 
     ret = parser->GetUint32(pinNode, "delayedTime", (uint32_t *)&drvData->delayTime, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "delayedTime");
