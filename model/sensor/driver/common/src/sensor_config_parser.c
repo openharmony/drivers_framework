@@ -363,8 +363,6 @@ static int32_t ParseSensorBus(struct DeviceResourceIface *parser, const struct D
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "gpioIrq1");
         ret = parser->GetUint32(busNode, "gpioIrq2", &config->busCfg.GpioNum[SENSOR_GPIO_NUM2], 0);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "gpioIrq2");
-        ret = parser->GetUint32(busNode, "delayedTime", &config->busCfg.GpioNum[SENSOR_DELAYED_TIME], 0);
-        CHECK_PARSER_RESULT_RETURN_VALUE(ret, "delayedTime");
     }
 
     return HDF_SUCCESS;
