@@ -674,4 +674,10 @@ HWTEST_F(IoServiceTest, HdfIoService014, TestSize.Level0)
 
     ret = HdfDeviceUnregisterEventListener(serv, &listener0.listener);
     EXPECT_NE(ret, HDF_SUCCESS);
+
+    ret = HdfDeviceUnregisterEventListener(serv1, &listener1.listener);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    HdfIoServiceRecycle(serv);
+    HdfIoServiceRecycle(serv1);
 }
