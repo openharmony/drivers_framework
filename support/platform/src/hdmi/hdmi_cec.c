@@ -153,8 +153,8 @@ static bool HdmiCecCheckTimerStatusMsgLen(struct HdmiCecMsg *msg)
     /* Progremmed Indicator Check. */
     if ((msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0x10) > 0) {
         if (((info == HDMI_CEC_PROGRAMMED_INFO_NOT_ENOUGH_SPAC) ||
-             (info == HDMI_CEC_PROGRAMMED_INFO_MIGHT_NOT_BE_ENOUGH_SPACE)) &&
-             (msg->len < HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TIMER_STATUS_DATA_MAX_LEN))) {
+            (info == HDMI_CEC_PROGRAMMED_INFO_MIGHT_NOT_BE_ENOUGH_SPACE)) &&
+            (msg->len < HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TIMER_STATUS_DATA_MAX_LEN))) {
             HDF_LOGD("check Timer_Status(Indicator) Msg fail.");
             return false;
         }

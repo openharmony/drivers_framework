@@ -16,7 +16,7 @@
 #define HDMI_IEEE_OUI_1_4_2ND 0x0C
 #define HDMI_IEEE_OUI_1_4_3RD 0x00
 
-static void HdmiInfoframeFillCheckSum(uint8_t *data, uint32_t len)
+static void HdmiInfoFrameFillCheckSum(uint8_t *data, uint32_t len)
 {
     uint32_t i;
     uint8_t checkSum = 0;
@@ -34,7 +34,7 @@ static void HdmiInfoframeFillCheckSum(uint8_t *data, uint32_t len)
     }
 }
 
-static void HdmiInfoframeFillHeader(struct HdmiInfoframeHeader *header, uint8_t *data, uint32_t len)
+static void HdmiInfoFrameFillHeader(struct HdmiInfoFrameHeader *header, uint8_t *data, uint32_t len)
 {
     if (len < HDMI_INFOFRAME_PACKET_HEADER_LEN) {
         HDF_LOGE("len = %d, val is too small.", len);
@@ -45,12 +45,12 @@ static void HdmiInfoframeFillHeader(struct HdmiInfoframeHeader *header, uint8_t 
     data[UINT8_ARRAY_TElEMENT_2] = header->len;
 }
 
-static int32_t HdmiInfoframePacketVsEncoding(union HdmiInfoframeInfo *infoframe, uint8_t *data, uint32_t len)
+static int32_t HdmiInfoFramePacketVsEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
     uint32_t lenght;
     struct HdmiVs14VsifContent *vsifContent = NULL;
     struct HdmiVsUserVsifContent *userContent = NULL;
-    struct HdmiVsInfoframe *vs = &(infoframe->vs);
+    struct HdmiVsInfoFrame *vs = &(infoFrame->vs);
 
     lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + vs->len;
     if (len < lenght) {
@@ -62,7 +62,7 @@ static int32_t HdmiInfoframePacketVsEncoding(union HdmiInfoframeInfo *infoframe,
         return HDF_ERR_IO;
     }
 
-    HdmiInfoframeFillHeader(&(infoframe->header), data, len);
+    HdmiInfoFrameFillHeader(&(infoFrame->header), data, len);
     if (vs->vsifContent.vsif.oui == HDMI_IEEE_OUI_1_4) {
         data[UINT8_ARRAY_TElEMENT_4] = HDMI_IEEE_OUI_1_4_1ST;
         data[UINT8_ARRAY_TElEMENT_5] = HDMI_IEEE_OUI_1_4_2ND;
@@ -91,15 +91,15 @@ static int32_t HdmiInfoframePacketVsEncoding(union HdmiInfoframeInfo *infoframe,
             lenght += userContent->len;
         }
     }
-    HdmiInfoframeFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, lenght);
     return HDF_SUCCESS;
 }
 
-static int32_t HdmiInfoframePacketAviEncoding(union HdmiInfoframeInfo *infoframe, uint8_t *data, uint32_t len)
+static int32_t HdmiInfoFramePacketAviEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
     uint32_t lenght;
     uint8_t *buff = data;
-    struct HdmiAviInfoframe *avi = &(infoframe->avi);
+    struct HdmiAviInfoFrame *avi = &(infoFrame->avi);
 
     lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + avi->len;
     if (len < lenght) {
@@ -111,7 +111,7 @@ static int32_t HdmiInfoframePacketAviEncoding(union HdmiInfoframeInfo *infoframe
         return HDF_ERR_IO;
     }
 
-    HdmiInfoframeFillHeader(&(infoframe->header), data, len);
+    HdmiInfoFrameFillHeader(&(infoFrame->header), data, len);
     buff += HDMI_INFOFRAME_PACKET_HEADER_LEN;
     /* PB1 */
     buff[UINT8_ARRAY_TElEMENT_0] |= (avi->colorSpace & HDMI_AVI_COLOR_SPACE_MARK) << HDMI_AVI_COLOR_SPACE_SHIFT;
@@ -144,7 +144,8 @@ static int32_t HdmiInfoframePacketAviEncoding(union HdmiInfoframeInfo *infoframe
     /* PB5 */
     buff[UINT8_ARRAY_TElEMENT_4] |= (avi->yccRange & HDMI_AVI_YCC_QUANTIZATION_RANGE_MARK) <<
                                     HDMI_AVI_YCC_QUANTIZATION_RANGE_SHIFT;
-    buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)avi->itcType & HDMI_AVI_IT_CONTENT_TYPE_MARK) << HDMI_AVI_IT_CONTENT_TYPE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)avi->itcType & HDMI_AVI_IT_CONTENT_TYPE_MARK) <<
+                                    HDMI_AVI_IT_CONTENT_TYPE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_4] |= (avi->pixelRepetitionFactor & HDMI_AVI_PIXEL_REPETION_FACTOR_MARK);
     /* PB6 */
     buff[UINT8_ARRAY_TElEMENT_5] = (uint8_t)(avi->topBar & HDMI_AVI_BAR_MODE_MARK);
@@ -162,15 +163,15 @@ static int32_t HdmiInfoframePacketAviEncoding(union HdmiInfoframeInfo *infoframe
     buff[UINT8_ARRAY_TElEMENT_11] = (uint8_t)(avi->rightBar & HDMI_AVI_BAR_MODE_MARK);
     /* PB13 */
     buff[UINT8_ARRAY_TElEMENT_12] = (uint8_t)((avi->rightBar >> HDMI_AVI_BAR_MODE_SHIFT) & HDMI_AVI_BAR_MODE_MARK);
-    HdmiInfoframeFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, lenght);
     return HDF_SUCCESS;
 }
 
-static int32_t HdmiInfoframePacketSpdEncoding(union HdmiInfoframeInfo *infoframe, uint8_t *data, uint32_t len)
+static int32_t HdmiInfoFramePacketSpdEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
     uint32_t lenght;
     uint8_t *buff = data;
-    struct HdmiSpdInfoframe *spd = &(infoframe->spd);
+    struct HdmiSpdInfoFrame *spd = &(infoFrame->spd);
 
     lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + spd->len;
     if (len < lenght) {
@@ -198,15 +199,15 @@ static int32_t HdmiInfoframePacketSpdEncoding(union HdmiInfoframeInfo *infoframe
     buff += HDMI_SPD_PRODUCT_DESCRIPTION_LEN;
     /* PB25 */
     buff[UINT8_ARRAY_TElEMENT_0] = spd->sdi;
-    HdmiInfoframeFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, lenght);
     return HDF_SUCCESS;
 }
 
-static int32_t HdmiInfoframePacketAudioEncoding(union HdmiInfoframeInfo *infoframe, uint8_t *data, uint32_t len)
+static int32_t HdmiInfoFramePacketAudioEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
     uint32_t lenght;
     uint8_t *buff = data;
-    struct HdmiAudioInfoframe *audio = &(infoframe->audio);
+    struct HdmiAudioInfoFrame *audio = &(infoFrame->audio);
 
     lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + audio->len;
     if (len < lenght) {
@@ -218,7 +219,7 @@ static int32_t HdmiInfoframePacketAudioEncoding(union HdmiInfoframeInfo *infofra
         return HDF_ERR_IO;
     }
 
-    HdmiInfoframeFillHeader(&(infoframe->header), data, len);
+    HdmiInfoFrameFillHeader(&(infoFrame->header), data, len);
     buff += HDMI_INFOFRAME_PACKET_HEADER_LEN;
     /* PB1 */
     buff[UINT8_ARRAY_TElEMENT_0] |= (audio->codingType & HDMI_AUDIO_CODING_TYPE_MARK) << HDMI_AUDIO_CODING_TYPE_SHIFT;
@@ -238,15 +239,15 @@ static int32_t HdmiInfoframePacketAudioEncoding(union HdmiInfoframeInfo *infofra
     if (audio->dmInh == true) {
         buff[UINT8_ARRAY_TElEMENT_4] |= (1 << HDMI_AUDIO_DM_INH_SHIFT);
     }
-    HdmiInfoframeFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, lenght);
     return HDF_SUCCESS;
 }
 
-static int32_t HdmiInfoframePacketDrmEncoding(union HdmiInfoframeInfo *infoframe, uint8_t *data, uint32_t len)
+static int32_t HdmiInfoFramePacketDrmEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
     uint32_t lenght;
     uint8_t *buff = data;
-    struct HdmiDrmInfoframe *drm = &(infoframe->drm);
+    struct HdmiDrmInfoFrame *drm = &(infoFrame->drm);
     struct HdmiStaticMetadataDescriptor1st *des = &(drm->des.type1);
 
     lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + drm->len;
@@ -259,7 +260,7 @@ static int32_t HdmiInfoframePacketDrmEncoding(union HdmiInfoframeInfo *infoframe
         return HDF_ERR_IO;
     }
 
-    HdmiInfoframeFillHeader(&(infoframe->header), data, len);
+    HdmiInfoFrameFillHeader(&(infoFrame->header), data, len);
     buff += HDMI_INFOFRAME_PACKET_HEADER_LEN;
     /* PB1 */
     buff[UINT8_ARRAY_TElEMENT_0] = drm->eotfType;
@@ -323,35 +324,35 @@ static int32_t HdmiInfoframePacketDrmEncoding(union HdmiInfoframeInfo *infoframe
     /* PB26 */
     buff[UINT8_ARRAY_TElEMENT_25] = (uint8_t)((des->maxFrameAverageLightLevel & HDMI_DRM_METADATA_MARK) &
                                               HDMI_DRM_METADATA_MARK);
-    HdmiInfoframeFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, lenght);
     return HDF_SUCCESS;
 }
 
-static int32_t HdmiInfoframePacketEncoding(union HdmiInfoframeInfo *infoframe,
+static int32_t HdmiInfoFramePacketEncoding(union HdmiInfoFrameInfo *infoFrame,
     enum HdmiPacketType type, uint8_t *data, uint32_t len)
 {
     int32_t ret;
 
-    if (infoframe == NULL || data == NULL) {
+    if (infoFrame == NULL || data == NULL) {
         HDF_LOGE("input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
 
     switch (type) {
         case HDMI_INFOFRAME_PACKET_TYPE_VS:
-            ret = HdmiInfoframePacketVsEncoding(infoframe, data, len);
+            ret = HdmiInfoFramePacketVsEncoding(infoFrame, data, len);
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_AVI:
-            ret = HdmiInfoframePacketAviEncoding(infoframe, data, len);
+            ret = HdmiInfoFramePacketAviEncoding(infoFrame, data, len);
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_SPD:
-            ret = HdmiInfoframePacketSpdEncoding(infoframe, data, len);
+            ret = HdmiInfoFramePacketSpdEncoding(infoFrame, data, len);
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_AUDIO:
-            ret = HdmiInfoframePacketAudioEncoding(infoframe, data, len);
+            ret = HdmiInfoFramePacketAudioEncoding(infoFrame, data, len);
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_DRM:
-            ret = HdmiInfoframePacketDrmEncoding(infoframe, data, len);
+            ret = HdmiInfoFramePacketDrmEncoding(infoFrame, data, len);
             break;
         default:
             HDF_LOGD("type %d not support.", type);
@@ -360,42 +361,42 @@ static int32_t HdmiInfoframePacketEncoding(union HdmiInfoframeInfo *infoframe,
     return ret;
 }
 
-static int32_t HdmiInfoframeSend(struct HdmiInfoframe *frame, union HdmiInfoframeInfo *infoframe)
+static int32_t HdmiInfoFrameSend(struct HdmiInfoFrame *frame, union HdmiInfoFrameInfo *infoFrame)
 {
     uint8_t buffer[HDMI_INFOFRAME_LEN] = {0};
     struct HdmiCntlr *cntlr = NULL;
     int32_t ret;
 
-    if (frame == NULL || frame->priv == NULL || infoframe == NULL) {
-        HDF_LOGE("HdmiInfoframeSend: input param is invalid.");
+    if (frame == NULL || frame->priv == NULL || infoFrame == NULL) {
+        HDF_LOGE("HdmiInfoFrameSend: input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
     cntlr = (struct HdmiCntlr *)frame->priv;
-    if (cntlr->ops == NULL || cntlr->ops->infoframeSend == NULL || cntlr->ops->infoframeEnable == NULL) {
-        HDF_LOGD("HdmiInfoframeSend not support.");
+    if (cntlr->ops == NULL || cntlr->ops->infoFrameSend == NULL || cntlr->ops->infoFrameEnable == NULL) {
+        HDF_LOGD("HdmiInfoFrameSend not support.");
         return HDF_ERR_NOT_SUPPORT;
     }
 
-    ret = HdmiInfoframePacketEncoding(infoframe, infoframe->header.type, buffer, HDMI_INFOFRAME_LEN);
+    ret = HdmiInfoFramePacketEncoding(infoFrame, infoFrame->header.type, buffer, HDMI_INFOFRAME_LEN);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("encding infoframe %d fail", infoframe->header.type);
+        HDF_LOGE("encding infoFrame %d fail", infoFrame->header.type);
         return ret;
     }
 
     HdmiCntlrLock(cntlr);
-    cntlr->ops->infoframeEnable(cntlr, infoframe->header.type, false);
-    ret = cntlr->ops->infoframeSend(cntlr, infoframe->header.type, buffer, HDMI_INFOFRAME_LEN);
+    cntlr->ops->infoFrameEnable(cntlr, infoFrame->header.type, false);
+    ret = cntlr->ops->infoFrameSend(cntlr, infoFrame->header.type, buffer, HDMI_INFOFRAME_LEN);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("send infoframe %d fail", infoframe->header.type);
+        HDF_LOGE("send infoFrame %d fail", infoFrame->header.type);
         HdmiCntlrUnlock(cntlr);
         return ret;
     }
-    cntlr->ops->infoframeEnable(cntlr, infoframe->header.type, true);
+    cntlr->ops->infoFrameEnable(cntlr, infoFrame->header.type, true);
     HdmiCntlrUnlock(cntlr);
     return HDF_SUCCESS;
 }
 
-static void HdmiFillAviHdrInfoframe(struct HdmiAviInfoframe *avi,
+static void HdmiFillAviHdrInfoFrame(struct HdmiAviInfoFrame *avi,
     struct HdmiVideoAttr *videoAttr, struct HdmiHdrAttr *hdrAttr, struct HdmiCommonAttr *commAttr)
 {
     switch (hdrAttr->mode) {
@@ -434,7 +435,7 @@ static void HdmiFillAviHdrInfoframe(struct HdmiAviInfoframe *avi,
     }
 }
 
-static void HdmiFillAviInfoframeVersion(struct HdmiAviInfoframe *avi)
+static void HdmiFillAviInfoFrameVersion(struct HdmiAviInfoFrame *avi)
 {
     /*
      * see hdmi spec2.0 10.1.
@@ -461,12 +462,12 @@ static void HdmiFillAviInfoframeVersion(struct HdmiAviInfoframe *avi)
     }
 }
 
-static void HdmiFillAviInfoframe(struct HdmiAviInfoframe *avi,
+static void HdmiFillAviInfoFrame(struct HdmiAviInfoFrame *avi,
     struct HdmiVideoAttr *videoAttr, struct HdmiHdrAttr *hdrAttr, struct HdmiCommonAttr *commAttr)
 {
     bool enable3d = true;
 
-    if (memset_s(avi, sizeof(struct HdmiAviInfoframe), 0, sizeof(struct HdmiAviInfoframe)) != EOK) {
+    if (memset_s(avi, sizeof(struct HdmiAviInfoFrame), 0, sizeof(struct HdmiAviInfoFrame)) != EOK) {
         HDF_LOGE("fill vsif, memset_s fail.");
         return;
     }
@@ -488,37 +489,37 @@ static void HdmiFillAviInfoframe(struct HdmiAviInfoframe *avi,
     avi->vic = HdmiCommonGetVic(videoAttr->timing, videoAttr->aspect, enable3d);
     avi->pixelRepetitionFactor = (uint8_t)videoAttr->pixelRepeat;
     avi->yccRange = videoAttr->yccQuantization;
-    HdmiFillAviHdrInfoframe(avi, videoAttr, hdrAttr, commAttr);
-    HdmiFillAviInfoframeVersion(avi);
+    HdmiFillAviHdrInfoFrame(avi, videoAttr, hdrAttr, commAttr);
+    HdmiFillAviInfoFrameVersion(avi);
 }
 
-int32_t HdmiAviInfoframeSend(struct HdmiInfoframe *frame, bool enable)
+int32_t HdmiAviInfoFrameSend(struct HdmiInfoFrame *frame, bool enable)
 {
     struct HdmiCntlr *cntlr = NULL;
-    union HdmiInfoframeInfo infoframe = {0};
+    union HdmiInfoFrameInfo infoFrame = {0};
 
     if (frame == NULL || frame->priv == NULL) {
-        HDF_LOGE("HdmiAviInfoframeSend: input param is invalid.");
+        HDF_LOGE("HdmiAviInfoFrameSend: input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
     cntlr = (struct HdmiCntlr *)frame->priv;
-    if (cntlr->ops == NULL || cntlr->ops->infoframeEnable == NULL || cntlr->ops->infoframeSend == NULL) {
-        HDF_LOGD("HdmiAviInfoframeSend not support.");
+    if (cntlr->ops == NULL || cntlr->ops->infoFrameEnable == NULL || cntlr->ops->infoFrameSend == NULL) {
+        HDF_LOGD("HdmiAviInfoFrameSend not support.");
         return HDF_ERR_NOT_SUPPORT;
     }
 
     if (enable == false) {
-        cntlr->ops->infoframeEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_AVI, false);
+        cntlr->ops->infoFrameEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_AVI, false);
         return HDF_SUCCESS;
     }
-    HdmiFillAviInfoframe(&(frame->avi), &(cntlr->attr.videoAttr), &(cntlr->attr.hdrAttr), &(cntlr->attr.commAttr));
-    infoframe.avi = frame->avi;
-    return HdmiInfoframeSend(frame, &infoframe);
+    HdmiFillAviInfoFrame(&(frame->avi), &(cntlr->attr.videoAttr), &(cntlr->attr.hdrAttr), &(cntlr->attr.commAttr));
+    infoFrame.avi = frame->avi;
+    return HdmiInfoFrameSend(frame, &infoFrame);
 }
 
-void HdmiFillAudioInfoframe(struct HdmiAudioInfoframe *audio, struct HdmiAudioAttr *audioAttr)
+void HdmiFillAudioInfoFrame(struct HdmiAudioInfoFrame *audio, struct HdmiAudioAttr *audioAttr)
 {
-    if (memset_s(audio, sizeof(struct HdmiAudioInfoframe), 0, sizeof(struct HdmiAudioInfoframe)) != EOK) {
+    if (memset_s(audio, sizeof(struct HdmiAudioInfoFrame), 0, sizeof(struct HdmiAudioInfoFrame)) != EOK) {
         HDF_LOGE("fill vsif, memset_s fail.");
         return;
     }
@@ -561,35 +562,35 @@ void HdmiFillAudioInfoframe(struct HdmiAudioInfoframe *audio, struct HdmiAudioAt
     }
 }
 
-int32_t HdmiAudioInfoframeSend(struct HdmiInfoframe *frame, bool enable)
+int32_t HdmiAudioInfoFrameSend(struct HdmiInfoFrame *frame, bool enable)
 {
     struct HdmiCntlr *cntlr = NULL;
-    union HdmiInfoframeInfo infoframe = {0};
+    union HdmiInfoFrameInfo infoFrame = {0};
 
     if (frame == NULL || frame->priv == NULL) {
-        HDF_LOGE("HdmiAudioInfoframeSend: input param is invalid.");
+        HDF_LOGE("HdmiAudioInfoFrameSend: input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
     cntlr = (struct HdmiCntlr *)frame->priv;
-    if (cntlr->ops == NULL || cntlr->ops->infoframeEnable == NULL) {
-        HDF_LOGD("HdmiAudioInfoframeSend not support.");
+    if (cntlr->ops == NULL || cntlr->ops->infoFrameEnable == NULL) {
+        HDF_LOGD("HdmiAudioInfoFrameSend not support.");
         return HDF_ERR_NOT_SUPPORT;
     }
 
     if (enable == false) {
         HdmiCntlrLock(cntlr);
-        cntlr->ops->infoframeEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_AUDIO, false);
+        cntlr->ops->infoFrameEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_AUDIO, false);
         HdmiCntlrUnlock(cntlr);
         return HDF_SUCCESS;
     }
-    HdmiFillAudioInfoframe(&(frame->audio), &(cntlr->attr.audioAttr));
-    infoframe.audio = frame->audio;
-    return HdmiInfoframeSend(frame, &infoframe);
+    HdmiFillAudioInfoFrame(&(frame->audio), &(cntlr->attr.audioAttr));
+    infoFrame.audio = frame->audio;
+    return HdmiInfoFrameSend(frame, &infoFrame);
 }
 
-static void HdmiFillDrmInfoframe(struct HdmiDrmInfoframe *drm, struct HdmiHdrAttr *hdrAttr)
+static void HdmiFillDrmInfoFrame(struct HdmiDrmInfoFrame *drm, struct HdmiHdrAttr *hdrAttr)
 {
-    if (memset_s(drm, sizeof(struct HdmiDrmInfoframe), 0, sizeof(struct HdmiDrmInfoframe)) != EOK) {
+    if (memset_s(drm, sizeof(struct HdmiDrmInfoFrame), 0, sizeof(struct HdmiDrmInfoFrame)) != EOK) {
         HDF_LOGE("fill vsif, memset_s fail.");
         return;
     }
@@ -601,28 +602,28 @@ static void HdmiFillDrmInfoframe(struct HdmiDrmInfoframe *drm, struct HdmiHdrAtt
     drm->des = hdrAttr->descriptor;
 }
 
-int32_t HdmiDrmInfoframeSend(struct HdmiInfoframe *frame, bool enable)
+int32_t HdmiDrmInfoFrameSend(struct HdmiInfoFrame *frame, bool enable)
 {
     struct HdmiCntlr *cntlr = NULL;
-    union HdmiInfoframeInfo infoframe = {0};
+    union HdmiInfoFrameInfo infoFrame = {0};
 
     if (frame == NULL || frame->priv == NULL) {
-        HDF_LOGE("HdmiDrmInfoframeSend: input param is invalid.");
+        HDF_LOGE("HdmiDrmInfoFrameSend: input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
     cntlr = (struct HdmiCntlr *)frame->priv;
-    if (cntlr->ops == NULL || cntlr->ops->infoframeEnable == NULL) {
-        HDF_LOGD("HdmiDrmInfoframeSend not support.");
+    if (cntlr->ops == NULL || cntlr->ops->infoFrameEnable == NULL) {
+        HDF_LOGD("HdmiDrmInfoFrameSend not support.");
         return HDF_ERR_NOT_SUPPORT;
     }
 
     if (enable == false) {
-        cntlr->ops->infoframeEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_DRM, false);
+        cntlr->ops->infoFrameEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_DRM, false);
         return HDF_SUCCESS;
     }
-    HdmiFillDrmInfoframe(&(frame->drm), &(cntlr->attr.hdrAttr));
-    infoframe.drm = frame->drm;
-    return HdmiInfoframeSend(frame, &infoframe);
+    HdmiFillDrmInfoFrame(&(frame->drm), &(cntlr->attr.hdrAttr));
+    infoFrame.drm = frame->drm;
+    return HdmiInfoFrameSend(frame, &infoFrame);
 }
 
 static uint8_t HdmiGetVsifLength(struct HdmiVs14VsifContent *_14Vsif, bool dolbyEnable, bool hdrSupport)
@@ -643,7 +644,7 @@ static uint8_t HdmiGetVsifLength(struct HdmiVs14VsifContent *_14Vsif, bool dolby
     return length;
 }
 
-static void HdmiFill14Vsif(struct HdmiVsInfoframe *vs, struct HdmiVideoAttr *videoAttr)
+static void HdmiFill14Vsif(struct HdmiVsInfoFrame *vs, struct HdmiVideoAttr *videoAttr)
 {
     struct HdmiVideo4kInfo *info = NULL;
     struct HdmiVs14VsifContent *vsif = &(vs->vsifContent.vsif);
@@ -672,13 +673,13 @@ static void HdmiFill14Vsif(struct HdmiVsInfoframe *vs, struct HdmiVideoAttr *vid
     }
 }
 
-static void HdmiFillVsInfoframe(struct HdmiInfoframe *frame, struct HdmiVideoAttr *videoAttr,
+static void HdmiFillVsInfoFrame(struct HdmiInfoFrame *frame, struct HdmiVideoAttr *videoAttr,
     bool dolbyEnable, bool hdrSupport)
 {
-    struct HdmiVsInfoframe *vs = &(frame->vs);
+    struct HdmiVsInfoFrame *vs = &(frame->vs);
     int32_t ret;
 
-    ret = memset_s(vs, sizeof(struct HdmiVsInfoframe), 0, sizeof(struct HdmiVsInfoframe));
+    ret = memset_s(vs, sizeof(struct HdmiVsInfoFrame), 0, sizeof(struct HdmiVsInfoFrame));
     if (ret != EOK) {
         HDF_LOGE("fill vsif, memset_s fail.");
         return;
@@ -696,38 +697,38 @@ static void HdmiFillVsInfoframe(struct HdmiInfoframe *frame, struct HdmiVideoAtt
     }
 }
 
-int32_t HdmiVsInfoframeSend(struct HdmiInfoframe *frame, bool enable, bool dolbyEnable)
+int32_t HdmiVsInfoFrameSend(struct HdmiInfoFrame *frame, bool enable, bool dolbyEnable)
 {
     struct HdmiCntlr *cntlr = NULL;
-    union HdmiInfoframeInfo infoframe = {0};
+    union HdmiInfoFrameInfo infoFrame = {0};
 
     if (frame == NULL || frame->priv == NULL) {
-        HDF_LOGE("HdmiVsInfoframeSend: input param is invalid.");
+        HDF_LOGE("HdmiVsInfoFrameSend: input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
     cntlr = (struct HdmiCntlr *)frame->priv;
-    if (cntlr->ops == NULL || cntlr->ops->infoframeEnable == NULL) {
-        HDF_LOGD("HdmiVsInfoframeSend not support.");
+    if (cntlr->ops == NULL || cntlr->ops->infoFrameEnable == NULL) {
+        HDF_LOGD("HdmiVsInfoFrameSend not support.");
         return HDF_ERR_NOT_SUPPORT;
     }
 
     if (enable == false) {
-        cntlr->ops->infoframeEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_VS, false);
+        cntlr->ops->infoFrameEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_VS, false);
         return HDF_SUCCESS;
     }
-    HdmiFillVsInfoframe(frame, &(cntlr->attr.videoAttr), dolbyEnable, frame->hdrSupport);
-    infoframe.vs = frame->vs;
-    return HdmiInfoframeSend(frame, &infoframe);
+    HdmiFillVsInfoFrame(frame, &(cntlr->attr.videoAttr), dolbyEnable, frame->hdrSupport);
+    infoFrame.vs = frame->vs;
+    return HdmiInfoFrameSend(frame, &infoFrame);
 }
 
-static void HdmiFillSpdInfoframe(struct HdmiSpdInfoframe *spd,
+static void HdmiFillSpdInfoFrame(struct HdmiSpdInfoFrame *spd,
                                  const char *vendorName, const char *productName,
                                  enum HdmiSpdSdi sdi)
 {
     uint32_t len, length;
 
-    if (memset_s(spd, sizeof(struct HdmiSpdInfoframe), 0, sizeof(struct HdmiSpdInfoframe)) != EOK) {
-        HDF_LOGE("fill spd infoframe, memset_s fail.");
+    if (memset_s(spd, sizeof(struct HdmiSpdInfoFrame), 0, sizeof(struct HdmiSpdInfoFrame)) != EOK) {
+        HDF_LOGE("fill spd infoFrame, memset_s fail.");
         return;
     }
     spd->type = HDMI_INFOFRAME_PACKET_TYPE_SPD;
@@ -739,91 +740,91 @@ static void HdmiFillSpdInfoframe(struct HdmiSpdInfoframe *spd,
     length = (uint32_t)sizeof(spd->vendorName);
     length = (length > len) ? len : length;
     if (memcpy_s(spd->vendorName, length, vendorName, length) != EOK) {
-        HDF_LOGE("fill spd infoframe vendor name, memcpy_s fail.");
+        HDF_LOGE("fill spd infoFrame vendor name, memcpy_s fail.");
     }
 
     len = (uint32_t)strlen(productName);
     length = (uint32_t)sizeof(spd->productDescription);
     length = (length > len) ? len : length;
     if (memcpy_s(spd->productDescription, length, productName, length) != EOK) {
-        HDF_LOGE("fill spd infoframe product name, memcpy_s fail.");
+        HDF_LOGE("fill spd infoFrame product name, memcpy_s fail.");
     }
 }
 
-int32_t HdmiSpdInfoframeSend(struct HdmiInfoframe *frame, bool enable,
+int32_t HdmiSpdInfoFrameSend(struct HdmiInfoFrame *frame, bool enable,
     char *vendorName, char *productName, enum HdmiSpdSdi sdi)
 {
     struct HdmiCntlr *cntlr = NULL;
-    union HdmiInfoframeInfo infoframe = {0};
+    union HdmiInfoFrameInfo infoFrame = {0};
 
     if (frame == NULL || frame->priv == NULL) {
-        HDF_LOGE("HdmiSpdInfoframeSend: input param is invalid.");
+        HDF_LOGE("HdmiSpdInfoFrameSend: input param is invalid.");
         return HDF_ERR_INVALID_PARAM;
     }
     cntlr = (struct HdmiCntlr *)frame->priv;
-    if (cntlr->ops == NULL || cntlr->ops->infoframeEnable == NULL) {
-        HDF_LOGD("HdmiSpdInfoframeSend not support.");
+    if (cntlr->ops == NULL || cntlr->ops->infoFrameEnable == NULL) {
+        HDF_LOGD("HdmiSpdInfoFrameSend not support.");
         return HDF_ERR_NOT_SUPPORT;
     }
 
     if (enable == false) {
-        cntlr->ops->infoframeEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_SPD, false);
+        cntlr->ops->infoFrameEnable(cntlr, HDMI_INFOFRAME_PACKET_TYPE_SPD, false);
         return HDF_SUCCESS;
     }
-    HdmiFillSpdInfoframe(&(frame->spd), vendorName, productName, sdi);
-    infoframe.spd = frame->spd;
-    return HdmiInfoframeSend(frame, &infoframe);
+    HdmiFillSpdInfoFrame(&(frame->spd), vendorName, productName, sdi);
+    infoFrame.spd = frame->spd;
+    return HdmiInfoFrameSend(frame, &infoFrame);
 }
 
-int32_t HdmiInfoframeGetInfo(struct HdmiInfoframe *frame, enum HdmiPacketType type,
-    union HdmiInfoframeInfo *infoframe)
+int32_t HdmiInfoFrameGetInfo(struct HdmiInfoFrame *frame, enum HdmiPacketType type,
+    union HdmiInfoFrameInfo *infoFrame)
 {
-    if (frame == NULL || infoframe == NULL) {
+    if (frame == NULL || infoFrame == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
 
     switch (type) {
         case HDMI_INFOFRAME_PACKET_TYPE_VS:
-            infoframe->vs = frame->vs;
+            infoFrame->vs = frame->vs;
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_AVI:
-            infoframe->avi = frame->avi;
+            infoFrame->avi = frame->avi;
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_AUDIO:
-            infoframe->audio = frame->audio;
+            infoFrame->audio = frame->audio;
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_DRM:
-            infoframe->drm = frame->drm;
+            infoFrame->drm = frame->drm;
             break;
         default:
-            HDF_LOGD("infoframe %d not support get", type);
+            HDF_LOGD("infoFrame %d not support get", type);
             return HDF_ERR_INVALID_PARAM;
     }
     return HDF_SUCCESS;
 }
 
-int32_t HdmiInfoframeSetInfo(struct HdmiInfoframe *frame, enum HdmiPacketType type,
-    union HdmiInfoframeInfo *infoframe)
+int32_t HdmiInfoFrameSetInfo(struct HdmiInfoFrame *frame, enum HdmiPacketType type,
+    union HdmiInfoFrameInfo *infoFrame)
 {
-    if (frame == NULL || infoframe == NULL) {
+    if (frame == NULL || infoFrame == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
 
     switch (type) {
         case HDMI_INFOFRAME_PACKET_TYPE_VS:
-            frame->vs = infoframe->vs;
+            frame->vs = infoFrame->vs;
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_AVI:
-            frame->avi = infoframe->avi;
+            frame->avi = infoFrame->avi;
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_AUDIO:
-            frame->audio = infoframe->audio;
+            frame->audio = infoFrame->audio;
             break;
         case HDMI_INFOFRAME_PACKET_TYPE_DRM:
-            frame->drm = infoframe->drm;
+            frame->drm = infoFrame->drm;
             break;
         default:
-            HDF_LOGD("infoframe %d not support set", type);
+            HDF_LOGD("infoFrame %d not support set", type);
             return HDF_ERR_INVALID_PARAM;
     }
     return HDF_SUCCESS;

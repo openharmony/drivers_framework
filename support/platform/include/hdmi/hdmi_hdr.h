@@ -43,7 +43,7 @@ struct HdmiHdrTimerConfig {
 
 struct HdmiHdrInfo {
     enum HdmiHdrState state;    /* Make sure that switch smoothly from non-HDR10 to HDR10. */
-    struct HdmiHdrTimerConfig zeroDrmIfTimer; /* Send zero DRM infoframe when the HDR mode from HDR10 to non-HDR10. */
+    struct HdmiHdrTimerConfig zeroDrmIfTimer; /* Send zero DRM infoFrame when the HDR mode from HDR10 to non-HDR10. */
     struct HdmiHdrTimerConfig stateChangeTimer; /*  */
 };
 
@@ -53,7 +53,7 @@ struct HdmiHdr {
 };
 
 int32_t HdmiHdrAttrHandle(struct HdmiHdr *hdr, struct HdmiHdrAttr *curAttr);
-int32_t HdmiHdrDrmInfoframeStop(struct HdmiHdr *hdr);
+int32_t HdmiHdrDrmInfoFrameStop(struct HdmiHdr *hdr);
 int32_t HdmiHdrModeChangeTimeout(struct HdmiHdr *hdr);
 
 #ifdef __cplusplus

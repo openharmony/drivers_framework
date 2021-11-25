@@ -117,8 +117,7 @@ struct UartDevice {
             | UART_PL011_LCR_H_EPS_MASK        \
             | UART_PL011_LCR_H_SPS_MASK)
 
-#define UART_PL011_LCR_H_STOPBIT_MASK          \
-              (0x1u << UART_PL011_LCR_H_STP2_BIT_OFFSET)
+#define UART_PL011_LCR_H_STOPBIT_MASK         (0x1u << UART_PL011_LCR_H_STP2_BIT_OFFSET)
 
 #define UART_PL011_DATA_FORMAT_MASK (          \
               UART_PL011_LCR_H_PARITY_MASK     \

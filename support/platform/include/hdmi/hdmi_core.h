@@ -122,7 +122,7 @@ struct HdmiHardwareStatus {
     struct HdmiCommonStatus commonStatus;
     struct HdmiAudioStatus audioStatus;
     struct HdmiVideoStatus videoStatus;
-    struct HdmiInfoframeStatus infoframeStatus;
+    struct HdmiInfoFrameStatus infoFrameStatus;
     struct HdmiHdcpStatus hdcpstatus;
 };
 
@@ -146,9 +146,9 @@ struct HdmiCntlrOps {
     void (*lowPowerSet)(struct HdmiCntlr *cntlr, bool enable);
     void (*tmdsModeSet)(struct HdmiCntlr *cntlr, enum HdmiTmdsModeType mode);
     int32_t (*tmdsConfigSet)(struct HdmiCntlr *cntlr, struct HdmiTmdsConfig mode);
-    void (*infoframeEnable)(struct HdmiCntlr *cntlr, enum HdmiPacketType infoframeType, bool enable);
-    int32_t (*infoframeSend)(struct HdmiCntlr *cntlr, enum HdmiPacketType infoframeType, uint8_t *data, uint32_t len);
-    int32_t (*infoframeDataSet)(struct HdmiCntlr *cntlr, uint32_t type, uint8_t *data, uint32_t len);
+    void (*infoFrameEnable)(struct HdmiCntlr *cntlr, enum HdmiPacketType infoFrameType, bool enable);
+    int32_t (*infoFrameSend)(struct HdmiCntlr *cntlr, enum HdmiPacketType infoFrameType, uint8_t *data, uint32_t len);
+    int32_t (*infoFrameDataSet)(struct HdmiCntlr *cntlr, uint32_t type, uint8_t *data, uint32_t len);
     int32_t (*cecMsgSend)(struct HdmiCntlr *cntlr, struct HdmiCecMsg *msg);
     void (*audioPathEnable)(struct HdmiCntlr *cntlr, bool enable);
     void (*audioPathSet)(struct HdmiCntlr *cntlr, struct HdmiAudioConfigInfo *config);
@@ -208,7 +208,7 @@ struct HdmiCntlr {
     uint32_t state;                 /* cntlr state. */
     enum HdmiTmdsModeType tmdsMode;
     struct HdmiDevice *hdmi;
-    struct HdmiInfoframe infoframe;
+    struct HdmiInfoFrame infoFrame;
     struct HdmiScdc *scdc;
     struct HdmiDdc ddc;
     struct HdmiFrl *frl;
@@ -364,8 +364,8 @@ int32_t HdmiCntlrDeepColorGet(struct HdmiCntlr *cntlr, enum HdmiDeepColor *color
 int32_t HdmiCntlrSetVideoAttribute(struct HdmiCntlr *cntlr, struct HdmiVideoAttr *attr);
 int32_t HdmiCntlrSetAudioAttribute(struct HdmiCntlr *cntlr, struct HdmiAudioAttr *attr);
 int32_t HdmiCntlrSetHdrAttribute(struct HdmiCntlr *cntlr, struct HdmiHdrAttr *attr);
-int32_t HdmiCntlrInfoframeGet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoframeInfo *frame);
-int32_t HdmiCntlrInfoframeSet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoframeInfo *frame);
+int32_t HdmiCntlrInfoFrameGet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoFrameInfo *frame);
+int32_t HdmiCntlrInfoFrameSet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoFrameInfo *frame);
 int32_t HdmiCntlrRegisterHpdCallbackFunc(struct HdmiCntlr *cntlr, struct HdmiHpdCallbackInfo *callback);
 int32_t HdmiCntlrUnregisterHpdCallbackFunc(struct HdmiCntlr *cntlr);
 void HdmiCntlrClose(struct HdmiCntlr *cntlr);

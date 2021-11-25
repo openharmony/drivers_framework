@@ -180,7 +180,7 @@ static int32_t HdmiEventCecMsgHandle(struct HdmiCntlr *cntlr, struct HdmiCecMsg 
 
 static int32_t HdmiEventHdrZeroDrmIfTimeout(struct HdmiCntlr *cntlr)
 {
-    return HdmiHdrDrmInfoframeStop(cntlr->hdr);
+    return HdmiHdrDrmInfoFrameStop(cntlr->hdr);
 }
 
 static int32_t HdmiEventSwitchToHdrModeTimeout(struct HdmiCntlr *cntlr)

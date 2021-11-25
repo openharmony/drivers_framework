@@ -7,8 +7,8 @@
  */
 
 #include "hdf_log.h"
-#include "hdmi_core.h"
 #include "hdmi_common.h"
+#include "hdmi_core.h"
 #include "hdmi_dfm.h"
 #include "hdmi_ncts.h"
 
@@ -466,7 +466,7 @@ static void HdmiFrlTrainingException(struct HdmiFrl *frl)
     struct HdmiCntlr *cntlr = (struct HdmiCntlr *)frl->priv;
     struct HdmiPhyCfg cfg = {0};
 
-    if (cntlr != NULL || cntlr->ops != NULL) {
+    if (cntlr == NULL || cntlr->ops == NULL) {
         return;
     }
 
@@ -517,7 +517,7 @@ static void HdmiFrlTrainingPassedCheck(struct HdmiFrl *frl)
 {
     struct HdmiCntlr *cntlr = (struct HdmiCntlr *)frl->priv;
 
-    if (cntlr != NULL || cntlr->ops != NULL) {
+    if (cntlr == NULL || cntlr->ops == NULL) {
         return;
     }
 
@@ -545,7 +545,7 @@ static void HdmiFrlRetrainingCheck(struct HdmiFrl *frl)
 {
     struct HdmiCntlr *cntlr = (struct HdmiCntlr *)frl->priv;
 
-    if (cntlr != NULL || cntlr->ops != NULL) {
+    if (cntlr == NULL || cntlr->ops == NULL) {
         return;
     }
     if (HdmiFrlGetFltUpdate(cntlr->scdc) == false) {
@@ -567,7 +567,7 @@ static void HdmiFrlTrainingStop(struct HdmiFrl *frl)
 {
     struct HdmiCntlr *cntlr = (struct HdmiCntlr *)frl->priv;
 
-    if (cntlr != NULL || cntlr->ops != NULL) {
+    if (cntlr == NULL || cntlr->ops == NULL) {
         return;
     }
 
@@ -679,7 +679,7 @@ static void HdmiFrlTrainingResultHandleTimeout(struct HdmiFrl *frl)
     bool frlStart = false;
     struct HdmiCntlr *cntlr = (struct HdmiCntlr *)frl->priv;
 
-    if (cntlr != NULL || cntlr->ops != NULL) {
+    if (cntlr == NULL || cntlr->ops == NULL) {
         return;
     }
 
@@ -722,7 +722,7 @@ static void HdmiFrlRetrainingCheckTimeout(struct HdmiFrl *frl)
     uint64_t curTime = OsalGetSysTimeMs();
     struct HdmiCntlr *cntlr = (struct HdmiCntlr *)frl->priv;
 
-    if (cntlr != NULL || cntlr->ops != NULL) {
+    if (cntlr == NULL || cntlr->ops == NULL) {
         return;
     }
     if ((curTime - frl->info.machineInfo.startTime) <= frl->info.machineInfo.waitRetrainTime) {

@@ -11,12 +11,15 @@
 
 #define HDF_LOG_TAG hello_spi_dispatch
 
+#define SPI_BUS_NUM       3
+#define SPI_MSG_SPEED     115200
+
 int main()
 {
     int32_t ret;
     struct SpiDevInfo spiDevInfo;       /* SPI device descriptor */
     struct DevHandle *spiHandle = NULL; /* SPI device handle */
-    spiDevInfo.busNum = 3;              /* SPI device bus number */
+    spiDevInfo.busNum = SPI_BUS_NUM;              /* SPI device bus number */
     spiDevInfo.csNum = 0;               /* SPI device CS number */
     spiHandle = SpiOpen(&spiDevInfo);
     if (spiHandle == NULL) {
@@ -32,7 +35,7 @@ int main()
     msg.len = 1;              /* The length of the data to be read or written is 1 bits. */
     msg.csChange = 1;         /* Disable the CS before the next transfer. */
     msg.delayUs = 0;          /* No delay before the next transfer */
-    msg.speed = 115200;       /* Speed of this transfer */
+    msg.speed = SPI_MSG_SPEED;       /* Speed of this transfer */
     ret = SpiTransfer(spiHandle, &msg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("SpiTransfer failed, ret %d", ret);

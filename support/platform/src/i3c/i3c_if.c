@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "i3c_core.h"
 #include "i3c_if.h"
+#include "i3c_core.h"
 #include "hdf_log.h"
 
 #define HDF_LOG_TAG i3c_if_c

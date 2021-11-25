@@ -7,9 +7,9 @@
  */
 
 #include "i3c_core.h"
-#include "i3c_ccc.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
+#include "i3c_ccc.h"
 #include "osal_mem.h"
 #include "osal_mutex.h"
 

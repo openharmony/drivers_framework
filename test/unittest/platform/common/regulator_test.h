@@ -40,6 +40,7 @@ enum RegulatorTestCmd {
 
 #define REGULATOR_TEST_STACK_SIZE    (1024 * 100)
 #define REGULATOR_TEST_WAIT_TIMES    200
+#define REGULATOR_TEST_WAIT_TIMEOUT  20
 
 struct RegulatorTest {
     struct IDeviceIoService service;

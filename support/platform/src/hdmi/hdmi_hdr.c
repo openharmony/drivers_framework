@@ -32,7 +32,7 @@ static void HdmiHdrColorimetryUpdate(struct HdmiVideoAttr *videoAttr, enum HdmiH
     }
 }
 
-static void HdmiHdrZeroDrmInfoframeTimerSet(struct HdmiCntlr *cntlr, bool start)
+static void HdmiHdrZeroDrmInfoFrameTimerSet(struct HdmiCntlr *cntlr, bool start)
 {
     struct HdmiHdrInfo *hdrInfo = &(cntlr->hdr->info);
     struct HdmiHdrAttr *hdrAttr = &(cntlr->attr.hdrAttr);
@@ -51,7 +51,7 @@ static void HdmiHdrZeroDrmInfoframeTimerSet(struct HdmiCntlr *cntlr, bool start)
         HDF_LOGE("memset_s fail");
         return;
     }
-    (void)HdmiDrmInfoframeSend(&(cntlr->infoframe), true);
+    (void)HdmiDrmInfoFrameSend(&(cntlr->infoFrame), true);
 
     hdrInfo->zeroDrmIfTimer.start = true;
     HdmiCntlrHdrTimerSet(cntlr, &(hdrInfo->zeroDrmIfTimer));
@@ -98,10 +98,10 @@ static int32_t HdmiDisableHdr(struct HdmiCntlr *cntlr, struct HdmiHdrAttr *curAt
                 }
                 HdmiHdrModeChangeTimerSet(cntlr,  true);
                 HdmiCntlrHdrTimerSet(cntlr, &(hdrInfo->stateChangeTimer));
-                (void)HdmiDrmInfoframeSend(&(cntlr->infoframe), false);
+                (void)HdmiDrmInfoFrameSend(&(cntlr->infoFrame), false);
             } else {
                 /* start timer, send zero DRMIF and stop after 2 seconds. */
-                HdmiHdrZeroDrmInfoframeTimerSet(cntlr,  true);
+                HdmiHdrZeroDrmInfoFrameTimerSet(cntlr,  true);
             }
             break;
         case HDMI_HDR_MODE_CEA_861_3_AUTHEN:
@@ -125,7 +125,7 @@ static void HdmiChangeToHdr(struct HdmiCntlr *cntlr, struct HdmiCommonAttr *comm
     struct HdmiHdrAttr *hdrAttr = &(cntlr->attr.hdrAttr);
     struct HdmiHdrInfo *hdrInfo = &(cntlr->hdr->info);
 
-    HdmiHdrZeroDrmInfoframeTimerSet(cntlr, false);
+    HdmiHdrZeroDrmInfoFrameTimerSet(cntlr, false);
     if (hdrAttr->userMode != HDMI_HDR_USERMODE_HDR10) {
         HDF_LOGE("usermode is not HDR10/HLG.");
         return;
@@ -225,20 +225,20 @@ int32_t HdmiHdrAttrHandle(struct HdmiHdr *hdr, struct HdmiHdrAttr *curAttr)
     if (ret != HDF_SUCCESS) {
         return ret;
     }
-    (void)HdmiDrmInfoframeSend(&(cntlr->infoframe), (commAttr->enableHdmi && commAttr->drm));
+    (void)HdmiDrmInfoFrameSend(&(cntlr->infoFrame), (commAttr->enableHdmi && commAttr->drm));
 
 _SEND_INFOFRAME:
-    (void)HdmiAviInfoframeSend(&(cntlr->infoframe), (commAttr->enableHdmi && commAttr->avi));
-    (void)HdmiVsInfoframeSend(&(cntlr->infoframe), commAttr->enableHdmi, commAttr->vsifDolby);
+    (void)HdmiAviInfoFrameSend(&(cntlr->infoFrame), (commAttr->enableHdmi && commAttr->avi));
+    (void)HdmiVsInfoFrameSend(&(cntlr->infoFrame), commAttr->enableHdmi, commAttr->vsifDolby);
     HdmiCntlrVideoPathSet(cntlr, &(cntlr->attr.videoAttr));
     return ret;
 }
 
-int32_t HdmiHdrDrmInfoframeStop(struct HdmiHdr *hdr)
+int32_t HdmiHdrDrmInfoFrameStop(struct HdmiHdr *hdr)
 {
     struct HdmiCntlr *cntlr = NULL;
 
-    HDF_LOGD("zero DRM infoframe send timeout.");
+    HDF_LOGD("zero DRM infoFrame send timeout.");
     if (hdr == NULL || hdr->priv == NULL) {
         HDF_LOGE("hdr stop drm, input param invalid.");
         return HDF_ERR_INVALID_PARAM;
@@ -246,7 +246,7 @@ int32_t HdmiHdrDrmInfoframeStop(struct HdmiHdr *hdr)
     cntlr = (struct HdmiCntlr *)hdr->priv;
 
     if (cntlr->attr.hdrAttr.mode != HDMI_HDR_MODE_CEA_861_3) {
-        return HdmiDrmInfoframeSend(&(cntlr->infoframe), false);
+        return HdmiDrmInfoFrameSend(&(cntlr->infoFrame), false);
     }
     return HDF_SUCCESS;
 }

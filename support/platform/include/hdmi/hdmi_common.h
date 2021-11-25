@@ -62,7 +62,7 @@ enum HdmiTmdsModeType {
  * see CTA-861-G, table 3.
  */
 enum HdmiVic {
-    HDMI_VIC_NONE = 0,    /* No Video Identification Code Avaiable(Used with AVI Infoframe only) */
+    HDMI_VIC_NONE = 0,    /* No Video Identification Code Avaiable(Used with AVI InfoFrame only) */
     HDMI_VIC_640X480P60_4_3 = 1,
     HDMI_VIC_720X480P60_4_3 = 2,
     HDMI_VIC_720X480P60_16_9 = 3,

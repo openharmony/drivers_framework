@@ -74,7 +74,6 @@ static int32_t GpioQuery(enum GpioOps ops, uint16_t gpio, uint16_t *val)
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("Failed to send service call");
         goto __ERR__;
-
     }
     if (!HdfSbufReadUint16(reply, val)) {
         HDF_LOGE("Failed to read reply sBuf");

@@ -382,7 +382,7 @@ static int32_t MtdDeviceWriteReadByPageUnlock(struct MtdDevice *mtdDevice, struc
 
     dataLenLeft = msg->withOob ?
         (msg->len / (mtdDevice->writeSize + mtdDevice->oobSize)) * mtdDevice->writeSize : msg->len;
-    for (addr = msg->addr, buf = msg->buf; (dataLenLeft > 0) && addr < mtdDevice->capacity; ) {
+    for (addr = msg->addr, buf = msg->buf; (dataLenLeft > 0) && addr < mtdDevice->capacity;) {
         if (MtdDeviceIsBadBlockUnlocked(mtdDevice, addr)) {
             if (!msg->skipBad) {
                 HDF_LOGE("%s: failed on bad block @0x%jx", __func__, addr);

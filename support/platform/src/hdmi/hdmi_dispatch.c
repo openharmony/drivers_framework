@@ -181,43 +181,43 @@ static int32_t HdmiCmdReadSinkEdid(struct HdmiCntlr *cntlr, struct HdfSBuf *data
     return HDF_SUCCESS;
 }
 
-static int32_t HdmiCmdInfoframeSet(struct HdmiCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t HdmiCmdInfoFrameSet(struct HdmiCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     enum HdmiPacketType type;
-    union HdmiInfoframeInfo *frame = NULL;
+    union HdmiInfoFrameInfo *frame = NULL;
     size_t size;
 
     if (!HdfSbufReadUint16(data, (uint16_t *)&type)) {
-        HDF_LOGE("HdmiCmdInfoframeSet: sbuf read uint16 failed");
+        HDF_LOGE("HdmiCmdInfoFrameSet: sbuf read uint16 failed");
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufReadBuffer(data, (const void **)&frame, &size)) {
-        HDF_LOGE("HdmiCmdInfoframeSet: sbuf read buffer failed");
+        HDF_LOGE("HdmiCmdInfoFrameSet: sbuf read buffer failed");
         return HDF_ERR_IO;
     }
-    return HdmiCntlrInfoframeSet(cntlr, type, frame);
+    return HdmiCntlrInfoFrameSet(cntlr, type, frame);
 }
 
-static int32_t HdmiCmdInfoframeGet(struct HdmiCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t HdmiCmdInfoFrameGet(struct HdmiCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     size_t size;
     int32_t ret;
     enum HdmiPacketType *type = NULL;
-    union HdmiInfoframeInfo frame = {0};
+    union HdmiInfoFrameInfo frame = {0};
 
     if (!HdfSbufReadBuffer(data, (const void **)&type, &size)) {
-        HDF_LOGE("HdmiCmdInfoframeGet: sbuf read buffer failed");
+        HDF_LOGE("HdmiCmdInfoFrameGet: sbuf read buffer failed");
         return HDF_ERR_IO;
     }
 
-    ret = HdmiCntlrInfoframeGet(cntlr, *type, &frame);
+    ret = HdmiCntlrInfoFrameGet(cntlr, *type, &frame);
     if (ret != HDF_SUCCESS) {
         return ret;
     }
 
     if (HdfSbufWriteBuffer(reply, &frame, sizeof(frame)) == false) {
-        HDF_LOGE("HdmiCmdInfoframeGet: write back frame fail!");
+        HDF_LOGE("HdmiCmdInfoFrameGet: write back frame fail!");
         return HDF_ERR_IO;
     }
 
@@ -261,8 +261,8 @@ int32_t HdmiIoDispatch(struct HdfDeviceIoClient *client, int32_t cmd, struct Hdf
         { HDMI_CMD_AUDIO_ATTR_SET, HdmiCmdAudioAttrSet },
         { HDMI_CMD_HDR_ATTR_SET, HdmiCmdHdrAttrSet },
         { HDMI_CMD_READ_SINK_EDID, HdmiCmdReadSinkEdid },
-        { HDMI_CMD_INFOFRAME_SET, HdmiCmdInfoframeSet },
-        { HDMI_CMD_INFOFRAME_GET, HdmiCmdInfoframeGet },
+        { HDMI_CMD_INFOFRAME_SET, HdmiCmdInfoFrameSet },
+        { HDMI_CMD_INFOFRAME_GET, HdmiCmdInfoFrameGet },
         { HDMI_CMD_REGISTER_HPD_CALLBACK_FUNC, HdmiCmdRegisterHpdCallbackFunc },
         { HDMI_CMD_UNREGISTER_HPD_CALLBACK_FUNC, HdmiCmdUnregisterHpdCallbackFunc },
     };
