@@ -163,9 +163,6 @@ static int32_t SensorOpsExtBuffRead(struct SensorBusCfg *busCfg, struct SensorRe
     CHECK_NULL_PTR_RETURN_VALUE(cfgItem, HDF_FAILURE);
     CHECK_NULL_PTR_RETURN_VALUE(cfgItem->buff, HDF_FAILURE);
 
-    if (cfgItem->len > LENGTH_NUMBER) {
-        return HDF_FAILURE;
-    }
     if (busCfg->busType == SENSOR_BUS_I2C) {
         ret = ReadSensor(busCfg, cfgItem->regAddr, cfgItem->buff, cfgItem->len);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read i2c reg");
