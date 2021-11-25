@@ -83,6 +83,7 @@ private:
     std::string sourceNameBase_;
     std::string outputName_;
     std::string sourceDir_;
+    void SetOptionData(char op);
 };
 
 } // Hardware

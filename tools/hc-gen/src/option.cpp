@@ -58,55 +58,60 @@ bool Option::ParseOptions(int argc, char **argv)
     int32_t op = 0;
     while (op != OPTION_END) {
         op = getopt(argc, argv, HCS_SUPPORT_ARGS);
-        switch (op) {
-            case 'o':
-                outputName_ = optarg;
-                break;
-            case 'a':
-                shouldAlign_ = true;
-                break;
-            case 'b':
-                shouldGenByteCodeConfig_ = true;
-                break;
-            case 't':
-                shouldGenTextConfig_ = true;
-                shouldGenByteCodeConfig_ = false;
-                shouldGenMacroConfig_ = false;
-                break;
-            case 'm':
-                shouldGenTextConfig_ = false;
-                shouldGenByteCodeConfig_ = false;
-                shouldGenMacroConfig_ = true;
-                break;
-            case 'p':
-                symbolNamePrefix_ = optarg;
-                break;
-            case 'i':
-                showGenHexDump_ = true;
-                break;
-            case 'V':
-                verboseLog_ = true;
-                break;
-            case 'd':
-                shouldDecompile_ = true;
-                break;
-            case 'v':
-                showVersion_ = true;
-                return false;
-            case 'h': /* fall-through */
-                showUsage_ = true;
-                return false;
-            case '?':
-                showUsage_ = true;
-                optionError_ = true;
-                SetOptionError();
-                return false;
-            default:
-                break;
-        }
+        SetOptionData(op);
     }
 
     return true;
+}
+
+void Option::SetOptionData(char op)
+{
+    switch (op) {
+        case 'o':
+            outputName_ = optarg;
+            break;
+        case 'a':
+            shouldAlign_ = true;
+            break;
+        case 'b':
+            shouldGenByteCodeConfig_ = true;
+            break;
+        case 't':
+            shouldGenTextConfig_ = true;
+            shouldGenByteCodeConfig_ = false;
+            shouldGenMacroConfig_ = false;
+            break;
+        case 'm':
+            shouldGenTextConfig_ = false;
+            shouldGenByteCodeConfig_ = false;
+            shouldGenMacroConfig_ = true;
+            break;
+        case 'p':
+            symbolNamePrefix_ = optarg;
+            break;
+        case 'i':
+            showGenHexDump_ = true;
+            break;
+        case 'V':
+            verboseLog_ = true;
+            break;
+        case 'd':
+            shouldDecompile_ = true;
+            break;
+        case 'v':
+            showVersion_ = true;
+            break;
+        case 'h': /* fall-through */
+            showUsage_ = true;
+            break;
+        case '?':
+            showUsage_ = true;
+            optionError_ = true;
+            SetOptionError();
+            break;
+        default:
+            break;
+    }
 }
 
 void Option::ShowUsage()

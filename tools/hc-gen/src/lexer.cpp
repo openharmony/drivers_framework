@@ -171,7 +171,7 @@ bool Lexer::FillBuffer()
 
 bool Lexer::ProcessComment()
 {
-    char c;
+    char c = 0;
     ConsumeChar();// skip first '/'
     if (!GetChar(c)) {
         Logger().Error() << *this << "unterminated comment";
@@ -254,7 +254,7 @@ bool Lexer::LexFromString(Token &token)
 bool Lexer::LexFromNumber(Token &token)
 {
     std::string value;
-    char c;
+    char c = 0;
     uint64_t v = 0;
     errno = 0;
 

@@ -224,56 +224,63 @@ bool MacroGen::NodeWalk()
         static uint32_t arraySize = 0;
         static uint32_t arrayType = 0;
 
-        Logger().Debug() << "name,type:[" << current->Name() << "," << type << "] depth:" << depth
-		    << " arraySize:" << std::dec << arraySize << '\n';
-        switch (type) {
-            case PARSEROP_UINT8:
-            case PARSEROP_UINT16:
-            case PARSEROP_UINT32:
-            case PARSEROP_UINT64: {
-                if (arraySize != 0) {
-                    GenArray(arrayName, arraySize, arrayType, current);
-                } else {
-                    ofs_ << " " << current->IntegerValue() << std::endl;
-                }
-                break;
-            }
-            case PARSEROP_STRING:
-                if (arraySize != 0) {
-                    GenArray(arrayName, arraySize, arrayType, current);
-                } else {
-                    ofs_ << " " <<  '"' << current->StringValue() << '"' << std::endl;
-                }
-                break;
-            case PARSEROP_CONFTERM:
-                ofs_ << "#define " << GenFullName(depth, current, "_") << "_exists 1" << std::endl;
-                ofs_ << "#define " << GenFullName(depth, current, "_");
-                break;
-            case PARSEROP_CONFNODE: {
-                if (nodeName != current->Name()) {
-                    ofs_ << std::endl;
-                }
-                nodeName = current->Name();
-                nodeNameMap_[depth] = nodeName;
-                GenNodeForeach(depth, current);
-                break;
-            }
-            case PARSEROP_ARRAY: {
-                std::shared_ptr<AstObject> parent(current->Parent());
-                arraySize = ConfigArray::CastFrom(current)->ArraySize();
-                arrayType = ConfigArray::CastFrom(current)->ArrayType();
-                ofs_ << "_array_size " << arraySize << std::endl;
-                arrayName = GenFullName(depth - 1, parent, "_");
-                break;
-            }
-            case PARSEROP_NODEREF: {
-                ofs_ << " " << GenRefObjName(depth, current) << std::endl;
-                break;
-            }
-            default:
-                break;
-        }
+        Logger().Debug() << "name,type:[" << current->Name() << "," << type \
+                         << "] depth:" << depth \
+                         << " arraySize:" << std::dec << arraySize << '\n';
+        SetTypeData(type, current, nodeName, arrayName, arraySize, arrayType, depth);
         
         return NOERR;
     });
+}
+
+void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current, std::string &nodeName,
+    std::string &arrayName, uint32_t &arraySize, uint32_t &arrayType, uint32_t depth)
+{
+    switch (type) {
+        case PARSEROP_UINT8:
+        case PARSEROP_UINT16:
+        case PARSEROP_UINT32:
+        case PARSEROP_UINT64: {
+            if (arraySize != 0) {
+                GenArray(arrayName, arraySize, arrayType, current);
+            } else {
+                ofs_ << " " << current->IntegerValue() << std::endl;
+            }
+            break;
+        }
+        case PARSEROP_STRING:
+            if (arraySize != 0) {
+                GenArray(arrayName, arraySize, arrayType, current);
+            } else {
+                ofs_ << " " <<  '"' << current->StringValue() << '"' << std::endl;
+            }
+            break;
+        case PARSEROP_CONFTERM:
+            ofs_ << "#define " << GenFullName(depth, current, "_") << "_exists 1" << std::endl;
+            ofs_ << "#define " << GenFullName(depth, current, "_");
+            break;
+        case PARSEROP_CONFNODE: {
+            if (nodeName != current->Name()) {
+                ofs_ << std::endl;
+            }
+            nodeName = current->Name();
+            nodeNameMap_[depth] = nodeName;
+            GenNodeForeach(depth, current);
+            break;
+        }
+        case PARSEROP_ARRAY: {
+            std::shared_ptr<AstObject> parent(current->Parent());
+            arraySize = ConfigArray::CastFrom(current)->ArraySize();
+            arrayType = ConfigArray::CastFrom(current)->ArrayType();
+            ofs_ << "_array_size " << arraySize << std::endl;
+            arrayName = GenFullName(depth - 1, parent, "_");
+            break;
+        }
+        case PARSEROP_NODEREF: {
+            ofs_ << " " << GenRefObjName(depth, current) << std::endl;
+            break;
+        }
+        default:
+            break;
+    }
 }
