@@ -88,6 +88,28 @@ static void HallDataWorkEntry(void *arg)
     }
 }
 
+static int32_t ParserHallDelayedConfigData(const struct DeviceResourceNode *node, struct HallDrvData *drvData)
+{
+    int32_t ret;
+    struct DeviceResourceIface *parser = NULL;
+
+    CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+
+    parser = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
+    CHECK_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
+
+    CHECK_NULL_PTR_RETURN_VALUE(parser->GetChildNode, HDF_ERR_INVALID_PARAM);
+
+    const struct DeviceResourceNode *delayedNode = parser->GetChildNode(node, "hallDelayedConfig");
+    CHECK_NULL_PTR_RETURN_VALUE(delayedNode, HDF_ERR_INVALID_PARAM);
+
+    ret = parser->GetUint32(delayedNode, "delayedTime", (uint32_t *)&drvData->delayTime, 0);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "delayedTime");
+
+    return HDF_SUCCESS;
+}
+
 static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
 {
     (void)gpio;
@@ -107,8 +129,8 @@ static int32_t HallNorthPolarityIrqFunc(uint16_t gpio, void *data)
         drvData->status = 0;
     }
 
-    if (!HdfAddWork(&drvData->hallWorkQueue, &drvData->hallWork)) {
-        HDF_LOGE("%s: Hall north add work queue failed", __func__);
+    if (!HdfAddDelayedWork(&drvData->hallWorkQueue, &drvData->hallWork, drvData->delayTime)) {
+        HDF_LOGE("%s: Hall north add delay work queue failed", __func__);
     }
 
     return HDF_SUCCESS;
@@ -133,8 +155,8 @@ static int32_t HallSouthPolarityIrqFunc(uint16_t gpio, void *data)
         drvData->status = 0;
     }
 
-    if (!HdfAddWork(&drvData->hallWorkQueue, &drvData->hallWork)) {
-        HDF_LOGE("%s: Hall south add work queue failed", __func__);
+    if (!HdfAddDelayedWork(&drvData->hallWorkQueue, &drvData->hallWork,drvData->delayTime)) {
+        HDF_LOGE("%s: Hall south add delay work queue failed", __func__);
     }
 
     return HDF_SUCCESS;
@@ -147,7 +169,7 @@ static int32_t InitHallData(struct HallDrvData *drvData)
         return HDF_FAILURE;
     }
 
-    if (HdfWorkInit(&drvData->hallWork, HallDataWorkEntry, drvData) != HDF_SUCCESS) {
+    if (HdfDelayedWorkInit(&drvData->hallWork, HallDataWorkEntry, drvData) != HDF_SUCCESS) {
         HDF_LOGE("%s: Hall create thread failed", __func__);
         return HDF_FAILURE;
     }
@@ -315,6 +337,12 @@ static int32_t InitHallAfterDetected(const struct DeviceResourceNode *node, stru
 
     if (AddSensorDevice(&deviceInfo) != HDF_SUCCESS) {
         HDF_LOGE("%s: Add hall device failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    if (ParserHallDelayedConfigData(node, drvData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: get hall delayed config failed", __func__);
+        (void)DeleteSensorDevice(&drvData->hallCfg->sensorInfo);
         return HDF_FAILURE;
     }
 
