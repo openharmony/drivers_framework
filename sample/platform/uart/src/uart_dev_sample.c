@@ -112,7 +112,7 @@ static ssize_t UartSampleWrite(struct file *filep, const char *buf, size_t count
 
 static int32_t UartSampleDevIoctl(struct file *filep, int32_t cmd, unsigned long arg)
 {
-    int32_t ret = HDF_FAILURE;
+    int32_t ret;
     struct UartHost *host = NULL;
     if (filep == NULL || filep->f_vnode == NULL) {
         return HDF_ERR_INVALID_PARAM;
@@ -122,7 +122,8 @@ static int32_t UartSampleDevIoctl(struct file *filep, int32_t cmd, unsigned long
     if (host->priv == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
-
+    
+    ret = HDF_FAILURE;
     switch (cmd) {
         case UART_CFG_BAUDRATE:
             ret = UartHostSetBaud(host, arg);

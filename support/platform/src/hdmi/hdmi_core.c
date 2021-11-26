@@ -52,7 +52,7 @@ static void HdmiCecInit(struct HdmiCntlr *cntlr)
 
     if (cntlr->cec == NULL) {
         cntlr->cec = (struct HdmiCec *)OsalMemCalloc(sizeof(struct HdmiCec));
-        if (cntlr->scdc == NULL) {
+        if (cntlr->cec == NULL) {
             HDF_LOGE("cec malloc fail");
             return;
         }
@@ -212,25 +212,25 @@ static void HdmiHdrDeinit(struct HdmiCntlr *cntlr)
     }
 }
 
-static void HdmiInfoframeInit(struct HdmiCntlr *cntlr)
+static void HdmiInfoFrameInit(struct HdmiCntlr *cntlr)
 {
     if (cntlr == NULL) {
         return;
     }
-    HDF_LOGE("HdmiInfoframeInit, success.");
-    cntlr->infoframe.priv = (void *)cntlr;
+    HDF_LOGE("HdmiInfoFrameInit, success.");
+    cntlr->infoFrame.priv = (void *)cntlr;
 }
 
-static void HdmiInfoframeDeInit(struct HdmiCntlr *cntlr)
+static void HdmiInfoFrameDeInit(struct HdmiCntlr *cntlr)
 {
     if (cntlr == NULL) {
         return;
     }
 
-    if (memset_s(&(cntlr->infoframe), sizeof(struct HdmiInfoframe), 0, sizeof(struct HdmiInfoframe)) != EOK) {
-        HDF_LOGE("deinit infoframe, memset_s fail.");
+    if (memset_s(&(cntlr->infoFrame), sizeof(struct HdmiInfoFrame), 0, sizeof(struct HdmiInfoFrame)) != EOK) {
+        HDF_LOGE("deinit infoFrame, memset_s fail.");
     }
-    cntlr->infoframe.priv = NULL;
+    cntlr->infoFrame.priv = NULL;
 }
 
 static void HdmiScdcInit(struct HdmiCntlr *cntlr)
@@ -300,7 +300,7 @@ static int32_t HdmiCntlrInit(struct HdmiCntlr *cntlr)
     cntlr->hdfDevObj->service = &(cntlr->service);
     cntlr->device.number = cntlr->deviceIndex;
     cntlr->device.hdfDev = cntlr->hdfDevObj;
-    HdmiInfoframeInit(cntlr);
+    HdmiInfoFrameInit(cntlr);
     HdmiDdcInit(cntlr);
     return HDF_SUCCESS;
 }
@@ -308,7 +308,7 @@ static int32_t HdmiCntlrInit(struct HdmiCntlr *cntlr)
 static void HdmiCntlrUninit(struct HdmiCntlr *cntlr)
 {
     if (cntlr != NULL) {
-        HdmiInfoframeDeInit(cntlr);
+        HdmiInfoFrameDeInit(cntlr);
         HdmiScdcDeinit(cntlr);
         HdmiDdcDeinit(cntlr);
         HdmiCecDeinit(cntlr);
@@ -697,7 +697,7 @@ int32_t HdmiCntlrOpen(struct HdmiCntlr *cntlr)
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-    HdmiInfoframeInit(cntlr);
+    HdmiInfoFrameInit(cntlr);
     HdmiDdcInit(cntlr);
     HdmiScdcInit(cntlr);
     HdmiFrlInit(cntlr);
@@ -1053,7 +1053,7 @@ static int32_t HdmiAudioAttrHandle(struct HdmiCntlr *cntlr)
 
     HdmiCntlrAudioPathEnable(cntlr, false);
     HdmiCntlrAudioPathSet(cntlr, &audioCfg);
-    ret = HdmiAudioInfoframeSend(&(cntlr->infoframe), ((commAttr->enableAudio) && (commAttr->audio)));
+    ret = HdmiAudioInfoFrameSend(&(cntlr->infoFrame), ((commAttr->enableAudio) && (commAttr->audio)));
     HdmiCntlrAudioPathEnable(cntlr, true);
     return ret;
 }
@@ -1100,24 +1100,24 @@ static void HdmiFillVideoAttrFromHardwareStatus(struct HdmiVideoAttr *videoAttr,
         ((!hwStatus->videoStatus.ycbcr2Rgb) && (hwStatus->videoStatus.outColorSpace == HDMI_COLOR_SPACE_RGB)));
     videoAttr->colorSpace = (rgb == true) ? HDMI_COLOR_SPACE_RGB : HDMI_COLOR_SPACE_YCBCR444;
 
-    if (hwStatus->infoframeStatus.aviEnable) {
-        vic = hwStatus->infoframeStatus.avi[7];
+    if (hwStatus->infoFrameStatus.aviEnable) {
+        vic = hwStatus->infoFrameStatus.avi[7];
         /*
-         * when the timing is 4096*2160, the aspect ratio in AVI infoframe is 0
+         * when the timing is 4096*2160, the aspect ratio in AVI infoFrame is 0
          * (but the real aspect ratio is 256:135<0x04>, the video_code is 0)
          */
-        aspectIs256 = (((vic == 0) && (hwStatus->infoframeStatus.vsif[8] == 0x04)) ||
+        aspectIs256 = (((vic == 0) && (hwStatus->infoFrameStatus.vsif[8] == 0x04)) ||
             ((vic >= HDMI_VIC_4096X2160P25_256_135) && (vic <= HDMI_VIC_4096X2160P60_256_135)));
         videoAttr->aspect = (aspectIs256 == true) ? HDMI_PICTURE_ASPECT_256_135 :
-            ((hwStatus->infoframeStatus.avi[5] >> 4) & 0x3);  /* 4'b, BIT[2:1] */
-        videoAttr->activeAspect = hwStatus->infoframeStatus.avi[5] & 0xf;
-        videoAttr->colorimetry = (hwStatus->infoframeStatus.avi[5] >> 6) & 0x3; /* 6'b, BIT[2:1] */
-        videoAttr->quantization = (hwStatus->infoframeStatus.avi[6] >> 2) & 0x3; /* 2'b, BIT[2:1] */
-        videoAttr->extColorimetry = (hwStatus->infoframeStatus.avi[6] >> 4) & 0x07; /* 4'b, BIT[3:1] */
-        videoAttr->yccQuantization = (hwStatus->infoframeStatus.avi[8] >> 6) & 0x3; /* 6'b, BIT[2:1] */
-        videoAttr->pixelRepeat = (hwStatus->infoframeStatus.avi[8] & 0xf) + 1;
+            ((hwStatus->infoFrameStatus.avi[5] >> 4) & 0x3);  /* 4'b, BIT[2:1] */
+        videoAttr->activeAspect = hwStatus->infoFrameStatus.avi[5] & 0xf;
+        videoAttr->colorimetry = (hwStatus->infoFrameStatus.avi[5] >> 6) & 0x3; /* 6'b, BIT[2:1] */
+        videoAttr->quantization = (hwStatus->infoFrameStatus.avi[6] >> 2) & 0x3; /* 2'b, BIT[2:1] */
+        videoAttr->extColorimetry = (hwStatus->infoFrameStatus.avi[6] >> 4) & 0x07; /* 4'b, BIT[3:1] */
+        videoAttr->yccQuantization = (hwStatus->infoFrameStatus.avi[8] >> 6) & 0x3; /* 6'b, BIT[2:1] */
+        videoAttr->pixelRepeat = (hwStatus->infoFrameStatus.avi[8] & 0xf) + 1;
         videoAttr->timing = HdmiCommonGetVideoTiming(vic, videoAttr->aspect);
-        if ((!hwStatus->infoframeStatus.vsifEnable) && (!vic)) {
+        if ((!hwStatus->infoFrameStatus.vsifEnable) && (!vic)) {
             videoAttr->timing = HDMI_VIDEO_TIMING_NONE;
         }
         commAttr->quantization = (commAttr->colorSpace == HDMI_COLOR_SPACE_RGB) ?
@@ -1125,13 +1125,13 @@ static void HdmiFillVideoAttrFromHardwareStatus(struct HdmiVideoAttr *videoAttr,
     }
 
     videoAttr->_3dStruct = HDMI_VS_VIDEO_3D_BUTT;
-    if (hwStatus->infoframeStatus.vsifEnable) {
-        format = (hwStatus->infoframeStatus.vsif[7] >> 5) & 0x3; /* 5'b, BIT[2:1] */
+    if (hwStatus->infoFrameStatus.vsifEnable) {
+        format = (hwStatus->infoFrameStatus.vsif[7] >> 5) & 0x3; /* 5'b, BIT[2:1] */
         if (format == HDMI_VS_VIDEO_FORMAT_4K) {
-            vic4k = hwStatus->infoframeStatus.vsif[8];
+            vic4k = hwStatus->infoFrameStatus.vsif[8];
             videoAttr->timing = HdmiCommonGetVideo4kTiming(vic4k);
         } else if (format == HDMI_VS_VIDEO_FORMAT_3D) {
-            videoAttr->_3dStruct = (hwStatus->infoframeStatus.vsif[8] >> 4) & 0xf; /* 4'b, BIT[4:1] */
+            videoAttr->_3dStruct = (hwStatus->infoFrameStatus.vsif[8] >> 4) & 0xf; /* 4'b, BIT[4:1] */
         }
     }
 }
@@ -1157,10 +1157,10 @@ static void HdmiFillCommonAttrFromHardwareStatus(struct HdmiCommonAttr *commAttr
             break;
     }
 
-    commAttr->enableAudio = (hwStatus->audioStatus.enable && hwStatus->infoframeStatus.audioEnable);
-    commAttr->avi = hwStatus->infoframeStatus.aviEnable;
-    commAttr->audio = hwStatus->infoframeStatus.audioEnable;
-    commAttr->xvyccMode = hwStatus->infoframeStatus.gdbEnable;
+    commAttr->enableAudio = (hwStatus->audioStatus.enable && hwStatus->infoFrameStatus.audioEnable);
+    commAttr->avi = hwStatus->infoFrameStatus.aviEnable;
+    commAttr->audio = hwStatus->infoFrameStatus.audioEnable;
+    commAttr->xvyccMode = hwStatus->infoFrameStatus.gdbEnable;
     commAttr->deepColor = HdmiCommonColorDepthConvertToDeepClolor(hwStatus->videoStatus.outBitDepth);
 
     /* color space is ycbcr444 when the hdr mode is dolby. */
@@ -1249,13 +1249,13 @@ static int32_t HdmiVedioAttrHandle(struct HdmiCntlr *cntlr, struct HdmiHardwareS
         HdmiCntlrVideoPathSet(cntlr, videoAttr);
     }
 
-    (void)HdmiAviInfoframeSend(&(cntlr->infoframe), (commAttr->enableHdmi && commAttr->avi));
-    (void)HdmiVsInfoframeSend(&(cntlr->infoframe), commAttr->enableHdmi, commAttr->vsifDolby);
-    /* the drm infoframe is stop because software was reset in videopath, so re-enable it if the mode is HDR10. */
+    (void)HdmiAviInfoFrameSend(&(cntlr->infoFrame), (commAttr->enableHdmi && commAttr->avi));
+    (void)HdmiVsInfoFrameSend(&(cntlr->infoFrame), commAttr->enableHdmi, commAttr->vsifDolby);
+    /* the drm infoFrame is stop because software was reset in videopath, so re-enable it if the mode is HDR10. */
     if (cntlr->cap.baseCap.bits.hdr > 0) {
         if (cntlr->attr.hdrAttr.mode == HDMI_HDR_MODE_CEA_861_3) {
-            (void)HdmiDrmInfoframeSend(&(cntlr->infoframe), false);
-            (void)HdmiDrmInfoframeSend(&(cntlr->infoframe), true);
+            (void)HdmiDrmInfoFrameSend(&(cntlr->infoFrame), false);
+            (void)HdmiDrmInfoFrameSend(&(cntlr->infoFrame), true);
         }
     }
     return HDF_SUCCESS;
@@ -1375,15 +1375,15 @@ int32_t HdmiCntlrSetHdrAttribute(struct HdmiCntlr *cntlr, struct HdmiHdrAttr *at
     return HdmiHdrAttrHandle(cntlr->hdr, attr);
 }
 
-int32_t HdmiCntlrInfoframeGet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoframeInfo *frame)
+int32_t HdmiCntlrInfoFrameGet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoFrameInfo *frame)
 {
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-    return HdmiInfoframeGetInfo(&(cntlr->infoframe), type, frame);
+    return HdmiInfoFrameGetInfo(&(cntlr->infoFrame), type, frame);
 }
 
-int32_t HdmiCntlrInfoframeSet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoframeInfo *frame)
+int32_t HdmiCntlrInfoFrameSet(struct HdmiCntlr *cntlr, enum HdmiPacketType type, union HdmiInfoFrameInfo *frame)
 {
     if (cntlr == NULL || cntlr->ops == NULL) {
         return HDF_ERR_INVALID_OBJECT;
@@ -1391,7 +1391,7 @@ int32_t HdmiCntlrInfoframeSet(struct HdmiCntlr *cntlr, enum HdmiPacketType type,
     if (frame == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
-    return HdmiInfoframeSetInfo(&(cntlr->infoframe), type, frame);
+    return HdmiInfoFrameSetInfo(&(cntlr->infoFrame), type, frame);
 }
 
 int32_t HdmiCntlrRegisterHpdCallbackFunc(struct HdmiCntlr *cntlr, struct HdmiHpdCallbackInfo *callback)
@@ -1428,7 +1428,7 @@ void HdmiCntlrClose(struct HdmiCntlr *cntlr)
         HdmiCntlrStop(cntlr);
     }
 
-    HdmiInfoframeDeInit(cntlr);
+    HdmiInfoFrameDeInit(cntlr);
     HdmiDdcDeinit(cntlr);
     HdmiScdcDeinit(cntlr);
     HdmiFrlDeinit(cntlr);

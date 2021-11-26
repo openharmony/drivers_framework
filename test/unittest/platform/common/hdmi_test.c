@@ -6,12 +6,12 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdmi_test.h"
 #include "device_resource_if.h"
 #include "hdf_base.h"
 #include "hdf_log.h"
-#include "osal_time.h"
 #include "hdmi_if.h"
-#include "hdmi_test.h"
+#include "osal_time.h"
 
 #define HDF_LOG_TAG hdmi_test_c
 
@@ -156,7 +156,9 @@ static int32_t TestHdmiDeepColorSetAndGet(struct HdmiTester *tester)
 
 static void TestHdmiHdpHandle(void *data, bool hdp)
 {
-    (void)data;
+    if (data == NULL) {
+        printf("data is null");
+    }
 
     if (hdp == true) {
         HDF_LOGE("TestHdmiHdpHandle: hdp.");

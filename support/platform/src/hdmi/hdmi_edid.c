@@ -1026,7 +1026,7 @@ static void HdmiEdidExtUseExtDataBlockHdrSmdbPhase(struct HdmiSinkDeviceCapabili
     }
 }
 
-static void HdmiEdidDolbyCapVersionZeroPhase(struct HdmiSinkDeviceCapability *sinkCap,uint8_t *data)
+static void HdmiEdidDolbyCapVersionZeroPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data)
 {
     sinkCap->dolbyCap.globalDimming = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_BIT2_MARK) ? true : false;
     sinkCap->dolbyCap.redX = ((data[UINT8_ARRAY_TElEMENT_5] &
@@ -1063,7 +1063,7 @@ static void HdmiEdidDolbyCapVersionZeroPhase(struct HdmiSinkDeviceCapability *si
     sinkCap->dolbyCap.dMinorVer = (data[UINT8_ARRAY_TElEMENT_20] & HDMI_LOWER_NIBBLE_MARK);
 }
 
-static void HdmiEdidDolbyCapVersionOnePhase(struct HdmiSinkDeviceCapability *sinkCap,uint8_t *data)
+static void HdmiEdidDolbyCapVersionOnePhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data)
 {
     sinkCap->dolbyCap.dmVer = (data[UINT8_ARRAY_TElEMENT_4] & HDMI_EDID_VSVDB_DOLBY_DM_VER_MARK) >>
                                 HDMI_EDID_VSVDB_DOLBY_DM_VER_SHIFT;

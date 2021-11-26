@@ -8,7 +8,6 @@
 
 #include "regulator_tree_mgr.h"
 #include "osal_mem.h"
-#include "securec.h"
 
 static struct RegulatorTreeManager *g_regulatorTreeManager = NULL;
 static int RegulatorChildNodeAdd(struct RegulatorTreeInfo *pRegulator, struct RegulatorNode *child)
@@ -263,8 +262,7 @@ int RegulatorTreeSet(const char *name, struct RegulatorNode *child, struct Regul
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("RegulatorTreeSet: set [%s], parent[%s]  success!", 
-            name, parent->regulatorInfo.name);
+    HDF_LOGI("RegulatorTreeSet: set [%s], parent[%s]  success!", name, parent->regulatorInfo.name);
     return HDF_SUCCESS;
 }
 static void RegulatorTreePrintChild(const char *name, struct DListHead *childHead)

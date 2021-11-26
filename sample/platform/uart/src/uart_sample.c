@@ -259,7 +259,7 @@ static void DeinitUartDevice(struct UartDevice *device)
 {
     struct UartRegisterMap *regMap = (struct UartRegisterMap *)device->resource.physBase;
     /* wait for uart enter idle. */
-    while (UartPl011IsBusy(regMap));
+    while (UartPl011IsBusy(regMap)) { }
     UartPl011ResetRegisters(regMap);
     uart_clk_cfg(0, false);
     OsalIoUnmap((void *)device->resource.physBase);

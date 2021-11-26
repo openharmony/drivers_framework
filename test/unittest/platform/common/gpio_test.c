@@ -74,7 +74,7 @@ static struct GpioTester *GpioTesterGet(void)
 {
     int32_t ret;
     static struct GpioTester tester;
-    static struct GpioTester *pTester;
+    static struct GpioTester *pTester = NULL;
 
     if (pTester != NULL) {
         return pTester;

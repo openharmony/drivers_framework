@@ -182,12 +182,13 @@ static int RegulatorTestThreadFunc(void *param)
 int32_t RegulatorTestMultiThread(struct RegulatorTest *test)
 {
     int32_t ret;
+    uint32_t time;
     struct OsalThread thread1, thread2;
     struct OsalThreadParam cfg1, cfg2;
     int32_t count1, count2;
 
     count1 = count2 = 0;
-
+    time = 0;
     ret = OsalThreadCreate(&thread1, (OsalThreadEntry)RegulatorTestThreadFunc, (void *)&count1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("create test thread1 fail:%d", ret);
@@ -225,6 +226,10 @@ int32_t RegulatorTestMultiThread(struct RegulatorTest *test)
     while (count1 == 0 || count2 == 0) {
         HDF_LOGE("waitting testing Regulator thread finish...");
         OsalMSleep(REGULATOR_TEST_WAIT_TIMES);
+        time++;
+        if (time > REGULATOR_TEST_WAIT_TIMEOUT) {
+            break;
+        }
     }
 
     (void)OsalThreadDestroy(&thread1);

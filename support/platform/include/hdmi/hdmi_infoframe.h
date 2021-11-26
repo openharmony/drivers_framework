@@ -73,7 +73,7 @@ enum HdmiPacketType {
     HDMI_PACKET_TYPE_DST_AUDIO = 0x08,                 /* DST(Diret Stream Transport) Audio Packet */
     HDMI_PACKET_TYPE_HBR_AUDIO_STREAM = 0x09,          /* HBR(High Bitrate) Audio Stream Packet */
     HDMI_PACKET_TYPE_GAMUT_METADATA = 0x0a,            /* gamut metadata packet */
-    /* infoframe type */
+    /* infoFrame type */
     HDMI_INFOFRAME_PACKET_TYPE_VS = 0x81,              /* Verdor-Specific */
     HDMI_INFOFRAME_PACKET_TYPE_AVI = 0x82,             /* Auxiliary Video Information */
     HDMI_INFOFRAME_PACKET_TYPE_SPD = 0x83,             /* Source Product Description */
@@ -84,13 +84,13 @@ enum HdmiPacketType {
     HDMI_PACKET_TYPE_BUTT,
 };
 
-struct HdmiInfoframeHeader {
+struct HdmiInfoFrameHeader {
     enum HdmiPacketType type;
     uint8_t verNum;
     uint8_t len;
 };
 
-/* Verdor-Specific infoframe details. */
+/* Verdor-Specific infoFrame details. */
 #define HDMI_VENDOR_1_4_MAX_3D_METADAT_LEN 20
 #define HDMI_VENDOR_USER_DATA_MAX_LEN 22
 #define HDMI_VENDOR_1_4_FORMAT_MARK 0x07
@@ -167,7 +167,7 @@ struct HdmiForumVsifContent {
     uint8_t _3dMetadata[10];
 };
 
-struct HdmiVsInfoframe {
+struct HdmiVsInfoFrame {
     enum HdmiPacketType type;
     uint8_t verNum;
     uint8_t len;
@@ -178,7 +178,7 @@ struct HdmiVsInfoframe {
     } vsifContent;
 };
 
-/* AVI infoframe details. */
+/* AVI infoFrame details. */
 #define HDMI_AVI_COLOR_SPACE_MARK 0x03
 #define HDMI_AVI_SCAN_MODE_MARK 0x03
 #define HDMI_AVI_COLOR_SPACE_SHIFT 5
@@ -227,7 +227,7 @@ enum HdmiItContentType {
     HDMI_IT_CONTENT_TYPE_GAME = 3,
 };
 
-struct HdmiAviInfoframe {
+struct HdmiAviInfoFrame {
     enum HdmiPacketType type;
     uint8_t verNum;
     uint8_t len;
@@ -253,7 +253,7 @@ struct HdmiAviInfoframe {
     uint16_t rightBar;
 };
 
-/* Audio infoframe details. */
+/* Audio infoFrame details. */
 #define HDMI_AUDIO_INFOFRAME_VERSION 1
 #define HDMI_AUDIO_CODING_TYPE_MARK 0x0f
 #define HDMI_AUDIO_CHANNEL_COUNT_MARK 0x07
@@ -323,7 +323,7 @@ enum HdmiAudioLfePlaybackLevel {
     HDMI_AUDIO_LFE_PLAYBAC_BUTT,
 };
 
-struct HdmiAudioInfoframe {
+struct HdmiAudioInfoFrame {
     enum HdmiPacketType type;
     uint8_t verNum;
     uint8_t len;
@@ -338,7 +338,7 @@ struct HdmiAudioInfoframe {
     bool dmInh; /* Down-mix Inhibit Flag */
 };
 
-/* Source Product Description infoframe details. */
+/* Source Product Description infoFrame details. */
 #define HDMI_SPD_VENDOR_NAME_LEN 8
 #define HDMI_SPD_PRODUCT_DESCRIPTION_LEN 16
 #define HDMI_SPD_VERSION 1
@@ -362,7 +362,7 @@ enum HdmiSpdSdi {
     HDMI_SPD_SDI_BUTT,
 };
 
-struct HdmiSpdInfoframe {
+struct HdmiSpdInfoFrame {
     enum HdmiPacketType type;
     uint8_t verNum;
     uint8_t len;
@@ -371,12 +371,12 @@ struct HdmiSpdInfoframe {
     enum HdmiSpdSdi sdi;
 };
 
-/* Dynamic Range and Mastering infoframe details. */
+/* Dynamic Range and Mastering infoFrame details. */
 #define HDMI_DRM_METADATA_MARK 0xff
 #define HDMI_DRM_METADATA_SHIFT 8
 #define HDMI_DRM_INFOFRAME_VERSION 1
 
-struct HdmiDrmInfoframe {
+struct HdmiDrmInfoFrame {
     enum HdmiPacketType type;
     uint8_t verNum;
     uint8_t len;
@@ -431,34 +431,34 @@ struct HdmiGbdPacket {
     uint8_t maxBlueDataL;
 };
 
-union HdmiInfoframeInfo {
-    struct HdmiInfoframeHeader header;
-    struct HdmiVsInfoframe vs;
-    struct HdmiAviInfoframe avi;
-    struct HdmiAudioInfoframe audio;
-    struct HdmiSpdInfoframe spd;
-    struct HdmiDrmInfoframe drm;
+union HdmiInfoFrameInfo {
+    struct HdmiInfoFrameHeader header;
+    struct HdmiVsInfoFrame vs;
+    struct HdmiAviInfoFrame avi;
+    struct HdmiAudioInfoFrame audio;
+    struct HdmiSpdInfoFrame spd;
+    struct HdmiDrmInfoFrame drm;
     struct HdmiGbdPacket gbd;
 };
 
 /*
- * Infoframe: A data structure defined in CEA-861-D that is designed to carry a variety of auxiliary data items
+ * InfoFrame: A data structure defined in CEA-861-D that is designed to carry a variety of auxiliary data items
  * regarding the audio or video streams or the source device and is carried from Source to Sink across HDMI.
  */
-struct HdmiInfoframe {
-    enum HdmiPacketType infoframeType;
+struct HdmiInfoFrame {
+    enum HdmiPacketType infoFrameType;
     bool hdrSupport;
-    struct HdmiVsInfoframe vs;
-    struct HdmiAviInfoframe avi;
-    struct HdmiAudioInfoframe audio;
-    struct HdmiSpdInfoframe spd;
-    struct HdmiDrmInfoframe drm;
+    struct HdmiVsInfoFrame vs;
+    struct HdmiAviInfoFrame avi;
+    struct HdmiAudioInfoFrame audio;
+    struct HdmiSpdInfoFrame spd;
+    struct HdmiDrmInfoFrame drm;
     struct HdmiGbdPacket gbd;
     struct HdmiVsUserVsifContent userVsif;
     void *priv;
 };
 
-struct HdmiInfoframeStatus {
+struct HdmiInfoFrameStatus {
     bool vsifEnable;
     bool aviEnable;
     bool audioEnable;
@@ -473,16 +473,16 @@ struct HdmiInfoframeStatus {
     uint8_t gdb[HDMI_INFOFRAME_LEN];
 };
 
-int32_t HdmiAudioInfoframeSend(struct HdmiInfoframe *frame, bool enable);
-int32_t HdmiAviInfoframeSend(struct HdmiInfoframe *frame, bool enable);
-int32_t HdmiDrmInfoframeSend(struct HdmiInfoframe *frame, bool enable);
-int32_t HdmiVsInfoframeSend(struct HdmiInfoframe *frame, bool enable, bool dolbyEnable);
-int32_t HdmiSpdInfoframeSend(struct HdmiInfoframe *frame, bool enable,
+int32_t HdmiAudioInfoFrameSend(struct HdmiInfoFrame *frame, bool enable);
+int32_t HdmiAviInfoFrameSend(struct HdmiInfoFrame *frame, bool enable);
+int32_t HdmiDrmInfoFrameSend(struct HdmiInfoFrame *frame, bool enable);
+int32_t HdmiVsInfoFrameSend(struct HdmiInfoFrame *frame, bool enable, bool dolbyEnable);
+int32_t HdmiSpdInfoFrameSend(struct HdmiInfoFrame *frame, bool enable,
     char *vendorName, char *productName, enum HdmiSpdSdi sdi);
-int32_t HdmiInfoframeGetInfo(struct HdmiInfoframe *frame, enum HdmiPacketType type,
-    union HdmiInfoframeInfo *infoframe);
-int32_t HdmiInfoframeSetInfo(struct HdmiInfoframe *frame, enum HdmiPacketType type,
-    union HdmiInfoframeInfo *infoframe);
+int32_t HdmiInfoFrameGetInfo(struct HdmiInfoFrame *frame, enum HdmiPacketType type,
+    union HdmiInfoFrameInfo *infoFrame);
+int32_t HdmiInfoFrameSetInfo(struct HdmiInfoFrame *frame, enum HdmiPacketType type,
+    union HdmiInfoFrameInfo *infoFrame);
 
 #ifdef __cplusplus
 #if __cplusplus

@@ -7,9 +7,7 @@
  */
 
 #include "hdf_gpio_entry_test.h"
-#include "gpio_if.h"
 #include "gpio_test.h"
-#include "hdf_log.h"
 
 #define HDF_LOG_TAG hdf_gpio_entry_test
 
