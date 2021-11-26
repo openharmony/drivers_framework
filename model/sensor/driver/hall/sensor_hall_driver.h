@@ -31,7 +31,7 @@ struct HallDrvData {
     struct SensorCfgData *hallCfg;
     struct HallOpsCall ops;
     uint16_t status;
-    unsigned long delayTime;
+    uint32_t delayTime;
 };
 
 int32_t HallRegisterChipOps(const struct HallOpsCall *ops);
