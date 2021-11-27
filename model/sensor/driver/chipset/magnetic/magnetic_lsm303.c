@@ -104,6 +104,12 @@ int32_t ReadLsm303Data(struct SensorCfgData *data)
     tmp[MAGNETIC_Y_AXIS] = rawData.y * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_XY47GA;
     tmp[MAGNETIC_Z_AXIS] = rawData.z * LSM303_MAGNETIC_GIN / LSM303DLHC_SENSITIVITY_Z47GA;
 
+    ret = SensorRawDataToRemapData(data->direction, tmp, sizeof(tmp) / sizeof(tmp[0]));
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: LSM303 convert raw data failed", __func__);
+        return HDF_FAILURE;
+    }
+    
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);

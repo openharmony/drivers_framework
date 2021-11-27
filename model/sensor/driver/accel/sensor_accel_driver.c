@@ -246,6 +246,11 @@ static int32_t InitAccelAfterDetected(struct SensorCfgData *config)
         return HDF_FAILURE;
     }
 
+    if (ParseSensorDirection(config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Parse accel direction failed", __func__);
+        return HDF_FAILURE;
+    }
+
     if (ParseSensorRegConfig(config) != HDF_SUCCESS) {
         HDF_LOGE("%s: Parse sensor register failed", __func__);
         (void)DeleteSensorDevice(&config->sensorInfo);
@@ -309,10 +314,12 @@ void AccelReleaseCfgData(struct SensorCfgData *accelCfg)
     (void)DeleteSensorDevice(&accelCfg->sensorInfo);
     ReleaseSensorAllRegConfig(accelCfg);
     (void)ReleaseSensorBusHandle(&accelCfg->busCfg);
+    ReleaseSensorDirectionConfig(accelCfg);
 
     accelCfg->root = NULL;
     (void)memset_s(&accelCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&accelCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
+    (void)memset_s(&accelCfg->direction, sizeof(struct SensorDirection), 0, sizeof(struct SensorDirection));
     (void)memset_s(&accelCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
 }
 

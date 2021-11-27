@@ -106,6 +106,12 @@ int32_t ReadBmi160Data(struct SensorCfgData *data)
     tmp[ACCEL_Y_AXIS] = (rawData.y * SENSOR_1K_UNIT) / SENSOR_CONVERT_UNIT;
     tmp[ACCEL_Z_AXIS] = (rawData.z * SENSOR_1K_UNIT) / SENSOR_CONVERT_UNIT;
 
+    ret = SensorRawDataToRemapData(data->direction, tmp, sizeof(tmp) / sizeof(tmp[0]));
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: BMI160 convert raw data failed", __func__);
+        return HDF_FAILURE;
+    }
+    
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);

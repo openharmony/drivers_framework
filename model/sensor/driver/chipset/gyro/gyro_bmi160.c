@@ -100,6 +100,12 @@ int32_t ReadBmi160GyroData(struct SensorCfgData *data)
     tmp[GYRO_Y_AXIS] = rawData.y * BMI160_GYRO_SENSITIVITY_2000DPS;
     tmp[GYRO_Z_AXIS] = rawData.z * BMI160_GYRO_SENSITIVITY_2000DPS;
 
+    ret = SensorRawDataToRemapData(data->direction, tmp, sizeof(tmp) / sizeof(tmp[0]));
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: BMI160 convert raw data failed", __func__);
+        return HDF_FAILURE;
+    }
+    
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);
