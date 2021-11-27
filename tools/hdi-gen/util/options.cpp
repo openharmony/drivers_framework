@@ -38,7 +38,7 @@ Options& Options::GetInstance()
     return option;
 }
 
-Options& Options::Parse(int argc, char* const argv[])
+Options& Options::Parse(int argc, const char* argv[])
 {
     program_ = argv[0];
     opterr = 1;

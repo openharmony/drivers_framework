@@ -8,8 +8,8 @@
 
 #include "codegen/c_custom_types_code_emitter.h"
 #include "util/file.h"
-#include "util/options.h"
 #include "util/logger.h"
+#include "util/options.h"
 
 namespace OHOS {
 namespace HDI {

@@ -9,8 +9,8 @@
 #ifndef OHOS_HDI_CODEGENERATOR_H
 #define OHOS_HDI_CODEGENERATOR_H
 
-#include "codegen/code_emitter.h"
 #include "ast/ast_module.h"
+#include "codegen/code_emitter.h"
 
 namespace OHOS {
 namespace HDI {
