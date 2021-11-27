@@ -446,12 +446,11 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
 
 int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *remapData, uint32_t num)
 {
-    int32_t ret;
     int32_t axis;
     int32_t directionSign[MAX_SENSOR_AXIS_NUM];
     int32_t newData[MAX_SENSOR_AXIS_NUM];
 
-    CHECK_NULL_PTR_RETURN_VALUE(ret, direction);
+    CHECK_NULL_PTR_RETURN_VALUE(direction, HDF_ERR_INVALID_PARAM);
 
     for (axis = 0; axis < num; axis++) {
         if (direction->sign[axis] == 0) {
