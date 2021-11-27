@@ -219,23 +219,23 @@ bool MacroGen::NodeWalk()
 {
     return ast_->WalkForward([this](std::shared_ptr<AstObject> &current, uint32_t depth) {
         auto type = current->Type();
-        static std::string nodeName;
-        static std::string arrayName;
         static uint32_t arraySize = 0;
-        static uint32_t arrayType = 0;
 
         Logger().Debug() << "name,type:[" << current->Name() << "," << type \
                          << "] depth:" << depth \
                          << " arraySize:" << std::dec << arraySize << '\n';
-        SetTypeData(type, current, nodeName, arrayName, arraySize, arrayType, depth);
+        SetTypeData(type, current, arraySize, depth);
         
         return NOERR;
     });
 }
 
-void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current, std::string &nodeName,
-    std::string &arrayName, uint32_t &arraySize, uint32_t &arrayType, uint32_t depth)
+void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current,
+    uint32_t &arraySize, uint32_t depth)
 {
+    static std::string nodeName;
+    static std::string arrayName;
+    static uint32_t arrayType = 0;
     switch (type) {
         case PARSEROP_UINT8:
         case PARSEROP_UINT16:
