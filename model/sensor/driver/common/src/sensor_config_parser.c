@@ -384,14 +384,18 @@ static int32_t ParseSensorAttr(struct DeviceResourceIface *parser, const struct 
 
 void ReleaseSensorDirectionConfig(struct SensorCfgData *config)
 {
-    if (config->direction != NULL) {
-        OsalMemFree(config->direction);
-        config->direction = NULL;
+    if (config == NULL) {
+        if (config->direction != NULL) {
+            OsalMemFree(config->direction);
+            config->direction = NULL;
+        }
     }
 }
 
 int32_t ParseSensorDirection(struct SensorCfgData *config)
 {
+    int32_t num;
+    int32_t ret;
     uint32_t index;
     uint32_t *buf = NULL;
     const struct DeviceResourceNode *directionNode = NULL;
@@ -404,13 +408,11 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
     directionNode = parser->GetChildNode(config->root, "sensorDirection");
     CHECK_NULL_PTR_RETURN_VALUE(directionNode, HDF_ERR_INVALID_PARAM);
     
-    int32_t num = parser->GetElemNum(directionNode, "convert");
-    int32_t ret = parser->GetUint32(directionNode, "direction", &index, 0);
+    num = parser->GetElemNum(directionNode, "convert");
+    ret = parser->GetUint32(directionNode, "direction", &index, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "direction"); 
-    if (num <= 0 || num > MAX_SENSOR_INDEX_NUM) {
-        if (index < 0 || index > num / AXIS_INDEX_MAX) {
-            return HDF_FAILURE;
-        }
+    if (num <= 0 || num > MAX_SENSOR_INDEX_NUM || index < 0 || index > num / AXIS_INDEX_MAX) {
+        return HDF_FAILURE;
     }
 
     buf = (uint32_t *)OsalMemCalloc(sizeof(uint32_t) * num);
@@ -424,8 +426,11 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
     }
 
     config->direction = (struct SensorDirection*)OsalMemCalloc(sizeof(struct SensorDirection));
-    CHECK_NULL_PTR_RETURN_VALUE(config->direction, HDF_ERR_MALLOC_FAIL);
-
+    if (config->direction == NULL) {
+        HDF_LOGE("%s: malloc sensor direction config item failed", __func__);
+        OsalMemFree(buf);
+        return HDF_ERR_MALLOC_FAIL;
+    }
 
     index = index * AXIS_INDEX_MAX;
     config->direction->sign[AXIS_X] = buf[index + SIGN_X_INDEX];

@@ -250,6 +250,8 @@ static int32_t InitMagneticAfterDetected(struct SensorCfgData *config)
 
     if (ParseSensorDirection(config) != HDF_SUCCESS) {
         HDF_LOGE("%s: Parse magnetic direction failed", __func__);
+        (void)DeleteSensorDevice(&config->sensorInfo);
+        ReleaseSensorDirectionConfig(config);
         return HDF_FAILURE;
     }
 
@@ -328,7 +330,6 @@ void MagneticReleaseCfgData(struct SensorCfgData *magneticCfg)
     magneticCfg->root = NULL;
     (void)memset_s(&magneticCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&magneticCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
-    (void)memset_s(&magneticCfg->direction, sizeof(struct SensorDirection), 0, sizeof(struct SensorDirection));
     (void)memset_s(&magneticCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
 }
 
