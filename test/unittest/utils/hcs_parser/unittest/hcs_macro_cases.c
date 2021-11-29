@@ -6,9 +6,9 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_macro_test.h"
 #include "hdf_log.h"
 #include "hcs_macro.h"
+#include "hdf_macro_test.h"
 
 #define HDF_LOG_TAG hcs_macro_cases
 
@@ -37,46 +37,46 @@
     }
 
 #define CHECK_INT_EQU(part1, part2) \
-    if (part1 != part2) { \
+    if ((part1) != (part2)) { \
         HDF_LOGE("%d\n", __LINE__); \
         return HDF_FAILURE; \
     }
 
-#define fp_child_deal(node) \
-    CHECK_STRING_EQU(HCS_PROP(node, status), fpData[index].child.status);
+#define FP_CHILD_DEAL(node) \
+    CHECK_STRING_EQU(HCS_PROP(node, status), g_fpData[index].child.status);
 
-#define fp_deal(node) \
+#define FP_DEAL(node) \
     do { \
-        CHECK_STRING_EQU(HCS_PROP(node, product), fpData[index].product); \
-        CHECK_STRING_EQU(HCS_PROP(node, chip), fpData[index].chip); \
-        node##_foreach_child(fp_child_deal); \
-        CHECK_STRING_EQU(HCS_PROP(node, status), fpData[index].status); \
+        CHECK_STRING_EQU(HCS_PROP(node, product), g_fpData[index].product); \
+        CHECK_STRING_EQU(HCS_PROP(node, chip), g_fpData[index].chip); \
+        node##_foreach_child(FP_CHILD_DEAL); \
+        CHECK_STRING_EQU(HCS_PROP(node, status), g_fpData[index].status); \
         index++; \
     } while (0);
 
-#define fp_deal_(node) fp_deal(node)
+#define FP_DEAL_(node) FP_DEAL(node)
 
-#define fp_child_deal_vargs(node, fpArgs, idx) \
+#define FP_CHILD_DEAL_VARGS(node, fpArgs, idx) \
     CHECK_STRING_EQU(HCS_PROP(node, status), fpArgs[idx].child.status);
 
-#define fp_deal_vargs(node, fpArgs, idx) \
+#define FP_DEAL_VARGS(node, fpArgs, idx) \
     do { \
-        CHECK_STRING_EQU(HCS_PROP(node, product), fpArgs[idx].product); \
-        CHECK_STRING_EQU(HCS_PROP(node, chip), fpArgs[idx].chip); \
-        node##_foreach_child_vargs(fp_child_deal_vargs, fpArgs, idx); \
-        CHECK_STRING_EQU(HCS_PROP(node, status), fpArgs[idx].status); \
-        idx++; \
+        CHECK_STRING_EQU(HCS_PROP(node, product), fpArgs[(idx)].product); \
+        CHECK_STRING_EQU(HCS_PROP(node, chip), fpArgs[(idx)].chip); \
+        node##_foreach_child_vargs(FP_CHILD_DEAL_VARGS, fpArgs, idx); \
+        CHECK_STRING_EQU(HCS_PROP(node, status), fpArgs[(idx)].status); \
+        (idx)++; \
     } while (0);
 
-#define fp_deal_vargs_(node, fpArgs, idx) fp_deal_vargs(node, fpArgs, idx)
+#define FP_DEAL_VARGS_(node, fpArgs, idx) FP_DEAL_VARGS(node, fpArgs, idx)
 
-struct oneChild {
+struct OneChild {
     const char *status;
 };
-struct fingerprint {
+struct FingerPrint {
     const char *product;
     const char *chip;
-    struct oneChild child;
+    struct OneChild child;
     const char *status;
 };
 
@@ -88,7 +88,7 @@ struct fingerprint {
 #define FP_INFO_THREE_NODE HCS_NODE(HCS_ROOT, fingerprint_three)
 #define FP_INFO_AUDIO_NODE HCS_NODE(FP_INFO_NODE, audio_info)
 
-static struct fingerprint fpData[] = {
+static struct FingerPrint g_fpData[] = {
     { "test", "one", { "ok" }, "ok" },
     { "test", "two", { "ok" }, "disable" },
     { "test", "three", { "ok" }, "disable" }
@@ -202,7 +202,7 @@ static int TraversalAudio(void)
 static int TraversalFPFingerInfo(void)
 {
     int index = FP_ONE_IDX;
-    fp_deal_(HCS_NODE(FP_INFO_NODE, finger_info));
+    FP_DEAL_(HCS_NODE(FP_INFO_NODE, finger_info));
     return HDF_SUCCESS;
 }
 
@@ -225,27 +225,27 @@ static int TraversalFPAudio(void)
 static int TraversalFPOne(void)
 {
     int index = FP_ONE_IDX;
-    fp_deal_(HCS_NODE(FP_INFO_NODE, fingerprint_one));
+    FP_DEAL_(HCS_NODE(FP_INFO_NODE, fingerprint_one));
     index = FP_ONE_IDX;
-    fp_deal_vargs_(HCS_NODE(FP_INFO_NODE, fingerprint_one), fpData, index);
+    FP_DEAL_VARGS_(HCS_NODE(FP_INFO_NODE, fingerprint_one), g_fpData, index);
     return HDF_SUCCESS;
 }
 
 static int TraversalFPTwo(void)
 {
     int index = FP_TWO_IDX;
-    fp_deal_(HCS_NODE(FP_INFO_NODE, fingerprint_two));
+    FP_DEAL_(HCS_NODE(FP_INFO_NODE, fingerprint_two));
     index = FP_TWO_IDX;
-    fp_deal_vargs_(HCS_NODE(FP_INFO_NODE, fingerprint_two), fpData, index);
+    FP_DEAL_VARGS_(HCS_NODE(FP_INFO_NODE, fingerprint_two), g_fpData, index);
     return HDF_SUCCESS;
 }
 
 static int TraversalPringerprintThree(void)
 {
     int index = FP_THREE_IDX;
-    fp_deal_(HCS_NODE(HCS_ROOT, fingerprint_three));
+    FP_DEAL_(HCS_NODE(HCS_ROOT, fingerprint_three));
     index = FP_THREE_IDX;
-    fp_deal_vargs_(HCS_NODE(HCS_ROOT, fingerprint_three), fpData, index);
+    FP_DEAL_VARGS_(HCS_NODE(HCS_ROOT, fingerprint_three), g_fpData, index);
     return HDF_SUCCESS;
 }
 
@@ -371,7 +371,7 @@ int HcsMacroTraversalOneNodeChild(void)
 {
     int index = 0;
 
-    HCS_FOREACH_CHILD(FP_INFO_NODE, fp_deal);
+    HCS_FOREACH_CHILD(FP_INFO_NODE, FP_DEAL);
     return HDF_SUCCESS;
 }
 
@@ -379,7 +379,7 @@ int HcsMacroTraversalOneNodeChildVargs(void)
 {
     int index = 0;
 
-    HCS_FOREACH_CHILD_VARGS(FP_INFO_NODE, fp_deal_vargs, fpData, index);
+    HCS_FOREACH_CHILD_VARGS(FP_INFO_NODE, FP_DEAL_VARGS, g_fpData, index);
     return HDF_SUCCESS;
 }
 
