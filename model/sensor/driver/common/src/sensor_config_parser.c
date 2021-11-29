@@ -384,11 +384,14 @@ static int32_t ParseSensorAttr(struct DeviceResourceIface *parser, const struct 
 
 void ReleaseSensorDirectionConfig(struct SensorCfgData *config)
 {
-    if (config == NULL) {
-        if (config->direction != NULL) {
-            OsalMemFree(config->direction);
-            config->direction = NULL;
-        }
+    if (config == NULL || config->direction == NULL) {
+        HDF_LOGE("%s:sensor direction is null", __func__);
+        return;
+    }
+
+    if (config->direction != NULL) {
+        OsalMemFree(config->direction);
+        config->direction = NULL;
     }
 }
 
@@ -458,7 +461,6 @@ int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *rem
         } else {
             directionSign[axis] = -1;
         }
-        HDF_LOGE("%s: sign[%d] = %d", __func__, axis, directionSign[axis]);
     }
 
     newData[direction->map[AXIS_X]] = directionSign[AXIS_X] * remapData[AXIS_X];

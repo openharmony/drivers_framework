@@ -249,7 +249,6 @@ static int32_t InitAccelAfterDetected(struct SensorCfgData *config)
     if (ParseSensorDirection(config) != HDF_SUCCESS) {
         HDF_LOGE("%s: Parse accel direction failed", __func__);
         (void)DeleteSensorDevice(&config->sensorInfo);
-        ReleaseSensorDirectionConfig(config);
         return HDF_FAILURE;
     }
 
@@ -257,6 +256,7 @@ static int32_t InitAccelAfterDetected(struct SensorCfgData *config)
         HDF_LOGE("%s: Parse sensor register failed", __func__);
         (void)DeleteSensorDevice(&config->sensorInfo);
         ReleaseSensorAllRegConfig(config);
+        ReleaseSensorDirectionConfig(config);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
