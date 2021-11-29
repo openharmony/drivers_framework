@@ -384,10 +384,7 @@ static int32_t ParseSensorAttr(struct DeviceResourceIface *parser, const struct 
 
 void ReleaseSensorDirectionConfig(struct SensorCfgData *config)
 {
-    if (config == NULL) {
-        HDF_LOGE("%s:sensor sensorcfgData is null", __func__);
-        return;
-    }
+    CHECK_NULL_PTR_RETURN(config);
 
     if (config->direction != NULL) {
         OsalMemFree(config->direction);
