@@ -414,7 +414,7 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
     num = parser->GetElemNum(directionNode, "convert");
     ret = parser->GetUint32(directionNode, "direction", &index, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "direction"); 
-    if (num <= 0 || num > MAX_SENSOR_INDEX_NUM || index < 0 || index > num / AXIS_INDEX_MAX) {
+    if ((num <= 0 || num > MAX_SENSOR_INDEX_NUM) || (index < 0 || index > num / AXIS_INDEX_MAX)) {
         return HDF_FAILURE;
     }
 
