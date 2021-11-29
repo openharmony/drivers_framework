@@ -24,7 +24,7 @@ struct IDeviceNode {
     int (*PublishService)(struct HdfDeviceNode *devNode);
     int (*RemoveService)(struct HdfDeviceNode *devNode);
     int (*LaunchNode)(struct HdfDeviceNode *devNode);
-    int (*ReleaseNode)(struct HdfDeviceNode *devNode);
+    void (*UnlaunchNode)(struct HdfDeviceNode *devNode);
 };
 
 struct HdfDeviceNode {
@@ -35,8 +35,9 @@ struct HdfDeviceNode {
     struct HdfDeviceObject deviceObject;
     struct IHdfDeviceToken *token;
     struct HdfDriver *driver;
-    const struct HdfDevice *device;
+    struct HdfDevice *device;
     char *servName;
+    char *driverName;
     devid_t devId;
     uint16_t policy;
     uint16_t permission;
@@ -61,5 +62,6 @@ void HdfDeviceNodeFreeInstance(struct HdfDeviceNode *devNode);
 void HdfDeviceNodeDelete(struct HdfDeviceNode *devNode);
 int HdfDeviceNodePublishPublicService(struct HdfDeviceNode *devNode);
 int HdfDeviceNodeRemoveService(struct HdfDeviceNode *devNode);
+int DeviveDriverBind(struct HdfDeviceNode *devNode);
 
 #endif /* HDF_DEVICE_NODE_H */

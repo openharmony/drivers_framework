@@ -32,20 +32,26 @@ int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt)
         HDF_LOGE("devHostSvcIf or devHostSvcIf->AddDevice is null");
         return HDF_FAILURE;
     }
-    HdfSListIteratorInit(&it, hostClnt->deviceInfos);
+    HdfSListIteratorInit(&it, &hostClnt->unloadDevInfos);
     while (HdfSListIteratorHasNext(&it)) {
         deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&it);
         if ((deviceInfo == NULL) || (deviceInfo->preload == DEVICE_PRELOAD_DISABLE)) {
             continue;
         }
-        if ((DeviceManagerIsQuickLoad() == DEV_MGR_QUICK_LOAD) &&
-            (deviceInfo->preload == DEVICE_PRELOAD_ENABLE_STEP2)) {
+        /*
+         * If quick start feature enable, the device which 'preload' attribute set as
+         * DEVICE_PRELOAD_ENABLE_STEP2 will be loaded later
+         */
+        if (DeviceManagerIsQuickLoad() == DEV_MGR_QUICK_LOAD &&
+            deviceInfo->preload == DEVICE_PRELOAD_ENABLE_STEP2) {
             continue;
         }
         ret = devHostSvcIf->AddDevice(devHostSvcIf, deviceInfo);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("failed to install driver %s, ret = %d", deviceInfo->svcName, ret);
+            continue;
         }
+        HdfSListIteratorRemove(&it);
     }
     return HDF_SUCCESS;
 }
@@ -69,6 +75,7 @@ struct DevHostServiceClnt *DevHostServiceClntNewInstance(uint16_t hostId, const 
         hostClnt->hostId = hostId;
         hostClnt->hostName = hostName;
         hostClnt->devCount = 0;
+        hostClnt->hostPid = -1;
         DevHostServiceClntConstruct(hostClnt);
     }
     return hostClnt;
@@ -78,7 +85,8 @@ void DevHostServiceClntFreeInstance(struct DevHostServiceClnt *hostClnt)
 {
     if (hostClnt != NULL) {
         HdfSListFlush(&hostClnt->devices, DeviceTokenClntDelete);
-        HdfSListFlush(hostClnt->deviceInfos, HdfDeviceInfoDelete);
+        HdfSListFlush(&hostClnt->unloadDevInfos, HdfDeviceInfoDelete);
+        HdfSListFlush(&hostClnt->dynamicDevInfos, HdfDeviceInfoDelete);
         OsalMemFree(hostClnt->deviceHashMap);
         OsalMemFree(hostClnt);
     }

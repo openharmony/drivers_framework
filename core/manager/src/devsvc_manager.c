@@ -13,6 +13,7 @@
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 #include "hdf_service_record.h"
+#include "hdf_device_node.h"
 
 #define HDF_LOG_TAG devsvc_manager
 
@@ -65,11 +66,10 @@ int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *svcName, st
 
 int DevSvcManagerSubscribeService(struct IDevSvcManager *inst, const char *svcName, struct SubscriberCallback callBack)
 {
-    int ret = HDF_FAILURE;
-    struct DevSvcManager *devSvcMgr = (struct DevSvcManager *)inst;
+    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();;
     struct HdfObject *deviceService = NULL;
-    if (svcName == NULL || devSvcMgr == NULL) {
-        return ret;
+    if (inst == NULL || svcName == NULL || devMgrSvc == NULL) {
+        return HDF_FAILURE;
     }
 
     deviceService = DevSvcManagerGetService(inst, svcName);
@@ -80,7 +80,7 @@ int DevSvcManagerSubscribeService(struct IDevSvcManager *inst, const char *svcNa
         return HDF_SUCCESS;
     }
 
-    return DevmgrServiceLoadDevice(svcName);
+    return devMgrSvc->super.LoadDevice(&devMgrSvc->super, svcName);
 }
 
 void DevSvcManagerRemoveService(struct IDevSvcManager *inst, const char *svcName)
@@ -113,6 +113,33 @@ struct HdfDeviceObject *DevSvcManagerGetObject(struct IDevSvcManager *inst, cons
         return serviceRecord->value;
     }
     return NULL;
+}
+
+// only use for kernel space
+void DevSvcManagerListService(struct HdfSBuf *serviecNameSet, DeviceClass deviceClass)
+{
+    struct HdfSListIterator it;
+    struct DevSvcRecord *record = NULL;
+    struct HdfDeviceNode *devNode = NULL;
+    struct DevSvcManager *devSvcManager = (struct DevSvcManager *)DevSvcManagerGetInstance();
+    if (devSvcManager == NULL) {
+        HDF_LOGE("failed to list service, devSvcManager is null");
+        return;
+    }
+
+    OsalMutexLock(&devSvcManager->mutex);
+    HdfSListIteratorInit(&it, &devSvcManager->services);
+    while (HdfSListIteratorHasNext(&it)) {
+        record = (struct DevSvcRecord *)HdfSListIteratorNext(&it);
+        if (record == NULL) {
+            continue;
+        }
+        devNode = CONTAINER_OF(record->value, struct HdfDeviceNode, deviceObject);
+        if (devNode->deviceObject.deviceClass == deviceClass) {
+            HdfSbufWriteString(serviecNameSet, devNode->servName);
+        }
+    }
+    OsalMutexUnlock(&devSvcManager->mutex);
 }
 
 struct HdfObject *DevSvcManagerGetService(struct IDevSvcManager *inst, const char *svcName)

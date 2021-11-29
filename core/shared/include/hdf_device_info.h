@@ -36,7 +36,6 @@ struct HdfDeviceInfo {
     const char *moduleName;
     const char *svcName;
     const char *deviceMatchAttr;
-    const void *private;
 };
 
 struct HdfPrivateInfo {

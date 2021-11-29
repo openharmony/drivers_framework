@@ -6,11 +6,12 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 #include "sample_driver_test.h"
-#include "devsvc_manager_clnt.h"
 #include "devmgr_service.h"
+#include "devsvc_manager_clnt.h"
+#include "hdf_device_object.h"
 #include "hdf_log.h"
-#include "hdf_device_desc.h"
 #include "hdf_pm.h"
+#include "osal_mem.h"
 
 #define HDF_LOG_TAG sample_driver_test
 
@@ -18,17 +19,58 @@
 #define INT32_MAX 0x7fffffff
 #endif
 
+struct SampleTestDevice {
+    struct DListHead listNode;
+    struct HdfDeviceObject *devobj;
+};
+
+struct DListHead g_sampleDeviceList = { NULL };
+
+#define REGISTER_DEV_MAX 16
+struct HdfDeviceObject *g_resistedDevice[REGISTER_DEV_MAX] = { 0 };
+
+static void SaveRegistedDevice(struct SampleTestDevice *sampleDev)
+{
+    if (g_sampleDeviceList.next == NULL) {
+        DListHeadInit(&g_sampleDeviceList);
+    }
+    DListInsertTail(&sampleDev->listNode, &g_sampleDeviceList);
+}
+
+struct SampleTestDevice *GetRegistedDevice(const char *serviceName)
+{
+    struct SampleTestDevice *sampleDev = NULL;
+    struct SampleTestDevice *sampleDevTmp = NULL;
+    DLIST_FOR_EACH_ENTRY_SAFE(sampleDev, sampleDevTmp, &g_sampleDeviceList, struct SampleTestDevice, listNode) {
+        if (sampleDev->devobj == NULL || HdfDeviceGetServiceName(sampleDev->devobj) == NULL) {
+            DListRemove(&sampleDev->listNode);
+            OsalMemFree(sampleDev);
+            continue;
+        }
+
+        if (strcmp(HdfDeviceGetServiceName(sampleDev->devobj), serviceName) == 0) {
+            return sampleDev;
+        }
+    }
+
+    return NULL;
+}
+
 void HdfSampleDriverRelease(struct HdfDeviceObject *deviceObject)
 {
     (void)deviceObject;
     return;
 }
 
-int32_t SampleDriverRegisterDevice(struct HdfSBuf *data)
+int32_t SampleDriverRegisterDevice(struct HdfDeviceObject *dev, struct HdfSBuf *data)
 {
     const char *moduleName = NULL;
     const char *serviceName = NULL;
     struct HdfDeviceObject *devObj = NULL;
+    struct SampleTestDevice *sampleDev = NULL;
+    int ret;
+
+    HDF_LOGI("%s:called", __func__);
     if (data == NULL) {
         return HDF_FAILURE;
     }
@@ -42,17 +84,42 @@ int32_t SampleDriverRegisterDevice(struct HdfSBuf *data)
         return HDF_FAILURE;
     }
 
-    devObj = HdfRegisterDevice(moduleName, serviceName, NULL);
+    devObj = HdfDeviceObjectAlloc(dev, moduleName);
     if (devObj == NULL) {
+        HDF_LOGE("faild to alloc new device for %s", moduleName);
         return HDF_FAILURE;
     }
-    return HDF_SUCCESS;
+
+    ret = HdfDeviceObjectRegister(devObj);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("faild to register device for %s", moduleName);
+        HdfDeviceObjectRelease(devObj);
+        return HDF_FAILURE;
+    }
+
+    ret = HdfDeviceObjectPublishService(devObj, serviceName, SERVICE_POLICY_CAPACITY, 0664);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("faild to publish service for %s", serviceName);
+        HdfDeviceObjectRelease(devObj);
+        return ret;
+    }
+
+    sampleDev = OsalMemAlloc(sizeof(struct SampleTestDevice));
+    if (sampleDev == NULL) {
+        HdfDeviceObjectRelease(devObj);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+    sampleDev->devobj = devObj;
+    SaveRegistedDevice(sampleDev);
+    HDF_LOGI("register device %s:%s success", moduleName, serviceName);
+    return ret;
 }
 
 int32_t SampleDriverUnregisterDevice(struct HdfSBuf *data)
 {
     const char *moduleName = NULL;
     const char *serviceName = NULL;
+    struct SampleTestDevice *dev = NULL;
     if (data == NULL) {
         return HDF_FAILURE;
     }
@@ -65,7 +132,15 @@ int32_t SampleDriverUnregisterDevice(struct HdfSBuf *data)
     if (serviceName == NULL) {
         return HDF_FAILURE;
     }
-    HdfUnregisterDevice(moduleName, serviceName);
+    dev = GetRegistedDevice(serviceName);
+    if (dev == NULL) {
+        HDF_LOGE("failed to found device %s", serviceName);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+    HdfDeviceObjectRelease(dev->devobj);
+    DListRemove(&dev->listNode);
+    OsalMemFree(dev);
+    HDF_LOGI("unregister device %s:%s success", moduleName, serviceName);
     return HDF_SUCCESS;
 }
 
@@ -96,7 +171,7 @@ int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct
     }
     switch (cmdId) {
         case SAMPLE_DRIVER_REGISTER_DEVICE: {
-            ret = SampleDriverRegisterDevice(data);
+            ret = SampleDriverRegisterDevice(client->device, data);
             HdfSbufWriteInt32(reply, ret);
             break;
         }
@@ -105,7 +180,7 @@ int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct
             HdfSbufWriteInt32(reply, ret);
             break;
         case SAMPLE_DRIVER_SENDEVENT_SINGLE_DEVICE:
-            ret =  SampleDriverSendEvent(client, cmdId, data, false);
+            ret = SampleDriverSendEvent(client, cmdId, data, false);
             HdfSbufWriteInt32(reply, INT32_MAX);
             break;
         case SAMPLE_DRIVER_SENDEVENT_BROADCAST_DEVICE:
@@ -169,7 +244,7 @@ struct SampleDriverPmListener {
 
 int HdfSampleDriverInit(struct HdfDeviceObject *deviceObject)
 {
-    static struct SampleDriverPmListener pmListener = {0};
+    static struct SampleDriverPmListener pmListener = { 0 };
     int ret;
     HDF_LOGI("%s::enter!", __func__);
     if (deviceObject == NULL) {
@@ -188,7 +263,6 @@ int HdfSampleDriverInit(struct HdfDeviceObject *deviceObject)
 
     return HDF_SUCCESS;
 }
-
 
 struct HdfDriverEntry g_sampleDriverEntry = {
     .moduleVersion = 1,

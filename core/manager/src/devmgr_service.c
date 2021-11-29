@@ -15,53 +15,116 @@
 #include "hdf_host_info.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
+#include "osal_time.h"
 
 #define HDF_LOG_TAG devmgr_service
 
-static int DevmgrServiceActiveDevice(struct DevHostServiceClnt *hostClnt,
-    struct HdfDeviceInfo *deviceInfo, bool isLoad)
-{
-    struct IDevHostService *devHostSvcIf = (struct IDevHostService *)hostClnt->hostService;
-    if (devHostSvcIf == NULL) {
-        return HDF_FAILURE;
-    }
-
-    if (isLoad && (deviceInfo->preload != DEVICE_PRELOAD_ENABLE)) {
-        int ret = devHostSvcIf->AddDevice(devHostSvcIf, deviceInfo);
-        if (ret == HDF_SUCCESS) {
-            deviceInfo->preload = DEVICE_PRELOAD_ENABLE;
-        }
-        return ret;
-    } else if (!isLoad && (deviceInfo->preload != DEVICE_PRELOAD_DISABLE)) {
-        devHostSvcIf->DelDevice(devHostSvcIf, deviceInfo->deviceId);
-        deviceInfo->preload = DEVICE_PRELOAD_DISABLE;
-        return HDF_SUCCESS;
-    } else {
-        return HDF_FAILURE;
-    }
-}
-
-static int DevmgrServiceFindAndActiveDevice(const char *svcName, bool isLoad)
+static bool DevmgrServiceDynamicDevInfoFound(const char *svcName, struct DevHostServiceClnt **targetHostClnt,
+    struct HdfDeviceInfo **targetDeviceInfo)
 {
     struct HdfSListIterator itDeviceInfo;
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct DevHostServiceClnt *hostClnt = NULL;
     struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
-    if (devMgrSvc == NULL || svcName == NULL) {
-        return HDF_ERR_INVALID_PARAM;
+    if (devMgrSvc == NULL) {
+        return false;
     }
 
     DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
-        HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
+        HdfSListIteratorInit(&itDeviceInfo, &hostClnt->dynamicDevInfos);
         while (HdfSListIteratorHasNext(&itDeviceInfo)) {
             deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
             if (strcmp(deviceInfo->svcName, svcName) == 0) {
-                return DevmgrServiceActiveDevice(hostClnt, deviceInfo, isLoad);
+                *targetDeviceInfo = deviceInfo;
+                *targetHostClnt = hostClnt;
+                return true;
             }
         }
     }
 
-    return HDF_FAILURE;
+    return false;
+}
+
+#define WAIT_HOST_SLEEP_TIME    1 // ms
+#define WAIT_HOST_SLEEP_CNT     100
+static int DevmgrServiceStartHostProcess(struct DevHostServiceClnt *hostClnt, bool sync)
+{
+    int waitCount = WAIT_HOST_SLEEP_CNT;
+    struct IDriverInstaller *installer = DriverInstallerGetInstance();
+    if (installer == NULL || installer->StartDeviceHost == NULL) {
+        HDF_LOGE("invalid installer");
+        return HDF_FAILURE;
+    }
+
+    hostClnt->hostPid = installer->StartDeviceHost(hostClnt->hostId, hostClnt->hostName);
+    if (hostClnt->hostPid == HDF_FAILURE) {
+            HDF_LOGW("failed to start device host(%s, %u)", hostClnt->hostName, hostClnt->hostId);
+            return HDF_FAILURE;
+    }
+    if (!sync) {
+        return HDF_SUCCESS;
+    }
+
+    while (hostClnt->hostService == NULL && waitCount-- > 0) {
+        OsalMSleep(WAIT_HOST_SLEEP_TIME);
+    }
+
+    if (waitCount <= 0) {
+        HDF_LOGE("wait host(%s, %d) attach timeout", hostClnt->hostName, hostClnt->hostId);
+        return HDF_ERR_TIMEOUT;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int DevmgrServiceLoadDevice(struct IDevmgrService *devMgrSvc, const char *serviceName)
+{
+    struct HdfDeviceInfo *deviceInfo = NULL;
+    struct DevHostServiceClnt *hostClnt = NULL;
+    (void)devMgrSvc;
+
+    if (serviceName == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    if (!DevmgrServiceDynamicDevInfoFound(serviceName, &hostClnt, &deviceInfo)) {
+        HDF_LOGE("device %s not in configed device list", serviceName);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+
+    if (deviceInfo->preload != DEVICE_PRELOAD_DISABLE) {
+        HDF_LOGE("device %s not an dynamic load device", serviceName);
+        return HDF_DEV_ERR_NORANGE;
+    }
+
+    if (hostClnt->hostPid < 0 && DevmgrServiceStartHostProcess(hostClnt, true) != HDF_SUCCESS) {
+        HDF_LOGW("failed to start device host(%s, %u)", hostClnt->hostName, hostClnt->hostId);
+        return HDF_FAILURE;
+    }
+
+    return hostClnt->hostService->AddDevice(hostClnt->hostService, deviceInfo);
+}
+
+static int DevmgrServiceUnloadDevice(struct IDevmgrService *devMgrSvc, const char *serviceName)
+{
+    struct HdfDeviceInfo *deviceInfo = NULL;
+    struct DevHostServiceClnt *hostClnt = NULL;
+    (void)devMgrSvc;
+
+    if (serviceName == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    if (!DevmgrServiceDynamicDevInfoFound(serviceName, &hostClnt, &deviceInfo) ||
+        deviceInfo->preload != DEVICE_PRELOAD_DISABLE) {
+        HDF_LOGE("device %s not in configed dynamic device list", serviceName);
+        return HDF_DEV_ERR_NO_DEVICE;
+    }
+
+    if (hostClnt->hostService == NULL) {
+        return HDF_FAILURE;
+    }
+    return hostClnt->hostService->DelDevice(hostClnt->hostService, deviceInfo->deviceId);
 }
 
 int32_t DevmgrServiceLoadLeftDriver(struct DevmgrService *devMgrSvc)
@@ -75,28 +138,20 @@ int32_t DevmgrServiceLoadLeftDriver(struct DevmgrService *devMgrSvc)
     }
 
     DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
-        HdfSListIteratorInit(&itDeviceInfo, hostClnt->deviceInfos);
+        HdfSListIteratorInit(&itDeviceInfo, &hostClnt->unloadDevInfos);
         while (HdfSListIteratorHasNext(&itDeviceInfo)) {
             deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&itDeviceInfo);
             if (deviceInfo->preload == DEVICE_PRELOAD_ENABLE_STEP2) {
-                ret = DevmgrServiceActiveDevice(hostClnt, deviceInfo, true);
+                ret = hostClnt->hostService->AddDevice(hostClnt->hostService, deviceInfo);
                 if (ret != HDF_SUCCESS) {
                     HDF_LOGE("%s:failed to load driver %s", __func__, deviceInfo->moduleName);
+                    continue;
                 }
+                HdfSListIteratorRemove(&itDeviceInfo);
             }
         }
     }
     return HDF_SUCCESS;
-}
-
-int DevmgrServiceLoadDevice(const char *svcName)
-{
-    return DevmgrServiceFindAndActiveDevice(svcName, true);
-}
-
-int DevmgrServiceUnLoadDevice(const char *svcName)
-{
-    return DevmgrServiceFindAndActiveDevice(svcName, false);
 }
 
 static struct DevHostServiceClnt *DevmgrServiceFindDeviceHost(struct IDevmgrService *inst, uint16_t hostId)
@@ -113,27 +168,8 @@ static struct DevHostServiceClnt *DevmgrServiceFindDeviceHost(struct IDevmgrServ
             return hostClnt;
         }
     }
-    HDF_LOGE("failed to find host, host id is %u", hostId);
+    HDF_LOGE("cannot find host %u", hostId);
     return NULL;
-}
-
-static void DevmgrServiceUpdateStatus(struct DevHostServiceClnt *hostClnt, devid_t devId, uint16_t status)
-{
-    struct HdfSListIterator it;
-    struct HdfDeviceInfo *deviceInfo = NULL;
-
-    HdfSListIteratorInit(&it, hostClnt->deviceInfos);
-    while (HdfSListIteratorHasNext(&it)) {
-        deviceInfo = (struct HdfDeviceInfo *)HdfSListIteratorNext(&it);
-        if (deviceInfo->deviceId == devId) {
-            deviceInfo->status = status;
-            HDF_LOGD("%s host:%s %u device:%s %u status:%u", __func__, hostClnt->hostName,
-                hostClnt->hostId, deviceInfo->svcName, devId, deviceInfo->status);
-            return;
-        }
-    }
-    HDF_LOGE("%s: not find device %u in host %u", __func__, devId, hostClnt->hostId);
-    return;
 }
 
 static int DevmgrServiceAttachDevice(struct IDevmgrService *inst, struct IHdfDeviceToken *token)
@@ -152,7 +188,6 @@ static int DevmgrServiceAttachDevice(struct IDevmgrService *inst, struct IHdfDev
         return HDF_FAILURE;
     }
 
-    DevmgrServiceUpdateStatus(hostClnt, token->devid, HDF_SERVICE_USABLE);
     HdfSListAdd(&hostClnt->devices, &tokenClnt->node);
     return HDF_SUCCESS;
 }
@@ -180,7 +215,6 @@ static int DevmgrServiceDetachDevice(struct IDevmgrService *inst, devid_t devid)
         return HDF_DEV_ERR_NO_DEVICE;
     }
     tokenClnt = CONTAINER_OF(tokenClntNode, struct DeviceTokenClnt, node);
-    DevmgrServiceUpdateStatus(hostClnt, devid, HDF_SERVICE_UNUSABLE);
     HdfSListRemove(&hostClnt->devices, &tokenClnt->node);
     return HDF_SUCCESS;
 }
@@ -199,13 +233,36 @@ static int DevmgrServiceAttachDeviceHost(
     }
 
     hostClnt->hostService = hostService;
-    hostClnt->deviceInfos = HdfAttributeManagerGetDeviceList(hostClnt->hostId, hostClnt->hostName);
-    if (hostClnt->deviceInfos == NULL) {
-        HDF_LOGW("failed to get device list ");
+    return DevHostServiceClntInstallDriver(hostClnt);
+}
+
+static int DevmgrServiceStartDeviceHost(struct DevmgrService *devmgr, struct HdfHostInfo *hostAttr)
+{
+    struct DevHostServiceClnt *hostClnt = DevHostServiceClntNewInstance(hostAttr->hostId, hostAttr->hostName);
+    if (hostClnt == NULL) {
+        HDF_LOGW("failed to create new device host client");
+        return HDF_FAILURE;
+    }
+
+    if (HdfAttributeManagerGetDeviceList(hostClnt) != HDF_SUCCESS) {
+        HDF_LOGW("failed to get device list for host %s", hostClnt->hostName);
+        return HDF_FAILURE;
+    }
+
+    DListInsertTail(&hostClnt->node, &devmgr->hosts);
+
+    // not start the host which only have dynamic deivces
+    if (HdfSListIsEmpty(&hostClnt->unloadDevInfos)) {
         return HDF_SUCCESS;
     }
-    hostClnt->devCount = HdfSListCount(hostClnt->deviceInfos);
-    return DevHostServiceClntInstallDriver(hostClnt);
+
+    if (DevmgrServiceStartHostProcess(hostClnt, false) != HDF_SUCCESS) {
+        HDF_LOGW("failed to start device host, host id is %u", hostAttr->hostId);
+        DListRemove(&hostClnt->node);
+        DevHostServiceClntFreeInstance(hostClnt);
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
 }
 
 static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
@@ -213,13 +270,7 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
     struct HdfSList hostList;
     struct HdfSListIterator it;
     struct HdfHostInfo *hostAttr = NULL;
-    struct DevHostServiceClnt *hostClnt = NULL;
-    struct IDriverInstaller *installer = NULL;
-    installer = DriverInstallerGetInstance();
-    if (installer == NULL || installer->StartDeviceHost == NULL) {
-        HDF_LOGE("installer or installer->StartDeviceHost is null");
-        return HDF_FAILURE;
-    }
+
     HdfSListInit(&hostList);
     if (!HdfAttributeManagerGetHostList(&hostList)) {
         HDF_LOGW("%s: host list is null", __func__);
@@ -228,18 +279,7 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
     HdfSListIteratorInit(&it, &hostList);
     while (HdfSListIteratorHasNext(&it)) {
         hostAttr = (struct HdfHostInfo *)HdfSListIteratorNext(&it);
-        hostClnt = DevHostServiceClntNewInstance(hostAttr->hostId, hostAttr->hostName);
-        if (hostClnt == NULL) {
-            HDF_LOGW("failed to create new device host client");
-            continue;
-        }
-        DListInsertTail(&hostClnt->node, &inst->hosts);
-        hostClnt->hostPid = installer->StartDeviceHost(hostAttr->hostId, hostAttr->hostName);
-        if (hostClnt->hostPid == HDF_FAILURE) {
-            HDF_LOGW("failed to start device host, host id is %u", hostAttr->hostId);
-            DListRemove(&hostClnt->node);
-            DevHostServiceClntFreeInstance(hostClnt);
-        }
+        DevmgrServiceStartDeviceHost(inst, hostAttr);
     }
     HdfSListFlush(&hostList, HdfHostInfoDelete);
     return HDF_SUCCESS;
@@ -305,6 +345,8 @@ bool DevmgrServiceConstruct(struct DevmgrService *inst)
     if (devMgrSvcIf != NULL) {
         devMgrSvcIf->AttachDevice = DevmgrServiceAttachDevice;
         devMgrSvcIf->DetachDevice = DevmgrServiceDetachDevice;
+        devMgrSvcIf->LoadDevice = DevmgrServiceLoadDevice;
+        devMgrSvcIf->UnloadDevice = DevmgrServiceUnloadDevice;
         devMgrSvcIf->AttachDeviceHost = DevmgrServiceAttachDeviceHost;
         devMgrSvcIf->StartService = DevmgrServiceStartService;
         devMgrSvcIf->PowerStateChange = DevmgrServicePowerStateChange;

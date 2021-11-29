@@ -47,6 +47,7 @@ int DevmgrServiceClntAttachDevice(struct IHdfDeviceToken *deviceToken)
     }
     return devMgrSvcIf->AttachDevice(devMgrSvcIf, deviceToken);
 }
+
 int DevmgrServiceClntDetachDevice(devid_t devid)
 {
     struct IDevmgrService *devMgrSvcIf = NULL;

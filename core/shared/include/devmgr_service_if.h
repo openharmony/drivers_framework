@@ -21,6 +21,8 @@ struct IDevmgrService {
     int (*AttachDeviceHost)(struct IDevmgrService *, uint16_t, struct IDevHostService *);
     int (*AttachDevice)(struct IDevmgrService *, struct IHdfDeviceToken *);
     int (*DetachDevice)(struct IDevmgrService *, devid_t);
+    int (*LoadDevice)(struct IDevmgrService *, const char *);
+    int (*UnloadDevice)(struct IDevmgrService *, const char *);
     int (*StartService)(struct IDevmgrService *);
     int (*PowerStateChange)(struct IDevmgrService *, enum HdfPowerState pEvent);
 };

@@ -12,5 +12,12 @@
 #include "hdf_device_desc.h"
 
 void HdfDeviceObjectConstruct(struct HdfDeviceObject *deviceObject);
+struct HdfDeviceObject *HdfDeviceObjectAlloc(struct HdfDeviceObject *parent, const char *driverName);
+void HdfDeviceObjectRelease(struct HdfDeviceObject *deviceObject);
+int HdfDeviceObjectRegister(struct HdfDeviceObject *deviceObject);
+int HdfDeviceObjectUnRegister(struct HdfDeviceObject *deviceObject);
+int HdfDeviceObjectPublishService(struct HdfDeviceObject *deviceObject,
+    const char *servName, uint8_t policy, uint32_t perm);
+int HdfDeviceObjectRemoveService(struct HdfDeviceObject *deviceObject);
 
 #endif /* HDF_DEVICE_OBJECT_H */
