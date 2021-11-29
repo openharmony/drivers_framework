@@ -16,7 +16,7 @@
 
 const uint32_t SEND_MESSAGE_COUNT = 40000;
 const uint32_t SYNC_MESSAGE_TIMEOUT = 2;
-const uint32_t ASYNC_MESSAGE_TIMEOUT = 5;
+const uint32_t ASYNC_MESSAGE_TIMEOUT = 8;
 #define COMMON_SEM_TIMEOUT 300
 
 enum ServiceList {
