@@ -287,3 +287,46 @@ int32_t SetSensorRegCfgArrayByBuff(struct SensorBusCfg *busCfg, const struct Sen
 
     return HDF_SUCCESS;
 }
+
+int32_t ReadSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group,
+    int32_t index, uint8_t *buf, int32_t len)
+{
+    int32_t ret;
+    struct SensorRegCfg *cfgItem = NULL;
+
+    CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(group, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(group->regCfgItem, HDF_FAILURE);
+
+    if ((index >= group->itemNum) || index < 0) {
+        HDF_LOGE("%s: Index is invalid parameter", __func__);
+        return HDF_FAILURE;
+    }
+
+    cfgItem = group->regCfgItem + index;
+    len = (cfgItem->len > len) ? len : cfgItem->len;
+    ret = ReadSensor(busCfg, cfgItem->regAddr, buf, len);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read i2c reg");
+
+    return HDF_SUCCESS;
+}
+
+int32_t WriteSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group,
+    int32_t index, int32_t len)
+{
+    struct SensorRegCfg *cfgItem = NULL;
+    CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(group, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(group->regCfgItem, HDF_FAILURE);
+
+    if ((index >= group->itemNum) || index < 0) {
+        HDF_LOGE("%s: Index is invalid parameter", __func__);
+        return HDF_FAILURE;
+    }
+
+    cfgItem = group->regCfgItem + index;
+    int32_t ret = SensorOpsUpdateBitwise(busCfg, cfgItem);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "Write i2c reg");
+
+    return HDF_SUCCESS;
+}

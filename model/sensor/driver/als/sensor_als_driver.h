@@ -17,6 +17,12 @@
 #define ALS_DEFAULT_SAMPLING_200_MS    200000000
 #define ALS_CHIP_NAME_BH1745    "bh1745"
 
+enum ExtendedAlsRegGroupType {
+    EXTENDED_ALS_TIME_GROUP = 0,
+    EXTENDED_ALS_GAIN_GROUP,
+    EXTENDED_ALS_GROUP_MAX,
+};
+
 enum AlsLightNum {
     ALS_R = 0,
     ALS_G = 1,
@@ -35,6 +41,22 @@ enum AlsLightPart {
     ALS_C_LSB = 6,
     ALS_C_MSB = 7,
     ALS_LIGHT_BUTT = 8,
+};
+
+struct AlsReportData {
+    int32_t als;
+    int32_t cct;
+    int32_t irData;
+};
+
+struct TimeMap {
+    uint8_t timeRegValue;
+    uint32_t timeValue;
+};
+
+struct GainMap {
+    uint8_t gainRegValue;
+    uint32_t gainValue;
 };
 
 struct AlsData {
@@ -65,5 +87,8 @@ struct AlsDrvData {
 int32_t AlsRegisterChipOps(const struct AlsOpsCall *ops);
 struct SensorCfgData *AlsCreateCfgData(const struct DeviceResourceNode *node);
 void AlsReleaseCfgData(struct SensorCfgData *sensorCfgData);
-
+int32_t GetTimeByRegValue(uint8_t regValue, struct TimeMap *table, int32_t itemNum);
+int32_t GetRegValueByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum);
+int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum);
+int32_t GetGainByRegValue(uint8_t regValue, struct GainMap *table, int32_t itemNum);
 #endif /* SENSOR_ALS_DRIVER_H */

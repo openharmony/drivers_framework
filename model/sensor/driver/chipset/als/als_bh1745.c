@@ -14,17 +14,131 @@
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 
+/* IO config for int-pin and I2C-pin */
+#define SENSOR_I2C6_DATA_REG_ADDR 0x114f004c
+#define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048
+#define SENSOR_I2C_REG_CFG        0x403
+
 static struct Bh1745DrvData *g_bh1745DrvData = NULL;
+static uint32_t g_timeMap_flag = 1;
+
+static struct TimeMap g_timeMap[EXTENDED_ALS_TIME_GROUP_INDEX_MAX] = {
+    { EXTENDED_ALS_TIME_GROUP_ATTR_VALUE_0,           BH1745_TIME_160MSEC },
+    { EXTENDED_ALS_TIME_GROUP_ATTR_VALUE_1,           BH1745_TIME_320MSEC },
+    { EXTENDED_ALS_TIME_GROUP_ATTR_VALUE_2,           BH1745_TIME_640MSEC },
+    { EXTENDED_ALS_TIME_GROUP_ATTR_VALUE_3,           BH1745_TIME_1280MSEC },
+    { EXTENDED_ALS_TIME_GROUP_ATTR_VALUE_4,           BH1745_TIME_2560MSEC },
+    { EXTENDED_ALS_TIME_GROUP_ATTR_VALUE_5,           BH1745_TIME_5120MSEC }
+};
+static struct GainMap g_gainMap[EXTENDED_ALS_GAIN_GROUP_INDEX_MAX] = {
+    { EXTENDED_ALS_GAIN_GROUP_ATTR_VALUE_0,              BH1745_GAIN_1X },
+    { EXTENDED_ALS_GAIN_GROUP_ATTR_VALUE_1,              BH1745_GAIN_2X },
+    { EXTENDED_ALS_GAIN_GROUP_ATTR_VALUE_2,              BH1745_GAIN_16X }
+};
+
+static uint32_t g_red[BH1745_COEFFICIENT_RED] = {
+    BH1745_COEFFICIENT_RED_LEVEL_0,
+    BH1745_COEFFICIENT_RED_LEVEL_1
+};
+
+static uint32_t g_green[BH1745_COEFFICIENT_GREEN] = {
+    BH1745_COEFFICIENT_GREEN_LEVEL_0,
+    BH1745_COEFFICIENT_GREEN_LEVEL_1
+};
 
 struct Bh1745DrvData *Bh1745GetDrvData(void)
 {
     return g_bh1745DrvData;
 }
 
-/* IO config for int-pin and I2C-pin */
-#define SENSOR_I2C6_DATA_REG_ADDR 0x114f004c
-#define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048
-#define SENSOR_I2C_REG_CFG        0x403
+static int32_t DynamicRangCovert(struct SensorCfgData *CfgData, uint32_t *rgbcData)
+{
+    uint8_t regValue;
+    uint32_t temp;
+    uint8_t timeItemNum;
+    struct SensorRegCfgGroupNode *timeGroupNode = NULL;
+    int32_t index = EXTENDED_ALS_TIME_GROUP_INDEX_0;
+
+    timeGroupNode = CfgData->extendedRegCfgGroup[EXTENDED_ALS_TIME_GROUP];
+    timeItemNum = timeGroupNode->itemNum;
+
+    ReadSensorRegCfgArray(&CfgData->busCfg, timeGroupNode, index, &regValue, sizeof(uint8_t));
+    regValue &= timeGroupNode->regCfgItem->mask;
+
+    temp = GetTimeByRegValue(regValue, g_timeMap, timeItemNum);
+    index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
+    if (index < 0) {
+        HDF_LOGE("%s: Index out of range ", __func__);
+        return HDF_FAILURE;
+    }
+
+    if ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX
+         || rgbcData[ALS_G] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX ) && temp >= BH1745_TIME_320MSEC) {
+        g_timeMap_flag = 1;
+        index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
+        index--;
+        WriteSensorRegCfgArray(&CfgData->busCfg, timeGroupNode, index, sizeof(uint8_t));
+    } else if ((g_timeMap_flag == 1) && ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN)
+                || (rgbcData[ALS_G] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN))) {
+        g_timeMap_flag = 0;
+        index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
+        index++;
+        if (index >= timeItemNum) {
+            HDF_LOGE("%s: Index out of range ", __func__);
+            return HDF_FAILURE;
+        }
+        WriteSensorRegCfgArray(&CfgData->busCfg, timeGroupNode, index, sizeof(uint8_t));
+    }
+    return HDF_SUCCESS;
+}
+
+static uint32_t CalLux(struct SensorCfgData *CfgData, uint32_t *rgbcData)
+{
+    uint32_t timeTemp;
+    uint32_t gainTemp;
+    uint8_t timeRegValue;
+    uint8_t gainRegvalue;
+    uint32_t index = 1;
+    uint32_t luxTemp;
+    uint8_t timeItemNum;
+    uint8_t gainItemNum;
+    struct SensorRegCfgGroupNode *timeGroupNode = NULL;
+    struct SensorRegCfgGroupNode *gainGroupNode = NULL;
+    int32_t timeIndex = EXTENDED_ALS_TIME_GROUP_INDEX_0;
+    int32_t gainIndex = EXTENDED_ALS_GAIN_GROUP_INDEX_0;
+
+    if (rgbcData[ALS_G] < 1) {
+        return 0;
+    }
+
+    if (BH1745_MULTIPLE_100 * rgbcData[ALS_C] / rgbcData[ALS_G] < BH1745_COEFFICIENT_JUDGE) {
+        index = 0;
+    }
+
+    luxTemp = g_red[index] * rgbcData[ALS_R] + g_green[index] * rgbcData[ALS_G];
+    timeGroupNode = CfgData->extendedRegCfgGroup[EXTENDED_ALS_TIME_GROUP];
+    timeItemNum = timeGroupNode->itemNum;
+    gainGroupNode = CfgData->extendedRegCfgGroup[EXTENDED_ALS_GAIN_GROUP];
+    gainItemNum = gainGroupNode->itemNum;
+
+    ReadSensorRegCfgArray(&CfgData->busCfg, timeGroupNode, timeIndex, &timeRegValue, sizeof(uint8_t));
+    timeRegValue &= timeGroupNode->regCfgItem->mask;
+    timeTemp = GetTimeByRegValue(timeRegValue, g_timeMap, timeItemNum);
+
+    ReadSensorRegCfgArray(&CfgData->busCfg, gainGroupNode, gainIndex, &gainRegvalue, sizeof(uint8_t));
+    gainRegvalue &= gainGroupNode->regCfgItem->mask;
+    gainTemp = GetGainByRegValue(gainRegvalue, g_gainMap, gainItemNum);
+
+    return (((luxTemp * BH1745_TIME_160MSEC * BH1745_GAIN_16X) / gainTemp) / timeTemp);
+}
+
+ static int32_t RawDataConvert(struct SensorCfgData *CfgData, struct AlsReportData *reportData, uint32_t* rgbcData)
+ {
+    reportData->als = (uint32_t)CalLux(CfgData, rgbcData);
+    reportData->als = (reportData->als > 0) ? reportData->als : 0;
+    DynamicRangCovert(CfgData, rgbcData);
+    return HDF_SUCCESS;
+ }
 
 static int32_t ReadBh1745RawData(struct SensorCfgData *data, struct AlsData *rawData, int64_t *timestamp)
 {
@@ -73,13 +187,13 @@ static int32_t ReadBh1745RawData(struct SensorCfgData *data, struct AlsData *raw
     ret = ReadSensor(&data->busCfg, BH1745_ALS_C_MSB_ADDR, &reg[ALS_C_MSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
 
-    rawData->red = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_R_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    rawData->red = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_R_MSB], SENSOR_DATA_WIDTH_8_BIT) |
         reg[ALS_R_LSB]);
-    rawData->green = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_G_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    rawData->green = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_G_MSB], SENSOR_DATA_WIDTH_8_BIT) |
         reg[ALS_G_LSB]);
-    rawData->blue = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_B_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    rawData->blue = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_B_MSB], SENSOR_DATA_WIDTH_8_BIT) |
         reg[ALS_B_LSB]);
-    rawData->clear = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_C_MSB], SENSOR_DATA_WIDTH_8_BIT) |
+    rawData->clear = (uint16_t)(SENSOR_DATA_SHIFT_LEFT(reg[ALS_C_MSB], SENSOR_DATA_WIDTH_8_BIT) |
         reg[ALS_C_LSB]);
 
     return HDF_SUCCESS;
@@ -89,8 +203,9 @@ int32_t ReadBh1745Data(struct SensorCfgData *data)
 {
     int32_t ret;
     struct AlsData rawData = { 0, 0, 0, 0 };
-    int32_t tmp[ALS_LIGHT_NUM];
+    uint32_t tmp[ALS_LIGHT_NUM];
     struct SensorReportEvent event;
+    struct AlsReportData reportData;
 
     (void)memset_s(&event, sizeof(event), 0, sizeof(event));
     ret = ReadBh1745RawData(data, &rawData, &event.timestamp);
@@ -108,8 +223,9 @@ int32_t ReadBh1745Data(struct SensorCfgData *data)
     tmp[ALS_B] = rawData.blue;
     tmp[ALS_C] = rawData.clear;
 
-    event.dataLen = sizeof(tmp);
-    event.data = (uint8_t *)&tmp;
+    RawDataConvert(data, &reportData, tmp);
+    event.dataLen = sizeof(reportData.als);
+    event.data = (uint8_t *)&reportData.als;
     ret = ReportSensorEvent(&event);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: BH1745 report data failed", __func__);
