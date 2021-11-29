@@ -17,6 +17,8 @@
 #include "spi_if.h"
 
 #define SENSOR_CONFIG_MAX_ITEM 100
+#define MAX_SENSOR_INDEX_NUM   48
+#define MAX_SENSOR_AXIS_NUM    3
 
 enum SensorRegOpsType {
     SENSOR_INIT_GROUP = 0,
@@ -66,12 +68,34 @@ struct SensorRegCfgGroupNode {
     struct SensorRegCfg *regCfgItem;
 };
 
+struct SensorDirection {
+    uint32_t sign[MAX_SENSOR_AXIS_NUM];
+    uint32_t map[MAX_SENSOR_AXIS_NUM];
+};
+
+enum SensorDirectionIndex {
+    SIGN_X_INDEX = 0,
+    SIGN_Y_INDEX,
+    SIGN_Z_INDEX,
+    AXIS_X_INDEX,
+    AXIS_Y_INDEX,
+    AXIS_Z_INDEX,
+    AXIS_INDEX_MAX,
+};
+
+enum AxisNum {
+    AXIS_X = 0,
+    AXIS_Y = 1,
+    AXIS_Z = 2,
+};
+
 struct SensorCfgData {
     struct SensorBusCfg busCfg;
     struct SensorBasicInfo sensorInfo;
     struct SensorAttr sensorAttr;
     struct SensorRegCfgGroupNode **regCfgGroup;
     const struct DeviceResourceNode *root;
+    struct SensorDirection *direction; 
 };
 
 int32_t GetSensorBaseConfigData(const struct DeviceResourceNode *node, struct SensorCfgData *config);
@@ -80,5 +104,8 @@ void ReleaseSensorAllRegConfig(struct SensorCfgData *config);
 int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg);
 int32_t ReleaseSensorBusHandle(struct SensorBusCfg *busCfg);
 int32_t DetectSensorDevice(struct SensorCfgData *config);
+int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *remapData, uint32_t num);
+void ReleaseSensorDirectionConfig(struct SensorCfgData *config);
+int32_t ParseSensorDirection(struct SensorCfgData *config);
 
 #endif /* SENSOR_CONFIG_PARSER_H */

@@ -382,6 +382,95 @@ static int32_t ParseSensorAttr(struct DeviceResourceIface *parser, const struct 
     return ret;
 }
 
+void ReleaseSensorDirectionConfig(struct SensorCfgData *config)
+{
+    CHECK_NULL_PTR_RETURN(config);
+
+    if (config->direction != NULL) {
+        OsalMemFree(config->direction);
+        config->direction = NULL;
+    }
+}
+
+int32_t ParseSensorDirection(struct SensorCfgData *config)
+{
+    int32_t num;
+    int32_t ret;
+    uint32_t index;
+    uint32_t *buf = NULL;
+    const struct DeviceResourceNode *directionNode = NULL;
+    struct DeviceResourceIface *parser = NULL;
+
+    CHECK_NULL_PTR_RETURN_VALUE(config->root, HDF_ERR_INVALID_PARAM);
+    parser = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
+    CHECK_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
+
+    directionNode = parser->GetChildNode(config->root, "sensorDirection");
+    CHECK_NULL_PTR_RETURN_VALUE(directionNode, HDF_ERR_INVALID_PARAM);
+    
+    num = parser->GetElemNum(directionNode, "convert");
+    ret = parser->GetUint32(directionNode, "direction", &index, 0);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "direction"); 
+    if ((num <= 0 || num > MAX_SENSOR_INDEX_NUM) || (index < 0 || index > num / AXIS_INDEX_MAX)) {
+        return HDF_FAILURE;
+    }
+
+    buf = (uint32_t *)OsalMemCalloc(sizeof(uint32_t) * num);
+    CHECK_NULL_PTR_RETURN_VALUE(buf, HDF_ERR_MALLOC_FAIL);
+
+    ret = parser->GetUint32Array(directionNode, "convert", buf, num, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: parser %s convert failed", __func__, "convert");
+        OsalMemFree(buf);
+        return HDF_FAILURE;
+    }
+
+    config->direction = (struct SensorDirection*)OsalMemCalloc(sizeof(struct SensorDirection));
+    if (config->direction == NULL) {
+        HDF_LOGE("%s: malloc sensor direction config item failed", __func__);
+        OsalMemFree(buf);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    index = index * AXIS_INDEX_MAX;
+    config->direction->sign[AXIS_X] = buf[index + SIGN_X_INDEX];
+    config->direction->sign[AXIS_Y] = buf[index + SIGN_Y_INDEX];
+    config->direction->sign[AXIS_Z] = buf[index + SIGN_Z_INDEX];
+    config->direction->map[AXIS_X] = buf[index + AXIS_X_INDEX];
+    config->direction->map[AXIS_Y] = buf[index + AXIS_Y_INDEX];
+    config->direction->map[AXIS_Z] = buf[index + AXIS_Z_INDEX];
+
+    OsalMemFree(buf);
+    return HDF_SUCCESS;
+}
+
+int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *remapData, uint32_t num)
+{
+    int32_t axis;
+    int32_t directionSign[MAX_SENSOR_AXIS_NUM];
+    int32_t newData[MAX_SENSOR_AXIS_NUM];
+
+    CHECK_NULL_PTR_RETURN_VALUE(direction, HDF_ERR_INVALID_PARAM);
+
+    for (axis = 0; axis < num; axis++) {
+        if (direction->sign[axis] == 0) {
+            directionSign[axis] = 1;
+        } else {
+            directionSign[axis] = -1;
+        }
+    }
+
+    newData[direction->map[AXIS_X]] = directionSign[AXIS_X] * remapData[AXIS_X];
+    newData[direction->map[AXIS_Y]] = directionSign[AXIS_Y] * remapData[AXIS_Y];
+    newData[direction->map[AXIS_Z]] = directionSign[AXIS_Z] * remapData[AXIS_Z];
+
+    remapData[AXIS_X] = newData[direction->map[AXIS_X]];
+    remapData[AXIS_Y] = newData[direction->map[AXIS_Y]];
+    remapData[AXIS_Z] = newData[direction->map[AXIS_Z]];
+    
+    return HDF_SUCCESS;
+}
+
 int32_t GetSensorBaseConfigData(const struct DeviceResourceNode *node, struct SensorCfgData *config)
 {
     int32_t ret;

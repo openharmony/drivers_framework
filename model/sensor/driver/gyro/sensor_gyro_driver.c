@@ -246,10 +246,17 @@ static int32_t InitGyroAfterDetected(struct SensorCfgData *config)
         return HDF_FAILURE;
     }
 
+    if (ParseSensorDirection(config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: Parse gyro direction failed", __func__);
+        (void)DeleteSensorDevice(&config->sensorInfo);
+        return HDF_FAILURE;
+    }
+
     if (ParseSensorRegConfig(config) != HDF_SUCCESS) {
         HDF_LOGE("%s: Parse sensor register failed", __func__);
         (void)DeleteSensorDevice(&config->sensorInfo);
         ReleaseSensorAllRegConfig(config);
+        ReleaseSensorDirectionConfig(config);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -309,6 +316,7 @@ void GyroReleaseCfgData(struct SensorCfgData *gyroCfg)
     (void)DeleteSensorDevice(&gyroCfg->sensorInfo);
     ReleaseSensorAllRegConfig(gyroCfg);
     (void)ReleaseSensorBusHandle(&gyroCfg->busCfg);
+    ReleaseSensorDirectionConfig(gyroCfg);
 
     gyroCfg->root = NULL;
     (void)memset_s(&gyroCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
