@@ -466,6 +466,31 @@ static int32_t WifiCmdSetMode(const RequestContext *context, struct HdfSBuf *req
     return ret;
 }
 
+static int32_t WifiCheckChannelNum(struct WlanHwCapability *capability,struct WlanBand *band)
+{
+    if (capability == NULL || band == NULL) {
+        HDF_LOGE("%s: capability or band is NULL", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+    if (capability->bands[IEEE80211_BAND_2GHZ] != NULL) {
+        band = capability->bands[IEEE80211_BAND_2GHZ];
+        if (band->channelCount > WIFI_24G_CHANNEL_NUM) {
+            HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
+            return HDF_FAILURE;
+        }   
+    } else if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
+        band = capability->bands[IEEE80211_BAND_5GHZ];
+        if (band->channelCount > WIFI_5G_CHANNEL_NUM) {
+            HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
+            return HDF_FAILURE;
+        }            
+    } else {
+        HDF_LOGE("%s: Supportting 2.4G/5G is required by now!", __func__);
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
 static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *featureData)
 {
     int32_t ret = HDF_SUCCESS;
@@ -487,25 +512,11 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
             featureData->bitrate[loop] = capability->supportedRates[loop];
         }
 
-        if (capability->bands[IEEE80211_BAND_2GHZ] != NULL) {
-            struct WlanBand *band = capability->bands[IEEE80211_BAND_2GHZ];
-            if (band->channelCount > WIFI_24G_CHANNEL_NUM) {
-                HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
-                ret = HDF_FAILURE;
-                break;
-            }   
-        } else if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
-            band = capability->bands[IEEE80211_BAND_5GHZ];
-            if (band->channelCount > WIFI_5G_CHANNEL_NUM) {
-                HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
-                ret = HDF_FAILURE;
-                break;
-            }            
-        } else {
-            HDF_LOGE("%s: Supportting 2.4G/5G is required by now!", __func__);
+        if (WifiCheckChannelNum(capability, &band) != HDF_SUCCESS) {
             ret = HDF_FAILURE;
             break;
         }
+        
         featureData->channelNum = band->channelCount;
         featureData->htCapab = capability->htCapability;
 
