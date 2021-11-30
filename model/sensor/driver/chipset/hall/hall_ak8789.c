@@ -7,7 +7,6 @@
  */
 
 #include "hall_ak8789.h"
-#include <securec.h>
 #include "osal_irq.h"
 #include "osal_mem.h"
 #include "osal_time.h"
