@@ -478,7 +478,7 @@ int32_t HdmiAviInfoFrameSend(struct HdmiInfoFrame *frame, bool enable);
 int32_t HdmiDrmInfoFrameSend(struct HdmiInfoFrame *frame, bool enable);
 int32_t HdmiVsInfoFrameSend(struct HdmiInfoFrame *frame, bool enable, bool dolbyEnable);
 int32_t HdmiSpdInfoFrameSend(struct HdmiInfoFrame *frame, bool enable,
-    char *vendorName, char *productName, enum HdmiSpdSdi sdi);
+    const char *vendorName, char *productName, enum HdmiSpdSdi sdi);
 int32_t HdmiInfoFrameGetInfo(struct HdmiInfoFrame *frame, enum HdmiPacketType type,
     union HdmiInfoFrameInfo *infoFrame);
 int32_t HdmiInfoFrameSetInfo(struct HdmiInfoFrame *frame, enum HdmiPacketType type,

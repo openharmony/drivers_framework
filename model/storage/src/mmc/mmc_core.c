@@ -7,15 +7,10 @@
   */
 
 #include "device_resource_if.h"
-#include "hdf_dlist.h"
-#include "hdf_log.h"
 #include "mmc_block.h"
-#include "mmc_corex.h"
 #include "mmc_dispatch.h"
 #include "mmc_emmc.h"
 #include "mmc_sdio.h"
-#include "osal_mem.h"
-#include "osal_time.h"
 
 #define HDF_LOG_TAG mmc_core_c
 

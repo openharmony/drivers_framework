@@ -163,7 +163,7 @@ static int32_t VirtualRegulatorContinueReadHcs(struct RegulatorNode *regNode, co
 
     HDF_LOGD("regulatorInfo:[%s][%d][%d]--[%d][%d]--[%d][%d]!",
         regNode->regulatorInfo.name, regNode->regulatorInfo.constraints.alwaysOn,
-            regNode->regulatorInfo.constraints.mode,
+        regNode->regulatorInfo.constraints.mode,
         regNode->regulatorInfo.constraints.minUv, regNode->regulatorInfo.constraints.maxUv,
         regNode->regulatorInfo.constraints.minUa, regNode->regulatorInfo.constraints.maxUa);
 

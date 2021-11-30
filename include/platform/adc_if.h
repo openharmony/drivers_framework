@@ -22,7 +22,7 @@ struct AdcIoMsg {
     uint32_t channel;
 };
 
-DevHandle AdcOpen(uint32_t num);
+DevHandle AdcOpen(uint32_t number);
 
 void AdcClose(DevHandle handle);
 
