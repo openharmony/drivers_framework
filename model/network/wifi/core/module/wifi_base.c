@@ -470,6 +470,7 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
 {
     int32_t ret = HDF_SUCCESS;
     struct WlanHwCapability *capability = GetHwCapability(netdev);
+    struct WlanBand *band = NULL;
     if (capability == NULL) {
         HDF_LOGE("%s:GetHwCapability failed!", __func__);
         return HDF_FAILURE;
@@ -492,34 +493,26 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
                 HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
                 ret = HDF_FAILURE;
                 break;
-            }
-            featureData->channelNum = band->channelCount;
-            featureData->htCapab = capability->htCapability;
-
-            for (loop = 0; loop < band->channelCount; ++loop) {
-                featureData->iee80211Channel[loop].flags = band->channels[loop].flags;
-                featureData->iee80211Channel[loop].freq = band->channels[loop].centerFreq;
-                featureData->iee80211Channel[loop].channel = band->channels[loop].channelId;
-            }
+            }   
         } else if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
-            struct WlanBand *band = capability->bands[IEEE80211_BAND_2GHZ];
+            band = capability->bands[IEEE80211_BAND_5GHZ];
             if (band->channelCount > WIFI_5G_CHANNEL_NUM) {
                 HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
                 ret = HDF_FAILURE;
                 break;
-            }
-            featureData->channelNum = band->channelCount;
-            featureData->htCapab = capability->htCapability;
-
-            for (loop = 0; loop < band->channelCount; ++loop) {
-                featureData->iee80211Channel[loop].flags = band->channels[loop].flags;
-                featureData->iee80211Channel[loop].freq = band->channels[loop].centerFreq;
-                featureData->iee80211Channel[loop].channel = band->channels[loop].channelId;
-            }
+            }            
         } else {
             HDF_LOGE("%s: Supportting 2.4G/5G is required by now!", __func__);
             ret = HDF_FAILURE;
             break;
+        }
+        featureData->channelNum = band->channelCount;
+        featureData->htCapab = capability->htCapability;
+
+        for (loop = 0; loop < band->channelCount; ++loop) {
+            featureData->iee80211Channel[loop].flags = band->channels[loop].flags;
+            featureData->iee80211Channel[loop].freq = band->channels[loop].centerFreq;
+            featureData->iee80211Channel[loop].channel = band->channels[loop].channelId;
         }
 
     } while (false);
