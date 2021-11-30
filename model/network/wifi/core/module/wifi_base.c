@@ -29,6 +29,7 @@
 #endif
 
 #define WIFI_24G_CHANNEL_NUM 14
+#define WIFI_5G_CHANNEL_NUM 24
 #define DEFAULT_EAPOL_PACKAGE_SIZE 800
 
 Service *g_baseService = NULL;
@@ -500,13 +501,27 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
                 featureData->iee80211Channel[loop].freq = band->channels[loop].centerFreq;
                 featureData->iee80211Channel[loop].channel = band->channels[loop].channelId;
             }
+        } else if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
+            struct WlanBand *band = capability->bands[IEEE80211_BAND_2GHZ];
+            if (band->channelCount > WIFI_5G_CHANNEL_NUM) {
+                HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
+                ret = HDF_FAILURE;
+                break;
+            }
+            featureData->channelNum = band->channelCount;
+            featureData->htCapab = capability->htCapability;
+
+            for (loop = 0; loop < band->channelCount; ++loop) {
+                featureData->iee80211Channel[loop].flags = band->channels[loop].flags;
+                featureData->iee80211Channel[loop].freq = band->channels[loop].centerFreq;
+                featureData->iee80211Channel[loop].channel = band->channels[loop].channelId;
+            }
         } else {
-            HDF_LOGE("%s: Supportting 2.4G is required by now!", __func__);
+            HDF_LOGE("%s: Supportting 2.4G/5G is required by now!", __func__);
             ret = HDF_FAILURE;
             break;
         }
 
-        // 5G not supported
     } while (false);
 
     if (capability->Release != NULL) {
