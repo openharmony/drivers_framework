@@ -7,13 +7,9 @@
  */
 
 #include "hdf_driver_loader.h"
-#include "devsvc_manager_clnt.h"
-#include "hcs_tree_if.h"
-#include "hdf_device_desc.h"
-#include "hdf_device_node.h"
+#include "hdf_driver.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
-#include "hdf_attribute_manager.h"
 
 #define HDF_LOG_TAG driver_loader
 
@@ -22,9 +18,8 @@ int32_t HdfDriverEntryConstruct()
     int i;
     struct HdfDriverEntry *driverEntry = NULL;
     size_t *addrBegin = NULL;
-    int32_t count = 0;
+    int32_t count = (int32_t)(((uint8_t *)(HDF_DRIVER_END()) - (uint8_t *)(HDF_DRIVER_BEGIN())) / sizeof(size_t));
 
-    count = (int32_t)(((uint8_t *)(HDF_DRIVER_END()) - (uint8_t *)(HDF_DRIVER_BEGIN())) / sizeof(size_t));
     if (count <= 0) {
         HDF_LOGE("%s: no hdf driver exist", __func__);
         return HDF_FAILURE;
@@ -88,4 +83,3 @@ struct IDriverLoader *HdfDriverLoaderGetInstance()
     }
     return instance;
 }
-

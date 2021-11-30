@@ -159,6 +159,7 @@ int32_t UsbPnpManagerRegisterDevice(struct UsbPnpManagerDeviceInfo *managerInfo)
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to regitst device %s", __func__, managerInfo->serviceName);
         HdfDeviceObjectRelease(devObj);
+        return ret;
     }
     // need optimize this code to remove SaveRegistedDevice function later
     SaveRegistedDevice(devObj);
