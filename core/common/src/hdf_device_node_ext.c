@@ -15,7 +15,7 @@
 #include "hdf_sbuf.h"
 #include "osal_mem.h"
 
-#define HDF_LOG_TAG device_node_ext
+#define HDF_LOG_TAG devnode_ext
 
 static int DeviceNodeExtDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
@@ -116,7 +116,9 @@ static void DeviceNodeExtConstruct(struct DeviceNodeExt *inst)
 
 static void DeviceNodeExtDestruct(struct DeviceNodeExt *devnode)
 {
-    DeviceNodeExtRemoveService(&devnode->super);
+    if (DeviceNodeExtRemoveService(&devnode->super) != HDF_SUCCESS) {
+        HDF_LOGE("failed to remove serivce");
+    }
     HdfDeviceNodeDestruct(&devnode->super);
 }
 

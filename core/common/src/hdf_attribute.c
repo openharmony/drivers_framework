@@ -187,7 +187,7 @@ static bool GetDeviceNodeInfo(const struct DeviceResourceNode *deviceNode, struc
 static bool GetDevcieNodeList(const struct DeviceResourceNode *device,
     struct DevHostServiceClnt *hostClnt, uint16_t deviceIdx)
 {
-    uint8_t deviceNnodeIdx = 0;
+    uint8_t deviceNodeIdx = 0;
     uint16_t hostId = hostClnt->hostId;
     struct HdfDeviceInfo *deviceNodeInfo = NULL;
     const struct DeviceResourceNode *devNodeResource = device->child;
@@ -204,7 +204,7 @@ static bool GetDevcieNodeList(const struct DeviceResourceNode *device,
         }
 
         deviceNodeInfo->hostId = hostId;
-        deviceNodeInfo->deviceId = MK_DEVID(hostId, deviceIdx, deviceNnodeIdx);
+        deviceNodeInfo->deviceId = MK_DEVID(hostId, deviceIdx, deviceNodeIdx);
         if (deviceNodeInfo->preload != DEVICE_PRELOAD_DISABLE) {
             if (!HdfSListAddOrder(&hostClnt->unloadDevInfos, &deviceNodeInfo->node, HdfDeviceListCompare)) {
                 HDF_LOGE("%s: failed to add device info to list %s", __func__, deviceNodeInfo->svcName);
@@ -215,9 +215,9 @@ static bool GetDevcieNodeList(const struct DeviceResourceNode *device,
             HdfSListAdd(&hostClnt->dynamicDevInfos, &deviceNodeInfo->node);
         }
 
-        deviceNnodeIdx++;
+        deviceNodeIdx++;
     }
-    return deviceNnodeIdx > 0;
+    return deviceNodeIdx > 0;
 }
 
 int HdfAttributeManagerGetDeviceList(struct DevHostServiceClnt *hostClnt)

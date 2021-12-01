@@ -6,12 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-
 #ifndef HC_GEN_MACRO_GEN_H
 #define HC_GEN_MACRO_GEN_H
 
-#include <fstream>
 #include "generator.h"
+#include <fstream>
 #include <map>
 
 namespace OHOS {
@@ -23,6 +22,7 @@ public:
     ~MacroGen() override = default;
 
     bool Output() override;
+
 private:
     bool Initialize();
 
