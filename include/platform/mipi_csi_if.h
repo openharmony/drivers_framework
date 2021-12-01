@@ -536,6 +536,18 @@ int32_t MipiCsiDisableSensorClock(DevHandle handle, uint8_t snsClkSource);
  */
 int32_t MipiCsiSetExtDataType(DevHandle handle, ExtDataType* dataType);
 
+/**
+ * @brief Sets additional parameters for a MIPI CSI device.
+ *
+ * @param handle Indicates the MIPI CSI device handle obtained via {@link MipiCsiOpen}.
+ * @param drvData Indicates the pointer to the additional parameters.
+ *
+ * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
+ *
+ * @since 1.0
+ */
+int32_t MipiCsiSetDrvData(DevHandle handle, void *drvData);
+
 #ifdef __cplusplus
 #if __cplusplus
 }

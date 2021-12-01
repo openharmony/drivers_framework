@@ -355,7 +355,7 @@ int32_t MipiDsiCntlrAttach(struct MipiDsiCntlr *cntlr, uint8_t *name)
     return ret;
 }
 
-int32_t MipiDsiCntlrSetDrvData(struct MipiDsiCntlr *cntlr, DevHandle *panelData)
+int32_t MipiDsiCntlrSetDrvData(struct MipiDsiCntlr *cntlr, void *panelData)
 {
     int32_t ret;
 

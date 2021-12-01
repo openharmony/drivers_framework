@@ -246,6 +246,7 @@ struct MipiCsiCntlrMethod {
     int32_t (*disableSensorClock)(struct MipiCsiCntlr *cntlr, uint8_t snsClkSource);
     int32_t (*resetSensor)(struct MipiCsiCntlr *cntlr, uint8_t snsResetSource);
     int32_t (*unresetSensor)(struct MipiCsiCntlr *cntlr, uint8_t snsResetSource);
+    int32_t (*setDrvData)(struct MipiCsiCntlr *cntlr, void *drvData);
 };
 
 /**
@@ -454,6 +455,18 @@ int32_t MipiCsiCntlrDisableSensorClock(struct MipiCsiCntlr *cntlr, uint8_t snsCl
  * @since 1.0
  */
 int32_t MipiCsiCntlrSetExtDataType(struct MipiCsiCntlr *cntlr, ExtDataType* dataType);
+
+/**
+ * @brief Sets additional parameters for a MIPI CSI device.
+ *
+ * @param cntlr Indicates the MIPI CSI device obtained via {@link MipiCsiOpen}.
+ * @param drvData Indicates the pointer to the additional parameters.
+ *
+ * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
+ *
+ * @since 1.0
+ */
+int32_t MipiCsiCntlrSetDrvData(struct MipiCsiCntlr *cntlr, void *drvData);
 
 /**
  * @brief Get controller context parameter variable for debugging.
