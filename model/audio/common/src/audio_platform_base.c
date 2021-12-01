@@ -7,12 +7,12 @@
  */
 
 #include "audio_platform_base.h"
-#include "osal_time.h"
-#include "osal_uaccess.h"
 #include "audio_driver_log.h"
 #include "audio_dma_base.h"
 #include "audio_sapm.h"
 #include "audio_stream_dispatch.h"
+#include "osal_time.h"
+#include "osal_uaccess.h"
 
 #define HDF_LOG_TAG audio_platform_base
 const int MAX_PERIOD_SIZE = 1024 * 16;
@@ -452,11 +452,8 @@ static int32_t MmapWriteData(struct PlatformData *data, char *tmpBuf)
 
 static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
 {
-    struct PlatformData *data = NULL;
-    enum CriBuffStatus status;
     uint32_t timeout = 0;
-
-    data = PlatformDataFromCard(card);
+    struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -472,14 +469,17 @@ static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
         (totalSize / MIN_PERIOD_SIZE) : (totalSize / MIN_PERIOD_SIZE + 1);
     data->mmapLoopCount = 0;
     char *tmpBuf = OsalMemCalloc(MIN_PERIOD_SIZE);
-
+    if (tmpBuf == NULL) {
+        AUDIO_DRIVER_LOG_ERR("tmpBuf is null.");
+        return HDF_FAILURE;
+    }
     while (data->mmapLoopCount < loopTimes && data->renderBufInfo.runStatus != PCM_STOP) {
         if (data->renderBufInfo.runStatus == PCM_PAUSE) {
             OsalMSleep(5);
             continue;
         }
-        status = AudioDmaBuffStatus(card);
-        if (status != ENUM_CIR_BUFF_NORMAL) {
+
+        if (AudioDmaBuffStatus(card) != ENUM_CIR_BUFF_NORMAL) {
             OsalMSleep(SLEEP_TIME);
             AUDIO_DRIVER_LOG_DEBUG("dma buff status ENUM_CIR_BUFF_FULL.");
             timeout++;
@@ -494,7 +494,6 @@ static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
         data->renderBufInfo.trafBufSize = (data->mmapLoopCount < (loopTimes - 1)) ? MIN_PERIOD_SIZE : lastBuffSize;
 
         if (MmapWriteData(data, tmpBuf) != HDF_SUCCESS) {
-            AUDIO_DRIVER_LOG_ERR("MmapWriteData fail.");
             OsalMemFree(tmpBuf);
             return HDF_FAILURE;
         }

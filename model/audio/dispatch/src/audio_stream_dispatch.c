@@ -7,8 +7,8 @@
  */
 
 #include "audio_stream_dispatch.h"
-#include "audio_platform_base.h"
 #include "audio_driver_log.h"
+#include "audio_platform_base.h"
 
 #define HDF_LOG_TAG audio_stream_dispatch
 
@@ -782,6 +782,7 @@ static int32_t StreamHostMmapWrite(const struct HdfDeviceIoClient *client, struc
         return HDF_FAILURE;
     }
 
+    (void)memset_s(&txMmapData, sizeof(struct AudioMmapData), 0, sizeof(struct AudioMmapData));
     txMmapData.memoryAddress = (void *)((uintptr_t)mAddress);
     if (txMmapData.memoryAddress == NULL) {
         ADM_LOG_ERR("txMmapData.memoryAddress is NULL.");
@@ -857,6 +858,8 @@ static int32_t StreamHostMmapRead(const struct HdfDeviceIoClient *client, struct
         ADM_LOG_ERR("capture mmap read request memory address failed!");
         return HDF_FAILURE;
     }
+
+    (void)memset_s(&rxMmapData, sizeof(struct AudioMmapData), 0, sizeof(struct AudioMmapData));
     rxMmapData.memoryAddress = (void *)((uintptr_t)mAddress);
     if (rxMmapData.memoryAddress == NULL) {
         ADM_LOG_ERR("rxMmapData.memoryAddress is NULL.");
