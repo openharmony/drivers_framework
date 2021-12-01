@@ -466,22 +466,22 @@ static int32_t WifiCmdSetMode(const RequestContext *context, struct HdfSBuf *req
     return ret;
 }
 
-static int32_t WifiCheckChannelNum(struct WlanHwCapability *capability,struct WlanBand *band)
+static int32_t WifiCheckChannelNum(struct WlanHwCapability *capability,struct WlanBand **band)
 {
     if (capability == NULL || band == NULL) {
         HDF_LOGE("%s: capability or band is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
     if (capability->bands[IEEE80211_BAND_2GHZ] != NULL) {
-        band = capability->bands[IEEE80211_BAND_2GHZ];
-        if (band->channelCount > WIFI_24G_CHANNEL_NUM) {
-            HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
+        *band = capability->bands[IEEE80211_BAND_2GHZ];
+        if ((*band)->channelCount > WIFI_24G_CHANNEL_NUM) {
+            HDF_LOGE("%s: channels %u out of range", __func__, (*band)->channelCount);
             return HDF_FAILURE;
         }   
     } else if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
-        band = capability->bands[IEEE80211_BAND_5GHZ];
-        if (band->channelCount > WIFI_5G_CHANNEL_NUM) {
-            HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
+        *band = capability->bands[IEEE80211_BAND_5GHZ];
+        if ((*band)->channelCount > WIFI_5G_CHANNEL_NUM) {
+            HDF_LOGE("%s: channels %u out of range", __func__, (*band)->channelCount);
             return HDF_FAILURE;
         }            
     } else {
