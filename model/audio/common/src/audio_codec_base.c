@@ -7,8 +7,8 @@
  */
 
 #include "audio_codec_base.h"
-#include "audio_parse.h"
 #include "audio_driver_log.h"
+#include "audio_parse.h"
 #include "audio_sapm.h"
 
 #define HDF_LOG_TAG audio_codec_base

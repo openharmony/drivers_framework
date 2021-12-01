@@ -7,10 +7,10 @@
  */
 
 #include "audio_sapm.h"
+#include "audio_driver_log.h"
 #include "osal_io.h"
 #include "osal_time.h"
 #include "osal_timer.h"
-#include "audio_driver_log.h"
 
 #define HDF_LOG_TAG audio_sapm
 
