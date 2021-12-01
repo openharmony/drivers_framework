@@ -86,6 +86,11 @@ struct PinDesc *PinCntlrGetPinDescByName(const char *pinName)
     struct PinCntlr *tmp = NULL;
     int32_t num;
 
+    if (pinName == NULL) {
+        HDF_LOGE("%s: pinName is NULL!", __func__);
+        return NULL;
+    }
+
     list = PinCntlrListGet();
 
     DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, list, struct PinCntlr, list) {
