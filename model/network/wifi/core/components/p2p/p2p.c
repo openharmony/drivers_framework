@@ -7,8 +7,6 @@
  */
 
 #include "p2p.h"
-#include <osal_mem.h>
-#include <securec.h>
 #include "message/message_router.h"
 #include "message/sidecar.h"
 #include "wifi_base.h"
