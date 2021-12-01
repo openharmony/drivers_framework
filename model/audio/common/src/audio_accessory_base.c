@@ -8,8 +8,8 @@
 
 #include "audio_accessory_base.h"
 #include "audio_driver_log.h"
-#include "osal_time.h"
 #include "i2c_if.h"
+#include "osal_time.h"
 
 #define HDF_LOG_TAG "audio_accessory_base"
 
