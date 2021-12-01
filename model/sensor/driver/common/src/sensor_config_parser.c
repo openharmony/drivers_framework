@@ -107,7 +107,7 @@ static int32_t ParseSensorRegItem(struct DeviceResourceIface *parser, const stru
     return HDF_SUCCESS;
 }
 
-static int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct DeviceResourceNode *regCfgNode,
+int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct DeviceResourceNode *regCfgNode,
     const char *groupName, struct SensorRegCfgGroupNode **groupNode)
 {
     int32_t num;

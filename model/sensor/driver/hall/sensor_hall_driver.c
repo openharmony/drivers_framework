@@ -155,7 +155,7 @@ static int32_t HallSouthPolarityIrqFunc(uint16_t gpio, void *data)
         drvData->status = 0;
     }
 
-    if (!HdfAddDelayedWork(&drvData->hallWorkQueue, &drvData->hallWork,drvData->delayTime)) {
+    if (!HdfAddDelayedWork(&drvData->hallWorkQueue, &drvData->hallWork, drvData->delayTime)) {
         HDF_LOGE("%s: Hall south add delay work queue failed", __func__);
     }
 

@@ -38,6 +38,10 @@ struct SensorOpsCall {
 };
 
 int32_t SetSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group);
-int32_t SetSensorRegCfgArrayByBuff(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group, uint8_t *buff, int16_t len);
-
+int32_t SetSensorRegCfgArrayByBuff(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group,
+    uint8_t *buff, int16_t len);
+int32_t ReadSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group,
+    int32_t index, uint8_t *buf, int32_t len);
+int32_t WriteSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorRegCfgGroupNode *group,
+    int32_t index, int32_t len);
 #endif /* SENSOR_CONFIG_CONTROLLER_H */
