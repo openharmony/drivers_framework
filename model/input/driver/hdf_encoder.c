@@ -9,10 +9,10 @@
 #include "hdf_encoder.h"
 #include "event_hub.h"
 #include "gpio_if.h"
+#include "hdf_device_desc.h"
+#include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_timer.h"
-#include "hdf_log.h"
-#include "hdf_device_desc.h"
 
 #define TIMER_INTERVAL_ENCODER  5
 
@@ -184,20 +184,20 @@ static InputDevice *InputDeviceInstance(EncoderDriver *encoderDrv)
 static int32_t RegisterEncoderDevice(EncoderCfg *encoderCfg, struct HdfDeviceObject *device)
 {
     int32_t ret;
-    EncoderDriver *EncoderDrv = EncoderDriverInstance(encoderCfg);
-    if (EncoderDrv == NULL) {
+    EncoderDriver *encoderDrv = EncoderDriverInstance(encoderCfg);
+    if (encoderDrv == NULL) {
         HDF_LOGE("%s: instance encoder driver failed", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
-    device->priv = (void *)EncoderDrv;
+    device->priv = (void *)encoderDrv;
 
-    ret = EncoderInit(EncoderDrv);
+    ret = EncoderInit(encoderDrv);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: key driver init failed, ret %d", __func__, ret);
         goto EXIT;
     }
 
-    InputDevice *inputDev = InputDeviceInstance(EncoderDrv);
+    InputDevice *inputDev = InputDeviceInstance(encoderDrv);
     if (inputDev == NULL) {
         HDF_LOGE("%s: instance input device failed", __func__);
         goto EXIT;
@@ -213,7 +213,7 @@ EXIT1:
     OsalMemFree(inputDev->pkgBuf);
     OsalMemFree(inputDev);
 EXIT:
-    OsalMemFree(EncoderDrv);
+    OsalMemFree(encoderDrv);
     return HDF_FAILURE;
 }
 

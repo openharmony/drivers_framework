@@ -26,13 +26,13 @@ void PushOnePackage(InputDevice *inputDev, uint32_t type, uint32_t code, int32_t
 {
     OsalTimespec time;
     EventPackage package = {0};
-    InputManager *g_inputManager = GetInputManager();
+    InputManager *inputManager = GetInputManager();
 
     if (inputDev == NULL) {
         HDF_LOGE("%s: parm is null", __func__);
         return;
     }
-    OsalMutexLock(&g_inputManager->mutex);
+    OsalMutexLock(&inputManager->mutex);
     package.type = type;
     package.code = code;
     package.value = value;
@@ -66,5 +66,5 @@ void PushOnePackage(InputDevice *inputDev, uint32_t type, uint32_t code, int32_t
         HdfSbufFlush(inputDev->pkgBuf);
         inputDev->errFrameFlag = false;
     }
-    OsalMutexUnlock(&g_inputManager->mutex);
+    OsalMutexUnlock(&inputManager->mutex);
 }
