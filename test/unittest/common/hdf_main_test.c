@@ -32,6 +32,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_ADC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_ADC)
 #include "hdf_adc_entry_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_DAC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_DAC)
+#include "hdf_dac_entry_test.h"
+#endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I3C) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I3C)
 #include "hdf_i3c_entry_test.h"
 #endif
@@ -100,6 +103,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_ADC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_ADC)
     { TEST_PAL_ADC_TYPE, HdfAdcTestEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_DAC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_DAC)
+    { TEST_PAL_DAC_TYPE, HdfDacTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_I3C) || defined(CONFIG_DRIVERS_HDF_PLATFORM_I3C)
     { TEST_PAL_I3C_TYPE, HdfI3cTestEntry },
