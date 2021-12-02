@@ -9,6 +9,7 @@
 #define HDF_ENCODER_H
 
 #include <securec.h>
+#include "hdf_device_object.h"
 #include "hdf_input_device_manager.h"
 #include "input_config.h"
 #include "osal_time.h"

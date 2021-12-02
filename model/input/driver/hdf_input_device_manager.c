@@ -7,7 +7,6 @@
  */
 
 #include "hdf_input_device_manager.h"
-#include "devsvc_manager_clnt.h"
 #include "event_hub.h"
 #include "hdf_base.h"
 #include "hdf_device_object.h"
@@ -64,7 +63,7 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
         HdfDeviceObjectRelease(hdfDev);
         return NULL;
     }
-    ret = HdfDeviceObjectPublishService(hdfDev, svcName, SERVICE_POLICY_CAPACITY, 0664);
+    ret = HdfDeviceObjectPublishService(hdfDev, svcName, SERVICE_POLICY_CAPACITY, 0664); // 0664:permission setting
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to regitst device %s", __func__, moduleName);
         HdfDeviceObjectRelease(hdfDev);

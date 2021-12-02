@@ -101,7 +101,7 @@ static void FreeCachedInfo(void)
     }
 }
 
-static int32_t SetInputDevAbsAttr(InputDevice *inputDev, HidInfo *info)
+static int32_t SetInputDevAbsAttr(InputDevice *inputDev, const HidInfo *info)
 {
     int32_t ret;
     for (int i = 0; i < BITS_TO_LONG(ABS_CNT); i++) {
@@ -114,7 +114,7 @@ static int32_t SetInputDevAbsAttr(InputDevice *inputDev, HidInfo *info)
     return HDF_SUCCESS;
 }
 
-static void GetInfoFromCache(InputDevice *inputDev, HidInfo *info)
+static void GetInfoFromCache(InputDevice *inputDev, const HidInfo *info)
 {
     uint32_t len;
     int32_t ret;
