@@ -752,7 +752,7 @@ static void HdmiFillSpdInfoFrame(struct HdmiSpdInfoFrame *spd,
 }
 
 int32_t HdmiSpdInfoFrameSend(struct HdmiInfoFrame *frame, bool enable,
-    char *vendorName, char *productName, enum HdmiSpdSdi sdi)
+    const char *vendorName, char *productName, enum HdmiSpdSdi sdi)
 {
     struct HdmiCntlr *cntlr = NULL;
     union HdmiInfoFrameInfo infoFrame = {0};
