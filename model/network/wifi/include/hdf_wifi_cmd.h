@@ -313,13 +313,14 @@ typedef struct {
 } WifiIeee80211Channel;
 
 #define MAX_SUPPORTED_RATE 12
+#define WIFI_5G_CHANNEL_NUM 24
 
 typedef struct {
     int32_t channelNum;
     uint16_t bitrate[MAX_SUPPORTED_RATE];
     uint16_t htCapab;
     uint8_t resv[2];
-    WifiIeee80211Channel iee80211Channel[24];
+    WifiIeee80211Channel iee80211Channel[WIFI_5G_CHANNEL_NUM];
 } WifiHwFeatureData;
 
 typedef struct {
