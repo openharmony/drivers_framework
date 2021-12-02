@@ -612,11 +612,11 @@ int32_t CheckRawSdkIfGetDescriptor001(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -640,11 +640,11 @@ int32_t CheckRawSdkIfGetDescriptor002(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -667,11 +667,11 @@ int32_t CheckRawSdkIfGetDescriptor003(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -694,11 +694,11 @@ int32_t CheckRawSdkIfGetDescriptor004(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -741,11 +741,11 @@ int32_t CheckRawSdkIfGetDescriptor006(void)
     if (ret < 0) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -768,11 +768,11 @@ int32_t CheckRawSdkIfGetDescriptor007(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -809,11 +809,11 @@ int32_t CheckRawSdkIfGetDescriptor009(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -875,11 +875,11 @@ int32_t CheckRawSdkIfGetDescriptor012(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(data);
     data = NULL;
 
@@ -1305,11 +1305,11 @@ int32_t CheckRawSdkIfFillControlSetup002(void)
     if (ret != HDF_ERR_INVALID_PARAM) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
     ret = HDF_SUCCESS;
-error:
+ERROR:
     OsalMemFree(setup);
     setup = NULL;
 
@@ -1359,11 +1359,11 @@ int32_t CheckRawSdkIfFillControlSetup004(void)
     if (ret) {
         HDF_LOGE("%s: error", __func__);
         ret = HDF_FAILURE;
-        goto error;
+        goto ERROR;
     }
     HDF_LOGE("%s: success", __func__);
 
-error:
+ERROR:
     OsalMemFree(setup);
     setup = NULL;
 

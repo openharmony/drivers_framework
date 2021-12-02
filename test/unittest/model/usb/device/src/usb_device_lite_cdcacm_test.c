@@ -394,7 +394,7 @@ static void CtrlComplete(uint8_t pipe, struct UsbFnRequest *req)
     struct CtrlInfo *ctrlInfo = (struct CtrlInfo *)req->context;
     struct AcmDevice *acm = ctrlInfo->acm;
     if (USB_REQUEST_COMPLETED != req->status) {
-        goto out;
+        goto OUT;
     }
 
     if (ctrlInfo->request == USB_DDK_CDC_REQ_SET_LINE_CODING) {
@@ -404,7 +404,7 @@ static void CtrlComplete(uint8_t pipe, struct UsbFnRequest *req)
         }
         acm->connect = true;
     }
-out:
+OUT:
     DListInsertTail(&req->list, &acm->ctrlPool);
 }
 
@@ -615,7 +615,7 @@ static int Setup(struct AcmDevice *acm, const struct UsbFnCtrlRequest *setup)
     switch (setup->request) {
         case USB_DDK_CDC_REQ_SET_LINE_CODING:
             if (length != sizeof(struct UsbCdcLineCoding)) {
-                goto out;
+                goto OUT;
             }
             ret = length;
             break;
@@ -637,7 +637,7 @@ static int Setup(struct AcmDevice *acm, const struct UsbFnCtrlRequest *setup)
             break;
     }
 
-out:
+OUT:
     ctrlInfo = (struct CtrlInfo *)req->context;
     ctrlInfo->request = setup->request;
     req->length = ret;

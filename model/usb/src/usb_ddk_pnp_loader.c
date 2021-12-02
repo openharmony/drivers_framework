@@ -298,7 +298,7 @@ static bool UsbDdkPnpLoaderMatchInterface(const struct UsbPnpNotifyMatchInfoTabl
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_CLASS) {
         for (i = 0; i < id->interfaceClassLength; i++) {
             if (id->interfaceClass[i] == dev->interfaceInfo[index].interfaceClass) {
-                id->interfaceClassMask |= (1 << i);
+                id->interfaceClassMask |= (1 << (uint32_t)i);
                 break;
             }
         }
@@ -311,7 +311,7 @@ static bool UsbDdkPnpLoaderMatchInterface(const struct UsbPnpNotifyMatchInfoTabl
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_SUBCLASS) {
         for (i = 0; i < id->interfaceSubClassLength; i++) {
             if (id->interfaceSubClass[i] == dev->interfaceInfo[index].interfaceSubClass) {
-                id->interfaceSubClassMask |= (1 << i);
+                id->interfaceSubClassMask |= (1 << (uint32_t)i);
                 break;
             }
         }
@@ -324,7 +324,7 @@ static bool UsbDdkPnpLoaderMatchInterface(const struct UsbPnpNotifyMatchInfoTabl
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_PROTOCOL) {
         for (i = 0; i < id->interfaceProtocolLength; i++) {
             if (id->interfaceProtocol[i] == dev->interfaceInfo[index].interfaceProtocol) {
-                id->interfaceProtocolMask |= (1 << i);
+                id->interfaceProtocolMask |= (1 << (uint32_t)i);
                 break;
             }
         }
@@ -337,7 +337,7 @@ static bool UsbDdkPnpLoaderMatchInterface(const struct UsbPnpNotifyMatchInfoTabl
     if (id->matchFlag & USB_PNP_NOTIFY_MATCH_INT_NUMBER) {
         for (i = 0; i < id->interfaceLength; i++) {
             if (id->interfaceNumber[i] == dev->interfaceInfo[index].interfaceNumber) {
-                id->interfaceMask |= (1 << i);
+                id->interfaceMask |= (1 << (uint32_t)i);
                 break;
             }
         }
