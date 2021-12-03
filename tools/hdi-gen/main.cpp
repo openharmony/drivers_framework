@@ -37,12 +37,14 @@ int main(int argc, char** argv)
     }
 
     if (options.DoGetHashKey()) {
-        std::unique_ptr<File> idlFile = std::make_unique<File>(options.GetSourceFile(), int(File::READ));
-        if (!idlFile->IsValid()) {
-            Logger::E("hdi-gen", "open idl file failed!");
-            return -1;
+        for (const auto& sourceFile : options.GetSourceFiles()) {
+            std::unique_ptr<File> idlFile = std::make_unique<File>(sourceFile, int(File::READ));
+            if (!idlFile->IsValid()) {
+                Logger::E("hdi-gen", "open idl file failed!");
+                return -1;
+            }
+            printf("%s:%lu\n", idlFile->GetPath().string(), idlFile->GetHashKey());
         }
-        printf("%s:%lu\n", idlFile->GetPath().string(), idlFile->GetHashKey());
         return 0;
     }
 

@@ -77,6 +77,20 @@ void CppCodeEmitter::EmitTailMacro(StringBuilder& sb, const String& fullName)
     sb.Append("#endif // ").Append(macroName).Append("\n\n");
 }
 
+void CppCodeEmitter::EmitHeadExternC(StringBuilder& sb)
+{
+    sb.Append("#ifdef __cplusplus\n");
+    sb.Append("extern \"C\" {\n");
+    sb.Append("#endif /* __cplusplus */\n");
+}
+
+void CppCodeEmitter::EmitTailExternC(StringBuilder& sb)
+{
+    sb.Append("#ifdef __cplusplus\n");
+    sb.Append("}\n");
+    sb.Append("#endif /* __cplusplus */\n");
+}
+
 void CppCodeEmitter::EmitBeginNamespace(StringBuilder& sb)
 {
     String nspace = interface_->GetNamespace()->ToString();

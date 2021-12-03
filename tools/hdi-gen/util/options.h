@@ -65,9 +65,9 @@ public:
         return !errors_.empty();
     }
 
-    inline String GetSourceFile() const
+    inline std::vector<String> GetSourceFiles() const
     {
-        return sourceFilePath_;
+        return sourceFiles_;
     }
 
     inline String GetTargetLanguage() const
@@ -78,6 +78,11 @@ public:
     inline String GetCodePart() const
     {
         return codePart_;
+    }
+
+    inline String GetModeName() const
+    {
+        return doSetModeName_ ? modeName_ : "sample";
     }
 
     inline String GetGenerationDirectory() const
@@ -93,7 +98,7 @@ public:
 
 private:
     Options() : program_(),
-        sourceFilePath_(),
+        sourceFiles_(0),
         targetLanguage_(),
         codePart_("all"),
         generationDirectory_(),
@@ -105,13 +110,16 @@ private:
         doDumpAST_(false),
         doGetHashKey_(false),
         doGenerateCode_(false),
+        doModeKernel_(false),
+        doGeneratePart_(false),
+        doSetModeName_(false),
         doOutDir_(false) {}
 
     void SetOptionData(char op);
 
-    void SetLanguage(String language);
+    void SetLanguage(const String& language);
 
-    void SetCodePart(String part);
+    void SetCodePart(const String& part);
 
     void CheckOptions();
 
@@ -122,22 +130,24 @@ private:
     static constexpr int VERSION_MINOR = 1;
 
     String program_;
-    String sourceFilePath_;
+    std::vector<String> sourceFiles_;
     String targetLanguage_;
     String codePart_;
+    String modeName_;
     String generationDirectory_;
     String illegalOptions_;
     std::vector<String> errors_;
 
-    bool doShowUsage_ = false;
-    bool doShowVersion_ = false;
-    bool doCompile_ = false;
-    bool doDumpAST_ = false;
-    bool doGetHashKey_ = false;
-    bool doGenerateCode_ = false;
-    bool doModeKernel_ = false;
-    bool doGeneratePart_ = false;
-    bool doOutDir_ = false;
+    bool doShowUsage_;
+    bool doShowVersion_;
+    bool doCompile_;
+    bool doDumpAST_;
+    bool doGetHashKey_;
+    bool doGenerateCode_;
+    bool doModeKernel_;
+    bool doGeneratePart_;
+    bool doSetModeName_;
+    bool doOutDir_;
 };
 } // namespace HDI
 } // namespace OHOS

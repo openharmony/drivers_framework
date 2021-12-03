@@ -23,11 +23,9 @@ private:
 
     void EmitCode() override;
 
-    void EmitCbProxyHeaderFile();
-
     void EmitProxySourceFile();
 
-    void EmitCbProxyMethodsDcl(StringBuilder& sb);
+    void EmitProxyDefinition(StringBuilder& sb);
 
     void EmitProxyInclusions(StringBuilder& sb);
 
@@ -54,13 +52,15 @@ private:
 
     void EmitProxyGetMethodImpl(StringBuilder& sb);
 
-    void EmitKernelProxyGetMethodImpl(StringBuilder& sb);
+    void EmitProxyGetInstanceMethodImpl(StringBuilder& sb);
+
+    void EmitKernelProxyGetInstanceMethodImpl(StringBuilder& sb);
+
+    void EmitCbProxyGetMethodImpl(StringBuilder& sb);
 
     void EmitProxyReleaseMethodImpl(StringBuilder& sb);
 
-    void EmitCbProxyObtainMethodImpl(StringBuilder& sb);
-
-    void EmitCbProxyReleaseMethodImpl(StringBuilder& sb);
+    void EmitKernelProxyReleaseMethodImpl(StringBuilder& sb);
 
     std::vector<String> freeObjStatements_;
 };
