@@ -39,9 +39,10 @@ private:
 
     void EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
-    void EmitCreateBuf(StringBuilder& sb, const String& prefix);
+    void EmitCreateBuf(const String& dataBufName, const String& replyBufName, StringBuilder& sb, const String& prefix);
 
-    void EmitReleaseBuf(StringBuilder& sb, const String& prefix);
+    void EmitReleaseBuf(const String& dataBufName, const String& replyBufName, StringBuilder& sb,
+        const String& prefix);
 
     void EmitReadProxyMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
         const String& gotoLabel, StringBuilder& sb, const String& prefix);

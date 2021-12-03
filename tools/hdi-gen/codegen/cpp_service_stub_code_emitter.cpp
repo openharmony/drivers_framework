@@ -161,8 +161,11 @@ void CppServiceStubCodeEmitter::EmitStubMethodDecls(StringBuilder& sb, const Str
 void CppServiceStubCodeEmitter::EmitStubMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
-    sb.Append(prefix).AppendFormat("int32_t %s%s(MessageParcel& data, MessageParcel& reply, MessageOption& option);\n",
-        stubName_.string(), method->GetName().string());
+    String dataName = "data_";
+    String replyName = "reply_";
+    String optionName = "option_";
+    sb.Append(prefix).AppendFormat("int32_t %s%s(MessageParcel& %s, MessageParcel& %s, MessageOption& %s);\n",
+        stubName_.string(), method->GetName().string(), dataName.string(), replyName.string(), optionName.string());
 }
 
 void CppServiceStubCodeEmitter::EmitStubOnRequestMethodDecl(StringBuilder& sb, const String& prefix)
@@ -292,15 +295,19 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpls(StringBuilder& sb, const Str
 void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
+    String dataName = "data_";
+    String replyName = "reply_";
+    String optionName = "option_";
     sb.Append(prefix).AppendFormat(
-        "int32_t %s::%s%s(MessageParcel& data, MessageParcel& reply, MessageOption& option)\n",
-        stubName_.string(), stubName_.string(), method->GetName().string());
+        "int32_t %s::%s%s(MessageParcel& %s, MessageParcel& %s, MessageOption& %s)\n",
+        stubName_.string(), stubName_.string(), method->GetName().string(),
+        dataName.string(), replyName.string(), optionName.string());
     sb.Append(prefix).Append("{\n");
 
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            EmitReadMethodParameter(param, "data", true, sb, prefix + g_tab);
+            EmitReadMethodParameter(param, dataName, true, sb, prefix + g_tab);
             sb.Append("\n");
         } else {
             EmitLocalVariable(param, sb, prefix + g_tab);
@@ -315,7 +322,7 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-                EmitWriteMethodParameter(param, "reply", sb, prefix + g_tab);
+                EmitWriteMethodParameter(param, replyName, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }
