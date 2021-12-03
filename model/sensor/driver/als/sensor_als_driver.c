@@ -148,7 +148,8 @@ int32_t ParseExtendedAlsRegConfig(struct SensorCfgData *config)
             goto ERROR;
         }
 
-        if (ParseSensorRegGroup(parser, extendedRegCfgNode, extendedRegAttr->name, &config->extendedRegCfgGroup[index]) != HDF_SUCCESS) {
+        if (ParseSensorRegGroup(parser, extendedRegCfgNode, extendedRegAttr->name,
+            &config->extendedRegCfgGroup[index]) != HDF_SUCCESS) {
             HDF_LOGE("%s: parse sensor register group failed", __func__);
             goto ERROR;
         }

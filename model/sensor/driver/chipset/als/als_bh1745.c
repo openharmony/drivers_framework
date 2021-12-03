@@ -72,14 +72,14 @@ static int32_t DynamicRangCovert(struct SensorCfgData *CfgData, uint32_t *rgbcDa
         return HDF_FAILURE;
     }
 
-    if ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX
-         || rgbcData[ALS_G] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX ) && temp >= BH1745_TIME_320MSEC) {
+    if ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX ||
+        rgbcData[ALS_G] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX ) && temp >= BH1745_TIME_320MSEC) {
         g_timeMap_flag = 1;
         index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
         index--;
         WriteSensorRegCfgArray(&CfgData->busCfg, timeGroupNode, index, sizeof(uint8_t));
-    } else if ((g_timeMap_flag == 1) && ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN)
-                || (rgbcData[ALS_G] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN))) {
+    } else if ((g_timeMap_flag == 1) && ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN) ||
+                (rgbcData[ALS_G] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN))) {
         g_timeMap_flag = 0;
         index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
         index++;
@@ -132,13 +132,17 @@ static uint32_t CalLux(struct SensorCfgData *CfgData, uint32_t *rgbcData)
     return (((luxTemp * BH1745_TIME_160MSEC * BH1745_GAIN_16X) / gainTemp) / timeTemp);
 }
 
- static int32_t RawDataConvert(struct SensorCfgData *CfgData, struct AlsReportData *reportData, uint32_t* rgbcData)
- {
+static int32_t RawDataConvert(struct SensorCfgData *CfgData, struct AlsReportData *reportData, uint32_t* rgbcData)
+{
+    int ret;
+
     reportData->als = (uint32_t)CalLux(CfgData, rgbcData);
     reportData->als = (reportData->als > 0) ? reportData->als : 0;
-    DynamicRangCovert(CfgData, rgbcData);
+    ret = DynamicRangCovert(CfgData, rgbcData);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "DynamicRangCovert");
+
     return HDF_SUCCESS;
- }
+}
 
 static int32_t ReadBh1745RawData(struct SensorCfgData *data, struct AlsData *rawData, int64_t *timestamp)
 {
@@ -223,7 +227,9 @@ int32_t ReadBh1745Data(struct SensorCfgData *data)
     tmp[ALS_B] = rawData.blue;
     tmp[ALS_C] = rawData.clear;
 
-    RawDataConvert(data, &reportData, tmp);
+    ret = RawDataConvert(data, &reportData, tmp);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "RawDataConvert");
+
     event.dataLen = sizeof(reportData.als);
     event.data = (uint8_t *)&reportData.als;
     ret = ReportSensorEvent(&event);
