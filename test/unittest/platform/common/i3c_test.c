@@ -7,15 +7,15 @@
  */
 
 #include "i3c_test.h"
-#include "i3c_if.h"
-#include "i3c_ccc.h"
 #include "hdf_base.h"
 #include "hdf_io_service_if.h"
 #include "hdf_log.h"
+#include "i3c_ccc.h"
+#include "i3c_if.h"
 #include "osal_mem.h"
-#include "securec.h"
 #include "osal_thread.h"
 #include "osal_time.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG i3c_test_c
 

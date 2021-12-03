@@ -7,10 +7,9 @@
  */
 
 #include "hdf_hdmi_entry_test.h"
-#include "hdmi_if.h"
 #include "hdf_log.h"
+#include "hdmi_if.h"
 #include "hdmi_test.h"
-
 
 #define HDF_LOG_TAG hdf_hdmi_entry_test
 
