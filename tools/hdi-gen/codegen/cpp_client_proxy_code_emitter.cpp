@@ -258,24 +258,27 @@ void CppClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& me
 void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
+    String dataName = "data_";
+    String replyName = "reply_";
+    String optionName = "option_";
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).Append("MessageParcel data;\n");
-    sb.Append(prefix + g_tab).Append("MessageParcel reply;\n");
-    sb.Append(prefix + g_tab).Append("MessageOption option(MessageOption::TF_SYNC);\n");
+    sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", dataName.string());
+    sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", replyName.string());
+    sb.Append(prefix + g_tab).AppendFormat("MessageOption %s(MessageOption::TF_SYNC);\n", optionName.string());
     sb.Append("\n");
 
     if (method->GetParameterNumber() > 0) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-                EmitWriteMethodParameter(param, "data", sb, prefix + g_tab);
+                EmitWriteMethodParameter(param, dataName, sb, prefix + g_tab);
             }
         }
         sb.Append("\n");
     }
 
-    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = Remote()->SendRequest(CMD_%s, data, reply, option);\n",
-        ConstantName(method->GetName()).string());
+    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = Remote()->SendRequest(CMD_%s, %s, %s, %s);\n",
+        ConstantName(method->GetName()).string(), dataName.string(), replyName.string(), optionName.string());
     sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
     sb.Append(prefix + g_tab + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s failed, error code is %%{public}d\", __func__, ec);\n", method->GetName().string());
@@ -287,7 +290,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-                EmitReadMethodParameter(param, "reply", false, sb, prefix + g_tab);
+                EmitReadMethodParameter(param, replyName, false, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }

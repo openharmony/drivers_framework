@@ -209,9 +209,11 @@ void CServiceStubCodeEmitter::EmitServiceStubMethodImpls(StringBuilder& sb, cons
 void CServiceStubCodeEmitter::EmitServiceStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
+    String dataName = "data_";
+    String replyName = "reply_";
     sb.Append(prefix).AppendFormat(
-        "static int32_t SerStub%s(struct %s *serviceImpl, struct HdfSBuf *data, struct HdfSBuf *reply)\n",
-        method->GetName().string(), interfaceName_.string());
+        "static int32_t SerStub%s(struct %s *serviceImpl, struct HdfSBuf *%s, struct HdfSBuf *%s)\n",
+        method->GetName().string(), interfaceName_.string(), dataName.string(), replyName.string());
     sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).Append("int32_t ec = HDF_FAILURE;\n");
 
@@ -239,7 +241,7 @@ void CServiceStubCodeEmitter::EmitServiceStubMethodImpl(const AutoPtr<ASTMethod>
         for (int i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-                EmitReadStubMethodParameter(param, "data", sb, prefix + g_tab);
+                EmitReadStubMethodParameter(param, dataName, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }
@@ -251,7 +253,7 @@ void CServiceStubCodeEmitter::EmitServiceStubMethodImpl(const AutoPtr<ASTMethod>
     for (int i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-            param->EmitCWriteVar("reply", gotoName, sb, prefix + g_tab);
+            param->EmitCWriteVar(replyName, gotoName, sb, prefix + g_tab);
             sb.Append("\n");
         }
     }

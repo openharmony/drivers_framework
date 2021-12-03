@@ -195,6 +195,8 @@ void CClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& meth
 void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
+    String dataName = "data_";
+    String replyName = "reply_";
     sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).Append("int32_t ec = HDF_FAILURE;\n");
 
@@ -212,20 +214,20 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
     }
 
     sb.Append("\n");
-    EmitCreateBuf(sb, prefix + g_tab);
+    EmitCreateBuf(dataName, replyName, sb, prefix + g_tab);
     sb.Append("\n");
 
     String gotoName = GetGotLabel(method);
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            param->EmitCWriteVar("data", gotoName, sb, prefix + g_tab);
+            param->EmitCWriteVar(dataName, gotoName, sb, prefix + g_tab);
             sb.Append("\n");
         }
     }
 
-    sb.Append(prefix + g_tab).AppendFormat("ec = %sCall(self, CMD_%s, data, reply);\n",
-        proxyName_.string(), ConstantName(method->GetName()).string());
+    sb.Append(prefix + g_tab).AppendFormat("ec = %sCall(self, CMD_%s, %s, %s);\n",
+        proxyName_.string(), ConstantName(method->GetName()).string(), dataName.string(), replyName.string());
     sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
     sb.Append(prefix + g_tab + g_tab).Append(
         "HDF_LOGE(\"%{public}s: call failed! error code is %{public}d\", __func__, ec);\n");
@@ -236,44 +238,46 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-            EmitReadProxyMethodParameter(param, "reply", gotoName, sb, prefix + g_tab);
+            EmitReadProxyMethodParameter(param, replyName, gotoName, sb, prefix + g_tab);
             sb.Append("\n");
         }
     }
 
     EmitErrorHandle(method, "errors", true, sb, prefix);
     sb.Append(prefix).Append("finished:\n");
-    EmitReleaseBuf(sb, prefix + g_tab);
+    EmitReleaseBuf(dataName, replyName, sb, prefix + g_tab);
 
     sb.Append(prefix + g_tab).Append("return ec;\n");
     sb.Append("}\n");
 }
 
-void CClientProxyCodeEmitter::EmitCreateBuf(StringBuilder& sb, const String& prefix)
+void CClientProxyCodeEmitter::EmitCreateBuf(const String& dataBufName, const String& replyBufName,
+    StringBuilder& sb, const String& prefix)
 {
     if (isKernelCode_) {
-        sb.Append(prefix).Append("struct HdfSBuf *data = HdfSBufObtainDefaultSize();\n");
-        sb.Append(prefix).Append("struct HdfSBuf *reply = HdfSBufObtainDefaultSize();\n");
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufObtainDefaultSize();\n", dataBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufObtainDefaultSize();\n", replyBufName.string());
     } else {
-        sb.Append(prefix).Append("struct HdfSBuf *data = HdfSBufTypedObtain(SBUF_IPC);\n");
-        sb.Append(prefix).Append("struct HdfSBuf *reply = HdfSBufTypedObtain(SBUF_IPC);\n");
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufTypedObtain(SBUF_IPC);\n", dataBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufTypedObtain(SBUF_IPC);\n", replyBufName.string());
     }
 
     sb.Append("\n");
-    sb.Append(prefix).Append("if (data == NULL || reply == NULL) {\n");
+    sb.Append(prefix).AppendFormat("if (%s == NULL || %s == NULL) {\n", dataBufName.string(), replyBufName.string());
     sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
     sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
     sb.Append(prefix + g_tab).Append("goto finished;\n");
     sb.Append(prefix).Append("}\n");
 }
 
-void CClientProxyCodeEmitter::EmitReleaseBuf(StringBuilder& sb, const String& prefix)
+void CClientProxyCodeEmitter::EmitReleaseBuf(const String& dataBufName, const String& replyBufName, StringBuilder& sb,
+    const String& prefix)
 {
-    sb.Append(prefix).Append("if (data != NULL) {\n");
-    sb.Append(prefix + g_tab).Append("HdfSBufRecycle(data);\n");
+    sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", dataBufName.string());
+    sb.Append(prefix + g_tab).AppendFormat("HdfSBufRecycle(%s);\n", dataBufName.string());
     sb.Append(prefix).Append("}\n");
-    sb.Append(prefix).Append("if (reply != NULL) {\n");
-    sb.Append(prefix + g_tab).Append("HdfSBufRecycle(reply);\n");
+    sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", replyBufName.string());
+    sb.Append(prefix + g_tab).AppendFormat("HdfSBufRecycle(%s);\n", replyBufName.string());
     sb.Append(prefix).Append("}\n");
 }
 

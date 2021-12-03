@@ -132,7 +132,8 @@ String ASTInterfaceType::EmitJavaType(TypeMode mode, bool isInnerType) const
 void ASTInterfaceType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
     StringBuilder& sb, const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("if (HdfSBufWriteRemoteService(data, %s->remote) != 0) {\n", name.string());
+    sb.Append(prefix).AppendFormat("if (HdfSBufWriteRemoteService(%s, %s->remote) != 0) {\n",
+        parcelName.string(), name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
     sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
@@ -146,8 +147,8 @@ void ASTInterfaceType::EmitCStubReadVar(const String& parcelName, const String& 
     String remoteName = String::Format("%sRemote", name.string());
     String miName = name_.StartsWith("I") ? name_.Substring(1) : name_;
 
-    sb.Append(prefix).AppendFormat("struct HdfRemoteService *%s = HdfSBufReadRemoteService(data);\n",
-        remoteName.string());
+    sb.Append(prefix).AppendFormat("struct HdfRemoteService *%s = HdfSBufReadRemoteService(%s);\n",
+        remoteName.string(), parcelName.string());
     sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", remoteName.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", remoteName.string());
