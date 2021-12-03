@@ -14,10 +14,8 @@ namespace OHOS {
 namespace HDI {
 bool CppServiceStubCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/server/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
-    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
+        ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
         directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
             FileName(ast_->GetPackageName()).string()));
     } else {
@@ -69,12 +67,10 @@ void CppServiceStubCodeEmitter::EmitStubHeaderInclusions(StringBuilder& sb)
     sb.Append("#include <message_parcel.h>\n");
     sb.Append("#include <message_option.h>\n");
     sb.Append("#include <refbase.h>\n");
-    if (!isCallbackInterface()) {
-        sb.AppendFormat("#include \"%s_service.h\"\n", FileName(infName_).string());
-    } else {
+    if (isCallbackInterface()) {
         sb.Append("#include <iremote_stub.h>\n");
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
     }
+    sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
 }
 
 void CppServiceStubCodeEmitter::EmitStubDecl(StringBuilder& sb)
@@ -178,8 +174,8 @@ void CppServiceStubCodeEmitter::EmitStubOnRequestMethodDecl(StringBuilder& sb, c
 
 void CppServiceStubCodeEmitter::EmitStubMembers(StringBuilder& sb, const String& prefix)
 {
-    sb.Append("private:\n");
-    sb.Append(prefix).AppendFormat("%sService service;\n", infName_.string());
+    sb.Append(prefix).Append("void *dlHandler;\n");
+    sb.Append(prefix).AppendFormat("%s *service;\n", interfaceName_.string());
 }
 
 void CppServiceStubCodeEmitter::EmitStubExternalsMethodsDel(StringBuilder& sb)
@@ -201,6 +197,18 @@ void CppServiceStubCodeEmitter::EmitStubSourceFile()
 
     EmitLicense(sb);
     EmitStubSourceInclusions(sb);
+    
+    if (!isCallbackInterface()) {
+        sb.Append("\n");
+        EmitDriverLibPath(sb);
+        sb.Append("\n");
+        EmitHeadExternC(sb);
+        sb.Append("\n");
+        EmitLibFuncTypeDef(sb);
+        sb.Append("\n");
+        EmitTailExternC(sb);
+    }
+
     sb.Append("\n");
     EmitBeginNamespace(sb);
     sb.Append("\n");
@@ -233,18 +241,41 @@ void CppServiceStubCodeEmitter::EmitStubSourceInclusions(StringBuilder& sb)
 
 void CppServiceStubCodeEmitter::EmitStubSourceStdlibInclusions(StringBuilder& sb)
 {
+    if (!isCallbackInterface()) {
+        sb.Append("#include <dlfcn.h>\n");
+    }
     sb.Append("#include <hdf_base.h>\n");
     sb.Append("#include <hdf_log.h>\n");
     sb.Append("#include <hdf_sbuf_ipc.h>\n");
 
     const AST::TypeStringMap& types = ast_->GetTypes();
-    for (const auto& pair : types) {
-        AutoPtr<ASTType> type = pair.second;
-        if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            sb.Append("#include <securec.h>\n");
-            break;
+    if (isCallbackInterface()) {
+        for (const auto& pair : types) {
+            AutoPtr<ASTType> type = pair.second;
+            if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
+                sb.Append("#include <securec.h>\n");
+                break;
+            }
         }
+    } else {
+        sb.Append("#include <securec.h>\n");
     }
+}
+
+void CppServiceStubCodeEmitter::EmitDriverLibPath(StringBuilder& sb)
+{
+    sb.Append("#ifdef __ARM64__\n");
+    sb.Append("#define DRIVER_PATH \"system/lib64\"\n");
+    sb.Append("#else\n");
+    sb.Append("#define DRIVER_PATH \"system/lib\"\n");
+    sb.Append("#endif\n");
+}
+
+void CppServiceStubCodeEmitter::EmitLibFuncTypeDef(StringBuilder& sb)
+{
+    sb.AppendFormat("typedef %s* (*SERVICE_CONSTRUCT_FUNC)();\n", CppFullName(interface_->GetFullName()).string());
+    sb.AppendFormat("typedef void (*SERVICE_RELEASE_FUNC)(%s *obj);\n",
+        CppFullName(interface_->GetFullName()).string());
 }
 
 void CppServiceStubCodeEmitter::EmitStubMethodImpls(StringBuilder& sb, const String& prefix)
@@ -298,7 +329,7 @@ void CppServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& met
     const String& prefix)
 {
     if (!isCallbackInterface()) {
-        sb.Append(prefix).AppendFormat("int32_t ec = service.%s(", method->GetName().string());
+        sb.Append(prefix).AppendFormat("int32_t ec = service->%s(", method->GetName().string());
     } else {
         sb.Append(prefix).AppendFormat("int32_t ec = %s(", method->GetName().string());
     }
@@ -369,58 +400,141 @@ void CppServiceStubCodeEmitter::EmitCbStubOnRequestMethodImpl(StringBuilder& sb,
 
 void CppServiceStubCodeEmitter::EmitStubExternalsMethodsImpl(StringBuilder& sb, const String& prefix)
 {
-    EmitStubInstanceMethodImpl(sb, prefix);
+    EmitStubLinkService(sb);
     sb.Append("\n");
-    EmitStubReleaseMethodImpl(sb, prefix);
+    EmitStubInstanceMethodImpl(sb);
     sb.Append("\n");
-    EmitServiceOnRemoteRequest(sb, prefix);
+    EmitStubReleaseMethodImpl(sb);
+    sb.Append("\n");
+    EmitServiceOnRemoteRequest(sb);
 }
 
-void CppServiceStubCodeEmitter::EmitStubInstanceMethodImpl(StringBuilder& sb, const String& prefix)
+void CppServiceStubCodeEmitter::EmitStubLinkService(StringBuilder& sb)
 {
-    sb.Append(prefix).AppendFormat("void *%sInstance()\n", stubName_.string());
-    sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).AppendFormat("using namespace %s;\n",
-        EmitStubServiceUsings(interface_->GetNamespace()->ToString()).string());
-    sb.Append(prefix + g_tab).AppendFormat("return reinterpret_cast<void *>(new %s());\n", stubName_.string());
-    sb.Append(prefix).Append("}\n");
+    sb.Append("static void *LoadServiceHandler(const char* libFileName)\n");
+    sb.Append("{\n");
+    sb.Append(g_tab).Append("char path[PATH_MAX + 1] = {0};\n");
+    sb.Append(g_tab).Append("char libPath[PATH_MAX + 1] = {0};\n");
+    sb.Append(g_tab).Append("void *handler = NULL;\n");
+    sb.Append("\n");
+    sb.Append(g_tab).AppendFormat("if (snprintf_s(path, sizeof(path), sizeof(path) - 1, \"%%s/%%s\", ");
+    sb.Append("DRIVER_PATH, libFileName) < 0) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: snprintf_s failed\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append("\n");
+    sb.Append(g_tab).Append("if (realpath(path, libPath) == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s file name invalid\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append("\n");
+    sb.Append(g_tab).Append("handler = dlopen(libPath, RTLD_LAZY);\n");
+    sb.Append(g_tab).Append("if (handler == NULL) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: dlopen failed %{public}s\", ");
+    sb.AppendFormat("__func__, dlerror());\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n");
+    sb.Append("\n");
+    sb.Append(g_tab).Append("return handler;\n");
+    sb.Append("}\n");
 }
 
-void CppServiceStubCodeEmitter::EmitStubReleaseMethodImpl(StringBuilder& sb, const String& prefix)
+void CppServiceStubCodeEmitter::EmitStubInstanceMethodImpl(StringBuilder& sb)
 {
-    sb.Append(prefix).AppendFormat("void %sRelease(void *obj)\n", stubName_.string());
-    sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).AppendFormat("using namespace %s;\n",
+    String objName = "stub";
+    String libName = String::Format("lib%s.z.so", FileName(implName_).string());
+    sb.AppendFormat("void *%sInstance()\n", stubName_.string());
+    sb.Append("{\n");
+    sb.Append(g_tab).AppendFormat("using namespace %s;\n",
         EmitStubServiceUsings(interface_->GetNamespace()->ToString()).string());
-    sb.Append(prefix + g_tab).AppendFormat("delete reinterpret_cast<%s *>(obj);\n", stubName_.string());
-    sb.Append(prefix).Append("}\n");
+    sb.Append(g_tab).Append("SERVICE_CONSTRUCT_FUNC serviceConstructFunc = nullptr;\n");
+    sb.Append(g_tab).AppendFormat("%sStub *%s = new %sStub();\n", infName_.string(), objName.string(),
+        infName_.string());
+    sb.Append(g_tab).AppendFormat("if (%s == nullptr) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: OsalMemAlloc %s failed!\", __func__);\n",
+        objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return nullptr;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).AppendFormat("%s->dlHandler = LoadServiceHandler(\"%s\");\n", objName.string(), libName.string());
+    sb.Append(g_tab).AppendFormat("if (%s->dlHandler == nullptr) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: %s->dlHanlder is null\", __func__);\n",
+        objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("delete %s;\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return nullptr;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).AppendFormat("serviceConstructFunc = ");
+    sb.AppendFormat("(SERVICE_CONSTRUCT_FUNC)dlsym(%s->dlHandler, \"%sServiceConstruct\");\n",
+        objName.string(), infName_.string());
+    sb.Append(g_tab).Append("if (serviceConstructFunc == nullptr) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: dlsym failed %{public}s\", __func__, dlerror());\n");
+    sb.Append(g_tab).Append(g_tab).AppendFormat("dlclose(%s->dlHandler);\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("delete %s;\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return nullptr;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).AppendFormat("%s->service = serviceConstructFunc();\n", objName.string());
+    sb.Append(g_tab).AppendFormat("if (%s->service == nullptr) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: get service failed %{public}s\", ");
+    sb.Append("__func__, dlerror());\n");
+    sb.Append(g_tab).Append(g_tab).AppendFormat("dlclose(%s->dlHandler);\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("delete %s;\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return nullptr;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).Append("return reinterpret_cast<void *>(stub);\n");
+    sb.Append("}\n");
 }
 
-void CppServiceStubCodeEmitter::EmitServiceOnRemoteRequest(StringBuilder& sb, const String& prefix)
+void CppServiceStubCodeEmitter::EmitStubReleaseMethodImpl(StringBuilder& sb)
+{
+    String objName = "stub";
+    sb.AppendFormat("void %sRelease(void *obj)\n", stubName_.string());
+    sb.Append("{\n");
+    sb.Append(g_tab).AppendFormat("using namespace %s;\n",
+        EmitStubServiceUsings(interface_->GetNamespace()->ToString()).string());
+    sb.Append(g_tab).Append("if (obj == nullptr) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("return;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).AppendFormat("%sStub *%s = reinterpret_cast<%sStub *>(obj);\n", infName_.string(),
+        objName.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("if (%s == nullptr) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).Append("SERVICE_RELEASE_FUNC serviceReleaseFunc = ");
+    sb.AppendFormat("(SERVICE_RELEASE_FUNC)dlsym(%s->dlHandler, \"SampleServiceRelease\");\n", objName.string());
+    sb.Append(g_tab).Append("if (serviceReleaseFunc == nullptr) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: dlsym failed %{public}s\", __func__, dlerror());\n");
+    sb.Append(g_tab).Append("} else {\n");
+    sb.Append(g_tab).Append(g_tab).AppendFormat("serviceReleaseFunc(%s->service);\n", objName.string());
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).AppendFormat("dlclose(%s->dlHandler);\n", objName.string());
+    sb.Append(g_tab).AppendFormat("delete %s;\n", objName.string());
+    sb.Append("}\n");
+}
+
+void CppServiceStubCodeEmitter::EmitServiceOnRemoteRequest(StringBuilder& sb)
 {
     String stubObjName = String::Format("%sStub", infName_.ToLowerCase().string());
-    sb.Append(prefix).AppendFormat(
+    sb.AppendFormat(
         "int32_t %sServiceOnRemoteRequest(void *stub, int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply)\n",
         infName_.string());
-    sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).AppendFormat("using namespace %s;\n",
+    sb.Append("{\n");
+    sb.Append(g_tab).AppendFormat("using namespace %s;\n",
         EmitStubServiceUsings(interface_->GetNamespace()->ToString()).string());
-    sb.Append(prefix + g_tab).AppendFormat("%s *%s = reinterpret_cast<%s *>(stub);\n",
+    sb.Append(g_tab).AppendFormat("%s *%s = reinterpret_cast<%s *>(stub);\n",
         stubName_.string(), stubObjName.string(), stubName_.string());
-    sb.Append(prefix + g_tab).Append("OHOS::MessageParcel *dataParcel = nullptr;\n");
-    sb.Append(prefix + g_tab).Append("OHOS::MessageParcel *replyParcel = nullptr;\n");
+    sb.Append(g_tab).Append("OHOS::MessageParcel *dataParcel = nullptr;\n");
+    sb.Append(g_tab).Append("OHOS::MessageParcel *replyParcel = nullptr;\n");
     sb.Append("\n");
 
-    sb.Append(prefix + g_tab).Append("(void)SbufToParcel(reply, &replyParcel);\n");
-    sb.Append(prefix + g_tab).Append("if (SbufToParcel(data, &dataParcel) != HDF_SUCCESS) {\n");
-    sb.Append(prefix + g_tab + g_tab).Append(
-        "HDF_LOGE(\"%{public}s:invalid data sbuf object to dispatch\", __func__);\n");
-    sb.Append(prefix + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + g_tab).Append("}\n\n");
-    sb.Append(prefix + g_tab).Append("OHOS::MessageOption option;\n");
-    sb.Append(prefix + g_tab).AppendFormat("return %s->%sOnRemoteRequest(cmdId, *dataParcel, *replyParcel, option);\n",
+    sb.Append(g_tab).Append("(void)SbufToParcel(reply, &replyParcel);\n");
+    sb.Append(g_tab).Append("if (SbufToParcel(data, &dataParcel) != HDF_SUCCESS) {\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s:invalid data sbuf object to dispatch\",");
+    sb.Append(" __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    sb.Append(g_tab).Append("OHOS::MessageOption option;\n");
+    sb.Append(g_tab).AppendFormat("return %s->%sOnRemoteRequest(cmdId, *dataParcel, *replyParcel, option);\n",
         stubObjName.string(), stubName_.string());
-    sb.Append(prefix).Append("}\n");
+    sb.Append("}\n");
 }
 
 String CppServiceStubCodeEmitter::EmitStubServiceUsings(String nameSpace)

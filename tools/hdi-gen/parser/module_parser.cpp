@@ -13,6 +13,8 @@
 
 namespace OHOS {
 namespace HDI {
+const char* ModuleParser::TAG = "ModuleParser";
+
 AutoPtr<ASTModule> ModuleParser::Parse()
 {
     if (!ParserDependencies()) {
@@ -28,13 +30,20 @@ AutoPtr<ASTModule> ModuleParser::Parse()
 
 bool ModuleParser::ParserDependencies()
 {
-    if (!ParserAllImports(option_.GetSourceFile())) {
-        Logger::E(g_tab, "Parsing all idl file failed.");
-        return false;
+    if (option_.GetSourceFiles().size() == 1) {
+        if (!ParserAllImports(option_.GetSourceFiles()[0])) {
+            Logger::E(TAG, "Parsing all idl file failed.");
+            return false;
+        }
+    } else {
+        if (!ParserAllidlFile(option_.GetSourceFiles())) {
+            Logger::E(TAG, "Parsing all given idl file failed.");
+            return false;
+        }
     }
 
     if (!CheckCircularReference()) {
-        Logger::E(g_tab, "has circle reference.");
+        Logger::E(TAG, "has circle reference.");
         return false;
     }
 
@@ -47,7 +56,7 @@ bool ModuleParser::CompileFiles()
 
     for (const auto& filePath : compileFiles_) {
         if (!parserPtr->Parse(filePath)) {
-            Logger::E(g_tab, "parse %s failed", filePath.string());
+            Logger::E(TAG, "parse %s failed", filePath.string());
             return false;
         }
     }
@@ -84,21 +93,41 @@ bool ModuleParser::ParserAllImportsRecursion(const std::shared_ptr<FileDetail>& 
         std::unique_ptr<Parser> parserPtr = std::make_unique<Parser>(option_);
         std::shared_ptr<FileDetail> file = nullptr;
         if (!parserPtr->Parse(filePath, file)) {
-            Logger::E(g_tab, "Parsing %s failed.", filePath.string());
+            Logger::E(TAG, "Parsing %s failed.", filePath.string());
             return false;
         }
 
         if (file == nullptr) {
-            Logger::E(g_tab, "Parsing %s failed, generator filedetail is nullptr.", filePath.string());
+            Logger::E(TAG, "Parsing %s failed, generator filedetail is nullptr.", filePath.string());
             return false;
         }
 
         sourceFiles_[file->GetFullName()] = file;
 
         if (!ParserAllImportsRecursion(file)) {
-            Logger::E(g_tab, "Parsing %s file's import failed.", file->GetFilePath().string());
+            Logger::E(TAG, "Parsing %s file's import failed.", file->GetFilePath().string());
             return false;
         }
+    }
+
+    return true;
+}
+
+bool ModuleParser::ParserAllidlFile(const std::vector<String>& idlSourceFile)
+{
+    std::unique_ptr<Parser> parserPtr = std::make_unique<Parser>(option_);
+
+    for (const auto& idlSourceFile : idlSourceFile) {
+        std::shared_ptr<FileDetail> fileInfo = nullptr;
+        if (!parserPtr->Parse(idlSourceFile, fileInfo)) {
+            return false;
+        }
+
+        if (fileInfo == nullptr) {
+            return false;
+        }
+
+        sourceFiles_[fileInfo->GetFullName()] = fileInfo;
     }
 
     return true;

@@ -4,7 +4,8 @@
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
 
-export TARGET:=hdi-gen
+export OUT_DIR:=.
+export TARGET:=$(OUT_DIR)/hdi-gen
 export CXXFLAGS = -std=c++14 -O2 -w
 export Q := @
 export MAKEFLAGS += --no-print-directory

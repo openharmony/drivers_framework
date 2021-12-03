@@ -59,6 +59,10 @@ private:
 
     void EmitStubSourceStdlibInclusions(StringBuilder& sb);
 
+    void EmitDriverLibPath(StringBuilder& sb);
+
+    void EmitLibFuncTypeDef(StringBuilder& sb);
+
     void EmitStubMethodImpls(StringBuilder& sb, const String& prefix);
 
     void EmitStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
@@ -71,11 +75,13 @@ private:
 
     void EmitStubExternalsMethodsImpl(StringBuilder& sb, const String& prefix);
 
-    void EmitStubInstanceMethodImpl(StringBuilder& sb, const String& prefix);
+    void EmitStubLinkService(StringBuilder& sb);
 
-    void EmitStubReleaseMethodImpl(StringBuilder& sb, const String& prefix);
+    void EmitStubInstanceMethodImpl(StringBuilder& sb);
 
-    void EmitServiceOnRemoteRequest(StringBuilder& sb, const String& prefix);
+    void EmitStubReleaseMethodImpl(StringBuilder& sb);
+
+    void EmitServiceOnRemoteRequest(StringBuilder& sb);
 
     String EmitStubServiceUsings(String nameSpace);
 };

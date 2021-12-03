@@ -9,6 +9,7 @@
 #include "codegen/c_service_driver_code_emitter.h"
 #include "util/file.h"
 #include "util/logger.h"
+#include "util/options.h"
 
 namespace OHOS {
 namespace HDI {
@@ -18,7 +19,7 @@ bool CServiceDriverCodeEmitter::ResolveDirectory(const String& targetDirectory)
         return false;
     }
 
-    directory_ = File::AdapterPath(String::Format("%s/%s/server/", targetDirectory.string(),
+    directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
         FileName(ast_->GetPackageName()).string()));
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CServiceDriverCodeEmitter", "Create '%s' failed!", directory_.string());
@@ -69,12 +70,12 @@ void CServiceDriverCodeEmitter::EmitDriverIncluions(StringBuilder& sb)
     sb.Append("#include <hdf_log.h>\n");
     sb.Append("#include <osal_mem.h>\n");
     sb.Append("#include <hdf_device_desc.h>\n");
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
+    sb.AppendFormat("#include \"%s.h\"\n", FileName(stubName_).string());
 }
 
 void CServiceDriverCodeEmitter::EmitDriverServiceDecl(StringBuilder& sb)
 {
-    sb.AppendFormat("struct Hdf%sService {\n", infName_.string());
+    sb.AppendFormat("struct Hdf%sHost {\n", infName_.string());
     sb.Append(g_tab).AppendFormat("struct IDeviceIoService ioservice;\n");
     sb.Append(g_tab).Append("void *instance;\n");
     sb.Append("};\n");
@@ -82,16 +83,17 @@ void CServiceDriverCodeEmitter::EmitDriverServiceDecl(StringBuilder& sb)
 
 void CServiceDriverCodeEmitter::EmitDriverDispatch(StringBuilder& sb)
 {
-    sb.AppendFormat("static int32_t %sServiceDispatch(struct HdfDeviceIoClient *client, int cmdId,\n",
+    String hostName = infName_.ToLowerCase() + "Host";
+    sb.AppendFormat("static int32_t %sDriverDispatch(struct HdfDeviceIoClient *client, int cmdId,\n",
         infName_.string());
     sb.Append(g_tab).Append("struct HdfSBuf *data, struct HdfSBuf *reply)\n");
     sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("struct Hdf%sService *hdf%sService = CONTAINER_OF(\n",
-        infName_.string(), infName_.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("client->device->service, struct Hdf%sService, ioservice);\n",
+    sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = CONTAINER_OF(\n",
+        infName_.string(), hostName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("client->device->service, struct Hdf%sHost, ioservice);\n",
         infName_.string());
-    sb.Append(g_tab).AppendFormat("return %sServiceOnRemoteRequest(hdf%sService->instance, cmdId, data, reply);\n",
-        infName_.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("return %sServiceOnRemoteRequest(%s->instance, cmdId, data, reply);\n",
+        infName_.string(), hostName.string());
     sb.Append("}\n");
 }
 
@@ -99,51 +101,53 @@ void CServiceDriverCodeEmitter::EmitDriverInit(StringBuilder& sb)
 {
     sb.AppendFormat("int Hdf%sDriverInit(struct HdfDeviceObject *deviceObject)\n", infName_.string());
     sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverInit enter, new hdi impl.\");\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverInit enter.\");\n", infName_.string());
     sb.Append(g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append("}\n");
 }
 
 void CServiceDriverCodeEmitter::EmitDriverBind(StringBuilder& sb)
 {
+    String hostName = infName_.ToLowerCase() + "Host";
     sb.AppendFormat("int Hdf%sDriverBind(struct HdfDeviceObject *deviceObject)\n", infName_.string());
     sb.Append("{\n");
     sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverBind enter.\");\n", infName_.string());
     sb.Append("\n");
-    sb.Append(g_tab).AppendFormat("struct Hdf%sService *hdf%sService = (struct Hdf%sService *)OsalMemAlloc(\n",
-        infName_.string(), infName_.string(), infName_.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("sizeof(struct Hdf%sService));\n", infName_.string());
-    sb.Append(g_tab).AppendFormat("if (hdf%sService == NULL) {\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = (struct Hdf%sHost *)OsalMemAlloc(\n",
+        infName_.string(), hostName.string(), infName_.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("sizeof(struct Hdf%sHost));\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", hostName.string());
     sb.Append(g_tab).Append(g_tab).AppendFormat(
-        "HDF_LOGE(\"Hdf%sDriverBind OsalMemAlloc Hdf%sService failed!\");\n", infName_.string(), infName_.string());
+        "HDF_LOGE(\"Hdf%sDriverBind OsalMemAlloc Hdf%sHost failed!\");\n", infName_.string(), infName_.string());
     sb.Append(g_tab).Append(g_tab).Append("return HDF_FAILURE;\n");
     sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
-    sb.Append(g_tab).AppendFormat("hdf%sService->ioservice.Dispatch = %sServiceDispatch;\n",
-        infName_.string(), infName_.string());
-    sb.Append(g_tab).AppendFormat("hdf%sService->ioservice.Open = NULL;\n", infName_.string());
-    sb.Append(g_tab).AppendFormat("hdf%sService->ioservice.Release = NULL;\n", infName_.string());
-    sb.Append(g_tab).AppendFormat("hdf%sService->instance = Hdi%sInstance();\n", infName_.string(), infName_.string());
-    sb.Append(g_tab).AppendFormat("if (hdf%sService->instance == NULL) {\n", infName_.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("OsalMemFree(hdf%sService);\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("%s->ioservice.Dispatch = %sDriverDispatch;\n",
+        hostName.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("%s->ioservice.Open = NULL;\n", hostName.string());
+    sb.Append(g_tab).AppendFormat("%s->ioservice.Release = NULL;\n", hostName.string());
+    sb.Append(g_tab).AppendFormat("%s->instance = %sStubGetInstance();\n", hostName.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("if (%s->instance == NULL) {\n", hostName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("OsalMemFree(%s);\n", hostName.string());
     sb.Append(g_tab).Append(g_tab).Append("return HDF_FAILURE;\n");
     sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
-    sb.Append(g_tab).AppendFormat("deviceObject->service = &hdf%sService->ioservice;\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("deviceObject->service = &%s->ioservice;\n", hostName.string());
     sb.Append(g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append("}\n");
 }
 
 void CServiceDriverCodeEmitter::EmitDriverRelease(StringBuilder& sb)
 {
+    String hostName = infName_.ToLowerCase() + "Host";
     sb.AppendFormat("void Hdf%sDriverRelease(struct HdfDeviceObject *deviceObject)\n", infName_.string());
     sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("struct Hdf%sService *hdf%sService = CONTAINER_OF(\n",
-        infName_.string(), infName_.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("deviceObject->service, struct Hdf%sService, ioservice);\n",
+    sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverRelease enter.\");\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = CONTAINER_OF(", infName_.string(), hostName.string());
+    sb.AppendFormat("deviceObject->service, struct Hdf%sHost, ioservice);\n",
         infName_.string());
-    sb.Append(g_tab).AppendFormat("Hdi%sRelease(hdf%sService->instance);\n", infName_.string(), infName_.string());
-    sb.Append(g_tab).AppendFormat("OsalMemFree(hdf%sService);\n", infName_.string());
+    sb.Append(g_tab).AppendFormat("%sStubRelease(%s->instance);\n", infName_.string(), hostName.string());
+    sb.Append(g_tab).AppendFormat("OsalMemFree(%s);\n", hostName.string());
     sb.Append("}\n");
 }
 
@@ -151,7 +155,8 @@ void CServiceDriverCodeEmitter::EmitDriverEntryDefinition(StringBuilder& sb)
 {
     sb.AppendFormat("struct HdfDriverEntry g_%sDriverEntry = {\n", infName_.ToLowerCase().string());
     sb.Append(g_tab).Append(".moduleVersion = 1,\n");
-    sb.Append(g_tab).Append(".moduleName = \"sample\", /* please change the moduleName */\n");
+    sb.Append(g_tab).AppendFormat(".moduleName = \"%s\",\n",
+        Options::GetInstance().GetModeName().string());
     sb.Append(g_tab).AppendFormat(".Bind = Hdf%sDriverBind,\n", infName_.string());
     sb.Append(g_tab).AppendFormat(".Init = Hdf%sDriverInit,\n", infName_.string());
     sb.Append(g_tab).AppendFormat(".Release = Hdf%sDriverRelease,\n", infName_.string());

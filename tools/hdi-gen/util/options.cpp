@@ -20,14 +20,13 @@ const char* Options::optSupportArgs = "c:d:";
 static struct option g_longOpts[] = {
     {"help", no_argument, nullptr, 'h'},
     {"version", no_argument, nullptr, 'v'},
-    {"mode-k", no_argument, nullptr, 'k'},
-    {"mode-u", no_argument, nullptr, 'u'},
     {"gen-c", no_argument, nullptr, 'C'},
     {"gen-cpp", no_argument, nullptr, 'P'},
     {"gen-java", no_argument, nullptr, 'J'},
-    {"client", no_argument, nullptr, 'a'},
-    {"server", no_argument, nullptr, 'b'},
-    {"hash", no_argument, nullptr, 'H'},
+    {"gen-hash", no_argument, nullptr, 'H'},
+    {"build-target", required_argument, nullptr, 'p'},
+    {"mode-name", required_argument, nullptr, 'N'},
+    {"kernel", no_argument, nullptr, 'K'},
     {"dump-ast", no_argument, nullptr, 'D'},
     {nullptr, 0, nullptr, 0}
 };
@@ -57,7 +56,7 @@ void Options::SetOptionData(char op)
     switch (op) {
         case 'c':
             doCompile_ = true;
-            sourceFilePath_ = optarg;
+			sourceFiles_.push_back(optarg);
             break;
         case 'd':
             doOutDir_ = true;
@@ -69,11 +68,12 @@ void Options::SetOptionData(char op)
         case 'v':
             doShowVersion_ = true;
             break;
-        case 'k':
+        case 'K':
             doModeKernel_ = true;
             break;
-        case 'u':
-            doModeKernel_ = false;
+        case 'N':
+            doSetModeName_ = true;
+            modeName_ = optarg;
             break;
         case 'C':
             SetLanguage("c");
@@ -84,11 +84,8 @@ void Options::SetOptionData(char op)
         case 'J':
             SetLanguage("java");
             break;
-        case 'a':
-            SetCodePart("client");
-            break;
-        case 'b':
-            SetCodePart("server");
+        case 'p':
+            SetCodePart(optarg);
             break;
         case 'H':
             doGetHashKey_ = true;
@@ -103,14 +100,15 @@ void Options::SetOptionData(char op)
     }
 }
 
-void Options::SetLanguage(String language)
+void Options::SetLanguage(const String& language)
 {
     doGenerateCode_ = true;
     targetLanguage_ = language;
 }
 
-void Options::SetCodePart(String part)
+void Options::SetCodePart(const String& part)
 {
+    // The default parameter is 'all', and the optional parameters is 'client' or 'server'
     doGeneratePart_ = true;
     codePart_ = part;
 }
@@ -135,6 +133,13 @@ void Options::CheckOptions()
         if (doGenerateCode_ && !doOutDir_) {
             errors_.push_back(String::Format("%s: no out directory.", program_.string()));
             return;
+        }
+
+        if (doGeneratePart_ && !codePart_.Equals("all") && !codePart_.Equals("client") &&
+            !codePart_.Equals("server")) {
+            errors_.push_back(
+                String::Format("%s: The '--build-target' option parameter must be 'client' 'server' or 'all'.",
+                program_.string()));
         }
     } else {
         if (doGetHashKey_ || doDumpAST_ || doGenerateCode_ || doOutDir_) {
@@ -164,19 +169,18 @@ void Options::ShowUsage() const
     printf("Compile a .idl file and generate C/C++ and Java codes.\n"
            "Usage: idl [options] file\n"
            "Options:\n"
-           "  --help            Display command line options\n"
-           "  --version         Display toolchain version information\n"
-           "  --hash            Display hash key of the idl file\n"
-           "  --dump-ast        Display the AST of the compiled file\n"
-           "  -c                Compile the .idl file\n"
-           "  --mode-k          Generate kernel-mode ioservice stub code\n"
-           "  --mode-u          Generate user-mode ioservice stub code\n"
-           "  --gen-c           Generate C codes\n"
-           "  --gen-cpp         Generate C++ codes\n"
-           "  --gen-java        Generate Java codes\n"
-           "  --client          Generate client codes\n"
-           "  --server          Generate server codes\n"
-           "  -d <directory>    Place generated codes into <directory>\n");
+           "  --help                          Display command line options\n"
+           "  --version                       Display toolchain version information\n"
+           "  --dump-ast                      Display the AST of the compiled file\n"
+           "  -c <*.idl>                      Compile the .idl file\n"
+           "  --gen-hash                      Generate hash key of the idl file\n"
+           "  --gen-c                         Generate C code\n"
+           "  --gen-cpp                       Generate C++ code\n"
+           "  --gen-java                      Generate Java code\n"
+           "  --kernel                        Generate kernel-mode ioservice stub code, default user-mode ioservice stub code\n"
+           "  --mode-name <mode name>         Set driver module name\n"
+           "  --build-target <target name>    Generate client code, server code or all code\n"
+           "  -d <directory>                  Place generated codes into <directory>\n");
 }
 } // namespace HDI
 } // namespace OHOS

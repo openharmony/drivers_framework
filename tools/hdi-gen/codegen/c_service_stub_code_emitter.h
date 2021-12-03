@@ -33,6 +33,10 @@ private:
 
     void EmitServiceStubStdlibInclusions(StringBuilder& sb);
 
+    void EmitDriverLibPath(StringBuilder& sb);
+
+    void EmitServConstructTypedef(StringBuilder& sb);
+
     void EmitServiceStubMethodImpls(StringBuilder& sb, const String& prefix);
 
     void EmitServiceStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
@@ -54,9 +58,15 @@ private:
 
     void EmitCbStubDefinitions(StringBuilder& sb);
 
-    void EmitCbStubObtainImpl(StringBuilder& sb);
+    void EmitStubGetMethodImpl(StringBuilder& sb);
 
-    void EmitCbStubReleaseImpl(StringBuilder& sb);
+    void EmitKernelStubGetMethodImpl(StringBuilder& sb);
+
+    void EmitStubLinkService(StringBuilder& sb);
+
+    void EmitStubReleaseImpl(StringBuilder& sb);
+
+    void EmitKernelStubReleaseImpl(StringBuilder& sb);
 };
 } // namespace HDI
 } // namespace OHOS

@@ -37,7 +37,7 @@ void CCustomTypesCodeEmitter::EmitCode()
 
 void CCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
 {
-    String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_).string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_).string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

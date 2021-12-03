@@ -15,10 +15,8 @@ namespace OHOS {
 namespace HDI {
 bool CppClientProxyCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/client/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
-    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
+        ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
         directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
             FileName(ast_->GetPackageName()).string()));
     } else {
@@ -86,11 +84,8 @@ void CppClientProxyCodeEmitter::EmitProxyDecl(StringBuilder& sb, const String& p
 
 void CppClientProxyCodeEmitter::EmitProxyConstructor(StringBuilder& sb, const String& prefix)
 {
-    sb.Append(prefix).AppendFormat("explicit %s(\n", proxyName_.string());
-    sb.Append(prefix + g_tab).Append("const sptr<IRemoteObject>& remote)\n");
-    sb.Append(prefix + g_tab).AppendFormat(": IRemoteProxy<%s>(remote)\n", interfaceName_.string());
-    sb.Append(prefix).Append("{}\n");
-    sb.Append("\n");
+    sb.Append(prefix).AppendFormat("explicit %s(const sptr<IRemoteObject>& remote)", proxyName_.string());
+    sb.AppendFormat(" : IRemoteProxy<%s>(remote) {}\n\n", interfaceName_.string());
     sb.Append(prefix).AppendFormat("virtual ~%s() {}\n", proxyName_.string());
 }
 
@@ -154,6 +149,8 @@ void CppClientProxyCodeEmitter::EmitProxySourceFile()
     if (!isCallbackInterface()) {
         EmitGetMethodImpl(sb, "");
         sb.Append("\n");
+        EmitGetInstanceMethodImpl(sb, "");
+        sb.Append("\n");
     }
     EmitProxyMethodImpls(sb, "");
     sb.Append("\n");
@@ -192,6 +189,16 @@ void CppClientProxyCodeEmitter::EmitGetMethodImpl(StringBuilder& sb, const Strin
     sb.Append(prefix).AppendFormat("sptr<%s> %s::Get()\n",
         interface_->GetName().string(), interface_->GetName().string());
     sb.Append(prefix).Append("{\n");
+    sb.Append(prefix + g_tab).AppendFormat("return %s::GetInstance(\"%s\");\n",
+        interfaceName_.string(), FileName(implName_).string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void CppClientProxyCodeEmitter::EmitGetInstanceMethodImpl(StringBuilder& sb, const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("sptr<%s> %s::GetInstance(const std::string& serviceName)\n",
+        interface_->GetName().string(), interface_->GetName().string());
+    sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).Append("do {\n");
     sb.Append(prefix + g_tab + g_tab).Append("using namespace OHOS::HDI::ServiceManager::V1_0;\n");
     sb.Append(prefix + g_tab + g_tab).Append("auto servMgr = IServiceManager::Get();\n");
@@ -200,15 +207,14 @@ void CppClientProxyCodeEmitter::EmitGetMethodImpl(StringBuilder& sb, const Strin
         "HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).Append("break;\n");
     sb.Append(prefix + g_tab + g_tab).Append("}\n\n");
-    sb.Append(prefix + g_tab + g_tab).AppendFormat(
-        "sptr<IRemoteObject> remote = servMgr->GetService(\"%sService\");\n", infName_.string());
+    sb.Append(prefix + g_tab + g_tab).Append("sptr<IRemoteObject> remote = servMgr->GetService(serviceName.c_str());\n");
     sb.Append(prefix + g_tab + g_tab).Append("if (remote != nullptr) {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return iface_cast<%s>(remote);\n",
         interface_->GetName().string());
     sb.Append(prefix + g_tab + g_tab).Append("}\n");
     sb.Append(prefix + g_tab).Append("} while(false);\n");
     sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: get %sService failed!\", __func__);\n", infName_.string());
+        "HDF_LOGE(\"%%{public}s: get %s failed!\", __func__);\n", FileName(implName_).string());
     sb.Append(prefix + g_tab).Append("return nullptr;\n");
     sb.Append(prefix).Append("}\n");
 }
@@ -272,7 +278,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
         ConstantName(method->GetName()).string());
     sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
     sb.Append(prefix + g_tab + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s failed, error code is %%d\", ec);\n", method->GetName().string());
+        "HDF_LOGE(\"%%{public}s failed, error code is %%{public}d\", __func__, ec);\n", method->GetName().string());
     sb.Append(prefix + g_tab + g_tab).Append("return ec;\n");
     sb.Append(prefix + g_tab).Append("}\n");
 

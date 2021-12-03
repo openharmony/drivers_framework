@@ -37,11 +37,19 @@ private:
 
     void EmitServiceImplMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
+    void EmitExternalGetMethodDecl(StringBuilder& sb);
+
+    void EmitExternalReleaseMethodDecl(StringBuilder& sb);
+
     void EmitImplSourceFile();
 
     void EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix);
 
     void EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+
+    void EmitExternalGetMethodImpl(StringBuilder& sb);
+
+    void EmitExternalReleaseMethodImpl(StringBuilder& sb);
 };
 } // namespace HDI
 } // namespace OHOS

@@ -154,7 +154,7 @@ void ASTInterfaceType::EmitCStubReadVar(const String& parcelName, const String& 
     sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
-    sb.Append(prefix).AppendFormat("%s = %sProxyObtain(%s);\n",
+    sb.Append(prefix).AppendFormat("%s = %sGet(%s);\n",
         name.string(), miName.string(), remoteName.string());
 }
 

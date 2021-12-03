@@ -7,32 +7,28 @@
  */
 
 #include "codegen/code_generator.h"
-#include "codegen/c_client_interface_code_emitter.h"
+#include "codegen/c_interface_code_emitter.h"
 #include "codegen/c_client_proxy_code_emitter.h"
 #include "codegen/c_custom_types_code_emitter.h"
 #include "codegen/c_service_driver_code_emitter.h"
 #include "codegen/c_service_impl_code_emitter.h"
-#include "codegen/c_service_interface_code_emitter.h"
 #include "codegen/c_service_stub_code_emitter.h"
-#include "codegen/cpp_client_interface_code_emitter.h"
+#include "codegen/cpp_interface_code_emitter.h"
 #include "codegen/cpp_client_proxy_code_emitter.h"
 #include "codegen/cpp_custom_types_code_emitter.h"
 #include "codegen/cpp_service_driver_code_emitter.h"
 #include "codegen/cpp_service_impl_code_emitter.h"
-#include "codegen/cpp_service_interface_code_emitter.h"
 #include "codegen/cpp_service_stub_code_emitter.h"
 #include "codegen/java_client_interface_code_emitter.h"
 #include "codegen/java_client_proxy_code_emitter.h"
 #include "util/options.h"
 
-
 namespace OHOS {
 namespace HDI {
 CodeEmitMap CodeGenerator::cCodeEmitters_ = {
     {"types", new CCustomTypesCodeEmitter()},
-    {"clientIface", new CClientInterfaceCodeEmitter()},
+    {"interface", new CInterfaceCodeEmitter()},
     {"proxy", new CClientProxyCodeEmitter()},
-    {"serviceIface", new CServiceInterfaceCodeEmitter()},
     {"driver", new CServiceDriverCodeEmitter()},
     {"stub", new CServiceStubCodeEmitter()},
     {"impl", new CServiceImplCodeEmitter()},
@@ -40,9 +36,8 @@ CodeEmitMap CodeGenerator::cCodeEmitters_ = {
 
 CodeEmitMap CodeGenerator::cppCodeEmitters_ = {
     {"types", new CppCustomTypesCodeEmitter()},
-    {"clientIface", new CppClientInterfaceCodeEmitter()},
+    {"interface", new CppInterfaceCodeEmitter()},
     {"proxy", new CppClientProxyCodeEmitter()},
-    {"serviceIface", new CppServiceInterfaceCodeEmitter()},
     {"driver", new CppServiceDriverCodeEmitter()},
     {"stub", new CppServiceStubCodeEmitter()},
     {"impl", new CppServiceImplCodeEmitter()},
@@ -56,7 +51,6 @@ CodeEmitMap CodeGenerator::javaCodeEmitters_ = {
 bool CodeGenerator::Generate()
 {
     const Options& options = Options::GetInstance();
-
     String dir = options.GetGenerationDirectory();
     String language = options.GetTargetLanguage();
     bool isModeKernel = options.DoGenerateKernelCode();
@@ -85,19 +79,18 @@ void CodeGenerator::GenerateCCode(const AutoPtr<AST>& ast, const String& outDir,
         }
         case ASTFileType::AST_IFACE: {
             if (codePart.Equals("client")) {
-                cCodeEmitters_["clientIface"]->OutPut(ast, outDir, isKernel);
+                cCodeEmitters_["interface"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["proxy"]->OutPut(ast, outDir, isKernel);
                 break;
             } else if (codePart.Equals("server")) {
-                cCodeEmitters_["serviceIface"]->OutPut(ast, outDir, isKernel);
+                cCodeEmitters_["interface"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["driver"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["stub"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["impl"]->OutPut(ast, outDir, isKernel);
                 break;
             } else {
-                cCodeEmitters_["clientIface"]->OutPut(ast, outDir, isKernel);
+                cCodeEmitters_["interface"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["proxy"]->OutPut(ast, outDir, isKernel);
-                cCodeEmitters_["serviceIface"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["driver"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["stub"]->OutPut(ast, outDir, isKernel);
                 cCodeEmitters_["impl"]->OutPut(ast, outDir, isKernel);
@@ -106,9 +99,8 @@ void CodeGenerator::GenerateCCode(const AutoPtr<AST>& ast, const String& outDir,
         }
         case ASTFileType::AST_ICALLBACK:
             // khdf doesn't support callback
-            cCodeEmitters_["clientIface"]->OutPut(ast, outDir);
+            cCodeEmitters_["interface"]->OutPut(ast, outDir);
             cCodeEmitters_["proxy"]->OutPut(ast, outDir);
-            cCodeEmitters_["serviceIface"]->OutPut(ast, outDir);
             cCodeEmitters_["driver"]->OutPut(ast, outDir);
             cCodeEmitters_["stub"]->OutPut(ast, outDir);
             cCodeEmitters_["impl"]->OutPut(ast, outDir);
@@ -126,17 +118,16 @@ void CodeGenerator::GenerateCppCode(const AutoPtr<AST>& ast, const String& outDi
             break;
         case ASTFileType::AST_IFACE: {
             if (codePart.Equals("client")) {
-                cppCodeEmitters_["clientIface"]->OutPut(ast, outDir);
+                cppCodeEmitters_["interface"]->OutPut(ast, outDir);
                 cppCodeEmitters_["proxy"]->OutPut(ast, outDir);
             } else if (codePart.Equals("server")) {
-                cppCodeEmitters_["serviceIface"]->OutPut(ast, outDir);
+                cppCodeEmitters_["interface"]->OutPut(ast, outDir);
                 cppCodeEmitters_["driver"]->OutPut(ast, outDir);
                 cppCodeEmitters_["stub"]->OutPut(ast, outDir);
                 cppCodeEmitters_["impl"]->OutPut(ast, outDir);
             } else {
-                cppCodeEmitters_["clientIface"]->OutPut(ast, outDir);
+                cppCodeEmitters_["interface"]->OutPut(ast, outDir);
                 cppCodeEmitters_["proxy"]->OutPut(ast, outDir);
-                cppCodeEmitters_["serviceIface"]->OutPut(ast, outDir);
                 cppCodeEmitters_["driver"]->OutPut(ast, outDir);
                 cppCodeEmitters_["stub"]->OutPut(ast, outDir);
                 cppCodeEmitters_["impl"]->OutPut(ast, outDir);
@@ -144,9 +135,8 @@ void CodeGenerator::GenerateCppCode(const AutoPtr<AST>& ast, const String& outDi
             break;
         }
         case ASTFileType::AST_ICALLBACK:
-            cppCodeEmitters_["clientIface"]->OutPut(ast, outDir);
+            cppCodeEmitters_["interface"]->OutPut(ast, outDir);
             cppCodeEmitters_["proxy"]->OutPut(ast, outDir);
-            cppCodeEmitters_["serviceIface"]->OutPut(ast, outDir);
             cppCodeEmitters_["driver"]->OutPut(ast, outDir);
             cppCodeEmitters_["stub"]->OutPut(ast, outDir);
             cppCodeEmitters_["impl"]->OutPut(ast, outDir);

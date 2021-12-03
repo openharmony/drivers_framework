@@ -35,6 +35,10 @@ protected:
 
     void EmitTailMacro(StringBuilder& sb, const String& fullName);
 
+    void EmitHeadExternC(StringBuilder& sb);
+
+    void EmitTailExternC(StringBuilder& sb);
+
     virtual void EmitBeginNamespace(StringBuilder& sb);
 
     virtual void EmitEndNamespace(StringBuilder& sb);

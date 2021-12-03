@@ -43,8 +43,12 @@ private:
 
     bool ParserAllImportsRecursion(const std::shared_ptr<FileDetail>& fileInfo);
 
+    bool ParserAllidlFile(const std::vector<String>& idlSourceFile);
+
     // check circular reference and reverse topology sorting of all idl file
     bool CheckCircularReference();
+
+    static const char* TAG;
 
     const Options& option_;
     FileDetailMap sourceFiles_;
