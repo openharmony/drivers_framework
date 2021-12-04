@@ -8,6 +8,7 @@
 
 #include "devmgr_service_start.h"
 #include "devhost_service_clnt.h"
+#include "devmgr_pm_reg.h"
 #include "devmgr_service.h"
 #include "devsvc_manager.h"
 #include "devsvc_manager_clnt.h"
@@ -93,6 +94,7 @@ int DeviceManagerIsQuickLoad(void)
 int DeviceManagerStart(void)
 {
     struct HdfIoService *ioService = NULL;
+    int ret;
     struct IDevmgrService *instance = DevmgrServiceGetInstance();
 
     if (instance == NULL || instance->StartService == NULL) {
@@ -107,7 +109,13 @@ int DeviceManagerStart(void)
         ioService->dispatcher = &dispatcher;
         ioService->target = &instance->base;
     }
-    return instance->StartService(instance);
+    ret = instance->StartService(instance);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("failed to start hdf devmgr");
+        return ret;
+    }
+
+    return DevMgrPmRegister();
 }
 
 int DeviceManagerStartStep2()
