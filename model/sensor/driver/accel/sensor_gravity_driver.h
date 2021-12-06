@@ -17,6 +17,8 @@
 
 #define GRAVITY_TIMER_MIN_TIME           10
 #define GRAVITY_TIMER_MAX_TIME           20
+#define GRAVITY_UNITS                    100
+#define GRAVITY_FILTER_UNITS             85
 enum GravityAxisNum {
     GRAVITY_X_AXIS   = 0,
     GRAVITY_Y_AXIS   = 1,

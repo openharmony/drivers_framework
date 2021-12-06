@@ -54,12 +54,12 @@ static void GravityDataWorkEntry(void *arg)
     CHECK_NULL_PTR_RETURN(drvData);
     OsalTimespec time;
 
-    GravityRawData[GRAVITY_X_AXIS] = (85 * (GravityRawData[GRAVITY_X_AXIS] - g_accelRawData[GRAVITY_X_AXIS]) +
-        g_accelRawData[GRAVITY_X_AXIS] * 100) / 100;
-    GravityRawData[GRAVITY_Y_AXIS] = (85 * (GravityRawData[GRAVITY_Y_AXIS] - g_accelRawData[GRAVITY_Y_AXIS]) +
-        g_accelRawData[GRAVITY_Y_AXIS] * 100) / 100;
-    GravityRawData[GRAVITY_Z_AXIS] = (85 * (GravityRawData[GRAVITY_Z_AXIS] - g_accelRawData[GRAVITY_Z_AXIS]) +
-        g_accelRawData[GRAVITY_Z_AXIS] * 100) / 100;
+    GravityRawData[GRAVITY_X_AXIS] = (g_accelRawData[GRAVITY_X_AXIS] * GRAVITY_UNITS +
+        GRAVITY_FILTER_UNITS * (GravityRawData[GRAVITY_X_AXIS] - g_accelRawData[GRAVITY_X_AXIS])) / GRAVITY_UNITS;
+    GravityRawData[GRAVITY_Y_AXIS] = (g_accelRawData[GRAVITY_Y_AXIS] * GRAVITY_UNITS +
+        GRAVITY_FILTER_UNITS * (GravityRawData[GRAVITY_Y_AXIS] - g_accelRawData[GRAVITY_Y_AXIS])) / GRAVITY_UNITS;
+    GravityRawData[GRAVITY_Z_AXIS] = (g_accelRawData[GRAVITY_Z_AXIS] * GRAVITY_UNITS +
+        GRAVITY_FILTER_UNITS * (GravityRawData[GRAVITY_Z_AXIS] - g_accelRawData[GRAVITY_Z_AXIS])) / GRAVITY_UNITS;
 
     if (OsalGetTime(&time) != HDF_SUCCESS) {
         HDF_LOGE("%s: Get time failed", __func__);
@@ -73,7 +73,7 @@ static void GravityDataWorkEntry(void *arg)
     event.data = (uint8_t *)&GravityRawData;
 
     if (ReportSensorEvent(&event) != HDF_SUCCESS) {
-        HDF_LOGE("%s: report gravity data failed", __func__);
+        HDF_LOGE("%s: Report gravity data failed", __func__);
     }
 }
 

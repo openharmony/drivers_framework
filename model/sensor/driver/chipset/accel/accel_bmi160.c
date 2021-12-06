@@ -120,7 +120,7 @@ int32_t ReadBmi160Data(struct SensorCfgData *cfg, struct SensorReportEvent *even
 
 static int32_t InitBmi160(struct SensorCfgData *data)
 {
-     int32_t ret;
+    int32_t ret;
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
     ret = SetSensorRegCfgArray(&data->busCfg, data->regCfgGroup[SENSOR_INIT_GROUP]);
