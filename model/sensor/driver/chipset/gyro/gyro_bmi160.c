@@ -18,7 +18,7 @@
 
 static struct Bmi160DrvData *g_bmi160DrvData = NULL;
 
-struct Bmi160DrvData *Bmi160GetDrvData(void)
+struct Bmi160DrvData *GyroBmi160GetDrvData(void)
 {
     return g_bmi160DrvData;
 }
@@ -149,7 +149,7 @@ static int32_t DispatchBMI160(struct HdfDeviceIoClient *client,
     return HDF_SUCCESS;
 }
 
-int32_t Bmi160BindDriver(struct HdfDeviceObject *device)
+int32_t GyroBmi160BindDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
 
@@ -167,7 +167,7 @@ int32_t Bmi160BindDriver(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-int32_t Bmi160InitDriver(struct HdfDeviceObject *device)
+int32_t GyroBmi160InitDriver(struct HdfDeviceObject *device)
 {
     int32_t ret;
     struct GyroOpsCall ops;
@@ -205,7 +205,7 @@ int32_t Bmi160InitDriver(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-void Bmi160ReleaseDriver(struct HdfDeviceObject *device)
+void GyroBmi160ReleaseDriver(struct HdfDeviceObject *device)
 {
     CHECK_NULL_PTR_RETURN(device);
 
@@ -223,9 +223,9 @@ void Bmi160ReleaseDriver(struct HdfDeviceObject *device)
 struct HdfDriverEntry g_gyroBmi160DevEntry = {
     .moduleVersion = 1,
     .moduleName = "HDF_SENSOR_GYRO_BMI160",
-    .Bind = Bmi160BindDriver,
-    .Init = Bmi160InitDriver,
-    .Release = Bmi160ReleaseDriver,
+    .Bind = GyroBmi160BindDriver,
+    .Init = GyroBmi160InitDriver,
+    .Release = GyroBmi160ReleaseDriver,
 };
 
 HDF_INIT(g_gyroBmi160DevEntry);
