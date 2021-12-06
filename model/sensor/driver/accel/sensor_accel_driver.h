@@ -32,6 +32,8 @@ enum AccelAxisPart {
     ACCEL_AXIS_BUTT,
 };
 
+typedef int32_t (*GravitySubscribeAccelCallback)(int32_t *rawData, int32_t size);
+
 struct AccelData {
     int32_t x;
     int32_t y;
@@ -40,7 +42,7 @@ struct AccelData {
 
 struct AccelOpsCall {
     int32_t (*Init)(struct SensorCfgData *data);
-    int32_t (*ReadData)(struct SensorCfgData *data);
+    int32_t (*ReadData)(struct SensorCfgData *data, struct SensorReportEvent *event);
 };
 
 struct AccelDrvData {
@@ -54,10 +56,11 @@ struct AccelDrvData {
     int64_t interval;
     struct SensorCfgData *accelCfg;
     struct AccelOpsCall ops;
+    GravitySubscribeAccelCallback cb;
 };
 
 int32_t AccelRegisterChipOps(const struct AccelOpsCall *ops);
 struct SensorCfgData *AccelCreateCfgData(const struct DeviceResourceNode *node);
 void AccelReleaseCfgData(struct SensorCfgData *sensorCfgData);
-
+int32_t SubscribeAccelDataCallbackFunc(GravitySubscribeAccelCallback cb);
 #endif /* SENSOR_ACCEL_DRIVER_H */
