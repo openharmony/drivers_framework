@@ -11,6 +11,7 @@
 #include "hdf_device_object.h"
 #include "hdf_log.h"
 #include "hdf_pm.h"
+#include "osal_file.h"
 #include "osal_mem.h"
 
 #define HDF_LOG_TAG sample_driver_test
@@ -97,7 +98,8 @@ int32_t SampleDriverRegisterDevice(struct HdfDeviceObject *dev, struct HdfSBuf *
         return HDF_FAILURE;
     }
 
-    ret = HdfDeviceObjectPublishService(devObj, serviceName, SERVICE_POLICY_CAPACITY, 0664);
+    ret = HdfDeviceObjectPublishService(devObj, serviceName, SERVICE_POLICY_CAPACITY,
+        OSAL_S_IREAD | OSAL_S_IWRITE | OSAL_S_IRGRP | OSAL_S_IWGRP | OSAL_S_IROTH);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("faild to publish service for %s", serviceName);
         HdfDeviceObjectRelease(devObj);

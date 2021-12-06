@@ -36,6 +36,9 @@ private:
 
     void SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current, uint32_t &arraySize, uint32_t depth);
 
+    void SetTypeDataUinit64(const std::string &arrayName, uint32_t &arraySize, uint32_t arrayType,
+        const std::shared_ptr<AstObject> &current);
+
     bool HeaderTopOutput();
 
     bool HeaderBottomOutput();

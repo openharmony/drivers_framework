@@ -8,16 +8,9 @@
 
 #include "hdf_attribute_manager.h"
 #include "devhost_service_clnt.h"
-#include "devmgr_service.h"
-#include "hcs_blob_if.h"
-#include "hcs_parser.h"
 #include "hcs_tree_if.h"
-#include "hdf_base.h"
-#include "hdf_device_info.h"
 #include "hdf_host_info.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
-#include "securec.h"
 #ifdef LOSCFG_DRIVERS_HDF_USB_PNP_NOTIFY
 #include "usb_pnp_manager.h"
 #endif

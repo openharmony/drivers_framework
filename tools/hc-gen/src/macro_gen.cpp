@@ -241,11 +241,7 @@ void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &curr
         case PARSEROP_UINT16:
         case PARSEROP_UINT32:
         case PARSEROP_UINT64: {
-            if (arraySize != 0) {
-                GenArray(arrayName, arraySize, arrayType, current);
-            } else {
-                ofs_ << " " << current->IntegerValue() << std::endl;
-            }
+            SetTypeDataUinit64(arrayName, arraySize, arrayType, current);
             break;
         }
         case PARSEROP_STRING:
@@ -282,5 +278,15 @@ void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &curr
         }
         default:
             break;
+    }
+}
+
+void MacroGen::SetTypeDataUinit64(const std::string &arrayName, uint32_t &arraySize, uint32_t arrayType,
+    const std::shared_ptr<AstObject> &current)
+{
+    if (arraySize != 0) {
+        GenArray(arrayName, arraySize, arrayType, current);
+    } else {
+        ofs_ << " " << current->IntegerValue() << std::endl;
     }
 }

@@ -31,7 +31,7 @@ static int HdfDeviceAttach(struct IHdfDevice *devInst, struct HdfDeviceNode *dev
     // for dynamic added device node, assign device id here
     if (devNode->devId == 0) {
         devNode->devId = MK_DEVID(HOSTID(device->deviceId), DEVICEID(device->deviceId),
-            DlistGetCount(&device->devNodes));
+            (uint32_t)DlistGetCount(&device->devNodes));
         devNode->token->devid = devNode->devId;
     }
 

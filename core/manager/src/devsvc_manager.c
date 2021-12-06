@@ -66,7 +66,7 @@ int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *svcName, st
 
 int DevSvcManagerSubscribeService(struct IDevSvcManager *inst, const char *svcName, struct SubscriberCallback callBack)
 {
-    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();;
+    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
     struct HdfObject *deviceService = NULL;
     if (inst == NULL || svcName == NULL || devMgrSvc == NULL) {
         return HDF_FAILURE;
