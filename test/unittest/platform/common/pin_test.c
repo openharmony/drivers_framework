@@ -7,13 +7,13 @@
  */
 
 #include "pin_test.h"
-#include "pin_if.h"
 #include "hdf_base.h"
 #include "hdf_io_service_if.h"
 #include "hdf_log.h"
-#include "securec.h"
 #include "osal_mem.h"
 #include "osal_time.h"
+#include "pin_if.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG pin_test_c
 
@@ -113,6 +113,7 @@ static int32_t PinSetGetPullTest(void)
     int32_t ret;
     enum PinPullType getPullTypeNum;
 
+    getPullTypeNum = 0;
     tester = PinTesterGet();
     if (tester == NULL) {
         HDF_LOGE("%s: Get tester failed!", __func__);
@@ -142,6 +143,7 @@ static int32_t PinSetGetStrengthTest(void)
     int32_t ret;
     uint32_t getStrengthNum;
 
+    getStrengthNum = 0;
     tester = PinTesterGet();
     if (tester == NULL) {
         HDF_LOGE("%s: Get tester failed!", __func__);
@@ -159,8 +161,8 @@ static int32_t PinSetGetStrengthTest(void)
         return HDF_FAILURE;
     }
     if (tester->config.strengthNum != getStrengthNum) {
-        HDF_LOGE("%s: Pin set strength:%d, but Pin get strength:%d",__func__,
-                 tester->config.strengthNum, getStrengthNum);
+        HDF_LOGE("%s: Pin set strength:%d, but Pin get strength:%d", __func__,
+            tester->config.strengthNum, getStrengthNum);
     }
     HDF_LOGD("%s: done", __func__);
     return HDF_SUCCESS;
@@ -178,23 +180,23 @@ static int32_t PinSetGetFuncTest(void)
     }
     ret = PinSetFunc(tester->handle, (const char *)tester->config.funcNameBuf);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: Pin set function failed!, pinName:%s,functionName:%s",
-                 __func__, tester->config.pinName, tester->config.funcNameBuf);
+        HDF_LOGE("%s: Pin set function failed!, pinName:%s, functionName:%s", __func__,
+            tester->config.pinName, tester->config.funcNameBuf);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: Pin set function success!, pinName:%s,functionName:%s",
-             __func__, tester->config.pinName, tester->config.funcNameBuf);
+    HDF_LOGI("%s: Pin set function success!, pinName:%s, functionName:%s", __func__,
+        tester->config.pinName, tester->config.funcNameBuf);
     ret = PinGetFunc(tester->handle, &tester->config.funcName);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: Pin get function failed!, pinName:%s,functionName:%s",
-                 __func__, tester->config.pinName, tester->config.funcName);
+        HDF_LOGE("%s: Pin get function failed!, pinName:%s, functionName:%s", __func__,
+            tester->config.pinName, tester->config.funcName);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: Pin get function success!, pinName:%s,functionName:%s",
-             __func__, tester->config.pinName, tester->config.funcName);
+    HDF_LOGI("%s: Pin get function success!, pinName:%s, functionName:%s", __func__,
+        tester->config.pinName, tester->config.funcName);
     if (strcmp((const char *)tester->config.funcNameBuf, tester->config.funcName) != 0) {
-        HDF_LOGE("%s: Pin set function:%s, but Pin get function:%s",
-                 __func__, tester->config.funcNameBuf, tester->config.funcName);
+        HDF_LOGE("%s: Pin set function:%s, but Pin get function:%s", __func__,
+            tester->config.funcNameBuf, tester->config.funcName);
     }
     HDF_LOGD("%s: done", __func__);
     return HDF_SUCCESS;
@@ -216,8 +218,8 @@ int32_t PinTestSetUpAll(void)
     tester->fails = 0;
 
     cfg = &tester->config;
-    HDF_LOGD("%s: test on pinName:%s, PullTypeNum:%d, strengthNum:%d",
-             __func__, cfg->pinName, cfg->PullTypeNum, cfg->strengthNum);
+    HDF_LOGD("%s: test on pinName:%s, PullTypeNum:%d, strengthNum:%d", __func__,
+        cfg->pinName, cfg->PullTypeNum, cfg->strengthNum);
     ret = PinGetPull(tester->handle, &g_oldPinCfg.pullTypeNum);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: get pullTypeNum failed!", __func__);

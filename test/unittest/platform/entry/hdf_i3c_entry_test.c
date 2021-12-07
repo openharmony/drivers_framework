@@ -9,7 +9,6 @@
 #include "hdf_i3c_entry_test.h"
 #include "hdf_log.h"
 #include "i3c_test.h"
-#include "hdf_log.h"
 
 #define HDF_LOG_TAG hdf_adc_entry_test
 

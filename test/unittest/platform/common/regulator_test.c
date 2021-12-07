@@ -9,9 +9,9 @@
 #include "regulator_test.h"
 #include "device_resource_if.h"
 #include "hdf_log.h"
-#include "regulator_if.h"
 #include "osal_thread.h"
 #include "osal_time.h"
+#include "regulator_if.h"
 
 #define HDF_LOG_TAG regulator_test_c
 

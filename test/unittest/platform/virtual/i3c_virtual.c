@@ -8,12 +8,7 @@
 
 #include "i3c/i3c_core.h"
 #include "device_resource_if.h"
-#include "hdf_device_desc.h"
-#include "hdf_log.h"
-#include "osal_io.h"
-#include "osal_irq.h"
 #include "osal_mem.h"
-#include "osal_spinlock.h"
 #include "osal_time.h"
 
 #define HDF_LOG_TAG                        i3c_virtual

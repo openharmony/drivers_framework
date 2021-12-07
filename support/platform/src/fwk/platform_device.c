@@ -22,6 +22,7 @@ static void PlatformDeviceOnFirstGet(struct HdfSRef *sref)
 static void PlatformDeviceOnLastPut(struct HdfSRef *sref)
 {
     struct PlatformDevice *device = NULL;
+    int32_t ret;
 
     if (sref == NULL) {
         return;
@@ -34,7 +35,11 @@ static void PlatformDeviceOnLastPut(struct HdfSRef *sref)
     }
     device->ready = false;
 
-    (void)PlatformDeviceNotify(device, PLAT_EVENT_DEAD);
+    ret = PlatformDeviceNotify(device, PLAT_EVENT_DEAD);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("PlatformDeviceOnLastPut: PlatformDeviceNotify failed!, ret = %d", ret);
+        return;
+    }
 }
 
 struct IHdfSRefListener g_platObjListener = {
