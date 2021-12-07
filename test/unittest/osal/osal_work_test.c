@@ -83,7 +83,7 @@ void TestAddRoute(int cnt)
         HdfAddDelayedWork(&g_workQue, &g_delayWork, g_delayTime);
     } else if (cnt % MSG_SEND_PERIOD == TEST_ITEM_NO_EVENT) {
         UT_TEST_CHECK_RET(g_osalWorkStatus, OSAL_WORK_RUN_CHECK);
-        UT_TEST_CHECK_RET(g_osalDelayStatus, OSAL_TEST_OTHER);
+        UT_TEST_CHECK_RET(g_osalDelayStatus, OSAL_DELAY_WORK_RUN_CHECK);
     } else if (cnt % MSG_SEND_PERIOD == MSG_NOSEND_CHECK_CNT) {
         g_delayTime = DELAY_TIME_FOR_OUT;
         g_osalDelayStatus = true;
