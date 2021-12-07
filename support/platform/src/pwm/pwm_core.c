@@ -12,64 +12,40 @@
 #include "securec.h"
 
 #define HDF_LOG_TAG pwm_core
-#define PWM_NAME_LEN 32
 
-static struct PwmDev *PwmGetDevByNum(uint32_t num)
-{
-    int ret;
-    char *name = NULL;
-    struct PwmDev *pwm = NULL;
-
-    name = (char *)OsalMemCalloc(PWM_NAME_LEN + 1);
-    if (name == NULL) {
-        return NULL;
-    }
-    ret = snprintf_s(name, PWM_NAME_LEN + 1, PWM_NAME_LEN, "HDF_PLATFORM_PWM_%u", num);
-    if (ret < 0) {
-        HDF_LOGE("%s: snprintf_s failed", __func__);
-        OsalMemFree(name);
-        return NULL;
-    }
-    pwm = (struct PwmDev *)DevSvcManagerClntGetService(name);
-    OsalMemFree(name);
-    return pwm;
-}
-
-DevHandle PwmOpen(uint32_t num)
+int32_t PwmDeviceGet(struct PwmDev *pwm)
 {
     int32_t ret;
-    struct PwmDev *pwm = PwmGetDevByNum(num);
 
     if (pwm == NULL) {
-        HDF_LOGE("%s: dev is null", __func__);
-        return NULL;
+        return HDF_ERR_INVALID_PARAM;
     }
+
     (void)OsalSpinLock(&(pwm->lock));
     if (pwm->busy) {
         (void)OsalSpinUnlock(&(pwm->lock));
-        HDF_LOGE("%s: pwm%u is busy", __func__, num);
-        return NULL;
+        HDF_LOGE("%s: pwm%u is busy", __func__, pwm->num);
+        return HDF_ERR_DEVICE_BUSY;
     }
     if (pwm->method != NULL && pwm->method->open != NULL) {
         ret = pwm->method->open(pwm);
         if (ret != HDF_SUCCESS) {
             (void)OsalSpinUnlock(&(pwm->lock));
             HDF_LOGE("%s: open failed, ret %d", __func__, ret);
-            return NULL;
+            return HDF_FAILURE;
         }
     }
+
     pwm->busy = true;
     (void)OsalSpinUnlock(&(pwm->lock));
-    return (DevHandle)pwm;
+    return HDF_SUCCESS;
 }
 
-void PwmClose(DevHandle handle)
+void PwmDevicePut(struct PwmDev *pwm)
 {
     int32_t ret;
-    struct PwmDev *pwm = (struct PwmDev *)handle;
-
+    
     if (pwm == NULL) {
-        HDF_LOGE("%s: dev is null", __func__);
         return;
     }
 
@@ -85,21 +61,14 @@ void PwmClose(DevHandle handle)
     (void)OsalSpinUnlock(&(pwm->lock));
 }
 
-int32_t PwmSetConfig(DevHandle handle, struct PwmConfig *config)
+int32_t PwmDeviceSetConfig(struct PwmDev *pwm, struct PwmConfig *config)
 {
     int32_t ret;
-    struct PwmDev *pwm = NULL;
-
-    HDF_LOGI("%s: enter.", __func__);
-    if (handle == NULL) {
-        HDF_LOGE("%s: handle is NULL", __func__);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    if (config == NULL) {
-        HDF_LOGE("%s: config is NULL", __func__);
+    
+    if (pwm == NULL || config == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
-    pwm = (struct PwmDev *)handle;
+
     if (memcmp(config, &(pwm->cfg), sizeof(*config)) == 0) {
         HDF_LOGE("%s: do not need to set config", __func__);
         return HDF_SUCCESS;
@@ -116,124 +85,8 @@ int32_t PwmSetConfig(DevHandle handle, struct PwmConfig *config)
         return ret;
     }
     pwm->cfg = *config;
-    HDF_LOGI("%s: success.", __func__);
 
     return HDF_SUCCESS;
-}
-
-int32_t PwmGetConfig(DevHandle handle, struct PwmConfig *config)
-{
-    struct PwmDev *pwm = NULL;
-
-    HDF_LOGI("%s: enter.", __func__);
-    if (handle == NULL) {
-        HDF_LOGE("%s: handle is NULL", __func__);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    if (config == NULL) {
-        HDF_LOGE("%s: config is NULL", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-    pwm = (struct PwmDev *)handle;
-    *config = pwm->cfg;
-    HDF_LOGI("%s: success.", __func__);
-
-    return HDF_SUCCESS;
-}
-
-int32_t PwmEnable(DevHandle handle)
-{
-    struct PwmConfig config;
-    uint32_t curValue;
-    int32_t ret;
-
-    HDF_LOGI("%s: enter.", __func__);
-    if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-    curValue = config.status;
-    config.status = PWM_ENABLE_STATUS;
-    ret = PwmSetConfig(handle, &config);
-    if (ret == HDF_SUCCESS) {
-        HDF_LOGI("%s: success. enable: %d -> %d.", __func__, curValue, config.status);
-    }
-    return ret;
-}
-
-int32_t PwmDisable(DevHandle handle)
-{
-    struct PwmConfig config;
-    uint32_t curValue;
-    int32_t ret;
-
-    HDF_LOGI("%s: enter.", __func__);
-    if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-    curValue = config.status;
-    config.status = PWM_DISABLE_STATUS;
-    ret = PwmSetConfig(handle, &config);
-    if (ret == HDF_SUCCESS) {
-        HDF_LOGI("%s: success. enable: %d -> %d.", __func__, curValue, config.status);
-    }
-    return ret;
-}
-
-int32_t PwmSetPeriod(DevHandle handle, uint32_t period)
-{
-    struct PwmConfig config;
-    uint32_t curValue;
-    int32_t ret;
-
-    HDF_LOGI("%s: enter.", __func__);
-    if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-    curValue = config.period;
-    config.period = period;
-    ret = PwmSetConfig(handle, &config);
-    if (ret == HDF_SUCCESS) {
-        HDF_LOGI("%s: success. period: %d -> %d.", __func__, curValue, config.period);
-    }
-    return ret;
-}
-
-int32_t PwmSetDuty(DevHandle handle, uint32_t duty)
-{
-    struct PwmConfig config;
-    uint32_t curValue;
-    int32_t ret;
-
-    HDF_LOGI("%s: enter.", __func__);
-    if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-    curValue = config.duty;
-    config.duty = duty;
-    ret = PwmSetConfig(handle, &config);
-    if (ret == HDF_SUCCESS) {
-        HDF_LOGI("%s: success. duty: %d -> %d.", __func__, curValue, config.duty);
-    }
-    return ret;
-}
-
-int32_t PwmSetPolarity(DevHandle handle, uint8_t polarity)
-{
-    struct PwmConfig config;
-    uint32_t curValue;
-    int32_t ret;
-
-    HDF_LOGI("%s: enter.", __func__);
-    if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-    curValue = config.polarity;
-    config.polarity = polarity;
-    ret = PwmSetConfig(handle, &config);
-    if (ret == HDF_SUCCESS) {
-        HDF_LOGI("%s: success. polarity: %d -> %d.", __func__, curValue, config.polarity);
-    }
-    return ret;
 }
 
 int32_t PwmSetPriv(struct PwmDev *pwm, void *priv)
