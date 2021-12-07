@@ -186,7 +186,11 @@ static int32_t SensorOpsExtBuffWrite(struct SensorBusCfg *busCfg, struct SensorR
     CHECK_NULL_PTR_RETURN_VALUE(value, HDF_FAILURE);
 
     value[SENSOR_ADDR_INDEX] = cfgItem->regAddr;
-    memcpy_s(&value[SENSOR_VALUE_INDEX], cfgItem->len, cfgItem->buff, cfgItem->len);
+    if (memcpy_s(&value[SENSOR_VALUE_INDEX], cfgItem->len, cfgItem->buff, cfgItem->len) != EOK) {
+        HDF_LOGE("%s: Cpy value failed", __func__);
+        OsalMemFree(value);
+        return HDF_FAILURE;
+    }
 
     if (busCfg->busType == SENSOR_BUS_I2C) {
         ret = WriteSensor(busCfg, value, cfgItem->len);
