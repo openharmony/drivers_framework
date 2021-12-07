@@ -79,24 +79,24 @@ static int32_t ReadBmi160RawData(struct SensorCfgData *data, struct AccelData *r
     return HDF_SUCCESS;
 }
 
-int32_t ReadBmi160Data(struct SensorCfgData *data)
+int32_t ReadBmi160Data(struct SensorCfgData *cfg, struct SensorReportEvent *event)
 {
     int32_t ret;
     struct AccelData rawData = { 0, 0, 0 };
-    int32_t tmp[ACCEL_AXIS_NUM];
-    struct SensorReportEvent event;
+    static int32_t tmp[ACCEL_AXIS_NUM];
 
-    (void)memset_s(&event, sizeof(event), 0, sizeof(event));
+    CHECK_NULL_PTR_RETURN_VALUE(cfg, HDF_ERR_INVALID_PARAM);
+    CHECK_NULL_PTR_RETURN_VALUE(event, HDF_ERR_INVALID_PARAM);
 
-    ret = ReadBmi160RawData(data, &rawData, &event.timestamp);
+    ret = ReadBmi160RawData(cfg, &rawData, &event->timestamp);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: BMI160 read raw data failed", __func__);
         return HDF_FAILURE;
     }
 
-    event.sensorId = SENSOR_TAG_ACCELEROMETER;
-    event.option = 0;
-    event.mode = SENSOR_WORK_MODE_REALTIME;
+    event->sensorId = SENSOR_TAG_ACCELEROMETER;
+    event->option = 0;
+    event->mode = SENSOR_WORK_MODE_REALTIME;
 
     rawData.x = rawData.x * BMI160_ACC_SENSITIVITY_2G;
     rawData.y = rawData.y * BMI160_ACC_SENSITIVITY_2G;
@@ -106,18 +106,15 @@ int32_t ReadBmi160Data(struct SensorCfgData *data)
     tmp[ACCEL_Y_AXIS] = (rawData.y * SENSOR_1K_UNIT) / SENSOR_CONVERT_UNIT;
     tmp[ACCEL_Z_AXIS] = (rawData.z * SENSOR_1K_UNIT) / SENSOR_CONVERT_UNIT;
 
-    ret = SensorRawDataToRemapData(data->direction, tmp, sizeof(tmp) / sizeof(tmp[0]));
+    ret = SensorRawDataToRemapData(cfg->direction, tmp, sizeof(tmp) / sizeof(tmp[0]));
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: BMI160 convert raw data failed", __func__);
         return HDF_FAILURE;
     }
-    
-    event.dataLen = sizeof(tmp);
-    event.data = (uint8_t *)&tmp;
-    ret = ReportSensorEvent(&event);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: BMI160 report data failed", __func__);
-    }
+
+    event->dataLen = sizeof(tmp);
+    event->data = (uint8_t *)&tmp;
+
     return ret;
 }
 

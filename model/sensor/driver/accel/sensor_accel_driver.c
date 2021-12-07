@@ -29,6 +29,19 @@ static struct AccelDrvData *AccelGetDrvData(void)
 
 static struct SensorRegCfgGroupNode *g_regCfgGroup[SENSOR_GROUP_MAX] = { NULL };
 
+int32_t SubscribeAccelDataCallbackFunc(GravitySubscribeAccelCallback cb)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(cb, HDF_ERR_INVALID_PARAM);
+
+    struct AccelDrvData *drvData = AccelGetDrvData();
+
+    CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+
+    drvData->cb = cb;
+
+    return HDF_SUCCESS;
+}
+
 int32_t AccelRegisterChipOps(const struct AccelOpsCall *ops)
 {
     struct AccelDrvData *drvData = AccelGetDrvData();
@@ -44,6 +57,7 @@ int32_t AccelRegisterChipOps(const struct AccelOpsCall *ops)
 static void AccelDataWorkEntry(void *arg)
 {
     struct AccelDrvData *drvData = NULL;
+    struct SensorReportEvent event;
 
     drvData = (struct AccelDrvData *)arg;
     CHECK_NULL_PTR_RETURN(drvData);
@@ -52,8 +66,19 @@ static void AccelDataWorkEntry(void *arg)
         HDF_LOGI("%s: Accel ReadData function NULl", __func__);
         return;
     }
-    if (drvData->ops.ReadData(drvData->accelCfg) != HDF_SUCCESS) {
+
+    if (drvData->ops.ReadData(drvData->accelCfg, &event) != HDF_SUCCESS) {
         HDF_LOGE("%s: Accel read data failed", __func__);
+        return;
+    }
+
+    if (ReportSensorEvent(&event) != HDF_SUCCESS) {
+        HDF_LOGE("%s: report accel data failed", __func__);
+        return;
+    }
+
+    if (drvData->cb != NULL) {
+        drvData->cb((int32_t*)event.data, event.dataLen);
     }
 }
 
@@ -342,6 +367,7 @@ int32_t AccelInitDriver(struct HdfDeviceObject *device)
     }
 
     drvData->accelCfg->regCfgGroup = &g_regCfgGroup[0];
+    drvData->cb = NULL;
 
     HDF_LOGI("%s: Init accel driver success", __func__);
     return HDF_SUCCESS;

@@ -59,8 +59,7 @@
 #define BMI160_ACCEL_DATA_READY_MASK         0x80
 
 int32_t DetectAccelBim160Chip(struct SensorCfgData *data);
-int32_t ReadBmi160Data(struct SensorCfgData *data);
-
+int32_t ReadBmi160Data(struct SensorCfgData *cfg, struct SensorReportEvent *event);
 struct Bmi160DrvData {
     struct IDeviceIoService ioService;
     struct HdfDeviceObject *device;
