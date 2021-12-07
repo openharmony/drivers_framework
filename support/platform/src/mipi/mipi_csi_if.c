@@ -80,3 +80,8 @@ int32_t MipiCsiUnresetSensor(DevHandle handle, uint8_t snsResetSource)
 {
     return MipiCsiCntlrUnresetSensor((struct MipiCsiCntlr *)handle, snsResetSource);
 }
+
+int32_t MipiCsiSetDrvData(DevHandle handle, void *drvData)
+{
+    return MipiCsiCntlrSetDrvData((struct MipiCsiCntlr *)handle, drvData);
+}

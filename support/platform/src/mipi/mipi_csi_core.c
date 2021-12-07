@@ -444,6 +444,33 @@ int32_t MipiCsiCntlrUnresetSensor(struct MipiCsiCntlr *cntlr, uint8_t snsResetSo
     return ret;
 }
 
+int32_t MipiCsiCntlrSetDrvData(struct MipiCsiCntlr *cntlr, void *drvData)
+{
+    int32_t ret;
+
+    if ((cntlr == NULL) || (cntlr->ops == NULL)) {
+        HDF_LOGE("%s: cntlr or ops is NULL.", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (cntlr->ops->setDrvData == NULL) {
+        HDF_LOGE("%s: setDrvData is NULL.", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    (void)OsalMutexLock(&(cntlr->lock));
+    ret = cntlr->ops->setDrvData(cntlr, drvData);
+    (void)OsalMutexUnlock(&(cntlr->lock));
+
+    if (ret == HDF_SUCCESS) {
+        HDF_LOGI("%s: success!", __func__);
+    } else {
+        HDF_LOGE("%s: failed!", __func__);
+    }
+
+    return ret;
+}
+
 int32_t MipiCsiDebugGetMipiDevCtx(struct MipiCsiCntlr *cntlr, MipiDevCtx *ctx)
 {
     if (cntlr == NULL) {

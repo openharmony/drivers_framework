@@ -56,7 +56,7 @@ int32_t MipiDsiAttach(DevHandle handle, uint8_t *name)
     return MipiDsiCntlrAttach((struct MipiDsiCntlr *)handle, name);
 }
 
-int32_t MipiDsiSetDrvData(DevHandle handle, DevHandle *panelData)
+int32_t MipiDsiSetDrvData(DevHandle handle, void *panelData)
 {
     return MipiDsiCntlrSetDrvData((struct MipiDsiCntlr *)handle, panelData);
 }

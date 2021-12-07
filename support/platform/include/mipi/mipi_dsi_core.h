@@ -45,7 +45,7 @@ struct MipiDsiCntlrMethod {
     void (*exitUlps)(struct MipiDsiCntlr *cntlr);
     int32_t (*powerControl)(struct MipiDsiCntlr *cntlr, uint8_t enable);
     int32_t (*attach)(struct MipiDsiCntlr *cntlr, uint8_t *name);
-    int32_t (*setDrvData)(struct MipiDsiCntlr *cntlr, DevHandle *panelData);
+    int32_t (*setDrvData)(struct MipiDsiCntlr *cntlr, void *panelData);
 };
 
 int32_t MipiDsiRegisterCntlr(struct MipiDsiCntlr *cntlr, struct HdfDeviceObject *device);
@@ -171,7 +171,7 @@ int32_t MipiDsiCntlrAttach(struct MipiDsiCntlr *cntlr, uint8_t *name);
  *
  * @since 1.0
  */
-int32_t MipiDsiCntlrSetDrvData(struct MipiDsiCntlr *cntlr, DevHandle *panelData);
+int32_t MipiDsiCntlrSetDrvData(struct MipiDsiCntlr *cntlr, void *panelData);
 
 #ifdef __cplusplus
 #if __cplusplus
