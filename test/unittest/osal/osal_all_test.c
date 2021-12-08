@@ -451,19 +451,19 @@ void OsaIrqTest(void)
     ret = OsalRegisterIrq(IRQ_NUM_TEST, 0, IRQHandle, "test", &g_irqData);
     UT_TEST_CHECK_RET(ret != retFlag, OSAL_IRQ_REG_NORMAL);
     ret = OsalDisableIrq(IRQ_NUM_TEST);
-    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TEST_OTHER);
+    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_IRQ_REG_NORMAL);
     ret = OsalEnableIrq(IRQ_NUM_TEST);
-    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TEST_OTHER);
+    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_IRQ_REG_NORMAL);
 #if defined(__LITEOS__)
     ret = OsalUnregisterIrq(IRQ_NUM_TEST, &g_irqData);
     UT_TEST_CHECK_RET(ret != retFlag, OSAL_IRQ_UNREG_NORMAL);
 #endif
 
     ret = OsalDisableIrq(IRQ_NUM_TEST);
-    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TEST_OTHER);
+    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_IRQ_REG_NORMAL);
 
     ret = OsalEnableIrq(IRQ_NUM_TEST);
-    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TEST_OTHER);
+    UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_IRQ_REG_NORMAL);
 
 #if defined(__LITEOS__)
     ret = OsalUnregisterIrq(IRQ_NUM_TEST, &g_irqData);
@@ -474,9 +474,9 @@ void OsaIrqTest(void)
         ret = OsalRegisterIrq(IRQ_NUM_TEST, 0, IRQHandle, "test", &g_irqData);
         UT_TEST_CHECK_RET(ret != retFlag, OSAL_IRQ_REG_NORMAL_STRESS);
         ret = OsalDisableIrq(IRQ_NUM_TEST);
-        UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TEST_OTHER);
+        UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_IRQ_REG_NORMAL_STRESS);
         ret = OsalEnableIrq(IRQ_NUM_TEST);
-        UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_TEST_OTHER);
+        UT_TEST_CHECK_RET(ret != HDF_SUCCESS, OSAL_IRQ_REG_NORMAL_STRESS);
 #if defined(__LITEOS__)
         ret = OsalUnregisterIrq(IRQ_NUM_TEST, &g_irqData);
         UT_TEST_CHECK_RET(ret != retFlag, OSAL_IRQ_UNREG_NORMAL_STRESS);
