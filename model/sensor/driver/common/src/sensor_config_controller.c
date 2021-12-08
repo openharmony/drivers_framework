@@ -221,7 +221,12 @@ int32_t SetSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorReg
     struct SensorRegCfg *cfgItem = NULL;
 
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
-    CHECK_NULL_PTR_RETURN_VALUE(group, HDF_FAILURE);
+
+    if (group == NULL) {
+        HDF_LOGI("%s: Pointer group is null", __func__);
+        return HDF_SUCCESS;
+    }
+
     CHECK_NULL_PTR_RETURN_VALUE(group->regCfgItem, HDF_FAILURE);
 
     count = sizeof(g_doOpsCall) / sizeof(g_doOpsCall[0]);
