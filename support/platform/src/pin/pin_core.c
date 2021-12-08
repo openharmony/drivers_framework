@@ -13,22 +13,22 @@
 
 #define MAX_CNT_PER_CNTLR    20
 
-static struct DListHead g_cntlrList;
+static struct DListHead g_cntlrListHead;
 static OsalSpinlock g_listLock;
 static uint32_t g_irqSave;
 
 static struct DListHead *PinCntlrListGet(void)
 {
-    static struct DListHead *list = NULL;
+    static struct DListHead *head = NULL;
     uint32_t irqSave;
-    if (list == NULL) {
-        list = &g_cntlrList;
-        DListHeadInit(list);
+    if (head == NULL) {
+        head = &g_cntlrListHead;
+        DListHeadInit(head);
         OsalSpinInit(&g_listLock);
     } 
     while (OsalSpinLockIrqSave(&g_listLock, &irqSave) != HDF_SUCCESS);
     g_irqSave = irqSave;
-    return list;
+    return head;
 }
 
 static void PinCntlrListPut(void)
@@ -38,13 +38,14 @@ static void PinCntlrListPut(void)
 
 int32_t PinCntlrAdd(struct PinCntlr *cntlr)
 {
-    struct DListHead *list = NULL;
+    struct DListHead *head = NULL;
 
     if (cntlr == NULL) {
         HDF_LOGE("%s: invalid object cntlr is NULL!", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-
+    DListHeadInit(&cntlr->node);
+    
     if (cntlr->method == NULL) {
         HDF_LOGE("%s: no method supplied!", __func__);
         return HDF_ERR_INVALID_OBJECT;
@@ -54,15 +55,12 @@ int32_t PinCntlrAdd(struct PinCntlr *cntlr)
         HDF_LOGE("%s: invalid pinCount:%u", __func__, cntlr->pinCount);
         return HDF_ERR_INVALID_PARAM;
     }
-    
+
     OsalSpinInit(&cntlr->spin);
 
-    list = PinCntlrListGet();
-
-    DListHeadInit(&cntlr->list);
-    DListInsertTail(&cntlr->list, list);
+    head = PinCntlrListGet();
+    DListInsertTail(&cntlr->node, head);
     PinCntlrListPut();
-
     return HDF_SUCCESS;
 }
 
@@ -74,14 +72,14 @@ void PinCntlrRemove(struct PinCntlr *cntlr)
     }
 
     (void)PinCntlrListGet();
-    DListRemove(&cntlr->list);
+    DListRemove(&cntlr->node);
     PinCntlrListPut();
     (void)OsalSpinDestroy(&cntlr->spin);
 }
 
 struct PinDesc *PinCntlrGetPinDescByName(const char *pinName)
 {
-    struct DListHead *list = NULL;
+    struct DListHead *head = NULL;
     struct PinCntlr *cntlr = NULL;
     struct PinCntlr *tmp = NULL;
     int32_t num;
@@ -91,9 +89,9 @@ struct PinDesc *PinCntlrGetPinDescByName(const char *pinName)
         return NULL;
     }
 
-    list = PinCntlrListGet();
+    head = PinCntlrListGet();
 
-    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, list, struct PinCntlr, list) {
+    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, head, struct PinCntlr, node) {
         for (num = 0; num < cntlr->pinCount; num++) {
             if (cntlr->pins[num].pinName == NULL) {
                 continue;
@@ -112,12 +110,13 @@ struct PinDesc *PinCntlrGetPinDescByName(const char *pinName)
 
 struct PinCntlr *PinCntlrGetByNumber(uint16_t number)
 {
-    struct DListHead *list = NULL;
+    struct DListHead *head = NULL;
     struct PinCntlr *cntlr = NULL;
     struct PinCntlr *tmp = NULL;
-    list = PinCntlrListGet();
 
-    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, list, struct PinCntlr, list) {
+    head = PinCntlrListGet();
+
+    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, head, struct PinCntlr, node) {
         if (cntlr->number == number) {
             PinCntlrListPut();
             HDF_LOGI("%s: get cntlr by number success!", __func__);
@@ -131,13 +130,14 @@ struct PinCntlr *PinCntlrGetByNumber(uint16_t number)
 
 struct PinCntlr *PinCntlrGetByPin(struct PinDesc *desc)
 {
-    struct DListHead *list = NULL;
+    struct DListHead *head = NULL;
     struct PinCntlr *cntlr = NULL;
     struct PinCntlr *tmp = NULL;
     int32_t num;
 
-    list = PinCntlrListGet();
-    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, list, struct PinCntlr, list) {
+    head = PinCntlrListGet();
+
+    DLIST_FOR_EACH_ENTRY_SAFE(cntlr, tmp, head, struct PinCntlr, node) {
         for (num = 0; num <cntlr->pinCount; num++) {
             if (desc == &cntlr->pins[num]) {
             PinCntlrListPut();

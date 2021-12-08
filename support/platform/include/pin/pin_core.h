@@ -34,7 +34,7 @@ struct PinCntlr {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
     struct PinCntlrMethod *method;
-    struct DListHead list;
+    struct DListHead node;
     OsalSpinlock spin;
     uint16_t number;
     uint16_t pinCount;
