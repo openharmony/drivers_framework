@@ -9,10 +9,10 @@
 #ifndef PWM_CORE_H
 #define PWM_CORE_H
 
+#include "pwm_if.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_spinlock.h"
-#include "pwm_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -40,6 +40,9 @@ struct PwmDev {
     void *priv;
 };
 
+int32_t PwmDeviceGet(struct PwmDev *pwm);
+void PwmDevicePut(struct PwmDev *pwm);
+int32_t PwmDeviceSetConfig(struct PwmDev *pwm, struct PwmConfig *config);
 void *PwmGetPriv(struct PwmDev *pwm);
 int32_t PwmSetPriv(struct PwmDev *pwm, void *priv);
 int32_t PwmDeviceAdd(struct HdfDeviceObject *obj, struct PwmDev *pwm);
