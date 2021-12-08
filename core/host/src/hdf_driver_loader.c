@@ -19,7 +19,6 @@ int32_t HdfDriverEntryConstruct()
     struct HdfDriverEntry *driverEntry = NULL;
     size_t *addrBegin = NULL;
     int32_t count = (int32_t)(((uint8_t *)(HDF_DRIVER_END()) - (uint8_t *)(HDF_DRIVER_BEGIN())) / sizeof(size_t));
-
     if (count <= 0) {
         HDF_LOGE("%s: no hdf driver exist", __func__);
         return HDF_FAILURE;

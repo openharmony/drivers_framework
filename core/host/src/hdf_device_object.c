@@ -190,7 +190,9 @@ int HdfDeviceObjectRegister(struct HdfDeviceObject *dev)
     struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
     struct IDriverLoader *driverLoader = HdfDriverLoaderGetInstance();
 
-    if (dev == NULL || devNode->driverName == NULL || devNode->device == NULL) {
+    if (dev == NULL || devNode->driverName == NULL || devNode->device == NULL || driverLoader == NULL ||
+        driverLoader->GetDriver == NULL) {
+        HDF_LOGE("failed to add device, param invalid");
         return HDF_ERR_INVALID_PARAM;
     }
 

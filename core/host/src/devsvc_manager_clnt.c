@@ -7,10 +7,6 @@
  */
 
 #include "devsvc_manager_clnt.h"
-#include "devmgr_service.h"
-#include "devsvc_manager.h"
-#include "hdf_attribute_manager.h"
-#include "hdf_base.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 

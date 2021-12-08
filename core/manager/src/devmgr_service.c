@@ -267,6 +267,7 @@ static int DevmgrServiceStartDeviceHost(struct DevmgrService *devmgr, struct Hdf
 
 static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
 {
+    uint32_t ret;
     struct HdfSList hostList;
     struct HdfSListIterator it;
     struct HdfHostInfo *hostAttr = NULL;
@@ -279,7 +280,11 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
     HdfSListIteratorInit(&it, &hostList);
     while (HdfSListIteratorHasNext(&it)) {
         hostAttr = (struct HdfHostInfo *)HdfSListIteratorNext(&it);
-        DevmgrServiceStartDeviceHost(inst, hostAttr);
+        ret = DevmgrServiceStartDeviceHost(inst, hostAttr);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGW("%s failed to start device host, host id is %u, host name is '%s'",
+                __func__, hostAttr->hostId, hostAttr->hostName);
+        }
     }
     HdfSListFlush(&hostList, HdfHostInfoDelete);
     return HDF_SUCCESS;
