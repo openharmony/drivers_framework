@@ -45,9 +45,9 @@ static void AcmReadBulk(struct UsbRequest *req)
         case -ESHUTDOWN:
             return;
         default:
-            goto exit;
+            goto EXIT;
     }
-exit:
+EXIT:
     return;
 }
 
