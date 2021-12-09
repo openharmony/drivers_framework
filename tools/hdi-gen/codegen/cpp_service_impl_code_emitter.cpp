@@ -71,12 +71,16 @@ void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 
 void CppServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder& sb)
 {
+    HeaderFile::HeaderFileSet headerFiles;
     if (!isCallbackInterface()) {
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
     } else {
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(stubName_).string());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
     }
-    sb.Append("#include <hdf_base.h>\n");
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
 }
 
 void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder& sb)
@@ -159,7 +163,7 @@ void CppServiceImplCodeEmitter::EmitImplSourceFile()
     StringBuilder sb;
 
     EmitLicense(sb);
-    sb.AppendFormat("#include \"%s_service.h\"\n", FileName(infName_).string());
+    EmitImplSourceInclusions(sb);
     sb.Append("\n");
     EmitBeginNamespace(sb);
     sb.Append("\n");
@@ -177,6 +181,22 @@ void CppServiceImplCodeEmitter::EmitImplSourceFile()
     file.WriteData(data.string(), data.GetLength());
     file.Flush();
     file.Close();
+}
+
+void CppServiceImplCodeEmitter::EmitImplSourceInclusions(StringBuilder& sb)
+{
+    HeaderFile::HeaderFileSet headerFiles;
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(implName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
+}
+
+void CppServiceImplCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
 }
 
 void CppServiceImplCodeEmitter::EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix)

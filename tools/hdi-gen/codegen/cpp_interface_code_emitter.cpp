@@ -66,62 +66,21 @@ void CppInterfaceCodeEmitter::EmitInterfaceHeaderFile()
 
 void CppInterfaceCodeEmitter::EmitInterfaceInclusions(StringBuilder& sb)
 {
-    EmitInterfaceStdlibInclusions(sb);
-    EmitInterfaceDBinderInclusions(sb);
-    EmitInterfaceSelfDefinedTypeInclusions(sb);
-}
+    HeaderFile::HeaderFileSet headerFiles;
 
-void CppInterfaceCodeEmitter::EmitInterfaceStdlibInclusions(StringBuilder& sb)
-{
-    bool includeString = false;
-    bool includeList = false;
-    bool includeMap = false;
+    GetStdlibInclusions(headerFiles);
+    GetImportInclusions(headerFiles);
+    GetHeaderOtherLibInclusions(headerFiles);
 
-    const AST::TypeStringMap& types = ast_->GetTypes();
-    for (const auto& pair : types) {
-        AutoPtr<ASTType> type = pair.second;
-        switch (type->GetTypeKind()) {
-            case TypeKind::TYPE_STRING: {
-                if (!includeString) {
-                    sb.Append("#include <string>\n");
-                    includeString = true;
-                }
-                break;
-            }
-            case TypeKind::TYPE_ARRAY:
-            case TypeKind::TYPE_LIST: {
-                if (!includeList) {
-                    sb.Append("#include <vector>\n");
-                    includeList = true;
-                }
-                break;
-            }
-            case TypeKind::TYPE_MAP: {
-                if (!includeMap) {
-                    sb.Append("#include <map>\n");
-                    includeMap = true;
-                }
-                break;
-            }
-            default:
-                break;
-        }
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceDBinderInclusions(StringBuilder& sb)
+void CppInterfaceCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    sb.Append("#include <stdint.h>\n");
-    sb.Append("#include <hdf_log.h>\n");
-    sb.Append("#include <iservmgr_hdi.h>\n");
-}
-
-void CppInterfaceCodeEmitter::EmitInterfaceSelfDefinedTypeInclusions(StringBuilder& sb)
-{
-    for (const auto& importPair : ast_->GetImports()) {
-        AutoPtr<AST> importAst = importPair.second;
-        sb.Append("#include ").AppendFormat("\"%s.h\"\n", FileName(importAst->GetFullName()).string());
-    }
+    headerFiles.emplace(HeaderFile(HeaderFileType::C_STD_HEADER_FILE, "stdint"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "iremote_broker"));
 }
 
 void CppInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)

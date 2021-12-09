@@ -45,7 +45,7 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
     EmitLicense(sb);
     EmitHeadMacro(sb, implFullName_);
     sb.Append("\n");
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
+    EmitServiceImplHeaderInclusions(sb);
     sb.Append("\n");
     EmitHeadExternC(sb);
     sb.Append("\n");
@@ -61,6 +61,17 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
     file.Close();
 }
 
+void CServiceImplCodeEmitter::EmitServiceImplHeaderInclusions(StringBuilder& sb)
+{
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
+}
+
 void CServiceImplCodeEmitter::EmitServiceImplConstructDecl(StringBuilder& sb)
 {
     sb.AppendFormat("void %sServiceConstruct(struct %s* service);\n", infName_.string(), interfaceName_.string());
@@ -73,7 +84,7 @@ void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
     StringBuilder sb;
 
     EmitLicense(sb);
-    EmitServiceImplInclusions(sb);
+    EmitServiceImplSourceInclusions(sb);
     sb.Append("\n");
     EmitServiceImplMethodImpls(sb, "");
     sb.Append("\n");
@@ -85,13 +96,24 @@ void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
     file.Close();
 }
 
-void CServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder& sb)
+void CServiceImplCodeEmitter::EmitServiceImplSourceInclusions(StringBuilder& sb)
 {
-    sb.Append("#include <hdf_base.h>\n");
-    sb.Append("#include <hdf_log.h>\n");
-    sb.Append("#include <osal_mem.h>\n");
-    sb.Append("#include <securec.h>\n");
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(infName_ + "Service").string());
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(implName_)));
+    GetSourceOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
+}
+
+void CServiceImplCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
 }
 
 void CServiceImplCodeEmitter::EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix)

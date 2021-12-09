@@ -12,8 +12,6 @@
 #include <unistd.h>
 #include <unordered_set>
 
-#include "util/logger.h"
-
 namespace OHOS {
 namespace HDI {
 String CppCodeEmitter::FileName(const String& name)
@@ -48,6 +46,53 @@ void CppCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb, const String
         sb.Append(g_tab).AppendFormat("CMD_%s,\n", ConstantName(method->GetName()).string());
     }
     sb.Append(prefix).Append("};\n");
+}
+
+void CppCodeEmitter::GetStdlibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    bool includeString = false;
+    bool includeList = false;
+    bool includeMap = false;
+
+    const AST::TypeStringMap& types = ast_->GetTypes();
+    for (const auto& pair : types) {
+        AutoPtr<ASTType> type = pair.second;
+        switch (type->GetTypeKind()) {
+            case TypeKind::TYPE_STRING: {
+                if (!includeString) {
+                    headerFiles.emplace(HeaderFile(HeaderFileType::CPP_STD_HEADER_FILE, "string"));
+                    includeString = true;
+                }
+                break;
+            }
+            case TypeKind::TYPE_ARRAY:
+            case TypeKind::TYPE_LIST: {
+                if (!includeList) {
+                    headerFiles.emplace(HeaderFile(HeaderFileType::CPP_STD_HEADER_FILE, "vector"));
+                    includeList = true;
+                }
+                break;
+            }
+            case TypeKind::TYPE_MAP: {
+                if (!includeMap) {
+                    headerFiles.emplace(HeaderFile(HeaderFileType::CPP_STD_HEADER_FILE, "map"));
+                    includeMap = true;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
+
+void CppCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    for (const auto& importPair : ast_->GetImports()) {
+        AutoPtr<AST> importAst = importPair.second;
+        String fileName = FileName(importAst->GetFullName());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(importAst->GetFullName())));
+    }
 }
 
 void CppCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb,

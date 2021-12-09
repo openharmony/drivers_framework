@@ -27,6 +27,10 @@ public:
 protected:
     void EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix);
 
+    void GetStdlibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+
+    void GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles);
+
     void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
 
     void EmitLicense(StringBuilder& sb);

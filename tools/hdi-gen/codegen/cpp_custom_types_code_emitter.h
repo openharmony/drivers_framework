@@ -27,9 +27,7 @@ private:
 
     void EmitHeaderFileInclusions(StringBuilder& sb);
 
-    void EmitCustomTypesStdlibInclusions(StringBuilder& sb);
-
-    void EmitImportInclusions(StringBuilder& sb);
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitCustomTypeDecls(StringBuilder& sb);
 
@@ -45,7 +43,7 @@ private:
 
     void EmitSourceFileInclusions(StringBuilder& sb);
 
-    void EmitSourceStdlibInclusions(StringBuilder& sb);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitCustomTypeDataProcess(StringBuilder& sb);
 

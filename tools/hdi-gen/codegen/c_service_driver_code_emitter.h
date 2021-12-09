@@ -27,6 +27,8 @@ private:
 
     void EmitDriverIncluions(StringBuilder& sb);
 
+    void GetDriverSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+
     void EmitDriverServiceDecl(StringBuilder& sb);
 
     void EmitDriverDispatch(StringBuilder& sb);

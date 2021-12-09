@@ -17,6 +17,6 @@ action("build_hdi_gen") {
     "-j8",
     "-C",
     rebase_path("."),
-    "OUT_DIR=" + rebase_path(target_out_dir),
+    "TARGET_DIR=" + rebase_path(target_out_dir),
   ]
 }

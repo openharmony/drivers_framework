@@ -29,7 +29,7 @@ private:
 
     void EmitProxyInclusions(StringBuilder& sb);
 
-    void EmitProxyStdlibInclusions(StringBuilder& sb);
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitProxyCallMethodImpl(StringBuilder& sb);
 

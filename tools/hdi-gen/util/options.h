@@ -80,9 +80,9 @@ public:
         return codePart_;
     }
 
-    inline String GetModeName() const
+    inline String GetModuleName() const
     {
-        return doSetModeName_ ? modeName_ : "sample";
+        return doSetModuleName_ ? moduleName_ : "sample";
     }
 
     inline String GetGenerationDirectory() const
@@ -112,7 +112,7 @@ private:
         doGenerateCode_(false),
         doModeKernel_(false),
         doGeneratePart_(false),
-        doSetModeName_(false),
+        doSetModuleName_(false),
         doOutDir_(false) {}
 
     void SetOptionData(char op);
@@ -133,7 +133,7 @@ private:
     std::vector<String> sourceFiles_;
     String targetLanguage_;
     String codePart_;
-    String modeName_;
+    String moduleName_;
     String generationDirectory_;
     String illegalOptions_;
     std::vector<String> errors_;
@@ -146,7 +146,7 @@ private:
     bool doGenerateCode_;
     bool doModeKernel_;
     bool doGeneratePart_;
-    bool doSetModeName_;
+    bool doSetModuleName_;
     bool doOutDir_;
 };
 } // namespace HDI

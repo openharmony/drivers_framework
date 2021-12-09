@@ -9,7 +9,6 @@
 #ifndef OHOS_HDI_C_CODE_EMITTER_H
 #define OHOS_HDI_C_CODE_EMITTER_H
 
-#include <vector>
 #include "ast/ast.h"
 #include "codegen/code_emitter.h"
 #include "util/autoptr.h"
@@ -25,6 +24,8 @@ public:
     static String FileName(const String& name);
 protected:
     void EmitInterfaceMethodCommands(StringBuilder& sb);
+
+    void GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& parameter, StringBuilder& sb, const String& prefix);
 

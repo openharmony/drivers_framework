@@ -66,11 +66,22 @@ void CServiceDriverCodeEmitter::EmitDriverSourceFile()
 
 void CServiceDriverCodeEmitter::EmitDriverIncluions(StringBuilder& sb)
 {
-    sb.Append("#include <hdf_base.h>\n");
-    sb.Append("#include <hdf_log.h>\n");
-    sb.Append("#include <osal_mem.h>\n");
-    sb.Append("#include <hdf_device_desc.h>\n");
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(stubName_).string());
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(stubName_)));
+    GetDriverSourceOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
+}
+
+void CServiceDriverCodeEmitter::GetDriverSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_device_desc"));
 }
 
 void CServiceDriverCodeEmitter::EmitDriverServiceDecl(StringBuilder& sb)
@@ -156,7 +167,7 @@ void CServiceDriverCodeEmitter::EmitDriverEntryDefinition(StringBuilder& sb)
     sb.AppendFormat("struct HdfDriverEntry g_%sDriverEntry = {\n", infName_.ToLowerCase().string());
     sb.Append(g_tab).Append(".moduleVersion = 1,\n");
     sb.Append(g_tab).AppendFormat(".moduleName = \"%s\",\n",
-        Options::GetInstance().GetModeName().string());
+        Options::GetInstance().GetModuleName().string());
     sb.Append(g_tab).AppendFormat(".Bind = Hdf%sDriverBind,\n", infName_.string());
     sb.Append(g_tab).AppendFormat(".Init = Hdf%sDriverInit,\n", infName_.string());
     sb.Append(g_tab).AppendFormat(".Release = Hdf%sDriverRelease,\n", infName_.string());

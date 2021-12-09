@@ -33,12 +33,11 @@ bool CServiceStubCodeEmitter::ResolveDirectory(const String& targetDirectory)
 
 void CServiceStubCodeEmitter::EmitCode()
 {
-
-    EmitCbServiceStubHeaderFile();
+    EmitServiceStubHeaderFile();
     EmitServiceStubSourceFile();
 }
 
-void CServiceStubCodeEmitter::EmitCbServiceStubHeaderFile()
+void CServiceStubCodeEmitter::EmitServiceStubHeaderFile()
 {
     String filePath = String::Format("%s%s.h", directory_.string(), FileName(stubName_).string());
     File file(filePath, File::WRITE);
@@ -47,7 +46,7 @@ void CServiceStubCodeEmitter::EmitCbServiceStubHeaderFile()
     EmitLicense(sb);
     EmitHeadMacro(sb, stubFullName_);
     sb.Append("\n");
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
+    EmitStubHeaderInclusions(sb);
     sb.Append("\n");
     EmitHeadExternC(sb);
     sb.Append("\n");
@@ -61,6 +60,17 @@ void CServiceStubCodeEmitter::EmitCbServiceStubHeaderFile()
     file.WriteData(data.string(), data.GetLength());
     file.Flush();
     file.Close();
+}
+
+void CServiceStubCodeEmitter::EmitStubHeaderInclusions(StringBuilder& sb)
+{
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
 }
 
 void CServiceStubCodeEmitter::EmitCbServiceStubMethodsDcl(StringBuilder& sb)
@@ -82,7 +92,7 @@ void CServiceStubCodeEmitter::EmitServiceStubSourceFile()
     StringBuilder sb;
 
     EmitLicense(sb);
-    EmitServiceStubInclusions(sb);
+    EmitStubSourceInclusions(sb);
     sb.Append("\n");
 
     if (!isKernelCode_) {
@@ -119,54 +129,56 @@ void CServiceStubCodeEmitter::EmitServiceStubSourceFile()
     file.Close();
 }
 
-void CServiceStubCodeEmitter::EmitServiceStubInclusions(StringBuilder& sb)
+void CServiceStubCodeEmitter::EmitStubSourceInclusions(StringBuilder& sb)
 {
+    HeaderFile::HeaderFileSet headerFiles;
     if (!isCallbackInterface()) {
-        EmitServiceStubStdlibInclusions(sb);
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(stubName_).string());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
         if (isKernelCode_) {
-            sb.AppendFormat("#include \"%s.h\"\n", FileName(implName_).string());
+            headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(implName_)));
         } else {
             for (const auto& importPair : ast_->GetImports()) {
                 AutoPtr<AST> importAst = importPair.second;
                 if (importAst->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
                     String fileName = FileName(importAst->GetInterfaceDef()->GetFullName());
-                    sb.AppendFormat("#include \"%s.h\"\n", fileName.string());
+                    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName));
                 }
             }
         }
     } else {
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(stubName_).string());
-        EmitServiceStubStdlibInclusions(sb);
-        sb.Append("#include <hdf_remote_service.h>\n");
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(implName_).string());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_remote_service"));
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(implName_)));
+    }
+
+    GetSourceOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CServiceStubCodeEmitter::EmitServiceStubStdlibInclusions(StringBuilder& sb)
+void CServiceStubCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
     if (!isKernelCode_) {
-        sb.Append("#include <dlfcn.h>\n");
-    }
-
-    sb.Append("#include <hdf_base.h>\n");
-    sb.Append("#include <hdf_device_desc.h>\n");
-    sb.Append("#include <hdf_log.h>\n");
-    sb.Append("#include <hdf_sbuf.h>\n");
-    sb.Append("#include <osal_mem.h>\n");
-
-    if (isKernelCode_) {
+        headerFiles.emplace(HeaderFile(HeaderFileType::SYSTEM_HEADER_FILE, "dlfcn"));
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
+    } else {
         const AST::TypeStringMap& types = ast_->GetTypes();
         for (const auto& pair : types) {
             AutoPtr<ASTType> type = pair.second;
             if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
-                sb.Append("#include <securec.h>\n");
+                headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
                 break;
             }
         }
-    } else {
-        sb.Append("#include <securec.h>\n");
     }
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_device_desc"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
 }
 
 void CServiceStubCodeEmitter::EmitDriverLibPath(StringBuilder& sb)
@@ -180,7 +192,6 @@ void CServiceStubCodeEmitter::EmitDriverLibPath(StringBuilder& sb)
 
 void CServiceStubCodeEmitter::EmitServConstructTypedef(StringBuilder& sb)
 {
-    typedef void (*SERVICE_CONSTRUCT_FUNC)(struct callbacks *);
     sb.AppendFormat("typedef void (*SERVICE_CONSTRUCT_FUNC)(struct %s *);\n", interfaceName_.string());
 }
 
@@ -533,6 +544,5 @@ void CServiceStubCodeEmitter::EmitKernelStubReleaseImpl(StringBuilder& sb)
     sb.Append(g_tab).Append("OsalMemFree(instance);\n");
     sb.Append("}");
 }
-
 } // namespace HDI
 } // namespace OHOS

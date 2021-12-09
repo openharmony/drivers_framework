@@ -66,56 +66,20 @@ void CppCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
 
 void CppCustomTypesCodeEmitter::EmitHeaderFileInclusions(StringBuilder& sb)
 {
-    EmitCustomTypesStdlibInclusions(sb);
-    sb.Append("#include <message_parcel.h>\n");
-    EmitImportInclusions(sb);
-}
+    HeaderFile::HeaderFileSet headerFiles;
 
-void CppCustomTypesCodeEmitter::EmitCustomTypesStdlibInclusions(StringBuilder& sb)
-{
-    bool includeString = false;
-    bool includeList = false;
-    bool includeMap = false;
+    GetStdlibInclusions(headerFiles);
+    GetImportInclusions(headerFiles);
+    GetHeaderOtherLibInclusions(headerFiles);
 
-    const AST::TypeStringMap& types = ast_->GetTypes();
-    for (const auto& pair : types) {
-        AutoPtr<ASTType> type = pair.second;
-        switch (type->GetTypeKind()) {
-            case TypeKind::TYPE_STRING: {
-                if (!includeString) {
-                    sb.Append("#include <string>\n");
-                    includeString = true;
-                }
-                break;
-            }
-            case TypeKind::TYPE_ARRAY:
-            case TypeKind::TYPE_LIST: {
-                if (!includeList) {
-                    sb.Append("#include <vector>\n");
-                    includeList = true;
-                }
-                break;
-            }
-            case TypeKind::TYPE_MAP: {
-                if (!includeMap) {
-                    sb.Append("#include <map>\n");
-                    includeMap = true;
-                }
-                break;
-            }
-            default:
-                break;
-        }
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CppCustomTypesCodeEmitter::EmitImportInclusions(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    for (const auto& importPair : ast_->GetImports()) {
-        AutoPtr<AST> importAst = importPair.second;
-        String fileName = FileName(importAst->GetFullName());
-        sb.Append("#include ").AppendFormat("\"%s.h\"\n", fileName.string());
-    }
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_parcel"));
 }
 
 void CppCustomTypesCodeEmitter::EmitCustomTypeDecls(StringBuilder& sb)
@@ -205,18 +169,24 @@ void CppCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 
 void CppCustomTypesCodeEmitter::EmitSourceFileInclusions(StringBuilder& sb)
 {
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(infName_).string());
-    EmitSourceStdlibInclusions(sb);
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(infName_)));
+    GetSourceOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
 }
 
-void CppCustomTypesCodeEmitter::EmitSourceStdlibInclusions(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    sb.Append("#include <hdf_log.h>\n");
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
     const AST::TypeStringMap& types = ast_->GetTypes();
     for (const auto& pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT || type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            sb.Append("#include <securec.h>\n");
+            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
             break;
         }
     }

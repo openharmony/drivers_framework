@@ -25,11 +25,15 @@ private:
 
     void EmitServiceImplHeaderFile();
 
+    void EmitServiceImplHeaderInclusions(StringBuilder& sb);
+
     void EmitServiceImplConstructDecl(StringBuilder& sb);
 
     void EmitServiceImplSourceFile();
 
-    void EmitServiceImplInclusions(StringBuilder& sb);
+    void EmitServiceImplSourceInclusions(StringBuilder& sb);
+
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix);
 
