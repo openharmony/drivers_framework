@@ -38,5 +38,7 @@ int HdfPmRegisterPowerListener(struct HdfDeviceObject *deviceObject, const struc
 void HdfPmUnregisterPowerListener(struct HdfDeviceObject *deviceObject, const struct IPowerEventListener *listener);
 void HdfPmAcquireDevice(struct HdfDeviceObject *deviceObject);
 void HdfPmReleaseDevice(struct HdfDeviceObject *deviceObject);
+void HdfPmAcquireDeviceAsync(struct HdfDeviceObject *deviceObject);
+void HdfPmReleaseDeviceAsync(struct HdfDeviceObject *deviceObject);
 void HdfPmSetMode(struct HdfDeviceObject *deviceObject, uint32_t mode);
 #endif /* HDF_POWER_MANAGEMENT_H */

@@ -8,7 +8,6 @@
 
 #include "devmgr_service_start.h"
 #include "devhost_service_clnt.h"
-#include "devmgr_pm_reg.h"
 #include "devmgr_service.h"
 #include "devsvc_manager.h"
 #include "devsvc_manager_clnt.h"
@@ -16,6 +15,7 @@
 #include "hdf_device_node.h"
 #include "hdf_io_service.h"
 #include "hdf_log.h"
+#include "hdf_power_manager.h"
 #include "hdf_sbuf.h"
 
 #define DEV_MGR_NODE_PERM 0660
@@ -115,7 +115,7 @@ int DeviceManagerStart(void)
         return ret;
     }
 
-    return DevMgrPmRegister();
+    return HdfPowerManagerInit();
 }
 
 int DeviceManagerStartStep2()
