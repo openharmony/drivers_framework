@@ -314,6 +314,7 @@ typedef struct {
 
 #define MAX_SUPPORTED_RATE 12
 #define WIFI_MAX_CHANNEL_NUM 24
+#define SUPPORTED_NUM_BANDS 2
 
 typedef struct {
     int32_t channelNum;          /**< Number of channels */
@@ -325,7 +326,7 @@ typedef struct {
     uint16_t bitrate[MAX_SUPPORTED_RATE];
     uint16_t htCapab;
     uint8_t resv[2];
-    WlanBands bands[IEEE80211_NUM_BANDS];
+    WlanBands bands[SUPPORTED_NUM_BANDS];
 } WifiHwFeatureData;
 
 typedef struct {
