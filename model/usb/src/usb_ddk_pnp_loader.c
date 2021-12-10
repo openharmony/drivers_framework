@@ -7,6 +7,7 @@
  */
 
 #include "usb_ddk_pnp_loader.h"
+#include <unistd.h>
 #include "devhost_service_clnt.h"
 #include "device_resource_if.h"
 #include "hcs_tree_if.h"
@@ -15,6 +16,7 @@
 #include "hdf_device_object.h"
 #include "hdf_log.h"
 #include "hdf_sbuf.h"
+#include "osal_file.h"
 #include "osal_mem.h"
 #include "osal_time.h"
 #include "securec.h"
@@ -155,15 +157,15 @@ int32_t UsbPnpManagerRegisterDevice(struct UsbPnpManagerDeviceInfo *managerInfo)
         HdfDeviceObjectRelease(devObj);
         return ret;
     }
-    ret = HdfDeviceObjectPublishService(devObj, managerInfo->serviceName, SERVICE_POLICY_CAPACITY, 0664);
+    ret = HdfDeviceObjectPublishService(devObj, managerInfo->serviceName, SERVICE_POLICY_CAPACITY,
+        OSAL_S_IREAD | OSAL_S_IWRITE | OSAL_S_IRGRP | OSAL_S_IWGRP | OSAL_S_IROTH);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to regitst device %s", __func__, managerInfo->serviceName);
         HdfDeviceObjectRelease(devObj);
         return ret;
     }
     // need optimize this code to remove SaveRegistedDevice function later
-    SaveRegistedDevice(devObj);
-    return ret;
+    return SaveRegistedDevice(devObj);
 }
 
 int32_t UsbPnpManagerUnregisterDevice(struct UsbPnpManagerDeviceInfo *managerInfo)
