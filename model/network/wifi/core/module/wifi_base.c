@@ -517,7 +517,7 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
         }
         if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
             band = capability->bands[IEEE80211_BAND_5GHZ];
-            if (band->channelCount > WIFI_5G_CHANNEL_NUM) {
+            if (band->channelCount > WIFI_MAX_CHANNEL_NUM) {
                 HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
                 ret = HDF_FAILURE;
                 break;
