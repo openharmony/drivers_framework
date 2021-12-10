@@ -489,7 +489,6 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
 {
     int32_t ret = HDF_SUCCESS;
     struct WlanHwCapability *capability = GetHwCapability(netdev);
-    struct WlanBand *band = NULL;
     if (capability == NULL) {
         HDF_LOGE("%s:GetHwCapability failed!", __func__);
         return HDF_FAILURE;
@@ -507,7 +506,7 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
         }
         
         if (capability->bands[IEEE80211_BAND_2GHZ] != NULL) {
-            band = capability->bands[IEEE80211_BAND_2GHZ];
+            struct WlanBand *band = capability->bands[IEEE80211_BAND_2GHZ];
             if (band->channelCount > WIFI_24G_CHANNEL_NUM) {
                 HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
                 ret = HDF_FAILURE;
@@ -516,7 +515,7 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
             WifiGetChannelData(band, &featureData, capability, IEEE80211_BAND_2GHZ);
         }
         if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
-            band = capability->bands[IEEE80211_BAND_5GHZ];
+            struct WlanBand *band = capability->bands[IEEE80211_BAND_5GHZ];
             if (band->channelCount > WIFI_MAX_CHANNEL_NUM) {
                 HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
                 ret = HDF_FAILURE;
