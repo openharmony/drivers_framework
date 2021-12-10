@@ -515,6 +515,10 @@ static int32_t HdfWlanMainInit(struct HdfDeviceObject *device)
         HDF_LOGE("%s:HdfWlanGetConfig get wlan config failed!", __func__);
         return HDF_FAILURE;
     }
+    int regVirtualAddr = IO_DEVICE_ADDR(0x12010000+0x0154);
+    uint32_t currentValue = readl(regVirtualAddr);
+    currentValue |= 0x0c; // Set to 25MHz
+    writel(currentValue, regVirtualAddr);
     /* feature init */
     rootConfig = HdfWlanGetModuleConfigRoot();
     moduleConfig = &rootConfig->wlanConfig.moduleConfig;
