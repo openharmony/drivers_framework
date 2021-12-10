@@ -325,7 +325,7 @@ typedef struct {
     uint16_t bitrate[MAX_SUPPORTED_RATE];
     uint16_t htCapab;
     uint8_t resv[2];
-    WlanBands bands[2];
+    WlanBands bands[IEEE80211_NUM_BANDS];
 } WifiHwFeatureData;
 
 typedef struct {

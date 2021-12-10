@@ -469,7 +469,7 @@ static int32_t WifiCmdSetMode(const RequestContext *context, struct HdfSBuf *req
 static void WifiGetChannelData(struct WlanBand *band, WifiHwFeatureData **featureData, struct WlanHwCapability *capability, uint32_t iee80211band)
 {
     uint32_t loop;
-    if (band == NULL || featureData == NULL)
+    if (band == NULL || featureData == NULL || *featureData == NULL)
     {
         HDF_LOGE("%s: band or featureData is NULL", __func__);
         return;
@@ -504,7 +504,7 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
             HDF_LOGV("%s: supported rate %u", __func__, capability->supportedRates[loop]);
             featureData->bitrate[loop] = capability->supportedRates[loop];
         }
-        
+
         if (capability->bands[IEEE80211_BAND_2GHZ] != NULL) {
             struct WlanBand *band = capability->bands[IEEE80211_BAND_2GHZ];
             if (band->channelCount > WIFI_24G_CHANNEL_NUM) {
