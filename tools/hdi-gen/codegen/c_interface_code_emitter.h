@@ -27,6 +27,8 @@ private:
 
     void EmitImportInclusions(StringBuilder& sb);
 
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+
     void EmitInterfaceDefinition(StringBuilder& sb);
 
     void EmitInterfaceMethods(StringBuilder& sb, const String& prefix);

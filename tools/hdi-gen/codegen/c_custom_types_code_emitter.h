@@ -27,6 +27,8 @@ private:
 
     void EmitHeaderInclusions(StringBuilder& sb);
 
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+
     void EmitCustomTypeDecls(StringBuilder& sb);
 
     void EmitCustomTypeDecl(StringBuilder& sb, const AutoPtr<ASTType>& type);
@@ -43,7 +45,7 @@ private:
 
     void EmitSoucreIncludsions(StringBuilder& sb);
 
-    void EmitSourceStdlibInclusions(StringBuilder& sb);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitCustomTypeDataProcess(StringBuilder& sb);
 

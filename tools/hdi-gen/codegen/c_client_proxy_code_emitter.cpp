@@ -79,32 +79,37 @@ void CClientProxyCodeEmitter::EmitProxySourceFile()
 
 void CClientProxyCodeEmitter::EmitProxyInclusions(StringBuilder& sb)
 {
-    EmitProxyStdlibInclusions(sb);
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
+    GetHeaderOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
 }
 
-void CClientProxyCodeEmitter::EmitProxyStdlibInclusions(StringBuilder& sb)
+void CClientProxyCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    sb.Append("#include <hdf_base.h>\n");
-    if (!isCallbackInterface() && !isKernelCode_) {
-        sb.Append("#include <hdf_dlist.h>\n");
-    }
-
-    sb.Append("#include <hdf_log.h>\n");
-    sb.Append("#include <hdf_sbuf.h>\n");
-    sb.Append("#include <osal_mem.h>\n");
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
 
     if (isKernelCode_) {
-        sb.Append("#include <hdf_io_service_if.h>\n");
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_io_service_if"));
     } else {
-        sb.Append("#include <servmgr_hdi.h>\n");
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "servmgr_hdi"));
+        if (!isCallbackInterface()) {
+            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_dlist"));
+        }
     }
 
     const AST::TypeStringMap& types = ast_->GetTypes();
     for (const auto& pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            sb.Append("#include <securec.h>\n");
+            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
             break;
         }
     }

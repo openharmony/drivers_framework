@@ -196,6 +196,23 @@ bool String::Equals(const String& other) const
     return false;
 }
 
+int String::Compare(const String& other) const
+{
+    if (string_ == nullptr) {
+        if (other.string_ == nullptr) {
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+
+    if (other.string_ == nullptr) {
+        return 1;
+    }
+
+    return strcmp(string_, other.string_);
+}
+
 int String::GetHashCode() const
 {
     // BKDR Hash Function

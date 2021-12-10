@@ -25,7 +25,7 @@ static struct option g_longOpts[] = {
     {"gen-java", no_argument, nullptr, 'J'},
     {"gen-hash", no_argument, nullptr, 'H'},
     {"build-target", required_argument, nullptr, 'p'},
-    {"mode-name", required_argument, nullptr, 'N'},
+    {"module-name", required_argument, nullptr, 'N'},
     {"kernel", no_argument, nullptr, 'K'},
     {"dump-ast", no_argument, nullptr, 'D'},
     {nullptr, 0, nullptr, 0}
@@ -56,7 +56,7 @@ void Options::SetOptionData(char op)
     switch (op) {
         case 'c':
             doCompile_ = true;
-			sourceFiles_.push_back(optarg);
+            sourceFiles_.push_back(optarg);
             break;
         case 'd':
             doOutDir_ = true;
@@ -72,8 +72,8 @@ void Options::SetOptionData(char op)
             doModeKernel_ = true;
             break;
         case 'N':
-            doSetModeName_ = true;
-            modeName_ = optarg;
+            doSetModuleName_ = true;
+            moduleName_ = optarg;
             break;
         case 'C':
             SetLanguage("c");
@@ -137,9 +137,8 @@ void Options::CheckOptions()
 
         if (doGeneratePart_ && !codePart_.Equals("all") && !codePart_.Equals("client") &&
             !codePart_.Equals("server")) {
-            errors_.push_back(
-                String::Format("%s: The '--build-target' option parameter must be 'client' 'server' or 'all'.",
-                program_.string()));
+            String errorLog = "The '--build-target' option parameter must be 'client' 'server' or 'all'.";
+            errors_.push_back(String::Format("%s: %s", program_.string(), errorLog.string()));
         }
     } else {
         if (doGetHashKey_ || doDumpAST_ || doGenerateCode_ || doOutDir_) {
@@ -178,7 +177,7 @@ void Options::ShowUsage() const
            "  --gen-cpp                       Generate C++ code\n"
            "  --gen-java                      Generate Java code\n"
            "  --kernel                        Generate kernel-mode ioservice stub code, default user-mode ioservice stub code\n"
-           "  --mode-name <mode name>         Set driver module name\n"
+           "  --module-name <module name>     Set driver module name\n"
            "  --build-target <target name>    Generate client code, server code or all code\n"
            "  -d <directory>                  Place generated codes into <directory>\n");
 }

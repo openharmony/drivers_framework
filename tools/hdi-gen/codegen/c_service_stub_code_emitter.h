@@ -23,15 +23,17 @@ private:
 
     void EmitCode() override;
 
-    void EmitCbServiceStubHeaderFile();
+    void EmitServiceStubHeaderFile();
+
+    void EmitStubHeaderInclusions(StringBuilder& sb);
 
     void EmitCbServiceStubMethodsDcl(StringBuilder& sb);
 
     void EmitServiceStubSourceFile();
 
-    void EmitServiceStubInclusions(StringBuilder& sb);
+    void EmitStubSourceInclusions(StringBuilder& sb);
 
-    void EmitServiceStubStdlibInclusions(StringBuilder& sb);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitDriverLibPath(StringBuilder& sb);
 

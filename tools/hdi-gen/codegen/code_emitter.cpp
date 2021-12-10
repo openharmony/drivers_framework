@@ -8,8 +8,6 @@
 
 #include "codegen/code_emitter.h"
 
-#include "util/logger.h"
-
 namespace OHOS {
 namespace HDI {
 bool CodeEmitter::OutPut(const AutoPtr<AST>& ast, const String& targetDirectory, bool isKernelCode)

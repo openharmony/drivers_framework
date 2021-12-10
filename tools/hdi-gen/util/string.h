@@ -57,6 +57,8 @@ public:
 
     bool Equals(const String& other) const;
 
+    int Compare(const String& other) const;
+
     int GetHashCode() const;
 
     int IndexOf(char c, int fromIndex = 0) const;

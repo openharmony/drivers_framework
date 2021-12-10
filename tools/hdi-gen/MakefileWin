@@ -4,9 +4,7 @@
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
 
-PWD:=$(subst /,\, $(abspath $(dir $(realpath $(lastword $(MAKEFILE_LIST))))))
-BUILD_DIR:=$(PWD)\build
-BOUNDS_CHECK_DIR:=$(abspath ..\..\..\..\third_party\bounds_checking_function)
+BOUNDS_CHECK_DIR:=$(subst /,\, $(abspath ..\..\..\..\third_party\bounds_checking_function))
 INCLUDES:=-I $(PWD) -I $(BOUNDS_CHECK_DIR)\include
 
 CODEGEN_SOURCE_DIR:=$(PWD)\codegen
@@ -29,7 +27,7 @@ UTIL_SOURCE:=$(wildcard $(UTIL_SOURCE_DIR)/*.cpp)
 UTIL_OBJS_DIR:=$(BUILD_DIR)\util
 UTIL_OBJS:=$(addprefix $(UTIL_OBJS_DIR)\, $(patsubst %.cpp, %.o, $(notdir $(UTIL_SOURCE))))
 
-BOUNDS_CHECK_SOURCE_DIR:=$(abspath ..\..\..\..\third_party\bounds_checking_function\src)
+BOUNDS_CHECK_SOURCE_DIR:=$(subst /,\, $(abspath ..\..\..\..\third_party\bounds_checking_function\src))
 BOUNDS_CHECK_SOURCE:=$(wildcard $(BOUNDS_CHECK_SOURCE_DIR)/*.c)
 BOUNDS_CHECK_OBJS_DIR:=$(BUILD_DIR)\bounds_checking_function
 BOUNDS_CHECK_OBJS:=$(addprefix $(BOUNDS_CHECK_OBJS_DIR)\, $(patsubst %.c, %.o, $(notdir $(BOUNDS_CHECK_SOURCE))))
@@ -67,7 +65,7 @@ $(BOUNDS_CHECK_OBJS_DIR)\\%.o : $(BOUNDS_CHECK_SOURCE_DIR)\\%.c
 	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
 
 clean:
-	$(Q) if exist $(TARGET).exe (del $(TARGET).exe)
+	$(Q) if exist $(TARGET) (del $(TARGET))
 	$(Q) if exist $(BUILD_DIR) (rd /s /q $(BUILD_DIR))
 
 .PHONY:all clean

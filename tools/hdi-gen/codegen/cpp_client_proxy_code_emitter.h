@@ -25,7 +25,9 @@ private:
 
     void EmitProxyHeaderFile();
 
-    void EmitProxyHeadrInclusions(StringBuilder& sb);
+    void EmitProxyHeaderInclusions(StringBuilder& sb);
+
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitProxyDecl(StringBuilder& sb, const String& prefix);
 
@@ -43,7 +45,7 @@ private:
 
     void EmitProxySourceInclusions(StringBuilder& sb);
 
-    void EmitProxySourceStdlibInclusions(StringBuilder& sb);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitGetMethodImpl(StringBuilder& sb, const String& prefix);
 

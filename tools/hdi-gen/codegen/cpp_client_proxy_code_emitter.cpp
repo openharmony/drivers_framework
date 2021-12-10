@@ -8,7 +8,6 @@
 
 #include "codegen/cpp_client_proxy_code_emitter.h"
 #include "util/file.h"
-
 #include "util/logger.h"
 
 namespace OHOS {
@@ -46,7 +45,7 @@ void CppClientProxyCodeEmitter::EmitProxyHeaderFile()
     EmitLicense(sb);
     EmitHeadMacro(sb, proxyFullName_);
     sb.Append("\n");
-    EmitProxyHeadrInclusions(sb);
+    EmitProxyHeaderInclusions(sb);
     sb.Append("\n");
     EmitBeginNamespace(sb);
     sb.Append("\n");
@@ -62,10 +61,21 @@ void CppClientProxyCodeEmitter::EmitProxyHeaderFile()
     file.Close();
 }
 
-void CppClientProxyCodeEmitter::EmitProxyHeadrInclusions(StringBuilder& sb)
+void CppClientProxyCodeEmitter::EmitProxyHeaderInclusions(StringBuilder& sb)
 {
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
-    sb.Append("#include <iremote_proxy.h>\n");
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(interfaceName_)));
+    GetHeaderOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
+}
+
+void CppClientProxyCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "iremote_proxy"));
 }
 
 void CppClientProxyCodeEmitter::EmitProxyDecl(StringBuilder& sb, const String& prefix)
@@ -164,21 +174,30 @@ void CppClientProxyCodeEmitter::EmitProxySourceFile()
 
 void CppClientProxyCodeEmitter::EmitProxySourceInclusions(StringBuilder& sb)
 {
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(proxyName_).string());
-    EmitProxySourceStdlibInclusions(sb);
+    HeaderFile::HeaderFileSet headerFiles;
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(proxyName_)));
+    GetSourceOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
 }
 
-void CppClientProxyCodeEmitter::EmitProxySourceStdlibInclusions(StringBuilder& sb)
+void CppClientProxyCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    sb.Append("#include <hdf_base.h>\n");
-    sb.Append("#include <message_option.h>\n");
-    sb.Append("#include <message_parcel.h>\n");
+    if (!isCallbackInterface()) {
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "iservmgr_hdi"));
+    }
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_option"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_parcel"));
 
     const AST::TypeStringMap& types = ast_->GetTypes();
     for (const auto& pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            sb.Append("#include <securec.h>\n");
+            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
             break;
         }
     }
@@ -207,7 +226,8 @@ void CppClientProxyCodeEmitter::EmitGetInstanceMethodImpl(StringBuilder& sb, con
         "HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).Append("break;\n");
     sb.Append(prefix + g_tab + g_tab).Append("}\n\n");
-    sb.Append(prefix + g_tab + g_tab).Append("sptr<IRemoteObject> remote = servMgr->GetService(serviceName.c_str());\n");
+    sb.Append(prefix + g_tab + g_tab).Append("sptr<IRemoteObject> remote = ");
+    sb.Append("servMgr->GetService(serviceName.c_str());\n");
     sb.Append(prefix + g_tab + g_tab).Append("if (remote != nullptr) {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return iface_cast<%s>(remote);\n",
         interface_->GetName().string());

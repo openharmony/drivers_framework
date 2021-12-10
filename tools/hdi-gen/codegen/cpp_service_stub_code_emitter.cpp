@@ -64,13 +64,23 @@ void CppServiceStubCodeEmitter::EmitStubHeaderFile()
 
 void CppServiceStubCodeEmitter::EmitStubHeaderInclusions(StringBuilder& sb)
 {
-    sb.Append("#include <message_parcel.h>\n");
-    sb.Append("#include <message_option.h>\n");
-    sb.Append("#include <refbase.h>\n");
-    if (isCallbackInterface()) {
-        sb.Append("#include <iremote_stub.h>\n");
+    HeaderFile::HeaderFileSet headerFiles;
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
+    GetHeaderOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
     }
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(interfaceName_).string());
+}
+
+void CppServiceStubCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_parcel"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_option"));
+    if (isCallbackInterface()) {
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "iremote_stub"));
+    }
 }
 
 void CppServiceStubCodeEmitter::EmitStubDecl(StringBuilder& sb)
@@ -238,31 +248,34 @@ void CppServiceStubCodeEmitter::EmitStubSourceFile()
 
 void CppServiceStubCodeEmitter::EmitStubSourceInclusions(StringBuilder& sb)
 {
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(stubName_).string());
-    EmitStubSourceStdlibInclusions(sb);
+    HeaderFile::HeaderFileSet headerFiles;
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
+    GetSourceOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
 }
 
-void CppServiceStubCodeEmitter::EmitStubSourceStdlibInclusions(StringBuilder& sb)
+void CppServiceStubCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
     if (!isCallbackInterface()) {
-        sb.Append("#include <dlfcn.h>\n");
-    }
-    sb.Append("#include <hdf_base.h>\n");
-    sb.Append("#include <hdf_log.h>\n");
-    sb.Append("#include <hdf_sbuf_ipc.h>\n");
-
-    const AST::TypeStringMap& types = ast_->GetTypes();
-    if (isCallbackInterface()) {
+        headerFiles.emplace(HeaderFile(HeaderFileType::SYSTEM_HEADER_FILE, "dlfcn"));
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf_ipc"));
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
+    } else {
+        const AST::TypeStringMap& types = ast_->GetTypes();
         for (const auto& pair : types) {
             AutoPtr<ASTType> type = pair.second;
             if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
-                sb.Append("#include <securec.h>\n");
+                headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
                 break;
             }
         }
-    } else {
-        sb.Append("#include <securec.h>\n");
     }
+
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
 }
 
 void CppServiceStubCodeEmitter::EmitDriverLibPath(StringBuilder& sb)

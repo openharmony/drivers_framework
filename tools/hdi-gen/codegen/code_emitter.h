@@ -9,6 +9,7 @@
 #ifndef OHOS_HDI_CODE_EMITTER_H
 #define OHOS_HDI_CODE_EMITTER_H
 
+#include <set>
 #include "ast/ast.h"
 #include "util/autoptr.h"
 #include "util/light_refcount_base.h"
@@ -16,6 +17,53 @@
 
 namespace OHOS {
 namespace HDI {
+enum class HeaderFileType {
+    OWN_HEADER_FILE,
+    SYSTEM_HEADER_FILE,
+    C_STD_HEADER_FILE,
+    CPP_STD_HEADER_FILE,
+    OTHER_MODULES_HEADER_FILE,
+    OWN_MODULE_HEADER_FILE,
+};
+
+struct HeaderFile {
+    HeaderFile(HeaderFileType type, String fileName) : type_(type), fileName_(fileName) {}
+
+    struct compare {
+        bool operator()(const HeaderFile& lhs, const HeaderFile& rhs)
+        {
+            if (lhs.type_ < rhs.type_) {
+                return true;
+            } else if (lhs.type_ > rhs.type_) {
+                return false;
+            }
+
+            return lhs.fileName_.Compare(rhs.fileName_) <= 0;
+        }
+    };
+
+    String ToString() const {
+        switch(type_) {
+            case HeaderFileType::OWN_HEADER_FILE:
+            case HeaderFileType::OWN_MODULE_HEADER_FILE:
+                return String::Format("#include \"%s.h\"", fileName_.string());
+            case HeaderFileType::SYSTEM_HEADER_FILE:
+            case HeaderFileType::C_STD_HEADER_FILE:
+            case HeaderFileType::OTHER_MODULES_HEADER_FILE:
+                return String::Format("#include <%s.h>", fileName_.string());
+            case HeaderFileType::CPP_STD_HEADER_FILE:
+                return String::Format("#include <%s>", fileName_.string());
+            default:
+                return String::Format("//");
+        }
+    }
+
+    using HeaderFileSet = std::set<HeaderFile, HeaderFile::compare>;
+
+    HeaderFileType type_;
+    String fileName_;
+};
+
 class CodeEmitter : public LightRefCountBase {
 public:
     virtual ~CodeEmitter() = default;

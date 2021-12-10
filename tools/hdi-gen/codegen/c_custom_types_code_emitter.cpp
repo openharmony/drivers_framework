@@ -64,10 +64,20 @@ void CCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
 
 void CCustomTypesCodeEmitter::EmitHeaderInclusions(StringBuilder& sb)
 {
+    HeaderFile::HeaderFileSet headerFiles;
+    GetHeaderOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
+}
+
+void CCustomTypesCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
     for (size_t i = 0; i < ast_->GetTypeDefinitionNumber(); i++) {
         AutoPtr<ASTType> type = ast_->GetTypeDefintion(i);
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-            sb.Append("#include <hdf_sbuf.h>\n");
+            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
             break;
         }
     }
@@ -168,21 +178,26 @@ void CCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 
 void CCustomTypesCodeEmitter::EmitSoucreIncludsions(StringBuilder& sb)
 {
-    sb.AppendFormat("#include \"%s.h\"\n", FileName(infName_).string());
-    EmitSourceStdlibInclusions(sb);
+    HeaderFile::HeaderFileSet headerFiles;
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(infName_)));
+    GetSourceOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
+    }
 }
 
-void CCustomTypesCodeEmitter::EmitSourceStdlibInclusions(StringBuilder& sb)
+void CCustomTypesCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    sb.Append("#include <hdf_log.h>\n");
-    sb.Append("#include <osal_mem.h>\n");
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
 
     const AST::TypeStringMap& types = ast_->GetTypes();
     for (const auto& pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT
             || type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            sb.Append("#include <securec.h>\n");
+            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
             break;
         }
     }

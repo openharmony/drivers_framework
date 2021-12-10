@@ -28,6 +28,8 @@ private:
 
     void EmitStubHeaderInclusions(StringBuilder& sb);
 
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+
     void EmitStubUsingNamespace(StringBuilder& sb);
 
     void EmitStubDecl(StringBuilder& sb);
@@ -57,7 +59,7 @@ private:
 
     void EmitStubSourceInclusions(StringBuilder& sb);
 
-    void EmitStubSourceStdlibInclusions(StringBuilder& sb);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitDriverLibPath(StringBuilder& sb);
 

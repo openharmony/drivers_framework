@@ -43,6 +43,10 @@ private:
 
     void EmitImplSourceFile();
 
+    void EmitImplSourceInclusions(StringBuilder& sb);
+
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+
     void EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix);
 
     void EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);

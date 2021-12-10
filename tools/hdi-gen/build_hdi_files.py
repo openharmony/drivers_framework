@@ -69,6 +69,7 @@ def get_idl_file_type(file_path):
     file.close()
     return idl_type
 
+
 def c_interface_file_translate(idl_file, out_dir, part, outputs):
     file = idl_file.split("/")[-1]
     file_name = translate_file_name(file.split(".")[0])
@@ -86,7 +87,6 @@ def c_interface_file_translate(idl_file, out_dir, part, outputs):
         outputs.append(client_proxy_source_file)
     elif part == "server_lib_source":
         outputs.append(iface_header_file)
-        outputs.append(server_driver_source_file)
         outputs.append(server_stub_header_file)
         outputs.append(server_stub_source_file)
     else:
@@ -97,6 +97,7 @@ def c_interface_file_translate(idl_file, out_dir, part, outputs):
         outputs.append(server_stub_source_file)
         outputs.append(server_impl_header_file)
         outputs.append(server_impl_source_file)
+
 
 def c_callback_file_translate(idl_file, out_dir, part, outputs):
     file = idl_file.split("/")[-1]
@@ -124,6 +125,7 @@ def c_callback_file_translate(idl_file, out_dir, part, outputs):
         outputs.append(server_impl_header_file)
         outputs.append(server_impl_source_file)
 
+
 def c_types_file_translate(idl_file, out_dir, outputs):
     file = idl_file.split("/")[-1]
     file_name = translate_file_name(file.split(".")[0])
@@ -133,6 +135,7 @@ def c_types_file_translate(idl_file, out_dir, outputs):
 
     outputs.append(types_header_file)
     outputs.append(types_source_file)
+
 
 def c_idl_translate(idl_files, out_dir):
     outputs = []
@@ -145,6 +148,7 @@ def c_idl_translate(idl_files, out_dir):
         elif idl_file_type == IdlType.TYPES:
             c_types_file_translate(idl_file, out_dir, outputs)
     return outputs
+
 
 def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
     file = idl_file.split("/")[-1]
@@ -165,7 +169,6 @@ def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
         outputs.append(client_proxy_source_file)
     elif part == "server_lib_source":
         outputs.append(iface_header_file)
-        outputs.append(server_driver_source_file)
         outputs.append(server_stub_header_file)
         outputs.append(server_stub_source_file)
     else:
@@ -177,6 +180,7 @@ def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
         outputs.append(server_stub_source_file)
         outputs.append(server_impl_header_file)
         outputs.append(server_impl_source_file)
+
 
 def cpp_callback_file_translate(idl_file, out_dir, part, outputs):
     file = idl_file.split("/")[-1]
@@ -207,6 +211,7 @@ def cpp_callback_file_translate(idl_file, out_dir, part, outputs):
         outputs.append(server_impl_header_file)
         outputs.append(server_impl_source_file)
 
+
 def cpp_types_file_translate(idl_file, out_dir, outputs):
     file = idl_file.split("/")[-1]
     file_name = translate_file_name(file.split(".")[0])
@@ -216,6 +221,7 @@ def cpp_types_file_translate(idl_file, out_dir, outputs):
 
     outputs.append(types_header_file)
     outputs.append(types_source_file)
+
 
 def cpp_idl_translate(idl_files, out_dir):
     outputs = []
@@ -229,6 +235,7 @@ def cpp_idl_translate(idl_files, out_dir):
             cpp_types_file_translate(idl_file, out_dir, outputs)   
     return outputs
 
+
 def idl_translate(idl_files, language, out_dir):
     outputs = []
     if language == "c":
@@ -236,6 +243,7 @@ def idl_translate(idl_files, language, out_dir):
     elif language == "cpp":
         outputs = cpp_idl_translate(idl_files, out_dir)
     return outputs
+
 
 def c_get_compile_source_file(idl_files, out_dir, part):
     outputs = []
@@ -249,6 +257,7 @@ def c_get_compile_source_file(idl_files, out_dir, part):
             c_types_file_translate(idl_file, out_dir, outputs)
     return outputs
 
+
 def cpp_get_compile_source_file(idl_files, out_dir, part):
     outputs = []
     for idl_file in idl_files:
@@ -261,6 +270,7 @@ def cpp_get_compile_source_file(idl_files, out_dir, part):
             cpp_types_file_translate(idl_file, out_dir, outputs)
     return outputs
 
+
 def get_compile_source_file(idl_files, language, out_dir, part):
     outputs = []
     if language == "c":
@@ -268,6 +278,7 @@ def get_compile_source_file(idl_files, language, out_dir, part):
     elif language == "cpp":
         outputs = cpp_get_compile_source_file(idl_files, out_dir, part)
     return outputs
+
 
 def main(argv):
     outputs = []
@@ -287,6 +298,7 @@ def main(argv):
         outputs = get_compile_source_file(argv[4:], language, out_dir, "server_lib_source")
 
     sys.stdout.write('\n'.join(outputs))
+
 
 if __name__ == "__main__":
     main(sys.argv)

@@ -162,7 +162,7 @@ void CppServiceDriverCodeEmitter::EmitDriverEntryDefinition(StringBuilder& sb)
     sb.AppendFormat("struct HdfDriverEntry g_%sDriverEntry = {\n", infName_.ToLowerCase().string());
     sb.Append(g_tab).Append(".moduleVersion = 1,\n");
     sb.Append(g_tab).AppendFormat(".moduleName = \"%s\",\n",
-        Options::GetInstance().GetModeName().string());
+        Options::GetInstance().GetModuleName().string());
     sb.Append(g_tab).AppendFormat(".Bind = Hdf%sDriverBind,\n", infName_.string());
     sb.Append(g_tab).AppendFormat(".Init = Hdf%sDriverInit,\n", infName_.string());
     sb.Append(g_tab).AppendFormat(".Release = Hdf%sDriverRelease,\n", infName_.string());

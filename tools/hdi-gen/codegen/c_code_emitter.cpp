@@ -47,6 +47,15 @@ void CCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb)
     sb.Append("};\n");
 }
 
+void CCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    for (const auto& importPair : ast_->GetImports()) {
+        AutoPtr<AST> importAst = importPair.second;
+        String fileName = FileName(importAst->GetFullName());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(importAst->GetFullName())));
+    }
+}
+
 void CCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& parameter, StringBuilder& sb,
     const String& prefix)
 {

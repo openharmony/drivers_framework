@@ -68,11 +68,19 @@ void CInterfaceCodeEmitter::EmitInterfaceHeaderFile()
 
 void CInterfaceCodeEmitter::EmitImportInclusions(StringBuilder& sb)
 {
-    sb.Append("#include <stdint.h>\n");
-    for (const auto& importPair : ast_->GetImports()) {
-        AutoPtr<AST> importAst = importPair.second;
-        sb.AppendFormat("#include \"%s.h\"\n", FileName(importAst->GetFullName()).string());
+    HeaderFile::HeaderFileSet headerFiles;
+
+    GetImportInclusions(headerFiles);
+    GetHeaderOtherLibInclusions(headerFiles);
+
+    for (const auto& file : headerFiles) {
+        sb.AppendFormat("%s\n", file.ToString().string());
     }
+}
+
+void CInterfaceCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+{
+    headerFiles.emplace(HeaderFile(HeaderFileType::C_STD_HEADER_FILE, "stdint"));
 }
 
 void CInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)

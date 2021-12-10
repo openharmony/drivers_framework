@@ -28,11 +28,7 @@ private:
 
     void EmitInterfaceInclusions(StringBuilder& sb);
 
-    void EmitInterfaceStdlibInclusions(StringBuilder& sb);
-
-    void EmitInterfaceDBinderInclusions(StringBuilder& sb);
-
-    void EmitInterfaceSelfDefinedTypeInclusions(StringBuilder& sb);
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitInterfaceDefinition(StringBuilder& sb);
 
