@@ -37,7 +37,7 @@ static int32_t PcieCntlrInit(struct PcieCntlr *cntlr)
 
     cntlr->service.Dispatch = PcieIoDispatch;
     cntlr->hdfDevObj->service = &(cntlr->service);
-    cntlr->device.magic = cntlr->devInfo.busNum;
+    cntlr->device.number = cntlr->devInfo.busNum;
     cntlr->device.hdfDev = cntlr->hdfDevObj;
     return HDF_SUCCESS;
 }

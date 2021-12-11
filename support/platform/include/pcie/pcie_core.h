@@ -13,8 +13,6 @@
 #include "hdf_device_desc.h"
 #include "osal_mutex.h"
 #include "platform_core.h"
-#include "platform_device.h"
-#include "platform_manager.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -63,7 +61,7 @@ static inline void PcieCntlrUnlock(struct PcieCntlr *cntlr)
 
 static inline struct PcieCntlr *PcieCntlrGetByBusNum(uint16_t num)
 {
-    struct PlatformDevice *device = PlatformManagerGetDeviceByMagic(PlatformManagerGet(PLATFORM_MODULE_PCIE), num);
+    struct PlatformDevice *device = PlatformManagerGetDeviceByNumber(PlatformManagerGet(PLATFORM_MODULE_PCIE), num);
 
     if (device == NULL) {
         return NULL;
