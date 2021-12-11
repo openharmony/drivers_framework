@@ -13,6 +13,8 @@
 #include "hdf_device_desc.h"
 #include "osal_mutex.h"
 #include "platform_core.h"
+#include "platform_device.h"
+#include "platform_manager.h"
 
 #ifdef __cplusplus
 #if __cplusplus
