@@ -29,6 +29,7 @@
 #endif
 
 #define WIFI_24G_CHANNEL_NUM 14
+#define WIFI_MAX_CHANNEL_NUM 24
 #define DEFAULT_EAPOL_PACKAGE_SIZE 800
 
 Service *g_baseService = NULL;
@@ -465,6 +466,25 @@ static int32_t WifiCmdSetMode(const RequestContext *context, struct HdfSBuf *req
     return ret;
 }
 
+static void WifiGetChannelData(struct WlanBand *band, WifiHwFeatureData **featureData, struct WlanHwCapability *capability, uint32_t iee80211band)
+{
+    uint32_t loop;
+    if (band == NULL || featureData == NULL || *featureData == NULL)
+    {
+        HDF_LOGE("%s: band or featureData is NULL", __func__);
+        return;
+    }
+    
+    (*featureData)->bands[iee80211band].channelNum = band->channelCount;
+    (*featureData)->htCapab = capability->htCapability;
+
+    for (loop = 0; loop < band->channelCount; ++loop) {
+        (*featureData)->bands[iee80211band].iee80211Channel[loop].freq = band->channels[loop].centerFreq;
+        (*featureData)->bands[iee80211band].iee80211Channel[loop].flags = band->channels[loop].flags;
+        (*featureData)->bands[iee80211band].iee80211Channel[loop].channel = band->channels[loop].channelId;
+    }   
+}
+
 static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *featureData)
 {
     int32_t ret = HDF_SUCCESS;
@@ -492,21 +512,18 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
                 ret = HDF_FAILURE;
                 break;
             }
-            featureData->channelNum = band->channelCount;
-            featureData->htCapab = capability->htCapability;
-
-            for (loop = 0; loop < band->channelCount; ++loop) {
-                featureData->iee80211Channel[loop].flags = band->channels[loop].flags;
-                featureData->iee80211Channel[loop].freq = band->channels[loop].centerFreq;
-                featureData->iee80211Channel[loop].channel = band->channels[loop].channelId;
+            WifiGetChannelData(band, &featureData, capability, IEEE80211_BAND_2GHZ);
+        }
+        if (capability->bands[IEEE80211_BAND_5GHZ] != NULL) {
+            struct WlanBand *band = capability->bands[IEEE80211_BAND_5GHZ];
+            if (band->channelCount > WIFI_MAX_CHANNEL_NUM) {
+                HDF_LOGE("%s: channels %u out of range", __func__, band->channelCount);
+                ret = HDF_FAILURE;
+                break;
             }
-        } else {
-            HDF_LOGE("%s: Supportting 2.4G is required by now!", __func__);
-            ret = HDF_FAILURE;
-            break;
+            WifiGetChannelData(band, &featureData, capability, IEEE80211_BAND_5GHZ);
         }
 
-        // 5G not supported
     } while (false);
 
     if (capability->Release != NULL) {
