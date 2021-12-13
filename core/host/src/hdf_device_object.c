@@ -15,6 +15,7 @@
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 #include "hdf_observer_record.h"
+#include "hdf_power_manager.h"
 #include "hdf_service_observer.h"
 #include "power_state_token.h"
 
@@ -104,6 +105,34 @@ void HdfPmReleaseDevice(struct HdfDeviceObject *deviceObject)
     if ((tokenIf != NULL) && (tokenIf->ReleaseWakeLock != NULL)) {
         tokenIf->ReleaseWakeLock(tokenIf);
     }
+}
+
+void HdfPmAcquireDeviceAsync(struct HdfDeviceObject *deviceObject)
+{
+    struct HdfDeviceNode *devNode = NULL;
+
+    if (deviceObject == NULL) {
+        HDF_LOGE("%s: input param is invalid", __func__);
+        return;
+    }
+
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+        struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
+    HdfPmTaskPut(devNode->powerToken, HDF_PM_REQUEST_ACQUIRE);
+}
+
+void HdfPmReleaseDeviceAsync(struct HdfDeviceObject *deviceObject)
+{
+    struct HdfDeviceNode *devNode = NULL;
+
+    if (deviceObject == NULL) {
+        HDF_LOGE("%s: input param is invalid", __func__);
+        return;
+    }
+
+    devNode = (struct HdfDeviceNode *)HDF_SLIST_CONTAINER_OF(
+        struct HdfDeviceObject, deviceObject, struct HdfDeviceNode, deviceObject);
+    HdfPmTaskPut(devNode->powerToken, HDF_PM_REQUEST_RELEASE);
 }
 
 void HdfPmSetMode(struct HdfDeviceObject *deviceObject, uint32_t mode)

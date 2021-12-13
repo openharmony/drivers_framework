@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef DEVMGR_PM_REG_H
-#define DEVMGR_PM_REG_H
+#ifndef HDF_PM_REG_H
+#define HDF_PM_REG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,4 +19,4 @@ int DevMgrPmRegister(void);
 }
 #endif /* __cplusplus */
 
-#endif /* DEVMGR_PM_REG_H */
+#endif /* HDF_PM_REG_H */
