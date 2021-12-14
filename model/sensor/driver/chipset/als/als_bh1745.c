@@ -135,7 +135,7 @@ static uint32_t CalLux(struct SensorCfgData *CfgData, uint32_t *rgbcData)
     regValue = 0;
     GroupNode = CfgData->extendedRegCfgGroup[EXTENDED_ALS_GAIN_GROUP];
     itemNum = GroupNode->itemNum;
-    if (timeItemNum > EXTENDED_ALS_GAIN_GROUP_INDEX_MAX) {
+    if (itemNum > EXTENDED_ALS_GAIN_GROUP_INDEX_MAX) {
         HDF_LOGE("%s: ItemNum out of range ", __func__);
         return HDF_FAILURE;
     }
