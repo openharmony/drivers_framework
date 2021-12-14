@@ -82,6 +82,7 @@ static int32_t DynamicRangCovert(struct SensorCfgData *CfgData, uint32_t *rgbcDa
         g_timeMap_flag = 1;
         index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
         index--;
+
         WriteSensorRegCfgArray(&CfgData->busCfg, timeGroupNode, index, sizeof(uint8_t));
     } else if ((g_timeMap_flag == 1) && ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN) ||
         (rgbcData[ALS_G] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN))) {
@@ -135,7 +136,7 @@ static uint32_t CalLux(struct SensorCfgData *CfgData, uint32_t *rgbcData)
     GroupNode = CfgData->extendedRegCfgGroup[EXTENDED_ALS_GAIN_GROUP];
     itemNum = GroupNode->itemNum;
     if (timeItemNum > EXTENDED_ALS_GAIN_GROUP_INDEX_MAX) {
-        HDF_LOGE("%s: TimeItemNum out of range ", __func__);
+        HDF_LOGE("%s: ItemNum out of range ", __func__);
         return HDF_FAILURE;
     }
 
