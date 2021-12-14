@@ -19,13 +19,21 @@
 #define WATCHDOG_TEST_TIMEOUT     2
 #define WATCHDOG_TEST_FEED_TIME   6
 
+static int32_t g_wdtState = 0;
+
 static int32_t WatchdogTestSetUp(struct WatchdogTester *tester)
 {
+    int32_t ret;
+    
     if (tester == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
     if (tester->handle == NULL) {
-        tester->handle = WatchdogOpen(0);
+        ret = WatchdogOpen(0, &tester->handle);
+        if (ret == HDF_ERR_DEVICE_BUSY) {
+            g_wdtState = ret;
+            return HDF_SUCCESS;
+        }
     }
     if (tester->handle == NULL) {
         return HDF_ERR_DEVICE_BUSY;
@@ -38,6 +46,11 @@ static int32_t WatchdogTestSetUp(struct WatchdogTester *tester)
 
 static void WatchdogTestTearDown(struct WatchdogTester *tester)
 {
+    if (g_wdtState == HDF_ERR_DEVICE_BUSY) {
+        HDF_LOGE("%s: DEVICE IS BUSY", __func__);
+        return;
+    }
+
     int ret;
 
     if (tester == NULL || tester->handle == NULL) {
@@ -56,6 +69,11 @@ static void WatchdogTestTearDown(struct WatchdogTester *tester)
 
 static int32_t TestCaseWatchdogSetGetTimeout(struct WatchdogTester *tester)
 {
+    if (g_wdtState == HDF_ERR_DEVICE_BUSY) {
+        HDF_LOGE("%s: DEVICE IS BUSY", __func__);
+        return HDF_SUCCESS;
+    }
+
     int32_t ret;
     uint32_t timeoutGet = 0;
     const uint32_t timeoutSet = WATCHDOG_TEST_TIMEOUT;
@@ -80,6 +98,11 @@ static int32_t TestCaseWatchdogSetGetTimeout(struct WatchdogTester *tester)
 
 static int32_t TestCaseWatchdogStartStop(struct WatchdogTester *tester)
 {
+    if (g_wdtState == HDF_ERR_DEVICE_BUSY) {
+        HDF_LOGE("%s: DEVICE IS BUSY", __func__);
+        return HDF_SUCCESS;
+    }
+
     int32_t ret;
     int32_t status;
 
@@ -116,6 +139,11 @@ static int32_t TestCaseWatchdogStartStop(struct WatchdogTester *tester)
 
 static int32_t TestCaseWatchdogFeed(struct WatchdogTester *tester)
 {
+    if (g_wdtState == HDF_ERR_DEVICE_BUSY) {
+        HDF_LOGE("%s: DEVICE IS BUSY", __func__);
+        return HDF_SUCCESS;
+    }
+
     int32_t ret;
     int32_t i;
 
@@ -141,6 +169,11 @@ static int32_t TestCaseWatchdogFeed(struct WatchdogTester *tester)
 
 static int32_t TestCaseWatchdogBark(struct WatchdogTester *tester)
 {
+    if (g_wdtState == HDF_ERR_DEVICE_BUSY) {
+        HDF_LOGE("%s: DEVICE IS BUSY", __func__);
+        return HDF_SUCCESS;
+    }
+
 #ifdef WATCHDOG_TEST_BARK_RESET
     int32_t ret;
     int32_t i;
@@ -166,6 +199,11 @@ static int32_t TestCaseWatchdogBark(struct WatchdogTester *tester)
 
 static int32_t TestCaseWatchdogReliability(struct WatchdogTester *tester)
 {
+    if (g_wdtState == HDF_ERR_DEVICE_BUSY) {
+        HDF_LOGE("%s: DEVICE IS BUSY", __func__);
+        return HDF_SUCCESS;
+    }
+
     int32_t status;
     uint32_t timeout;
 
@@ -198,6 +236,11 @@ static int32_t TestCaseWatchdogReliability(struct WatchdogTester *tester)
 
 static int32_t WatchdogTestByCmd(struct WatchdogTester *tester, int32_t cmd)
 {
+    if (g_wdtState == HDF_ERR_DEVICE_BUSY) {
+        HDF_LOGE("%s: DEVICE IS BUSY", __func__);
+        return HDF_SUCCESS;
+    }
+
     int32_t i;
 
     if (cmd == WATCHDOG_TEST_SET_GET_TIMEOUT) {

@@ -55,14 +55,15 @@ void WatchdogCntlrRemove(struct WatchdogCntlr *cntlr)
     (void)OsalSpinDestroy(&cntlr->lock);
 }
 
-void WatchdogGetPrivData(struct WatchdogCntlr *cntlr)
+int32_t WatchdogGetPrivData(struct WatchdogCntlr *cntlr)
 {
     if (cntlr == NULL || cntlr->ops == NULL) {
-        return;
+        return HDF_ERR_INVALID_OBJECT;
     }
     if (cntlr->ops->getPriv != NULL) {
-        cntlr->ops->getPriv(cntlr);
+        return cntlr->ops->getPriv(cntlr);
     }
+    return HDF_SUCCESS;
 }
 
 void WatchdogReleasePriv(struct WatchdogCntlr *cntlr)

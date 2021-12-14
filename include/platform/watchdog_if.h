@@ -63,7 +63,7 @@ enum WatchdogStatus {
  *
  * @since 1.0
  */
-DevHandle WatchdogOpen(int16_t wdtId);
+int32_t WatchdogOpen(int16_t wdtId,  DevHandle *handle);
 
  /**
  * @brief Closes a watchdog.
