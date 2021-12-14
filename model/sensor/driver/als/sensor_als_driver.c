@@ -35,7 +35,7 @@ static char *g_extendedAlsGroupName[EXTENDED_ALS_GROUP_MAX] = {
 
 int32_t GetTimeByRegValue(uint8_t regValue, struct TimeMap *table, int32_t itemNum)
 {
-    int i;
+    int32_t i;
 
     CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
 
@@ -44,12 +44,13 @@ int32_t GetTimeByRegValue(uint8_t regValue, struct TimeMap *table, int32_t itemN
             return table[i].timeValue;
         }
     }
+
     return HDF_FAILURE;
 }
 
 int32_t GetRegValueByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum)
 {
-    int i;
+    int32_t i;
 
     CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
 
@@ -58,12 +59,13 @@ int32_t GetRegValueByTime(uint32_t timeValue, struct TimeMap *table, int32_t ite
             return table[i].timeRegValue;
         }
     }
+
     return HDF_FAILURE;
 }
 
 int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum)
 {
-    int i;
+    int32_t i;
 
     CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
 
@@ -72,12 +74,13 @@ int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeMap *table, int32_
             return i;
         }
     }
+
     return HDF_FAILURE;
 }
 
 int32_t GetGainByRegValue(uint8_t regValue, struct GainMap *table, int32_t itemNum)
 {
-    int i;
+    int32_t i;
 
     CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
 
@@ -86,12 +89,13 @@ int32_t GetGainByRegValue(uint8_t regValue, struct GainMap *table, int32_t itemN
             return table[i].gainValue;
         }
     }
+
     return HDF_FAILURE;
 }
 
-static uint32_t GetExtendedAlsRegGroupNameIndex(const char *name)
+static int32_t GetExtendedAlsRegGroupNameIndex(const char *name)
 {
-    uint32_t index;
+    int32_t index;
 
     CHECK_NULL_PTR_RETURN_VALUE(name, EXTENDED_ALS_GROUP_MAX);
 
@@ -117,6 +121,7 @@ void ReleaseExtendedAlsRegConfig(struct SensorCfgData *config)
                 OsalMemFree(config->extendedRegCfgGroup[index]->regCfgItem);
                 config->extendedRegCfgGroup[index]->regCfgItem = NULL;
             }
+
             OsalMemFree(config->extendedRegCfgGroup[index]);
             config->extendedRegCfgGroup[index] = NULL;
         }
@@ -142,6 +147,7 @@ int32_t ParseExtendedAlsRegConfig(struct SensorCfgData *config)
             HDF_LOGE("%s:sensor reg node attr is null", __func__);
             break;
         }
+
         index = GetExtendedAlsRegGroupNameIndex(extendedRegAttr->name);
         if (index >= EXTENDED_ALS_GROUP_MAX) {
             HDF_LOGE("%s: get sensor register group index failed", __func__);
@@ -154,11 +160,13 @@ int32_t ParseExtendedAlsRegConfig(struct SensorCfgData *config)
             goto ERROR;
         }
     }
+
     return HDF_SUCCESS;
 
 ERROR:
     ReleaseExtendedAlsRegConfig(config);
     HDF_LOGE("%s: parse sensor extend register config failed", __func__);
+
     return HDF_FAILURE;
 }
 
@@ -318,7 +326,7 @@ static int32_t SetAlsOption(uint32_t option)
 }
 
 static int32_t DispatchAls(struct HdfDeviceIoClient *client,
-    int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
+    int32_t cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     (void)client;
     (void)cmd;
