@@ -314,6 +314,7 @@ int32_t ReadSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorRe
 
     cfgItem = group->regCfgItem + index;
     len = (cfgItem->len > len) ? len : cfgItem->len;
+
     ret = ReadSensor(busCfg, cfgItem->regAddr, buf, len);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read i2c reg");
 
@@ -324,6 +325,7 @@ int32_t WriteSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorR
     int32_t index, int32_t len)
 {
     struct SensorRegCfg *cfgItem = NULL;
+
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_FAILURE);
     CHECK_NULL_PTR_RETURN_VALUE(group, HDF_FAILURE);
     CHECK_NULL_PTR_RETURN_VALUE(group->regCfgItem, HDF_FAILURE);
@@ -334,6 +336,7 @@ int32_t WriteSensorRegCfgArray(struct SensorBusCfg *busCfg, const struct SensorR
     }
 
     cfgItem = group->regCfgItem + index;
+
     int32_t ret = SensorOpsUpdateBitwise(busCfg, cfgItem);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "Write i2c reg");
 
