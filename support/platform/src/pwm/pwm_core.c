@@ -8,8 +8,6 @@
 
 #include "pwm_core.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
-#include "securec.h"
 
 #define HDF_LOG_TAG pwm_core
 
