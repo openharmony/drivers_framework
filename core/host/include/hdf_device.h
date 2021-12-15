@@ -51,6 +51,7 @@ struct HdfDevice {
     struct DListHead devNodes;
     uint16_t deviceId;
     uint16_t hostId;
+    uint16_t devidIndex;
 };
 int HdfDeviceDetach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode);
 void HdfDeviceConstruct(struct HdfDevice *device);

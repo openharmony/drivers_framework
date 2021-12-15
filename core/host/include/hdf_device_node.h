@@ -37,6 +37,7 @@ struct HdfDeviceNode {
     struct HdfDriver *driver;
     struct HdfDevice *device;
     char *servName;
+    const char *servInfo;
     char *driverName;
     devid_t devId;
     uint16_t policy;

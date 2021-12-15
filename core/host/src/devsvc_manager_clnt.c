@@ -12,12 +12,17 @@
 
 #define HDF_LOG_TAG devsvc_manager_clnt
 
-int DevSvcManagerClntAddService(const char *svcName, struct HdfDeviceObject *service)
+int DevSvcManagerClntAddService(const char *svcName, uint16_t devClass,
+    struct HdfDeviceObject *service, const char *servinfo)
 {
     struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
     struct IDevSvcManager *serviceManager = NULL;
     if (devSvcMgrClnt == NULL) {
         HDF_LOGE("failed to add service, client is null");
+        return HDF_FAILURE;
+    }
+    if (devClass >= DEVICE_CLASS_MAX) {
+        HDF_LOGE("failed to add service, invalid class");
         return HDF_FAILURE;
     }
 
@@ -26,7 +31,29 @@ int DevSvcManagerClntAddService(const char *svcName, struct HdfDeviceObject *ser
         HDF_LOGE("serviceManager AddService function is null");
         return HDF_FAILURE;
     }
-    return serviceManager->AddService(serviceManager, svcName, service);
+    return serviceManager->AddService(serviceManager, svcName, devClass, service, servinfo);
+}
+
+int DevSvcManagerClntUpdateService(const char *svcName, uint16_t devClass,
+    struct HdfDeviceObject *service, const char *servinfo)
+{
+    struct DevSvcManagerClnt *devSvcMgrClnt = DevSvcManagerClntGetInstance();
+    struct IDevSvcManager *serviceManager = NULL;
+    if (devSvcMgrClnt == NULL) {
+        HDF_LOGE("failed to add service, client is null");
+        return HDF_FAILURE;
+    }
+    if (devClass >= DEVICE_CLASS_MAX) {
+        HDF_LOGE("failed to add service, invalid class");
+        return HDF_FAILURE;
+    }
+
+    serviceManager = devSvcMgrClnt->devSvcMgrIf;
+    if (serviceManager == NULL || serviceManager->UpdateService == NULL) {
+        HDF_LOGE("serviceManager UpdateService function is null");
+        return HDF_FAILURE;
+    }
+    return serviceManager->UpdateService(serviceManager, svcName, devClass, service, servinfo);
 }
 
 const struct HdfObject *DevSvcManagerClntGetService(const char *svcName)

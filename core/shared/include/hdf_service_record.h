@@ -10,17 +10,19 @@
 #define DEVSVC_RECORD_H
 
 #include "hdf_object.h"
-#include "hdf_slist.h"
+#include "hdf_dlist.h"
 
 struct DevSvcRecord {
-    struct HdfSListNode entry;
+    struct DListHead entry;
     uint32_t key;
     struct HdfDeviceObject *value;
+    const char *servName;
+    const char *servInfo;
+    uint16_t devClass;
 };
 
 struct DevSvcRecord *DevSvcRecordNewInstance(void);
 void DevSvcRecordFreeInstance(struct DevSvcRecord *inst);
-void DevSvcRecordDelete(struct HdfSListNode *listEntry);
 
 #endif /* DEVSVC_RECORD_H */
 

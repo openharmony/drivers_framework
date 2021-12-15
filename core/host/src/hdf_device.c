@@ -18,26 +18,45 @@
 
 #define HDF_LOG_TAG hdf_device
 
+static void UpdateDeivceNodeIdIndex(struct HdfDevice *device, devid_t nodeDevid)
+{
+    if (device->devidIndex < DEVICEID(nodeDevid)) {
+        device->devidIndex = DEVICEID(nodeDevid);
+    }
+}
+
+static int AcquireNodeDeivceId(struct HdfDevice *device, devid_t *devid)
+{
+    if (device->devidIndex >= DEVICEID_MASK) {
+        return HDF_FAILURE;
+    }
+    device->devidIndex++;
+    *devid = MK_DEVID(HOSTID(device->deviceId), DEVICEID(device->deviceId), device->devidIndex);
+
+    return HDF_SUCCESS;
+}
+
 static int HdfDeviceAttach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode)
 {
     int ret;
     struct HdfDevice *device = (struct HdfDevice *)devInst;
     struct IDeviceNode *nodeIf = (struct IDeviceNode *)devNode;
+
     if (device == NULL || nodeIf == NULL || nodeIf->LaunchNode == NULL) {
         HDF_LOGE("failed to attach device, input params invalid");
         return HDF_ERR_INVALID_PARAM;
     }
 
     // for dynamic added device node, assign device id here
-    if (devNode->devId == 0) {
-        devNode->devId = MK_DEVID(HOSTID(device->deviceId), DEVICEID(device->deviceId),
-            (uint32_t)DlistGetCount(&device->devNodes));
-        devNode->token->devid = devNode->devId;
+    if (devNode->devId == 0 && AcquireNodeDeivceId(device, &devNode->devId) != HDF_SUCCESS) {
+        HDF_LOGE("failed to attach device, invalid device id");
+        return HDF_ERR_INVALID_PARAM;
     }
-
+    devNode->token->devid = devNode->devId;
     ret = nodeIf->LaunchNode(devNode);
     if (ret == HDF_SUCCESS) {
         DListInsertTail(&devNode->entry, &device->devNodes);
+        UpdateDeivceNodeIdIndex(device, devNode->devId);
     }
 
     return ret;
@@ -51,7 +70,7 @@ int HdfDeviceDetach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode)
     }
 
     device = CONTAINER_OF(devInst, struct HdfDevice, super);
-    if (device->deviceId != DEVICEID(devNode->devId)) {
+    if (DEVICEID(device->deviceId) != DEVICEID(devNode->devId)) {
         HDF_LOGE("%s: device %x detach unknown devnode %x", __func__, device->deviceId, devNode->devId);
         return HDF_DEV_ERR_NO_DEVICE;
     }

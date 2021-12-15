@@ -78,7 +78,11 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
         ret = HDF_DEV_ERR_NO_DEVICE;
         goto error;
     }
-
+    devNode = device->super.GetDeviceNode(&device->super, deviceInfo->deviceId);
+    if (devNode != NULL) {
+        HDF_LOGE("failed to add device %d, device already exist", deviceInfo->deviceId);
+        return HDF_ERR_DEVICE_BUSY;
+    }
     driver = driverLoader->GetDriver(deviceInfo->moduleName);
     if (driver == NULL) {
         ret = HDF_DEV_ERR_NODATA;

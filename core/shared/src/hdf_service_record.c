@@ -17,13 +17,9 @@ struct DevSvcRecord *DevSvcRecordNewInstance(void)
 void DevSvcRecordFreeInstance(struct DevSvcRecord *inst)
 {
     if (inst != NULL) {
+        OsalMemFree((char *)inst->servName);
+        OsalMemFree((char *)inst->servInfo);
         OsalMemFree(inst);
     }
 }
 
-void DevSvcRecordDelete(struct HdfSListNode *listEntry)
-{
-    if (listEntry != NULL) {
-        OsalMemFree(listEntry);
-    }
-}

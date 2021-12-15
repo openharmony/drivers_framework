@@ -38,7 +38,7 @@ int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data
     int ret = HDF_FAILURE;
     int32_t deviceClass = 0;
     const char *svcName = NULL;
-    struct DevmgrService *devMgrSvc = (struct DevmgrService *)stub;
+    struct DevmgrService *devMgrSvc = (struct DevmgrService *)DevmgrServiceGetInstance();
     static struct SubscriberCallback callback = {
         .deviceObject = NULL,
         .OnServiceConnected = NULL,
@@ -107,7 +107,7 @@ int DeviceManagerStart(void)
             .Dispatch = DeviceManagerDispatch,
         };
         ioService->dispatcher = &dispatcher;
-        ioService->target = &instance->base;
+        ioService->target = NULL;
     }
     ret = instance->StartService(instance);
     if (ret != HDF_SUCCESS) {

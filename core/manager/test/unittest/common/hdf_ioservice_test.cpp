@@ -17,8 +17,11 @@
 #include <cstdlib>
 #include <fcntl.h>
 #include <gtest/gtest.h>
+#include <hdf_sbuf.h>
 #include <inttypes.h>
+#include <ioservstat_listener.h>
 #include <string>
+#include <svcmgr_ioservice.h>
 #include <unistd.h>
 
 using namespace testing::ext;
@@ -34,14 +37,15 @@ public:
     static void TearDownTestCase();
     void SetUp();
     void TearDown();
-    static int OnDevEventReceived(struct HdfDevEventlistener *listener, struct HdfIoService *service, uint32_t id,
-        struct HdfSBuf *data);
+    static int OnDevEventReceived(
+        struct HdfDevEventlistener *listener, struct HdfIoService *service, uint32_t id, struct HdfSBuf *data);
 
     static struct Eventlistener listener0;
     static struct Eventlistener listener1;
     const char *testSvcName = SAMPLE_SERVICE;
     const int eventWaitTimeUs = (150 * 1000);
     static int eventCount;
+    const int servstatWaitTime = 15; // ms
 };
 
 int IoServiceTest::eventCount = 0;
@@ -73,8 +77,8 @@ void IoServiceTest::TearDown()
 {
 }
 
-int IoServiceTest::OnDevEventReceived(struct HdfDevEventlistener *listener, struct HdfIoService *service, uint32_t id,
-    struct HdfSBuf *data)
+int IoServiceTest::OnDevEventReceived(
+    struct HdfDevEventlistener *listener, struct HdfIoService *service, uint32_t id, struct HdfSBuf *data)
 {
     OsalTimespec time;
     OsalGetTime(&time);
@@ -680,4 +684,225 @@ HWTEST_F(IoServiceTest, HdfIoService014, TestSize.Level0)
 
     HdfIoServiceRecycle(serv);
     HdfIoServiceRecycle(serv1);
+}
+
+struct IoServiceStatusData {
+    IoServiceStatusData()
+        : devClass(0)
+        , servStatus(0)
+        , callbacked(false)
+    {
+    }
+    ~IoServiceStatusData() = default;
+    std::string servName;
+    std::string servInfo;
+    uint16_t devClass;
+    uint16_t servStatus;
+    bool callbacked;
+};
+
+static void TestOnServiceStatusReceived(struct ServiceStatusListener *listener, struct ServiceStatus *servstat)
+{
+    struct IoServiceStatusData *issd = (struct IoServiceStatusData *)listener->priv;
+    if (issd == NULL) {
+        return;
+    }
+    issd->servName = servstat->serviceName;
+    issd->servInfo = servstat->info != NULL ? servstat->info : "";
+    issd->devClass = servstat->deviceClass;
+    issd->servStatus = servstat->status;
+    issd->callbacked = true;
+
+    HDF_LOGI("service status listener callback: %{public}s, %{public}s, %{public}d", servstat->serviceName,
+        issd->servName.data(), issd->servStatus);
+}
+
+/* *
+ * @tc.name: HdfIoService015
+ * @tc.desc: ioservice status listener test
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(IoServiceTest, HdfIoService015, TestSize.Level0)
+{
+    struct ISvcMgrIoservice *servmgr = SvcMgrIoserviceGet();
+    ASSERT_NE(servmgr, nullptr);
+
+    struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
+    ASSERT_NE(serv, nullptr);
+    serv->priv = (void *)"serv";
+
+    struct IoServiceStatusData issd;
+    struct ServiceStatusListener *listener = IoServiceStatusListenerNewInstance();
+    listener->callback = TestOnServiceStatusReceived;
+    listener->priv = (void *)&issd;
+
+    int status = servmgr->RegisterServiceStatusListener(servmgr, listener, DEVICE_CLASS_DEFAULT);
+    ASSERT_EQ(status, HDF_SUCCESS);
+
+    struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
+    ASSERT_TRUE(testService != NULL);
+    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    ASSERT_TRUE(data != NULL);
+    const char *newServName = "sample_service1";
+    ASSERT_TRUE(HdfSbufWriteString(data, "sample_driver"));
+    ASSERT_TRUE(HdfSbufWriteString(data, newServName));
+
+    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_REGISTER_DEVICE, data, NULL);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    int count = servstatWaitTime;
+    while (!issd.callbacked && count > 0) {
+        OsalMSleep(1);
+        count--;
+    }
+    ASSERT_TRUE(issd.callbacked);
+    ASSERT_EQ(issd.servName, newServName);
+    ASSERT_EQ(issd.devClass, DEVICE_CLASS_DEFAULT);
+    ASSERT_EQ(issd.servInfo, std::string(SAMPLE_SERVICE));
+    ASSERT_EQ(issd.servStatus, SERVIE_STATUS_START);
+
+    issd.callbacked = false;
+    ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, NULL);
+    ASSERT_TRUE(ret == HDF_SUCCESS);
+
+    count = servstatWaitTime;
+    while (!issd.callbacked && count > 0) {
+        OsalMSleep(1);
+        count--;
+    }
+    ASSERT_TRUE(issd.callbacked);
+    ASSERT_EQ(issd.servName, newServName);
+    ASSERT_EQ(issd.devClass, DEVICE_CLASS_DEFAULT);
+    ASSERT_EQ(issd.servInfo, std::string(SAMPLE_SERVICE));
+    ASSERT_EQ(issd.servStatus, SERVIE_STATUS_STOP);
+
+    status = servmgr->UnregisterServiceStatusListener(servmgr, listener);
+    ASSERT_EQ(status, HDF_SUCCESS);
+
+    IoServiceStatusListenerFree(listener);
+    HdfIoServiceRecycle(testService);
+    SvcMgrIoserviceRelease(servmgr);
+    HdfSBufRecycle(data);
+}
+
+/* *
+ * @tc.name: HdfIoService016
+ * @tc.desc: ioservice status listener update info test
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(IoServiceTest, HdfIoService016, TestSize.Level0)
+{
+    struct ISvcMgrIoservice *servmgr = SvcMgrIoserviceGet();
+    ASSERT_NE(servmgr, nullptr);
+
+    struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
+    ASSERT_NE(serv, nullptr);
+    serv->priv = (void *)"serv";
+
+    struct IoServiceStatusData issd;
+    struct ServiceStatusListener *listener = IoServiceStatusListenerNewInstance();
+    listener->callback = TestOnServiceStatusReceived;
+    listener->priv = (void *)&issd;
+
+    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
+    int status = servmgr->RegisterServiceStatusListener(servmgr, listener, DEVICE_CLASS_DEFAULT);
+    ASSERT_EQ(status, HDF_SUCCESS);
+
+    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
+    struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
+    ASSERT_TRUE(testService != NULL);
+    HdfSBuf *data = HdfSBufObtainDefaultSize();
+    ASSERT_TRUE(data != NULL);
+
+    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
+    std::string servinfo = "foo";
+    ASSERT_TRUE(HdfSbufWriteString(data, servinfo.data()));
+    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UPDATE_SERVICE_INFO, data, NULL);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
+    int count = servstatWaitTime;
+    while (!issd.callbacked && count > 0) {
+        OsalMSleep(1);
+        count--;
+    }
+    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
+    ASSERT_TRUE(issd.callbacked);
+    ASSERT_EQ(issd.servName, SAMPLE_SERVICE);
+    ASSERT_EQ(issd.devClass, DEVICE_CLASS_DEFAULT);
+    ASSERT_EQ(issd.servInfo, servinfo);
+    ASSERT_EQ(issd.servStatus, SERVIE_STATUS_CHANGE);
+
+    status = servmgr->UnregisterServiceStatusListener(servmgr, listener);
+    ASSERT_EQ(status, HDF_SUCCESS);
+
+    IoServiceStatusListenerFree(listener);
+    HdfIoServiceRecycle(testService);
+    SvcMgrIoserviceRelease(servmgr);
+    HdfSBufRecycle(data);
+}
+
+/* *
+ * @tc.name: HdfIoService017
+ * @tc.desc: ioservice status listener unregister test
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(IoServiceTest, HdfIoService017, TestSize.Level0)
+{
+    struct ISvcMgrIoservice *servmgr = SvcMgrIoserviceGet();
+    ASSERT_NE(servmgr, nullptr);
+
+    struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
+    ASSERT_NE(serv, nullptr);
+    serv->priv = (void *)"serv";
+
+    struct IoServiceStatusData issd;
+    struct ServiceStatusListener *listener = IoServiceStatusListenerNewInstance();
+    listener->callback = TestOnServiceStatusReceived;
+    listener->priv = (void *)&issd;
+
+    HDF_LOGI("%{public}s:%{public}d", __func__, __LINE__);
+    int status = servmgr->RegisterServiceStatusListener(servmgr, listener, DEVICE_CLASS_DEFAULT);
+    ASSERT_EQ(status, HDF_SUCCESS);
+
+    struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
+    ASSERT_TRUE(testService != NULL);
+    HdfSBuf *data = HdfSBufObtainDefaultSize();
+    ASSERT_TRUE(data != NULL);
+    const char *newServName = "sample_service1";
+    ASSERT_TRUE(HdfSbufWriteString(data, "sample_driver"));
+    ASSERT_TRUE(HdfSbufWriteString(data, newServName));
+    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_REGISTER_DEVICE, data, NULL);
+    ASSERT_EQ(ret, HDF_SUCCESS);
+
+    int count = 10;
+    while (!issd.callbacked && count > 0) {
+        OsalMSleep(1);
+        count--;
+    }
+    ASSERT_TRUE(issd.callbacked);
+    ASSERT_EQ(issd.servName, newServName);
+    ASSERT_EQ(issd.devClass, DEVICE_CLASS_DEFAULT);
+    ASSERT_EQ(issd.servInfo, std::string(SAMPLE_SERVICE));
+    ASSERT_EQ(issd.servStatus, SERVIE_STATUS_START);
+
+    status = servmgr->UnregisterServiceStatusListener(servmgr, listener);
+    ASSERT_EQ(status, HDF_SUCCESS);
+
+    issd.callbacked = false;
+    ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, NULL);
+    ASSERT_EQ(status, HDF_SUCCESS);
+
+    OsalMSleep(10);
+
+    ASSERT_FALSE(issd.callbacked);
+    status = servmgr->UnregisterServiceStatusListener(servmgr, listener);
+    ASSERT_NE(status, HDF_SUCCESS);
+    IoServiceStatusListenerFree(listener);
+    HdfIoServiceRecycle(testService);
+    SvcMgrIoserviceRelease(servmgr);
+    HdfSBufRecycle(data);
 }
