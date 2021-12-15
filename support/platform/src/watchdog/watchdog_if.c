@@ -46,16 +46,24 @@ static struct Watchdog *WatchdogGetById(int16_t wdtId)
     return service;
 }
 
-DevHandle WatchdogOpen(int16_t wdtId)
+int32_t WatchdogOpen(int16_t wdtId, DevHandle *handle)
 {
     struct Watchdog *service = NULL;
+    int32_t ret;
 
     service = WatchdogGetById(wdtId);
     if (service == NULL) {
-        return NULL;
+        *handle = NULL;
+        return HDF_ERR_INVALID_OBJECT;
     }
-    WatchdogGetPrivData((struct WatchdogCntlr *)service);
-    return (DevHandle)service;
+
+    ret = WatchdogGetPrivData((struct WatchdogCntlr *)service);
+    if (ret == HDF_SUCCESS) {
+        *handle = (DevHandle)service;
+        return ret;
+    }
+    
+    return ret;
 }
 
 void WatchdogClose(DevHandle handle)

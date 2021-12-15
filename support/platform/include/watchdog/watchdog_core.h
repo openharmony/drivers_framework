@@ -100,7 +100,7 @@ int32_t WatchdogCntlrGetTimeout(struct WatchdogCntlr *cntlr, uint32_t *seconds);
 
 int32_t WatchdogCntlrFeed(struct WatchdogCntlr *cntlr);
 
-void WatchdogGetPrivData(struct WatchdogCntlr *cntlr);
+int32_t WatchdogGetPrivData(struct WatchdogCntlr *cntlr);
 
 void WatchdogReleasePriv(struct WatchdogCntlr *cntlr);
 
