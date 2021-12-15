@@ -45,7 +45,7 @@ void HdfPmTaskQueueDestroy(void)
     pmTaskQueue->taskQueue = NULL;
 }
 
-int32_t PmTaskFunc(struct HdfTaskType *para)
+static int32_t PmTaskFunc(struct HdfTaskType *para)
 {
     struct HdfPmRequest *pmRequest = NULL;
     struct IPowerStateToken *tokenIf = NULL;

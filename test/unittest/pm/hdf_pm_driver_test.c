@@ -265,8 +265,8 @@ int32_t HdfPmRegisterTestListener(int32_t index)
 
 int32_t HdfPmBakListener(int32_t index)
 {
+    HdfPmUnregisterPowerListener(pmTestType[index].obj, &pmTestType[index].listener.powerListener);
     if (pmTestType[index].listenerBak != NULL) {
-        HdfPmUnregisterPowerListener(pmTestType[index].obj, &pmTestType[index].listener.powerListener);
         HdfPmRegisterPowerListener(pmTestType[index].obj, pmTestType[index].listenerBak);
         HdfPmSetMode(pmTestType[index].obj, HDF_POWER_SYS_CTRL);
     }
@@ -317,6 +317,7 @@ int32_t HdfPmTestEnd(void)
 
     HdfPowerManagerExit();
     HdfPmTaskQueueInit(NULL);
+    loopTest = false;
 
     return HDF_SUCCESS;
 }
