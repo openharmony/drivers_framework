@@ -466,15 +466,15 @@ static int32_t WifiCmdSetMode(const RequestContext *context, struct HdfSBuf *req
     return ret;
 }
 
-static void WifiGetChannelData(struct WlanBand *band, WifiHwFeatureData **featureData, struct WlanHwCapability *capability, uint32_t iee80211band)
+static void WifiGetChannelData(struct WlanBand *band, WifiHwFeatureData **featureData,
+    struct WlanHwCapability *capability, uint32_t iee80211band)
 {
     uint32_t loop;
-    if (band == NULL || featureData == NULL || *featureData == NULL)
-    {
+    if (band == NULL || featureData == NULL || *featureData == NULL) {
         HDF_LOGE("%s: band or featureData is NULL", __func__);
         return;
     }
-    
+
     (*featureData)->bands[iee80211band].channelNum = band->channelCount;
     (*featureData)->htCapab = capability->htCapability;
 
@@ -523,7 +523,6 @@ static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *fe
             }
             WifiGetChannelData(band, &featureData, capability, IEEE80211_BAND_5GHZ);
         }
-
     } while (false);
 
     if (capability->Release != NULL) {
