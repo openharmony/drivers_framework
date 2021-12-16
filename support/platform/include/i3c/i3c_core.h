@@ -61,7 +61,8 @@ extern "C" {
            (addr == I3C_RESERVED_ADDR_7H79) || (addr == I3C_RESERVED_ADDR_7H7A) ||  \
            (addr == I3C_RESERVED_ADDR_7H7B) || (addr == I3C_RESERVED_ADDR_7H7C) ||  \
            (addr == I3C_RESERVED_ADDR_7H7D) || (addr == I3C_RESERVED_ADDR_7H7E) ||  \
-           (addr == I3C_RESERVED_ADDR_7H7F)) ? I3C_ADDR_RESERVED : I3C_ADDR_FREE;})
+           (addr == I3C_RESERVED_ADDR_7H7F)) ? I3C_ADDR_RESERVED : I3C_ADDR_FREE;   \
+        })
 
 struct I3cCntlr;
 struct I3cMethod;

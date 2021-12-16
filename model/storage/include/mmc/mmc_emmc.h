@@ -33,7 +33,7 @@ struct EmmcDeviceOps {
 };
 
 int32_t EmmcDeviceGetCid(struct EmmcDevice *dev, uint8_t *cid, uint32_t len);
-void EmmcDeviceAddOps(struct EmmcDevice *dev, void *ops);
+void EmmcDeviceAddOps(struct EmmcDevice *dev, struct EmmcDeviceOps *ops);
 
 #ifdef __cplusplus
 #if __cplusplus

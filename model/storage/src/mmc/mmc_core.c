@@ -1056,7 +1056,7 @@ void MmcDeviceAddOps(struct MmcDevice *mmc, void *ops)
     }
 
     if (mmc->type == MMC_DEV_EMMC) {
-        EmmcDeviceAddOps((struct EmmcDevice *)mmc, ops);
+        EmmcDeviceAddOps((struct EmmcDevice *)mmc, (struct EmmcDeviceOps *)ops);
     }
 }
 

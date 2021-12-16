@@ -7,7 +7,6 @@
  */
 
 #ifndef __USER__
-#include "devsvc_manager_clnt.h"
 #include "mmc_emmc.h"
 #endif
 #include "emmc_if.h"

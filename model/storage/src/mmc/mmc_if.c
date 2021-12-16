@@ -8,10 +8,8 @@
 
 #include "mmc_if.h"
 #ifndef __USER__
-#include "devsvc_manager_clnt.h"
 #include "mmc_corex.h"
 #endif
-#include "hdf_base.h"
 #ifdef __USER__
 #include "hdf_io_service_if.h"
 #endif
