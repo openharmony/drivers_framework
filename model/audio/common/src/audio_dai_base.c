@@ -104,7 +104,7 @@ int32_t DaiSetConfigInfo(struct DaiData *data)
         }
         data->controls[index].name     = g_audioControlsList[item[index].arrayIndex];
         data->controls[index].Info     = AudioInfoCtrlOps;
-        data->controls[index].privateValue = (unsigned long)&patRegCfgItemTmp[index];
+        data->controls[index].privateValue = (unsigned long)(uintptr_t)(void*)(&patRegCfgItemTmp[index]);
         data->controls[index].Get = AudioCpuDaiGetCtrlOps;
         data->controls[index].Set = AudioCpuDaiSetCtrlOps;
     }

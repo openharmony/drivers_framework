@@ -25,12 +25,12 @@ const int SLEEP_TIME = 5;
 
 unsigned int SysReadl(unsigned long addr)
 {
-    return *(volatile unsigned int *)(addr);
+    return *(volatile unsigned int *)(uintptr_t)(addr);
 }
 
 void SysWritel(unsigned long addr, unsigned int value)
 {
-    *(volatile unsigned int *)(addr) = value;
+    *(volatile unsigned int *)(uintptr_t)(addr) = value;
 }
 
 struct PlatformData *PlatformDataFromCard(const struct AudioCard *card)

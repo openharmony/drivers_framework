@@ -331,7 +331,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
         g_audioControls[index].name  = g_audioControlsList[ctlcfgItem[index].arrayIndex];
         g_audioControls[index].Info  = AudioInfoCtrlOps;
         g_audioControls[index].privateValue =
-            (unsigned long)&g_audioRegCfgGroupNode[AUDIO_CTRL_PATAM_GROUP]->regCfgItem[index];
+            (unsigned long)(uintptr_t)(void*)(&g_audioRegCfgGroupNode[AUDIO_CTRL_PATAM_GROUP]->regCfgItem[index]);
         g_audioControls[index].Get = AudioAccessoryGetCtrlOps;
         g_audioControls[index].Set = AudioAccessorySetCtrlOps;
     }
