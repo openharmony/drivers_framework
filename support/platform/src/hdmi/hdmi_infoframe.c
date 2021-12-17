@@ -115,7 +115,7 @@ static int32_t HdmiInfoFramePacketAviEncoding(union HdmiInfoFrameInfo *infoFrame
     buff += HDMI_INFOFRAME_PACKET_HEADER_LEN;
     /* PB1 */
     buff[UINT8_ARRAY_TElEMENT_0] |= (avi->colorSpace & HDMI_AVI_COLOR_SPACE_MARK) << HDMI_AVI_COLOR_SPACE_SHIFT;
-    buff[UINT8_ARRAY_TElEMENT_0] |= (avi->scanMode & HDMI_AVI_SCAN_MODE_MARK);
+    buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)avi->scanMode & HDMI_AVI_SCAN_MODE_MARK);
     if (avi->activeFormatInformationPresent == true) {
         buff[UINT8_ARRAY_TElEMENT_0] |= (1 << HDMI_AVI_ACTIVE_INFORMATION_SHIFT);
     }
@@ -222,18 +222,19 @@ static int32_t HdmiInfoFramePacketAudioEncoding(union HdmiInfoFrameInfo *infoFra
     HdmiInfoFrameFillHeader(&(infoFrame->header), data, len);
     buff += HDMI_INFOFRAME_PACKET_HEADER_LEN;
     /* PB1 */
-    buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)audio->codingType & HDMI_AUDIO_CODING_TYPE_MARK) << HDMI_AUDIO_CODING_TYPE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)audio->codingType & HDMI_AUDIO_CODING_TYPE_MARK) <<
+                                    HDMI_AUDIO_CODING_TYPE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)audio->channelCount & HDMI_AUDIO_CHANNEL_COUNT_MARK);
     /* PB2 */
     buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)audio->sampleFreq & HDMI_AUDIO_SAMPLE_FREQUENCY_MARK) <<
                                     HDMI_AUDIO_SAMPLE_FREQUENCY_SHIFT;
-    buff[UINT8_ARRAY_TElEMENT_1] |= (audio->sampleSize & HDMI_AUDIO_SAMPLE_SIZE_MARK);
+    buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)audio->sampleSize & HDMI_AUDIO_SAMPLE_SIZE_MARK);
     /* PB3 */
     buff[UINT8_ARRAY_TElEMENT_2] |= ((uint8_t)audio->codingExtType & HDMI_AUDIO_CXT_MARK);
     /* PB4 */
     buff[UINT8_ARRAY_TElEMENT_3] |= audio->channelAllocation;
     /* PB5 */
-    buff[UINT8_ARRAY_TElEMENT_4] |= (audio->levelShiftValue & HDMI_AUDIO_LEVEL_SHIFT_VALUE_MARK) <<
+    buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)audio->levelShiftValue & HDMI_AUDIO_LEVEL_SHIFT_VALUE_MARK) <<
                                     HDMI_AUDIO_LEVEL_SHIFT_VALUE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)audio->playBackLevel & HDMI_AUDIO_LEF_PLAYBACK_LEVEL_MARK);
     if (audio->dmInh == true) {
