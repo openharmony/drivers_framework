@@ -8,7 +8,6 @@
 
 #include "watchdog_core.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
 
 #define HDF_LOG_TAG watchdog_core
 

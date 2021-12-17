@@ -7,10 +7,7 @@
  */
 
 #include "rtc_if.h"
-#include "devsvc_manager_clnt.h"
-#include "hdf_base.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
 #include "rtc_base.h"
 #include "rtc_core.h"
 

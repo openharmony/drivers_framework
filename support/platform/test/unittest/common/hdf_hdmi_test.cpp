@@ -13,10 +13,9 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <unistd.h>
-#include "hdmi_if.h"
 #include "hdf_uhdf_test.h"
 #include "hdf_io_service_if.h"
-
+#include "hdmi_if.h"
 
 using namespace testing::ext;
 
