@@ -173,7 +173,7 @@ static int32_t CalLux(struct SensorCfgData *CfgData, uint32_t *rgbcData, int32_t
     return HDF_SUCCESS;
 }
 
-static int32_t RawDataConvert(struct SensorCfgData *CfgData, struct AlsReportData *reportData, uint32_t RawDataConvert*rgbcData)
+static int32_t RawDataConvert(struct SensorCfgData *CfgData, struct AlsReportData *reportData, uint32_t *rgbcData)
 {
     int ret;
 

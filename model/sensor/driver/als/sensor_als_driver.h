@@ -90,7 +90,7 @@ struct AlsDrvData {
 int32_t AlsRegisterChipOps(const struct AlsOpsCall *ops);
 struct SensorCfgData *AlsCreateCfgData(const struct DeviceResourceNode *node);
 void AlsReleaseCfgData(struct SensorCfgData *sensorCfgData);
-int32_t GetTimeByRegValue(uint8_t regValue, struct TimeMap *map, int32_t itemNum);
-int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeMap *map, int32_t itemNum);
-int32_t GetGainByRegValue(uint8_t regValue, struct GainMap *map, int32_t itemNum);
+int32_t GetTimeByRegValue(uint8_t regValue, struct TimeRegAddrValueMap *map, int32_t itemNum);
+int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeRegAddrValueMap *map, int32_t itemNum);
+int32_t GetGainByRegValue(uint8_t regValue, struct GainRegAddrValueMap *map, int32_t itemNum);
 #endif /* SENSOR_ALS_DRIVER_H */
