@@ -113,7 +113,7 @@ static int32_t DynamicRangCovert(struct SensorCfgData *CfgData, uint32_t *rgbcDa
     return HDF_SUCCESS;
 }
 
-static int32_t CalLux(struct SensorCfgData *CfgData, uint32_t *rgbcData, int32_t als)
+static int32_t CalLux(struct SensorCfgData *CfgData, struct AlsReportData *reportData, uint32_t *rgbcData)
 {
     int32_t ret;
     uint32_t time;
@@ -168,7 +168,7 @@ static int32_t CalLux(struct SensorCfgData *CfgData, uint32_t *rgbcData, int32_t
     regValue &= GroupNode->regCfgItem->mask;
     gain = GetGainByRegValue(regValue, g_gainMap, itemNum);
 
-    als = ((luxTemp * BH1745_TIME_160MSEC * BH1745_GAIN_16X) / gain) / time;
+    reportData->als = ((luxTemp * BH1745_TIME_160MSEC * BH1745_GAIN_16X) / gain) / time;
 
     return HDF_SUCCESS;
 }
@@ -177,11 +177,12 @@ static int32_t RawDataConvert(struct SensorCfgData *CfgData, struct AlsReportDat
 {
     int ret;
 
-    ret = CalLux(CfgData, rgbcData, &reportData->als);
+    ret = CalLux(CfgData, reportData, rgbcData);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: Failed to calculate sensor brightness ", __func__);
         return HDF_FAILURE;
     }
+
     reportData->als = (reportData->als > 0) ? reportData->als : 0;
 
     ret = DynamicRangCovert(CfgData, rgbcData);
