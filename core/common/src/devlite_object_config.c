@@ -6,15 +6,16 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_object_manager.h"
 #include "devhost_service.h"
 #include "devmgr_service.h"
 #include "devsvc_manager.h"
+#include "devsvc_manager_ext.h"
 #include "hdf_device.h"
 #include "hdf_device_node_ext.h"
 #include "hdf_device_token.h"
 #include "hdf_driver_installer.h"
 #include "hdf_driver_loader.h"
+#include "hdf_object_manager.h"
 
 static const struct HdfObjectCreator g_liteObjectCreators[] = {
     [HDF_OBJECT_ID_DEVMGR_SERVICE] =
@@ -24,8 +25,8 @@ static const struct HdfObjectCreator g_liteObjectCreators[] = {
         },
     [HDF_OBJECT_ID_DEVSVC_MANAGER] =
         {
-            .Create = DevSvcManagerCreate,
-            .Release = DevSvcManagerRelease,
+            .Create = DevSvcManagerExtCreate,
+            .Release = DevSvcManagerExtRelease,
         },
     [HDF_OBJECT_ID_DEVHOST_SERVICE] =
         {

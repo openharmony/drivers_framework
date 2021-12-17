@@ -9,6 +9,10 @@
 #ifndef POWER_STATE_TOKEN_IF_H
 #define POWER_STATE_TOKEN_IF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef enum {
     PSM_STATE_IDLE,           /* Idle state */
     PSM_STATE_ACTIVE,         /* Activated state */
@@ -19,5 +23,9 @@ struct IPowerStateToken {
     void (*AcquireWakeLock)(struct IPowerStateToken *);
     void (*ReleaseWakeLock)(struct IPowerStateToken *);
 };
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* POWER_STATE_TOKEN_IF_H */

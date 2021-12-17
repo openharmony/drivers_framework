@@ -18,6 +18,7 @@ int HdfDeviceObjectRegister(struct HdfDeviceObject *deviceObject);
 int HdfDeviceObjectUnRegister(struct HdfDeviceObject *deviceObject);
 int HdfDeviceObjectPublishService(struct HdfDeviceObject *deviceObject,
     const char *servName, uint8_t policy, uint32_t perm);
-int HdfDeviceObjectRemoveService(struct HdfDeviceObject *deviceObject);
-
+int HdfRemoveService(struct HdfDeviceObject *deviceObject);
+int HdfDeviceObjectSetServInfo(struct HdfDeviceObject *dev, const char *info);
+int HdfDeviceObjectUpdate(struct HdfDeviceObject *dev);
 #endif /* HDF_DEVICE_OBJECT_H */

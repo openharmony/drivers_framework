@@ -155,7 +155,8 @@ int HdfDeviceNodePublishPublicService(struct HdfDeviceNode *devNode)
         return HDF_FAILURE;
     }
 
-    ret = DevSvcManagerClntAddService(devNode->servName, &devNode->deviceObject);
+    ret = DevSvcManagerClntAddService(devNode->servName,
+        devNode->deviceObject.deviceClass, &devNode->deviceObject, devNode->servInfo);
     if (ret == HDF_SUCCESS) {
         devNode->servStatus = true;
     }
@@ -233,8 +234,10 @@ void HdfDeviceNodeDestruct(struct HdfDeviceNode *devNode)
             PowerStateTokenFreeInstance(devNode->powerToken);
             devNode->powerToken = NULL;
             OsalMemFree(devNode->servName);
+            OsalMemFree((char *)devNode->servInfo);
             OsalMemFree(devNode->driverName);
             devNode->servName = NULL;
+            devNode->servInfo = NULL;
             break;
         case DEVNODE_NONE:
             break;
@@ -261,6 +264,7 @@ struct HdfDeviceNode *HdfDeviceNodeNewInstance(const struct HdfDeviceInfo *devic
     devNode->token->devid = deviceInfo->deviceId;
     devNode->servName = HdfStringCopy(deviceInfo->svcName);
     if (devNode->servName == NULL) {
+        HdfDeviceNodeFreeInstance(devNode);
         return NULL;
     }
     devNode->deviceObject.property = HcsGetNodeByMatchAttr(HdfGetHcsRootNode(), deviceInfo->deviceMatchAttr);

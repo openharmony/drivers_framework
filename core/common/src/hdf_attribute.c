@@ -180,7 +180,7 @@ static bool GetDeviceNodeInfo(const struct DeviceResourceNode *deviceNode, struc
 static bool GetDevcieNodeList(const struct DeviceResourceNode *device,
     struct DevHostServiceClnt *hostClnt, uint16_t deviceIdx)
 {
-    uint8_t deviceNodeIdx = 0;
+    uint8_t deviceNodeIdx = 1;
     uint16_t hostId = hostClnt->hostId;
     struct HdfDeviceInfo *deviceNodeInfo = NULL;
     const struct DeviceResourceNode *devNodeResource = device->child;
@@ -210,12 +210,12 @@ static bool GetDevcieNodeList(const struct DeviceResourceNode *device,
 
         deviceNodeIdx++;
     }
-    return deviceNodeIdx > 0;
+    return deviceNodeIdx > 1;
 }
 
 int HdfAttributeManagerGetDeviceList(struct DevHostServiceClnt *hostClnt)
 {
-    uint16_t deviceIdx = 0;
+    uint16_t deviceIdx = 1;
     const struct DeviceResourceNode *hostNode = NULL;
     const struct DeviceResourceNode *device = NULL;
     int ret = HDF_DEV_ERR_NO_DEVICE;

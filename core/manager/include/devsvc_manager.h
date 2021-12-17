@@ -11,21 +11,26 @@
 
 #include "devsvc_manager_if.h"
 #include "hdf_service_observer.h"
-#include "hdf_slist.h"
+#include "hdf_dlist.h"
 #include "osal_mutex.h"
 
 struct DevSvcManager {
     struct IDevSvcManager super;
-    struct HdfSList services;
+    struct DListHead services;
     struct HdfServiceObserver observer;
+    struct DListHead svcstatListeners;
     struct OsalMutex mutex;
 };
 
 struct HdfObject *DevSvcManagerCreate(void);
 bool DevSvcManagerConstruct(struct DevSvcManager *inst);
-void DevSvcManagerRelease(struct HdfObject *object);
+void DevSvcManagerRelease(struct IDevSvcManager *inst);
 struct IDevSvcManager *DevSvcManagerGetInstance(void);
-int DevSvcManagerAddService(struct IDevSvcManager *manager, const char *svcName, struct HdfDeviceObject *service);
+
+int DevSvcManagerStartService(void);
+
+int DevSvcManagerAddService(struct IDevSvcManager *manager, const char *svcName,
+        uint16_t devClass, struct HdfDeviceObject *service, const char *servInfo);
 struct HdfObject *DevSvcManagerGetService(struct IDevSvcManager *manager, const char *svcName);
 void DevSvcManagerRemoveService(struct IDevSvcManager *manager, const char *svcName);
 void DevSvcManagerListService(struct HdfSBuf *serviecNameSet, DeviceClass deviceClass);

@@ -199,8 +199,10 @@ static int HdfVNodeAdapterServCall(const struct HdfVNodeAdapterClient *client, u
     struct HdfSBuf *reply = NULL;
     int ret;
 
-    if (client->serv == NULL) {
-        return HDF_DEV_ERR_NO_DEVICE;
+    if (client->serv == NULL || client->adapter == NULL ||
+        client->adapter->ioService.dispatcher == NULL ||
+        client->adapter->ioService.dispatcher->Dispatch == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
     }
 
     if (bwrUser == NULL) {

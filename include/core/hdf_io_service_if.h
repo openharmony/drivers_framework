@@ -47,18 +47,15 @@ struct HdfIoService;
  * @since 1.0
  */
 typedef enum {
-    /** Default device */
-    DEVICE_CLASS_DEFAULT = 0,
-    /** Platform device */
-    DEVICE_CLASS_PAL,
-    /** Sensor device */
-    DEVICE_CLASS_SENSOR,
-    /** Input device */
-    DEVICE_CLASS_INPUT,
-    /** Display device */
-    DEVICE_CLASS_DISPLAY,
-    /** Maximum value of a device class */
-    DEVICE_CLASS_MAX
+    DEVICE_CLASS_DEFAULT = 0x1 << 0,    /** Default device */
+    DEVICE_CLASS_PALT    = 0x1 << 1,    /** Platform device */
+    DEVICE_CLASS_SENSOR  = 0x1 << 2,    /** Sensor device */
+    DEVICE_CLASS_INPUT   = 0x1 << 3,    /** Input device */
+    DEVICE_CLASS_DISPLAY = 0x1 << 4,    /** Display device */
+    DEVICE_CLASS_AUDIO   = 0x1 << 5,    /** Audio device */
+    DEVICE_CLASS_CAMERA  = 0x1 << 6,    /** Camera device */
+    DEVICE_CLASS_USB     = 0x1 << 7,    /** USB device */
+    DEVICE_CLASS_MAX     = 0x1 << 8,    /** Maximum value of a device class */
 } DeviceClass;
 
 /**
@@ -88,8 +85,8 @@ typedef int (*OnEventReceived)(void *priv, uint32_t id, struct HdfSBuf *data);
  *
  * @since 1.0
  */
-typedef int (*OnDevEventReceive)(struct HdfDevEventlistener *listener,
-    struct HdfIoService *service, uint32_t id, struct HdfSBuf *data);
+typedef int (*OnDevEventReceive)(
+    struct HdfDevEventlistener *listener, struct HdfIoService *service, uint32_t id, struct HdfSBuf *data);
 
 /**
  * @brief Defines a driver event listener object.
@@ -130,9 +127,9 @@ struct HdfIoService {
     /** Pointer to the bound service entity, which is used for framework management. You can ignore it. */
     struct HdfObject *target;
     /** Service call dispatcher */
-    struct HdfIoDispatcher* dispatcher;
+    struct HdfIoDispatcher *dispatcher;
     /** Private data of the service */
-    void* priv;
+    void *priv;
 };
 
 /**
@@ -175,7 +172,6 @@ void HdfIoServiceGroupRecycle(struct HdfIoServiceGroup *group);
  * @since 1.0
  */
 int32_t HdfIoServiceGroupAddService(struct HdfIoServiceGroup *group, struct HdfIoService *service);
-
 
 /**
  * @brief Removes a driver service object from a specified driver service group.

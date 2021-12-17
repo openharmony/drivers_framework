@@ -9,6 +9,7 @@
 #include "devmgr_service.h"
 #include "devhost_service_clnt.h"
 #include "device_token_clnt.h"
+#include "devsvc_manager.h"
 #include "hdf_attribute_manager.h"
 #include "hdf_base.h"
 #include "hdf_driver_installer.h"
@@ -292,11 +293,16 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
 
 int DevmgrServiceStartService(struct IDevmgrService *inst)
 {
+    int ret;
     struct DevmgrService *dmService = (struct DevmgrService *)inst;
     if (dmService == NULL) {
         HDF_LOGE("failed to start device manager service, dmService is null");
         return HDF_FAILURE;
     }
+
+    ret = DevSvcManagerStartService();
+    HDF_LOGI("start svcmgr result %d", ret);
+
     return DevmgrServiceStartDeviceHosts(dmService);
 }
 

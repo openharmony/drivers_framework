@@ -8,6 +8,7 @@
 
 #include "hdf_device_object.h"
 #include "devhost_service.h"
+#include "devsvc_manager_clnt.h"
 #include "hdf_base.h"
 #include "hdf_cstring.h"
 #include "hdf_device_node.h"
@@ -17,9 +18,12 @@
 #include "hdf_observer_record.h"
 #include "hdf_power_manager.h"
 #include "hdf_service_observer.h"
+#include "osal_mem.h"
 #include "power_state_token.h"
 
 #define HDF_LOG_TAG device_object
+
+#define SERVICE_INFO_LEN_MAX 128
 
 int32_t HdfDeviceSubscribeService(
     struct HdfDeviceObject *deviceObject, const char *serviceName, struct SubscriberCallback callback)
@@ -291,4 +295,31 @@ int HdfDeviceObjectRemoveService(struct HdfDeviceObject *dev)
     }
 
     return devNode->super.RemoveService(devNode);
+}
+int HdfDeviceObjectSetServInfo(struct HdfDeviceObject *dev, const char *info)
+{
+    if (dev == NULL || info == NULL || strlen(info) > SERVICE_INFO_LEN_MAX) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    if (devNode->servInfo != NULL) {
+        OsalMemFree((char *)devNode->servInfo);
+    }
+    devNode->servInfo = HdfStringCopy(info);
+    if (devNode->servInfo == NULL) {
+        return HDF_ERR_MALLOC_FAIL;
+    }
+    return HDF_SUCCESS;
+}
+
+int HdfDeviceObjectUpdate(struct HdfDeviceObject *dev)
+{
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    if (dev == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    return DevSvcManagerClntUpdateService(
+        devNode->servName, devNode->deviceObject.deviceClass, &devNode->deviceObject, devNode->servInfo);
 }

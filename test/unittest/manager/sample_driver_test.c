@@ -164,6 +164,24 @@ int32_t SampleDriverPowerStateInject(uint32_t powerState)
     return ret;
 }
 
+int32_t SampleDriverUpdateService(struct HdfDeviceIoClient *client, struct HdfSBuf *data)
+{
+    const char *servInfo = HdfSbufReadString(data);
+    int32_t ret;
+    if (servInfo == NULL) {
+        HDF_LOGE("%s: miss servce info", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    if(HdfDeviceObjectSetServInfo(client->device, servInfo) != HDF_SUCCESS) {
+        HDF_LOGE("%s: failed to set servce info", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+    ret = HdfDeviceObjectUpdate(client->device);
+    HDF_LOGE("%s:set servce info done, ret = %d", __func__, ret);
+    return ret;
+}
+
 int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     uint32_t powerState = 0;
@@ -180,6 +198,9 @@ int32_t SampleDriverDispatch(struct HdfDeviceIoClient *client, int cmdId, struct
         case SAMPLE_DRIVER_UNREGISTER_DEVICE:
             ret = SampleDriverUnregisterDevice(data);
             HdfSbufWriteInt32(reply, ret);
+            break;
+        case SAMPLE_DRIVER_UPDATE_SERVICE_INFO:
+            ret = SampleDriverUpdateService(client, data);
             break;
         case SAMPLE_DRIVER_SENDEVENT_SINGLE_DEVICE:
             ret = SampleDriverSendEvent(client, cmdId, data, false);
@@ -254,7 +275,7 @@ int HdfSampleDriverInit(struct HdfDeviceObject *deviceObject)
         return HDF_FAILURE;
     }
     HDF_LOGD("%s:Init success", __func__);
-
+    HdfDeviceObjectSetServInfo(deviceObject, SAMPLE_SERVICE);
     pmListener.powerListener.DozeResume = HdfSampleDozeResume;
     pmListener.powerListener.DozeSuspend = HdfSampleDozeSuspend;
     pmListener.powerListener.Resume = HdfSampleResume;
