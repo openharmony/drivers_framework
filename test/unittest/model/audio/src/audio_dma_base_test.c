@@ -17,7 +17,7 @@ int32_t AudioDmaBufAllocTest(void)
 {
     struct PlatformData data;
 
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
 
     if (AudioDmaBufAlloc(NULL, 0) == HDF_SUCCESS) {
         return HDF_FAILURE;
@@ -34,7 +34,7 @@ int32_t AudioDmaBufFreeTest(void)
 {
     struct PlatformData data;
 
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
 
     if (AudioDmaBufFree(NULL, 0) == HDF_SUCCESS) {
         return HDF_FAILURE;
@@ -50,7 +50,7 @@ int32_t AudioDmaBufFreeTest(void)
 int32_t AudioDmaRequestChannelTest(void)
 {
     struct PlatformData data;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaRequestChannel(NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -65,7 +65,7 @@ int32_t AudioDmaRequestChannelTest(void)
 int32_t AudioDmaConfigChannelTest(void)
 {
     struct PlatformData data;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaConfigChannel(NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -80,7 +80,7 @@ int32_t AudioDmaConfigChannelTest(void)
 int32_t AudioDmaPrepTest(void)
 {
     struct PlatformData data;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaPrep(NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -95,7 +95,7 @@ int32_t AudioDmaPrepTest(void)
 int32_t AudioDmaSubmitTest(void)
 {
     struct PlatformData data;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaSubmit(NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -110,7 +110,7 @@ int32_t AudioDmaSubmitTest(void)
 int32_t AudioDmaPendingTest(void)
 {
     struct PlatformData data;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaPending(NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -125,7 +125,7 @@ int32_t AudioDmaPendingTest(void)
 int32_t AudioDmaPauseTest(void)
 {
     struct PlatformData data;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaPause(NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -140,7 +140,7 @@ int32_t AudioDmaPauseTest(void)
 int32_t AudioDmaResumeTest(void)
 {
     struct PlatformData data;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaResume(NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -156,7 +156,7 @@ int32_t AudioDmaPointerTest(void)
 {
     struct PlatformData data;
     uint32_t pointer = 0;
-    memset(&data, 0, sizeof(struct PlatformData));
+    (void)memset_s(&data, sizeof(struct PlatformData), 0, sizeof(struct PlatformData));
     if (AudioDmaPointer(NULL, NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }

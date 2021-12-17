@@ -65,8 +65,8 @@ int32_t CodecSetConfigInfoTest(void)
     struct DaiData device;
     struct CodecData codecData;
 
-    memset(&device, 0, sizeof(struct DaiData));
-    memset(&codecData, 0, sizeof(struct CodecData));
+    (void)memset_s(&device, sizeof(struct DaiData), 0, sizeof(struct DaiData));
+    (void)memset_s(&codecData, sizeof(struct CodecData), 0, sizeof(struct CodecData));
     if (CodecSetConfigInfo(NULL, NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
