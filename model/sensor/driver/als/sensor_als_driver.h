@@ -15,7 +15,10 @@
 #include "sensor_platform_if.h"
 
 #define ALS_DEFAULT_SAMPLING_200_MS    200000000
-#define ALS_CHIP_NAME_BH1745    "bh1745"
+#define ALS_CHIP_NAME_BH1745           "bh1745"
+#define ERR_NO_TIME_VALUE              -1
+#define ERR_NO_INDEX_VALUE             -1
+#define ERR_NO_GAIN_VALUE              -1
 
 enum ExtendedAlsRegGroupType {
     EXTENDED_ALS_TIME_GROUP = 0,
@@ -49,13 +52,13 @@ struct AlsReportData {
     int32_t irData;
 };
 
-struct TimeMap {
-    uint8_t timeRegValue;
+struct TimeRegAddrValueMap {
+    uint8_t timeRegKey;
     uint32_t timeValue;
 };
 
-struct GainMap {
-    uint8_t gainRegValue;
+struct GainRegAddrValueMap {
+    uint8_t gainRegKey;
     uint32_t gainValue;
 };
 
@@ -87,8 +90,7 @@ struct AlsDrvData {
 int32_t AlsRegisterChipOps(const struct AlsOpsCall *ops);
 struct SensorCfgData *AlsCreateCfgData(const struct DeviceResourceNode *node);
 void AlsReleaseCfgData(struct SensorCfgData *sensorCfgData);
-int32_t GetTimeByRegValue(uint8_t regValue, struct TimeMap *table, int32_t itemNum);
-int32_t GetRegValueByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum);
-int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum);
-int32_t GetGainByRegValue(uint8_t regValue, struct GainMap *table, int32_t itemNum);
+int32_t GetTimeByRegValue(uint8_t regValue, struct TimeMap *map, int32_t itemNum);
+int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeMap *map, int32_t itemNum);
+int32_t GetGainByRegValue(uint8_t regValue, struct GainMap *map, int32_t itemNum);
 #endif /* SENSOR_ALS_DRIVER_H */

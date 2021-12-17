@@ -66,7 +66,7 @@
 #define EXTENDED_ALS_GAIN_GROUP_ATTR_VALUE_1                 0x01
 #define EXTENDED_ALS_GAIN_GROUP_ATTR_VALUE_2                 0x02
 
-enum ExtendedAlsTimeRegGroupIdex {
+enum ExtendedAlsTimeRegGroupIndex {
     EXTENDED_ALS_TIME_GROUP_INDEX_0 = 0,
     EXTENDED_ALS_TIME_GROUP_INDEX_1,
     EXTENDED_ALS_TIME_GROUP_INDEX_2,
@@ -76,7 +76,7 @@ enum ExtendedAlsTimeRegGroupIdex {
     EXTENDED_ALS_TIME_GROUP_INDEX_MAX,
 };
 
-enum ExtendedAlsGainRegGroupIdex {
+enum ExtendedAlsGainRegGroupIndex {
     EXTENDED_ALS_GAIN_GROUP_INDEX_0 = 0,
     EXTENDED_ALS_GAIN_GROUP_INDEX_1,
     EXTENDED_ALS_GAIN_GROUP_INDEX_2,
