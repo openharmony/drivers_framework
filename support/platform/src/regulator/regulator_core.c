@@ -14,7 +14,6 @@
 #include "regulator_tree_mgr.h"
 
 #define HDF_LOG_TAG regulator_core
-
 struct RegulatorManager {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
@@ -28,6 +27,7 @@ struct RegulatorNode *RegulatorNodeOpen(const char *name)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, NULL);
     struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
 
     struct RegulatorManager *manager = g_regulatorManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, NULL);
@@ -37,9 +37,13 @@ struct RegulatorNode *RegulatorNodeOpen(const char *name)
         return NULL;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->regulatorHead, struct RegulatorNode, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
         if (strcmp(name, pos->regulatorInfo.name) == 0) {
-            HDF_LOGD("RegulatorNodeOpen:[%s] SUCCESS", name);
+            if ((pos->ops->open != NULL) && pos->ops->open(pos) != HDF_SUCCESS) {
+                (void)OsalMutexUnlock(&manager->lock);
+                HDF_LOGE("RegulatorNodeOpen: open regulator[%s] fail!", name);
+                return NULL;
+            }
             (void)OsalMutexUnlock(&manager->lock);
             return pos;
         }
@@ -59,6 +63,7 @@ int32_t RegulatorNodeClose(struct RegulatorNode *node)
 void RegulatorNodeListPrint(void)
 {
     struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
     
     struct RegulatorManager *manager = g_regulatorManager;
     CHECK_NULL_PTR_RETURN(manager);
@@ -68,13 +73,13 @@ void RegulatorNodeListPrint(void)
         return;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->regulatorHead, struct RegulatorNode, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
         HDF_LOGI("RegulatorNodeListPrint: name[%s], [%d][%d][%d], [%d][%d]--[%d][%d]", 
             pos->regulatorInfo.name, pos->regulatorInfo.status,
             pos->regulatorInfo.constraints.alwaysOn, pos->regulatorInfo.constraints.mode, 
-            pos->regulatorInfo.minUv, pos->regulatorInfo.maxUv, 
-            pos->regulatorInfo.minUa, pos->regulatorInfo.maxUa);
-        if (pos->regulatorInfo.parentName != NULL) {
+            pos->regulatorInfo.constraints.minUv, pos->regulatorInfo.constraints.maxUv, 
+            pos->regulatorInfo.constraints.minUa, pos->regulatorInfo.constraints.maxUa);
+        if ((pos->regulatorInfo.parentName != NULL) && (strlen(pos->regulatorInfo.parentName) > 0)) {
             HDF_LOGI("RegulatorNodeListPrint:parentName[%s]", pos->regulatorInfo.parentName);
         }
     }
@@ -87,6 +92,7 @@ int32_t RegulatorNodeSetParent(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
     struct RegulatorManager *manager = g_regulatorManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
 
@@ -97,7 +103,7 @@ int32_t RegulatorNodeSetParent(struct RegulatorNode *node)
     // parent set
     if ((node->regulatorInfo.parentName != NULL) 
         && (strlen(node->regulatorInfo.parentName) > 0)) {
-        DLIST_FOR_EACH_ENTRY(pos, &manager->regulatorHead, struct RegulatorNode, node) {
+        DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
             if (strcmp(node->regulatorInfo.parentName, pos->regulatorInfo.name) == 0) {
                 if (RegulatorTreeSet(node->regulatorInfo.name, node, pos) != HDF_SUCCESS) {
                     HDF_LOGE("%s: RegulatorTreeSet failed", __func__);
@@ -118,33 +124,103 @@ int32_t RegulatorNodeSetParent(struct RegulatorNode *node)
     }
 
     (void)OsalMutexUnlock(&manager->lock);
-    HDF_LOGE("%s: the node %s no need to set parent", __func__, node->regulatorInfo.name);
+    HDF_LOGD("%s: the node %s no need to set parent", __func__, node->regulatorInfo.name);
     return HDF_SUCCESS;
 }
 
-/**
-  * complete up and down management topology
-  * process alwayson
-  */
+int32_t RegulatorNodeSetChild(struct RegulatorNode *parent)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(parent, HDF_ERR_INVALID_PARAM);
+    struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
+    struct RegulatorManager *manager = g_regulatorManager;
+    CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
+
+    if (OsalMutexLock(&manager->lock) != HDF_SUCCESS) {
+        HDF_LOGE("RegulatorNodeSetChild: lock regulator manager fail!");
+        return HDF_ERR_DEVICE_BUSY;
+    }
+
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
+        if ((pos->regulatorInfo.parentName != NULL) && 
+            (strcmp(parent->regulatorInfo.name, pos->regulatorInfo.parentName) == 0)) {
+            HDF_LOGD("%s: node[%s] parent is %s, tree info process", __func__, 
+                pos->regulatorInfo.parentName, parent->regulatorInfo.name);
+            if (RegulatorTreeSet(pos->regulatorInfo.name, pos, parent) != HDF_SUCCESS) {
+                HDF_LOGE("%s: RegulatorTreeSet failed", __func__);
+                (void)OsalMutexUnlock(&manager->lock);
+                return HDF_FAILURE;
+            }
+        }
+    }
+
+    HDF_LOGD("%s: the node %s child info process suceess", __func__, parent->regulatorInfo.name);
+    (void)OsalMutexUnlock(&manager->lock);
+    return HDF_SUCCESS;
+}
+
+void RegulatorNodeInitEnable(struct RegulatorNode *node)
+{
+    CHECK_NULL_PTR_RETURN(node);
+    if (node->regulatorInfo.status == REGULATOR_STATUS_ON) {
+        HDF_LOGD("RegulatorNodeInitEnable: %s status on", node->regulatorInfo.name);
+        return;
+    }
+
+    bool isChildAlwayson = RegulatorTreeIsChildAlwayson(node->regulatorInfo.name);
+    bool isChildOn = RegulatorTreeIsChildStatusOn(node->regulatorInfo.name);
+    // if regulator alwaysOn is true or there is child's alwaysOn is true or there is child's status on, then process
+    if ((node->regulatorInfo.constraints.alwaysOn) || (isChildAlwayson) || (isChildOn)) {
+        // RegulatorTreeIsUpNodeComplete is false, call RegulatorNodeEnable will fail.
+        if (RegulatorTreeIsUpNodeComplete(node->regulatorInfo.name)) {
+            HDF_LOGD("RegulatorNodeInitEnable: %s UpNodeComplete", node->regulatorInfo.name);
+            RegulatorNodeEnable(node);
+            return;
+        }
+        if (OsalMutexLock(&node->lock) != HDF_SUCCESS) {
+            HDF_LOGE("RegulatorNodeInitEnable: lock regulator %s fail!", node->regulatorInfo.name);
+            return;
+        }
+        // first enable
+        if (node->ops->enable(node) != HDF_SUCCESS) {
+            (void)OsalMutexUnlock(&node->lock);
+            HDF_LOGE("RegulatorNodeInitEnable: %s failed", node->regulatorInfo.name);
+            return;
+        }
+        node->regulatorInfo.status = REGULATOR_STATUS_ON;
+        RegulatorNodeStatusCb(node);
+
+        (void)OsalMutexUnlock(&node->lock);
+        HDF_LOGD("RegulatorNodeInitEnable: %s success", node->regulatorInfo.name);
+        return;
+    }
+}
+
+/*
+* complete up and down management topology
+* process alwayson
+*/
 int32_t RegulatorNodeInitProcess(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
 
     // parent or child set
     if (RegulatorNodeSetParent(node) != HDF_SUCCESS) {
-        HDF_LOGE("%s: node %s RegulatorNodeSetParent fail", __func__, node->regulatorInfo.name);
+        HDF_LOGD("%s: node %s RegulatorNodeSetParent fail, parent not add", __func__, node->regulatorInfo.name);
+    }
+
+    if (RegulatorNodeSetChild(node) != HDF_SUCCESS) {
+        HDF_LOGE("%s: node %s RegulatorNodeSetChild fail", __func__, node->regulatorInfo.name);
         return HDF_FAILURE;
     }
 
-    // if alwaysOn is true, process
-    if (node->regulatorInfo.constraints.alwaysOn) {
-        if (node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_CURRENT) {
-            RegulatorNodeSetCurrent(node, node->regulatorInfo.constraints.minUa, node->regulatorInfo.constraints.maxUa);
-        } else if (node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_VOLTAGE) {
-            RegulatorNodeSetVoltage(node, node->regulatorInfo.constraints.minUv, node->regulatorInfo.constraints.maxUv);
-        }
-        RegulatorNodeEnable(node);
+    if (node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_CURRENT) {
+        RegulatorNodeSetCurrent(node, node->regulatorInfo.constraints.minUa, node->regulatorInfo.constraints.maxUa);
+    } else if(node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_VOLTAGE) {
+        RegulatorNodeSetVoltage(node, node->regulatorInfo.constraints.minUv, node->regulatorInfo.constraints.maxUv);
     }
+
+    RegulatorNodeInitEnable(node);
 
     HDF_LOGD("%s: the node %s init success", __func__, node->regulatorInfo.name);
     return HDF_SUCCESS;
@@ -153,11 +229,13 @@ int32_t RegulatorNodeInitProcess(struct RegulatorNode *node)
 int32_t RegulatorNodeAdd(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
+    CHECK_NULL_PTR_RETURN_VALUE(node->ops, HDF_ERR_INVALID_PARAM);
     struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
     struct RegulatorManager *manager = g_regulatorManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->regulatorHead, struct RegulatorNode, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
         if (strcmp(node->regulatorInfo.name, pos->regulatorInfo.name) == 0) {
             HDF_LOGE("%s: regulatorInfo[%s] existed", __func__, node->regulatorInfo.name);
             return HDF_FAILURE;
@@ -187,17 +265,16 @@ int32_t RegulatorNodeAdd(struct RegulatorNode *node)
     }
 
     HDF_LOGI("%s: add regulator name[%s] success", __func__, node->regulatorInfo.name);
-    RegulatorNodeListPrint();
+
     return HDF_SUCCESS;
 }
-int32_t RegulatorNodeRemoveAll(void)
+
+int32_t RegulatorNodeRemove(const char *name)
 {
-    if (RegulatorTreeNodeRemoveAll() != HDF_SUCCESS) {
-        HDF_LOGE("RegulatorNodeRemoveAll: RegulatorTreeNodeRemoveAll failed");
-        return HDF_FAILURE;
-    }
+    CHECK_NULL_PTR_RETURN_VALUE(name, HDF_ERR_INVALID_PARAM);
 
     struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
     struct RegulatorManager *manager = g_regulatorManager;
     if (manager == NULL) {
         HDF_LOGE("RegulatorNodeRemoveAll: regulator manager null!");
@@ -209,7 +286,47 @@ int32_t RegulatorNodeRemoveAll(void)
         return HDF_ERR_DEVICE_BUSY;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->regulatorHead, struct RegulatorNode, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
+        if (strcmp(pos->regulatorInfo.name, name) == 0) {
+            if ((pos->ops->release != NULL) && pos->ops->release(pos) != HDF_SUCCESS) {
+                HDF_LOGE("RegulatorNodeRemoveAll: release regulator[%s] fail!", pos->regulatorInfo.name);
+            }
+            DListRemove(&pos->node);
+            (void)OsalMutexDestroy(&pos->lock);
+            OsalMemFree(pos);
+            break;
+        }
+    }
+
+    (void)OsalMutexUnlock(&manager->lock);
+    HDF_LOGI("%s: remove regulator %s success", __func__, name);
+    return HDF_SUCCESS;
+}
+
+int32_t RegulatorNodeRemoveAll(void)
+{
+    if (RegulatorTreeNodeRemoveAll() != HDF_SUCCESS) {
+        HDF_LOGE("RegulatorNodeRemoveAll: RegulatorTreeNodeRemoveAll failed");
+        return HDF_FAILURE;
+    }
+
+    struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
+    struct RegulatorManager *manager = g_regulatorManager;
+    if (manager == NULL) {
+        HDF_LOGE("RegulatorNodeRemoveAll: regulator manager null!");
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    if (OsalMutexLock(&manager->lock) != HDF_SUCCESS) {
+        HDF_LOGE("RegulatorNodeRemoveAll: lock regulator manager fail!");
+        return HDF_ERR_DEVICE_BUSY;
+    }
+
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
+        if ((pos->ops->release != NULL) && pos->ops->release(pos) != HDF_SUCCESS) {
+            HDF_LOGE("RegulatorNodeRemoveAll: release regulator[%s] fail!", pos->regulatorInfo.name);
+        }
         DListRemove(&pos->node);
         (void)OsalMutexDestroy(&pos->lock);
         OsalMemFree(pos);
@@ -219,6 +336,7 @@ int32_t RegulatorNodeRemoveAll(void)
     HDF_LOGI("%s: remove all regulator success", __func__);
     return HDF_SUCCESS;
 }
+
 int32_t RegulatorNodeStatusCb(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
@@ -232,6 +350,7 @@ int32_t RegulatorNodeStatusCb(struct RegulatorNode *node)
 
     return node->regulatorInfo.cb(&info);
 }
+
 int32_t RegulatorNodeEnable(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
@@ -262,18 +381,16 @@ int32_t RegulatorNodeEnable(struct RegulatorNode *node)
     // first enable
     if (node->ops->enable(node) != HDF_SUCCESS) {
         (void)OsalMutexUnlock(&node->lock);
-        HDF_LOGE("enable: %s failed", node->regulatorInfo.name);
+        HDF_LOGE("RegulatorNodeEnable:enable: %s failed", node->regulatorInfo.name);
         return HDF_FAILURE;
     }
-    node->regulatorInfo.status = REGULATOR_STATUS_ON;
     RegulatorNodeStatusCb(node);
 
     (void)OsalMutexUnlock(&node->lock);
-    HDF_LOGD("RegulatorNodeEnable: %s success", node->regulatorInfo.name);
     return HDF_SUCCESS;
 }
 
-static int32_t RegulatorNodeDisable(struct RegulatorNode *node)
+int32_t RegulatorNodeDisable(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     if ((node->regulatorInfo.status == REGULATOR_STATUS_OFF) || (node->regulatorInfo.constraints.alwaysOn)) {
@@ -289,22 +406,23 @@ static int32_t RegulatorNodeDisable(struct RegulatorNode *node)
 
     if (!RegulatorTreeIsAllChildDisable(node->regulatorInfo.name)) {
         (void)OsalMutexUnlock(&node->lock);
-        HDF_LOGE("RegulatorNodeDisable:there is %s child not disable ", node->regulatorInfo.name);
+        HDF_LOGE("RegulatorNodeDisable:there is %s child not disable, so disable node failed",
+            node->regulatorInfo.name);
         return HDF_FAILURE;
     }
 
     // the regulator no user, can disable
+
     if (node->ops->disable(node) != HDF_SUCCESS) {
         (void)OsalMutexUnlock(&node->lock);
         HDF_LOGE("RegulatorNodeDisable:disable %s failed", node->regulatorInfo.name);
         return HDF_FAILURE;
     }
-    node->regulatorInfo.status = REGULATOR_STATUS_OFF;
+
     RegulatorNodeStatusCb(node);
-    HDF_LOGD("RegulatorNodeDisable:disable %s success", node->regulatorInfo.name);
 
     // set parent
-    if (strlen(node->regulatorInfo.parentName) != 0) {
+    if ((node->regulatorInfo.parentName != NULL) && (strlen(node->regulatorInfo.parentName) > 0)) {
         struct RegulatorNode *parent = RegulatorTreeGetParent(node->regulatorInfo.name);
         if (parent == NULL) {
             (void)OsalMutexUnlock(&node->lock);
@@ -313,8 +431,9 @@ static int32_t RegulatorNodeDisable(struct RegulatorNode *node)
         }
         if (RegulatorNodeDisable(parent) != HDF_SUCCESS) {
             (void)OsalMutexUnlock(&node->lock);
-            HDF_LOGE("RegulatorNodeDisable: %s failed", parent->regulatorInfo.name);
-            return HDF_FAILURE;
+            HDF_LOGD("RegulatorNodeDisable: disable %s's parent %s failed", 
+                node->regulatorInfo.name, parent->regulatorInfo.name);
+            return HDF_SUCCESS;
         }
     }
 
@@ -332,29 +451,33 @@ int32_t RegulatorNodeForceDisable(struct RegulatorNode *node)
 
     if (node->regulatorInfo.status == REGULATOR_STATUS_OFF) {
         (void)OsalMutexUnlock(&node->lock);
-        HDF_LOGI(": %s useCount[%d] has been closed", 
-            node->regulatorInfo.name, node->regulatorInfo.useCount);
         return HDF_SUCCESS;
     }
 
     // if the regulator force disable ,set all child node disable
     if (RegulatorTreeChildForceDisable(node)) {
         (void)OsalMutexUnlock(&node->lock);
-        HDF_LOGE("RegulatorTreeConsumerForceDisable: %s failed", node->regulatorInfo.name);
+        HDF_LOGE("RegulatorNodeForceDisable--RegulatorTreeConsumerForceDisable: %s failed", node->regulatorInfo.name);
         return HDF_FAILURE;
     }
 
-    if (node->ops->disable(node) != HDF_SUCCESS) {
+    if (node->ops->forceDisable != NULL) {
+        if (node->ops->forceDisable(node) != HDF_SUCCESS) {
+            (void)OsalMutexUnlock(&node->lock);
+            HDF_LOGE("RegulatorNodeForceDisable:forceDisable %s failed", node->regulatorInfo.name);
+            return HDF_FAILURE;
+        }
+    } else if (node->ops->disable(node) != HDF_SUCCESS) {
         (void)OsalMutexUnlock(&node->lock);
-        HDF_LOGE("RegulatorNodeDisable:disable %s failed", node->regulatorInfo.name);
+        HDF_LOGE("RegulatorNodeForceDisable:disable %s failed", node->regulatorInfo.name);
         return HDF_FAILURE;
     }
     node->regulatorInfo.status = REGULATOR_STATUS_OFF;
     RegulatorNodeStatusCb(node);
-    HDF_LOGD(":regulator %s force disable success", node->regulatorInfo.name);
+    HDF_LOGI("RegulatorNodeForceDisable:regulator %s force disable success", node->regulatorInfo.name);
 
     // set parent
-    if (strlen(node->regulatorInfo.parentName) != 0) {
+    if ((node->regulatorInfo.parentName != NULL) && (strlen(node->regulatorInfo.parentName) > 0)) {
         struct RegulatorNode *parent = RegulatorTreeGetParent(node->regulatorInfo.name);
         if (parent == NULL) {
             (void)OsalMutexUnlock(&node->lock);
@@ -363,8 +486,9 @@ int32_t RegulatorNodeForceDisable(struct RegulatorNode *node)
         }
         if (RegulatorNodeDisable(parent) != HDF_SUCCESS) {
             (void)OsalMutexUnlock(&node->lock);
-            HDF_LOGE(": %s failed", parent->regulatorInfo.name);
-            return HDF_FAILURE;
+            HDF_LOGD("RegulatorNodeDisable: disable %s's parent %s failed", 
+                node->regulatorInfo.name, parent->regulatorInfo.name);
+            return HDF_SUCCESS;
         }
     }
 
@@ -382,7 +506,6 @@ int32_t RegulatorNodeSetVoltage(struct RegulatorNode *node, uint32_t minUv, uint
     }
     
     if (minUv == node->regulatorInfo.minUv && maxUv == node->regulatorInfo.maxUv) {
-        HDF_LOGD("RegulatorNodeSetVoltage: %s voltage", node->regulatorInfo.name);
         return HDF_SUCCESS;
     }
 
@@ -410,8 +533,6 @@ int32_t RegulatorNodeSetVoltage(struct RegulatorNode *node, uint32_t minUv, uint
     node->regulatorInfo.maxUv = maxUv;
     (void)OsalMutexUnlock(&node->lock);
 
-    HDF_LOGD("RegulatorNodeSetVoltage: %s voltage[%d, %d] success", 
-        node->regulatorInfo.name, minUv, maxUv);
     return HDF_SUCCESS;
 }
 
@@ -432,8 +553,6 @@ int32_t RegulatorNodeGetVoltage(struct RegulatorNode *node, uint32_t *voltage)
         return HDF_FAILURE;
     }
 
-    HDF_LOGD("RegulatorNodeGetVoltage: %s voltage[%d] success", 
-        node->regulatorInfo.name, *voltage);
     return HDF_SUCCESS;
 }
 
@@ -447,8 +566,6 @@ int32_t RegulatorNodeSetCurrent(struct RegulatorNode *node, uint32_t minUA, uint
     }
 
     if (minUA == node->regulatorInfo.minUa && maxUA == node->regulatorInfo.maxUa) {
-        HDF_LOGD("RegulatorNodeSetCurrent: %s [%d, %d] [%d, %d]", node->regulatorInfo.name, 
-            minUA, maxUA, node->regulatorInfo.minUa, node->regulatorInfo.maxUa);
         return HDF_SUCCESS;
     }
 
@@ -475,30 +592,25 @@ int32_t RegulatorNodeSetCurrent(struct RegulatorNode *node, uint32_t minUA, uint
     node->regulatorInfo.minUa = minUA;
     node->regulatorInfo.maxUa = maxUA;
     (void)OsalMutexUnlock(&node->lock);
-    
-    HDF_LOGD("RegulatorNodeSetCurrent: %s UA[%d, %d] SUCCESS", 
-        node->regulatorInfo.name, minUA, maxUA);
     return HDF_SUCCESS;
 }
 
-int32_t RegulatorNodeGetCurrent(struct RegulatorNode *node, uint32_t *current)
+int32_t RegulatorNodeGetCurrent(struct RegulatorNode *node, uint32_t *regCurrent)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_OBJECT);
-    CHECK_NULL_PTR_RETURN_VALUE(current, HDF_ERR_INVALID_OBJECT);
+    CHECK_NULL_PTR_RETURN_VALUE(regCurrent, HDF_ERR_INVALID_OBJECT);
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_CURRENT) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!", 
+        HDF_LOGE("RegulatorNodeGetCurrent: %s mode %d invalid!", 
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }
 
-    int ret = node->ops->getCurrent(node, current);
+    int ret = node->ops->getCurrent(node, regCurrent);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("RegulatorNodeGetVoltage: getCurrent %s fail!", node->regulatorInfo.name);
+        HDF_LOGE("RegulatorNodeGetCurrent: getCurrent %s fail!", node->regulatorInfo.name);
         return HDF_FAILURE;
     }
 
-    HDF_LOGD("RegulatorNodeGetVoltage: %s current[%d] success", 
-        node->regulatorInfo.name, *current);
     return HDF_SUCCESS;
 }
 
@@ -511,8 +623,6 @@ int32_t RegulatorNodeGetStatus(struct RegulatorNode *node, uint32_t *status)
         return HDF_FAILURE;
     }
 
-    HDF_LOGD("RegulatorNodeGetStatus: %s status[%d] success", 
-        node->regulatorInfo.name, *status);
     return HDF_SUCCESS;
 }
 
@@ -527,13 +637,14 @@ int32_t RegulatorNodeRegisterStatusChangeCb(struct RegulatorNode *node, Regulato
 int32_t RegulatorTreeInfoInit(struct RegulatorNode *node)
 {
     struct RegulatorNode *pos = NULL;
+    struct RegulatorNode *tmp = NULL;
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_OBJECT);
     struct RegulatorManager *manager = g_regulatorManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_OBJECT);
 
     if ((node->regulatorInfo.parentName != NULL) 
         && (strlen(node->regulatorInfo.parentName) > 0)) {
-        DLIST_FOR_EACH_ENTRY(pos, &manager->regulatorHead, struct RegulatorNode, node) {
+        DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
             if (strcmp(node->regulatorInfo.parentName, pos->regulatorInfo.name) == 0) {
                 if (RegulatorTreeSet(node->regulatorInfo.name, node, pos) != HDF_SUCCESS) {
                     HDF_LOGE("%s: RegulatorTreeSet failed", __func__);
@@ -624,4 +735,5 @@ struct HdfDriverEntry g_regulatorManagerEntry = {
     .Release = RegulatorManagerRelease,
     .moduleName = "HDF_PLATFORM_REGULATOR_MANAGER",
 };
+
 HDF_INIT(g_regulatorManagerEntry);

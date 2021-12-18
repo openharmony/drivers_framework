@@ -273,11 +273,10 @@ static int32_t VirtualRegulatorInit(struct HdfDeviceObject *device)
         ret = VirtualRegulatorParseAndInit(device, childNode);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:VirtualRegulatorParseAndInit fail", __func__);
-            RegulatorNodeRemoveAll();
             return HDF_FAILURE;
         }
     }
-
+    HDF_LOGI("%s: success", __func__);
     return HDF_SUCCESS;
 }
 

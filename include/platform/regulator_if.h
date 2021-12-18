@@ -130,7 +130,7 @@ int32_t RegulatorSetCurrent(DevHandle handle, uint32_t minUa, uint32_t maxUa);
  * 
  * @since 1.0
  */
-int32_t RegulatorGetCurrent(DevHandle handle, uint32_t *current);
+int32_t RegulatorGetCurrent(DevHandle handle, uint32_t *regCurrent);
 /**
  * @brief Get a regulator status
  *

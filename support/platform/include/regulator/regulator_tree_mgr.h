@@ -29,7 +29,7 @@ struct RegulatorTreeInfo {
     const char *name;                  /* regulator name */
     struct RegulatorNode *parent;    /* regulator parent info */
     struct DListHead node;
-    struct DListHead childHead;      /* child regulator list */
+    struct DListHead childHead;      /* next level child regulator list */
 };
 
 struct RegulatorTreeManager {
@@ -45,6 +45,9 @@ void RegulatorTreePrint(void);
 struct RegulatorNode *RegulatorTreeGetParent(const char *name);
 int32_t RegulatorTreeChildForceDisable(struct RegulatorNode *node);
 bool RegulatorTreeIsAllChildDisable(const char *name);
+bool RegulatorTreeIsChildAlwayson(const char *name);
+bool RegulatorTreeIsChildStatusOn(const char *name);
+bool RegulatorTreeIsUpNodeComplete(const char *name);
 
 #ifdef __cplusplus
 #if __cplusplus
