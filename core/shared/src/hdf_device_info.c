@@ -18,7 +18,6 @@ void HdfDeviceInfoConstruct(struct HdfDeviceInfo *deviceInfo)
         return;
     }
     deviceInfo->isDynamic = false;
-    deviceInfo->hostId = 0;
     deviceInfo->status = HDF_SERVICE_UNUSABLE;
     deviceInfo->deviceType = HDF_DEV_LOCAL_SERVICE;
     deviceInfo->deviceId = 0;

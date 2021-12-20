@@ -27,8 +27,7 @@ struct HdfDeviceInfo {
     bool isDynamic;
     uint16_t status;
     uint16_t deviceType;
-    uint16_t hostId;
-    uint16_t deviceId;
+    uint32_t deviceId;
     uint16_t policy;
     uint16_t priority;
     uint16_t preload;

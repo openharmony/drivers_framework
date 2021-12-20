@@ -196,7 +196,6 @@ static bool GetDevcieNodeList(const struct DeviceResourceNode *device,
             continue;
         }
 
-        deviceNodeInfo->hostId = hostId;
         deviceNodeInfo->deviceId = MK_DEVID(hostId, deviceIdx, deviceNodeIdx);
         if (deviceNodeInfo->preload != DEVICE_PRELOAD_DISABLE) {
             if (!HdfSListAddOrder(&hostClnt->unloadDevInfos, &deviceNodeInfo->node, HdfDeviceListCompare)) {
