@@ -18,9 +18,11 @@
 #define SENSOR_I2C6_DATA_REG_ADDR 0x114f004c
 #define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048
 #define SENSOR_I2C_REG_CFG        0x403
+#define SENSOR_TIME_BIGGER         0
+#define SENSOR_TIME_SMALLER        1
 
 static struct Bh1745DrvData *g_bh1745DrvData = NULL;
-static uint32_t g_timeMapFlag = 1;
+static uint32_t g_timeMapFlag = SENSOR_TIME_SMALLER;
 
 static struct TimeRegAddrValueMap g_timeMap[EXTENDED_ALS_TIME_GROUP_INDEX_MAX] = {
     { EXTENDED_ALS_TIME_GROUP_ATTR_VALUE_0,           BH1745_TIME_160MSEC },
@@ -84,7 +86,7 @@ static int32_t DynamicRangCovert(struct SensorCfgData *CfgData, uint32_t *rgbcDa
 
     if (((rgbcData[ALS_R] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX) ||
     (rgbcData[ALS_G] * BH1745_MULTIPLE_100 > BH1745_TIME_MAX)) && (temp >= BH1745_TIME_320MSEC)) {
-        g_timeMapFlag = 1;
+        g_timeMapFlag = SENSOR_TIME_SMALLER;
         index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
         index--;
 
@@ -93,9 +95,9 @@ static int32_t DynamicRangCovert(struct SensorCfgData *CfgData, uint32_t *rgbcDa
             HDF_LOGE("%s: Failed to write sensor register array ", __func__);
             return HDF_FAILURE;
         }
-    } else if ((g_timeMapFlag == 1) && ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN) ||
+    } else if ((g_timeMapFlag == SENSOR_TIME_SMALLER) && ((rgbcData[ALS_R] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN) ||
     (rgbcData[ALS_G] * BH1745_MULTIPLE_100 < BH1745_TIME_MIN))) {
-        g_timeMapFlag = 0;
+        g_timeMapFlag = SENSOR_TIME_BIGGER;
         index = GetRegGroupIndexByTime(temp, g_timeMap, timeItemNum);
         index++;
         if (index >= timeItemNum) {
