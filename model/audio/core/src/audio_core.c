@@ -147,7 +147,7 @@ int32_t AudioRegisterCodec(struct HdfDeviceObject *device, struct CodecData *cod
 
     ret = AudioSocRegisterDai(device, daiData);
     if (ret != HDF_SUCCESS) {
-        OsalIoUnmap((void *)((uintptr_t)(void*)&(codec->devData->virtualAddress)));
+        OsalIoUnmap((void *)((uintptr_t)(codec->devData->virtualAddress)));
         OsalMemFree(codec);
         ADM_LOG_ERR("Register dai device fail ret=%d", ret);
         return HDF_ERR_IO;

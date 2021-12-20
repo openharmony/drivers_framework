@@ -148,7 +148,7 @@ static int32_t CodecSetSapmConfigInfo(struct CodecData *codeData, struct AudioRe
     for (index = 0; index < regCfgGroup[AUDIO_SAPM_CFG_GROUP]->itemNum; index++) {
         audioSapmControls[index].iface = sapmCtrlItem[index].iface;
         audioSapmControls[index].name = g_audioSapmCfgNameList[sapmCtrlItem[index].arrayIndex];
-        audioSapmControls[index].privateValue = (unsigned long)&ctlSapmRegCfgItem[index];
+        audioSapmControls[index].privateValue = (unsigned long)(uintptr_t)(void*)(&ctlSapmRegCfgItem[index]);
         audioSapmControls[index].Info = AudioInfoCtrlOps;
         audioSapmControls[index].Get  = AudioCodecSapmGetCtrlOps;
         audioSapmControls[index].Set  = AudioCodecSapmSetCtrlOps;
@@ -215,7 +215,7 @@ int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData)
         codeData->controls[index].iface   = compItem[index].iface;
         codeData->controls[index].name    = g_audioControlsList[compItem[index].arrayIndex];
         codeData->controls[index].Info    = AudioInfoCtrlOps;
-        codeData->controls[index].privateValue = (unsigned long)&ctlRegCfgItem[index];
+        codeData->controls[index].privateValue = (unsigned long)(uintptr_t)(void*)(&ctlRegCfgItem[index]);
         if (compItem[index].enable) {
             codeData->controls[index].Get = AudioCodecGetCtrlOps;
             codeData->controls[index].Set = AudioCodecSetCtrlOps;
