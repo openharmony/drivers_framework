@@ -371,6 +371,7 @@ void ReleaseSensorDevManager(struct HdfDeviceObject *device)
     }
 
     OsalMutexDestroy(&manager->mutex);
+    OsalMutexDestroy(&manager->eventMutex);
     OsalMemFree(manager);
     g_sensorDeviceManager = NULL;
 }
