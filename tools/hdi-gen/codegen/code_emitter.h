@@ -42,7 +42,8 @@ struct HeaderFile {
         }
     };
 
-    String ToString() const {
+    String ToString() const
+    {
         switch(type_) {
             case HeaderFileType::OWN_HEADER_FILE:
             case HeaderFileType::OWN_MODULE_HEADER_FILE:

@@ -98,8 +98,6 @@ void CppInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
         sb.AppendFormat("class %s {\n", interfaceName_.string());
         sb.Append("public:\n");
         sb.Append("#endif\n");
-
-
         EmitInterfaceDestruction(sb, g_tab);
         sb.Append("\n");
         EmitInterfaceMethodsDecl(sb, g_tab);

@@ -38,9 +38,7 @@ private:
     void EmitInterfaceGetMethodDecl(StringBuilder& sb);
 
     void EmitInterfaceReleaseMethodDecl(StringBuilder& sb);
-
 };
-
 } // namespace HDI
 } // namespace OHOS
 

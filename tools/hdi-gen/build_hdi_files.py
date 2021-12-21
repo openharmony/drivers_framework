@@ -34,18 +34,20 @@
 import os
 import sys
 
+
 class IdlType:
     INTERFACE = 1
     CALLBACK = 2
     TYPES = 3
 
+
 def translate_file_name(file_name):
     name = file_name[1:] if file_name.startswith("I") else file_name
     translate_name = ""
-    for i in range(len(name)):
-        c = name[i]
+    for index,_ in enumerate(name):
+        c = name[index]
         if c >= 'A' and c <= 'Z':
-            if i > 1:
+            if index > 1:
                 translate_name += "_"
             translate_name += c.lower()
         else:
@@ -157,7 +159,8 @@ def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
     iface_header_file = os.path.join(out_dir, "i" + file_name + ".h")
     client_proxy_header_file = os.path.join(out_dir, file_name + "_proxy.h")
     client_proxy_source_file = os.path.join(out_dir, file_name + "_proxy.cpp")
-    server_driver_source_file = os.path.join(out_dir, file_name + "_driver.cpp")
+    server_driver_source_file = os.path.join(out_dir,
+        file_name + "_driver.cpp")
     server_stub_header_file = os.path.join(out_dir, file_name + "_stub.h")
     server_stub_source_file = os.path.join(out_dir, file_name + "_stub.cpp")
     server_impl_header_file = os.path.join(out_dir, file_name + "_service.h")
@@ -293,9 +296,11 @@ def main(argv):
     if option == "-o":
         outputs = idl_translate(files, language, out_dir)
     elif option == "-c":
-        outputs = get_compile_source_file(argv[4:], language, out_dir, "client_lib_source")
+        outputs = get_compile_source_file(argv[4:],
+            language, out_dir, "client_lib_source")
     elif option == "-s":
-        outputs = get_compile_source_file(argv[4:], language, out_dir, "server_lib_source")
+        outputs = get_compile_source_file(argv[4:],
+            language, out_dir, "server_lib_source")
 
     sys.stdout.write('\n'.join(outputs))
 

@@ -176,7 +176,8 @@ void Options::ShowUsage() const
            "  --gen-c                         Generate C code\n"
            "  --gen-cpp                       Generate C++ code\n"
            "  --gen-java                      Generate Java code\n"
-           "  --kernel                        Generate kernel-mode ioservice stub code, default user-mode ioservice stub code\n"
+           "  --kernel                        Generate kernel-mode ioservice stub code," \
+                                              "default user-mode ioservice stub code\n"
            "  --module-name <module name>     Set driver module name\n"
            "  --build-target <target name>    Generate client code, server code or all code\n"
            "  -d <directory>                  Place generated codes into <directory>\n");
