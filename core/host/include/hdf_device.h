@@ -49,8 +49,7 @@ struct HdfDevice {
     struct IHdfDevice super;
     struct DListHead node;
     struct DListHead devNodes;
-    uint16_t deviceId;
-    uint16_t hostId;
+    devid_t deviceId;
     uint16_t devidIndex;
 };
 int HdfDeviceDetach(struct IHdfDevice *devInst, struct HdfDeviceNode *devNode);
