@@ -225,13 +225,15 @@ static int32_t AudioSeekCpuDaiDevice(struct AudioRuntimeDeivces *rtd, const stru
         ADM_LOG_ERR("Input cpuDaiName check error: configData->cpuDaiName is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
-
     if (DListIsEmpty(&daiController)) {
         ADM_LOG_ERR("daiController is empty.");
         return HDF_FAILURE;
     }
     DLIST_FOR_EACH_ENTRY(cpuDai, &daiController, struct DaiDevice, list) {
-        if (cpuDai != NULL && cpuDai->devDaiName != NULL &&
+        if (cpuDai == NULL) {
+            return HDF_ERR_INVALID_OBJECT;
+        }
+        if (cpuDai->devDaiName != NULL &&
             strcmp(cpuDai->devDaiName, configData->cpuDaiName) == 0) {
             rtd->cpuDai = cpuDai;
             break;
@@ -259,7 +261,10 @@ static int32_t AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struc
         if (codec->devCodecName != NULL && strcmp(codec->devCodecName, configData->codecName) == 0) {
             rtd->codec = codec;
             DLIST_FOR_EACH_ENTRY(codecDai, &daiController, struct DaiDevice, list) {
-                if (codecDai != NULL && codecDai->device != NULL && codec->device == codecDai->device &&
+                if (codecDai == NULL) {
+                    return HDF_ERR_INVALID_OBJECT;
+                }
+                if (codecDai->device != NULL && codec->device == codecDai->device &&
                     codecDai->devDaiName != NULL && strcmp(codecDai->devDaiName, configData->codecDaiName) == 0) {
                     rtd->codecDai = codecDai;
                     break;
@@ -268,7 +273,6 @@ static int32_t AudioSeekCodecDevice(struct AudioRuntimeDeivces *rtd, const struc
             break;
         }
     }
-
     return HDF_SUCCESS;
 }
 
@@ -287,13 +291,20 @@ static int32_t AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const s
     }
 
     DLIST_FOR_EACH_ENTRY(accessory, &accessoryController, struct AccessoryDevice, list) {
-        if (accessory != NULL && accessory->devAccessoryName != NULL &&
-                strcmp(accessory->devAccessoryName, configData->accessoryName) == 0) {
+        if (accessory == NULL) {
+            return HDF_ERR_INVALID_OBJECT;
+        }
+        if (accessory->devAccessoryName != NULL
+         && strcmp(accessory->devAccessoryName, configData->accessoryName) == 0) {
             rtd->accessory = accessory;
             DLIST_FOR_EACH_ENTRY(accessoryDai, &daiController, struct DaiDevice, list) {
-                if (accessoryDai != NULL && accessoryDai->device != NULL &&
-                    accessory->device == accessoryDai->device && accessoryDai->devDaiName != NULL &&
-                    strcmp(accessoryDai->devDaiName, configData->accessoryDaiName) == 0) {
+                if (accessoryDai == NULL) {
+                    return HDF_ERR_INVALID_OBJECT;
+                }
+                if (accessoryDai->device != NULL
+                 && accessory->device == accessoryDai->device
+                 && accessoryDai->devDaiName != NULL
+                 && strcmp(accessoryDai->devDaiName, configData->accessoryDaiName) == 0) {
                     rtd->accessoryDai = accessoryDai;
                     break;
                 }
@@ -320,10 +331,16 @@ static int32_t AudioSeekDspDevice(struct AudioRuntimeDeivces *rtd, const struct 
     }
 
     DLIST_FOR_EACH_ENTRY(dsp, &dspController, struct DspDevice, list) {
-        if (dsp != NULL && dsp->devDspName != NULL && strcmp(dsp->devDspName, configData->dspName) == 0) {
+        if (dsp == NULL) {
+            return HDF_ERR_INVALID_OBJECT;
+        }
+        if (dsp->devDspName != NULL && strcmp(dsp->devDspName, configData->dspName) == 0) {
             rtd->dsp = dsp;
             DLIST_FOR_EACH_ENTRY(dspDai, &daiController, struct DaiDevice, list) {
-                if (dspDai != NULL && dspDai->device != NULL && dsp->device == dspDai->device &&
+                if (dspDai == NULL) {
+                    return HDF_ERR_INVALID_OBJECT;
+                }
+                if (dspDai->device != NULL && dsp->device == dspDai->device &&
                     dspDai->devDaiName != NULL && strcmp(dspDai->devDaiName, configData->dspDaiName) == 0) {
                     rtd->dspDai = dspDai;
                     break;
