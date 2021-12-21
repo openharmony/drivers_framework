@@ -97,12 +97,16 @@ struct RegulatorNode {
 };
 
 struct RegulatorMethod {
+    int32_t (*open)(struct RegulatorNode *node);
+    int32_t (*close)(struct RegulatorNode *node);
+    int32_t (*release)(struct RegulatorNode *node);
     int32_t (*enable)(struct RegulatorNode *node);
     int32_t (*disable)(struct RegulatorNode *node);
+    int32_t (*forceDisable)(struct RegulatorNode *node);
     int32_t (*setVoltage)(struct RegulatorNode *node, uint32_t minUv, uint32_t maxUv);
     int32_t (*getVoltage)(struct RegulatorNode *node, uint32_t *voltage);
     int32_t (*setCurrent)(struct RegulatorNode *node, uint32_t minUa, uint32_t maxUa);
-    int32_t (*getCurrent)(struct RegulatorNode *node, uint32_t *current);
+    int32_t (*getCurrent)(struct RegulatorNode *node, uint32_t *regCurrent);
     int32_t (*getStatus)(struct RegulatorNode *node, uint32_t *status);
 };
 
@@ -120,6 +124,7 @@ int32_t RegulatorNodeClose(struct RegulatorNode *node);
  * @return success or fail
  */
 int32_t RegulatorNodeAdd(struct RegulatorNode *node);
+int32_t RegulatorNodeRemove(const char *name);
 /**
  * @brief remove all regulator controllers
  * @param 
@@ -173,7 +178,7 @@ int32_t RegulatorNodeSetCurrent(struct RegulatorNode *node, uint32_t minUA, uint
  * @param current regulator current
  * @return success or fail
  */
-int32_t RegulatorNodeGetCurrent(struct RegulatorNode *node, uint32_t *current);
+int32_t RegulatorNodeGetCurrent(struct RegulatorNode *node, uint32_t *regCurrent);
 /**
  * @brief get regulator status
  * @param node Indicates a regulator controller.

@@ -147,15 +147,15 @@ int32_t RegulatorSetCurrent(DevHandle handle, uint32_t minUa, uint32_t maxUa)
     return HDF_SUCCESS;
 }
 
-int32_t RegulatorGetCurrent(DevHandle handle, uint32_t *current)
+int32_t RegulatorGetCurrent(DevHandle handle, uint32_t *regCurrent)
 {
     struct RegulatorNode *node = (struct RegulatorNode *)handle;
-    if (node == NULL || current == NULL) {
+    if (node == NULL || regCurrent == NULL) {
         HDF_LOGE("%s: param is null", __func__);
         return HDF_FAILURE;
     }
 
-    int ret = RegulatorNodeGetCurrent(node, current);
+    int ret = RegulatorNodeGetCurrent(node, regCurrent);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: RegulatorNodeGetCurrent fail", __func__);
         return HDF_FAILURE;

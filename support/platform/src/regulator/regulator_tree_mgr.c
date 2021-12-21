@@ -8,6 +8,7 @@
 
 #include "regulator_tree_mgr.h"
 #include "osal_mem.h"
+#include "securec.h"
 
 static struct RegulatorTreeManager *g_regulatorTreeManager = NULL;
 static int RegulatorChildNodeAdd(struct RegulatorTreeInfo *pRegulator, struct RegulatorNode *child)
@@ -28,21 +29,26 @@ static int RegulatorChildNodeAdd(struct RegulatorTreeInfo *pRegulator, struct Re
     HDF_LOGI("RegulatorChildNodeAdd: add %s child node success!", pRegulator->name);
     return HDF_SUCCESS;
 }
+
 void RegulatorChildListDestroy(struct RegulatorTreeInfo *pRegulator)
 {
     CHECK_NULL_PTR_RETURN(pRegulator);
     struct RegulatorChildNode *nodeInfo = NULL;
+    struct RegulatorChildNode *tmp = NULL;
 
-    DLIST_FOR_EACH_ENTRY(nodeInfo, &pRegulator->childHead, struct RegulatorChildNode, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, &pRegulator->childHead, struct RegulatorChildNode, node) {
         DListRemove(&nodeInfo->node);
         OsalMemFree(nodeInfo);
     }
 }
-struct RegulatorNode *RegulatorTreeGetParent(const char *name)
+
+// name:the regulator node name; fun :get the node parent struct RegulatorNode
+struct RegulatorNode * RegulatorTreeGetParent(const char *name)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, NULL);
 
     struct RegulatorTreeInfo *pos = NULL;
+    struct RegulatorTreeInfo *tmp = NULL;
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, NULL);
 
@@ -51,7 +57,7 @@ struct RegulatorNode *RegulatorTreeGetParent(const char *name)
         return NULL;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         if (strcmp(pos->name, name) == 0) {
             if (pos->parent == NULL) {
                 (void)OsalMutexUnlock(&manager->lock);
@@ -70,11 +76,13 @@ struct RegulatorNode *RegulatorTreeGetParent(const char *name)
     return NULL;
 }
 
+// next level child
 static struct DListHead *RegulatorTreeGetChild(const char *name)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, NULL);
 
     struct RegulatorTreeInfo *pos = NULL;
+    struct RegulatorTreeInfo *tmp = NULL;
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, NULL);
 
@@ -83,7 +91,7 @@ static struct DListHead *RegulatorTreeGetChild(const char *name)
         return NULL;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         if (strcmp(pos->name, name) == 0) {
             (void)OsalMutexUnlock(&manager->lock);
             HDF_LOGI("RegulatorTreeGetChild: get %s child success!", name);
@@ -96,6 +104,61 @@ static struct DListHead *RegulatorTreeGetChild(const char *name)
     return NULL;
 }
 
+// name:the regulator node name
+bool RegulatorTreeIsUpNodeComplete(const char *name)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(name, false);
+
+    struct RegulatorNode *node = RegulatorTreeGetParent(name);
+    CHECK_NULL_PTR_RETURN_VALUE(node, false);
+
+    if ((node->regulatorInfo.parentName == NULL) || (strlen(node->regulatorInfo.parentName) == 0)) {
+        return true;
+    } else {
+        return RegulatorTreeIsUpNodeComplete(node->regulatorInfo.name);
+    }
+}
+
+bool RegulatorTreeIsChildAlwayson(const char *name)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(name, false);
+    struct DListHead *pList = RegulatorTreeGetChild(name);
+    CHECK_NULL_PTR_RETURN_VALUE(pList, false);
+
+    struct RegulatorChildNode *nodeInfo = NULL;
+    struct RegulatorChildNode *tmp = NULL;
+    DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, pList, struct RegulatorChildNode, node) {
+        if (nodeInfo->child->regulatorInfo.constraints.alwaysOn) {
+            HDF_LOGD("RegulatorTreeIsChildAlwayson:%s's child %s alwaysOn true!",
+                name, nodeInfo->child->regulatorInfo.name);
+            return true;
+        }
+    }
+
+    HDF_LOGD("RegulatorTreeIsChildAlwayson:%s's all child alwaysOn false!", name);
+    return false;
+}
+
+bool RegulatorTreeIsChildStatusOn(const char *name)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(name, false);
+    struct DListHead *pList = RegulatorTreeGetChild(name);
+    CHECK_NULL_PTR_RETURN_VALUE(pList, false);
+
+    struct RegulatorChildNode *nodeInfo = NULL;
+    struct RegulatorChildNode *tmp = NULL;
+    DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, pList, struct RegulatorChildNode, node) {
+        if (nodeInfo->child->regulatorInfo.status == REGULATOR_STATUS_ON) {
+            HDF_LOGD("RegulatorTreeIsChildAlwayson:%s's child %s status on!",
+                name, nodeInfo->child->regulatorInfo.name);
+            return true;
+        }
+    }
+
+    HDF_LOGD("RegulatorTreeIsChildAlwayson:%s's all child status off!", name);
+    return false;
+}
+
 bool RegulatorTreeIsAllChildDisable(const char *name)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, true);
@@ -103,7 +166,8 @@ bool RegulatorTreeIsAllChildDisable(const char *name)
     CHECK_NULL_PTR_RETURN_VALUE(pList, true);
 
     struct RegulatorChildNode *nodeInfo = NULL;
-    DLIST_FOR_EACH_ENTRY(nodeInfo, pList, struct RegulatorChildNode, node) {
+    struct RegulatorChildNode *tmp = NULL;
+    DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, pList, struct RegulatorChildNode, node) {
         if (nodeInfo->child->regulatorInfo.status == REGULATOR_STATUS_ON) {
             HDF_LOGI("RegulatorTreeIsAllChildDisable:%s's child %s on!", name, nodeInfo->child->regulatorInfo.name);
             return false;
@@ -118,10 +182,11 @@ int32_t RegulatorTreeChildForceDisable(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     struct DListHead *pList = RegulatorTreeGetChild(node->regulatorInfo.name);
-    CHECK_NULL_PTR_RETURN_VALUE(pList, HDF_ERR_INVALID_PARAM);
+    CHECK_NULL_PTR_RETURN_VALUE(pList, HDF_SUCCESS);
     
     struct RegulatorChildNode *nodeInfo = NULL;
-    DLIST_FOR_EACH_ENTRY(nodeInfo, pList, struct RegulatorChildNode, node) {
+    struct RegulatorChildNode *tmp = NULL;
+    DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, pList, struct RegulatorChildNode, node) {
         if (RegulatorTreeChildForceDisable(nodeInfo->child) != HDF_SUCCESS) {
             HDF_LOGE("RegulatorTreeChildForceDisable: %s fail!", nodeInfo->child->regulatorInfo.name);
             return HDF_FAILURE;
@@ -150,17 +215,18 @@ static int32_t RegulatorTreeManagerNodeInit(const char *name)
 
     struct RegulatorTreeInfo *nodeInfo = NULL;
     struct RegulatorTreeInfo *pos = NULL;
+    struct RegulatorTreeInfo *tmp = NULL;
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
 
     if (OsalMutexLock(&manager->lock) != HDF_SUCCESS) {
-        HDF_LOGE("RegulatorTreeSetParent: lock regulator manager fail!");
+        HDF_LOGE("RegulatorTreeManagerNodeInit: lock regulator manager fail!");
         return HDF_ERR_DEVICE_BUSY;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         if (strcmp(pos->name, name) == 0) {
-            HDF_LOGI("node %s has exists!", name);
+            HDF_LOGI("RegulatorTreeManagerNodeInit: node %s has exists!", name);
             (void)OsalMutexUnlock(&manager->lock);
             return HDF_SUCCESS;
         }
@@ -179,12 +245,14 @@ static int32_t RegulatorTreeManagerNodeInit(const char *name)
     return HDF_SUCCESS;
 }
 
+// set regulator (name)'s (parent) info
 static int RegulatorTreeSetParent(const char *name, struct RegulatorNode *parent)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(parent, HDF_ERR_INVALID_PARAM);
     
     struct RegulatorTreeInfo *pos = NULL;
+    struct RegulatorTreeInfo *tmp = NULL;
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
 
@@ -193,7 +261,7 @@ static int RegulatorTreeSetParent(const char *name, struct RegulatorNode *parent
         return HDF_ERR_DEVICE_BUSY;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         if (strcmp(pos->name, name) == 0) {
             pos->parent = parent;
             (void)OsalMutexUnlock(&manager->lock);
@@ -206,12 +274,15 @@ static int RegulatorTreeSetParent(const char *name, struct RegulatorNode *parent
     HDF_LOGI("RegulatorTreeSetParent:%s does not exist!", name);
     return HDF_FAILURE;
 }
+
+// add (child) to regulator (name)'s childHead
 static int RegulatorTreeSetChild(const char *name, struct RegulatorNode *child)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(child, HDF_ERR_INVALID_PARAM);
 
     struct RegulatorTreeInfo *pos = NULL;
+    struct RegulatorTreeInfo *tmp = NULL;
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
 
@@ -220,7 +291,7 @@ static int RegulatorTreeSetChild(const char *name, struct RegulatorNode *child)
         return HDF_ERR_DEVICE_BUSY;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         if (strcmp(pos->name, name) == 0) {
             if (RegulatorChildNodeAdd(pos, child) != HDF_SUCCESS) {
                 HDF_LOGE("RegulatorTreeSetChild: RegulatorChildNodeAdd fail!");
@@ -228,7 +299,7 @@ static int RegulatorTreeSetChild(const char *name, struct RegulatorNode *child)
                 return HDF_FAILURE;
             }
             (void)OsalMutexUnlock(&manager->lock);
-            HDF_LOGI("RegulatorTreeSetChild: set %s parent success!", name);
+            HDF_LOGI("RegulatorTreeSetChild: set %s child success!", name);
             return HDF_SUCCESS;
         }
     }
@@ -238,6 +309,12 @@ static int RegulatorTreeSetChild(const char *name, struct RegulatorNode *child)
     return HDF_FAILURE;
 }
 
+/*
+* name: child regulator node name
+* child: child regulator node info
+* parent: parent regulator node info
+* process: set regultor (name)'s RegulatorTreeInfo:parent,and add (name) to (parent)'s RegulatorTreeInfo:childHead
+*/
 int RegulatorTreeSet(const char *name, struct RegulatorNode *child, struct RegulatorNode *parent)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, HDF_ERR_INVALID_PARAM);
@@ -262,7 +339,8 @@ int RegulatorTreeSet(const char *name, struct RegulatorNode *child, struct Regul
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("RegulatorTreeSet: set [%s], parent[%s]  success!", name, parent->regulatorInfo.name);
+    HDF_LOGI("RegulatorTreeSet: set [%s], parent[%s] and child info success!", 
+            name, parent->regulatorInfo.name);
     return HDF_SUCCESS;
 }
 static void RegulatorTreePrintChild(const char *name, struct DListHead *childHead)
@@ -271,16 +349,18 @@ static void RegulatorTreePrintChild(const char *name, struct DListHead *childHea
     CHECK_NULL_PTR_RETURN(name);
 
     struct RegulatorChildNode *nodeInfo = NULL;
+    struct RegulatorChildNode *tmp = NULL;
 
-    DLIST_FOR_EACH_ENTRY(nodeInfo, childHead, struct RegulatorChildNode, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, childHead, struct RegulatorChildNode, node) {
         HDF_LOGI("RegulatorTreePrintChild: %s's child %s !", 
             name, nodeInfo->child->regulatorInfo.name);
     }
 }
 
-static void RegulatorTreePrint(void)
+void RegulatorTreePrint(void)
 {
     struct RegulatorTreeInfo *pos = NULL;
+    struct RegulatorTreeInfo *tmp = NULL;
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN(manager);
 
@@ -289,7 +369,7 @@ static void RegulatorTreePrint(void)
         return;
     }
 
-    DLIST_FOR_EACH_ENTRY(pos, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         HDF_LOGI("RegulatorTreePrint %s info IN ---->", pos->name);
         if (pos->parent != NULL) {
             HDF_LOGI("RegulatorTreePrint %s info, parent name[%s]", 
@@ -305,6 +385,7 @@ static void RegulatorTreePrint(void)
 int RegulatorTreeNodeRemoveAll(void)
 {
     struct RegulatorTreeInfo *nodeInfo = NULL;
+    struct RegulatorTreeInfo *tmp = NULL;
     struct RegulatorTreeManager *manager = g_regulatorTreeManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_FAILURE);
 
@@ -313,7 +394,7 @@ int RegulatorTreeNodeRemoveAll(void)
         return HDF_ERR_DEVICE_BUSY;
     }
 
-    DLIST_FOR_EACH_ENTRY(nodeInfo, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
+    DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         RegulatorChildListDestroy(nodeInfo);
         DListRemove(&nodeInfo->node);
         OsalMemFree(nodeInfo);
