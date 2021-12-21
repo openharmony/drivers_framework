@@ -52,7 +52,6 @@ static struct HdfDevice *DevHostServiceQueryOrAddDevice(struct DevHostService *i
             HDF_LOGE("Dev host service failed to create driver instance");
             return NULL;
         }
-        device->hostId = inst->hostId;
         device->deviceId = MK_DEVID(inst->hostId, deviceId, 0);
         DListInsertHead(&device->node, &inst->devices);
     }
