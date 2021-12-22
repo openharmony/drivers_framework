@@ -294,17 +294,17 @@ static int32_t AudioSeekAccessoryDevice(struct AudioRuntimeDeivces *rtd, const s
         if (accessory == NULL) {
             return HDF_ERR_INVALID_OBJECT;
         }
-        if (accessory->devAccessoryName != NULL
-         && strcmp(accessory->devAccessoryName, configData->accessoryName) == 0) {
+        if (accessory->devAccessoryName != NULL &&
+            strcmp(accessory->devAccessoryName, configData->accessoryName) == 0) {
             rtd->accessory = accessory;
             DLIST_FOR_EACH_ENTRY(accessoryDai, &daiController, struct DaiDevice, list) {
                 if (accessoryDai == NULL) {
                     return HDF_ERR_INVALID_OBJECT;
                 }
-                if (accessoryDai->device != NULL
-                 && accessory->device == accessoryDai->device
-                 && accessoryDai->devDaiName != NULL
-                 && strcmp(accessoryDai->devDaiName, configData->accessoryDaiName) == 0) {
+                if (accessoryDai->device != NULL &&
+                    accessory->device == accessoryDai->device &&
+                    accessoryDai->devDaiName != NULL &&
+                    strcmp(accessoryDai->devDaiName, configData->accessoryDaiName) == 0) {
                     rtd->accessoryDai = accessoryDai;
                     break;
                 }
