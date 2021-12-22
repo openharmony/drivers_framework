@@ -16,9 +16,7 @@
 
 #define ALS_DEFAULT_SAMPLING_200_MS    200000000
 #define ALS_CHIP_NAME_BH1745           "bh1745"
-#define ERR_NO_TIME_VALUE              -1
-#define ERR_NO_INDEX_VALUE             -1
-#define ERR_NO_GAIN_VALUE              -1
+#define INVALID_VALUE                  -1
 
 enum ExtendedAlsRegGroupType {
     EXTENDED_ALS_TIME_GROUP = 0,

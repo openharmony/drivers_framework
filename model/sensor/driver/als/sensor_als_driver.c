@@ -37,7 +37,7 @@ int32_t GetTimeByRegValue(uint8_t regValue, struct TimeRegAddrValueMap *map, int
 {
     int32_t i;
 
-    CHECK_NULL_PTR_RETURN_VALUE(map, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(map, INVALID_VALUE);
 
     for (i = 0; i < itemNum; i++) {
         if (regValue == map[i].timeRegKey) {
@@ -45,14 +45,14 @@ int32_t GetTimeByRegValue(uint8_t regValue, struct TimeRegAddrValueMap *map, int
         }
     }
 
-    return ERR_NO_TIME_VALUE;
+    return INVALID_VALUE;
 }
 
 int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeRegAddrValueMap *map, int32_t itemNum)
 {
     int32_t i;
 
-    CHECK_NULL_PTR_RETURN_VALUE(map, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(map, INVALID_VALUE);
 
     for (i = 0; i < itemNum; i++) {
         if (timeValue == map[i].timeValue) {
@@ -60,14 +60,14 @@ int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeRegAddrValueMap *m
         }
     }
 
-    return ERR_NO_INDEX_VALUE;
+    return INVALID_VALUE;
 }
 
 int32_t GetGainByRegValue(uint8_t regValue, struct GainRegAddrValueMap *map, int32_t itemNum)
 {
     int32_t i;
 
-    CHECK_NULL_PTR_RETURN_VALUE(map, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(map, INVALID_VALUE);
 
     for (i = 0; i < itemNum; i++) {
         if (regValue == map[i].gainRegKey) {
@@ -75,7 +75,7 @@ int32_t GetGainByRegValue(uint8_t regValue, struct GainRegAddrValueMap *map, int
         }
     }
 
-    return ERR_NO_GAIN_VALUE;
+    return INVALID_VALUE;
 }
 
 static int32_t GetExtendedAlsRegGroupNameIndex(const char *name)
@@ -140,7 +140,7 @@ int32_t ParseExtendedAlsRegConfig(struct SensorCfgData *config)
         }
 
         if (ParseSensorRegGroup(parser, extendedRegCfgNode, extendedRegAttr->name,
-    &config->extendedRegCfgGroup[index]) != HDF_SUCCESS) {
+            &config->extendedRegCfgGroup[index]) != HDF_SUCCESS) {
             HDF_LOGE("%s: parse sensor register group failed", __func__);
             goto ERROR;
         }
