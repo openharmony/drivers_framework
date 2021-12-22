@@ -10,104 +10,78 @@
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "pcie_core.h"
-#include "pcie_if.h"
 
 #define HDF_LOG_TAG pcie_virtual_c
 
-#define PCIE_ADAPTER_ONE_BYTE 1
-#define PCIE_ADAPTER_TWO_BYTE 2
-#define PCIE_ADAPTER_FOUR_BYTE 4
-#define PCIE_READ_DATA_1 0x95
-#define PCIE_READ_DATA_2 0x27
-#define PCIE_READ_DATA_3 0x89
+#define PCIE_VIRTUAL_ADAPTER_ONE_BYTE 1
+#define PCIE_VIRTUAL_ADAPTER_TWO_BYTE 2
+#define PCIE_VIRTUAL_ADAPTER_FOUR_BYTE 4
+#define PCIE_VIRTUAL_ADAPTER_READ_DATA_1 0x95
+#define PCIE_VIRTUAL_ADAPTER_READ_DATA_2 0x27
+#define PCIE_VIRTUAL_ADAPTER_READ_DATA_3 0x89
 
-struct PcieAdapterHost {
+struct PcieVirtualAdapterHost {
     struct PcieCntlr cntlr;
 };
 
-static int32_t pcieAdapterInit(struct PcieCntlr *cntlr, uint16_t busNum)
-{
-    if (cntlr == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    if (busNum != cntlr->devInfo.busNum) {
-        HDF_LOGE("pci bus num not match.");
-        return HDF_ERR_NOT_SUPPORT;
-    }
-
-    HDF_LOGE("pcieAdapterInit:success! vendorId is %d, devId is %d", cntlr->devInfo.vendorId, cntlr->devInfo.devId);
-    return HDF_SUCCESS;
-}
-
-static int32_t pcieAdapterRead(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len)
+static int32_t PcieVirtualAdapterRead(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len)
 {
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGE("pcieAdapterRead: pos = 0x%x, data = 0x%x, data val = %u, len = %d", pos, (uint32_t)data,
-        *data, len);
-    if (len == 1) {
-        *data = PCIE_READ_DATA_1;
-    } else if (len == 2) {
-        *data = PCIE_READ_DATA_1;
+    HDF_LOGE("PcieVirtualAdapterRead: pos = 0x%x, data = 0x%x, data val = %u, len = %d",
+        pos, (uint32_t)data, *data, len);
+    if (len == PCIE_VIRTUAL_ADAPTER_ONE_BYTE) {
+        *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_1;
+    } else if (len == PCIE_VIRTUAL_ADAPTER_TWO_BYTE) {
+        *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_1;
         data++;
-        *data = PCIE_READ_DATA_2;
+        *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_2;
     } else {
-        *data = PCIE_READ_DATA_1;
+        *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_1;
         data++;
-        *data = PCIE_READ_DATA_2;
+        *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_2;
         data++;
-        *data = PCIE_READ_DATA_2;
+        *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_2;
         data++;
-        *data = PCIE_READ_DATA_3;
+        *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_3;
     }
     return HDF_SUCCESS;
 }
 
-static int32_t pcieAdapterWrite(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len)
+static int32_t PcieVirtualAdapterWrite(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len)
 {
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGE("pcieAdapterWrite: pos = 0x%x, data = 0x%x, data val = %u, len = %d", pos, (uint32_t)data,
+    HDF_LOGE("PcieVirtualAdapterWrite: pos = 0x%x, data = 0x%x, data val = %u, len = %d", pos, (uint32_t)data,
         *data, len);
     return HDF_SUCCESS;
 }
 
-static int32_t pcieAdapterDeinit(struct PcieCntlr *cntlr)
-{
-    if (cntlr == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    cntlr->priv = NULL;
-    return HDF_SUCCESS;
-}
-
-static struct PcieCntlrOps g_pcieAdapterHostOps = {
-    .init = pcieAdapterInit,
-    .read = pcieAdapterRead,
-    .write = pcieAdapterWrite,
-    .deinit = pcieAdapterDeinit,
+static struct PcieCntlrOps g_pcieVirtualAdapterHostOps = {
+    .read = PcieVirtualAdapterRead,
+    .write = PcieVirtualAdapterWrite,
 };
 
-static int32_t PcieAdapterBind(struct HdfDeviceObject *obj)
+static int32_t PcieVirtualAdapterBind(struct HdfDeviceObject *obj)
 {
-    struct PcieAdapterHost *host = NULL;
+    struct PcieVirtualAdapterHost *host = NULL;
     int32_t ret;
 
     if (obj == NULL) {
-        HDF_LOGE("PcieAdapterBind: Fail, device is NULL.");
+        HDF_LOGE("PcieVirtualAdapterBind: Fail, device is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    host = (struct PcieAdapterHost *)OsalMemCalloc(sizeof(struct PcieAdapterHost));
+    host = (struct PcieVirtualAdapterHost *)OsalMemCalloc(sizeof(struct PcieVirtualAdapterHost));
     if (host == NULL) {
-        HDF_LOGE("PcieAdapterBind: no mem for PcieAdapterHost.");
+        HDF_LOGE("PcieVirtualAdapterBind: no mem for PcieAdapterHost.");
         return HDF_ERR_MALLOC_FAIL;
     }
-    host->cntlr.ops = &g_pcieAdapterHostOps;
+    host->cntlr.ops = &g_pcieVirtualAdapterHostOps;
     host->cntlr.hdfDevObj = obj;
     obj->service = &(host->cntlr.service);
 
@@ -121,7 +95,7 @@ static int32_t PcieAdapterBind(struct HdfDeviceObject *obj)
         goto _ERR;
     }
 
-    HDF_LOGE("PcieAdapterBind: success.");
+    HDF_LOGD("PcieVirtualAdapterBind: success.");
     return HDF_SUCCESS;
 _ERR:
     PcieCntlrRemove(&(host->cntlr));
@@ -130,18 +104,18 @@ _ERR:
     return ret;
 }
 
-static int32_t PcieAdapterInit(struct HdfDeviceObject *obj)
+static int32_t PcieVirtualAdapterInit(struct HdfDeviceObject *obj)
 {
     (void)obj;
 
-    HDF_LOGE("PcieAdapterInit: success.");
+    HDF_LOGD("PcieVirtualAdapterInit: success.");
     return HDF_SUCCESS;
 }
 
-static void PcieAdapterRelease(struct HdfDeviceObject *obj)
+static void PcieVirtualAdapterRelease(struct HdfDeviceObject *obj)
 {
     struct PcieCntlr *cntlr = NULL;
-    struct PcieAdapterHost *host = NULL;
+    struct PcieVirtualAdapterHost *host = NULL;
 
     if (obj == NULL) {
         return;
@@ -152,16 +126,16 @@ static void PcieAdapterRelease(struct HdfDeviceObject *obj)
         return;
     }
     PcieCntlrRemove(cntlr);
-    host = (struct PcieAdapterHost *)cntlr;
+    host = (struct PcieVirtualAdapterHost *)cntlr;
     OsalMemFree(host);
     HDF_LOGD("PcieAdapterRelease: success.");
 }
 
 struct HdfDriverEntry g_pcieVirtualDriverEntry = {
     .moduleVersion = 1,
-    .Bind = PcieAdapterBind,
-    .Init = PcieAdapterInit,
-    .Release = PcieAdapterRelease,
+    .Bind = PcieVirtualAdapterBind,
+    .Init = PcieVirtualAdapterInit,
+    .Release = PcieVirtualAdapterRelease,
     .moduleName = "PLATFORM_PCIE_VIRTUAL",
 };
 HDF_INIT(g_pcieVirtualDriverEntry);

@@ -23,10 +23,8 @@ extern "C" {
 struct PcieCntlr;
 
 struct PcieCntlrOps {
-    int32_t (*init)(struct PcieCntlr *cntlr, uint16_t busNum);
     int32_t (*read)(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len);
     int32_t (*write)(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len);
-    int32_t (*deinit)(struct PcieCntlr *cntlr);
 };
 
 struct PcieDevCfgInfo {
@@ -73,10 +71,8 @@ int32_t PcieCntlrParse(struct PcieCntlr *cntlr, struct HdfDeviceObject *obj);
 int32_t PcieCntlrAdd(struct PcieCntlr *cntlr);
 void PcieCntlrRemove(struct PcieCntlr *cntlr);
 
-int32_t PcieCntlrOpen(struct PcieCntlr *cntlr, uint16_t busNum);
 int32_t PcieCntlrRead(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len);
 int32_t PcieCntlrWrite(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len);
-void PcieCntlrClose(struct PcieCntlr *cntlr);
 
 #ifdef __cplusplus
 #if __cplusplus

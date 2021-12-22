@@ -15,8 +15,6 @@
 #define HDF_LOG_TAG pcie_dispatch_c
 
 enum PcieIoCmd {
-    PCIE_CMD_OPEN,
-    PCIE_CMD_CLOSE,
     PCIE_CMD_READ,
     PCIE_CMD_WRITE,
     PCIE_CMD_BUTT,
@@ -26,27 +24,6 @@ struct PcieDispatchFunc {
     int32_t cmd;
     int32_t (*func)(struct PcieCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply);
 };
-
-static int32_t PcieCmdOpen(struct PcieCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
-{
-    uint16_t busNum;
-    (void)reply;
-
-    if (!HdfSbufReadUint16(data, &busNum)) {
-        HDF_LOGE("PcieCmdRead: read busNum fail");
-        return HDF_ERR_IO;
-    }
-    return PcieCntlrOpen(cntlr, busNum);
-}
-
-static int32_t PcieCmdClose(struct PcieCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
-{
-    (void)data;
-    (void)reply;
-
-    PcieCntlrClose(cntlr);
-    return HDF_SUCCESS;
-}
 
 static int32_t PcieCmdRead(struct PcieCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
@@ -110,8 +87,6 @@ int32_t PcieIoDispatch(struct HdfDeviceIoClient *client, int32_t cmd, struct Hdf
     struct PcieCntlr *cntlr = NULL;
     uint32_t i, len;
     struct PcieDispatchFunc dispatchFunc[] = {
-        { PCIE_CMD_OPEN, PcieCmdOpen },
-        { PCIE_CMD_CLOSE, PcieCmdClose },
         { PCIE_CMD_READ, PcieCmdRead },
         { PCIE_CMD_WRITE, PcieCmdWrite },
     };

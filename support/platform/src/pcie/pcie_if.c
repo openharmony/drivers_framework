@@ -25,8 +25,6 @@
 
 #ifdef __USER__
 enum PcieIoCmd {
-    PCIE_CMD_OPEN,
-    PCIE_CMD_CLOSE,
     PCIE_CMD_READ,
     PCIE_CMD_WRITE,
     PCIE_CMD_BUTT,
@@ -53,22 +51,6 @@ static int32_t PcieGetDataFromReply(struct HdfSBuf *reply, uint8_t *data, uint32
         return HDF_ERR_IO;
     }
     return HDF_SUCCESS;
-}
-
-static void PcieUserClose(DevHandle handle)
-{
-    struct HdfIoService *service = (struct HdfIoService *)handle;
-    int32_t ret;
-
-    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
-        HDF_LOGE("PcieUserClose: service is invalid");
-        return;
-    }
-
-    ret = service->dispatcher->Dispatch(&service->object, PCIE_CMD_CLOSE, NULL, NULL);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("PcieUserClose: failed to send service call:%d", ret);
-    }
 }
 
 static int32_t PcieUserRead(DevHandle handle, uint32_t pos, uint8_t *data, uint32_t len)
@@ -190,38 +172,7 @@ __ERR:
 
 DevHandle PcieOpen(uint16_t busNum)
 {
-    DevHandle *obj = (DevHandle *)PcieCntlrObjGet(busNum);
-    int32_t ret;
-
-    if (obj == NULL) {
-        return NULL;
-    }
-#ifdef __USER__
-    struct HdfIoService *service = (struct HdfIoService *)obj;
-    if (service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
-        HDF_LOGE("PcieOpen: dispatcher or Dispatch is NULL!");
-        return NULL;
-    }
-
-    struct HdfSBuf *buf = HdfSBufObtainDefaultSize();
-    if (!HdfSbufWriteUint16(buf, busNum)) {
-        HDF_LOGE("PcieOpen: sbuf write uint16 failed");
-        HdfSBufRecycle(buf);
-        return NULL;
-    }
-    ret = service->dispatcher->Dispatch(&service->object, PCIE_CMD_OPEN, buf, NULL);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("PcieOpen: failed to send service call:%d", ret);
-        return NULL;
-    }
-    HdfSBufRecycle(buf);
-#else
-    ret = PcieCntlrOpen((struct PcieCntlr *)obj, busNum);
-    if (ret != HDF_SUCCESS) {
-        return NULL;
-    }
-#endif
-    return obj;
+    return (DevHandle)PcieCntlrObjGet(busNum);
 }
 
 int32_t PcieRead(DevHandle handle, uint32_t pos, uint8_t *data, uint32_t len)
@@ -244,9 +195,9 @@ int32_t PcieWrite(DevHandle handle, uint32_t pos, uint8_t *data, uint32_t len)
 
 void PcieClose(DevHandle handle)
 {
+    if (handle != NULL) {
 #ifdef __USER__
-    PcieUserClose(handle);
-#else
-    PcieCntlrClose((struct PcieCntlr *)handle);
+        HdfIoServiceRecycle((struct HdfIoService *)handle);
 #endif
+    }
 }

@@ -75,8 +75,8 @@ int32_t PcieCntlrAdd(struct PcieCntlr *cntlr)
 void PcieCntlrRemove(struct PcieCntlr *cntlr)
 {
     if (cntlr != NULL) {
-        PcieCntlrUninit(cntlr);
         PlatformDeviceDel(&cntlr->device);
+        PcieCntlrUninit(cntlr);
     }
 }
 
@@ -97,7 +97,7 @@ int32_t PcieCntlrParse(struct PcieCntlr *cntlr, struct HdfDeviceObject *obj)
         return HDF_FAILURE;
     }
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
-    if (drsOps == NULL || drsOps->GetString == NULL || drsOps->GetUint32 == NULL) {
+    if (drsOps == NULL || drsOps->GetUint32 == NULL) {
         HDF_LOGE("PcieCntlrParse: invalid drs ops fail.");
         return HDF_FAILURE;
     }
@@ -120,20 +120,6 @@ int32_t PcieCntlrParse(struct PcieCntlr *cntlr, struct HdfDeviceObject *obj)
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
-}
-
-int32_t PcieCntlrOpen(struct PcieCntlr *cntlr, uint16_t busNum)
-{
-    int32_t ret;
-
-    if (cntlr == NULL || cntlr->ops == NULL || cntlr->ops->init == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    PcieCntlrLock(cntlr);
-    ret = cntlr->ops->init(cntlr, busNum);
-    PcieCntlrUnlock(cntlr);
-    return ret;
 }
 
 int32_t PcieCntlrRead(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uint32_t len)
@@ -167,17 +153,4 @@ int32_t PcieCntlrWrite(struct PcieCntlr *cntlr, uint32_t pos, uint8_t *data, uin
     ret = cntlr->ops->write(cntlr, pos, data, len);
     PcieCntlrUnlock(cntlr);
     return ret;
-}
-
-void PcieCntlrClose(struct PcieCntlr *cntlr)
-{
-    if (cntlr == NULL || cntlr->ops == NULL || cntlr->ops->deinit == NULL) {
-        return;
-    }
-
-    PcieCntlrLock(cntlr);
-    if (cntlr->ops->deinit(cntlr) != HDF_SUCCESS) {
-        HDF_LOGE("pcie deinit fail");
-    }
-    PcieCntlrUnlock(cntlr);
 }
