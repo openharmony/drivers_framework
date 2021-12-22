@@ -65,7 +65,7 @@ static void GravityDataWorkEntry(void *arg)
         HDF_LOGE("%s: Get time failed", __func__);
         return;
     }
-    event.timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT; /* unit nanosecond */
+    event.timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT;
     event.sensorId = SENSOR_TAG_GRAVITY;
     event.option = 0;
     event.mode = SENSOR_WORK_MODE_REALTIME;
