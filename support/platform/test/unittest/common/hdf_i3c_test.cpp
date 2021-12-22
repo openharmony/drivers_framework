@@ -13,9 +13,9 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <unistd.h>
+#include "hdf_io_service_if.h"
 #include "hdf_uhdf_test.h"
 #include "i3c_test.h"
-#include "hdf_io_service_if.h"
 
 using namespace testing::ext;
 
