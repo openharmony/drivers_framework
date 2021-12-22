@@ -42,7 +42,7 @@ int32_t EmmcDeviceGetCid(struct EmmcDevice *dev, uint8_t *cid, uint32_t len)
     return dev->emmcOps->getCid(dev, cid, len);
 }
 
-void EmmcDeviceAddOps(struct EmmcDevice *dev, void *ops)
+void EmmcDeviceAddOps(struct EmmcDevice *dev, struct EmmcDeviceOps *ops)
 {
     if (dev == NULL) {
         HDF_LOGE("EmmcDeviceAddOps: dev is NULL.");
@@ -52,6 +52,6 @@ void EmmcDeviceAddOps(struct EmmcDevice *dev, void *ops)
         dev->emmcOps = &g_emmcOps;
         HDF_LOGD("EmmcDeviceAddOps: use default ops.");
     } else {
-        dev->emmcOps = (struct EmmcDeviceOps *)ops;
+        dev->emmcOps = ops;
     }
 }
