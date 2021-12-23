@@ -10,7 +10,7 @@
 #define SDIO_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 #include "sdio_if.h"
 
 enum SdioTestCmd {

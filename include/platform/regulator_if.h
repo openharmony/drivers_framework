@@ -10,7 +10,7 @@
 #ifndef REGULATOR_IF_H
 #define REGULATOR_IF_H
 
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus

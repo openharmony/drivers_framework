@@ -29,7 +29,7 @@
 #ifndef I3C_IF_H
 #define I3C_IF_H
 
-#include "hdf_platform.h"
+#include "platform_if.h"
 #include "i3c_ccc.h"
 
 #ifdef __cplusplus

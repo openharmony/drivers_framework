@@ -11,7 +11,7 @@
 
 #include "data_fifo.h"
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 #include "implementation/global_implementation.h"
 #include "usb_ddk_interface.h"
 #include "usb_raw_api.h"

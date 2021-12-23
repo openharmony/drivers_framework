@@ -10,7 +10,7 @@
 #define UART_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 enum UartTestCmd {
     UAER_WRITE_TEST = 0,

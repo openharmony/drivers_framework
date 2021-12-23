@@ -29,7 +29,7 @@
 #ifndef GPIO_IF_H
 #define GPIO_IF_H
 
-#include "hdf_platform.h"
+#include "platform_if.h"
 #include "osal_irq.h"
 
 #ifdef __cplusplus

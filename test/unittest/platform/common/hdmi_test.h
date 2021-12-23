@@ -10,7 +10,7 @@
 #define HDMI_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 enum HdmiTestCmd {
     HDMI_START_AND_STOP_01 = 0,

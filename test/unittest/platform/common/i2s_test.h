@@ -10,7 +10,7 @@
 #define I2S_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 enum I2sTestCmd {
     I2S_SET_CFG_TEST,

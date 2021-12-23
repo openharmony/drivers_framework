@@ -18,15 +18,15 @@
  */
 
 /**
- * @file hdf_platform.h
+ * @file platform_if.h
  *
  * @brief Declares common APIs of the platform driver.
  *
  * @since 1.0
  */
 
-#ifndef HDF_PLATFORM_H
-#define HDF_PLATFORM_H
+#ifndef PLATFORM_IF_H
+#define PLATFORM_IF_H
 
 #include "hdf_base.h"
 
@@ -52,5 +52,5 @@ typedef void* DevHandle;
 #endif
 #endif /* __cplusplus */
 
-#endif /* HDF_PLATFORM_H */
+#endif /* PLATFORM_IF_H */
 /** @} */

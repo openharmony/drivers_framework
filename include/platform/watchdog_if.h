@@ -31,7 +31,7 @@
 #ifndef WATCHDOG_IF_H
 #define WATCHDOG_IF_H
 
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus
