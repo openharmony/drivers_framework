@@ -9,12 +9,12 @@
 #ifndef HDF_POWER_MANAGER_H
 #define HDF_POWER_MANAGER_H
 
+#include "hdf_task_queue.h"
+#include "power_state_token.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include "hdf_task_queue.h"
-#include "power_state_token.h"
 
 typedef enum {
     HDF_PM_REQUEST_ACQUIRE,

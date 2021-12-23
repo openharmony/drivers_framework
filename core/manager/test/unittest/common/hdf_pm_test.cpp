@@ -6,12 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <fcntl.h>
-#include <string>
-#include <unistd.h>
 #include <gtest/gtest.h>
 #include "hdf_io_service.h"
 #include "hdf_pm_driver_test.h"
