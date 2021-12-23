@@ -10,7 +10,7 @@
 #define WATCHDOG_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 enum WatchdogTestCmd {
     WATCHDOG_TEST_SET_GET_TIMEOUT = 0,

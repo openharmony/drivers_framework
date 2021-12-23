@@ -32,7 +32,7 @@
 #ifndef MIPI_CSI_IF_H
 #define MIPI_CSI_IF_H
 
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus

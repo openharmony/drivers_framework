@@ -34,7 +34,7 @@
 #ifndef I2S_IF_H
 #define I2S_IF_H
 
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus

@@ -10,7 +10,7 @@
 #define SPI_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 enum SpiTestCmd {
     SPI_TRANSFER_TEST,

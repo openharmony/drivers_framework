@@ -10,7 +10,7 @@
 #define REGULATOR_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 #ifdef REGULATOR_TEST_PRINTK_OPEN
 #define REGULATOR_TEST_PRINT_LOG_DBG(fmt, arg...) \
