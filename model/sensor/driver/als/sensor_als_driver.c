@@ -33,64 +33,49 @@ static char *g_extendedAlsGroupName[EXTENDED_ALS_GROUP_MAX] = {
     "gain",
 };
 
-int32_t GetTimeByRegValue(uint8_t regValue, struct TimeMap *table, int32_t itemNum)
+int32_t GetTimeByRegValue(uint8_t regValue, struct TimeRegAddrValueMap *map, int32_t itemNum)
 {
     int32_t i;
 
-    CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(map, INVALID_VALUE);
 
     for (i = 0; i < itemNum; i++) {
-        if (regValue == table[i].timeRegValue) {
-            return table[i].timeValue;
+        if (regValue == map[i].timeRegKey) {
+            return map[i].timeValue;
         }
     }
 
-    return HDF_FAILURE;
+    return INVALID_VALUE;
 }
 
-int32_t GetRegValueByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum)
+int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeRegAddrValueMap *map, int32_t itemNum)
 {
     int32_t i;
 
-    CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(map, INVALID_VALUE);
 
     for (i = 0; i < itemNum; i++) {
-        if (timeValue == table[i].timeValue) {
-            return table[i].timeRegValue;
-        }
-    }
-
-    return HDF_FAILURE;
-}
-
-int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeMap *table, int32_t itemNum)
-{
-    int32_t i;
-
-    CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
-
-    for (i = 0; i < itemNum; i++) {
-        if (timeValue == table[i].timeValue) {
+        if (timeValue == map[i].timeValue) {
             return i;
         }
     }
 
-    return HDF_FAILURE;
+    return INVALID_VALUE;
 }
 
-int32_t GetGainByRegValue(uint8_t regValue, struct GainMap *table, int32_t itemNum)
+int32_t GetGainByRegValue(uint8_t regValue, struct GainRegAddrValueMap *map, int32_t itemNum)
 {
     int32_t i;
 
-    CHECK_NULL_PTR_RETURN_VALUE(table, HDF_FAILURE);
+    CHECK_NULL_PTR_RETURN_VALUE(map, INVALID_VALUE);
 
     for (i = 0; i < itemNum; i++) {
-        if (regValue == table[i].gainRegValue) {
-            return table[i].gainValue;
+        if (regValue == map[i].gainRegKey) {
+            return map[i].gainValue;
         }
     }
 
-    return HDF_FAILURE;
+    return INVALID_VALUE;
 }
 
 static int32_t GetExtendedAlsRegGroupNameIndex(const char *name)
