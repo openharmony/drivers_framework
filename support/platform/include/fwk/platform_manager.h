@@ -23,7 +23,6 @@ extern "C" {
 enum PlatformModuleType;
 struct PlatformManager {
     struct PlatformDevice device;
-    const char *name;          /* name of the manager */
     struct DListHead devices;  /* list to keep all it's device instances */
     OsalSpinlock spin;         /* for member protection */
     int32_t (*add)(struct PlatformManager *manager, struct PlatformDevice *device);
@@ -36,11 +35,21 @@ struct PlatformManager {
  * Create a platform manager with member initialized.
  *
  * @param name Indicates the name of the manager.
+ * @param manager Indicates the double pointer to receive the created manager instance.
  *
- * @return Returns the pointer to the paltform manager on success; returns NULL otherwise.
+ * @return Returns 0 if create successfully; returns a negative value otherwise.
  * @since 1.0
  */
-struct PlatformManager *PlatformManagerCreate(const char *name);
+int32_t PlatformManagerCreate(const char *name, struct PlatformManager **manager);
+
+/**
+ * @brief Destroy a platform manager.
+ *
+ * @param name Indicates the name of the manager.
+ *
+ * @since 1.0
+ */
+void PlatformManagerDestroy(struct PlatformManager *manager);
 
 /**
  * @brief Get a platform manager by module type.
@@ -73,9 +82,10 @@ int32_t PlatformManagerAddDevice(struct PlatformManager *manager, struct Platfor
  * @param manager Indicates the pointer to the platform manager.
  * @param device Indicates the pointer to the platform device.
  *
+ * @return Returns 0 if the remove successfully; returns a negative value otherwise.
  * @since 1.0
  */
-void PlatformManagerDelDevice(struct PlatformManager *manager, struct PlatformDevice *device);
+int32_t PlatformManagerDelDevice(struct PlatformManager *manager, struct PlatformDevice *device);
 
 /**
  * @brief Find a particular device from the manager.
@@ -100,12 +110,25 @@ struct PlatformDevice *PlatformManagerFindDevice(struct PlatformManager *manager
  * The device got will be returned with reference count increased.
  *
  * @param manager Indicates the pointer to the platform manager.
- * @param number Indicates the number number of the target platform device.
+ * @param number Indicates the number of the target platform device.
  *
  * @return Returns the pointer to the paltform device on success; returns NULL otherwise.
  * @since 1.0
  */
 struct PlatformDevice *PlatformManagerGetDeviceByNumber(struct PlatformManager *manager, uint32_t number);
+
+/**
+ * @brief Get a platform device from the manager by device name.
+ *
+ * The device got will be returned with reference count increased.
+ *
+ * @param manager Indicates the pointer to the platform manager.
+ * @param number Indicates the name of the target platform device.
+ *
+ * @return Returns the pointer to the paltform device on success; returns NULL otherwise.
+ * @since 1.0
+ */
+struct PlatformDevice *PlatformManagerGetDeviceByName(struct PlatformManager *manager, const char *name);
 
 #ifdef __cplusplus
 #if __cplusplus

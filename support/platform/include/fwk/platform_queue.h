@@ -32,12 +32,13 @@ struct PlatformMsg {
     void *data;
 };
 
-int32_t PlatformMsgWait(struct PlatformMsg *msg);
+int32_t PlatformMsgWait(struct PlatformMsg *msg, uint32_t tms);
 typedef int32_t (*PlatformMsgHandle)(struct PlatformQueue *queue, struct PlatformMsg *msg);
 
 struct PlatformQueue {
     const char *name;
     OsalSpinlock spin;
+    bool start;
     struct OsalSem sem;
     struct DListHead msgs;
     struct OsalThread thread; /* the worker thread of this queue */
@@ -45,12 +46,10 @@ struct PlatformQueue {
     void *data;
 };
 
-void PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg);
+int32_t PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg);
 struct PlatformQueue *PlatformQueueCreate(PlatformMsgHandle handle, const char *name, void *data);
 void PlatformQueueDestroy(struct PlatformQueue *queue);
 int32_t PlatformQueueStart(struct PlatformQueue *queue);
-int32_t PlatformQueueSuspend(struct PlatformQueue *queue);
-int32_t PlatformQueueResume(struct PlatformQueue *queue);
 
 #ifdef __cplusplus
 #if __cplusplus

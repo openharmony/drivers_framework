@@ -102,7 +102,7 @@ struct MmcDevice *MmcCntlrGetDevice(struct MmcCntlr *cntlr);
 
 static inline struct MmcCntlr *MmcCntlrGet(struct MmcCntlr *cntlr)
 {
-    if (cntlr != NULL && PlatformDeviceGet(&cntlr->device) != NULL) {
+    if (cntlr != NULL && PlatformDeviceGet(&cntlr->device) == HDF_SUCCESS) {
         return cntlr;
     }
     return NULL;
@@ -279,6 +279,7 @@ enum MmcMsgCode {
 struct MmcMsg {
     struct PlatformMsg msg;
     struct MmcCmd *mmcCmd;
+    bool block;
 };
 
 struct MmcRwData {

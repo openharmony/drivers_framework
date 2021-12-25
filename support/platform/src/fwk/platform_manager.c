@@ -6,58 +6,115 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "platform_manager.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_sem.h"
 #include "platform_core.h"
-#include "platform_device.h"
-#include "platform_manager.h"
 
 #define PLATFORM_MANAGER_NAME_DEFAULT "PlatformManagerDefault"
 
-static void PlatformManagerInit(struct PlatformManager *manager)
+static inline void PlatformManagerLock(struct PlatformManager *manager)
 {
-    if (manager->name == NULL) {
-        manager->name = PLATFORM_MANAGER_NAME_DEFAULT;
+    (void)OsalSpinLock(&manager->spin);
+}
+
+static inline void PlatformManagerUnlock(struct PlatformManager *manager)
+{
+    (void)OsalSpinUnlock(&manager->spin);
+}
+
+static int32_t PlatformManagerInit(struct PlatformManager *manager)
+{
+    int32_t ret;
+
+    DListHeadInit(&manager->devices);
+    OsalSpinInit(&manager->spin);
+
+    if ((ret = PlatformDeviceInit(&manager->device)) != HDF_SUCCESS) {
+        (void)OsalSpinDestroy(&manager->spin);
+        return ret;
     }
 
-    OsalSpinInit(&manager->spin);
-    DListHeadInit(&manager->devices);
-    PlatformDeviceInit(&manager->device);
-    PlatformDeviceGet(&manager->device);
+    manager->add = NULL;
+    manager->del = NULL;
+    return HDF_SUCCESS;
+}
+
+static void PlatformManagerClearDevice(struct PlatformManager *manager)
+{
+    struct PlatformDevice *tmp = NULL;
+    struct PlatformDevice *pos = NULL;
+
+    if (manager == NULL) {
+        return;
+    }
+
+    PlatformManagerLock(manager);
+    DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->devices, struct PlatformDevice, node) {
+        DListRemove(&pos->node);
+        PlatformDevicePut(pos);  // put the reference hold by manager
+    }
+    PlatformManagerUnlock(manager);
+}
+
+static void PlatformManagerUninit(struct PlatformManager *manager)
+{
+    PlatformManagerClearDevice(manager);
+    PlatformDeviceUninit(&manager->device);
+    (void)OsalSpinDestroy(&manager->spin);
     manager->add = NULL;
     manager->del = NULL;
 }
 
-struct PlatformManager *PlatformManagerCreate(const char *name)
+int32_t PlatformManagerCreate(const char *name, struct PlatformManager **manager)
 {
-    struct PlatformManager *manager = NULL;
+    int32_t ret;
+    struct PlatformManager *managerNew = NULL;
 
-    manager = (struct PlatformManager *)OsalMemCalloc(sizeof(*manager));
-    if (manager == NULL) {
-        HDF_LOGE("PlatformManagerCreate: malloc fail!");
-        return NULL;
+    managerNew = (struct PlatformManager *)OsalMemCalloc(sizeof(*managerNew));
+    if (managerNew == NULL) {
+        PLAT_LOGE("PlatformManagerCreate: malloc fail!");
+        return HDF_ERR_MALLOC_FAIL;
     }
-    manager->name = name;
-    PlatformManagerInit(manager);
-    return manager;
+    managerNew->device.name = name;
+    if ((ret = PlatformManagerInit(managerNew)) != HDF_SUCCESS) {
+        OsalMemFree(managerNew);
+        return ret;
+    }
+    *manager = managerNew;
+    return ret;
+}
+
+void PlatformManagerDestroy(struct PlatformManager *manager)
+{
+    if (manager == NULL) {
+        return;
+    }
+    PlatformManagerUninit(manager);
+    OsalMemFree(manager);
 }
 
 struct PlatformManager *PlatformManagerGet(enum PlatformModuleType module)
 {
+    int32_t ret;
     struct PlatformManager *manager = NULL;
     struct PlatformModuleInfo *info = NULL;
 
     info = PlatformModuleInfoGet(module);
     if (info == NULL) {
-        HDF_LOGE("PlatformManagerGet: get module(%d) info failed", module);
+        PLAT_LOGE("PlatformManagerGet: get module(%d) info failed", module);
         return NULL;
     }
 
     PlatformGlobalLock();
     if (info->priv == NULL) {
-        manager = PlatformManagerCreate(info->moduleName);
-        info->priv = manager;
+        ret = PlatformManagerCreate(info->moduleName, &manager);
+        if (ret != HDF_SUCCESS) {
+            PLAT_LOGE("PlatformManagerGet: create manager failed:%d", ret);
+        } else {
+            info->priv = manager;
+        }
     } else {
         manager = (struct PlatformManager *)info->priv;
     }
@@ -70,74 +127,128 @@ static int32_t PlatformManagerAddDeviceDefault(struct PlatformManager *manager, 
 {
     struct PlatformDevice *tmp = NULL;
     bool repeatId = false;
-
-    if (PlatformDeviceGet(device) == NULL) { // keep a reference by manager
-        return HDF_PLT_ERR_DEV_GET;
-    }
+    bool repeatName = false;
 
     DLIST_FOR_EACH_ENTRY(tmp, &manager->devices, struct PlatformDevice, node) {
-        if (tmp != NULL && tmp->number == device->number) {
+        if (device->number == tmp->number) {
             repeatId = true;
-            HDF_LOGE("PlatformManagerAddDevice: repeated number:%u!", device->number);
+            PLAT_LOGE("%s: device:%s(%d) num repeated in manager:%s", __func__, 
+                device->name, device->number, manager->device.name);
+            break;
+        }
+        if (device->name != NULL && device->name == tmp->name) {
+            repeatName = true;
+            PLAT_LOGE("%s: device:%s(%d) name repeated in manager:%s", __func__, 
+                device->name, device->number, manager->device.name);
             break;
         }
     }
-    if (!repeatId) {
-        DListInsertTail(&device->node, &manager->devices);
-        device->manager = manager;
-    } else {
-        PlatformDevicePut(device);
+
+    if (repeatId) {
+        return HDF_PLT_ERR_ID_REPEAT;
+    }
+    if (repeatName) {
+        return HDF_PLT_ERR_NAME_REPEAT;
     }
 
-    return repeatId ? HDF_PLT_ERR_ID_REPEAT : HDF_SUCCESS;
+    DListInsertTail(&device->node, &manager->devices);
+    return HDF_SUCCESS;
 }
 
 int32_t PlatformManagerAddDevice(struct PlatformManager *manager, struct PlatformDevice *device)
 {
     int32_t ret;
+    struct PlatformDevice *pos = NULL;
 
     if (manager == NULL || device == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    (void)OsalSpinLock(&manager->spin);
+    if (PlatformDeviceGet(device) != HDF_SUCCESS) { // keep a reference by manager
+        return HDF_PLT_ERR_DEV_GET;
+    }
+
+    PlatformManagerLock(manager);
+    DLIST_FOR_EACH_ENTRY(pos, &manager->devices, struct PlatformDevice, node) {
+        if (pos == device) {
+            PlatformManagerUnlock(manager);
+            PLAT_LOGE("%s: device:%s(%d) already in manager:%s", __func__,
+                device->name, device->number, manager->device.name);
+            PlatformDevicePut(device);
+            return HDF_PLT_ERR_OBJ_REPEAT;
+        }
+    }
     if (manager->add != NULL) {
         ret = manager->add(manager, device);
     } else {
         ret = PlatformManagerAddDeviceDefault(manager, device);
     }
-    (void)OsalSpinUnlock(&manager->spin);
+    PlatformManagerUnlock(manager);
+
+    if (ret == HDF_SUCCESS) {
+        PLAT_LOGD("%s: add dev:%s(%d) to %s success", __func__,
+            device->name, device->number, manager->device.name);
+    } else {
+        PlatformDevicePut(device);
+        PLAT_LOGE("%s: add dev:%s(%d) to %s failed:%d", __func__,
+            device->name, device->number, manager->device.name, ret);
+    }
 
     return ret;
 }
 
 static int32_t PlatformManagerDelDeviceDefault(struct PlatformManager *manager, struct PlatformDevice *device)
 {
+    if (manager == NULL || device == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
     if (!DListIsEmpty(&device->node)) {
         DListRemove(&device->node);
+    } else {
+        PLAT_LOGE("%s: device:%s already moved", __func__, device->name);
+        return HDF_ERR_INVALID_PARAM;
     }
-    PlatformDevicePut(device);  // put the reference hold by manager
+
     return HDF_SUCCESS;
 }
 
-void PlatformManagerDelDevice(struct PlatformManager *manager, struct PlatformDevice *device)
+int32_t PlatformManagerDelDevice(struct PlatformManager *manager, struct PlatformDevice *device)
 {
+    int32_t ret;
+    struct PlatformDevice *pos = NULL;
+
     if (manager == NULL || device == NULL) {
-        return;
+        return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (device->manager != manager) {
-        HDF_LOGE("PlatformManagerDelDevice: manager mismatch!");
-        return;
+    PlatformManagerLock(manager);
+    DLIST_FOR_EACH_ENTRY(pos, &manager->devices, struct PlatformDevice, node) {
+        if (pos == device) {
+            break;
+        }
     }
-
-    (void)OsalSpinLock(&manager->spin);
+    if (pos != device) {
+        PLAT_LOGE("%s: device:%s(%d) not in manager:%s", __func__,
+            device->name, device->number, manager->device.name);
+        PlatformManagerUnlock(manager);
+        return HDF_PLT_ERR_NO_DEV;
+    }
     if (manager->del != NULL) {
-        (void)manager->del(manager, device);
+        ret = manager->del(manager, device);
     } else {
-        (void)PlatformManagerDelDeviceDefault(manager, device);
+        ret = PlatformManagerDelDeviceDefault(manager, device);
     }
-    (void)OsalSpinUnlock(&manager->spin);
+    PlatformManagerUnlock(manager);
+
+    if (ret == HDF_SUCCESS) {
+        PlatformDevicePut(device);  // put the reference hold by manager
+        PLAT_LOGD("%s: remove %s(%d) from %s success", __func__,
+            device->name, device->number, manager->device.name);
+    } else {
+        PLAT_LOGE("%s: remove %s(%d) from %s failed:%d", __func__,
+            device->name, device->number, manager->device.name, ret);
+    }
+    return ret;
 }
 
 struct PlatformDevice *PlatformManagerFindDevice(struct PlatformManager *manager, void *data,
@@ -150,17 +261,21 @@ struct PlatformDevice *PlatformManagerFindDevice(struct PlatformManager *manager
         return NULL;
     }
     if (manager->devices.prev == NULL || manager->devices.next == NULL) {
-        HDF_LOGD("PlatformManagerFindDevice: devices not init.");
+        PLAT_LOGD("PlatformManagerFindDevice: devices not init.");
         return NULL;
     }
 
-    (void)OsalSpinLock(&manager->spin);
+    PlatformManagerLock(manager);
     DLIST_FOR_EACH_ENTRY(tmp, &manager->devices, struct PlatformDevice, node) {
-        if (tmp != NULL && match(tmp, data)) {
-            pdevice = PlatformDeviceGet(tmp);
+        if (tmp == NULL || !match(tmp, data)) {
+            continue;
         }
+        if (PlatformDeviceGet(tmp) == HDF_SUCCESS) {
+            pdevice = tmp;
+        }
+        break;
     }
-    (void)OsalSpinUnlock(&manager->spin);
+    PlatformManagerUnlock(manager);
 
     return pdevice;
 }
@@ -178,4 +293,23 @@ struct PlatformDevice *PlatformManagerGetDeviceByNumber(struct PlatformManager *
         return NULL;
     }
     return PlatformManagerFindDevice(manager, (void *)(uintptr_t)number, PlatformDeviceMatchByNumber);
+}
+
+static bool PlatformDeviceMatchByName(struct PlatformDevice *device, void *data)
+{
+    const char *name = (const char *)data;
+
+    if (name == NULL || device->name == NULL) {
+        return false;
+    }
+
+    return (strcmp(name, device->name) == 0);
+}
+
+struct PlatformDevice *PlatformManagerGetDeviceByName(struct PlatformManager *manager, const char *name)
+{
+    if (manager == NULL) {
+        return NULL;
+    }
+    return PlatformManagerFindDevice(manager, (void *)name, PlatformDeviceMatchByName);
 }

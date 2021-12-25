@@ -15,6 +15,8 @@
 #include "hdf_sref.h"
 #include "osal_sem.h"
 #include "osal_spinlock.h"
+#include "platform_event.h"
+#include "platform_if.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -32,37 +34,10 @@ struct PlatformDevice {
     const char *name;                  /* name of the device instance */
     struct HdfSRef ref;                /* used for reference count */
     struct DListHead node;             /* linked to the list of a manager */
-    struct DListHead notifiers;        /* list of notifier nodes */
-    bool ready;                        /* indicates whether initialized */
+    struct PlatformEvent event;        /* platform event obj of this device */
     OsalSpinlock spin;                 /* for member protection */
     struct OsalSem released;           /* for death notification */
     void *priv;                        /* private data of the device */
-};
-
-enum PlatformEventType {
-    PLAT_EVENT_INIT = 0,   /* a platform device already initialized */
-    PLAT_EVENT_DEAD = 1,   /* a platform device going to die */
-    PLAT_EVENT_MAX  = 2,
-};
-
-struct PlatformNotifier {
-    void *data;             /* private data u can take */
-    /**
-     * @brief the event handle funciton of this notifier.
-     *
-     * make sure it can be called in irq context.
-     *
-     * @param device Indicates the pointer to the platform device.
-     * @param event Indicates the event type of this handling process.
-     *
-     * @since 1.0
-     */
-    void (*handle)(struct PlatformDevice *device, enum PlatformEventType event, void *data);
-};
-
-struct PlatformNotifierNode {
-    struct DListHead node;              /* link to notfifier node list */
-    struct PlatformNotifier *notifier;  /* pointer to the notifier instance */
 };
 
 /**
@@ -74,7 +49,7 @@ struct PlatformNotifierNode {
  *
  * @since 1.0
  */
-void PlatformDeviceInit(struct PlatformDevice *device);
+int32_t PlatformDeviceInit(struct PlatformDevice *device);
 
 /**
  * @brief Uninitialize a platform device.
@@ -88,14 +63,37 @@ void PlatformDeviceInit(struct PlatformDevice *device);
 void PlatformDeviceUninit(struct PlatformDevice *device);
 
 /**
+ * @brief Set the name of a platform device.
+ *
+ * Use PlatformDeviceClearName to clean the name if no need anymore.
+ *
+ * @param device Indicates the pointer to the platform device.
+ * @param fmt Indicates the pointer to the format string.
+ *
+ * @since 1.0
+ */
+int32_t PlatformDeviceSetName(struct PlatformDevice *device, const char *fmt, ...);
+
+/**
+ * @brief Clear the name of a platform device.
+ *
+ * Can only clear the name set by PlatformDeviceSetName.
+ *
+ * @param device Indicates the pointer to the platform device.
+ *
+ * @since 1.0
+ */
+void PlatformDeviceClearName(struct PlatformDevice *device); 
+
+/**
  * @brief Increase reference count for a platform device.
  *
  * @param device Indicates the pointer to the platform device.
  *
- * @return Returns the pointer to the paltform device on success; returns NULL otherwise.
+ * @return Returns 0 if get successfully; returns a negative value otherwise.
  * @since 1.0
  */
-struct PlatformDevice *PlatformDeviceGet(struct PlatformDevice *device);
+int32_t PlatformDeviceGet(struct PlatformDevice *device);
 
 /**
  * @brief Decrease reference count for a platform device.
@@ -107,51 +105,61 @@ struct PlatformDevice *PlatformDeviceGet(struct PlatformDevice *device);
 void PlatformDevicePut(struct PlatformDevice *device);
 
 /**
- * @brief Register a notifier to a platform device.
- *
- * Subscribe the events of a platform device by registering a notfier.
+ * @brief Get the reference count for a platform device.
  *
  * @param device Indicates the pointer to the platform device.
- * @param notifier Indicates the pointer to the platform notifier.
  *
- * @return Returns 0 if the notifier registered successfully; returns a negative value otherwise.
+ * @return Returns the reference count on success; returns a negative value otherwise.
  * @since 1.0
  */
-int32_t PlatformDeviceRegNotifier(struct PlatformDevice *device, struct PlatformNotifier *notifier);
+int32_t PlatformDeviceRefCount(struct PlatformDevice *device);
 
 /**
- * @brief Notify a platform event.
+ * @brief Wait for specified events of a platform device.
  *
  * @param device Indicates the pointer to the platform device.
- * @param event The platform event to notify.
+ * @param mask Mask the events interested.
+ * @param tms The timeout value specified.
+ * @param events Pointer to receive the events, NULL if not needed.
  *
- * @return Returns 0 if the notify successfully; returns a negative value otherwise.
+ * @return Returns 0 if wait successfully; returns a negative value otherwise.
  * @since 1.0
  */
-int32_t PlatformDeviceNotify(struct PlatformDevice *device, int32_t event);
+int32_t PlatformDeviceWaitEvent(struct PlatformDevice *device, uint32_t mask, uint32_t tms, uint32_t *events);
 
 /**
- * @brief Unregister a notifier to a platform device.
- *
- * Unsubscribe the events of a platform device by unregistering the notfier.
+ * @brief Post a platform event.
  *
  * @param device Indicates the pointer to the platform device.
- * @param notifier Indicates the pointer to the platform notifier.
+ * @param events The platform event to post.
  *
+ * @return Returns 0 if the event post successfully; returns a negative value otherwise.
  * @since 1.0
  */
-void PlatformDeviceUnregNotifier(struct PlatformDevice *device, struct PlatformNotifier *notifier);
+int32_t PlatformDevicePostEvent(struct PlatformDevice *device, uint32_t events);
 
 /**
- * @brief Unregister all notifiers to a platform device.
+ * @brief Register a listener to a platform device.
  *
- * Unsubscribe all the events of a platform device by clearing the notfiers.
+ * The events will be notified by callback function specified by the platform listener object.
  *
  * @param device Indicates the pointer to the platform device.
+ * @param listener Indicates the pointer to the platform listener.
+ *
+ * @return Returns 0 if registered successfully; returns a negative value otherwise.
+ * @since 1.0
+ */
+int32_t PlatformDeviceListenEvent(struct PlatformDevice *device, struct PlatformEventListener *listener);
+
+/**
+ * @brief Unregister a listener to a platform device.
+ *
+ * @param device Indicates the pointer to the platform device.
+ * @param listener Indicates the pointer to the platform listener.
  *
  * @since 1.0
  */
-void PlatformDeviceClearNotifier(struct PlatformDevice *device);
+void PlatformDeviceUnListenEvent(struct PlatformDevice *device, struct PlatformEventListener *listener);
 
 /**
  * @brief Add a platform device by module type.
@@ -181,9 +189,10 @@ void PlatformDeviceDel(struct PlatformDevice *device);
  *
  * @param device Indicates the pointer to the platform device.
  *
+ * @return Returns 0 if add successfully; returns a negative value otherwise.
  * @since 1.0
  */
-struct DeviceResourceNode *PlatformDeviceGetDrs(struct PlatformDevice *device);
+int32_t PlatformDeviceGetDrs(struct PlatformDevice *device, struct DeviceResourceNode **drs);
 
 /**
  * @brief Create a hdf device service for the platform device.
@@ -191,6 +200,7 @@ struct DeviceResourceNode *PlatformDeviceGetDrs(struct PlatformDevice *device);
  * @param device Indicates the pointer to the platform device.
  * @param dispatch Dispatch function for the service.
  *
+ * @return Returns 0 if create successfully; returns a negative value otherwise.
  * @since 1.0
  */
 int32_t PlatformDeviceCreateService(struct PlatformDevice *device,
@@ -203,7 +213,7 @@ int32_t PlatformDeviceCreateService(struct PlatformDevice *device,
  *
  * @since 1.0
  */
-int32_t PlatformDeviceDestroyService(struct PlatformDevice *device);
+void PlatformDeviceDestroyService(struct PlatformDevice *device);
 
 /**
  * @brief Bind to a hdf device object.
@@ -211,6 +221,7 @@ int32_t PlatformDeviceDestroyService(struct PlatformDevice *device);
  * @param device Indicates the pointer to the platform device.
  * @param hdfDevice Indicates the pointer to the hdf device object.
  *
+ * @return Returns 0 if bind successfully; returns a negative value otherwise.
  * @since 1.0
  */
 int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject *hdfDevice);
@@ -222,7 +233,7 @@ int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject
  *
  * @since 1.0
  */
-int32_t PlatformDeviceUnbind(struct PlatformDevice *device);
+void PlatformDeviceUnbind(struct PlatformDevice *device);
 
 
 /**
@@ -230,9 +241,10 @@ int32_t PlatformDeviceUnbind(struct PlatformDevice *device);
  *
  * @param device Indicates the pointer to the platform device.
  *
+ * @return Returns 0 if get successfully; returns a negative value otherwise.
  * @since 1.0
  */
-struct PlatformDevice *PlatformDeviceFromHdf(struct HdfDeviceObject *device);
+int32_t PlatformDeviceGetFromHdfDev(struct HdfDeviceObject *hdfDev, struct PlatformDevice **device);
 
 #ifdef __cplusplus
 #if __cplusplus

@@ -11,8 +11,17 @@
 #include "osal_mem.h"
 #include "osal_mutex.h"
 #include "osal_thread.h"
+#include "platform_log.h"
 
-#define MMC_QUEUE_THREAD_STAK 20000
+#define PLAT_QUEUE_THREAD_STAK 20000
+
+static void PlatformQueueDoDestroy(struct PlatformQueue *queue)
+{
+    (void)OsalThreadDestroy(&queue->thread);
+    (void)OsalSemDestroy(&queue->sem);
+    (void)OsalSpinDestroy(&queue->spin);
+    OsalMemFree(queue);
+}
 
 static int32_t PlatformQueueThreadWorker(void *data)
 {
@@ -27,6 +36,11 @@ static int32_t PlatformQueueThreadWorker(void *data)
             continue;
         }
 
+        if (!queue->start) {
+            PlatformQueueDoDestroy(queue);
+            break;
+        }
+
         (void)OsalSpinLock(&queue->spin);
         if (DListIsEmpty(&queue->msgs)) {
             msg = NULL;
@@ -38,9 +52,7 @@ static int32_t PlatformQueueThreadWorker(void *data)
         /* message process */
         if (msg != NULL) {
             (void)(queue->handle(queue, msg));
-            if (msg->block == true) {
-                (void)OsalSemPost(&msg->sem);
-            }
+            (void)OsalSemPost(&msg->sem);
         }
     }
     return HDF_SUCCESS;
@@ -57,7 +69,7 @@ struct PlatformQueue *PlatformQueueCreate(PlatformMsgHandle handle, const char *
 
     queue = (struct PlatformQueue *)OsalMemCalloc(sizeof(*queue));
     if (queue == NULL) {
-        HDF_LOGE("PlatformQueueCreate: alloc queue fail!");
+        PLAT_LOGE("PlatformQueueCreate: alloc queue fail!");
         return NULL;
     }
     (void)OsalSpinInit(&queue->spin);
@@ -66,7 +78,7 @@ struct PlatformQueue *PlatformQueueCreate(PlatformMsgHandle handle, const char *
 
     ret = OsalThreadCreate(&queue->thread, (OsalThreadEntry)PlatformQueueThreadWorker, (void *)queue);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("PlatformQueueCreate: create thread fail!");
+        PLAT_LOGE("PlatformQueueCreate: create thread fail!");
         OsalMemFree(queue);
         return NULL;
     }
@@ -74,19 +86,8 @@ struct PlatformQueue *PlatformQueueCreate(PlatformMsgHandle handle, const char *
     queue->name = (name == NULL) ? "PlatformWorkerThread" : name;
     queue->handle = handle;
     queue->data = data;
+    queue->start = false;
     return queue;
-}
-
-void PlatformQueueDestroy(struct PlatformQueue *queue)
-{
-    if (queue == NULL) {
-        return;
-    }
-
-    (void)OsalThreadDestroy(&queue->thread);
-    (void)OsalSemDestroy(&queue->sem);
-    (void)OsalSpinDestroy(&queue->spin);
-    OsalMemFree(queue);
 }
 
 int32_t PlatformQueueStart(struct PlatformQueue *queue)
@@ -100,41 +101,38 @@ int32_t PlatformQueueStart(struct PlatformQueue *queue)
 
     cfg.name = (char *)queue->name;
     cfg.priority = OSAL_THREAD_PRI_HIGHEST;
-    cfg.stackSize = MMC_QUEUE_THREAD_STAK;
+    cfg.stackSize = PLAT_QUEUE_THREAD_STAK;
     ret = OsalThreadStart(&queue->thread, &cfg);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("PlatformQueueStart: start thread fail:%d", ret);
+        PLAT_LOGE("PlatformQueueStart: start thread fail:%d", ret);
         return ret;
     }
+    queue->start = true;
 
     return HDF_SUCCESS;
 }
 
-int32_t PlatformQueueSuspend(struct PlatformQueue *queue)
+void PlatformQueueDestroy(struct PlatformQueue *queue)
 {
     if (queue == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    return OsalThreadSuspend(&queue->thread);
-}
-
-int32_t PlatformQueueResume(struct PlatformQueue *queue)
-{
-    if (queue == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    return OsalThreadResume(&queue->thread);
-}
-
-void PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg)
-{
-    if (queue == NULL || msg == NULL) {
         return;
     }
 
-    if (msg->block == true) {
-        (void)OsalSemInit(&msg->sem, 0);
+    if (queue->start) {
+        queue->start = false;
+        (void)OsalSemPost(&queue->sem);
+    } else {
+        PlatformQueueDoDestroy(queue);
     }
+}
+
+int32_t PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg)
+{
+    if (queue == NULL || msg == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    (void)OsalSemInit(&msg->sem, 0);
     DListHeadInit(&msg->node);
     msg->error = HDF_SUCCESS;
     (void)OsalSpinLock(&queue->spin);
@@ -142,16 +140,20 @@ void PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg)
     (void)OsalSpinUnlock(&queue->spin);
     /* notify the worker thread */
     (void)OsalSemPost(&queue->sem);
+    return HDF_SUCCESS;
 }
 
-int32_t PlatformMsgWait(struct PlatformMsg *msg)
+int32_t PlatformMsgWait(struct PlatformMsg *msg, uint32_t tms)
 {
+    int32_t ret;
+
     if (msg == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (msg->block == false) {
-        return HDF_SUCCESS;
+    ret = OsalSemWait(&msg->sem, tms);
+    if (ret == HDF_SUCCESS) {
+        OsalSemDestroy(&msg->sem);
     }
-    return OsalSemWait(&msg->sem, HDF_WAIT_FOREVER);
+    return ret;
 }

@@ -56,6 +56,10 @@ enum HdfTestSubModuleCmd {
     TEST_PAL_I3C_TYPE       = 22,
     TEST_PAL_MIPI_CSI_TYPE  = 23,
     TEST_PAL_DAC_TYPE       = 24,
+    TEST_PAL_MANAGER_TYPE   = 196,
+    TEST_PAL_DEVICE_TYPE    = 197,
+    TEST_PAL_QUEUE_TYPE     = 198,
+    TEST_PAL_EVENT_TYPE     = 199,
     TEST_PAL_END            = 200,
     TEST_OSAL_BEGIN = TEST_PAL_END,
 #define HDF_OSAL_TEST_ITEM(v) (TEST_OSAL_BEGIN + (v))

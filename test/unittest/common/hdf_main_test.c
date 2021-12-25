@@ -14,6 +14,7 @@
 #include "osal_test_entry.h"
 
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM) || defined(CONFIG_DRIVERS_HDF_PLATFORM)
+#include "hdf_platform_core_entry_test.h"
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)
 #include "hdf_gpio_entry_test.h"
 #endif
@@ -86,6 +87,10 @@
 // add submodule entry
 HdfTestFuncList g_hdfTestFuncList[] = {
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM) || defined(CONFIG_DRIVERS_HDF_PLATFORM)
+    { TEST_PAL_EVENT_TYPE, HdfPlatformEventTestEntry },
+    { TEST_PAL_QUEUE_TYPE, HdfPlatformQueueTestEntry },
+    { TEST_PAL_DEVICE_TYPE, HdfPlatformDeviceTestEntry },
+    { TEST_PAL_MANAGER_TYPE, HdfPlatformManagerTestEntry },
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)
     { TEST_PAL_GPIO_TYPE, HdfGpioTestEntry },
 #endif
