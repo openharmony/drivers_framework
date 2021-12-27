@@ -52,15 +52,15 @@ static int32_t PcieCmdRead(struct PcieCntlr *cntlr, struct HdfSBuf *data, struct
     ret = PcieCntlrRead(cntlr, pos, buf, len);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("PcieCntlrRead: error, ret is %d", ret);
-        goto _EXIST;
+        goto EXIST;
     }
     if (!HdfSbufWriteBuffer(reply, buf, len)) {
         HDF_LOGE("PcieCntlrRead: sbuf write buffer failed");
         ret = HDF_ERR_IO;
-        goto _EXIST;
+        goto EXIST;
     }
     ret = HDF_SUCCESS;
-_EXIST:
+EXIST:
     OsalMemFree(buf);
     return ret;
 }
@@ -85,7 +85,8 @@ static int32_t PcieCmdWrite(struct PcieCntlr *cntlr, struct HdfSBuf *data, struc
 int32_t PcieIoDispatch(struct HdfDeviceIoClient *client, int32_t cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct PcieCntlr *cntlr = NULL;
-    uint32_t i, len;
+    uint32_t i;
+    uint32_t len;
     struct PcieDispatchFunc dispatchFunc[] = {
         { PCIE_CMD_READ, PcieCmdRead },
         { PCIE_CMD_WRITE, PcieCmdWrite },

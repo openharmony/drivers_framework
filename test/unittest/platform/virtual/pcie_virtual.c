@@ -30,7 +30,7 @@ static int32_t PcieVirtualAdapterRead(struct PcieCntlr *cntlr, uint32_t pos, uin
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGE("PcieVirtualAdapterRead: pos = 0x%x, data = 0x%x, data val = %u, len = %d",
+    HDF_LOGD("PcieVirtualAdapterRead: pos = 0x%x, data = 0x%x, data val = %u, len = %d",
         pos, (uint32_t)data, *data, len);
     if (len == PCIE_VIRTUAL_ADAPTER_ONE_BYTE) {
         *data = PCIE_VIRTUAL_ADAPTER_READ_DATA_1;
@@ -56,7 +56,7 @@ static int32_t PcieVirtualAdapterWrite(struct PcieCntlr *cntlr, uint32_t pos, ui
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGE("PcieVirtualAdapterWrite: pos = 0x%x, data = 0x%x, data val = %u, len = %d", pos, (uint32_t)data,
+    HDF_LOGD("PcieVirtualAdapterWrite: pos = 0x%x, data = 0x%x, data val = %u, len = %d", pos, (uint32_t)data,
         *data, len);
     return HDF_SUCCESS;
 }
