@@ -74,8 +74,7 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
 
     device = DevHostServiceQueryOrAddDevice(hostService, DEVICEID(deviceInfo->deviceId));
     if (device == NULL || device->super.Attach == NULL) {
-        ret = HDF_DEV_ERR_NO_DEVICE;
-        goto error;
+        return HDF_DEV_ERR_NO_DEVICE;
     }
     devNode = device->super.GetDeviceNode(&device->super, deviceInfo->deviceId);
     if (devNode != NULL) {
