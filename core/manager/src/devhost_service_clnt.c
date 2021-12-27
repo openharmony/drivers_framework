@@ -51,7 +51,9 @@ int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt)
             HDF_LOGE("failed to install driver %s, ret = %d", deviceInfo->svcName, ret);
             continue;
         }
+#ifndef __USER__
         HdfSListIteratorRemove(&it);
+#endif
     }
     return HDF_SUCCESS;
 }
