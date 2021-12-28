@@ -19,8 +19,11 @@
 
 using namespace testing::ext;
 
+#ifndef __LITEOS__
 static const char *OSAL_FW_PATH = "/lib/firmware";
 static const int OSAL_FW_PATH_MODE = 0x777;
+#endif
+
 #define OSAL_TEST_FUNC_DEFINE(subCmd) do { \
     struct HdfTestMsg msg = { TEST_OSAL_ITEM, subCmd, -1 }; \
     printf("OSAL test enter cmd:%d\n\r", subCmd); \
