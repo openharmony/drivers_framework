@@ -127,19 +127,19 @@ static int32_t PcieUserWrite(DevHandle handle, uint32_t pos, uint8_t *data, uint
     if (!HdfSbufWriteUint32(buf, pos)) {
         HDF_LOGE("PcieUserWrite: sbuf write uint32 failed");
         ret = HDF_ERR_IO;
-        goto __EXIT;
+        goto EXIT;
     }
     if (!HdfSbufWriteBuffer(buf, data, len)) {
         HDF_LOGE("PcieUserWrite: sbuf write buffer failed");
         ret = HDF_ERR_IO;
-        goto __EXIT;
+        goto EXIT;
     }
 
     ret = service->dispatcher->Dispatch(&service->object, PCIE_CMD_WRITE, buf, NULL);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("PcieUserWrite: failed to write, ret %d", ret);
     }
-__EXIT:
+EXIT:
     HdfSBufRecycle(buf);
     return ret;
 }
@@ -158,14 +158,14 @@ static void *PcieCntlrObjGet(uint16_t busNum)
     if (snprintf_s(serviceName, (PCIE_SERVICE_NAME_LEN + 1),
         PCIE_SERVICE_NAME_LEN, "HDF_PLATFORM_PCIE_%d", busNum) < 0) {
         HDF_LOGE("get PCIE service name fail.");
-        goto __ERR;
+        goto EXIT;
     }
 #ifdef __USER__
     obj = (void *)HdfIoServiceBind(serviceName);
 #else
     obj = (void *)PcieCntlrGetByBusNum(busNum);
 #endif
-__ERR:
+EXIT:
     OsalMemFree(serviceName);
     return obj;
 }
