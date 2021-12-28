@@ -10,7 +10,7 @@
 #define PCIE_TEST_H
 
 #include "hdf_device_desc.h"
-#include "hdf_platform.h"
+#include "platform_if.h"
 
 enum PcieTestCmd {
     PCIE_READ_AND_WRITE_01 = 0,
