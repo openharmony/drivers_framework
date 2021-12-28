@@ -87,17 +87,17 @@ static int32_t PcieVirtualAdapterBind(struct HdfDeviceObject *obj)
 
     ret = PcieCntlrParse(&(host->cntlr), obj);
     if (ret != HDF_SUCCESS) {
-        goto _ERR;
+        goto ERR;
     }
 
     ret = PcieCntlrAdd(&(host->cntlr));
     if (ret != HDF_SUCCESS) {
-        goto _ERR;
+        goto ERR;
     }
 
     HDF_LOGD("PcieVirtualAdapterBind: success.");
     return HDF_SUCCESS;
-_ERR:
+ERR:
     PcieCntlrRemove(&(host->cntlr));
     OsalMemFree(host);
     HDF_LOGD("PcieAdapterBind: fail, err = %d.", ret);
