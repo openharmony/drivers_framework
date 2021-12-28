@@ -72,24 +72,24 @@ static int32_t PcieUserRead(DevHandle handle, uint32_t pos, uint8_t *data, uint3
     if (buf == NULL) {
         HDF_LOGE("PcieUserRead: failed to obtain buf");
         ret = HDF_ERR_MALLOC_FAIL;
-        goto __EXIT;
+        goto EXIT;
     }
     if (!HdfSbufWriteUint32(buf, len)) {
         HDF_LOGE("PcieUserRead: sbuf write uint32 failed");
         ret = HDF_ERR_IO;
-        goto __EXIT;
+        goto EXIT;
     }
     if (!HdfSbufWriteUint32(buf, pos)) {
         HDF_LOGE("PcieUserRead: sbuf write uint32 failed");
         ret = HDF_ERR_IO;
-        goto __EXIT;
+        goto EXIT;
     }
 
     reply = HdfSBufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("PcieUserRead: failed to obtain reply");
         ret = HDF_ERR_MALLOC_FAIL;
-        goto __EXIT;
+        goto EXIT;
     }
 
     ret = service->dispatcher->Dispatch(&service->object, PCIE_CMD_READ, buf, reply);
@@ -99,7 +99,7 @@ static int32_t PcieUserRead(DevHandle handle, uint32_t pos, uint8_t *data, uint3
         ret = PcieGetDataFromReply(reply, data, len);
     }
 
-__EXIT :
+EXIT :
     if (reply != NULL) {
         HdfSBufRecycle(reply);
     }

@@ -52,15 +52,15 @@ static int32_t PcieCmdRead(struct PcieCntlr *cntlr, struct HdfSBuf *data, struct
     ret = PcieCntlrRead(cntlr, pos, buf, len);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("PcieCntlrRead: error, ret is %d", ret);
-        goto EXIST;
+        goto EXIT;
     }
     if (!HdfSbufWriteBuffer(reply, buf, len)) {
         HDF_LOGE("PcieCntlrRead: sbuf write buffer failed");
         ret = HDF_ERR_IO;
-        goto EXIST;
+        goto EXIT;
     }
     ret = HDF_SUCCESS;
-EXIST:
+EXIT:
     OsalMemFree(buf);
     return ret;
 }
