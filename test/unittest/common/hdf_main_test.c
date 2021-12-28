@@ -44,6 +44,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SDIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SDIO)
 #include "hdf_sdio_entry_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PCIE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PCIE)
+#include "hdf_pcie_entry_test.h"
+#endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_UART) || defined(CONFIG_DRIVERS_HDF_PLATFORM_UART)
 #include "hdf_uart_entry_test.h"
 #endif
@@ -130,6 +133,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SDIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SDIO)
     { TEST_PAL_SDIO_TYPE, HdfSdioUnitTestEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PCIE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PCIE)
+    { TEST_PAL_PCIE_TYPE, HdfPcieUnitTestEntry },
 #endif
 #if (defined(LOSCFG_STORAGE_EMMC) && defined(LOSCFG_DRIVERS_HDF_PLATFORM_EMMC)) || \
      defined(CONFIG_DRIVERS_HDF_PLATFORM_EMMC)
