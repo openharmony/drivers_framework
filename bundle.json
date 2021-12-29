@@ -1,0 +1,59 @@
+{
+    "name": "@ohos/drivers_framework",
+    "version": "",
+    "description": "提供归一化的驱动平台框架、驱动模型、对外接口等公共框架代码实现",
+    "homePage": "https://gitee.com/openharmony",
+    "license": "GPL V2,BSD3",
+    "repository": "https://gitee.com/openharmony/drivers_framework",
+    "domain": "os",
+    "language": "",
+    "publishAs": "code-segment",
+    "private": false,
+    "scripts": {},
+    "tags": [
+        "drivers"
+    ],
+    "keywords": [
+        "drivers",
+        "framework"
+    ],
+    "envs": [],
+    "dirs": [],
+    "author": {
+        "name": "",
+        "email": "",
+        "url": ""
+    },
+    "contributors": [
+        {
+            "name": "",
+            "email": "",
+            "url": ""
+        }
+    ],
+    "segment": {
+        "destPath": "drivers/framework"
+    },
+    "component": {
+        "name": "driver_framework",
+        "subsystem": "hdf",
+        "syscap": [],
+        "features": [],
+        "adapted_system_type": [
+            "mini",
+            "small",
+            "standard"
+        ],
+        "rom": "",
+        "ram": "",
+        "deps": {
+            "components": [],
+            "third_party": []
+        },
+        "build": {
+            "sub_component": [],
+            "inner_kits": [],
+            "test": []
+        }
+    }
+}
