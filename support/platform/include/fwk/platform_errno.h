@@ -23,13 +23,15 @@ enum PlatformErrno {
     HDF_PLT_ERR_OS_API = HDF_ERR_BSP_PLT_API_ERR,
     HDF_PLT_ERR_OPEN_DEV = HDF_PAL_ERR_DEV_CREATE,     /**< Failed to open a device. */
     HDF_PLT_ERR_INNER = HDF_PAL_ERR_INNER,             /**< Internal error of platform framework. */
-
     HDF_PLT_ERR_NO_DEV = HDF_PLT_ERR_NUM(-5),          /**< There is no device present. */
     HDF_PLT_ERR_DEV_TYPE = HDF_PLT_ERR_NUM(-6),        /**< invalid device type */
     HDF_PLT_ERR_DEV_GET = HDF_PLT_ERR_NUM(-7),         /**< err on device get */
     HDF_PLT_ERR_DEV_ADD = HDF_PLT_ERR_NUM(-8),         /**< err on device add */
     HDF_PLT_ERR_DEV_FULL = HDF_PLT_ERR_NUM(-9),        /**< id number conflict */
     HDF_PLT_ERR_ID_REPEAT = HDF_PLT_ERR_NUM(-10),      /**< id number conflict */
+    HDF_PLT_ERR_NAME_REPEAT = HDF_PLT_ERR_NUM(-11),    /**< id number conflict */
+    HDF_PLT_ERR_OBJ_REPEAT = HDF_PLT_ERR_NUM(-12),     /**< id number conflict */
+    HDF_PLT_ERR_NO_DATA = HDF_PLT_ERR_NUM(-13),        /**< id number conflict */
 #define HDF_MMC_ERR_START (HDF_PLT_ERR_START - 50)     /**< Error number start for mmc. */
 #define HDF_MMC_ERR_NUM(v) (HDF_MMC_ERR_START + (v))
     HDF_MMC_ERR_SWITCH_FAIL = HDF_MMC_ERR_NUM(-1),

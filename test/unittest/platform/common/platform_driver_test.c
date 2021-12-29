@@ -10,13 +10,21 @@
 #include "device_resource_if.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
-#include "hdf_log.h"
+#include "platform_device_test.h"
+#include "platform_event_test.h"
+#include "platform_log.h"
+#include "platform_manager_test.h"
+#include "platform_queue_test.h"
 
 static void DoAllPlatformTest(void)
 {
 #ifdef PLATFORM_TEST_ON_INIT
+    PlatformEventTestExecuteAll();
+    PlatformQueueTestExecuteAll();
+    PlatformManagerTestExecuteAll();
+    PlatformDeviceTestExecuteAll();
 #ifdef LOSCFG_DRIVERS_HDF_PLATFORM_I2C
-    HDF_LOGE("DoAllPlatformTest: do i2c test ...");
+    PLAT_LOGE("DoAllPlatformTest: do i2c test ...");
     I2cTestExecuteAll();
 #endif
 #endif
@@ -27,13 +35,13 @@ static int32_t PlatformTestBind(struct HdfDeviceObject *device)
     static struct IDeviceIoService service;
 
     if (device == NULL) {
-        HDF_LOGE("%s: device is null!", __func__);
+        PLAT_LOGE("%s: device is null!", __func__);
         return HDF_ERR_IO;
     }
 
-    device->service = &service;
     DoAllPlatformTest();
-    HDF_LOGE("PlatformTestBind: done!");
+    device->service = &service;
+    PLAT_LOGE("PlatformTestBind: done!");
     return HDF_SUCCESS;
 }
 

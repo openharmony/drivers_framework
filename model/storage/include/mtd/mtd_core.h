@@ -195,7 +195,7 @@ void MtdDeviceDel(struct MtdDevice *mtdDevice);
  */
 static inline struct MtdDevice *MtdDeviceGet(struct MtdDevice *mtdDevice)
 {
-    if (mtdDevice != NULL && PlatformDeviceGet(&mtdDevice->device) != NULL) {
+    if (mtdDevice != NULL && PlatformDeviceGet(&mtdDevice->device) == HDF_SUCCESS) {
         return mtdDevice;
     }
     return NULL;

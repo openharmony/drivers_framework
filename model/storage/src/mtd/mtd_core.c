@@ -98,10 +98,14 @@ static void MtdDeviceUnlockDefault(struct MtdDevice *mtdDevice)
 
 struct PlatformManager *MtdManagerGet(void)
 {
+    int32_t ret;
     static struct PlatformManager *g_mtdManager = NULL;
 
     if (g_mtdManager == NULL) {
-        g_mtdManager = PlatformManagerCreate("STORAGE_MTD");
+        ret = PlatformManagerCreate("STORAGE_MTD", &g_mtdManager);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("MtdManagerGet: create manager failed:%d", ret);
+        }
     }
     return g_mtdManager;
 }

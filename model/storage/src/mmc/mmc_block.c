@@ -24,7 +24,7 @@ int32_t MmcBlockInit(struct MmcDevice *mmcDevice)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (PlatformDeviceGet(&mmcDevice->device) == NULL) {
+    if (MmcDeviceGet(mmcDevice) == NULL) {
         return HDF_PLT_ERR_DEV_GET;
     }
 

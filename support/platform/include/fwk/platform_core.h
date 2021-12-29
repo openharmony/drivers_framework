@@ -13,6 +13,7 @@
 
 #include "platform_log.h"
 #include "platform_errno.h"
+#include "platform_event.h"
 #include "platform_queue.h"
 #ifndef __USER__
 #include "platform_device.h"

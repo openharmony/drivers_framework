@@ -186,7 +186,7 @@ static int32_t MmcMsgHandleDefault(struct PlatformQueue *queue, struct PlatformM
             break;
     }
 
-    if (mmcMsg->msg.block == false) {
+    if (mmcMsg->block == false) {
         OsalMemFree(mmcMsg);
     }
     return ret;
@@ -303,17 +303,21 @@ static int32_t MmcCntlrPostMsg(struct MmcCntlr *cntlr, struct MmcMsg *mmcMsg)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    PlatformQueueAddMsg(cntlr->msgQueue, &mmcMsg->msg);
-    ret = PlatformMsgWait(&mmcMsg->msg);
-    if (mmcMsg->msg.block == true) {
-        (void)OsalSemDestroy(&mmcMsg->msg.sem);
-        OsalMemFree(mmcMsg);
-    }
+    ret = PlatformQueueAddMsg(cntlr->msgQueue, &mmcMsg->msg);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("MmcCntlrPostMsg: wait mmc msg fail!");
+        OsalMemFree(mmcMsg);
+        HDF_LOGE("MmcCntlrPostMsg: add msg failed");
         return ret;
     }
-    return HDF_SUCCESS;
+    if (!mmcMsg->block) {
+        return HDF_SUCCESS;
+    }
+    ret = PlatformMsgWait(&mmcMsg->msg, HDF_WAIT_FOREVER);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("MmcCntlrPostMsg: wait msg failed:%d", ret);
+    }
+    OsalMemFree(mmcMsg);
+    return ret;
 }
 
 void MmcCntlrSetClock(struct MmcCntlr *cntlr, uint32_t clock)
@@ -648,7 +652,7 @@ int32_t MmcCntlrAddMsgToQueue(struct MmcCntlr *cntlr, struct MmcCmd *cmd,
     }
     msg->msg.code = code;
     msg->msg.data = (void *)cntlr;
-    msg->msg.block = block;
+    msg->block = block;
     msg->mmcCmd = cmd;
     return MmcCntlrPostMsg(cntlr, msg);
 }
@@ -1028,7 +1032,7 @@ struct MmcDevice *MmcDeviceGet(struct MmcDevice *mmc)
         return NULL;
     }
 
-    if (PlatformDeviceGet(&mmc->device) == NULL) {
+    if (PlatformDeviceGet(&mmc->device) != HDF_SUCCESS) {
         HDF_LOGE("MmcDeviceAdd: get device ref fail!");
         return NULL;
     }

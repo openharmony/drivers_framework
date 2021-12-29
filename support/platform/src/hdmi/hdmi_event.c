@@ -24,7 +24,7 @@ static int32_t HdmiEventPostMsg(struct HdmiCntlr *cntlr, struct HdmiEventMsg *ev
     }
 
     PlatformQueueAddMsg(cntlr->msgQueue, &event->msg);
-    ret = PlatformMsgWait(&event->msg);
+    ret = PlatformMsgWait(&event->msg, HDF_WAIT_FOREVER);
     if (event->msg.block == true) {
         (void)OsalSemDestroy(&event->msg.sem);
         OsalMemFree(event);
