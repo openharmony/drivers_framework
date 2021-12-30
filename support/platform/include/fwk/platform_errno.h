@@ -27,11 +27,12 @@ enum PlatformErrno {
     HDF_PLT_ERR_DEV_TYPE = HDF_PLT_ERR_NUM(-6),        /**< invalid device type */
     HDF_PLT_ERR_DEV_GET = HDF_PLT_ERR_NUM(-7),         /**< err on device get */
     HDF_PLT_ERR_DEV_ADD = HDF_PLT_ERR_NUM(-8),         /**< err on device add */
-    HDF_PLT_ERR_DEV_FULL = HDF_PLT_ERR_NUM(-9),        /**< id number conflict */
+    HDF_PLT_ERR_DEV_FULL = HDF_PLT_ERR_NUM(-9),        /**< device of a manager is full */
     HDF_PLT_ERR_ID_REPEAT = HDF_PLT_ERR_NUM(-10),      /**< id number conflict */
-    HDF_PLT_ERR_NAME_REPEAT = HDF_PLT_ERR_NUM(-11),    /**< id number conflict */
-    HDF_PLT_ERR_OBJ_REPEAT = HDF_PLT_ERR_NUM(-12),     /**< id number conflict */
-    HDF_PLT_ERR_NO_DATA = HDF_PLT_ERR_NUM(-13),        /**< id number conflict */
+    HDF_PLT_ERR_NAME_REPEAT = HDF_PLT_ERR_NUM(-11),    /**< name conflict */
+    HDF_PLT_ERR_OBJ_REPEAT = HDF_PLT_ERR_NUM(-12),     /**< repeated object */
+    HDF_PLT_ERR_NO_DATA = HDF_PLT_ERR_NUM(-13),        /**< no data available */
+    HDF_PLT_RSC_NOT_AVL = HDF_PLT_ERR_NUM(-14),        /**< resource not available */
 #define HDF_MMC_ERR_START (HDF_PLT_ERR_START - 50)     /**< Error number start for mmc. */
 #define HDF_MMC_ERR_NUM(v) (HDF_MMC_ERR_START + (v))
     HDF_MMC_ERR_SWITCH_FAIL = HDF_MMC_ERR_NUM(-1),

@@ -14,7 +14,7 @@
 
 #define MAX_CNT_PER_CNTLR          1024
 
-static uint16_t GpioCntlrQueryStart(struct GpioCntlr *cntlr, struct DListHead *list)
+static int32_t GpioCntlrCheckStart(struct GpioCntlr *cntlr, struct DListHead *list)
 {
     uint16_t freeStart;
     uint16_t freeCount;
@@ -36,40 +36,40 @@ static uint16_t GpioCntlrQueryStart(struct GpioCntlr *cntlr, struct DListHead *l
         }
 
         if (cntlr->start < freeStart) {
-            PLAT_LOGE("GpioCntlrQueryStart: start:%u not available(freeStart:%u, freeCount:%u)",
+            PLAT_LOGE("GpioCntlrCheckStart: start:%u not available(freeStart:%u, freeCount:%u)",
                 cntlr->start, freeStart, freeCount);
-            return GPIO_NUM_MAX;
+            return HDF_PLT_RSC_NOT_AVL;
         }
 
         if ((cntlr->start + cntlr->count) <= (freeStart + freeCount)) {
-            return freeStart;
+            return HDF_SUCCESS;
         }
         cntlrLast = cntlrCur;
     }
     if (cntlrLast == NULL) { // empty list
-        return cntlr->start;
+        return HDF_SUCCESS;
     }
     if (cntlr->start >= (cntlrLast->start + cntlrLast->count)) {
-        return cntlrLast->start + cntlrLast->count;
+        return HDF_SUCCESS;
     }
-    PLAT_LOGE("GpioCntlrQueryStart: start:%u not available(lastStart:%u, lastCount:%u)",
-        cntlr->start, cntlrLast->start, cntlrLast->count);
+    PLAT_LOGE("GpioCntlrCheckStart: start:%u(%u) not available(lastStart:%u, lastCount:%u)",
+        cntlr->start, cntlr->count, cntlrLast->start, cntlrLast->count);
     return GPIO_NUM_MAX;
 }
 
 static int32_t GpioManagerAdd(struct PlatformManager *manager, struct PlatformDevice *device)
 {
-    uint16_t start;
+    int32_t ret;
     struct GpioCntlr *cntlr = CONTAINER_OF(device, struct GpioCntlr, device);
 
-    if ((start = GpioCntlrQueryStart(cntlr, &manager->devices)) >= GPIO_NUM_MAX) {
-        PLAT_LOGE("GpioCntlrAdd: query range for start:%d fail:%d", cntlr->start, start);
+    ret = GpioCntlrCheckStart(cntlr, &manager->devices);
+    if (ret != HDF_SUCCESS) {
+        PLAT_LOGE("GpioManagerAdd: start:%u(%u) invalid:%d", cntlr->start, cntlr->count, ret);
         return HDF_ERR_INVALID_PARAM;
     }
 
-    cntlr->start = start;
     DListInsertTail(&device->node, &manager->devices);
-    PLAT_LOGI("%s: start:%u count:%u", __func__, cntlr->start, cntlr->count);
+    PLAT_LOGI("GpioManagerAdd: start:%u count:%u added success", cntlr->start, cntlr->count);
     return HDF_SUCCESS;
 }
 
