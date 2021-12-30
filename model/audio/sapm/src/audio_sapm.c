@@ -1311,7 +1311,7 @@ int32_t AudioSampPowerUp(const struct AudioCard *card)
     DListHeadInit(&upList);
     DLIST_FOR_EACH_ENTRY(sapmComponent, &card->components, struct AudioSapmComponent, list) {
         if (sapmComponent == NULL) {
-            continue;
+            break;
         }
         if (sapmComponent->power == SAPM_POWER_DOWN) {
             AudioSapmPowerSeqInsert(sapmComponent, &upList, SAPM_POWER_UP);
@@ -1345,7 +1345,7 @@ static void AudioSapmEnterSleepSub(const uintptr_t para, struct AudioSapmCompone
     }
     DLIST_FOR_EACH_ENTRY(sapmComponent, &audioCard->components, struct AudioSapmComponent, list) {
         if (sapmComponent == NULL) {
-            continue;
+            break;
         }
         if (sapmComponent->power == SAPM_POWER_UP) {
             AudioSapmPowerSeqInsert(sapmComponent, &downList, SAPM_POWER_DOWN);
