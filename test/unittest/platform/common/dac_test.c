@@ -17,9 +17,10 @@
 #include "securec.h"
 
 #define HDF_LOG_TAG dac_test_c
-#define DAC_TEST_WAIT_TIMES      100
+#define DAC_TEST_WAIT_TIMES        100
 #define TEST_DAC_VAL_NUM           50
 #define DAC_TEST_STACK_SIZE        (1024 * 64)
+#define DAC_TEST_WAIT_TIMEOUT      20
 
 static int32_t DacTestGetConfig(struct DacTestConfig *config)
 {
@@ -99,8 +100,8 @@ int32_t DacTestWrite(void)
     int i;
 
     tester = DacTesterGet();
-	if (tester == NULL || tester->handle == NULL) {
-		HDF_LOGE("%s: get tester failed", __func__);
+    if (tester == NULL || tester->handle == NULL) {
+        HDF_LOGE("%s: get tester failed", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
     for (i = 0; i < TEST_DAC_VAL_NUM; i++) {
@@ -143,11 +144,14 @@ static int DacTestThreadFunc(void *param)
 int32_t DacTestMultiThread(void)
 {
     int32_t ret;
+    uint32_t time;
     struct OsalThread thread1, thread2;
     struct OsalThreadParam cfg1, cfg2;
     int32_t count1, count2;
 
-    count1 = count2 = 0;
+    count1 = 0;
+    count2 = 0;
+    time = 0;
     ret = OsalThreadCreate(&thread1, (OsalThreadEntry)DacTestThreadFunc, (void *)&count1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("create test thread1 fail:%d", ret);
@@ -180,6 +184,10 @@ int32_t DacTestMultiThread(void)
     while (count1 == 0 || count2 == 0) {
         HDF_LOGE("waitting testing thread finish...");
         OsalMSleep(DAC_TEST_WAIT_TIMES);
+        time++;
+        if (time > DAC_TEST_WAIT_TIMEOUT) {
+            break;
+        }
     }
 
     (void)OsalThreadDestroy(&thread1);

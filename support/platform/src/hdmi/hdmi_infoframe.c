@@ -114,7 +114,8 @@ static int32_t HdmiInfoFramePacketAviEncoding(union HdmiInfoFrameInfo *infoFrame
     HdmiInfoFrameFillHeader(&(infoFrame->header), data, len);
     buff += HDMI_INFOFRAME_PACKET_HEADER_LEN;
     /* PB1 */
-    buff[UINT8_ARRAY_TElEMENT_0] |= (avi->colorSpace & HDMI_AVI_COLOR_SPACE_MARK) << HDMI_AVI_COLOR_SPACE_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)avi->colorSpace & HDMI_AVI_COLOR_SPACE_MARK) <<
+                                     HDMI_AVI_COLOR_SPACE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)avi->scanMode & HDMI_AVI_SCAN_MODE_MARK);
     if (avi->activeFormatInformationPresent == true) {
         buff[UINT8_ARRAY_TElEMENT_0] |= (1 << HDMI_AVI_ACTIVE_INFORMATION_SHIFT);
@@ -126,15 +127,16 @@ static int32_t HdmiInfoFramePacketAviEncoding(union HdmiInfoFrameInfo *infoFrame
         buff[UINT8_ARRAY_TElEMENT_0] |= (1 << HDMI_AVI_VERTICAL_BAR_SHIFT);
     }
     /* PB2 */
-    buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)avi->colorimetry & HDMI_AVI_COLORIMETRY_MARK) << HDMI_AVI_COLORIMETRY_SHIFT;
+    buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)avi->colorimetry & HDMI_AVI_COLORIMETRY_MARK) <<
+                                     HDMI_AVI_COLORIMETRY_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)avi->pictureAspect & HDMI_AVI_PICTURE_ASPECT_RATE_MARK) <<
-                                    HDMI_AVI_PICTURE_ASPECT_RATE_SHIFT;
+                                     HDMI_AVI_PICTURE_ASPECT_RATE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)avi->activeAspect & HDMI_AVI_ACTIVE_FORMAT_ASPECT_RATE_MARK);
     /* PB3 */
     buff[UINT8_ARRAY_TElEMENT_2] |= ((uint8_t)avi->extColorimetry & HDMI_AVI_EXT_COLORIMETRY_MARK) <<
-                                    HDMI_AVI_EXT_COLORIMETRY_SHIFT;
+                                     HDMI_AVI_EXT_COLORIMETRY_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_2] |= ((uint8_t)avi->range & HDMI_AVI_EXT_QUANTIZATION_RANGE_MARK) <<
-                                    HDMI_AVI_EXT_QUANTIZATION_RANGE_SHIFT;
+                                     HDMI_AVI_EXT_QUANTIZATION_RANGE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_2] |= ((uint8_t)avi->nups & HDMI_AVI_NUPS_RANGE_MARK);
     if (avi->itc == true) {
         buff[UINT8_ARRAY_TElEMENT_2] |= (1 << HDMI_AVI_IT_CONTENT_SHIFT);
@@ -143,9 +145,9 @@ static int32_t HdmiInfoFramePacketAviEncoding(union HdmiInfoFrameInfo *infoFrame
     buff[UINT8_ARRAY_TElEMENT_3] = avi->vic;
     /* PB5 */
     buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)avi->yccRange & HDMI_AVI_YCC_QUANTIZATION_RANGE_MARK) <<
-                                    HDMI_AVI_YCC_QUANTIZATION_RANGE_SHIFT;
+                                     HDMI_AVI_YCC_QUANTIZATION_RANGE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)avi->itcType & HDMI_AVI_IT_CONTENT_TYPE_MARK) <<
-                                    HDMI_AVI_IT_CONTENT_TYPE_SHIFT;
+                                     HDMI_AVI_IT_CONTENT_TYPE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_4] |= (avi->pixelRepetitionFactor & HDMI_AVI_PIXEL_REPETION_FACTOR_MARK);
     /* PB6 */
     buff[UINT8_ARRAY_TElEMENT_5] = (uint8_t)(avi->topBar & HDMI_AVI_BAR_MODE_MARK);
@@ -223,11 +225,11 @@ static int32_t HdmiInfoFramePacketAudioEncoding(union HdmiInfoFrameInfo *infoFra
     buff += HDMI_INFOFRAME_PACKET_HEADER_LEN;
     /* PB1 */
     buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)audio->codingType & HDMI_AUDIO_CODING_TYPE_MARK) <<
-                                    HDMI_AUDIO_CODING_TYPE_SHIFT;
+                                     HDMI_AUDIO_CODING_TYPE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_0] |= ((uint8_t)audio->channelCount & HDMI_AUDIO_CHANNEL_COUNT_MARK);
     /* PB2 */
     buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)audio->sampleFreq & HDMI_AUDIO_SAMPLE_FREQUENCY_MARK) <<
-                                    HDMI_AUDIO_SAMPLE_FREQUENCY_SHIFT;
+                                     HDMI_AUDIO_SAMPLE_FREQUENCY_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_1] |= ((uint8_t)audio->sampleSize & HDMI_AUDIO_SAMPLE_SIZE_MARK);
     /* PB3 */
     buff[UINT8_ARRAY_TElEMENT_2] |= ((uint8_t)audio->codingExtType & HDMI_AUDIO_CXT_MARK);
@@ -235,7 +237,7 @@ static int32_t HdmiInfoFramePacketAudioEncoding(union HdmiInfoFrameInfo *infoFra
     buff[UINT8_ARRAY_TElEMENT_3] |= audio->channelAllocation;
     /* PB5 */
     buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)audio->levelShiftValue & HDMI_AUDIO_LEVEL_SHIFT_VALUE_MARK) <<
-                                    HDMI_AUDIO_LEVEL_SHIFT_VALUE_SHIFT;
+                                     HDMI_AUDIO_LEVEL_SHIFT_VALUE_SHIFT;
     buff[UINT8_ARRAY_TElEMENT_4] |= ((uint8_t)audio->playBackLevel & HDMI_AUDIO_LEF_PLAYBACK_LEVEL_MARK);
     if (audio->dmInh == true) {
         buff[UINT8_ARRAY_TElEMENT_4] |= (1 << HDMI_AUDIO_DM_INH_SHIFT);

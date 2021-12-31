@@ -216,7 +216,7 @@ int32_t RegulatorNodeInitProcess(struct RegulatorNode *node)
 
     if (node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_CURRENT) {
         RegulatorNodeSetCurrent(node, node->regulatorInfo.constraints.minUa, node->regulatorInfo.constraints.maxUa);
-    } else if(node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_VOLTAGE) {
+    } else if (node->regulatorInfo.constraints.mode == REGULATOR_CHANGE_VOLTAGE) {
         RegulatorNodeSetVoltage(node, node->regulatorInfo.constraints.minUv, node->regulatorInfo.constraints.maxUv);
     }
 

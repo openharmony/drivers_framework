@@ -5,7 +5,7 @@
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
- 
+
 #include "dac/dac_core.h"
 #include "asm/platform.h"
 #include "device_resource_if.h"
@@ -69,7 +69,7 @@ static int32_t VirtualDacReadDrs(struct VirtualDacDevice *virtual, const struct 
         HDF_LOGE("%s: Invalid drs ops fail!", __func__);
         return HDF_FAILURE;
     }
-	if (drsOps->GetUint32(node, "deviceNum", &virtual->deviceNum, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint32(node, "deviceNum", &virtual->deviceNum, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: Read deviceNum fail!", __func__);
         return HDF_ERR_IO;
     }
