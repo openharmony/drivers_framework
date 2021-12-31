@@ -381,7 +381,7 @@ struct HdfObject *DevmgrServiceCreate()
     return (struct HdfObject *)&devmgrServiceInstance;
 }
 
-struct IDevmgrService *DevmgrServiceGetInstance()
+struct IDevmgrService *DevmgrServiceGetInstance(void)
 {
     static struct IDevmgrService *instance = NULL;
     if (instance == NULL) {

@@ -10,7 +10,9 @@
 #define HDF_DEVICE_OBJECT_H
 
 #include "hdf_device_desc.h"
-
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 void HdfDeviceObjectConstruct(struct HdfDeviceObject *deviceObject);
 struct HdfDeviceObject *HdfDeviceObjectAlloc(struct HdfDeviceObject *parent, const char *driverName);
 void HdfDeviceObjectRelease(struct HdfDeviceObject *deviceObject);
@@ -21,4 +23,8 @@ int HdfDeviceObjectPublishService(struct HdfDeviceObject *deviceObject,
 int HdfRemoveService(struct HdfDeviceObject *deviceObject);
 int HdfDeviceObjectSetServInfo(struct HdfDeviceObject *dev, const char *info);
 int HdfDeviceObjectUpdate(struct HdfDeviceObject *dev);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 #endif /* HDF_DEVICE_OBJECT_H */
