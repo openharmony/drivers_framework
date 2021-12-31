@@ -25,14 +25,11 @@ struct PlatformQueue;
 
 struct PlatformMsg {
     struct DListHead node;
-    struct OsalSem sem;
     int32_t code;
     int32_t error;
-    bool block;    /* whether need to block thread */
     void *data;
 };
 
-int32_t PlatformMsgWait(struct PlatformMsg *msg, uint32_t tms);
 typedef int32_t (*PlatformMsgHandle)(struct PlatformQueue *queue, struct PlatformMsg *msg);
 
 struct PlatformQueue {

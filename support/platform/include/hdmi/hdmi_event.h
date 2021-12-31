@@ -35,6 +35,8 @@ enum HdmiEventType {
 
 struct HdmiEventMsg {
     struct PlatformMsg msg;
+    struct OsalSem sem;
+    bool block;
     void *priv;
 };
 

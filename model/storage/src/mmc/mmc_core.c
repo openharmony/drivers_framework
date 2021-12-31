@@ -186,8 +186,10 @@ static int32_t MmcMsgHandleDefault(struct PlatformQueue *queue, struct PlatformM
             break;
     }
 
-    if (mmcMsg->block == false) {
+    if (!mmcMsg->block) {
         OsalMemFree(mmcMsg);
+    } else {
+        (void)OsalSemPost(&mmcMsg->sem);
     }
     return ret;
 }
@@ -303,20 +305,20 @@ static int32_t MmcCntlrPostMsg(struct MmcCntlr *cntlr, struct MmcMsg *mmcMsg)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    ret = PlatformQueueAddMsg(cntlr->msgQueue, &mmcMsg->msg);
-    if (ret != HDF_SUCCESS) {
-        OsalMemFree(mmcMsg);
-        HDF_LOGE("MmcCntlrPostMsg: add msg failed");
-        return ret;
+    if (mmcMsg->block) {
+        (void)OsalSemInit(&mmcMsg->sem, 0);
     }
+    (void)PlatformQueueAddMsg(cntlr->msgQueue, &mmcMsg->msg);
     if (!mmcMsg->block) {
         return HDF_SUCCESS;
     }
-    ret = PlatformMsgWait(&mmcMsg->msg, HDF_WAIT_FOREVER);
+
+    ret = OsalSemWait(&mmcMsg->sem, HDF_WAIT_FOREVER);
+    (void)OsalSemDestroy(&mmcMsg->sem);
+    OsalMemFree(mmcMsg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("MmcCntlrPostMsg: wait msg failed:%d", ret);
     }
-    OsalMemFree(mmcMsg);
     return ret;
 }
 
