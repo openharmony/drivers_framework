@@ -101,6 +101,11 @@ static void ParsePointData(ChipDevice *device, FrameData *frame, uint8_t *buf, u
             frame->fingers[i].x = ((buf[GT_POINT_SIZE * i + GT_Y_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_Y_HIGH] & ONE_BYTE_MASK) <<
                                   ONE_BYTE_OFFSET)) * resX / resY;
+#elif defined(CONFIG_ARCH_ROCKCHIP)
+            frame->fingers[i].x = 720 - ((buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
+                                  ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET));
+            frame->fingers[i].y = 1280 - ((buf[GT_POINT_SIZE * i + GT_Y_LOW] & ONE_BYTE_MASK) |
+                                  ((buf[GT_POINT_SIZE * i + GT_Y_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET));
 #else
             frame->fingers[i].y = (buf[GT_POINT_SIZE * i + GT_X_LOW] & ONE_BYTE_MASK) |
                                   ((buf[GT_POINT_SIZE * i + GT_X_HIGH] & ONE_BYTE_MASK) << ONE_BYTE_OFFSET);
@@ -176,6 +181,24 @@ static int32_t UpdateFirmware(ChipDevice *device)
 {
     int32_t ret;
     InputI2cClient *i2cClient = &device->driver->i2cClient;
+#if defined(CONFIG_ARCH_ROCKCHIP)
+    uint8_t buf[1] = {0};
+    uint8_t reg[GT_ADDR_LEN] = {0};
+
+    reg[0] = (GTP_REG_CONFIG_DATA >> ONE_BYTE_OFFSET) & ONE_BYTE_MASK;
+    reg[1] = GTP_REG_CONFIG_DATA & ONE_BYTE_MASK;
+    ret = InputI2cRead(i2cClient, reg, GT_ADDR_LEN, buf, 1);
+    if (ret < 0) {
+        HDF_LOGE("%s: read fw version failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    HDF_LOGI("%s: buf[0]=0x%x", __func__, buf[0]);
+    if (buf[0] == firmWareParm[2]) {
+        HDF_LOGI("%s: needn't update fw version", __func__);
+        return HDF_SUCCESS;
+    }
+#endif
     ret = InputI2cWrite(i2cClient, firmWareParm, FIRMWARE_LEN);
     if (ret < 0) {
         return HDF_FAILURE;
