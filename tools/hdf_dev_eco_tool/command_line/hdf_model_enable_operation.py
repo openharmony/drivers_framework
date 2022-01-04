@@ -31,11 +31,14 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 import os
+import re
 from string import Template
-import hdf_utils
 
 from .hdf_linux_scann import HdfLinuxScan
 from .hdf_liteos_scann import HdfLiteScan
+from .hdf_command_error_code import CommandErrorCode
+from hdf_tool_exception import HdfToolException
+import hdf_utils
 
 
 class EnableOperation(object):
@@ -44,10 +47,58 @@ class EnableOperation(object):
         self.vendor = vendor
         self.board = board
         self.model = model
-        self.liteos_model_name = HdfLiteScan(
+        temp_liteos_model_name = HdfLiteScan(
             self.root, self.vendor, self.board).scan_build()
-        self.linux_model_name = HdfLinuxScan(
-            self.root, self.vendor, self.board).scan_makefile()
+        self.liteos_model_name = list(map(lambda x:x.strip(",").strip('"'),
+                                          temp_liteos_model_name))
+
+        self.makefile_path = hdf_utils.get_vendor_makefile_path(
+            root, kernel="linux")
+        if not os.path.exists(self.makefile_path):
+            raise HdfToolException(
+                'Makefile: %s not exist' % self.makefile_path,
+                CommandErrorCode.TARGET_NOT_EXIST)
+
+        self.contents_makefile = hdf_utils.read_file_lines(self.makefile_path)
+        self.build_path = hdf_utils.get_vendor_gn_path(self.root)
+        if not os.path.exists(self.build_path):
+            raise HdfToolException('file: %s not exist' % self.build_path,
+                                   CommandErrorCode.TARGET_NOT_EXIST)
+        self.contents_build = hdf_utils.read_file_lines(self.build_path)
+        self.re_temp2 = r'model/[a-z 0-9]+'
+        self.re_temp = r"^group"
+
+    def scan_makefile(self):
+        model_list = []
+        for i in self.contents_makefile:
+            result = re.search(self.re_temp2, i)
+            if result:
+                model_name = result.group().split('/')[-1]
+                if model_name not in model_list:
+                    model_list.append(model_name)
+        return list(set(model_list))
+
+    def scan_build(self):
+        start_index = 0
+        end_index = 0
+        state = 0
+        for index, line in enumerate(self.contents_build):
+            if re.compile(self.re_temp).match(line):
+                start_index = index
+                state += 1
+            elif line.strip() == "{" and start_index > 0:
+                state += 1
+            elif line.strip() == "}" and start_index > 0:
+                state -= 1
+                if state == 0:
+                    end_index = index + 1
+
+        model_list = []
+        for i in self.contents[start_index: end_index]:
+            model_name = re.compile(self.re_temp2).match(i.strip())
+            if model_name:
+                model_list.append(model_name.group().split('/')[-1])
+        return list(set(model_list))
 
     def disable_model_liteos(self):
         dot_file_list = hdf_utils.get_dot_configs_path(
@@ -124,7 +175,7 @@ class EnableOperation(object):
         else:
             try:
                 if self.disable_model_linux():
-                    return "success(linux) enable %s" % self.model
+                    return "success(linux) disable %s" % self.model
                 else:
                     return "%s model_name is not linux type" % self.model
             except Exception:
@@ -144,8 +195,8 @@ class EnableOperation(object):
                     lambda x: x.split(split_sign)[-1] == endswitch, files))
             else:
                 files_list = list(filter(lambda x: x == endswitch, files))
-            for file in files_list:
-                file_path.append(os.path.join(roots, file))
+            for file_name in files_list:
+                file_path.append(os.path.join(roots, file_name))
         return file_path
 
     def _get_config_linux(self):
@@ -174,7 +225,7 @@ class EnableOperation(object):
         return True
 
     def disable_model_linux(self):
-        if self.model not in self.linux_model_name:
+        if self.model not in self.scan_makefile():
             return False
         file_path_list = self._get_config_linux()
         for file_path in file_path_list:
@@ -194,7 +245,7 @@ class EnableOperation(object):
         return True
 
     def enable_model_linux(self):
-        if self.model not in self.linux_model_name:
+        if self.model not in self.scan_makefile():
             return False
         file_path_list = self._get_config_linux()
         for file_path in file_path_list:

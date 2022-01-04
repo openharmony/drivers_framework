@@ -127,47 +127,47 @@ def _write_one_section(file_obj, section_content):
 def add_before_and_save(file_content, file_path, pos_range, new_section):
     if not file_content or not file_path or not pos_range or not new_section:
         return
-    with open(file_path, 'w', newline='\n') as file:
-        file.write(file_content[:pos_range.start_pos])
-        _write_one_section(file, new_section)
-        file.write(file_content[pos_range.start_pos:])
+    with open(file_path, 'w', newline='\n') as file_write:
+        file_write.write(file_content[:pos_range.start_pos])
+        _write_one_section(file_write, new_section)
+        file_write.write(file_content[pos_range.start_pos:])
 
 
 def add_after_and_save(file_content, file_path, pos_range, new_section):
     if not file_content or not file_path or not pos_range or not new_section:
         return
-    with open(file_path, 'w', newline='\n') as file:
-        file.write(file_content[:pos_range.end_pos + 1])
-        _write_one_section(file, new_section)
+    with open(file_path, 'w', newline='\n') as file_write:
+        file_write.write(file_content[:pos_range.end_pos + 1])
+        _write_one_section(file_write, new_section)
         if len(file_content) > pos_range.end_pos + 1:
-            file.write(file_content[pos_range.end_pos + 1:])
+            file_write.write(file_content[pos_range.end_pos + 1:])
 
 
 def append_and_save(file_content, file_path, new_section):
     if not file_content or not file_path or not new_section:
         return
-    with open(file_path, 'w', newline='\n') as file:
-        file.write(file_content)
-        _write_one_section(file, new_section)
+    with open(file_path, 'w', newline='\n') as file_write:
+        file_write.write(file_content)
+        _write_one_section(file_write, new_section)
 
 
 def delete_and_save(file_content, file_path, delete_range):
     if not file_content or not file_path or not delete_range:
         return
     length = len(file_content)
-    with open(file_path, 'w', newline='\n') as file:
-        file.write(file_content[:delete_range.start_pos])
+    with open(file_path, 'w', newline='\n') as file_write:
+        file_write.write(file_content[:delete_range.start_pos])
         if delete_range.end_pos + 1 < length:
-            file.write(file_content[delete_range.end_pos + 1:])
+            file_write.write(file_content[delete_range.end_pos + 1:])
 
 
 def replace_and_save(file_content, file_path, old_range, new_section):
     if not file_content or not file_path or not old_range or not new_section:
         return
-    with open(file_path, 'w', newline='\n') as file:
-        file.write(file_content[:old_range.start_pos])
-        _write_one_section(file, new_section)
-        file.write(file_content[old_range.end_pos + 1:])
+    with open(file_path, 'w', newline='\n') as file_write:
+        file_write.write(file_content[:old_range.start_pos])
+        _write_one_section(file_write, new_section)
+        file_write.write(file_content[old_range.end_pos + 1:])
 
 
 def get_id(part2):
@@ -184,25 +184,25 @@ def create_dirs(dir_path):
 
 
 def read_file(file_path):
-    with open(file_path, encoding="utf-8") as file:
-        content = file.read()
+    with open(file_path, encoding="utf-8") as file_read:
+        content = file_read.read()
     return content
 
 
 def read_file_lines(file_path, code_type="utf-8"):
-    with open(file_path, encoding=code_type) as file:
-        lines = file.readlines()
+    with open(file_path, encoding=code_type) as file_read:
+        lines = file_read.readlines()
     return lines
 
 
 def write_file(file_path, content):
-    with open(file_path, 'w+', newline='\n') as file:
-        file.write(content)
+    with open(file_path, 'w+', newline='\n') as file_write:
+        file_write.write(content)
 
 
 def write_file_lines(file_path, content, code_type="utf-8"):
-    with open(file_path, 'w', encoding=code_type) as file:
-        file.writelines(content)
+    with open(file_path, 'w', encoding=code_type) as file_write:
+        file_write.writelines(content)
 
 
 def get_framework_lite_dir(root):
@@ -293,8 +293,8 @@ def get_templates_lite_dir():
 def get_template(template_name, type_='lite'):
     templates_dir = os.path.join(get_templates_dir(), type_)
     template = os.path.join(templates_dir, template_name)
-    with open(template) as file:
-        template_str = file.read()
+    with open(template) as file_read:
+        template_str = file_read.read()
     return template_str
 
 
@@ -321,7 +321,8 @@ def is_commented_line(line, comment_start):
 
 
 def get_vendor_gn_path(root):
-    return os.path.join(get_vendor_hdf_dir_adapter(root), 'BUILD.gn')
+    # return os.path.join(get_vendor_hdf_dir_adapter(root), 'BUILD.gn')
+    return os.path.join(get_vendor_hdf_dir_adapter(root), 'model', 'BUILD.gn')
 
 
 def get_template_file_path(root, kernel='liteos'):
@@ -368,3 +369,7 @@ def get_create_model_info(root, create_data):
                         model_file_path[key] = path_dict
         out_model_list.append({k: model_file_path})
     return out_model_list
+
+
+def get_config_config_path(root, kernel):
+    return os.path.join(root, "kernel", kernel, "config", "linux-5.10")

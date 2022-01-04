@@ -60,9 +60,9 @@ class HdfToolSettings(object):
         self.settings = {}
         if not os.path.exists(self.file_path):
             return
-        with open(self.file_path) as file:
+        with open(self.file_path) as file_write:
             try:
-                self.settings = json.load(file)
+                self.settings = json.load(file_write)
             except ValueError as exc:
                 raise HdfToolException('file: %s format wrong, %s' %
                                        (self.file_path, str(exc)),
@@ -70,6 +70,7 @@ class HdfToolSettings(object):
         self.supported_boards_key = 'supported_boards'
         self.drivers_path_key = 'drivers_path_relative_to_vendor'
         self.drivers_adapter_path_key = 'drivers_path_relative_adapter'
+        self.user_adapter_path_key = 'user_model_path_relative_adapter'
         self.dot_configs_key = 'dot_configs'
         self.board_path_key = 'board_parent_path'
         self.dot_config_path_key = 'dot_config_path'
@@ -126,3 +127,7 @@ class HdfToolSettings(object):
     def get_board_list(self):
         key = self.supported_boards_key
         return list(self.settings[key].keys())
+
+    def get_user_adapter_path(self):
+        key = self.user_adapter_path_key
+        return self.settings.get(key, 'hdf')
