@@ -9,6 +9,7 @@
 #include "util/file.h"
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <functional>
 #include <sys/stat.h>
 #include <unistd.h>
