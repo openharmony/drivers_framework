@@ -23,6 +23,7 @@
 
 struct PlatformQueueTestMsg {
     struct PlatformMsg msg;
+    struct OsalSem sem;
     int32_t status;
 };
 
@@ -51,6 +52,7 @@ static int32_t PlatformQueueTestHandle(struct PlatformQueue *queue, struct Platf
         return HDF_ERR_INVALID_PARAM;
     }
 
+    (void)OsalSemPost(&tmsg->sem);
     tmsg->status = HDF_SUCCESS;
     return HDF_SUCCESS;
 }
@@ -65,15 +67,26 @@ static int32_t PlatformQueueTestAddAndWait(struct PlatformQueue *pq)
     tmsg.msg.data = pq;
     tmsg.status = -1;
 
+    (void)OsalSemInit(&tmsg.sem, 0);
     //should add msg success
     ret = PlatformQueueAddMsg(pq, &tmsg.msg);
-    CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
+    if (!CHECK_EQ(ret, HDF_SUCCESS)) {
+        (void)OsalSemDestroy(&tmsg.sem);
+        return ret;
+    }
 
     //should wait msg success
-    ret = PlatformMsgWait(&tmsg.msg, PLAT_QUEUE_TEST_TIMEOUT);
-    CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
-    CHECK_EQ_RETURN(tmsg.status, HDF_SUCCESS, HDF_FAILURE);
+    ret = OsalSemWait(&tmsg.sem, PLAT_QUEUE_TEST_TIMEOUT);
+    if (!CHECK_EQ(ret, HDF_SUCCESS)) {
+        (void)OsalSemDestroy(&tmsg.sem);
+        return ret;
+    }
+    if (!CHECK_EQ(tmsg.status, HDF_SUCCESS)) {
+        (void)OsalSemDestroy(&tmsg.sem);
+        return tmsg.status;
+    }
 
+    (void)OsalSemDestroy(&tmsg.sem);
     PLAT_LOGD("%s: exit", __func__);
     return HDF_SUCCESS;
 }

@@ -279,6 +279,7 @@ enum MmcMsgCode {
 struct MmcMsg {
     struct PlatformMsg msg;
     struct MmcCmd *mmcCmd;
+    struct OsalSem sem;
     bool block;
 };
 

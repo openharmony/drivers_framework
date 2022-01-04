@@ -52,7 +52,6 @@ static int32_t PlatformQueueThreadWorker(void *data)
         /* message process */
         if (msg != NULL) {
             (void)(queue->handle(queue, msg));
-            (void)OsalSemPost(&msg->sem);
         }
     }
     return HDF_SUCCESS;
@@ -132,7 +131,6 @@ int32_t PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    (void)OsalSemInit(&msg->sem, 0);
     DListHeadInit(&msg->node);
     msg->error = HDF_SUCCESS;
     (void)OsalSpinLock(&queue->spin);
@@ -141,19 +139,4 @@ int32_t PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg
     /* notify the worker thread */
     (void)OsalSemPost(&queue->sem);
     return HDF_SUCCESS;
-}
-
-int32_t PlatformMsgWait(struct PlatformMsg *msg, uint32_t tms)
-{
-    int32_t ret;
-
-    if (msg == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    ret = OsalSemWait(&msg->sem, tms);
-    if (ret == HDF_SUCCESS) {
-        OsalSemDestroy(&msg->sem);
-    }
-    return ret;
 }

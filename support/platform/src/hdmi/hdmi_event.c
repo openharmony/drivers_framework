@@ -23,17 +23,21 @@ static int32_t HdmiEventPostMsg(struct HdmiCntlr *cntlr, struct HdmiEventMsg *ev
         return HDF_ERR_INVALID_PARAM;
     }
 
-    PlatformQueueAddMsg(cntlr->msgQueue, &event->msg);
-    ret = PlatformMsgWait(&event->msg, HDF_WAIT_FOREVER);
-    if (event->msg.block == true) {
-        (void)OsalSemDestroy(&event->msg.sem);
-        OsalMemFree(event);
+    if (event->block) {
+        (void)OsalSemInit(&event->sem, 0);
     }
+    (void)PlatformQueueAddMsg(cntlr->msgQueue, &event->msg);
+    if (!event->block) {
+        return HDF_SUCCESS;
+    }
+
+    ret = OsalSemWait(&event->sem, HDF_WAIT_FOREVER);
+    (void)OsalSemDestroy(&event->sem);
+    OsalMemFree(event);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("HdmiEventPostMsg: wait hdmi event msg fail!");
-        return ret;
     }
-    return HDF_SUCCESS;
+    return ret;
 }
 
 bool HdmiHpdStatusGet(struct HdmiCntlr *cntlr)
@@ -82,7 +86,7 @@ int32_t HdmiAddEventMsgToQueue(struct HdmiCntlr *cntlr, int32_t code, bool block
     }
     event->msg.code = code;
     event->msg.data = (void *)cntlr;
-    event->msg.block = block;
+    event->block = block;
     event->priv = data;
     return HdmiEventPostMsg(cntlr, event);
 }
@@ -229,9 +233,12 @@ int32_t HdmiEventMsgHandleDefault(struct PlatformQueue *queue, struct PlatformMs
             break;
     }
 
-    if (event->msg.block == false) {
+    if (!event->block) {
         OsalMemFree(event);
+    } else {
+        (void)OsalSemPost(&event->sem);
     }
+
     return ret;
 }
 
