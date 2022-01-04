@@ -6,7 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "devmgr_service.h"
 #include "devsvc_manager.h"
 #include "devsvc_manager_clnt.h"
 #include "hdf_device_desc.h"
@@ -229,12 +228,12 @@ void HdfPmClearTestCnt()
     uint32_t index;
 
     for (index = 0; index <= PM_TEST_DRIVER; index++) {
-       pmTestType[index].resumeCnt = 0;
-       pmTestType[index].suspendCnt = 0;
+        pmTestType[index].resumeCnt = 0;
+        pmTestType[index].suspendCnt = 0;
     }
 }
 
-int32_t HdfPmRegisterTestListener(int32_t index)
+void HdfPmRegisterTestListener(int32_t index)
 {
     struct SubscriberCallback callback = {NULL};
     struct HdfDeviceNode *devNode = NULL;
@@ -260,17 +259,15 @@ int32_t HdfPmRegisterTestListener(int32_t index)
         HdfPmRegisterPowerListener(pmTestType[index].obj, &pmTestType[index].listener.powerListener);
     }
     HdfPmSetMode(pmTestType[index].obj, HDF_POWER_DYNAMIC_CTRL);
-    return HDF_SUCCESS;
 }
 
-int32_t HdfPmBakListener(int32_t index)
+void HdfPmBakListener(int32_t index)
 {
     HdfPmUnregisterPowerListener(pmTestType[index].obj, &pmTestType[index].listener.powerListener);
     if (pmTestType[index].listenerBak != NULL) {
         HdfPmRegisterPowerListener(pmTestType[index].obj, pmTestType[index].listenerBak);
         HdfPmSetMode(pmTestType[index].obj, HDF_POWER_SYS_CTRL);
     }
-    return HDF_SUCCESS;
 }
 
 void HdfPmTestAcquire(uint32_t index)
