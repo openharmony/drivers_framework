@@ -38,6 +38,7 @@ from string import Template
 
 from .hdf_command_error_code import CommandErrorCode
 from hdf_tool_exception import HdfToolException
+from hdf_tool_settings import HdfToolSettings
 import hdf_utils
 
 
@@ -50,8 +51,8 @@ class HdfDeviceInfoHcsFile(object):
             self.root = root
             self.driver = driver
             self.lines = None
-            self.hcspath = hdf_utils.get_hcs_file_path(
-                self.root, self.vendor, self.board)
+            board_parent_path = HdfToolSettings().get_board_parent_path(board)
+            self.hcspath = os.path.join(self.root, board_parent_path, "device_info.hcs")
         else:
             self.hcspath = path
             self.root = root
@@ -120,7 +121,7 @@ class HdfDeviceInfoHcsFile(object):
                 index_info["start_index"] = index
                 for child_index in range(
                         index_info["start_index"], len(hcs_config)):
-                    if hcs_config[child_index].strip().endswith("{"):
+                    if hcs_config[child_index].strip().find("{") != -1:
                         count += 1
                     elif hcs_config[child_index].strip() == "}":
                         count -= 1
@@ -139,6 +140,27 @@ class HdfDeviceInfoHcsFile(object):
                                      'device_info_hcs.template')
         lines = list(map(lambda x: "\t\t" + x,
                          hdf_utils.read_file_lines(template_path)))
+        old_lines = list(filter(lambda x: x != "\n",
+                                hdf_utils.read_file_lines(self.hcspath)))
+        new_data = old_lines[:-2] + lines + old_lines[-2:]
+        data = {
+            "driver_name": self.driver,
+            "model_name": self.module,
+        }
+        for index, _ in enumerate(new_data):
+            new_data[index] = Template(new_data[index]).substitute(data)
+        codetype = "utf-8"
+        with open(self.hcspath, "w+", encoding=codetype) as lwrite:
+            for j in new_data:
+                lwrite.write(j)
+        return self.hcspath
+
+    def add_model_hcs_file_config_user(self):
+        template_path = os.path.join(self.file_path,
+                                     'User_device_info_hcs.template')
+        lines = list(map(lambda x: "\t\t" + x,
+                         hdf_utils.read_file_lines(template_path)))
+        lines[-1] = "\t\t"+lines[-1].strip()+"\n"
         old_lines = list(filter(lambda x: x != "\n",
                                 hdf_utils.read_file_lines(self.hcspath)))
         new_data = old_lines[:-2] + lines + old_lines[-2:]

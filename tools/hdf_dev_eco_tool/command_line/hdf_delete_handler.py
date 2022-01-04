@@ -77,13 +77,12 @@ class HdfDeleteHandler(HdfCommandHandlerBase):
         self.check_arg_raise_if_not_exist("board_name")
         root, vendor, _, _, _ = self.get_args()
         vendor_hdf_dir = hdf_utils.get_vendor_hdf_dir(root, vendor)
-        print(vendor_hdf_dir)
         if not os.path.exists(vendor_hdf_dir):
             return
         for module in os.listdir(vendor_hdf_dir):
             mod_dir = os.path.join(vendor_hdf_dir, module)
             if os.path.isdir(mod_dir):
-                self._delete_module(root, module)
+                pass
         shutil.rmtree(vendor_hdf_dir)
 
     def _delete_module(self, root, model, model_info):
@@ -152,14 +151,14 @@ class HdfDeleteHandler(HdfCommandHandlerBase):
             return self._delete_module(root, module, model_info)
 
     def _delete_driver(self, module, driver):
-        root, vendor, _, _, board = self.get_args()
+        root, vendor, _, _, board, kernel = self.get_args()
         drv_dir = hdf_utils.get_drv_dir(root, vendor, module, driver)
         if os.path.exists(drv_dir):
             shutil.rmtree(drv_dir)
         k_path = hdf_utils.get_module_kconfig_path(root, vendor, module)
         HdfModuleKconfigFile(root, module, k_path).delete_driver(driver)
         HdfModuleMkFile(root, vendor, module).delete_driver(driver)
-        HdfDriverConfigFile(root, board, module, driver).delete_driver()
+        HdfDriverConfigFile(root, board, module, driver, kernel).delete_driver()
 
     def _delete_driver_handler(self):
         self.check_arg_raise_if_not_exist("vendor_name")
@@ -204,20 +203,32 @@ class HdfDeleteHandler(HdfCommandHandlerBase):
                         defconfig_patch.delete_module(
                             path=os.path.join(root, dot_path))
         elif key == "module_path":
-            for _, value2 in model_info[key].items():
-                if value2.endswith("hcs"):
-                    hcs_path = os.path.join(root, value2)
-                    HdfDeviceInfoHcsFile(
-                        root=root, vendor="", module="",
-                        board="", driver="", path=hcs_path). \
-                        delete_driver(module=model)
+            for file_name, value2 in model_info[key].items():
+                if file_name.startswith("ohos"):
+                    ohos_json_info = json.loads(
+                        hdf_utils.read_file(os.path.join(root, value2)))
+                    delete_info = "libhdf_%s_hotplug" % model
+                    temp_list = ohos_json_info["parts"]["hdf"]["module_list"]
+                    for config_line in temp_list:
+                        if config_line.find(delete_info) > 0:
+                            ohos_json_info["parts"]["hdf"]["module_list"].\
+                                remove(config_line)
+                    hdf_utils.write_file(os.path.join(root, value2),
+                                         json.dumps(ohos_json_info, indent=4))
                 else:
-                    if value2:
-                        file_path = os.path.join(root, value2)
-                        if os.path.exists(file_path):
-                            os.remove(file_path)
-                        model_dir_path = "/".join(file_path.split("/")[:-1])
-                        if os.path.exists(model_dir_path):
-                            file_list = os.listdir(model_dir_path)
-                            if not file_list:
-                                shutil.rmtree(model_dir_path)
+                    if value2.endswith("hcs"):
+                        hcs_path = os.path.join(root, value2)
+                        HdfDeviceInfoHcsFile(
+                            root=root, vendor="", module="",
+                            board="", driver="", path=hcs_path). \
+                            delete_driver(module=model)
+                    else:
+                        if value2:
+                            file_path = os.path.join(root, value2)
+                            if os.path.exists(file_path):
+                                os.remove(file_path)
+                            model_dir_path = "/".join(file_path.split("/")[:-1])
+                            if os.path.exists(model_dir_path):
+                                file_list = os.listdir(model_dir_path)
+                                if not file_list:
+                                    shutil.rmtree(model_dir_path)

@@ -60,13 +60,13 @@ class HdfDefconfigAndPatch(object):
     def get_config_patch(self):
         return os.path.join(self.root, "kernel", self.kernel, "patches")
 
-    def add_module(self, path, files):
+    def add_module(self, path, files, codetype):
         for filename in os.listdir(path):
             new_path = os.path.join(path, filename)
             if not os.path.isdir(new_path):
-                self.find_file(new_path, files)
+                self.find_file(new_path, files, codetype)
             else:
-                self.add_module(new_path, files=files)
+                self.add_module(path=new_path, files=files, codetype=codetype)
         return files
 
     def delete_module(self, path):
@@ -85,13 +85,16 @@ class HdfDefconfigAndPatch(object):
         new_content = re.sub(pattern, replacement, self.contents)
         hdf_utils.write_file(self.file_path, new_content)
 
-    def find_file(self, path, files):
+    def find_file(self, path, files, codetype):
         if path.split("\\")[-1] in self.drivers_path_list or \
                 path.split("/")[-1] in self.drivers_path_list:
             files.append(path)
-            codetype = "utf-8"
-            with open(path, "r+", encoding=codetype) as fread:
-                data = fread.readlines()
+            if codetype is None:
+                with open(path, "r+") as fread:
+                    data = fread.readlines()
+            else:
+                with open(path, "r+", encoding=codetype) as fread:
+                    data = fread.readlines()
             insert_index = None
             state = False
             for index, line in enumerate(data):
@@ -107,6 +110,10 @@ class HdfDefconfigAndPatch(object):
                 else:
                     data.insert(insert_index + 1,
                                 "+" + self.new_demo_config)
-            with open(path, "w", encoding=codetype) as fwrite:
-                fwrite.writelines(data)
+            if codetype is None:
+                with open(path, "w") as fwrite:
+                    fwrite.writelines(data)
+            else:
+                with open(path, "w", encoding=codetype) as fwrite:
+                    fwrite.writelines(data)
         return files

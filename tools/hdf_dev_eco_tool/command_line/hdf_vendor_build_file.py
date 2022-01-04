@@ -52,7 +52,7 @@ class HdfVendorBuildFile(object):
         with open(self.file_path, 'r') as file_read:
             data = file_read.readlines()
 
-        line_template = r'model/input'
+        line_template = r'input'
         new_line = {}
         for index, line in enumerate(data):
             result = re.search(line_template, line)
