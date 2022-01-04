@@ -104,7 +104,8 @@ static void FreeCachedInfo(void)
 static int32_t SetInputDevAbsAttr(InputDevice *inputDev, const HidInfo *info)
 {
     int32_t ret;
-    for (int i = 0; i < BITS_TO_LONG(ABS_CNT); i++) {
+    int i;
+    for (i = 0; i < BITS_TO_LONG(ABS_CNT); i++) {
         if (inputDev->abilitySet.absCode[i] != 0) {
             ret = memcpy_s(inputDev->attrSet.axisInfo, sizeof(AbsAttr) * ABS_CNT,
                            info->axisInfo, sizeof(AbsAttr) * ABS_CNT);
