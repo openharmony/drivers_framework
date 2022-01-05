@@ -172,12 +172,13 @@ int32_t GpioSetIrq(uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg);
  * disable the GPIO pin interrupt.
  *
  * @param gpio Indicates the GPIO pin number.
+ * @param arg Indicates the pointer to the parameters passed to the ISR function.
  *
  * @return Returns <b>0</b> if the ISR function of the GPIO pin is successfully cancelled; returns a negative value
  * otherwise.
  * @since 1.0
  */
-int32_t GpioUnSetIrq(uint16_t gpio);
+int32_t GpioUnsetIrq(uint16_t gpio, void *arg);
 
 /**
  * @brief Enables a GPIO pin interrupt.

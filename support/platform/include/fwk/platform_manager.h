@@ -24,7 +24,6 @@ enum PlatformModuleType;
 struct PlatformManager {
     struct PlatformDevice device;
     struct DListHead devices;  /* list to keep all it's device instances */
-    OsalSpinlock spin;         /* for member protection */
     int32_t (*add)(struct PlatformManager *manager, struct PlatformDevice *device);
     int32_t (*del)(struct PlatformManager *manager, struct PlatformDevice *device);
 };

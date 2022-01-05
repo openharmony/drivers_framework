@@ -36,6 +36,7 @@ struct PlatformDevice {
     struct DListHead node;             /* linked to the list of a manager */
     struct PlatformEvent event;        /* platform event obj of this device */
     OsalSpinlock spin;                 /* for member protection */
+    uint32_t irqSave;                  /* for spinlock irq save */
     struct OsalSem released;           /* for death notification */
     void *priv;                        /* private data of the device */
 };

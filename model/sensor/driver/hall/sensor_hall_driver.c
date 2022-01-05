@@ -234,7 +234,7 @@ static int32_t SetHallDisable(void)
     }
 
     if (drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM1] >= 0) {
-        ret = GpioUnSetIrq(drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM1]);
+        ret = GpioUnsetIrq(drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM1], drvData);
         if (ret != 0) {
             HDF_LOGE("%s: Gpio unset north irq failed", __func__);
         }
@@ -246,7 +246,7 @@ static int32_t SetHallDisable(void)
     }
 
     if (drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM2] >= 0) {
-        ret = GpioUnSetIrq(drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM2]);
+        ret = GpioUnsetIrq(drvData->hallCfg->busCfg.GpioNum[SENSOR_GPIO_NUM2], drvData);
         if (ret != 0) {
             HDF_LOGE("%s: Gpio unset south irq failed", __func__);
         }

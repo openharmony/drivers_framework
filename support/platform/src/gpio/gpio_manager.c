@@ -9,6 +9,7 @@
 #include "gpio/gpio_core.h"
 #include "osal_mem.h"
 #include "platform_core.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG gpio_manager
 
@@ -95,6 +96,51 @@ struct PlatformManager *GpioManagerGet(void)
     return manager;
 }
 
+static int32_t GpioCntlrCreateGpioInfos(struct GpioCntlr *cntlr)
+{
+    int32_t ret;
+    uint16_t i;
+
+    cntlr->ginfos = OsalMemCalloc(sizeof(*cntlr->ginfos) * cntlr->count);
+    if (cntlr->ginfos == NULL) {
+        return HDF_ERR_MALLOC_FAIL;
+    }
+    for (i = 0; i < cntlr->count; i++) {
+        cntlr->ginfos[i].cntlr = cntlr;
+        if (snprintf_s(cntlr->ginfos[i].name, GPIO_NAME_LEN, GPIO_NAME_LEN - 1,
+            "GPIO%u+%u", cntlr->start, i) < 0) {
+            PLAT_LOGE("GpioCntlrCreateGpioInfos: format gpio name fail");
+            ret = HDF_PLT_ERR_OS_API;
+            goto ERROR_EXIT;
+        }
+        (void)OsalSpinInit(&cntlr->ginfos[i].spin);
+    }
+    return HDF_SUCCESS;
+
+ERROR_EXIT:
+    while (i-- > 0) {
+        (void)OsalSpinDestroy(&cntlr->ginfos[i].spin);
+    }
+    OsalMemFree(cntlr->ginfos);
+    return ret;
+}
+
+static void GpioCntlrDestroyGpioInfos(struct GpioCntlr *cntlr)
+{
+    uint16_t i;
+    struct GpioIrqRecord *irqRecord = NULL;
+
+    for (i = 0; i < cntlr->count; i++) {
+        irqRecord = cntlr->ginfos[i].irqRecord;
+        if (irqRecord != NULL) {
+            GpioIrqRecordDestroy(irqRecord);
+        }
+        (void)OsalSpinDestroy(&cntlr->ginfos[i].spin);
+    }
+    OsalMemFree(cntlr->ginfos);
+    cntlr->ginfos = NULL;
+}
+
 int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
 {
     int32_t ret;
@@ -108,21 +154,19 @@ int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (cntlr->count >= MAX_CNT_PER_CNTLR) {
+    if (cntlr->count == 0 || cntlr->count >= MAX_CNT_PER_CNTLR) {
         PLAT_LOGE("GpioCntlrAdd: invalid gpio count:%u", cntlr->count);
         return HDF_ERR_INVALID_PARAM;
     }
 
-    if (cntlr->ginfos == NULL) {
-        cntlr->ginfos = OsalMemCalloc(sizeof(*cntlr->ginfos) * cntlr->count);
-        if (cntlr->ginfos == NULL) {
-            return HDF_ERR_MALLOC_FAIL;
-        }
+    ret = GpioCntlrCreateGpioInfos(cntlr);
+    if (ret != HDF_SUCCESS) {
+        return ret;
     }
-
     cntlr->device.manager = GpioManagerGet();
-    if ((ret = PlatformDeviceAdd(&cntlr->device)) != HDF_SUCCESS) {
-        OsalMemFree(cntlr->ginfos);
+    ret = PlatformDeviceAdd(&cntlr->device);
+    if (ret != HDF_SUCCESS) {
+        GpioCntlrDestroyGpioInfos(cntlr);
         return ret;
     }
 
@@ -137,10 +181,11 @@ void GpioCntlrRemove(struct GpioCntlr *cntlr)
 
     PlatformDeviceDel(&cntlr->device);
 
-    if (cntlr->ginfos != NULL) {
-        OsalMemFree(cntlr->ginfos);
-        cntlr->ginfos = NULL;
+    if (cntlr->ginfos == NULL) {
+        return;
     }
+
+    GpioCntlrDestroyGpioInfos(cntlr);
 }
 
 static bool GpioCntlrFindMatch(struct PlatformDevice *device, void *data)
@@ -154,7 +199,7 @@ static bool GpioCntlrFindMatch(struct PlatformDevice *device, void *data)
     return false;
 }
 
-struct GpioCntlr *GpioGetCntlr(uint16_t gpio)
+struct GpioCntlr *GpioCntlrGet(uint16_t gpio)
 {
     struct PlatformManager *gpioMgr = NULL;
     struct PlatformDevice *device = NULL;
