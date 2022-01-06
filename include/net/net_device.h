@@ -733,7 +733,8 @@ int32_t NetIfRx(const struct NetDevice *netDevice, NetBuf *buff);
  * during initialization.
  * @param buff Indicates the network-side data, in Ether format.
  *
- * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
+ * @return Returns <b>0</b> if the operation is successful; returns a non-zero value {@link HDF_STATUS} if the
+ * operation fails.
  *
  * @since 1.0
  * @version 1.0
