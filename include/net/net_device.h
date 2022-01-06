@@ -712,13 +712,14 @@ int32_t NetIfSetLinkStatus(const struct NetDevice *netDevice, NetIfLinkStatus st
 int32_t NetIfGetLinkStatus(const struct NetDevice *netDevice, NetIfLinkStatus *status);
 
 /**
- * @brief Transfers the input data packets from the network side to a protocol stack.
+ * @brief Transfers data packets from the network side to a protocol stack in an interrupt processing thread.
  *
  * @param netDevice Indicates the pointer to the network device structure {@link netDevice} obtained
  * during initialization.
  * @param buff Indicates the network-side data, in Ether format.
  *
- * @return Returns <b>0</b> if the operation is successful; returns a non-zero value otherwise.
+ * @return Returns <b>0</b> if the operation is successful; returns a non-zero value {@link HDF_STATUS} if the
+ * operation fails.
  *
  * @since 1.0
  * @version 1.0
@@ -726,7 +727,7 @@ int32_t NetIfGetLinkStatus(const struct NetDevice *netDevice, NetIfLinkStatus *s
 int32_t NetIfRx(const struct NetDevice *netDevice, NetBuf *buff);
 
 /**
- * @brief Transfers data packets from the network side to a protocol stack in an interrupt processing thread.
+ * @brief Transfers the input data packets from the network side to a protocol stack.
  *
  * @param netDevice Indicates the pointer to the network device structure {@link netDevice} obtained
  * during initialization.
