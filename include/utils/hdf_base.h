@@ -88,6 +88,16 @@ typedef enum {
  */
 #define HDF_KILO_UNIT 1000
 
+#ifdef __LITEOS__
+#define HDF_LIBRARY_PATH_DIR "/usr/lib"
+#define HDF_LIBRARY_SUFFIX ".so"
+#define HDF_ETC_PATH_DIR "/etc"
+#else
+#define HDF_LIBRARY_PATH_DIR "/system/lib"
+#define HDF_LIBRARY_SUFFIX ".z.so"
+#define HDF_ETC_PATH_DIR "/system/etc"
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
