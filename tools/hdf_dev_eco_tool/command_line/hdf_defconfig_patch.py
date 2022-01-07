@@ -70,14 +70,16 @@ class HdfDefconfigAndPatch(object):
         return files
 
     def delete_module(self, path):
-        lines = hdf_utils.read_file_lines(path)
-        if self.new_demo_config in lines or \
-                ("+" + self.new_demo_config) in lines:
+        with open(path, "rb") as f_read:
+            lines = f_read.readlines()
+        if self.new_demo_config.encode("utf-8") in lines or \
+                ("+" + self.new_demo_config).encode("utf-8") in lines:
             if path.split(".")[-1] != "patch":
-                lines.remove(self.new_demo_config)
+                lines.remove(self.new_demo_config.encode("utf-8"))
             else:
-                lines.remove("+" + self.new_demo_config)
-        hdf_utils.write_file_lines(path, lines)
+                lines.remove(("+" + self.new_demo_config).encode("utf-8"))
+        with open(path, "wb") as f_write:
+            f_write.writelines(lines)
 
     def rename_vendor(self):
         pattern = r'vendor/([a-zA-Z0-9_\-]+)/'
@@ -90,30 +92,45 @@ class HdfDefconfigAndPatch(object):
                 path.split("/")[-1] in self.drivers_path_list:
             files.append(path)
             if codetype is None:
-                with open(path, "r+") as fread:
+                with open(path, "rb") as fread:
                     data = fread.readlines()
+                insert_index = None
+                state = False
+                for index, line in enumerate(data):
+                    if line.find("CONFIG_DRIVERS_HDF_INPUT=y".encode('utf-8')) >= 0:
+                        insert_index = index
+                    elif line.find(self.new_demo_config.encode('utf-8')) >= 0:
+                        files.remove(path)
+                        state = True
+                if not state:
+                    if path.split(".")[-1] != "patch":
+                        data.insert(insert_index + 1,
+                                    self.new_demo_config.encode('utf-8'))
+                    else:
+                        data.insert(insert_index + 1,
+                                    ("+" + self.new_demo_config).encode('utf-8'))
+
+                with open(path, "wb") as fwrite:
+                    fwrite.writelines(data)
             else:
                 with open(path, "r+", encoding=codetype) as fread:
                     data = fread.readlines()
-            insert_index = None
-            state = False
-            for index, line in enumerate(data):
-                if line.find("CONFIG_DRIVERS_HDF_INPUT=y") >= 0:
-                    insert_index = index
-                elif line.find(self.new_demo_config) >= 0:
-                    files.remove(path)
-                    state = True
-            if not state:
-                if path.split(".")[-1] != "patch":
-                    data.insert(insert_index + 1,
-                                self.new_demo_config)
-                else:
-                    data.insert(insert_index + 1,
-                                "+" + self.new_demo_config)
-            if codetype is None:
-                with open(path, "w") as fwrite:
-                    fwrite.writelines(data)
-            else:
+                insert_index = None
+                state = False
+                for index, line in enumerate(data):
+                    if line.find("CONFIG_DRIVERS_HDF_INPUT=y") >= 0:
+                        insert_index = index
+                    elif line.find(self.new_demo_config) >= 0:
+                        files.remove(path)
+                        state = True
+                if not state:
+                    if path.split(".")[-1] != "patch":
+                        data.insert(insert_index + 1,
+                                    self.new_demo_config)
+                    else:
+                        data.insert(insert_index + 1,
+                                    "+" + self.new_demo_config)
+
                 with open(path, "w", encoding=codetype) as fwrite:
                     fwrite.writelines(data)
         return files

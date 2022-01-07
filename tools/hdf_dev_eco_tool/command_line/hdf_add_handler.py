@@ -312,7 +312,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
             patch_list = defconfig_patch.add_module(config_path, files=files, codetype=None)
             config_path = defconfig_patch.get_config_patch()
             files1 = []
-            defconfig_list = defconfig_patch.add_module(config_path, files=files1, codetype="utf-8")
+            defconfig_list = defconfig_patch.add_module(config_path, files=files1, codetype=None)
             linux_level_config_file_path[module + "_dot_configs"] = \
                 list(set(patch_list + defconfig_list))
             return linux_file_path, linux_level_config_file_path
@@ -337,7 +337,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
             patch_list = defconfig_patch.add_module(config_path, files=files, codetype=None)
             config_path = defconfig_patch.get_config_patch()
             files1 = []
-            defconfig_list = defconfig_patch.add_module(config_path, files=files1, codetype="utf-8")
+            defconfig_list = defconfig_patch.add_module(config_path, files=files1, codetype=None)
             linux_level_config_file_path[module + "_dot_configs"] = \
                 list(set(patch_list + defconfig_list))
             return linux_file_path, linux_level_config_file_path
