@@ -60,6 +60,7 @@ typedef enum {
     TEST_PAL_I3C_TYPE       = 22,
     TEST_PAL_MIPI_CSI_TYPE  = 23,
     TEST_PAL_DAC_TYPE       = 24,
+    TEST_PAL_TIMER_TYPE     = 25,
     TEST_PAL_MANAGER_TYPE   = 196,
     TEST_PAL_DEVICE_TYPE    = 197,
     TEST_PAL_QUEUE_TYPE     = 198,

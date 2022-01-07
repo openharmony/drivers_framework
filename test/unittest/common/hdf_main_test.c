@@ -70,6 +70,9 @@
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PWM) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PWM)
 #include "hdf_pwm_entry_test.h"
 #endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TIMER) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TIMER)
+#include "hdf_timer_entry_test.h"
+#endif
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_WIFI) || defined(CONFIG_DRIVERS_HDF_WIFI)
 #include "hdf_wifi_test.h"
@@ -148,6 +151,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PWM) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PWM)
     { TEST_PAL_PWM_TYPE, HdfPwmUnitTestEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TIMER) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TIMER)
+        { TEST_PAL_TIMER_TYPE, HdfTimerUnitTestEntry },
 #endif
 #endif
     { TEST_CONFIG_TYPE, HdfConfigEntry },
