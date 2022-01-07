@@ -44,7 +44,7 @@ static int32_t HdfWlanSinglePowerActive(struct HdfConfigWlanPower* powerDate)
         HDF_LOGE("%s:powerDate is NULL", __func__);
         return HDF_FAILURE;
     }
-    if (powerDate->powerType != POWER_NOT_MANAGED) {
+    if (powerDate->powerType == POWER_NOT_MANAGED) {
         HDF_LOGI("%s:power type is always on", __func__);
         return HDF_SUCCESS;
     }
