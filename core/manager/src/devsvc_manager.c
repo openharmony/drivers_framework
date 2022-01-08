@@ -65,7 +65,13 @@ int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *servName,
         HDF_LOGE("failed to add service, input param is null");
         return HDF_FAILURE;
     }
-
+    record = DevSvcManagerSearchService(inst, HdfStringMakeHashKey(servName, 0));
+    if (record != NULL) {
+        HDF_LOGI("%s:add service %s exist, only update value", __func__, servName);
+        // on service died will release old service object
+        record->value = service;
+        return HDF_SUCCESS;
+    }
     record = DevSvcRecordNewInstance();
     if (record == NULL) {
         HDF_LOGE("failed to add service , record is null");

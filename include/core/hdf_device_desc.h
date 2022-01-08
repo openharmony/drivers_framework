@@ -34,6 +34,9 @@
 #include "hdf_object.h"
 #include "hdf_sbuf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 /**
  * @brief The maximum priority for loading the host and device.
  */
@@ -318,6 +321,10 @@ int32_t HdfDeviceSendEventToClient(const struct HdfDeviceIoClient *client, uint3
  * @return Returns <b>true</b> if the operation is successful; returns <b>false</b> otherwise.
  * @since 1.0 */
 bool HdfDeviceSetClass(struct HdfDeviceObject *deviceObject, DeviceClass deviceClass);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* HDF_DEVICE_DESC_H */
 /** @} */
