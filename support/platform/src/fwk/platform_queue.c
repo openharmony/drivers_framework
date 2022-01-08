@@ -71,9 +71,6 @@ struct PlatformQueue *PlatformQueueCreate(PlatformMsgHandle handle, const char *
         PLAT_LOGE("PlatformQueueCreate: alloc queue fail!");
         return NULL;
     }
-    (void)OsalSpinInit(&queue->spin);
-    (void)OsalSemInit(&queue->sem, 0);
-    DListHeadInit(&queue->msgs);
 
     ret = OsalThreadCreate(&queue->thread, (OsalThreadEntry)PlatformQueueThreadWorker, (void *)queue);
     if (ret != HDF_SUCCESS) {
@@ -82,6 +79,9 @@ struct PlatformQueue *PlatformQueueCreate(PlatformMsgHandle handle, const char *
         return NULL;
     }
 
+    (void)OsalSpinInit(&queue->spin);
+    (void)OsalSemInit(&queue->sem, 0);
+    DListHeadInit(&queue->msgs);
     queue->name = (name == NULL) ? "PlatformWorkerThread" : name;
     queue->handle = handle;
     queue->data = data;

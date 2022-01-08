@@ -16,12 +16,12 @@
 
 static inline void PlatformManagerLock(struct PlatformManager *manager)
 {
-    (void)OsalSpinLock(&manager->spin);
+    (void)OsalSpinLockIrqSave(&manager->device.spin, &manager->device.irqSave);
 }
 
 static inline void PlatformManagerUnlock(struct PlatformManager *manager)
 {
-    (void)OsalSpinUnlock(&manager->spin);
+    (void)OsalSpinUnlockIrqRestore(&manager->device.spin, &manager->device.irqSave);
 }
 
 static int32_t PlatformManagerInit(struct PlatformManager *manager)
@@ -29,10 +29,8 @@ static int32_t PlatformManagerInit(struct PlatformManager *manager)
     int32_t ret;
 
     DListHeadInit(&manager->devices);
-    OsalSpinInit(&manager->spin);
 
     if ((ret = PlatformDeviceInit(&manager->device)) != HDF_SUCCESS) {
-        (void)OsalSpinDestroy(&manager->spin);
         return ret;
     }
 
@@ -62,7 +60,6 @@ static void PlatformManagerUninit(struct PlatformManager *manager)
 {
     PlatformManagerClearDevice(manager);
     PlatformDeviceUninit(&manager->device);
-    (void)OsalSpinDestroy(&manager->spin);
     manager->add = NULL;
     manager->del = NULL;
 }

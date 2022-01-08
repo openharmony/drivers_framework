@@ -9,10 +9,11 @@
 #ifndef GPIO_CORE_H
 #define GPIO_CORE_H
 
+#include "gpio_if.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "hdf_dlist.h"
-#include "gpio_if.h"
+#include "osal_mem.h"
 #include "osal_spinlock.h"
 #include "platform_core.h"
 
@@ -25,8 +26,10 @@ extern "C" {
 struct GpioCntlr;
 struct GpioMethod;
 struct GpioInfo;
+struct GpioIrqRecord;
 
 #define GPIO_NUM_MAX     0xFFFF
+#define GPIO_NAME_LEN    16
 
 /**
  * @brief Defines the struct which represent a hardware GPIO controller.
@@ -48,9 +51,63 @@ struct GpioCntlr {
  * @since 1.0
  */
 struct GpioInfo {
-    GpioIrqFunc irqFunc;
-    void *irqData;
+    struct GpioCntlr *cntlr;
+    char name[GPIO_NAME_LEN];
+    OsalSpinlock spin;
+    uint32_t irqSave;
+    struct GpioIrqRecord *irqRecord;
 };
+
+static inline uint16_t GpioInfoToLocal(struct GpioInfo *ginfo)
+{
+    return ginfo - &(ginfo->cntlr->ginfos[0]);
+}
+
+static inline uint16_t GpioInfoToGlobal(struct GpioInfo *ginfo)
+{
+    return ginfo->cntlr->start + GpioInfoToLocal(ginfo);
+}
+
+/**
+ * @brief Defines the struct which represent a GPIO irq action.
+ *
+ * @since 1.0
+ */
+struct GpioIrqRecord {
+    uint16_t mode;
+    GpioIrqFunc irqFunc;
+    GpioIrqFunc btmFunc;
+    void *irqData;
+    uint16_t global;
+    OsalSpinlock spin;
+    struct OsalSem sem;
+    struct OsalThread thread;
+    bool removed;
+};
+
+static inline void GpioIrqRecordTrigger(struct GpioIrqRecord *irqRecord)
+{
+    if (irqRecord->irqFunc != NULL) {
+        (void)irqRecord->irqFunc(irqRecord->global, irqRecord->irqData);
+    }
+    if (irqRecord->btmFunc != NULL) {
+        (void)OsalSemPost(&irqRecord->sem);
+    }
+}
+
+static inline void GpioIrqRecordDestroy(struct GpioIrqRecord *irqRecord)
+{
+    uint32_t irqSave;
+
+    if (irqRecord->btmFunc == NULL) {
+        OsalMemFree(irqRecord);  // the last access to this record
+    } else {
+        (void)OsalSpinLockIrqSave(&irqRecord->spin, &irqSave);
+        irqRecord->removed = true;
+        (void)OsalSemPost(&irqRecord->sem); // this is the last post ...
+        (void)OsalSpinUnlockIrqRestore(&irqRecord->spin, &irqSave);
+    }
+}
 
 /**
  * @brief Defines the struct which contains the hooks which a GPIO driver need to implement.
@@ -73,7 +130,7 @@ struct GpioMethod {
     /** get the irq number of a GPIO pin, optional */
     int32_t (*toIrq)(struct GpioCntlr *cntlr, uint16_t local, uint16_t *irq);
     /** set the ISR function for a GPIO pin */
-    int32_t (*setIrq)(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode, GpioIrqFunc func, void *arg);
+    int32_t (*setIrq)(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode);
     /** unset the ISR function for a GPIO pin */
     int32_t (*unsetIrq)(struct GpioCntlr *cntlr, uint16_t local);
     /** enable a GPIO pin interrupt */
@@ -126,7 +183,7 @@ int32_t GpioCntlrToIrq(struct GpioCntlr *cntlr, uint16_t local, uint16_t *irq);
 
 int32_t GpioCntlrSetIrq(struct GpioCntlr *cntlr, uint16_t local, uint16_t mode, GpioIrqFunc func, void *arg);
 
-int32_t GpioCntlrUnsetIrq(struct GpioCntlr *cntlr, uint16_t local);
+int32_t GpioCntlrUnsetIrq(struct GpioCntlr *cntlr, uint16_t local, void *arg);
 
 int32_t GpioCntlrEnableIrq(struct GpioCntlr *cntlr, uint16_t local);
 
@@ -136,15 +193,16 @@ void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local);
 
 struct PlatformManager *GpioManagerGet(void);
 
-struct GpioCntlr *GpioGetCntlr(uint16_t gpio);
+struct GpioCntlr *GpioCntlrGet(uint16_t gpio);
 
-static inline uint16_t GpioToLocal(uint16_t gpio)
+static inline void GpioCntlrPut(struct GpioCntlr *cntlr)
 {
-    struct GpioCntlr *cntlr = GpioGetCntlr(gpio);
-    return (cntlr == NULL) ? gpio : (gpio - cntlr->start);
+    if (cntlr != NULL) {
+        PlatformDevicePut(&cntlr->device);
+    }
 }
 
-static inline uint16_t GpioGetLocalNumber(struct GpioCntlr *cntlr, uint16_t gpio)
+static inline uint16_t GpioCntlrGetLocal(struct GpioCntlr *cntlr, uint16_t gpio)
 {
     return (cntlr == NULL) ? gpio : (gpio - cntlr->start);
 }

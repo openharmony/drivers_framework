@@ -254,7 +254,7 @@ static inline void GpioTestHelperInversePin(uint16_t gpio, uint16_t mode)
     (void)GpioWrite(gpio, (valRead == GPIO_VAL_LOW) ? GPIO_VAL_HIGH : GPIO_VAL_LOW);
     (void)GpioRead(gpio, &valRead);
     (void)GpioGetDir(gpio, &dir);
-    HDF_LOGD("%s, gpio:%u, val:%u, dir:%u, mode:%x", __func__, gpio, valRead, dir, mode);
+    HDF_LOGE("%s, gpio:%u, val:%u, dir:%u, mode:%x", __func__, gpio, valRead, dir, mode);
 }
 
 static int32_t GpioTestIrqSharedFunc(struct GpioTester *tester, uint16_t mode, bool inverse)
@@ -262,18 +262,21 @@ static int32_t GpioTestIrqSharedFunc(struct GpioTester *tester, uint16_t mode, b
     int32_t ret;
     uint32_t timeout;
 
+    HDF_LOGE("%s: mark gona set irq ...", __func__);
     ret = GpioSetIrq(tester->cfg.gpioIrq, mode, GpioTestIrqHandler, (void *)tester);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: set irq fail! ret:%d", __func__, ret);
         return ret;
     }
+    HDF_LOGE("%s: mark gona enable irq ...", __func__);
     ret = GpioEnableIrq(tester->cfg.gpioIrq);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: enable irq fail! ret:%d", __func__, ret);
-        (void)GpioUnSetIrq(tester->cfg.gpioIrq);
+        (void)GpioUnsetIrq(tester->cfg.gpioIrq, tester);
         return ret;
     }
 
+    HDF_LOGE("%s: mark gona inverse irq ...", __func__);
     for (timeout = 0; tester->irqCnt <= 0 && timeout <= tester->irqTimeout;
         timeout += GPIO_TEST_IRQ_DELAY) {
         if (inverse) {
@@ -282,7 +285,7 @@ static int32_t GpioTestIrqSharedFunc(struct GpioTester *tester, uint16_t mode, b
         }
         OsalMSleep(GPIO_TEST_IRQ_DELAY);
     }
-    (void)GpioUnSetIrq(tester->cfg.gpioIrq);
+    (void)GpioUnsetIrq(tester->cfg.gpioIrq, tester);
 
 #if defined(_LINUX_USER_) || defined(__KERNEL__)
     if (inverse) {
@@ -378,14 +381,10 @@ static int32_t GpioTestReliability(void)
 
     /* invalid gpio number */
     (void)GpioSetIrq(-1, OSAL_IRQF_TRIGGER_RISING, GpioTestIrqHandler, (void *)tester);
-    /* invalid irq mode */
-    (void)GpioSetIrq(tester->cfg.gpioIrq, -1, GpioTestIrqHandler, (void *)tester);
     /* invalid irq handler */
     (void)GpioSetIrq(tester->cfg.gpioIrq, OSAL_IRQF_TRIGGER_RISING, NULL, (void *)tester);
-    /* invalid irq data */
-    (void)GpioSetIrq(tester->cfg.gpioIrq, OSAL_IRQF_TRIGGER_RISING, GpioTestIrqHandler, NULL);
 
-    (void)GpioUnSetIrq(-1);                /* invalid gpio number */
+    (void)GpioUnsetIrq(-1, NULL);          /* invalid gpio number */
 
     (void)GpioEnableIrq(-1);               /* invalid gpio number */
 
