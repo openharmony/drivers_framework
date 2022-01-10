@@ -71,7 +71,7 @@ class HdfLinuxScan(object):
         self.driver_configs_list = ['Kconfig', 'Makefile']
         self.re_temp1_model = r'model/[a-z _ 0-9]+'
         self.re_temp2_obj = r"^obj-"
-        self.re_temp3_enable = r"CONFIG_DRIVERS_[A-Z _]+"
+        self.re_temp3_enable = r"CONFIG_DRIVERS_[A-Z _ 0-9]+"
         self.re_temp4_include = r"^include"
         self.re_temp_prefix0 = r"^../[. /]+"
         self.re_temp_prefix1 = r"\$\(HDF_DIR_PREFIX\)"
@@ -259,8 +259,7 @@ class HdfLinuxScan(object):
                 makefile_path=model_makefile_path)
             result = self._prefix_template_replace(
                 name_split_dict, enable_dict,
-                makefile_path=model_makefile_path,
-                model_name=model_name)
+                makefile_path=model_makefile_path)
             if result_dict00.get(model_name, None):
                 result_dict00[model_name].update(result)
             else:

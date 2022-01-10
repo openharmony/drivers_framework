@@ -47,10 +47,13 @@ class EnableOperation(object):
         self.vendor = vendor
         self.board = board
         self.model = model
-        temp_liteos_model_name = HdfLiteScan(
-            self.root, self.vendor, self.board).scan_build()
-        self.liteos_model_name = list(map(lambda x:x.strip(",").strip('"'),
-                                          temp_liteos_model_name))
+        if self.board.endswith("linux"):
+            pass
+        else:
+            temp_liteos_model_name = HdfLiteScan(
+                self.root, self.vendor, self.board).scan_build()
+            self.liteos_model_name = list(map(lambda x: x.strip(",").strip('"'),
+                                              temp_liteos_model_name))
 
         self.makefile_path = hdf_utils.get_vendor_makefile_path(
             root, kernel="linux")
@@ -60,12 +63,7 @@ class EnableOperation(object):
                 CommandErrorCode.TARGET_NOT_EXIST)
 
         self.contents_makefile = hdf_utils.read_file_lines(self.makefile_path)
-        self.build_path = hdf_utils.get_vendor_gn_path(self.root)
-        if not os.path.exists(self.build_path):
-            raise HdfToolException('file: %s not exist' % self.build_path,
-                                   CommandErrorCode.TARGET_NOT_EXIST)
-        self.contents_build = hdf_utils.read_file_lines(self.build_path)
-        self.re_temp2 = r'model/[a-z 0-9]+'
+        self.re_temp2 = r'model/[a-z 0-9 _ ]+'
         self.re_temp = r"^group"
 
     def scan_makefile(self):
@@ -217,11 +215,14 @@ class EnableOperation(object):
         old_demo_config = Template(old_string).substitute(
             {"module_upper_case": self.model.upper()})
 
-        file_lines = hdf_utils.read_file_lines(file_path)
+        with open(file_path, 'rb') as f_read:
+            file_lines = f_read.readlines()
         for index, line in enumerate(file_lines):
-            if old_demo_config == line.strip():
-                file_lines[index] = new_demo_config
-        hdf_utils.write_file_lines(file_path, file_lines)
+            if old_demo_config.encode('utf-8') == line.strip():
+                file_lines[index] = new_demo_config.encode('utf-8')
+        
+        with open(file_path, 'wb') as f_write:
+            f_write.writelines(file_lines)
         return True
 
     def disable_model_linux(self):

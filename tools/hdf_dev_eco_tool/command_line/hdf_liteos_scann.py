@@ -35,6 +35,7 @@ import os
 import re
 from string import Template
 import platform
+import ast
 
 from .hdf_command_error_code import CommandErrorCode
 from hdf_tool_exception import HdfToolException
@@ -77,8 +78,8 @@ class HdfLiteScan(object):
         self.re_source_file2 = r"[_ / a-z 0-9]+\.c"
         self.re_temp_header = r"^hdf_driver\(module_name\)"
         self.re_temp_if = r"^if"
-        self.re_test = r'^[A-Z _ ]+'
-        self.re_test2 = r'\$[A-Z _]+'
+        self.re_test = r'^[A-Z _ 0-9]+'
+        self.re_test2 = r'\$[A-Z _ 0-9]+'
         if platform.system().lower() == 'windows':
             self.platform = "windows"
         elif platform.system().lower() == 'linux':
@@ -246,20 +247,23 @@ class HdfLiteScan(object):
         import_gni_path = []
         import_replace_name = set([])
         for name in list(model_path_dict.keys()):
-            if len(model_path_dict[name]) == 1:
-                need_replace, return_dict, \
-                enable_path_dict, import_gni_path = \
-                    self.get_need_result_only(model_path_dict, name,
-                                              import_replace_name,
-                                              import_gni_path,
-                                              return_dict, need_replace)
+            if len(model_path_dict[name]) == 0:
+                pass
             else:
-                need_replace, return_dict, \
-                enable_path_dict, import_gni_path = \
-                    self.get_need_result_list(model_path_dict, name,
-                                              import_replace_name,
-                                              import_gni_path,
-                                              return_dict, need_replace)
+                if len(model_path_dict[name]) == 1:
+                    need_replace, return_dict, \
+                    enable_path_dict, import_gni_path = \
+                        self.get_need_result_only(model_path_dict, name,
+                                                  import_replace_name,
+                                                  import_gni_path,
+                                                  return_dict, need_replace)
+                else:
+                    need_replace, return_dict, \
+                    enable_path_dict, import_gni_path = \
+                        self.get_need_result_list(model_path_dict, name,
+                                                  import_replace_name,
+                                                  import_gni_path,
+                                                  return_dict, need_replace)
 
         for k in list(return_dict.keys()):
             for model_detail in list(return_dict[k].keys()):
@@ -356,8 +360,8 @@ class HdfLiteScan(object):
                 elif Source_File_Path2:
                     list1 = temp_info.strip().split("=")
                     try:
-                        str1 = eval(list1[-1])[0]
-                    except:
+                        str1 = ast.literal_eval(list1[-1])[0]
+                    except NameError:
                         continue
                     temp_list0.append(re.search(
                         self.re_source_file2, str1.strip()).group())
