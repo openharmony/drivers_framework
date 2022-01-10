@@ -304,14 +304,14 @@ static int32_t ParseSensorInfo(struct DeviceResourceIface *parser, const struct 
 
     ret = parser->GetString(infoNode, "firmwareVersion", &name, NULL);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "firmwareVersion");
-    if (strcpy_s(config->sensorInfo.firmwareVersion, SENSOR_INFO_NAME_MAX_LEN, name) != EOK) {
+    if (strcpy_s(config->sensorInfo.firmwareVersion, SENSOR_INFO_VERSION_MAX_LEN, name) != EOK) {
         HDF_LOGE("%s:copy firmwareVersion failed!", __func__);
         return HDF_FAILURE;
     }
 
     ret = parser->GetString(infoNode, "hardwareVersion", &name, NULL);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "hardwareVersion");
-    if (strcpy_s(config->sensorInfo.hardwareVersion, SENSOR_INFO_NAME_MAX_LEN, name) != EOK) {
+    if (strcpy_s(config->sensorInfo.hardwareVersion, SENSOR_INFO_VERSION_MAX_LEN, name) != EOK) {
         HDF_LOGE("%s:copy hardwareVersion failed!", __func__);
         return HDF_FAILURE;
     }
