@@ -11,7 +11,8 @@
 
 #include "hdf_base.h"
 
-#define SENSOR_INFO_NAME_MAX_LEN   16
+#define SENSOR_INFO_NAME_MAX_LEN      32
+#define SENSOR_INFO_VERSION_MAX_LEN   16
 
 enum SensorAccuracyMode {
     SENSOR_ACCURACY_NO     = 0,
@@ -80,8 +81,8 @@ enum SensorTag {
 struct SensorBasicInfo {
     char sensorName[SENSOR_INFO_NAME_MAX_LEN]; /**< Sensor name */
     char vendorName[SENSOR_INFO_NAME_MAX_LEN]; /**< Sensor vendor */
-    char firmwareVersion[SENSOR_INFO_NAME_MAX_LEN]; /**< Sensor firmware version */
-    char hardwareVersion[SENSOR_INFO_NAME_MAX_LEN]; /**< Sensor hardware version */
+    char firmwareVersion[SENSOR_INFO_VERSION_MAX_LEN]; /**< Sensor firmware version */
+    char hardwareVersion[SENSOR_INFO_VERSION_MAX_LEN]; /**< Sensor hardware version */
     int32_t sensorTypeId; /**< Sensor type ID (described in {@link SensorTypeTag}) */
     int32_t sensorId;     /**< Sensor ID, defined by the sensor driver developer */
     int32_t maxRange;     /**< Maximum measurement range of the sensor */
