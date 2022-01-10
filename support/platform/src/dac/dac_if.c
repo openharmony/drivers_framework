@@ -9,8 +9,6 @@
 #include "dac_if.h"
 #include "dac_core.h"
 #include "hdf_log.h"
-#include "osal_mem.h"
-#include "securec.h"
 #define HDF_LOG_TAG dac_if_c
 #define DAC_SERVICE_NAME "HDF_PLATFORM_DAC_MANAGER"
 
