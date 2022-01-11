@@ -38,6 +38,7 @@ static struct DevSvcRecord *DevSvcManagerSearchService(struct IDevSvcManager *in
     OsalMutexUnlock(&devSvcManager->mutex);
     return searchResult;
 }
+
 static void NotifyServiceStatusLocked(struct DevSvcManager *devSvcManager,
     struct DevSvcRecord *record, uint32_t status)
 {
@@ -51,6 +52,26 @@ static void NotifyServiceStatusLocked(struct DevSvcManager *devSvcManager,
 
     DLIST_FOR_EACH_ENTRY(listenerHolder, &devSvcManager->svcstatListeners, struct ServStatListenerHolder, node) {
         if ((listenerHolder->listenClass & record->devClass) && listenerHolder->NotifyStatus != NULL) {
+            listenerHolder->NotifyStatus(listenerHolder, &svcstat);
+        }
+    }
+}
+
+static void NotifyServiceStatusOnRegisterLocked(struct DevSvcManager *devSvcManager,
+    struct ServStatListenerHolder *listenerHolder)
+{
+    struct DevSvcRecord *record = NULL;
+    DLIST_FOR_EACH_ENTRY(record, &devSvcManager->services, struct DevSvcRecord, entry) {
+        if ((listenerHolder->listenClass & record->devClass) == 0) {
+            continue;
+        }
+        struct ServiceStatus svcstat = {
+            .deviceClass = record->devClass,
+            .serviceName = record->servName,
+            .status = SERVIE_STATUS_START,
+            .info = record->servInfo,
+        };
+        if (listenerHolder->NotifyStatus != NULL) {
             listenerHolder->NotifyStatus(listenerHolder, &svcstat);
         }
     }
@@ -99,10 +120,9 @@ int DevSvcManagerUpdateService(struct IDevSvcManager *inst, const char *servName
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     struct DevSvcRecord *record = NULL;
-    char *servNameStr = NULL;
     char *servInfoStr = NULL;
     if (devSvcManager == NULL || service == NULL || servName == NULL) {
-        HDF_LOGE("failed to add service, input param is null");
+        HDF_LOGE("failed to update service, invalid param");
         return HDF_FAILURE;
     }
 
@@ -111,22 +131,14 @@ int DevSvcManagerUpdateService(struct IDevSvcManager *inst, const char *servName
         return HDF_DEV_ERR_NO_DEVICE;
     }
 
-    servNameStr = HdfStringCopy(servName);
-    if (servNameStr == NULL) {
-        return HDF_ERR_MALLOC_FAIL;
-    }
-
     servInfoStr = HdfStringCopy(servInfo);
     if (servInfoStr == NULL) {
-        OsalMemFree(servNameStr);
         return HDF_ERR_MALLOC_FAIL;
     }
-    OsalMemFree((char *)record->servName);
     OsalMemFree((char *)record->servInfo);
 
     record->value = service;
     record->devClass = devClass;
-    record->servName = servNameStr;
     record->servInfo = servInfoStr;
 
     NotifyServiceStatusLocked(devSvcManager, record, SERVIE_STATUS_CHANGE);
@@ -226,6 +238,7 @@ int DevSvcManagerRegsterServListener(struct IDevSvcManager *inst,
 
     OsalMutexLock(&devSvcManager->mutex);
     DListInsertTail(&listenerHolder->node, &devSvcManager->svcstatListeners);
+    NotifyServiceStatusOnRegisterLocked(devSvcManager, listenerHolder);
     OsalMutexUnlock(&devSvcManager->mutex);
 
     return HDF_SUCCESS;
