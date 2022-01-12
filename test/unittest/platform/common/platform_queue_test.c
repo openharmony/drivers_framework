@@ -7,11 +7,6 @@
  */
 
 #include "platform_queue_test.h"
-#include "hdf_base.h"
-#include "hdf_log.h"
-#include "osal_sem.h"
-#include "osal_spinlock.h"
-#include "osal_time.h"
 #include "platform_assert.h"
 #include "platform_queue.h"
 
@@ -31,8 +26,8 @@ static int32_t PlatformQueueTestHandle(struct PlatformQueue *queue, struct Platf
 {
     struct PlatformQueueTestMsg *tmsg = (struct PlatformQueueTestMsg *)msg;
     if (msg == NULL) {
-         return HDF_ERR_INVALID_PARAM;
-    };
+        return HDF_ERR_INVALID_PARAM;
+    }
 
     if (queue == NULL) {
         tmsg->status = HDF_ERR_INVALID_OBJECT;
@@ -68,14 +63,14 @@ static int32_t PlatformQueueTestAddAndWait(struct PlatformQueue *pq)
     tmsg.status = -1;
 
     (void)OsalSemInit(&tmsg.sem, 0);
-    //should add msg success
+    // should add msg success
     ret = PlatformQueueAddMsg(pq, &tmsg.msg);
     if (!CHECK_EQ(ret, HDF_SUCCESS)) {
         (void)OsalSemDestroy(&tmsg.sem);
         return ret;
     }
 
-    //should wait msg success
+    // should wait msg success
     ret = OsalSemWait(&tmsg.sem, PLAT_QUEUE_TEST_TIMEOUT);
     if (!CHECK_EQ(ret, HDF_SUCCESS)) {
         (void)OsalSemDestroy(&tmsg.sem);

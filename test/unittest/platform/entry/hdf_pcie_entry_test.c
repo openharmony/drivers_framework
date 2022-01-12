@@ -6,9 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_log.h"
 #include "hdf_pcie_entry_test.h"
-#include "pcie_if.h"
+#include "hdf_log.h"
 #include "pcie_test.h"
 
 #define HDF_LOG_TAG hdf_pcie_entry_test

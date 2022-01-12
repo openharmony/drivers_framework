@@ -7,8 +7,6 @@
  */
 
 #include "hdf_i2c_entry_test.h"
-#include "hdf_log.h"
-#include "i2c_if.h"
 #include "i2c_test.h"
 
 #define HDF_LOG_TAG hdf_i2c_entry_test
