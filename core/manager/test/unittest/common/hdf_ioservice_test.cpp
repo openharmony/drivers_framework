@@ -806,29 +806,24 @@ HWTEST_F(IoServiceTest, HdfIoService016, TestSize.Level0)
     listener->callback = TestOnServiceStatusReceived;
     listener->priv = (void *)&issd;
 
-    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
     int status = servmgr->RegisterServiceStatusListener(servmgr, listener, DEVICE_CLASS_DEFAULT);
     ASSERT_EQ(status, HDF_SUCCESS);
 
-    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
     struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
     ASSERT_TRUE(testService != NULL);
     HdfSBuf *data = HdfSBufObtainDefaultSize();
     ASSERT_TRUE(data != NULL);
 
-    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
     std::string servinfo = "foo";
     ASSERT_TRUE(HdfSbufWriteString(data, servinfo.data()));
     int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UPDATE_SERVICE_INFO, data, NULL);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
-    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
     int count = servstatWaitTime;
     while (!issd.callbacked && count > 0) {
         OsalMSleep(1);
         count--;
     }
-    HDF_LOGI("YDEBUG:%{public}s:%{public}d", __func__, __LINE__);
     ASSERT_TRUE(issd.callbacked);
     ASSERT_EQ(issd.servName, SAMPLE_SERVICE);
     ASSERT_EQ(issd.devClass, DEVICE_CLASS_DEFAULT);
