@@ -414,7 +414,7 @@ static void *HdmiCntlrObjGet(uint16_t busNum)
         return NULL;
     }
     if (snprintf_s(serviceName, (HDMI_SERVICE_NAME_LEN + 1),
-        HDMI_SERVICE_NAME_LEN, "HDF_PLATFORM_HDMI_%d", busNum) < 0) {
+        HDMI_SERVICE_NAME_LEN, "HDF_PLATFORM_HDMI_%u", busNum) < 0) {
         HDF_LOGE("get HDMI service name fail.");
         goto __ERR;
     }

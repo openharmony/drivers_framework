@@ -156,7 +156,7 @@ static void *PcieCntlrObjGet(uint16_t busNum)
         return NULL;
     }
     if (snprintf_s(serviceName, (PCIE_SERVICE_NAME_LEN + 1),
-        PCIE_SERVICE_NAME_LEN, "HDF_PLATFORM_PCIE_%d", busNum) < 0) {
+        PCIE_SERVICE_NAME_LEN, "HDF_PLATFORM_PCIE_%u", busNum) < 0) {
         HDF_LOGE("get PCIE service name fail.");
         goto EXIT;
     }

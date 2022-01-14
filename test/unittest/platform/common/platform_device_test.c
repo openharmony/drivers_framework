@@ -7,16 +7,12 @@
  */
 
 #include "platform_device_test.h"
-#include "hdf_base.h"
-#include "hdf_log.h"
-#include "osal_sem.h"
-#include "osal_spinlock.h"
-#include "osal_time.h"
 #include "platform_assert.h"
-#include "platform_device.h"
 #include "platform_manager.h"
 
 #define HDF_LOG_TAG platform_device_test
+
+#define PLAT_DEV_WAIT_TIMEOUT     10
 
 int32_t PlatformDeviceTestSetUpAll(void)
 {
@@ -47,7 +43,7 @@ static int32_t PlatformDeviceTestSetName(struct PlatformDevice *device)
     ret = PlatformDeviceSetName(device, "platform_device_name"); 
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
     ret = strcmp(device->name, "platform_device_name");
-    CHECK_EQ_RETURN(ret , 0, HDF_FAILURE);
+    CHECK_EQ_RETURN(ret, 0, HDF_FAILURE);
 
     // clean the name after test
     PlatformDeviceClearName(device);
@@ -106,7 +102,7 @@ static int32_t PlatformDeviceTestWaitEvent(struct PlatformDevice *device)
     PLAT_LOGD("%s: enter", __func__);
     device->name = "platform_device_test_event";
     // should not wait success before post
-    ret = PlatformDeviceWaitEvent(device, mask, 10, &events);
+    ret = PlatformDeviceWaitEvent(device, mask, PLAT_DEV_WAIT_TIMEOUT, &events);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE); 
 
     // should post event success
@@ -114,7 +110,7 @@ static int32_t PlatformDeviceTestWaitEvent(struct PlatformDevice *device)
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret); 
 
     // should wait success after post
-    ret = PlatformDeviceWaitEvent(device, mask, 10, &events);
+    ret = PlatformDeviceWaitEvent(device, mask, PLAT_DEV_WAIT_TIMEOUT, &events);
     PLAT_LOGD("%s: events:%x", __func__, events);
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret); 
     CHECK_EQ_RETURN(events, eventA | eventB, ret); 

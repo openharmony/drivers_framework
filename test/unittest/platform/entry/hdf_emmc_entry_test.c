@@ -7,7 +7,6 @@
  */
 
 #include "hdf_emmc_entry_test.h"
-#include "emmc_if.h"
 #include "emmc_test.h"
 #include "hdf_log.h"
 

@@ -23,6 +23,7 @@ static void PlatformDeviceOnFirstGet(struct HdfSRef *sref)
 static void PlatformDeviceOnLastPut(struct HdfSRef *sref)
 {
     struct PlatformDevice *device = NULL;
+    int32_t ret;
 
     if (sref == NULL) {
         return;
@@ -34,7 +35,11 @@ static void PlatformDeviceOnLastPut(struct HdfSRef *sref)
         return;
     }
 
-    (void)PlatformDevicePostEvent(device, PLAT_EVENT_DEVICE_DEAD);
+    ret = PlatformDevicePostEvent(device, PLAT_EVENT_DEVICE_DEAD);
+    if (ret != HDF_SUCCESS) {
+        PLAT_LOGE("PlatformDeviceOnLastPut: post event failed:%d", ret);
+        return;
+    }
     PLAT_LOGI("PlatformDeviceOnLastPut: device:%s(%d) life cycle end", device->name, device->number);
 }
 

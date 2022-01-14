@@ -7,7 +7,6 @@
  */
 
 #include "hdf_dac_entry_test.h"
-#include "hdf_log.h"
 #include "dac_test.h"
 #include "hdf_log.h"
 

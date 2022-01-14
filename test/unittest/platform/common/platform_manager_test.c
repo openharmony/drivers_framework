@@ -7,19 +7,17 @@
  */
 
 #include "platform_manager_test.h"
-#include "hdf_base.h"
-#include "hdf_log.h"
 #include "osal_mem.h"
-#include "osal_sem.h"
-#include "osal_spinlock.h"
-#include "osal_time.h"
 #include "platform_assert.h"
 #include "platform_manager.h"
 
 #define HDF_LOG_TAG platform_manager_test
 
-#define PLAT_MGR_TEST_DEV_NUM 3
-#define PLAT_MGR_TEST_DEV_NUM_START 0x5A
+#define PLAT_MGR_TEST_DEV_NUM           3
+#define PLAT_MGR_TEST_DEV_NUM_START     0x5A
+#define PLAT_DEV_NUMBER_0               0
+#define PLAT_DEV_NUMBER_1               1
+#define PLAT_DEV_NUMBER_2               2
 
 static struct PlatformDevice *g_platDevices[PLAT_MGR_TEST_DEV_NUM];
 
@@ -70,9 +68,9 @@ static void PlatformManagerTestDestroyDevices(void)
 static int32_t PlatformManagerTestAddAndDel(struct PlatformManager *manager)
 {
     int32_t ret;
-    struct PlatformDevice *device0 = g_platDevices[0];
-    struct PlatformDevice *device1 = g_platDevices[1];
-    struct PlatformDevice *device2 = g_platDevices[2];
+    struct PlatformDevice *device0 = g_platDevices[PLAT_DEV_NUMBER_0];
+    struct PlatformDevice *device1 = g_platDevices[PLAT_DEV_NUMBER_1];
+    struct PlatformDevice *device2 = g_platDevices[PLAT_DEV_NUMBER_2];
     struct PlatformDevice *device0Get = NULL;
     struct PlatformDevice *device1Get = NULL;
     int32_t refCntBeforeAdd;
@@ -136,9 +134,9 @@ static int32_t PlatformManagerTestAddAndDel(struct PlatformManager *manager)
 static int32_t PlatformManagerTestGetDevice(struct PlatformManager *manager)
 {
     int32_t ret;
-    struct PlatformDevice *device0 = g_platDevices[0];
-    struct PlatformDevice *device1 = g_platDevices[1];
-    struct PlatformDevice *device2 = g_platDevices[2];
+    struct PlatformDevice *device0 = g_platDevices[PLAT_DEV_NUMBER_0];
+    struct PlatformDevice *device1 = g_platDevices[PLAT_DEV_NUMBER_1];
+    struct PlatformDevice *device2 = g_platDevices[PLAT_DEV_NUMBER_2];
     struct PlatformDevice *device0Get = NULL;
     struct PlatformDevice *device1Get = NULL;
     int32_t refCntBeforeGet;
