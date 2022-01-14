@@ -43,7 +43,7 @@ void RegulatorChildListDestroy(struct RegulatorTreeInfo *pRegulator)
 }
 
 // name:the regulator node name; fun :get the node parent struct RegulatorNode
-struct RegulatorNode * RegulatorTreeGetParent(const char *name)
+struct RegulatorNode *RegulatorTreeGetParent(const char *name)
 {
     CHECK_NULL_PTR_RETURN_VALUE(name, NULL);
 
@@ -339,8 +339,8 @@ int RegulatorTreeSet(const char *name, struct RegulatorNode *child, struct Regul
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("RegulatorTreeSet: set [%s], parent[%s] and child info success!", 
-            name, parent->regulatorInfo.name);
+    HDF_LOGI("RegulatorTreeSet: set [%s], parent[%s] and child info success!",
+        name, parent->regulatorInfo.name);
     return HDF_SUCCESS;
 }
 static void RegulatorTreePrintChild(const char *name, struct DListHead *childHead)

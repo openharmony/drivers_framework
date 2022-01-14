@@ -20,6 +20,9 @@
 
 #define HDF_LOG_TAG regulator_virtual
 
+#define MINIMUN_VOLTAGE            1000
+#define MAXIMUN_VOLTAGE            50000
+
 struct VirtualVoltageRegulatorDev {
     struct regmap *regmap;
     struct regulator_dev *dev;
@@ -33,12 +36,11 @@ static struct regulator_consumer_supply g_virtualVoltageRegulatorVoltSupplies[] 
 // virtual regulator init info
 static struct regulator_init_data g_virtualVoltageRegulatorInitData = {
     .constraints = {
-    .name = "virtual_regulator",
-    .min_uV = 1000,
-    .max_uV = 50000,
-    .always_on = 1,
-    .valid_ops_mask = REGULATOR_CHANGE_VOLTAGE |
-            REGULATOR_CHANGE_STATUS,
+        .name = "virtual_regulator",
+        .min_uV = MINIMUN_VOLTAGE,
+        .max_uV = MAXIMUN_VOLTAGE,
+        .always_on = 1,
+        .valid_ops_mask = REGULATOR_CHANGE_VOLTAGE | REGULATOR_CHANGE_STATUS,
     },
     .num_consumer_supplies = ARRAY_SIZE(g_virtualVoltageRegulatorVoltSupplies),
     .consumer_supplies = g_virtualVoltageRegulatorVoltSupplies,
@@ -94,7 +96,7 @@ static int VirtualVoltageRegulatorIsEnabled(struct regulator_dev *rdev)
 }
 
 static int VirtualVoltageRegulatorSetVoltage(struct regulator_dev *rdev, int min_uV,
-                                        int max_uV, unsigned *selector)
+    int max_uV, unsigned *selector)
 {
     if ((rdev == NULL) || (rdev->constraints == NULL)) {
         HDF_LOGE("%s: rdev NULL", __func__);
@@ -133,7 +135,7 @@ static struct regulator_desc g_virtualVoltageRegulatorDesc = {
     .name = "regulator_virtual",
     .type = REGULATOR_VOLTAGE,
     .ops = &g_virtualVoltageRegulatorOps,
-    .min_uV = 1000,
+    .min_uV = MINIMUN_VOLTAGE,
     .owner = THIS_MODULE,
 };
 

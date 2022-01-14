@@ -20,6 +20,9 @@
 
 #define HDF_LOG_TAG regulator_virtual_current
 
+#define MINIMUN_CURRENT            1000
+#define MAXIMUN_CURRENT            50000
+
 struct VirtualCurrentRegulatorDev {
     struct regmap *regmap;
     struct regulator_dev *dev;
@@ -34,10 +37,9 @@ static struct regulator_consumer_supply g_virtualCurrentRegulatorSupplies[] = {
 static struct regulator_init_data g_virtualCurrentRegulatorInitData = {
     .constraints = {
     .name = "virtual_current_regulator",
-    .min_uA = 1000,
-    .max_uA = 50000,
-    .valid_ops_mask = REGULATOR_CHANGE_CURRENT |
-            REGULATOR_CHANGE_STATUS,
+    .min_uA = MINIMUN_CURRENT,
+    .max_uA = MAXIMUN_CURRENT,
+    .valid_ops_mask = REGULATOR_CHANGE_CURRENT | REGULATOR_CHANGE_STATUS,
     },
     .num_consumer_supplies = ARRAY_SIZE(g_virtualCurrentRegulatorSupplies),
     .consumer_supplies = g_virtualCurrentRegulatorSupplies,
@@ -94,7 +96,7 @@ static int VirtualCurrentRegulatorIsEnabled(struct regulator_dev *rdev)
 }
 
 static int VirtualCurrentRegulatorSetCurrent(struct regulator_dev *rdev, int min_uA,
-                                        int max_uA)
+    int max_uA)
 {
     if ((rdev == NULL) || (rdev->constraints == NULL)) {
         HDF_LOGE("%s: rdev NULL", __func__);
@@ -190,7 +192,7 @@ static struct platform_driver g_virtualCurrentRegulatorPlatformDriver = {
 int VirtualCurrentRegulatorAdapterInit(void)
 {
     int ret = platform_device_register(&g_virtualCurrentRegulatorPlatformDevice);
-    if(ret == 0) {
+    if (ret == 0) {
         ret = platform_driver_register(&g_virtualCurrentRegulatorPlatformDriver);
     } else {
         HDF_LOGE("%s:device register fail %d", __func__, ret);
@@ -201,7 +203,7 @@ int VirtualCurrentRegulatorAdapterInit(void)
 static int __init VirtualCurrentRegulatorInit(void)
 {
     int ret = platform_device_register(&g_virtualCurrentRegulatorPlatformDevice);
-    if(ret == 0) {
+    if (ret == 0) {
         ret = platform_driver_register(&g_virtualCurrentRegulatorPlatformDriver);
     }
     return ret;

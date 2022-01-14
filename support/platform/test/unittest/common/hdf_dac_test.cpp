@@ -80,5 +80,3 @@ HWTEST_F(HdfLiteDacTest, DacTestReliability001, TestSize.Level1)
     struct HdfTestMsg msg = {TEST_PAL_DAC_TYPE, DAC_TEST_CMD_RELIABILITY, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
-
-

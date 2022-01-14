@@ -46,7 +46,7 @@ DevHandle PwmOpen(uint32_t num)
     }
 
     ret = PwmDeviceGet((struct PwmDev *)pwm);
-    if(ret != HDF_SUCCESS) {
+    if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: PwmDeviceGet failed, ret: %d", __func__, ret);
         return NULL;
     }
