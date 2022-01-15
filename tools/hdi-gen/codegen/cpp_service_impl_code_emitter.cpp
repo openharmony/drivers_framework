@@ -16,8 +16,7 @@ bool CppServiceImplCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
         ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
+        directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
     }
@@ -38,7 +37,7 @@ void CppServiceImplCodeEmitter::EmitCode()
 
 void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 {
-    String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -48,18 +47,6 @@ void CppServiceImplCodeEmitter::EmitImplHeaderFile()
     EmitServiceImplInclusions(sb);
     sb.Append("\n");
     EmitServiceImplDecl(sb);
-
-    if (!isCallbackInterface()) {
-        sb.Append("\n");
-        EmitHeadExternC(sb);
-        sb.Append("\n");
-        EmitExternalGetMethodDecl(sb);
-        sb.Append("\n");
-        EmitExternalReleaseMethodDecl(sb);
-        sb.Append("\n");
-        EmitTailExternC(sb);
-    }
-
     sb.Append("\n");
     EmitTailMacro(sb, implFullName_);
 
@@ -72,11 +59,7 @@ void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 void CppServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    if (!isCallbackInterface()) {
-        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
-    } else {
-        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
-    }
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
 
     for (const auto& file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -87,11 +70,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder& sb)
 {
     EmitBeginNamespace(sb);
     sb.Append("\n");
-    if (!isCallbackInterface()) {
-        sb.AppendFormat("class %sService : public %s {\n", infName_.string(), interfaceName_.string());
-    } else {
-        sb.AppendFormat("class %sService : public %s {\n", infName_.string(), stubName_.string());
-    }
+    sb.AppendFormat("class %sService : public %s {\n", infName_.string(), stubName_.string());
     sb.Append("public:\n");
     EmitServiceImplBody(sb, g_tab);
     sb.Append("};\n");
@@ -146,19 +125,9 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(const AutoPtr<ASTMetho
     }
 }
 
-void CppServiceImplCodeEmitter::EmitExternalGetMethodDecl(StringBuilder& sb)
-{
-    sb.AppendFormat("%s *%sServiceConstruct();\n", CppFullName(interfaceFullName_).string(), infName_.string());
-}
-
-void CppServiceImplCodeEmitter::EmitExternalReleaseMethodDecl(StringBuilder& sb)
-{
-    sb.AppendFormat("void %sServiceRelease(%s *obj);\n", infName_.string(), CppFullName(interfaceFullName_).string());
-}
-
 void CppServiceImplCodeEmitter::EmitImplSourceFile()
 {
-    String filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(infName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -170,12 +139,6 @@ void CppServiceImplCodeEmitter::EmitImplSourceFile()
     EmitServiceImplMethodImpls(sb, "");
     sb.Append("\n");
     EmitEndNamespace(sb);
-    if (!isCallbackInterface()) {
-        sb.Append("\n");
-        EmitExternalGetMethodImpl(sb);
-        sb.Append("\n");
-        EmitExternalReleaseMethodImpl(sb);
-    }
 
     String data = sb.ToString();
     file.WriteData(data.string(), data.GetLength());
@@ -235,26 +198,6 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMetho
     sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append(prefix).Append("}\n");
-}
-
-void CppServiceImplCodeEmitter::EmitExternalGetMethodImpl(StringBuilder& sb)
-{
-    sb.AppendFormat("%s *%sServiceConstruct()\n", CppFullName(interfaceFullName_).string(), infName_.string());
-    sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("using %s;\n", CppFullName(implFullName_).string());
-    sb.Append(g_tab).AppendFormat("return new %sService();\n", infName_.string());
-    sb.Append("}\n");
-}
-
-void CppServiceImplCodeEmitter::EmitExternalReleaseMethodImpl(StringBuilder& sb)
-{
-    sb.AppendFormat("void %sServiceRelease(%s *obj)\n", infName_.string(), CppFullName(interfaceFullName_).string());
-    sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("if (obj == nullptr) {\n");
-    sb.Append(g_tab).Append(g_tab).Append("return;\n");
-    sb.Append(g_tab).Append("}\n");
-    sb.Append(g_tab).AppendFormat("delete obj;\n");
-    sb.Append("}\n");
 }
 } // namespace HDI
 } // namespace OHOS

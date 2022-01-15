@@ -10,6 +10,7 @@
 #define OHOS_HDI_FILE_DETAIL_H
 
 #include <unordered_set>
+#include "util/options.h"
 #include "util/string.h"
 
 namespace OHOS {
@@ -64,13 +65,13 @@ public:
 
     inline static String ImportsToPath(const String& importPkgName)
     {
-        return importPkgName.Replace('.', '/') + ".idl";
+        return Options::GetInstance().GetPackagePath(importPkgName) + ".idl";
     }
 
     String Dump();
-
 private:
     String idlFilePath_;
+    String rootPackageName_;
     String packageName_;
     String idlName_;
     StringSet imports_;

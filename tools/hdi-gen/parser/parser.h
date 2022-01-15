@@ -73,6 +73,8 @@ private:
 
     bool ParsePackageName();
 
+    bool ParserPackageInfo(const String& packageFullName);
+
     bool ParseImport();
 
     bool ParseSequenceable();
@@ -85,7 +87,11 @@ private:
 
     bool ParseMethod(const AutoPtr<ASTInterfaceType>& interface);
 
+    void SetVersionInterfaceMethod(const AutoPtr<ASTInterfaceType>& interface);
+
     bool ParseAttributeBody(AutoPtr<Attribute>& attributes);
+
+    bool ParseAttributeParam(AutoPtr<Attribute>& attributes);
 
     bool ParseParameterList(AutoPtr<ASTMethod>& method);
 
@@ -100,6 +106,8 @@ private:
     AutoPtr<ASTType> ParseList();
 
     AutoPtr<ASTType> ParseMap();
+
+    AutoPtr<ASTType> ParseSharedMemQueueMetaType();
 
     AutoPtr<ASTType> ParseArrayType(const AutoPtr<ASTType>& elementType);
 

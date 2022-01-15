@@ -13,10 +13,11 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "util/file.h"
 
 namespace OHOS {
 namespace HDI {
-const char* Options::optSupportArgs = "c:d:";
+const char* Options::optSupportArgs = "c:d:r:";
 static struct option g_longOpts[] = {
     {"help", no_argument, nullptr, 'h'},
     {"version", no_argument, nullptr, 'v'},
@@ -48,6 +49,7 @@ Options& Options::Parse(int argc, char* const argv[])
         SetOptionData(op);
     }
     CheckOptions();
+
     return *this;
 }
 
@@ -67,6 +69,9 @@ void Options::SetOptionData(char op)
             break;
         case 'v':
             doShowVersion_ = true;
+            break;
+        case 'r':
+            AddPackagePath(optarg);
             break;
         case 'K':
             doModeKernel_ = true;
@@ -98,6 +103,26 @@ void Options::SetOptionData(char op)
             doShowUsage_ = true;
             break;
     }
+}
+
+void Options::AddPackagePath(const String& packagePath)
+{
+    int index = packagePath.IndexOf(":");
+    if (index == -1 || index == packagePath.GetLength() - 1) {
+        errors_.push_back(String::Format("%s: invalid option parameters '%s'.", program_.string(),
+            packagePath.string()));
+        return;
+    }
+
+    String package = packagePath.Substring(0, index);
+    String path = packagePath.Substring(index + 1);
+
+    auto it = packagePath_.find(package);
+    if (it != packagePath_.end()) {
+        errors_.push_back(String::Format("%s: The '%s:%s' has been set.", program_.string()));
+    }
+
+    packagePath_[package] = path;
 }
 
 void Options::SetLanguage(const String& language)
@@ -171,6 +196,7 @@ void Options::ShowUsage() const
            "  --help                          Display command line options\n"
            "  --version                       Display toolchain version information\n"
            "  --dump-ast                      Display the AST of the compiled file\n"
+           "  -r <rootPackage>:<rootPath>     set root path of root package\n"
            "  -c <*.idl>                      Compile the .idl file\n"
            "  --gen-hash                      Generate hash key of the idl file\n"
            "  --gen-c                         Generate C code\n"
@@ -181,6 +207,69 @@ void Options::ShowUsage() const
            "  --module-name <module name>     Set driver module name\n"
            "  --build-target <target name>    Generate client code, server code or all code\n"
            "  -d <directory>                  Place generated codes into <directory>\n");
+}
+
+/*
+*For Example
+*-r option: -r OHOS.Hdi:drivers/interface
+*package:OHOS.Hdi.foo.v1_0
+*rootPackage:OHOS.Hdi
+*/
+String Options::GetRootPackage(const String& package)
+{
+    const auto& packagePaths = GetPackagePath();
+    for (const auto& packageRoot : packagePaths) {
+        if (package.StartsWith(packageRoot.first)) {
+            return packageRoot.first;
+        }
+    }
+
+    return String("");
+}
+
+/*
+*For Example
+*-r option: -r OHOS.Hdi:drivers/interface
+*package:OHOS.Hdi.foo.v1_0
+*subPackage:foo.v1_0
+*/
+String Options::GetSubPackage(const String& package)
+{
+    String rootPackage = GetRootPackage(package);
+    if (rootPackage.IsEmpty()) {
+        return package;
+    }
+
+    return package.Substring(rootPackage.GetLength() + 1);
+}
+
+/*
+*For Example
+*-r option: -r OHOS.Hdi:drivers/interface
+*package:OHOS.Hdi.foo.v1_0
+*packagePath:drivers/interface/foo/v1_0
+*/
+String Options::GetPackagePath(const String& package)
+{
+    String rootPackage = "";
+    String rootPath = "";
+    const auto& packagePaths = GetPackagePath();
+    for (const auto& packageRoot : packagePaths) {
+        if (package.StartsWith(packageRoot.first)) {
+            rootPackage = packageRoot.first;
+            rootPath = packageRoot.second;
+        }
+    }
+
+    if (rootPackage.IsEmpty()) {
+        return package.Replace('.', File::pathSeparator);
+    }
+
+    if (rootPath.EndsWith(File::pathSeparator)) {
+        rootPath = rootPath.Substring(0, rootPath.GetLength() - 1);
+    }
+
+    return package.Replace(rootPackage, rootPath).Replace('.', File::pathSeparator);
 }
 } // namespace HDI
 } // namespace OHOS

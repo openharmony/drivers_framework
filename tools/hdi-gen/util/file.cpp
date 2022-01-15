@@ -9,8 +9,8 @@
 #include "util/file.h"
 #include <cstdlib>
 #include <cstring>
-#include <string>
 #include <functional>
+#include <string>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "securec.h"

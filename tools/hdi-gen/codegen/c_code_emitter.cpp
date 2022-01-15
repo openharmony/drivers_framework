@@ -10,6 +10,7 @@
 #include <cctype>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "util/options.h"
 
 namespace OHOS {
 namespace HDI {
@@ -19,13 +20,13 @@ String CCodeEmitter::FileName(const String& name)
         return name;
     }
 
+    String subName = Options::GetInstance().GetSubPackage(name);
     StringBuilder sb;
-
-    for (int i = 0; i < name.GetLength(); i++) {
-        char c = name[i];
+    for (int i = 0; i < subName.GetLength(); i++) {
+        char c = subName[i];
         if (isupper(c) != 0) {
             // 2->Index of the last char array.
-            if (i > 1 && name[i - 1] != '.' && name[i - 2] != '.') {
+            if (i > 1 && subName[i - 1] != '.' && subName[i - 2] != '.') {
                 sb.Append('_');
             }
             sb.Append(tolower(c));
@@ -37,13 +38,21 @@ String CCodeEmitter::FileName(const String& name)
     return sb.ToString().Replace('.', '/');
 }
 
+String CCodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod>& method)
+{
+    return String::Format("CMD_%s_%s", infName_.ToUnderLineUpper().string(),
+        method->GetName().ToUnderLineUpper().string());
+}
+
 void CCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb)
 {
     sb.Append("enum {\n");
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(g_tab).AppendFormat("CMD_%s,\n", ConstantName(method->GetName()).string());
+        sb.Append(g_tab).Append(EmitMethodCmdID(method)).Append(",\n");
     }
+
+    sb.Append(g_tab).Append(EmitMethodCmdID(interface_->GetVersionMethod())).Append(",\n");
     sb.Append("};\n");
 }
 

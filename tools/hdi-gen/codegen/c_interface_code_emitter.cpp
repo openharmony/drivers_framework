@@ -16,8 +16,7 @@ bool CInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
         ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
+        directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
     }
@@ -37,7 +36,7 @@ void CInterfaceCodeEmitter::EmitCode()
 
 void CInterfaceCodeEmitter::EmitInterfaceHeaderFile()
 {
-    String filePath = String::Format("%s%s.h", directory_.string(), FileName(interfaceName_).string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(interfaceName_).string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -47,6 +46,10 @@ void CInterfaceCodeEmitter::EmitInterfaceHeaderFile()
     EmitImportInclusions(sb);
     sb.Append("\n");
     EmitHeadExternC(sb);
+    sb.Append("\n");
+    EmitPreDeclaration(sb);
+    sb.Append("\n");
+    EmitInterfaceVersionMacro(sb);
     sb.Append("\n");
     EmitInterfaceMethodCommands(sb);
     sb.Append("\n");
@@ -83,13 +86,20 @@ void CInterfaceCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSe
     headerFiles.emplace(HeaderFile(HeaderFileType::C_STD_HEADER_FILE, "stdint"));
 }
 
+void CInterfaceCodeEmitter::EmitPreDeclaration(StringBuilder& sb)
+{
+    sb.Append("struct HdfRemoteService;\n");
+}
+
+void CInterfaceCodeEmitter::EmitInterfaceVersionMacro(StringBuilder& sb)
+{
+    sb.AppendFormat("#define %s %u\n", majorVerName_.string(), ast_->GetMajorVer());
+    sb.AppendFormat("#define %s %u\n", minorVerName_.string(), ast_->GetMinorVer());
+}
+
 void CInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
 {
     sb.AppendFormat("struct %s {\n", interfaceName_.string());
-    if (isCallbackInterface()) {
-        sb.Append(g_tab).Append("struct HdfRemoteService *remote;\n");
-        sb.Append("\n");
-    }
     EmitInterfaceMethods(sb, g_tab);
     sb.Append("};\n");
 }
@@ -99,9 +109,14 @@ void CInterfaceCodeEmitter::EmitInterfaceMethods(StringBuilder& sb, const String
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
         EmitInterfaceMethod(method, sb, prefix);
-        if (i + 1 < interface_->GetMethodNumber()) {
-            sb.Append("\n");
-        }
+        sb.Append("\n");
+    }
+
+    EmitInterfaceMethod(interface_->GetVersionMethod(), sb, prefix);
+
+    if (!isKernelCode_) {
+        sb.Append("\n");
+        EmitAsObjectMethod(sb, g_tab);
     }
 }
 
@@ -129,6 +144,12 @@ void CInterfaceCodeEmitter::EmitInterfaceMethod(const AutoPtr<ASTMethod>& method
     }
 }
 
+void CInterfaceCodeEmitter::EmitAsObjectMethod(StringBuilder& sb, const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("struct HdfRemoteService* (*AsObject)(struct %s *self);\n",
+        interfaceName_.string());
+}
+
 void CInterfaceCodeEmitter::EmitInterfaceGetMethodDecl(StringBuilder& sb)
 {
     String methodParamStr = isCallbackInterface() ? "struct HdfRemoteService *remote" : "void";
@@ -144,5 +165,6 @@ void CInterfaceCodeEmitter::EmitInterfaceReleaseMethodDecl(StringBuilder& sb)
 {
     sb.AppendFormat("void %sRelease(struct %s *instance);\n", infName_.string(), interfaceName_.string());
 }
+
 } // namespace HDI
 } // namespace OHOS

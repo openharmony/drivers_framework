@@ -19,8 +19,7 @@ bool CCustomTypesCodeEmitter::ResolveDirectory(const String& targetDirectory)
         return false;
     }
 
-    directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-        FileName(ast_->GetPackageName()).string()));
+    directory_ = GetFilePath(targetDirectory);
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CCustomTypesCodeEmitter", "Create '%s' failed!", directory_.string());
         return false;
@@ -161,7 +160,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypeFreeDecl(StringBuilder& sb,
 
 void CCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 {
-    String filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_).string());
+    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(infName_).string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

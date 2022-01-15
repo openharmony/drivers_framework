@@ -35,7 +35,8 @@ void Lexer::InitializeKeywords()
         { "Map", Token::MAP }, { "oneway", Token::ONEWAY }, { "out", Token::OUT },
         { "package", Token::PACKAGE}, { "sequenceable", Token::SEQUENCEABLE }, { "short", Token::SHORT },
         { "String", Token::STRING }, { "struct", Token::STRUCT }, { "union", Token::UNION },
-        { "unsigned", Token::UNSIGNED }, { "FileDescriptor", Token::FILEDESCRIPTOR }
+        { "unsigned", Token::UNSIGNED }, { "FileDescriptor", Token::FILEDESCRIPTOR },
+        {"SharedMemQueue", Token::SMEMQUEUE},
     };
 
     delimiters_ = {
@@ -62,7 +63,7 @@ void Lexer::InitializeKeywords()
         { Token::SEQUENCEABLE, "sequenceable"}, { Token::STRUCT, "struct"}, { Token::PARENTHESES_LEFT, "("},
         { Token::PARENTHESES_RIGHT, ")"}, { Token::SEMICOLON, ";"}, { Token::SHORT, "short"},
         { Token::STRING, "String"}, { Token::UNION, "union"}, { Token::UNSIGNED, "unsigned"},
-        { Token::FILEDESCRIPTOR, "FileDescriptor"}
+        { Token::FILEDESCRIPTOR, "FileDescriptor"}, {Token::SMEMQUEUE, "SharedMemQueue"},
     };
 }
 

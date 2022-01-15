@@ -32,22 +32,21 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import re
 import sys
-
 
 class IdlType:
     INTERFACE = 1
     CALLBACK = 2
     TYPES = 3
 
-
 def translate_file_name(file_name):
     name = file_name[1:] if file_name.startswith("I") else file_name
     translate_name = ""
-    for index,_ in enumerate(name):
-        c = name[index]
+    for i in range(len(name)):
+        c = name[i]
         if c >= 'A' and c <= 'Z':
-            if index > 1:
+            if i > 1:
                 translate_name += "_"
             translate_name += c.lower()
         else:
@@ -159,8 +158,7 @@ def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
     iface_header_file = os.path.join(out_dir, "i" + file_name + ".h")
     client_proxy_header_file = os.path.join(out_dir, file_name + "_proxy.h")
     client_proxy_source_file = os.path.join(out_dir, file_name + "_proxy.cpp")
-    server_driver_source_file = os.path.join(out_dir,
-        file_name + "_driver.cpp")
+    server_driver_source_file = os.path.join(out_dir, file_name + "_driver.cpp")
     server_stub_header_file = os.path.join(out_dir, file_name + "_stub.h")
     server_stub_source_file = os.path.join(out_dir, file_name + "_stub.cpp")
     server_impl_header_file = os.path.join(out_dir, file_name + "_service.h")
@@ -283,7 +281,7 @@ def get_compile_source_file(idl_files, language, out_dir, part):
     return outputs
 
 
-def main(argv):
+def get_files(argv):
     outputs = []
     if len(argv) < 4:
         return outputs
@@ -296,14 +294,44 @@ def main(argv):
     if option == "-o":
         outputs = idl_translate(files, language, out_dir)
     elif option == "-c":
-        outputs = get_compile_source_file(argv[4:],
-            language, out_dir, "client_lib_source")
+        outputs = get_compile_source_file(argv[4:], language, out_dir, "client_lib_source")
     elif option == "-s":
-        outputs = get_compile_source_file(argv[4:],
-            language, out_dir, "server_lib_source")
+        outputs = get_compile_source_file(argv[4:], language, out_dir, "server_lib_source")
 
     sys.stdout.write('\n'.join(outputs))
 
 
+def get_file_version(file_path):
+    major_version = 0
+    minor_version = 0
+    file = open(file_path, "r")
+    file_str = file.read()
+    result = re.findall(r'package\s\w+(?:\.\w+)*\.[V|v](\d+)_(\d+);', file_str)
+
+    if len(result) > 0:
+        major_version = result[0][0]
+        minor_version = result[0][1]
+    file.close()
+    version = str(major_version) + "." + str(minor_version)
+    return version
+
+
+def get_version(argv):
+    version = "0.0"
+    idl_files = argv[2:]
+    for idl_file in idl_files:
+        idl_file_type = get_idl_file_type(idl_file)
+        if idl_file_type == IdlType.INTERFACE:
+            version = get_file_version(idl_file)
+            break
+    sys.stdout.write(version)
+
+
 if __name__ == "__main__":
-    main(sys.argv)
+    if len(sys.argv) < 1:
+        sys.stdout.write('\n')
+    option = sys.argv[1]
+    if option == "-v":
+        get_version(sys.argv)
+    else:
+        get_files(sys.argv)

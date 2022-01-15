@@ -9,9 +9,9 @@
 #ifndef OHOS_HDI_LEXER_H
 #define OHOS_HDI_LEXER_H
 
+#include <cstdlib>
 #include <ctype.h>
 #include <memory>
-#include <string>
 #include <unordered_map>
 #include "parser/token.h"
 #include "util/file.h"

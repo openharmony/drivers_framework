@@ -7,6 +7,7 @@
  */
 
 #include "parser/file_detail.h"
+#include "util/file.h"
 #include "util/string_builder.h"
 
 namespace OHOS {

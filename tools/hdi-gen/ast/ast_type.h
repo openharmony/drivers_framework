@@ -42,6 +42,7 @@ enum class TypeKind {
     TYPE_ENUM,
     TYPE_STRUCT,
     TYPE_UNION,
+    TYPE_SMQ,
 };
 
 enum class TypeMode {
@@ -110,6 +111,8 @@ public:
     virtual bool IsArrayType();
 
     virtual bool IsFdType();
+
+    virtual bool IsSharedMemQueueType();
 
     virtual String ToShortString();
 

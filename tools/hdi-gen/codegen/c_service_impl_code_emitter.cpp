@@ -16,8 +16,7 @@ bool CServiceImplCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
         ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
+        directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
     }
@@ -38,7 +37,7 @@ void CServiceImplCodeEmitter::EmitCode()
 
 void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
 {
-    String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -79,7 +78,7 @@ void CServiceImplCodeEmitter::EmitServiceImplConstructDecl(StringBuilder& sb)
 
 void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
 {
-    String filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(infName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

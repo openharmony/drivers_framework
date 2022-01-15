@@ -26,6 +26,7 @@ enum class Token {
     FILEDESCRIPTOR,
     LIST,
     MAP,
+    SMEMQUEUE,
     CHAR,
     // qualifier
     UNSIGNED,

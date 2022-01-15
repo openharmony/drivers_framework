@@ -9,6 +9,7 @@
 #ifndef OHOS_HDI_OPTION_H
 #define OHOS_HDI_OPTION_H
 
+#include <unordered_map>
 #include <vector>
 #include "util/string.h"
 
@@ -16,6 +17,8 @@ namespace OHOS {
 namespace HDI {
 class Options {
 public:
+    using PkgPathMap = std::unordered_map<String, String, StringHashFunc, StringEqualFunc>;
+
     static Options& GetInstance();
 
     Options(const Options& other) = delete;
@@ -70,6 +73,11 @@ public:
         return sourceFiles_;
     }
 
+    inline PkgPathMap GetPackagePath() const
+    {
+        return packagePath_;
+    }
+
     inline String GetTargetLanguage() const
     {
         return targetLanguage_;
@@ -96,6 +104,11 @@ public:
 
     void ShowUsage() const;
 
+    String GetRootPackage(const String& package);
+
+    String GetSubPackage(const String& package);
+
+    String GetPackagePath(const String& package);
 private:
     Options() : program_(),
         sourceFiles_(0),
@@ -117,6 +130,8 @@ private:
 
     void SetOptionData(char op);
 
+    void AddPackagePath(const String& packagePath);
+
     void SetLanguage(const String& language);
 
     void SetCodePart(const String& part);
@@ -137,6 +152,7 @@ private:
     String generationDirectory_;
     String illegalOptions_;
     std::vector<String> errors_;
+    PkgPathMap packagePath_;
 
     bool doShowUsage_;
     bool doShowVersion_;

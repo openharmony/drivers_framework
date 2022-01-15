@@ -7,6 +7,7 @@
  */
 
 #include "ast/ast.h"
+#include <cstdlib>
 #include "util/string_builder.h"
 
 namespace OHOS {
@@ -231,6 +232,12 @@ bool AST::AddImport(const AutoPtr<AST>& importAst)
     imports_[importAst->GetFullName()] = importAst;
 
     return true;
+}
+
+void AST::SetVersion(size_t& majorVer, size_t& minorVer)
+{
+    majorVersion_ = majorVer;
+    minorVersion_ = minorVer;
 }
 } // namespace HDI
 } // namespace OHOS

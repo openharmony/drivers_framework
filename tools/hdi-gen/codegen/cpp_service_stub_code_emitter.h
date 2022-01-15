@@ -34,25 +34,17 @@ private:
 
     void EmitStubDecl(StringBuilder& sb);
 
-    void EmitCbStubDecl(StringBuilder& sb);
-
     void EmitStubBody(StringBuilder& sb, const String& prefix);
-
-    void EmitCbStubBody(StringBuilder& sb, const String& prefix);
 
     void EmitStubDestruction(StringBuilder& sb, const String& prefix);
 
-    void EmitCbStubOnRequestDecl(StringBuilder& sb, const String& prefix);
+    void EmitStubOnRequestDecl(StringBuilder& sb, const String& prefix);
+
+    void EmitGetVersionDecl(StringBuilder& sb, const String& prefix);
 
     void EmitStubMethodDecls(StringBuilder& sb, const String& prefix);
 
     void EmitStubMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
-
-    void EmitStubOnRequestMethodDecl(StringBuilder& sb, const String& prefix);
-
-    void EmitStubMembers(StringBuilder& sb, const String& prefix);
-
-    void EmitStubExternalsMethodsDel(StringBuilder& sb);
 
     // ISample.idl -> sample_service_stub.cpp
     void EmitStubSourceFile();
@@ -61,29 +53,15 @@ private:
 
     void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
-    void EmitDriverLibPath(StringBuilder& sb);
+    void EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
 
-    void EmitLibFuncTypeDef(StringBuilder& sb);
+    void EmitGetVersionMethodImpl(StringBuilder& sb, const String& prefix);
 
     void EmitStubMethodImpls(StringBuilder& sb, const String& prefix);
 
     void EmitStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
     void EmitStubCallMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
-
-    void EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
-
-    void EmitCbStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
-
-    void EmitStubExternalsMethodsImpl(StringBuilder& sb, const String& prefix);
-
-    void EmitStubLinkService(StringBuilder& sb);
-
-    void EmitStubInstanceMethodImpl(StringBuilder& sb);
-
-    void EmitStubReleaseMethodImpl(StringBuilder& sb);
-
-    void EmitServiceOnRemoteRequest(StringBuilder& sb);
 
     String EmitStubServiceUsings(String nameSpace);
 };

@@ -42,8 +42,7 @@ struct HeaderFile {
         }
     };
 
-    String ToString() const
-    {
+    String ToString() const {
         switch(type_) {
             case HeaderFileType::OWN_HEADER_FILE:
             case HeaderFileType::OWN_MODULE_HEADER_FILE:
@@ -80,6 +79,8 @@ protected:
 
     virtual void EmitCode() = 0;
 
+    String GetFilePath(const String& outDir);
+
     bool isKernelCode_ = false;
     AutoPtr<AST> ast_ = nullptr;
     AutoPtr<ASTInterfaceType> interface_ = nullptr;
@@ -94,6 +95,8 @@ protected:
     String stubFullName_;
     String implName_;
     String implFullName_;
+    String majorVerName_;
+    String minorVerName_;
 };
 }
 }

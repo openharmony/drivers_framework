@@ -77,6 +77,8 @@ public:
 
     bool StartsWith(const String& other) const;
 
+    bool EndsWith(char c) const;
+
     bool EndsWith(const char* string) const;
 
     bool EndsWith(const String& other) const;
@@ -84,6 +86,8 @@ public:
     String ToLowerCase() const;
 
     String ToUpperCase() const;
+
+    String ToUnderLineUpper() const;
 
     String Substring(int begin) const;
 

@@ -16,8 +16,7 @@ bool CppClientProxyCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
         ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
+        directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
     }
@@ -38,7 +37,7 @@ void CppClientProxyCodeEmitter::EmitCode()
 
 void CppClientProxyCodeEmitter::EmitProxyHeaderFile()
 {
-    String filePath = String::Format("%s%s.h", directory_.string(), FileName(infName_ + "Proxy").string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_ + "Proxy").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -104,10 +103,10 @@ void CppClientProxyCodeEmitter::EmitProxyMethodDecls(StringBuilder& sb, const St
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
         EmitProxyMethodDecl(method, sb, prefix);
-        if (i + 1 < interface_->GetMethodNumber()) {
-            sb.Append("\n");
-        }
+        sb.Append("\n");
     }
+
+    EmitProxyMethodDecl(interface_->GetVersionMethod(), sb, prefix);
 }
 
 void CppClientProxyCodeEmitter::EmitProxyMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
@@ -147,7 +146,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodParameter(const AutoPtr<ASTParame
 
 void CppClientProxyCodeEmitter::EmitProxySourceFile()
 {
-    String filePath = String::Format("%s%s.cpp", directory_.string(), FileName(infName_ + "Proxy").string());
+    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(infName_ + "Proxy").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -215,40 +214,64 @@ void CppClientProxyCodeEmitter::EmitGetMethodImpl(StringBuilder& sb, const Strin
 
 void CppClientProxyCodeEmitter::EmitGetInstanceMethodImpl(StringBuilder& sb, const String& prefix)
 {
+    String objName = "proxy";
+    String SerMajorName = "serMajorVer";
+    String SerMinorName = "serMinorVer";
     sb.Append(prefix).AppendFormat("sptr<%s> %s::GetInstance(const std::string& serviceName)\n",
         interface_->GetName().string(), interface_->GetName().string());
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).Append("do {\n");
-    sb.Append(prefix + g_tab + g_tab).Append("using namespace OHOS::HDI::ServiceManager::V1_0;\n");
-    sb.Append(prefix + g_tab + g_tab).Append("auto servMgr = IServiceManager::Get();\n");
-    sb.Append(prefix + g_tab + g_tab).Append("if (servMgr == nullptr) {\n");
-    sb.Append(prefix + g_tab + g_tab + g_tab).Append(
+    sb.Append(prefix + g_tab).Append("using namespace OHOS::HDI::ServiceManager::V1_0;\n");
+    sb.Append(prefix + g_tab).Append("auto servMgr = IServiceManager::Get();\n");
+    sb.Append(prefix + g_tab).Append("if (servMgr == nullptr) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append(
         "HDF_LOGE(\"%{public}s:get IServiceManager failed!\", __func__);\n");
-    sb.Append(prefix + g_tab + g_tab + g_tab).Append("break;\n");
-    sb.Append(prefix + g_tab + g_tab).Append("}\n\n");
-    sb.Append(prefix + g_tab + g_tab).Append("sptr<IRemoteObject> remote = ");
+    sb.Append(prefix + g_tab + g_tab).Append("return nullptr;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
+
+    sb.Append(prefix + g_tab).Append("sptr<IRemoteObject> remote = ");
     sb.Append("servMgr->GetService(serviceName.c_str());\n");
-    sb.Append(prefix + g_tab + g_tab).Append("if (remote != nullptr) {\n");
-    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return iface_cast<%s>(remote);\n",
-        interface_->GetName().string());
-    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-    sb.Append(prefix + g_tab).Append("} while(false);\n");
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: get %s failed!\", __func__);\n", FileName(implName_).string());
-    sb.Append(prefix + g_tab).Append("return nullptr;\n");
+    sb.Append(prefix + g_tab).Append("if (remote == nullptr) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append(
+        "HDF_LOGE(\"%{public}s:get remote object failed!\", __func__);\n");
+    sb.Append(prefix + g_tab + g_tab).Append("return nullptr;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
+
+    sb.Append(prefix + g_tab).AppendFormat("sptr<%s> %s = iface_cast<%s>(remote);\n",
+        interfaceName_.string(), objName.string(), interfaceName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (%s == nullptr) {\n", objName.string());
+    sb.Append(prefix + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s:iface_cast failed!\", __func__);\n");
+    sb.Append(prefix + g_tab + g_tab).Append("return nullptr;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
+
+    sb.Append(prefix + g_tab).AppendFormat("uint32_t %s = 0;\n", SerMajorName.string());
+    sb.Append(prefix + g_tab).AppendFormat("uint32_t %s = 0;\n", SerMinorName.string());
+    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = %s->GetVersion(%s, %s);\n",
+        objName.string(), SerMajorName.string(), SerMinorName.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s:get version failed!\", __func__);\n");
+    sb.Append(prefix + g_tab + g_tab).Append("return nullptr;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
+
+    sb.Append(prefix + g_tab).AppendFormat("if (%s != %s) {\n", SerMajorName.string(), majorVerName_.string());
+    sb.Append(prefix + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s:check version failed! ");
+    sb.Append("version of service:%u.%u, version of client:%u.%u\", __func__,\n");
+    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("%s, %s, %s, %s);\n",
+        SerMajorName.string(), SerMinorName.string(), majorVerName_.string(), minorVerName_.string());
+    sb.Append(prefix + g_tab + g_tab).Append("return nullptr;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
+    sb.Append(prefix + g_tab).AppendFormat("return %s;\n", objName.string());
     sb.Append(prefix).Append("}\n");
 }
-
 
 void CppClientProxyCodeEmitter::EmitProxyMethodImpls(StringBuilder& sb, const String& prefix)
 {
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
         EmitProxyMethodImpl(method, sb, prefix);
-        if (i + 1 < interface_->GetMethodNumber()) {
-            sb.Append("\n");
-        }
+        sb.Append("\n");
     }
+
+    EmitProxyMethodImpl(interface_->GetVersionMethod(), sb, prefix);
 }
 
 void CppClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
@@ -281,10 +304,11 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
     String dataName = "data_";
     String replyName = "reply_";
     String optionName = "option_";
+    String option = method->IsOneWay() ? "MessageOption::TF_ASYNC" : "MessageOption::TF_SYNC";
     sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", dataName.string());
     sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", replyName.string());
-    sb.Append(prefix + g_tab).AppendFormat("MessageOption %s(MessageOption::TF_SYNC);\n", optionName.string());
+    sb.Append(prefix + g_tab).AppendFormat("MessageOption %s(%s);\n", optionName.string(), option.string());
     sb.Append("\n");
 
     if (method->GetParameterNumber() > 0) {
@@ -292,13 +316,13 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_IN) {
                 EmitWriteMethodParameter(param, dataName, sb, prefix + g_tab);
+                sb.Append("\n");
             }
         }
-        sb.Append("\n");
     }
 
-    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = Remote()->SendRequest(CMD_%s, %s, %s, %s);\n",
-        ConstantName(method->GetName()).string(), dataName.string(), replyName.string(), optionName.string());
+    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = Remote()->SendRequest(%s, %s, %s, %s);\n",
+        EmitMethodCmdID(method).string(), dataName.string(), replyName.string(), optionName.string());
     sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
     sb.Append(prefix + g_tab + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s failed, error code is %%{public}d\", __func__, ec);\n", method->GetName().string());

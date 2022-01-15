@@ -35,9 +35,7 @@ private:
 
     void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
-    void EmitDriverLibPath(StringBuilder& sb);
-
-    void EmitServConstructTypedef(StringBuilder& sb);
+    void EmitStubDefinitions(StringBuilder& sb);
 
     void EmitServiceStubMethodImpls(StringBuilder& sb, const String& prefix);
 
@@ -56,15 +54,17 @@ private:
 
     void EmitCallParameter(StringBuilder& sb, const AutoPtr<ASTType>& type, ParamAttr attribute, const String& name);
 
-    void EmitServiceStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
+    void EmitStubGetVerMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
-    void EmitCbStubDefinitions(StringBuilder& sb);
+    void EmitStubAsObjectMethodImpl(StringBuilder& sb, const String& prefix);
+
+    void EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
+
+    void EmitServiceStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
 
     void EmitStubGetMethodImpl(StringBuilder& sb);
 
     void EmitKernelStubGetMethodImpl(StringBuilder& sb);
-
-    void EmitStubLinkService(StringBuilder& sb);
 
     void EmitStubReleaseImpl(StringBuilder& sb);
 
