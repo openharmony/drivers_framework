@@ -7,6 +7,8 @@
  */
 
 #include "codegen/code_emitter.h"
+#include "util/file.h"
+#include "util/options.h"
 
 namespace OHOS {
 namespace HDI {
@@ -47,6 +49,9 @@ bool CodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory, 
         infName_ = ast_->GetName();
     }
 
+    majorVerName_ = String::Format("%s_MAJOR_VERSION", interfaceName_.ToUnderLineUpper().string());
+    minorVerName_ = String::Format("%s_MINOR_VERSION", interfaceName_.ToUnderLineUpper().string());
+
     if (!ResolveDirectory(targetDirectory)) {
         return false;
     }
@@ -69,6 +74,19 @@ void CodeEmitter::CleanData()
     stubFullName_ = "";
     implName_ = "";
     implFullName_ = "";
+}
+
+String CodeEmitter::GetFilePath(const String& outDir)
+{
+    String outPath = outDir.EndsWith(File::pathSeparator) ?
+        outDir.Substring(0, outDir.GetLength() - 1) : outDir;
+    String packagePath = Options::GetInstance().GetPackagePath(ast_->GetPackageName());
+
+    if (packagePath.EndsWith(File::pathSeparator)) {
+        return String::Format("%s/%s", outPath.string(), packagePath.string());
+    } else {
+        return String::Format("%s/%s/", outPath.string(), packagePath.string());
+    }
 }
 } // namespace HDI
 } // namespace OHOS

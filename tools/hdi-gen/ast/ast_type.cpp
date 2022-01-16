@@ -142,6 +142,11 @@ bool ASTType::IsFdType()
     return false;
 }
 
+bool ASTType::IsSharedMemQueueType()
+{
+    return false;
+}
+
 String ASTType::ToShortString()
 {
     return name_;

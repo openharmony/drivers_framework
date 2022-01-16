@@ -7,16 +7,24 @@
  */
 
 #include "parser/parser.h"
+#include <regex>
 #include "ast/ast_array_type.h"
 #include "ast/ast_enum_type.h"
 #include "ast/ast_list_type.h"
 #include "ast/ast_map_type.h"
+#include "ast/ast_smq_type.h"
 #include "ast/ast_parameter.h"
 #include "ast/ast_sequenceable_type.h"
 #include "ast/ast_struct_type.h"
 #include "ast/ast_union_type.h"
 #include "util/logger.h"
 #include "util/string_builder.h"
+
+#define RE_DIGIT        "[0-9]+"
+#define RE_IDENTIFIER   "[a-zA-Z_][a-zA-Z0-9_]*"
+
+static const std::regex rePackage(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" "(" RE_DIGIT ")_(" RE_DIGIT ")");
+static const std::regex reImport(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" RE_DIGIT "_" RE_DIGIT "." RE_IDENTIFIER);
 
 namespace OHOS {
 namespace HDI {
@@ -249,9 +257,7 @@ bool Parser::ParseLicense()
 bool Parser::ParsePackageName()
 {
     lexer_->GetToken();
-
     String packageFullName;
-
     Token token = lexer_->PeekToken();
     if (token != Token::IDENTIFIER) {
         if (token == Token::SEMICOLON) {
@@ -275,7 +281,6 @@ bool Parser::ParsePackageName()
 
     // read ';'
     lexer_->GetToken();
-
     if (packageFullName.IsEmpty()) {
         LogError(String("Package name is not expected."));
         return false;
@@ -288,8 +293,29 @@ bool Parser::ParsePackageName()
         return false;
     }
 
-    ast_->SetPackageName(packageFullName);
+    if (!ParserPackageInfo(packageFullName)) {
+        LogError(String::Format("Parse package '%s' infomation failed.", packageFullName.string()));
+        return false;
+    }
 
+    return true;
+}
+
+bool Parser::ParserPackageInfo(const String& packageName)
+{
+    std::cmatch result;
+    if (!std::regex_match(packageName.string(), result, rePackage)) {
+        return false;
+    }
+
+    if (result.size() < 3) {
+        return false;
+    }
+
+    ast_->SetPackageName(result.str(0).c_str());
+    size_t majorVersion = std::atoi(result.str(1).c_str());
+    size_t minorVersion = std::atoi(result.str(2).c_str());
+    ast_->SetVersion(majorVersion, minorVersion);
     return true;
 }
 
@@ -497,6 +523,8 @@ bool Parser::ParseInterfaceBody(const AutoPtr<ASTInterfaceType>& interface)
         return false;
     }
 
+    SetVersionInterfaceMethod(interface);
+
     ast_->AddInterfaceDef(interface);
     return ret;
 }
@@ -531,7 +559,7 @@ bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
     method->SetName(lexer_->GetIdentifier());
 
     if (attributes != nullptr) {
-        method->SetOneWay(attributes->isOneWay);
+        method->SetOneWay(attributes->isOneWay || interface->IsOneWay());
         method->SetFull(attributes->isFull);
         method->SetLite(attributes->isLite);
     }
@@ -544,6 +572,23 @@ bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
     return true;
 }
 
+void Parser::SetVersionInterfaceMethod(const AutoPtr<ASTInterfaceType>& interface)
+{
+    AutoPtr<ASTMethod> method = new ASTMethod();
+    method->SetName("GetVersion");
+
+    AutoPtr<ASTType> type = ast_->FindType("unsigned int");
+    if (type == nullptr) {
+        type = new ASTUintType();
+    }
+    AutoPtr<ASTParameter> majorParam = new ASTParameter("majorVer", ParamAttr::PARAM_OUT, type);
+    AutoPtr<ASTParameter> minorParam = new ASTParameter("minorVer", ParamAttr::PARAM_OUT, type);
+
+    method->AddParameter(majorParam);
+    method->AddParameter(minorParam);
+    interface->AddVersionMethod(method);
+}
+
 bool Parser::ParseAttributeBody(AutoPtr<Attribute>& attributes)
 {
     Token token = lexer_->PeekToken();
@@ -551,31 +596,13 @@ bool Parser::ParseAttributeBody(AutoPtr<Attribute>& attributes)
         return true;
     }
     lexer_->GetToken();
-
     attributes = new Attribute();
     token = lexer_->PeekToken();
     while (token != Token::BRACKETS_RIGHT) {
-        switch (token) {
-            case Token::ONEWAY:
-                attributes->isOneWay = true;
-                break;
-            case Token::CALLBACK:
-                attributes->isCallback = true;
-                break;
-            case Token::FULL:
-                attributes->isFull = true;
-                break;
-            case Token::LITE:
-                attributes->isLite = true;
-                break;
-            default: {
-                LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
-                lexer_->Skip(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
-                lexer_->GetToken();
-                return false;
-            }
+        if (!ParseAttributeParam(attributes)) {
+            return false;
         }
-        lexer_->GetToken();
+
         token = lexer_->PeekToken();
         if (token == Token::COMMA) {
             lexer_->GetToken();
@@ -590,6 +617,38 @@ bool Parser::ParseAttributeBody(AutoPtr<Attribute>& attributes)
         }
     }
     lexer_->GetToken();
+    return true;
+}
+
+bool Parser::ParseAttributeParam(AutoPtr<Attribute>& attributes)
+{
+    Token token = lexer_->GetToken();
+    switch (token) {
+        case Token::ONEWAY:
+            if (options_.DoGenerateKernelCode()) {
+                LogError(String::Format("'%s' is not supported in kernel code.", lexer_->DumpToken().string()));
+                lexer_->Skip(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
+                lexer_->GetToken();
+                return false;
+            }
+            attributes->isOneWay = true;
+            break;
+        case Token::CALLBACK:
+            attributes->isCallback = true;
+            break;
+        case Token::FULL:
+            attributes->isFull = true;
+            break;
+        case Token::LITE:
+            attributes->isLite = true;
+            break;
+        default: {
+            LogError(String::Format("'%s' is not expected.", lexer_->DumpToken().string()));
+            lexer_->Skip(Lexer::TokenToChar(Token::BRACKETS_RIGHT));
+            lexer_->GetToken();
+            return false;
+        }
+    }
     return true;
 }
 
@@ -664,6 +723,12 @@ bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
 
     parameter->SetName(lexer_->GetIdentifier());
     parameter->SetType(type);
+
+    if (method->IsOneWay() && parameter->GetAttribute() == ParamAttr::PARAM_OUT) {
+        LogError(String::Format("The attribute of parameter '%s' cannot be 'out'.", parameter->GetName().string()));
+        return false;
+    }
+
     method->AddParameter(parameter);
     return true;
 }
@@ -730,6 +795,8 @@ AutoPtr<ASTType> Parser::ParseType()
         type = ParseList();
     } else if (token == Token::MAP) {
         type = ParseMap();
+    } else if (token == Token::SMEMQUEUE) {
+        type = ParseSharedMemQueueMetaType();
     } else if (token == Token::ENUM || token == Token::STRUCT || token == Token::UNION) {
         type = ParseCustomType();
     } else if (token == Token::IDENTIFIER) {
@@ -868,6 +935,41 @@ AutoPtr<ASTType> Parser::ParseMap()
     if (ret == nullptr) {
         ast_->AddType(map.Get());
         ret = map.Get();
+    }
+
+    return ret;
+}
+
+AutoPtr<ASTType> Parser::ParseSharedMemQueueMetaType()
+{
+    lexer_->GetToken();
+
+    Token token = lexer_->PeekToken();
+    if (token != Token::ANGLE_BRACKETS_LEFT) {
+        LogError(String("'<' is expected."));
+        return nullptr;
+    }
+    lexer_->GetToken();
+
+    AutoPtr<ASTType> InnerType = ParseType();
+    if (InnerType == nullptr) {
+        lexer_->SkipCurrentLine('>');
+        return nullptr;
+    }
+
+    token = lexer_->PeekToken();
+    if (token != Token::ANGLE_BRACKETS_RIGHT) {
+        LogError(String("'>' is expected."));
+        return nullptr;
+    }
+    lexer_->GetToken();
+
+    AutoPtr<ASTSharedMemQueueType> type = new ASTSharedMemQueueType();
+    type->SetInnerType(InnerType);
+    AutoPtr<ASTType> ret = ast_->FindType(type->ToString());
+    if (ret == nullptr) {
+        ast_->AddType(type.Get());
+        ret = type.Get();
     }
 
     return ret;
@@ -1363,19 +1465,14 @@ bool Parser::IsValidTypeName(const String& typeName)
 
 /*
 * For example
-* filePath: ./test/cpp_test/data_test/v1_0/IDataTest.idl
-* package test.cpp_test.data_test.v1_0;
+* filePath: ./ohos/interface/foo/v1_0/IFoo.idl
+* package OHOS.Hdi.foo.v1_0;
 */
 bool Parser::CheckPackageName(const String& filePath, const String& packageName)
 {
-#ifndef __MINGW32__
-    char delimiter = '/';
-#else
-    char delimiter = '\\';
-#endif
+    String pkgToPath = Options::GetInstance().GetPackagePath(packageName);
 
-    String pkgToPath = packageName.Replace('.', delimiter);
-    int index = filePath.LastIndexOf(delimiter);
+    int index = filePath.LastIndexOf(File::pathSeparator);
     if (index == -1) {
         return false;
     }
@@ -1385,7 +1482,7 @@ bool Parser::CheckPackageName(const String& filePath, const String& packageName)
         return false;
     }
 
-    return true;
+    return parentDir.EndsWith(pkgToPath);
 }
 
 bool Parser::AddAst()

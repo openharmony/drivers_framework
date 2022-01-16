@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <unordered_set>
+#include "util/options.h"
 
 namespace OHOS {
 namespace HDI {
@@ -20,13 +21,13 @@ String CppCodeEmitter::FileName(const String& name)
         return name;
     }
 
+    String subName = Options::GetInstance().GetSubPackage(name);
     StringBuilder sb;
-
-    for (int i = 0; i < name.GetLength(); i++) {
-        char c = name[i];
+    for (int i = 0; i < subName.GetLength(); i++) {
+        char c = subName[i];
         if (isupper(c) != 0) {
             // 2->Index of the last char array.
-            if (i > 1 && name[i - 1] != '.' && name[i - 2] != '.') {
+            if (i > 1 && subName[i - 1] != '.' && subName[i - 2] != '.') {
                 sb.Append('_');
             }
             sb.Append(tolower(c));
@@ -38,13 +39,21 @@ String CppCodeEmitter::FileName(const String& name)
     return sb.ToString().Replace('.', '/');
 }
 
+String CppCodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod>& method)
+{
+    return String::Format("CMD_%s_%s", infName_.ToUnderLineUpper().string(),
+        method->GetName().ToUnderLineUpper().string());
+}
+
 void CppCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix)
 {
-    sb.Append(prefix).Append("enum {\n");
+    sb.Append(prefix).AppendFormat("enum {\n");
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(g_tab).AppendFormat("CMD_%s,\n", ConstantName(method->GetName()).string());
+        sb.Append(prefix + g_tab).Append(EmitMethodCmdID(method)).Append(",\n");
     }
+
+    sb.Append(g_tab).Append(EmitMethodCmdID(interface_->GetVersionMethod())).Append(",\n");
     sb.Append(prefix).Append("};\n");
 }
 
@@ -53,6 +62,7 @@ void CppCodeEmitter::GetStdlibInclusions(HeaderFile::HeaderFileSet& headerFiles)
     bool includeString = false;
     bool includeList = false;
     bool includeMap = false;
+    bool includeSmq = false;
 
     const AST::TypeStringMap& types = ast_->GetTypes();
     for (const auto& pair : types) {
@@ -79,6 +89,12 @@ void CppCodeEmitter::GetStdlibInclusions(HeaderFile::HeaderFileSet& headerFiles)
                     includeMap = true;
                 }
                 break;
+            }
+            case TypeKind::TYPE_SMQ: {
+                if (!includeSmq) {
+                    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdi_smq"));
+                    includeSmq = true;
+                }
             }
             default:
                 break;
@@ -119,7 +135,7 @@ void CppCodeEmitter::EmitHeadMacro(StringBuilder& sb, const String& fullName)
 void CppCodeEmitter::EmitTailMacro(StringBuilder& sb, const String& fullName)
 {
     String macroName = MacroName(fullName);
-    sb.Append("#endif // ").Append(macroName).Append("\n\n");
+    sb.Append("#endif // ").Append(macroName);
 }
 
 void CppCodeEmitter::EmitHeadExternC(StringBuilder& sb)
@@ -178,6 +194,15 @@ void CppCodeEmitter::EmitImportUsingNamespace(StringBuilder& sb)
             continue;
         }
         namespaceSet.emplace(nameSpace);
+    }
+
+    const AST::TypeStringMap& types = ast_->GetTypes();
+    for (const auto& pair : types) {
+        AutoPtr<ASTType> type = pair.second;
+        if (type->GetTypeKind() == TypeKind::TYPE_SMQ) {
+            namespaceSet.emplace("OHOS::HDI::Base");
+            break;
+        }
     }
 
     for (const auto& nspace : namespaceSet) {

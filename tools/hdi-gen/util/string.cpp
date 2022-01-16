@@ -409,6 +409,20 @@ bool String::StartsWith(const String& other) const
     return memcmp(string_, other.string_, count) == 0;
 }
 
+bool String::EndsWith(char c) const
+{
+    if (string_ == nullptr) {
+        return false;
+    }
+
+    size_t len = GetLength();
+    if (len < 1) {
+        return false;
+    }
+
+    return string_[len - 1] == c;
+}
+
 bool String::EndsWith(const char* string) const
 {
     if (string == nullptr || string_ == nullptr) {
@@ -483,6 +497,29 @@ String String::ToUpperCase() const
         }
     }
     return *this;
+}
+
+String String::ToUnderLineUpper() const
+{
+    if (IsEmpty()) {
+        return *this;
+    }
+
+    StringBuilder sb;
+
+    for (int i = 0; i < GetLength(); i++) {
+        char c = string_[i];
+        if (isupper(c) != 0) {
+            if (i > 1) {
+                sb.Append('_');;
+            }
+            sb.Append(c);
+        } else {
+            sb.Append(toupper(c));
+        }
+    }
+
+    return sb.ToString();
 }
 
 String String::Substring(int begin) const

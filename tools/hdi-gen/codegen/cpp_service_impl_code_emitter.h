@@ -37,10 +37,6 @@ private:
 
     void EmitServiceImplMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
-    void EmitExternalGetMethodDecl(StringBuilder& sb);
-
-    void EmitExternalReleaseMethodDecl(StringBuilder& sb);
-
     void EmitImplSourceFile();
 
     void EmitImplSourceInclusions(StringBuilder& sb);

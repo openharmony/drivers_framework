@@ -153,11 +153,30 @@ public:
         return imports_;
     }
 
+    void SetVersion(size_t& majorVer, size_t& minorVer);
+
+    inline size_t GetMajorVer()
+    {
+        return majorVersion_;
+    }
+
+    inline size_t GetMinorVer()
+    {
+        return minorVersion_;
+    }
+
+    String GetVersion()
+    {
+        return String::Format("%u.%u", majorVersion_, minorVersion_);
+    }
+
 private:
     ASTFileType astFileType_ = ASTFileType::AST_IFACE;
     String name_;
     String license_;
     String packageName_;
+    size_t majorVersion_;
+    size_t minorVersion_;
     std::vector<AutoPtr<ASTNamespace>> namespaces_;
     std::vector<AutoPtr<ASTType>> typeDefinitions_;
     AutoPtr<ASTSequenceableType> sequenceableDef_ = nullptr;

@@ -19,8 +19,7 @@ bool CServiceDriverCodeEmitter::ResolveDirectory(const String& targetDirectory)
         return false;
     }
 
-    directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-        FileName(ast_->GetPackageName()).string()));
+    directory_ = GetFilePath(targetDirectory);
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CServiceDriverCodeEmitter", "Create '%s' failed!", directory_.string());
         return false;
@@ -39,7 +38,7 @@ void CServiceDriverCodeEmitter::EmitCode()
 
 void CServiceDriverCodeEmitter::EmitDriverSourceFile()
 {
-    String filePath = String::Format("%s%s.c", directory_.string(), FileName(infName_ + "Driver").string());
+    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(infName_ + "Driver").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -69,6 +68,7 @@ void CServiceDriverCodeEmitter::EmitDriverIncluions(StringBuilder& sb)
     HeaderFile::HeaderFileSet headerFiles;
 
     headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(stubName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(implName_)));
     GetDriverSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -88,7 +88,7 @@ void CServiceDriverCodeEmitter::EmitDriverServiceDecl(StringBuilder& sb)
 {
     sb.AppendFormat("struct Hdf%sHost {\n", infName_.string());
     sb.Append(g_tab).AppendFormat("struct IDeviceIoService ioservice;\n");
-    sb.Append(g_tab).Append("void *instance;\n");
+    sb.Append(g_tab).AppendFormat("struct %s *service;\n", interfaceName_.string());
     sb.Append("};\n");
 }
 
@@ -103,7 +103,7 @@ void CServiceDriverCodeEmitter::EmitDriverDispatch(StringBuilder& sb)
         infName_.string(), hostName.string());
     sb.Append(g_tab).Append(g_tab).AppendFormat("client->device->service, struct Hdf%sHost, ioservice);\n",
         infName_.string());
-    sb.Append(g_tab).AppendFormat("return %sServiceOnRemoteRequest(%s->instance, cmdId, data, reply);\n",
+    sb.Append(g_tab).AppendFormat("return %sServiceOnRemoteRequest(%s->service, cmdId, data, reply);\n",
         infName_.string(), hostName.string());
     sb.Append("}\n");
 }
@@ -137,12 +137,13 @@ void CServiceDriverCodeEmitter::EmitDriverBind(StringBuilder& sb)
         hostName.string(), infName_.string());
     sb.Append(g_tab).AppendFormat("%s->ioservice.Open = NULL;\n", hostName.string());
     sb.Append(g_tab).AppendFormat("%s->ioservice.Release = NULL;\n", hostName.string());
-    sb.Append(g_tab).AppendFormat("%s->instance = %sStubGetInstance();\n", hostName.string(), infName_.string());
-    sb.Append(g_tab).AppendFormat("if (%s->instance == NULL) {\n", hostName.string());
+    sb.Append(g_tab).AppendFormat("%s->service = %sStubGetInstance();\n", hostName.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("if (%s->service == NULL) {\n", hostName.string());
     sb.Append(g_tab).Append(g_tab).AppendFormat("OsalMemFree(%s);\n", hostName.string());
     sb.Append(g_tab).Append(g_tab).Append("return HDF_FAILURE;\n");
     sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
+    sb.Append(g_tab).AppendFormat("%sServiceConstruct(%s->service);\n", infName_.string(),  hostName.string());
     sb.Append(g_tab).AppendFormat("deviceObject->service = &%s->ioservice;\n", hostName.string());
     sb.Append(g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append("}\n");
@@ -157,7 +158,7 @@ void CServiceDriverCodeEmitter::EmitDriverRelease(StringBuilder& sb)
     sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = CONTAINER_OF(", infName_.string(), hostName.string());
     sb.AppendFormat("deviceObject->service, struct Hdf%sHost, ioservice);\n",
         infName_.string());
-    sb.Append(g_tab).AppendFormat("%sStubRelease(%s->instance);\n", infName_.string(), hostName.string());
+    sb.Append(g_tab).AppendFormat("%sStubRelease(%s->service);\n", infName_.string(), hostName.string());
     sb.Append(g_tab).AppendFormat("OsalMemFree(%s);\n", hostName.string());
     sb.Append("}\n");
 }

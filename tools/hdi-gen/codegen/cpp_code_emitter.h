@@ -25,6 +25,8 @@ public:
 
     static String FileName(const String& name);
 protected:
+    String EmitMethodCmdID(const AutoPtr<ASTMethod>& method);
+
     void EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix);
 
     void GetStdlibInclusions(HeaderFile::HeaderFileSet& headerFiles);

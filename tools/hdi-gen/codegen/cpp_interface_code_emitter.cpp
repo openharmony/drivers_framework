@@ -16,8 +16,7 @@ bool CppInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
         ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
+        directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
     }
@@ -46,14 +45,14 @@ void CppInterfaceCodeEmitter::EmitInterfaceHeaderFile()
     sb.Append("\n");
     EmitInterfaceInclusions(sb);
     sb.Append("\n");
-    EmitBeginNamespace(sb);
+    EmitInterfaceVersionMacro(sb);
     sb.Append("\n");
+    EmitBeginNamespace(sb);
     EmitUsingNamespace(sb);
     sb.Append("\n");
     EmitInterfaceMethodCommands(sb, "");
     sb.Append("\n");
     EmitInterfaceDefinition(sb);
-    sb.Append("\n");
     EmitEndNamespace(sb);
     sb.Append("\n");
     EmitTailMacro(sb, interfaceFullName_);
@@ -83,25 +82,27 @@ void CppInterfaceCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFile
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "iremote_broker"));
 }
 
+void CppInterfaceCodeEmitter::EmitInterfaceVersionMacro(StringBuilder& sb)
+{
+    sb.AppendFormat("#define %s %u\n", majorVerName_.string(), ast_->GetMajorVer());
+    sb.AppendFormat("#define %s %u\n", minorVerName_.string(), ast_->GetMinorVer());
+}
+
 void CppInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
 {
     if (!isCallbackInterface()) {
-        sb.Append("#ifndef __HDI_SERVER__\n");
         sb.AppendFormat("class %s : public IRemoteBroker {\n", interfaceName_.string());
         sb.Append("public:\n");
         EmitInterfaceDescriptor(sb, g_tab);
         sb.Append("\n");
+        EmitInterfaceDestruction(sb, g_tab);
+        sb.Append("\n");
         EmitGetMethodDecl(sb, g_tab);
         sb.Append("\n");
         EmitGetInstanceMethodDecl(sb, g_tab);
-        sb.Append("#else\n");
-        sb.AppendFormat("class %s {\n", interfaceName_.string());
-        sb.Append("public:\n");
-        sb.Append("#endif\n");
-        EmitInterfaceDestruction(sb, g_tab);
         sb.Append("\n");
         EmitInterfaceMethodsDecl(sb, g_tab);
-        sb.Append("};\n\n");
+        sb.Append("};\n");
     } else {
         sb.AppendFormat("class %s : public IRemoteBroker {\n", interfaceName_.string());
         sb.Append("public:\n");
@@ -110,7 +111,7 @@ void CppInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
         EmitInterfaceDestruction(sb, g_tab);
         sb.Append("\n");
         EmitInterfaceMethodsDecl(sb, g_tab);
-        sb.Append("};\n\n");
+        sb.Append("};\n");
     }
 }
 
@@ -140,10 +141,10 @@ void CppInterfaceCodeEmitter::EmitInterfaceMethodsDecl(StringBuilder& sb, const 
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
         EmitInterfaceMethodDecl(method, sb, prefix);
-        if (i + 1 < interface_->GetMethodNumber()) {
-            sb.Append("\n");
-        }
+        sb.Append("\n");
     }
+
+    EmitInterfaceMethodDecl(interface_->GetVersionMethod(), sb, prefix);
 }
 
 void CppInterfaceCodeEmitter::EmitInterfaceMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,

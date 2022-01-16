@@ -33,6 +33,8 @@ private:
 
     void EmitProxyCallMethodImpl(StringBuilder& sb);
 
+    void EmitProxyKernelCallMethodImpl(StringBuilder& sb);
+
     void EmitProxyMethodImpls(StringBuilder& sb);
 
     void EmitProxyMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb);
@@ -48,6 +50,8 @@ private:
         const String& gotoLabel, StringBuilder& sb, const String& prefix);
 
     String GetGotLabel(const AutoPtr<ASTMethod>& method);
+
+    void EmitProxyAsObjectMethodImpl(StringBuilder& sb);
 
     void EmitProxyConstruction(StringBuilder&);
 

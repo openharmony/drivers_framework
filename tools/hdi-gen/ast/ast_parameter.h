@@ -24,6 +24,10 @@ enum class ParamAttr {
 
 class ASTParameter : public ASTNode {
 public:
+    ASTParameter() : ASTNode() {}
+    ASTParameter(const String& name, ParamAttr attribute, const AutoPtr<ASTType>& type)
+        : ASTNode(), name_(name), attribute_(attribute), type_(type) {}
+
     inline void SetName(const String& name)
     {
         name_ = name;

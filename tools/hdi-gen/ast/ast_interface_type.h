@@ -79,6 +79,16 @@ public:
         return methods_.size();
     }
 
+    void AddVersionMethod(const AutoPtr<ASTMethod>& method)
+    {
+        getVerMethod_ = method;
+    }
+
+    AutoPtr<ASTMethod> GetVersionMethod()
+    {
+        return getVerMethod_;
+    }
+
     bool IsInterfaceType() override;
 
     String ToString() override;
@@ -122,6 +132,7 @@ private:
     bool isFull_ = false;
     bool isLite_ = false;
     std::vector<AutoPtr<ASTMethod>> methods_;
+    AutoPtr<ASTMethod> getVerMethod_;
 };
 } // namespace HDI
 } // namespace OHOS
