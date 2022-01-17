@@ -182,13 +182,13 @@ int32_t MessageSingleNodeTest002(void)
 
         MSG_BREAK_IF(errCode, g_serviceA == NULL);
 
-        rspData = HdfSBufObtainDefaultSize();
+        rspData = HdfSbufObtainDefaultSize();
 
         MSG_BREAK_IF_FUNCTION_FAILED(errCode, g_serviceA->SendSyncMessage(g_serviceA, SERVICE_ID_B, 0, NULL, rspData));
     } while (false);
 
     if (rspData != NULL) {
-        HdfSBufRecycle(rspData);
+        HdfSbufRecycle(rspData);
         rspData = NULL;
     }
 
@@ -212,8 +212,8 @@ int32_t MessageSingleNodeTest003(void)
         OsalTimespec diffTime;
         MSG_BREAK_IF_FUNCTION_FAILED(errCode, StartEnv());
         MSG_BREAK_IF(errCode, g_serviceA == NULL);
-        rspData = HdfSBufObtainDefaultSize();
-        sendData = HdfSBufObtainDefaultSize();
+        rspData = HdfSbufObtainDefaultSize();
+        sendData = HdfSbufObtainDefaultSize();
 
         MSG_BREAK_IF_FUNCTION_FAILED(errCode, OsalGetTime(&startTime));
         for (i = 0; i < SEND_MESSAGE_COUNT; i++) {
@@ -229,12 +229,12 @@ int32_t MessageSingleNodeTest003(void)
     } while (false);
 
     if (rspData != NULL) {
-        HdfSBufRecycle(rspData);
+        HdfSbufRecycle(rspData);
         rspData = NULL;
     }
 
     if (sendData != NULL) {
-        HdfSBufRecycle(sendData);
+        HdfSbufRecycle(sendData);
         sendData = NULL;
     }
 

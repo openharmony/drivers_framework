@@ -81,7 +81,7 @@ bool MmcDevPresent(DevHandle handle)
     struct HdfSBuf *reply = NULL;
     struct HdfIoService *service = (struct HdfIoService *)handle;
 
-    reply = HdfSBufObtainDefaultSize();
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("MmcDevPresent: failed to obtain reply!");
         return false;
@@ -103,7 +103,7 @@ bool MmcDevPresent(DevHandle handle)
         goto __EXIT;
     }
 __EXIT:
-    HdfSBufRecycle(reply);
+    HdfSbufRecycle(reply);
     return (present != 0);
 #else
     return MmcCntlrDevPresent((struct MmcCntlr *)handle);

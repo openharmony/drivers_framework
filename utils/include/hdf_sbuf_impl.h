@@ -16,54 +16,54 @@ extern "C" {
 #endif /* __cplusplus */
 
 struct HdfSbufConstructor {
-    struct HdfSbufImpl *(*obtain)(size_t capacity);
-    struct HdfSbufImpl *(*bind)(uintptr_t base, size_t size);
+    struct HdfSBufImpl *(*obtain)(size_t capacity);
+    struct HdfSBufImpl *(*bind)(uintptr_t base, size_t size);
 };
 
 struct HdfRemoteService;
 
-struct HdfSbufImpl {
-    bool (*writeBuffer)(struct HdfSbufImpl *sbuf, const uint8_t *data, uint32_t writeSize);
-    bool (*writeUnpadBuffer)(struct HdfSbufImpl *sbuf, const uint8_t *data, uint32_t writeSize);
-    bool (*writeUint64)(struct HdfSbufImpl *sbuf, uint64_t value);
-    bool (*writeUint32)(struct HdfSbufImpl *sbuf, uint32_t value);
-    bool (*writeUint16)(struct HdfSbufImpl *sbuf, uint16_t value);
-    bool (*writeUint8)(struct HdfSbufImpl *sbuf, uint8_t value);
-    bool (*writeInt64)(struct HdfSbufImpl *sbuf, int64_t value);
-    bool (*writeInt32)(struct HdfSbufImpl *sbuf, int32_t value);
-    bool (*writeInt16)(struct HdfSbufImpl *sbuf, int16_t value);
-    bool (*writeInt8)(struct HdfSbufImpl *sbuf, int8_t value);
-    bool (*writeString)(struct HdfSbufImpl *sbuf, const char *value);
-    bool (*writeFileDescriptor)(struct HdfSbufImpl *sbuf, int fd);
-    bool (*writeFloat)(struct HdfSbufImpl *sbuf, float value);
-    bool (*writeDouble)(struct HdfSbufImpl *sbuf, double value);
-    bool (*readDouble)(struct HdfSbufImpl *sbuf, double *value);
-    bool (*readFloat)(struct HdfSbufImpl *sbuf, float *value);
-    int (*readFileDescriptor)(struct HdfSbufImpl *sbuf);
-    bool (*writeString16)(struct HdfSbufImpl *sbuf, const char16_t *value, uint32_t size);
-    bool (*readBuffer)(struct HdfSbufImpl *sbuf, const uint8_t **data, uint32_t *readSize);
-    const uint8_t *(*readUnpadBuffer)(struct HdfSbufImpl *sbuf, size_t length);
-    bool (*readUint64)(struct HdfSbufImpl *sbuf, uint64_t *value);
-    bool (*readUint32)(struct HdfSbufImpl *sbuf, uint32_t *value);
-    bool (*readUint16)(struct HdfSbufImpl *sbuf, uint16_t *value);
-    bool (*readUint8)(struct HdfSbufImpl *sbuf, uint8_t *value);
-    bool (*readInt64)(struct HdfSbufImpl *sbuf, int64_t *value);
-    bool (*readInt32)(struct HdfSbufImpl *sbuf, int32_t *value);
-    bool (*readInt16)(struct HdfSbufImpl *sbuf, int16_t *value);
-    bool (*readInt8)(struct HdfSbufImpl *sbuf, int8_t *value);
-    const char *(*readString)(struct HdfSbufImpl *sbuf);
-    const char16_t *(*readString16)(struct HdfSbufImpl *sbuf);
-    int32_t (*writeRemoteService)(struct HdfSbufImpl *sbuf, const struct HdfRemoteService *service);
-    struct HdfRemoteService *(*readRemoteService)(struct HdfSbufImpl *sbuf);
-    const uint8_t *(*getData)(const struct HdfSbufImpl *sbuf);
-    void (*flush)(struct HdfSbufImpl *sbuf);
-    size_t (*getCapacity)(const struct HdfSbufImpl *sbuf);
-    size_t (*getDataSize)(const struct HdfSbufImpl *sbuf);
-    void (*setDataSize)(struct HdfSbufImpl *sbuf, size_t size);
-    void (*recycle)(struct HdfSbufImpl *sbuf);
-    struct HdfSbufImpl *(*move)(struct HdfSbufImpl *sbuf);
-    struct HdfSbufImpl *(*copy)(const struct HdfSbufImpl *sbuf);
-    void (*transDataOwnership)(struct HdfSbufImpl *sbuf);
+struct HdfSBufImpl {
+    bool (*writeBuffer)(struct HdfSBufImpl *sbuf, const uint8_t *data, uint32_t writeSize);
+    bool (*writeUnpadBuffer)(struct HdfSBufImpl *sbuf, const uint8_t *data, uint32_t writeSize);
+    bool (*writeUint64)(struct HdfSBufImpl *sbuf, uint64_t value);
+    bool (*writeUint32)(struct HdfSBufImpl *sbuf, uint32_t value);
+    bool (*writeUint16)(struct HdfSBufImpl *sbuf, uint16_t value);
+    bool (*writeUint8)(struct HdfSBufImpl *sbuf, uint8_t value);
+    bool (*writeInt64)(struct HdfSBufImpl *sbuf, int64_t value);
+    bool (*writeInt32)(struct HdfSBufImpl *sbuf, int32_t value);
+    bool (*writeInt16)(struct HdfSBufImpl *sbuf, int16_t value);
+    bool (*writeInt8)(struct HdfSBufImpl *sbuf, int8_t value);
+    bool (*writeString)(struct HdfSBufImpl *sbuf, const char *value);
+    bool (*writeFileDescriptor)(struct HdfSBufImpl *sbuf, int fd);
+    bool (*writeFloat)(struct HdfSBufImpl *sbuf, float value);
+    bool (*writeDouble)(struct HdfSBufImpl *sbuf, double value);
+    bool (*readDouble)(struct HdfSBufImpl *sbuf, double *value);
+    bool (*readFloat)(struct HdfSBufImpl *sbuf, float *value);
+    int (*readFileDescriptor)(struct HdfSBufImpl *sbuf);
+    bool (*writeString16)(struct HdfSBufImpl *sbuf, const char16_t *value, uint32_t size);
+    bool (*readBuffer)(struct HdfSBufImpl *sbuf, const uint8_t **data, uint32_t *readSize);
+    const uint8_t *(*readUnpadBuffer)(struct HdfSBufImpl *sbuf, size_t length);
+    bool (*readUint64)(struct HdfSBufImpl *sbuf, uint64_t *value);
+    bool (*readUint32)(struct HdfSBufImpl *sbuf, uint32_t *value);
+    bool (*readUint16)(struct HdfSBufImpl *sbuf, uint16_t *value);
+    bool (*readUint8)(struct HdfSBufImpl *sbuf, uint8_t *value);
+    bool (*readInt64)(struct HdfSBufImpl *sbuf, int64_t *value);
+    bool (*readInt32)(struct HdfSBufImpl *sbuf, int32_t *value);
+    bool (*readInt16)(struct HdfSBufImpl *sbuf, int16_t *value);
+    bool (*readInt8)(struct HdfSBufImpl *sbuf, int8_t *value);
+    const char *(*readString)(struct HdfSBufImpl *sbuf);
+    const char16_t *(*readString16)(struct HdfSBufImpl *sbuf);
+    int32_t (*writeRemoteService)(struct HdfSBufImpl *sbuf, const struct HdfRemoteService *service);
+    struct HdfRemoteService *(*readRemoteService)(struct HdfSBufImpl *sbuf);
+    const uint8_t *(*getData)(const struct HdfSBufImpl *sbuf);
+    void (*flush)(struct HdfSBufImpl *sbuf);
+    size_t (*getCapacity)(const struct HdfSBufImpl *sbuf);
+    size_t (*getDataSize)(const struct HdfSBufImpl *sbuf);
+    void (*setDataSize)(struct HdfSBufImpl *sbuf, size_t size);
+    void (*recycle)(struct HdfSBufImpl *sbuf);
+    struct HdfSBufImpl *(*move)(struct HdfSBufImpl *sbuf);
+    struct HdfSBufImpl *(*copy)(const struct HdfSBufImpl *sbuf);
+    void (*transDataOwnership)(struct HdfSBufImpl *sbuf);
 };
 
 #ifdef __cplusplus

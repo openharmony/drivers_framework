@@ -85,7 +85,7 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
     struct HdfSBuf *data = NULL;
     struct HdfIoService *ioService = HdfIoServiceBind(SAMPLE_SERVICE);
     ASSERT_TRUE(ioService != NULL);
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     EXPECT_TRUE(data != NULL);
     EXPECT_TRUE(HdfSbufWriteString(data, "sample_driver"));
     EXPECT_TRUE(HdfSbufWriteString(data, "sample_service1"));
@@ -106,7 +106,7 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
     EXPECT_TRUE(ioService1 == NULL);
     HdfIoServiceRecycle(ioService);
     HdfIoServiceRecycle(ioService1);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 }
 
 /**
@@ -117,7 +117,7 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
   */
 HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
 {
-    struct HdfSBuf *data = HdfSBufObtain(2000);
+    struct HdfSBuf *data = HdfSbufObtain(2000);
     ASSERT_TRUE(data != NULL);
 
     bool flag = false;
@@ -138,7 +138,7 @@ HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
         }
         HdfSbufFlush(data);
     }
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     EXPECT_TRUE(flag);
 }
 

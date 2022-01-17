@@ -235,12 +235,12 @@ static int32_t AllocPackageBuffer(InputDevice *inputDev)
             HDF_LOGE("%s: devType not exist", __func__);
             return HDF_FAILURE;
     }
-    inputDev->pkgBuf = HdfSBufObtain(sizeof(EventPackage) * pkgNum);
+    inputDev->pkgBuf = HdfSbufObtain(sizeof(EventPackage) * pkgNum);
     if (inputDev->pkgBuf == NULL) {
         HDF_LOGE("%s: malloc sbuf failed", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
-    inputDev->eventBuf = HdfSBufObtain(sizeof(HotPlugEvent));
+    inputDev->eventBuf = HdfSbufObtain(sizeof(HotPlugEvent));
     if (inputDev->eventBuf == NULL) {
         HDF_LOGE("%s: malloc sbuf failed", __func__);
         return HDF_ERR_MALLOC_FAIL;
@@ -340,13 +340,13 @@ void UnregisterInputDevice(InputDevice *inputDev)
     }
 
     DeleteDeviceNode(inputDev);
-    HdfSBufRecycle(inputDev->pkgBuf);
+    HdfSbufRecycle(inputDev->pkgBuf);
     inputDev->pkgBuf = NULL;
     ret = DeleteInputDevice(inputDev);
     if (ret != HDF_SUCCESS) {
         goto EXIT;
     }
-    HdfSBufRecycle(inputDev->eventBuf);
+    HdfSbufRecycle(inputDev->eventBuf);
     inputDev->eventBuf = NULL;
     OsalMemFree(inputDev);
     OsalMutexUnlock(&g_inputManager->mutex);

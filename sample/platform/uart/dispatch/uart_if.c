@@ -61,7 +61,7 @@ int32_t UartWrite(struct DevHandle *handle, uint8_t *data, uint32_t size)
         return HDF_FAILURE;
     }
 
-    struct HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     if (sBuf == NULL) {
         HDF_LOGE("Failed to obtain sBuf");
         return HDF_FAILURE;
@@ -69,7 +69,7 @@ int32_t UartWrite(struct DevHandle *handle, uint8_t *data, uint32_t size)
 
     if (!HdfSbufWriteBuffer(sBuf, data, size)) {
         HDF_LOGE("Failed to write sbuf");
-        HdfSBufRecycle(sBuf);
+        HdfSbufRecycle(sBuf);
         return HDF_FAILURE;
     }
 
@@ -78,7 +78,7 @@ int32_t UartWrite(struct DevHandle *handle, uint8_t *data, uint32_t size)
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("Failed to send service call");
     }
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(sBuf);
     return ret;
 }
 

@@ -102,16 +102,16 @@ static int SendEvent(struct HdfIoService *serv, const char *eventData, bool broa
     OsalGetTime(&time);
 
     int ret;
-    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *data = HdfSbufObtainDefaultSize();
     if (data == nullptr) {
         HDF_LOGE("fail to obtain sbuf data");
         return HDF_FAILURE;
     }
 
-    struct HdfSBuf *reply = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *reply = HdfSbufObtainDefaultSize();
     if (reply == nullptr) {
         HDF_LOGE("fail to obtain sbuf reply");
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_DEV_ERR_NO_MEMORY;
     }
 
@@ -140,8 +140,8 @@ static int SendEvent(struct HdfIoService *serv, const char *eventData, bool broa
         HDF_LOGE("send event finish at %" PRIu64 ".%" PRIu64 "", time.sec, time.usec);
     } while (0);
 
-    HdfSBufRecycle(data);
-    HdfSBufRecycle(reply);
+    HdfSbufRecycle(data);
+    HdfSbufRecycle(reply);
     return ret;
 }
 
@@ -613,7 +613,7 @@ HWTEST_F(IoServiceTest, HdfIoService012, TestSize.Level0)
  */
 HWTEST_F(IoServiceTest, HdfIoService013, TestSize.Level0)
 {
-    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *data = HdfSbufObtainDefaultSize();
     ASSERT_NE(data, nullptr);
 
     struct HdfIoService *serv = HdfIoServiceBind(testSvcName);
@@ -638,7 +638,7 @@ HWTEST_F(IoServiceTest, HdfIoService013, TestSize.Level0)
     ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
     ASSERT_EQ(ret, HDF_SUCCESS);
     HdfIoServiceRecycle(serv);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 }
 
 /* *
@@ -742,7 +742,7 @@ HWTEST_F(IoServiceTest, HdfIoService015, TestSize.Level0)
 
     struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
     ASSERT_TRUE(testService != NULL);
-    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *data = HdfSbufObtainDefaultSize();
     ASSERT_TRUE(data != NULL);
     const char *newServName = "sample_service1";
     ASSERT_TRUE(HdfSbufWriteString(data, "sample_driver"));
@@ -783,7 +783,7 @@ HWTEST_F(IoServiceTest, HdfIoService015, TestSize.Level0)
     IoServiceStatusListenerFree(listener);
     HdfIoServiceRecycle(testService);
     SvcMgrIoserviceRelease(servmgr);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 }
 
 /* *
@@ -811,7 +811,7 @@ HWTEST_F(IoServiceTest, HdfIoService016, TestSize.Level0)
 
     struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
     ASSERT_TRUE(testService != NULL);
-    HdfSBuf *data = HdfSBufObtainDefaultSize();
+    HdfSBuf *data = HdfSbufObtainDefaultSize();
     ASSERT_TRUE(data != NULL);
 
     std::string servinfo = "foo";
@@ -836,7 +836,7 @@ HWTEST_F(IoServiceTest, HdfIoService016, TestSize.Level0)
     IoServiceStatusListenerFree(listener);
     HdfIoServiceRecycle(testService);
     SvcMgrIoserviceRelease(servmgr);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 }
 
 /* *
@@ -865,7 +865,7 @@ HWTEST_F(IoServiceTest, HdfIoService017, TestSize.Level0)
 
     struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
     ASSERT_TRUE(testService != NULL);
-    HdfSBuf *data = HdfSBufObtainDefaultSize();
+    HdfSBuf *data = HdfSbufObtainDefaultSize();
     ASSERT_TRUE(data != NULL);
     const char *newServName = "sample_service1";
     ASSERT_TRUE(HdfSbufWriteString(data, "sample_driver"));
@@ -899,5 +899,5 @@ HWTEST_F(IoServiceTest, HdfIoService017, TestSize.Level0)
     IoServiceStatusListenerFree(listener);
     HdfIoServiceRecycle(testService);
     SvcMgrIoserviceRelease(servmgr);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 }

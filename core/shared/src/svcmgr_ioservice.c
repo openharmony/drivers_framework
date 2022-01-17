@@ -23,7 +23,7 @@ struct SvcMgrIoservice {
 
 static int32_t SetListenClass(struct SvcMgrIoservice *svcmgrInst, uint16_t devClass)
 {
-    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         return HDF_ERR_MALLOC_FAIL;
     }
@@ -39,7 +39,7 @@ static int32_t SetListenClass(struct SvcMgrIoservice *svcmgrInst, uint16_t devCl
 
 static int32_t UnSetListenClass(struct SvcMgrIoservice *svcmgrInst, uint16_t devClass)
 {
-    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         return HDF_ERR_MALLOC_FAIL;
     }

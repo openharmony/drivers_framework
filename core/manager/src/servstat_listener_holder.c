@@ -48,7 +48,7 @@ void KServStatListenerHolderNotifyStatus(struct ServStatListenerHolder *holder,
         return;
     }
 
-    struct HdfSBuf *data = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("failed to notify service status, oom");
         return;
@@ -56,7 +56,7 @@ void KServStatListenerHolderNotifyStatus(struct ServStatListenerHolder *holder,
 
     if (ServiceStatusMarshalling(status, data) != HDF_SUCCESS) {
         HDF_LOGE("failed to marshalling service status");
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return;
     }
 
@@ -64,7 +64,7 @@ void KServStatListenerHolderNotifyStatus(struct ServStatListenerHolder *holder,
         HDF_LOGE("failed to notify service status, send error");
     }
 
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 }
 
 struct ServStatListenerHolder *ServStatListenerHolderCreate(uintptr_t listener, uint16_t listenClass)

@@ -19,15 +19,15 @@ static struct HdfSBuf *g_reply = NULL;
 void HdfTestOpenService(void)
 {
     g_testService = HdfIoServiceBind(HDF_TEST_SERVICE_NAME);
-    g_msg = HdfSBufObtainDefaultSize();
+    g_msg = HdfSbufObtainDefaultSize();
     if (g_msg == NULL) {
         printf("fail to obtain sbuf data\n\r");
         return;
     }
-    g_reply = HdfSBufObtainDefaultSize();
+    g_reply = HdfSbufObtainDefaultSize();
     if (g_reply == NULL) {
         printf("fail to obtain sbuf reply\n\r");
-        HdfSBufRecycle(g_msg);
+        HdfSbufRecycle(g_msg);
         return;
     }
 }
@@ -35,11 +35,11 @@ void HdfTestOpenService(void)
 void HdfTestCloseService(void)
 {
     if (g_msg != NULL) {
-        HdfSBufRecycle(g_msg);
+        HdfSbufRecycle(g_msg);
         g_msg = NULL;
     };
     if (g_reply != NULL) {
-        HdfSBufRecycle(g_reply);
+        HdfSbufRecycle(g_reply);
         g_reply = NULL;
     };
     if (g_testService != NULL) {

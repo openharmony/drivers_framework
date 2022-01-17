@@ -44,7 +44,7 @@ static int32_t I2cTestGetConfig(struct I2cTestConfig *config)
         return HDF_ERR_NOT_SUPPORT;
     }
 
-    reply = HdfSBufObtain(sizeof(*config) + sizeof(uint64_t));
+    reply = HdfSbufObtain(sizeof(*config) + sizeof(uint64_t));
     if (reply == NULL) {
         HDF_LOGE("I2cTestGetConfig: failed to obtain reply!");
         return HDF_ERR_MALLOC_FAIL;
@@ -57,23 +57,23 @@ static int32_t I2cTestGetConfig(struct I2cTestConfig *config)
 
     if (!HdfSbufReadBuffer(reply, &buf, &len)) {
         HDF_LOGE("I2cTestGetConfig: read buf fail!");
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
 
     if (len != sizeof(*config)) {
         HDF_LOGE("I2cTestGetConfig: config size:%u, but read size:%u!", sizeof(*config), len);
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
 
     if (memcpy_s(config, sizeof(*config), buf, sizeof(*config)) != EOK) {
         HDF_LOGE("I2cTestGetConfig: memcpy buf fail!");
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
 
-    HdfSBufRecycle(reply);
+    HdfSbufRecycle(reply);
     HDF_LOGD("I2cTestGetConfig: exit!");
     HdfIoServiceRecycle(service);
     return HDF_SUCCESS;

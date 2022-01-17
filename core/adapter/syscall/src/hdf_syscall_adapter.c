@@ -86,9 +86,9 @@ static int32_t HdfDevEventDispatchLocked(const struct HdfDevListenerThread *thre
     struct HdfSBuf *sbuf = NULL;
 
     if (bwr->readConsumed > 0) {
-        sbuf = HdfSBufBind(bwr->readBuffer, bwr->readConsumed);
+        sbuf = HdfSbufBind(bwr->readBuffer, bwr->readConsumed);
     } else {
-        sbuf = HdfSBufObtain(sizeof(int));
+        sbuf = HdfSbufObtain(sizeof(int));
     }
 
     if (sbuf == NULL) {
@@ -120,7 +120,7 @@ static int32_t HdfDevEventDispatchLocked(const struct HdfDevListenerThread *thre
     }
     OsalMutexUnlock(&adapter->mutex);
 
-    HdfSBufRecycle(sbuf);
+    HdfSbufRecycle(sbuf);
     return HDF_SUCCESS;
 }
 

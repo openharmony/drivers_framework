@@ -25,7 +25,7 @@
 #endif // INT16_MAX
 
 struct HdfSBufRaw {
-    struct HdfSbufImpl infImpl;
+    struct HdfSBufImpl infImpl;
     size_t writePos; /**< Current write position */
     size_t readPos;  /**< Current read position */
     size_t capacity; /**< Storage capacity, 512 KB at most. */
@@ -36,14 +36,14 @@ struct HdfSBufRaw {
 #define SBUF_RAW_CAST(impl) (struct HdfSBufRaw *)(impl)
 
 static struct HdfSBufRaw *SbufRawImplNewInstance(size_t capacity);
-static void SbufInterfaceAssign(struct HdfSbufImpl *inf);
+static void SbufInterfaceAssign(struct HdfSBufImpl *inf);
 
 static size_t SbufRawImplGetAlignSize(size_t size)
 {
     return (size + HDF_SBUF_ALIGN - 1) & (~(HDF_SBUF_ALIGN - 1));
 }
 
-static void SbufRawImplRecycle(struct HdfSbufImpl *impl)
+static void SbufRawImplRecycle(struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     if (sbuf != NULL) {
@@ -64,7 +64,7 @@ static size_t SbufRawImplGetLeftReadSize(struct HdfSBufRaw *sbuf)
     return (sbuf->writePos < sbuf->readPos) ? 0 : (sbuf->writePos - sbuf->readPos);
 }
 
-static bool SbufRawImplWriteRollback(struct HdfSbufImpl *impl, uint32_t size)
+static bool SbufRawImplWriteRollback(struct HdfSBufImpl *impl, uint32_t size)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     size_t alignSize;
@@ -81,7 +81,7 @@ static bool SbufRawImplWriteRollback(struct HdfSbufImpl *impl, uint32_t size)
     return true;
 }
 
-static bool SbufRawImplReadRollback(struct HdfSbufImpl *impl, uint32_t size)
+static bool SbufRawImplReadRollback(struct HdfSBufImpl *impl, uint32_t size)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     size_t alignSize;
@@ -98,7 +98,7 @@ static bool SbufRawImplReadRollback(struct HdfSbufImpl *impl, uint32_t size)
     return true;
 }
 
-static const uint8_t *SbufRawImplGetData(const struct HdfSbufImpl *impl)
+static const uint8_t *SbufRawImplGetData(const struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     if (sbuf == NULL) {
@@ -108,7 +108,7 @@ static const uint8_t *SbufRawImplGetData(const struct HdfSbufImpl *impl)
     return (uint8_t *)sbuf->data;
 }
 
-static void SbufRawImplSetDataSize(struct HdfSbufImpl *impl, size_t size)
+static void SbufRawImplSetDataSize(struct HdfSBufImpl *impl, size_t size)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     if (sbuf == NULL) {
@@ -120,7 +120,7 @@ static void SbufRawImplSetDataSize(struct HdfSbufImpl *impl, size_t size)
     }
 }
 
-static void SbufRawImplFlush(struct HdfSbufImpl *impl)
+static void SbufRawImplFlush(struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     if (sbuf != NULL) {
@@ -129,13 +129,13 @@ static void SbufRawImplFlush(struct HdfSbufImpl *impl)
     }
 }
 
-static size_t SbufRawImplGetCapacity(const struct HdfSbufImpl *impl)
+static size_t SbufRawImplGetCapacity(const struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     return (sbuf != NULL) ? sbuf->capacity : 0;
 }
 
-static size_t SbufRawImplGetDataSize(const struct HdfSbufImpl *impl)
+static size_t SbufRawImplGetDataSize(const struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     return (sbuf != NULL) ? sbuf->writePos : 0;
@@ -180,7 +180,7 @@ static bool SbufRawImplGrow(struct HdfSBufRaw *sbuf, uint32_t growSize)
     return true;
 }
 
-static bool SbufRawImplWrite(struct HdfSbufImpl *impl, const uint8_t *data, uint32_t size)
+static bool SbufRawImplWrite(struct HdfSBufImpl *impl, const uint8_t *data, uint32_t size)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     size_t alignSize;
@@ -220,7 +220,7 @@ static bool SbufRawImplWrite(struct HdfSbufImpl *impl, const uint8_t *data, uint
     return true;
 }
 
-static bool SbufRawImplRead(struct HdfSbufImpl *impl, uint8_t *data, uint32_t readSize)
+static bool SbufRawImplRead(struct HdfSBufImpl *impl, uint8_t *data, uint32_t readSize)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     size_t alignSize;
@@ -245,47 +245,47 @@ static bool SbufRawImplRead(struct HdfSbufImpl *impl, uint8_t *data, uint32_t re
     return true;
 }
 
-static bool SbufRawImplWriteUint64(struct HdfSbufImpl *impl, uint64_t value)
+static bool SbufRawImplWriteUint64(struct HdfSBufImpl *impl, uint64_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteUint32(struct HdfSbufImpl *impl, uint32_t value)
+static bool SbufRawImplWriteUint32(struct HdfSBufImpl *impl, uint32_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteUint16(struct HdfSbufImpl *impl, uint16_t value)
+static bool SbufRawImplWriteUint16(struct HdfSBufImpl *impl, uint16_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteUint8(struct HdfSbufImpl *impl, uint8_t value)
+static bool SbufRawImplWriteUint8(struct HdfSBufImpl *impl, uint8_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteInt64(struct HdfSbufImpl *impl, int64_t value)
+static bool SbufRawImplWriteInt64(struct HdfSBufImpl *impl, int64_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteInt32(struct HdfSbufImpl *impl, int32_t value)
+static bool SbufRawImplWriteInt32(struct HdfSBufImpl *impl, int32_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteInt16(struct HdfSbufImpl *impl, int16_t value)
+static bool SbufRawImplWriteInt16(struct HdfSBufImpl *impl, int16_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteInt8(struct HdfSbufImpl *impl, int8_t value)
+static bool SbufRawImplWriteInt8(struct HdfSBufImpl *impl, int8_t value)
 {
     return SbufRawImplWrite(impl, (uint8_t *)(&value), sizeof(value));
 }
 
-static bool SbufRawImplWriteBuffer(struct HdfSbufImpl *impl, const uint8_t *data, uint32_t writeSize)
+static bool SbufRawImplWriteBuffer(struct HdfSBufImpl *impl, const uint8_t *data, uint32_t writeSize)
 {
     if (impl == NULL) {
         HDF_LOGE("Failed to write the Sbuf, invalid input params");
@@ -306,7 +306,7 @@ static bool SbufRawImplWriteBuffer(struct HdfSbufImpl *impl, const uint8_t *data
     return true;
 }
 
-static bool SbufRawImplWriteString(struct HdfSbufImpl *impl, const char *value)
+static bool SbufRawImplWriteString(struct HdfSBufImpl *impl, const char *value)
 {
     if (impl == NULL) {
         HDF_LOGE("%s: input null", __func__);
@@ -316,47 +316,47 @@ static bool SbufRawImplWriteString(struct HdfSbufImpl *impl, const char *value)
     return SbufRawImplWriteBuffer(impl, (const uint8_t *)value, value ? (strlen(value) + 1) : 0);
 }
 
-static bool SbufRawImplReadUint64(struct HdfSbufImpl *impl, uint64_t *value)
+static bool SbufRawImplReadUint64(struct HdfSBufImpl *impl, uint64_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadUint32(struct HdfSbufImpl *impl, uint32_t *value)
+static bool SbufRawImplReadUint32(struct HdfSBufImpl *impl, uint32_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadUint16(struct HdfSbufImpl *impl, uint16_t *value)
+static bool SbufRawImplReadUint16(struct HdfSBufImpl *impl, uint16_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadUint8(struct HdfSbufImpl *impl, uint8_t *value)
+static bool SbufRawImplReadUint8(struct HdfSBufImpl *impl, uint8_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadInt64(struct HdfSbufImpl *impl, int64_t *value)
+static bool SbufRawImplReadInt64(struct HdfSBufImpl *impl, int64_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadInt32(struct HdfSbufImpl *impl, int32_t *value)
+static bool SbufRawImplReadInt32(struct HdfSBufImpl *impl, int32_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadInt16(struct HdfSbufImpl *impl, int16_t *value)
+static bool SbufRawImplReadInt16(struct HdfSBufImpl *impl, int16_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadInt8(struct HdfSbufImpl *impl, int8_t *value)
+static bool SbufRawImplReadInt8(struct HdfSBufImpl *impl, int8_t *value)
 {
     return SbufRawImplRead(impl, (uint8_t *)(value), sizeof(*value));
 }
 
-static bool SbufRawImplReadBuffer(struct HdfSbufImpl *impl, const uint8_t **data, uint32_t *readSize)
+static bool SbufRawImplReadBuffer(struct HdfSBufImpl *impl, const uint8_t **data, uint32_t *readSize)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     int buffSize = 0;
@@ -388,7 +388,7 @@ static bool SbufRawImplReadBuffer(struct HdfSbufImpl *impl, const uint8_t **data
     return true;
 }
 
-static const char *SbufRawImplReadString(struct HdfSbufImpl *impl)
+static const char *SbufRawImplReadString(struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     int32_t strLen = 0;
@@ -415,7 +415,7 @@ static const char *SbufRawImplReadString(struct HdfSbufImpl *impl)
     return str;
 }
 
-static struct HdfSbufImpl *SbufRawImplCopy(const struct HdfSbufImpl *impl)
+static struct HdfSBufImpl *SbufRawImplCopy(const struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     struct HdfSBufRaw *new = NULL;
@@ -438,7 +438,7 @@ static struct HdfSbufImpl *SbufRawImplCopy(const struct HdfSbufImpl *impl)
     return &new->infImpl;
 }
 
-static struct HdfSbufImpl *SbufRawImplMove(struct HdfSbufImpl *impl)
+static struct HdfSBufImpl *SbufRawImplMove(struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     struct HdfSBufRaw *new = NULL;
@@ -463,7 +463,7 @@ static struct HdfSbufImpl *SbufRawImplMove(struct HdfSbufImpl *impl)
     return &new->infImpl;
 }
 
-static void SbufRawImplTransDataOwnership(struct HdfSbufImpl *impl)
+static void SbufRawImplTransDataOwnership(struct HdfSBufImpl *impl)
 {
     struct HdfSBufRaw *sbuf = SBUF_RAW_CAST(impl);
     if (sbuf == NULL) {
@@ -473,7 +473,7 @@ static void SbufRawImplTransDataOwnership(struct HdfSbufImpl *impl)
     sbuf->isBind = false;
 }
 
-static void SbufInterfaceAssign(struct HdfSbufImpl *inf)
+static void SbufInterfaceAssign(struct HdfSBufImpl *inf)
 {
     inf->writeBuffer = SbufRawImplWriteBuffer;
     inf->writeUint64 = SbufRawImplWriteUint64;
@@ -533,7 +533,7 @@ static struct HdfSBufRaw *SbufRawImplNewInstance(size_t capacity)
     return sbuf;
 }
 
-struct HdfSbufImpl *SbufObtainRaw(size_t capacity)
+struct HdfSBufImpl *SbufObtainRaw(size_t capacity)
 {
     struct HdfSBufRaw *sbuf = SbufRawImplNewInstance(capacity);
     if (sbuf == NULL) {
@@ -542,7 +542,7 @@ struct HdfSbufImpl *SbufObtainRaw(size_t capacity)
     return &sbuf->infImpl;
 }
 
-struct HdfSbufImpl *SbufBindRaw(uintptr_t base, size_t size)
+struct HdfSBufImpl *SbufBindRaw(uintptr_t base, size_t size)
 {
     struct HdfSBufRaw *sbuf = NULL;
     if (base == 0 || size == 0) {

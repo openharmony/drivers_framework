@@ -97,7 +97,7 @@ int32_t ReportSensorEvent(const struct SensorReportEvent *events)
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_PARAM);
 
     (void)OsalMutexLock(&manager->eventMutex);
-    msg = HdfSBufObtain(HDF_SENSOR_EVENT_MAX_BUF);
+    msg = HdfSbufObtain(HDF_SENSOR_EVENT_MAX_BUF);
     if (msg == NULL) {
         (void)OsalMutexUnlock(&manager->eventMutex);
         return HDF_ERR_INVALID_PARAM;
@@ -123,7 +123,7 @@ int32_t ReportSensorEvent(const struct SensorReportEvent *events)
     ret = HDF_SUCCESS;
 
 EXIT:
-    HdfSBufRecycle(msg);
+    HdfSbufRecycle(msg);
     (void)OsalMutexUnlock(&manager->eventMutex);
     return ret;
 }
