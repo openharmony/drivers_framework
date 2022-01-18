@@ -166,7 +166,7 @@ static void HdmiDfmCaculateVideoBorrowInfo(struct HdmiDfmInfo *info)
     if (info->activeTimeRef >= info->activeTimeMin && info->blankTimeRef >= info->blankTimeMin) {
         info->tBorrow = 0;
     } else if (info->activeTimeRef < info->activeTimeMin && info->blankTimeRef >= info->blankTimeMin) {
-        info->tBorrow = info->activeTimeMin - info->activeTimeRef;
+        info->tBorrow = (int32_t)(info->activeTimeMin - info->activeTimeRef);
     } else {
         info->tBorrow = HDMI_DFM_INVALID_VAL;
     }
@@ -244,7 +244,7 @@ static void HdmiDfmCaculateVideoInfo(struct HdmiDfmInfo *info, struct HdmiDfmPar
         return;
     }
     info->utilization = (uint64_t)info->cFrlActualPayload * 100000 / (uint64_t)info->minFrlCharsPerLine;
-    info->margin = 100000 - (info->utilization + info->overheadMax);
+    info->margin = (int32_t)(100000 - (info->utilization + info->overheadMax));
 }
 
 static void HdmiDfmFillInfo(struct HdmiDfmInfo *info, struct HdmiDfmParam *param)

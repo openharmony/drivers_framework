@@ -354,7 +354,7 @@ static int32_t VirtualI3cParseAndInit(struct HdfDeviceObject *device, const stru
 
     VirtualI3cCntlrInit(virtual);
     virtual->cntlr.priv = (void *)node;
-    virtual->cntlr.busId = virtual->busId;
+    virtual->cntlr.busId = (int16_t)virtual->busId;
     virtual->cntlr.ops = &g_method;
     (void)OsalSpinInit(&virtual->spin);
     ret = I3cCntlrAdd(&virtual->cntlr);

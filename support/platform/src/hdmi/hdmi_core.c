@@ -298,7 +298,7 @@ static int32_t HdmiCntlrInit(struct HdmiCntlr *cntlr)
 
     cntlr->service.Dispatch = HdmiIoDispatch;
     cntlr->hdfDevObj->service = &(cntlr->service);
-    cntlr->device.number = cntlr->deviceIndex;
+    cntlr->device.number = (int32_t)cntlr->deviceIndex;
     cntlr->device.hdfDev = cntlr->hdfDevObj;
     HdmiInfoFrameInit(cntlr);
     HdmiDdcInit(cntlr);

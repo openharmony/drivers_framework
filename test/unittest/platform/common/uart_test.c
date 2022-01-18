@@ -236,7 +236,7 @@ static int32_t UartTestBind(struct HdfDeviceObject *device)
 static int32_t UartTestInitFromHcs(struct UartTest *test, const struct DeviceResourceNode *node)
 {
     int32_t ret;
-    int32_t i;
+    uint32_t i;
     uint32_t *tmp = NULL;
     struct DeviceResourceIface *face = NULL;
 

@@ -107,7 +107,7 @@ static int32_t HdmiEdidVendorInfoPhase(struct HdmiEdid *edid)
 
     /* Serial Number */
     for (i = 0; i < HDMI_EDID_SERIAL_NUMBER_FIELD_LEN; i++) {
-        sinkCap->vendorInfo.serialNumber |= (block->serialNumber[i] << (HDMI_EDID_SERIAL_NUMBER_SHIFT * i));
+        sinkCap->vendorInfo.serialNumber |= (block->serialNumber[i] << (uint16_t)(HDMI_EDID_SERIAL_NUMBER_SHIFT * i));
     }
     sinkCap->vendorInfo.week = block->week;
     sinkCap->vendorInfo.year = block->year + HDMI_EDID_YEAR_BASE;
@@ -177,7 +177,7 @@ static int32_t HdmiEdidEstablisedTimingPhase(struct HdmiEdid *edid)
     struct HdmiEdidFirstBlockInfo *block = (struct HdmiEdidFirstBlockInfo *)edid->raw;
 
     for (i = 0; i < HDMI_EDID_ESTABLISHED_TIMINGS_FIELD_LEN; i++) {
-        data |= (block->estTimings[i] << (i * HDMI_ONE_BYTE_SHIFT));
+        data |= (block->estTimings[i] << (uint32_t)(i * HDMI_ONE_BYTE_SHIFT));
     }
 
     /*

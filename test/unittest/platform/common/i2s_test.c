@@ -130,7 +130,7 @@ static int32_t I2sPlayTest(struct I2sTest *test)
         return HDF_FAILURE;
     }
 
-    uint32_t totalLen = 0;
+    int32_t totalLen = 0;
     uint32_t readBuff = I2S_WRITE_BUFF_SIZE;
     do {
         size = OsalFileRead(&file, test->wbuf, readBuff);
@@ -143,7 +143,7 @@ static int32_t I2sPlayTest(struct I2sTest *test)
                 HDF_LOGE("%s: I2sPlayTest error", __func__);
                 return HDF_FAILURE;
             }
-            printf("[%s] [%d] I2sPlayTest wlen[%d]\n", __func__, ret, wlen);
+            printf("[%s] [%d] I2sPlayTest wlen[%u]\n", __func__, ret, wlen);
         }
     } while (size > 0);
 
@@ -255,7 +255,7 @@ static int32_t I2sReadStartTest(struct I2sTest *test)
         HDF_LOGE("%s: test null", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-    HDF_LOGI("%s: rbuf[%p] wbuf[%p]\n", __func__, test->rbuf, test->wbuf);
+    
     I2sStartRead(test->handle);
     if (test->rbuf != NULL) {
         HDF_LOGI("%s: rbuf[0] = [%u]\n", __func__, test->rbuf[0]);
@@ -281,7 +281,7 @@ static int32_t I2sReadStopTest(struct I2sTest *test)
         HDF_LOGE("%s: test null", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-    HDF_LOGI("%s: rbuf[%p] wbuf[%p]\n", __func__, test->rbuf, test->wbuf);
+    
     I2sStopRead(test->handle);
     if (test->rbuf != NULL) {
         HDF_LOGI("%s: rbuf[0] = [%u]\n", __func__, test->rbuf[0]);

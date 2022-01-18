@@ -95,7 +95,7 @@ static int32_t GetAddrStatus(struct I3cCntlr *cntlr, uint16_t addr)
 static int32_t SetAddrStatus(struct I3cCntlr *cntlr, uint16_t addr, enum I3cAddrStatus status)
 {
     uint16_t temp;
-    uint32_t ret;
+    int32_t ret;
     uint16_t statusMask;
 
     if (addr > I3C_ADDR_MAX) {
@@ -115,7 +115,7 @@ static int32_t SetAddrStatus(struct I3cCntlr *cntlr, uint16_t addr, enum I3cAddr
     }
 
     statusMask = ADDR_STATUS_MASK << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS);
-    temp = (cntlr->addrSlot[addr / ADDRS_PER_UINT16]) & ~statusMask;
+    temp = (cntlr->addrSlot[addr / (uint16_t)ADDRS_PER_UINT16]) & ~statusMask;
     temp |= ((uint16_t)status) << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS);
     cntlr->addrSlot[addr / ADDRS_PER_UINT16] = temp;
 
@@ -546,7 +546,7 @@ int32_t I3cCntlrGetConfig(struct I3cCntlr *cntlr, struct I3cConfig *config)
     }
 
     ret = cntlr->ops->getConfig(cntlr, config);
-    config = &cntlr->config;
+    cntlr->config = *config;
     I3cCntlrUnlock(cntlr);
 
     return ret;

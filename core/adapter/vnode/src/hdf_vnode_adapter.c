@@ -284,7 +284,7 @@ static int HdfVNodeAdapterReadDevEvent(struct HdfVNodeAdapterClient *client, uns
             return HDF_ERR_IO;
         }
         bwr.readConsumed = eventSize;
-        bwr.cmdCode = event->id;
+        bwr.cmdCode = (int32_t)event->id;
     }
 
     if (CopyToUser(bwrUser, &bwr, sizeof(struct HdfWriteReadBuf)) != 0) {

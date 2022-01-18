@@ -281,7 +281,7 @@ static bool PlatformDeviceMatchByNumber(struct PlatformDevice *device, void *dat
 {
     uint32_t number = (uint32_t)(uintptr_t)data;
 
-    return (device != NULL && device->number == number);
+    return (device != NULL && (uint32_t)device->number == number);
 }
 
 struct PlatformDevice *PlatformManagerGetDeviceByNumber(struct PlatformManager *manager, uint32_t number)

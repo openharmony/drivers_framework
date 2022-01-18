@@ -36,10 +36,10 @@ static struct regulator_consumer_supply g_virtualCurrentRegulatorSupplies[] = {
 // virtual regulator init info
 static struct regulator_init_data g_virtualCurrentRegulatorInitData = {
     .constraints = {
-    .name = "virtual_current_regulator",
-    .min_uA = MINIMUN_CURRENT,
-    .max_uA = MAXIMUN_CURRENT,
-    .valid_ops_mask = REGULATOR_CHANGE_CURRENT | REGULATOR_CHANGE_STATUS,
+        .name = "virtual_current_regulator",
+        .min_uA = MINIMUN_CURRENT,
+        .max_uA = MAXIMUN_CURRENT,
+        .valid_ops_mask = REGULATOR_CHANGE_CURRENT | REGULATOR_CHANGE_STATUS,
     },
     .num_consumer_supplies = ARRAY_SIZE(g_virtualCurrentRegulatorSupplies),
     .consumer_supplies = g_virtualCurrentRegulatorSupplies,
