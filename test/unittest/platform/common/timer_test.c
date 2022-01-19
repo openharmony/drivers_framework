@@ -73,7 +73,11 @@ static int32_t TimerGetTest(struct TimerTest *test)
     uint32_t uSecond;
     bool isPeriod;
 
-    TimerGet(test->handle, &uSecond, &isPeriod);
+    if (TimerGet(test->handle, &uSecond, &isPeriod) != HDF_SUCCESS) {
+        HDF_LOGE("func: %s, TimerGet dailed", __func__);
+        return HDF_FAILURE;
+    }
+
     HDF_LOGD("%s:[%d][%d]", __func__, uSecond, isPeriod);
     return HDF_SUCCESS;
 }

@@ -194,7 +194,7 @@ int VirtualVoltageRegulatorAdapterInit(void)
 {
     HDF_LOGI("VirtualVoltageRegulatorAdapterInit");
     int ret = platform_device_register(&g_virtualVoltageRegulatorPlatformDevice);
-    if(ret == 0) {
+    if (ret == 0) {
         ret = platform_driver_register(&g_virtualVoltageRegulatorPlatformDriver);
     } else {
         HDF_LOGE("VirtualVoltageRegulatorAdapterInit:device register fail %d", ret);
@@ -206,7 +206,7 @@ static int __init VirtualVoltageRegulatorInit(void)
 {
     HDF_LOGI("VirtualVoltageRegulatorInit");
     int ret = platform_device_register(&g_virtualVoltageRegulatorPlatformDevice);
-    if(ret == 0) {
+    if (ret == 0) {
         ret = platform_driver_register(&g_virtualVoltageRegulatorPlatformDriver);
     }
     return ret;

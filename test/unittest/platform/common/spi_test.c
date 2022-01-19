@@ -60,7 +60,7 @@ static struct SpiCfg g_spiCfg = {
 
 static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8_t bits)
 {
-    int32_t i;
+    uint32_t i;
     uint16_t vw;
     uint16_t vr;
 

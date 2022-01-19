@@ -155,7 +155,7 @@ static int32_t UartUserReceive(DevHandle handle, void *data, uint32_t size, enum
         goto __EXIT;
     }
     if (cmd == UART_IO_READ) {
-        ret = rLen;
+        ret = (int32_t)rLen;
     }
 __EXIT:
     HdfSBufRecycle(reply);

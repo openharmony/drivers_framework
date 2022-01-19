@@ -82,7 +82,7 @@ struct PinDesc *PinCntlrGetPinDescByName(const char *pinName)
     struct DListHead *head = NULL;
     struct PinCntlr *cntlr = NULL;
     struct PinCntlr *tmp = NULL;
-    int32_t num;
+    uint16_t num;
 
     if (pinName == NULL) {
         HDF_LOGE("%s: pinName is NULL!", __func__);
@@ -153,7 +153,8 @@ struct PinCntlr *PinCntlrGetByPin(struct PinDesc *desc)
 
 static int32_t GetPinIndex(struct PinCntlr *cntlr, struct PinDesc *desc)
 {
-    int32_t index, ret;
+    uint16_t index;
+    int32_t ret;
 
     for (index = 0; index < cntlr->pinCount; index++) {
         if (cntlr->pins[index].pinName == NULL) {
@@ -163,7 +164,7 @@ static int32_t GetPinIndex(struct PinCntlr *cntlr, struct PinDesc *desc)
         ret = strcmp(cntlr->pins[index].pinName, desc->pinName);
         if (ret == 0) {
             HDF_LOGI("%s: get pin index:%d success!", __func__, index);
-            return index;
+            return (int32_t)index;
         }
     }
     HDF_LOGE("%s:  get pin index failed!", __func__);

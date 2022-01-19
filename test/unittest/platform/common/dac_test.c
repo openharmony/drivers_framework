@@ -117,7 +117,7 @@ static int DacTestThreadFunc(void *param)
 {
     struct DacTester *tester = NULL;
     uint32_t val;
-    int i;
+    uint32_t i;
     int32_t ret;
     tester = DacTesterGet();
     if (tester == NULL) {

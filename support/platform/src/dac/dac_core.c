@@ -71,7 +71,6 @@ static int32_t DacManagerAddDevice(struct DacDevice *device)
         ret = HDF_FAILURE;
     } else {
         manager->devices[device->devNum] = device;
-        HDF_LOGE("%s: device:%p", __func__, manager->devices[0]);
         ret = HDF_SUCCESS;
     }
 

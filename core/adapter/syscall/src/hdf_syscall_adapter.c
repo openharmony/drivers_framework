@@ -427,7 +427,7 @@ static int32_t HdfDevListenerThreadStart(struct HdfDevListenerThread *thread)
     }
 
     do {
-        for (int i = 0; i < thread->pfdSize; i++) {
+        for (uint16_t i = 0; i < thread->pfdSize; i++) {
             if (thread->pfds[i].fd == SYSCALL_INVALID_FD) {
                 continue;
             }
@@ -597,7 +597,7 @@ static void HdfDevListenerThreadDestroy(struct HdfDevListenerThread *thread)
             thread->adapterListPtr = NULL;
             thread->listenerListPtr = NULL;
             OsalMutexUnlock(&thread->mutex);
-            for (int i = 0; i < thread->pfdSize; i++) {
+            for (uint16_t i = 0; i < thread->pfdSize; i++) {
                 if (thread->pfds[i].fd != SYSCALL_INVALID_FD &&
                     HdfAdapterExitListenIoctl(thread->pfds[i].fd) == HDF_SUCCESS) {
                     stopCount++;

@@ -139,7 +139,7 @@ static int32_t PlatformEventRead(struct PlatformEvent *pe, uint32_t *events, uin
         return HDF_ERR_INVALID_PARAM; 
     } 
     PlatformEventLock(pe);
-    if (((uint32_t)mode & PLAT_EVENT_MODE_AND) == 0) {
+    if (((uint32_t)mode & (uint32_t)PLAT_EVENT_MODE_AND) == 0) {
         if ((pe->eventsWord & mask) != 0) {
             masked = pe->eventsWord & mask;
         }
@@ -162,7 +162,7 @@ static int32_t PlatformEventReadSlowlly(struct PlatformEvent *pe,
     struct PlatformEventWaiter waiter;
 
     waiter.mask = mask;
-    waiter.mode = (uint32_t)mode & (~PLAT_EVENT_MODE_ASYNC);
+    waiter.mode = (uint32_t)mode & (uint32_t)(~PLAT_EVENT_MODE_ASYNC);
     (void)OsalSemInit(&waiter.sem, 0);
     DListHeadInit(&waiter.node);
 
@@ -225,7 +225,7 @@ static int32_t PlatformEventAsyncCallback(struct PlatformEventWaiter *waiter, in
     }
 
     // gona do it in thread context later ...
-    return listener->cb(listener, (int32_t)events & listener->mask);
+    return listener->cb(listener, (uint32_t)events & listener->mask);
 }   
 
 int32_t PlatformEventListen(struct PlatformEvent *pe, const struct PlatformEventListener *listener)
