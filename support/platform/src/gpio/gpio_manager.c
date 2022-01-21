@@ -199,20 +199,20 @@ static bool GpioCntlrFindMatch(struct PlatformDevice *device, void *data)
     return false;
 }
 
-struct GpioCntlr *GpioCntlrGet(uint16_t gpio)
+struct GpioCntlr *GpioCntlrGetByGpio(uint16_t gpio)
 {
     struct PlatformManager *gpioMgr = NULL;
     struct PlatformDevice *device = NULL;
 
     gpioMgr = GpioManagerGet();
     if (gpioMgr == NULL) {
-        PLAT_LOGE("GpioCntlrRemove: get gpio manager failed");
+        PLAT_LOGE("GpioCntlrGetByGpio: get gpio manager failed");
         return NULL;
     }
 
     device = PlatformManagerFindDevice(gpioMgr, (void *)(uintptr_t)gpio, GpioCntlrFindMatch);
     if (device == NULL) {
-        PLAT_LOGE("%s: gpio %u not in any controllers!", __func__, gpio);
+        PLAT_LOGE("GpioCntlrGetByGpio: gpio %u not in any controllers!", gpio);
         return NULL;
     }
     return CONTAINER_OF(device, struct GpioCntlr, device);

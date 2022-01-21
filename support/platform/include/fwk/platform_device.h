@@ -231,21 +231,22 @@ int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject
  * @brief Unbind from a hdf device object.
  *
  * @param device Indicates the pointer to the platform device.
+ * @param hdfDevice Indicates the pointer to the hdf device object.
  *
  * @since 1.0
  */
-void PlatformDeviceUnbind(struct PlatformDevice *device);
+void PlatformDeviceUnbind(struct PlatformDevice *device, struct HdfDeviceObject *hdfDevice);
 
 
 /**
- * @brief Get the platform device from a hdf device object.
+ * @brief Transform a hdf device object to a platform device object.
  *
  * @param device Indicates the pointer to the platform device.
  *
- * @return Returns 0 if get successfully; returns a negative value otherwise.
+ * @return Returns the pointer to the platform device object on success; otherwise null.
  * @since 1.0
  */
-int32_t PlatformDeviceGetFromHdfDev(struct HdfDeviceObject *hdfDev, struct PlatformDevice **device);
+struct PlatformDevice *PlatformDeviceFromHdfDev(struct HdfDeviceObject *hdfDev);
 
 #ifdef __cplusplus
 #if __cplusplus

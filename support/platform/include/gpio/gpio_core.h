@@ -166,9 +166,9 @@ void GpioCntlrRemove(struct GpioCntlr *cntlr);
  * @return Retrns the pointer of the GpioCntlr on success; returns NULL otherwise.
  * @since 1.0
  */
-static inline struct GpioCntlr *GpioCntlrFromDevice(struct HdfDeviceObject *device)
+static inline struct GpioCntlr *GpioCntlrFromHdfDev(struct HdfDeviceObject *device)
 {
-    return (device == NULL) ? NULL : (struct GpioCntlr *)device->service;
+    return (struct GpioCntlr *)PlatformDeviceFromHdfDev(device);
 }
 
 int32_t GpioCntlrWrite(struct GpioCntlr *cntlr, uint16_t local, uint16_t val);
@@ -193,7 +193,7 @@ void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local);
 
 struct PlatformManager *GpioManagerGet(void);
 
-struct GpioCntlr *GpioCntlrGet(uint16_t gpio);
+struct GpioCntlr *GpioCntlrGetByGpio(uint16_t gpio);
 
 static inline void GpioCntlrPut(struct GpioCntlr *cntlr)
 {

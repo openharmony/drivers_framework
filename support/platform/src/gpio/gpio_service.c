@@ -207,7 +207,7 @@ static void GpioServiceRelease(struct HdfDeviceObject *device)
         return;
     }
 
-    (void)PlatformDeviceUnbind(&gpioMgr->device);
+    (void)PlatformDeviceUnbind(&gpioMgr->device, device);
     (void)PlatformDeviceDestroyService(&gpioMgr->device);
     PLAT_LOGI("GpioServiceRelease: done");
 }
