@@ -45,7 +45,7 @@ static int32_t GetAllLightInfo(struct HdfSBuf *data, struct HdfSBuf *reply)
             continue;
         }
         lightInfo.lightType = i;
-        lightInfo.reserved = NULL;
+        lightInfo.reserved = 0;
 
         if (!HdfSbufWriteBuffer(reply, &lightInfo, sizeof(lightInfo))) {
             HDF_LOGE("%s: write sbuf failed", __func__);
@@ -125,7 +125,7 @@ void LightTimerEntry(uintptr_t para)
 static int32_t Enable(uint32_t lightType, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     (void)reply;
-    int32_t len;
+    uint32_t len;
     struct LightEffect *buf = NULL;
     struct LightDriverData *drvData = NULL;
 
@@ -155,7 +155,7 @@ static int32_t Enable(uint32_t lightType, struct HdfSBuf *data, struct HdfSBuf *
 
     if (buf->flashEffect.flashMode == LIGHT_FLASH_NONE) {
         if (GpioWrite(drvData->info[lightType]->busNum, GPIO_VAL_HIGH) != HDF_SUCCESS) {
-            HDF_LOGE("%s: gpio busNum %s write failed", __func__, drvData->info[lightType]->busNum);
+            HDF_LOGE("%s: gpio busNum %d write failed", __func__, drvData->info[lightType]->busNum);
             return HDF_FAILURE;
         }
     }
@@ -249,7 +249,6 @@ static int32_t DispatchLight(struct HdfDeviceIoClient *client,
 {
     int32_t ret;
     uint32_t lightType;
-    struct LightDevInfoNode *pos = NULL;
     struct LightDriverData *drvData = NULL;
 
     drvData = GetLightDrvData();
@@ -268,7 +267,7 @@ static int32_t DispatchLight(struct HdfDeviceIoClient *client,
 
     CHECK_LIGHT_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
     (void)OsalMutexLock(&drvData->mutex);
-    if (!HdfSbufReadInt32(data, &lightType)) {
+    if (!HdfSbufReadUint32(data, &lightType)) {
         HDF_LOGE("%s: sbuf read lightType failed", __func__);
         (void)OsalMutexUnlock(&drvData->mutex);
         return HDF_ERR_INVALID_PARAM;
@@ -291,6 +290,7 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
     int32_t ret;
     uint32_t i;
     uint32_t temp;
+    uint32_t *lightBrightness = NULL;
     struct LightDriverData *drvData = NULL;
 
     drvData = GetLightDrvData();
@@ -304,7 +304,7 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
         return HDF_FAILURE;
     }
 
-    ret = memset_s(drvData->info, sizeof(drvData->info[LIGHT_TYPE_NONE]) * LIGHT_TYPE_BUTT, NULL,
+    ret = memset_s(drvData->info, sizeof(drvData->info[LIGHT_TYPE_NONE]) * LIGHT_TYPE_BUTT, 0,
         sizeof(drvData->info[LIGHT_TYPE_NONE]) * LIGHT_TYPE_BUTT);
     CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "memset_s");
 
@@ -329,7 +329,8 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "busGNum");
         ret = parser->GetUint32(node, "busBNum", &drvData->info[temp]->busBNum, 0);
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "busBNum");
-        ret = parser->GetUint32(node, "lightBrightness", &drvData->info[temp]->lightBrightness, 0);
+        lightBrightness = (uint32_t *)&drvData->info[temp]->lightBrightness;
+        ret = parser->GetUint32(node, "lightBrightness", lightBrightness, 0);
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "lightBrightness");
         ret = parser->GetUint32(node, "onTime", &drvData->info[temp]->onTime, 0);
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "onTime");
@@ -398,7 +399,7 @@ static void LightWorkEntry(void *para)
     lightType = drvData->lightType;
 
     if (drvData->info[lightType] == NULL) {
-        HDF_LOGE("%s: lightType[%u] info is NULL!", __func__);
+        HDF_LOGE("%s: lightType info is NULL!", __func__);
         return;
     }
 

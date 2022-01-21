@@ -18,8 +18,6 @@
 #include "osal_mutex.h"
 #include "osal_timer.h"
 
-#define LIGHT_FLASH_NONE    0
-#define LIGHT_FLASH_TIMED   1
 #define LIGHT_MAKE_R_BIT    0X80000000
 #define LIGHT_MAKE_G_BIT    0X00008000
 #define LIGHT_MAKE_B_BIT    0X00000080
@@ -70,7 +68,13 @@ enum LightType {
     LIGHT_TYPE_NOTIFICATIONS       = 2,
     LIGHT_TYPE_ATTENTION           = 3,
     LIGHT_TYPE_BUTT,
-};  
+};
+
+enum LightFlashMode {
+    LIGHT_FLASH_NONE = 0,
+    LIGHT_FLASH_TIMED = 1,
+    LIGHT_FLASH_BUTT = 2,
+};
 
 struct LightFlashEffect {
     int32_t flashMode;
