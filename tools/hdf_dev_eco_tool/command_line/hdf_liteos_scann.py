@@ -360,7 +360,7 @@ class HdfLiteScan(object):
                 elif Source_File_Path2:
                     list1 = temp_info.strip().split("=")
                     try:
-                        str1 = ast.literal_eval(list1[-1])[0]
+                        str1 = ast.literal_eval(list1[-1].strip())[0]
                     except NameError:
                         continue
                     temp_list0.append(re.search(
@@ -436,3 +436,4 @@ class HdfLiteScan(object):
             self.get_need_result(model_path_dict)
         return self.replace_file_path(return_dict, import_gni_path,
                                       import_replace_name, need_replace)
+
