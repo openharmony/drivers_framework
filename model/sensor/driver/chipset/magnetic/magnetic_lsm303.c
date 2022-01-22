@@ -14,6 +14,8 @@
 #include "sensor_device_manager.h"
 #include "sensor_magnetic_driver.h"
 
+#define HDF_LOG_TAG    hdf_sensor_magnetic
+
 static struct Lsm303DrvData *g_lsm303DrvData = NULL;
 
 struct Lsm303DrvData *Lsm303GetDrvData(void)

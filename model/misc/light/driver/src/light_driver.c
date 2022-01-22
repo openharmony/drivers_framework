@@ -13,7 +13,7 @@
 #include "osal_mem.h"
 #include "osal_mutex.h"
 
-#define HDF_LOG_TAG    light_driver_c
+#define HDF_LOG_TAG    hdf_light_driver
 
 #define LIGHT_WORK_QUEUE_NAME    "light_queue"
 
@@ -82,7 +82,7 @@ int32_t StopLight(uint32_t lightType)
         HDF_LOGE("%s: pull gpio%d to %d level failed", __func__, drvData->info[lightType]->busNum, GPIO_VAL_LOW);
         return HDF_FAILURE;
     }
-    
+
     return HDF_SUCCESS;
 }
 

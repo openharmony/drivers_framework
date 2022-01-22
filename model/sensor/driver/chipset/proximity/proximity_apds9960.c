@@ -14,7 +14,7 @@
 #include "sensor_device_manager.h"
 #include "sensor_proximity_driver.h"
 
-#define HDF_LOG_TAG    proximity_apds9960_c
+#define HDF_LOG_TAG    hdf_sensor_proximity
 
 #define PROXIMITY_STATE_FAR    5
 #define PROXIMITY_STATE_NEAR   0

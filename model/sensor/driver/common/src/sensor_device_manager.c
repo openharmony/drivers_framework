@@ -12,7 +12,7 @@
 #include "osal_mem.h"
 #include "sensor_platform_if.h"
 
-#define HDF_LOG_TAG    sensor_device_manager_c
+#define HDF_LOG_TAG    hdf_sensor_commom
 
 #define HDF_SENSOR_INFO_MAX_BUF (4 * 1024) // 4kB for all sensor info
 #define HDF_SENSOR_EVENT_MAX_BUF (4 * 1024) // 4kB

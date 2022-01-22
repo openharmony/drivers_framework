@@ -17,7 +17,7 @@
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
 
-#define HDF_LOG_TAG    sensor_gravity_driver_c
+#define HDF_LOG_TAG    hdf_sensor_gravity_driver
 
 #define HDF_GRAVITY_WORK_QUEUE_NAME    "hdf_gravity_work_queue"
 

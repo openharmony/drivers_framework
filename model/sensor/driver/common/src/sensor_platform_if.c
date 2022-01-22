@@ -11,7 +11,7 @@
 #include "osal_io.h"
 #include "osal_time.h"
 
-#define HDF_LOG_TAG    sensor_platform_if_c
+#define HDF_LOG_TAG    hdf_sensor_commom
 
 #define I2C_READ_MSG_NUM           2
 #define I2C_READ_MSG_ADDR_IDX      0

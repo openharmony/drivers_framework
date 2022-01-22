@@ -15,6 +15,8 @@
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
 
+#define HDF_LOG_TAG    hdf_sensor_barometer
+
 static struct Bmp180DrvData *g_bmp180DrvData = NULL;
 
 struct Bmp180DrvData *Bmp180GetDrvData(void)
