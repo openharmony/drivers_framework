@@ -194,11 +194,10 @@ static int32_t PlatformDeviceTestBindDevice(struct PlatformDevice *device)
     CHECK_EQ_RETURN(device->hdfDev, &hdfDev, HDF_FAILURE);
     CHECK_EQ_RETURN(device->service, hdfDev.service, HDF_FAILURE);
 
-    ret = PlatformDeviceGetFromHdfDev(&hdfDev, &devFromHdf);
-    CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
+    devFromHdf = PlatformDeviceFromHdfDev(&hdfDev);
     CHECK_EQ_RETURN(device, devFromHdf, HDF_FAILURE);
 
-    PlatformDeviceUnbind(device);
+    PlatformDeviceUnbind(device, &hdfDev);
     CHECK_EQ_RETURN(device->hdfDev, NULL, ret);
     CHECK_EQ_RETURN(hdfDev.service, NULL, ret);
 
@@ -252,12 +251,11 @@ static int32_t PlatformDeviceTestReliability(struct PlatformDevice *device)
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
     ret = PlatformDeviceBind(NULL, &hdfDev); 
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
-    PlatformDeviceUnbind(NULL);
+    PlatformDeviceUnbind(device, NULL);
+    PlatformDeviceUnbind(NULL, NULL);
 
-    ret = PlatformDeviceGetFromHdfDev(&hdfDev, NULL); 
-    CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
-    ret = PlatformDeviceGetFromHdfDev(NULL, &devGet); 
-    CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
+    devGet = PlatformDeviceFromHdfDev(NULL); 
+    CHECK_NULL_RETURN(devGet, HDF_FAILURE);
 
     PLAT_LOGD("%s: exit", __func__);
     return HDF_SUCCESS;

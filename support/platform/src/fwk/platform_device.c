@@ -288,7 +288,7 @@ int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject
     return HDF_SUCCESS;
 }
 
-void PlatformDeviceUnbind(struct PlatformDevice *device)
+void PlatformDeviceUnbind(struct PlatformDevice *device, struct HdfDeviceObject *hdfDev)
 {
     if (device == NULL) {
         return;
@@ -296,23 +296,24 @@ void PlatformDeviceUnbind(struct PlatformDevice *device)
     if (device->hdfDev == NULL) {
         return;
     }
+    if (device->hdfDev != hdfDev) {
+        PLAT_LOGW("PlatformDeviceUnbind: hdf device not match!");
+	return;
+    }
 
     device->hdfDev->service = NULL;
     device->hdfDev->priv = NULL;
     device->hdfDev = NULL;
 }
 
-int32_t PlatformDeviceGetFromHdfDev(struct HdfDeviceObject *hdfDev, struct PlatformDevice **device)
+struct PlatformDevice *PlatformDeviceFromHdfDev(struct HdfDeviceObject *hdfDev)
 {
     if (hdfDev == NULL || hdfDev->priv == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    if (device == NULL) {
-        return HDF_ERR_INVALID_PARAM;
+        PLAT_LOGE("PlatformDeviceFromHdfDev: hdf device or priv null");
+        return NULL;
     }
 
-    *device = (struct PlatformDevice *)hdfDev->priv;
-    return HDF_SUCCESS;
+    return (struct PlatformDevice *)hdfDev->priv;
 }
 
 int32_t PlatformDevicePostEvent(struct PlatformDevice *device, uint32_t events)

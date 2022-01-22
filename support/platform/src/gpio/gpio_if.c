@@ -19,7 +19,7 @@
 
 #include "hdf_base.h"
 
-#define PLAT_LOG_TAG gpio_if
+#define HDF_LOG_TAG gpio_if
 
 #ifdef __USER__
 
@@ -247,7 +247,7 @@ int32_t GpioDisableIrq(uint16_t gpio)
 int32_t GpioRead(uint16_t gpio, uint16_t *val)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrRead(cntlr, GpioCntlrGetLocal(cntlr, gpio), val);
 
@@ -258,7 +258,7 @@ int32_t GpioRead(uint16_t gpio, uint16_t *val)
 int32_t GpioWrite(uint16_t gpio, uint16_t val)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrWrite(cntlr, GpioCntlrGetLocal(cntlr, gpio), val);
 
@@ -269,7 +269,7 @@ int32_t GpioWrite(uint16_t gpio, uint16_t val)
 int32_t GpioSetDir(uint16_t gpio, uint16_t dir)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrSetDir(cntlr, GpioCntlrGetLocal(cntlr, gpio), dir);
 
@@ -280,7 +280,7 @@ int32_t GpioSetDir(uint16_t gpio, uint16_t dir)
 int32_t GpioGetDir(uint16_t gpio, uint16_t *dir)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrGetDir(cntlr, GpioCntlrGetLocal(cntlr, gpio), dir);
 
@@ -291,7 +291,7 @@ int32_t GpioGetDir(uint16_t gpio, uint16_t *dir)
 int32_t GpioSetIrq(uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrSetIrq(cntlr, GpioCntlrGetLocal(cntlr, gpio), mode, func, arg);
 
@@ -302,7 +302,7 @@ int32_t GpioSetIrq(uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg)
 int32_t GpioUnsetIrq(uint16_t gpio, void *arg)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrUnsetIrq(cntlr, GpioCntlrGetLocal(cntlr, gpio), arg);
 
@@ -313,7 +313,7 @@ int32_t GpioUnsetIrq(uint16_t gpio, void *arg)
 int32_t GpioEnableIrq(uint16_t gpio)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrEnableIrq(cntlr, GpioCntlrGetLocal(cntlr, gpio));
 
@@ -324,7 +324,7 @@ int32_t GpioEnableIrq(uint16_t gpio)
 int32_t GpioDisableIrq(uint16_t gpio)
 {
     int32_t ret;
-    struct GpioCntlr *cntlr = GpioCntlrGet(gpio);
+    struct GpioCntlr *cntlr = GpioCntlrGetByGpio(gpio);
 
     ret = GpioCntlrDisableIrq(cntlr, GpioCntlrGetLocal(cntlr, gpio));
 
