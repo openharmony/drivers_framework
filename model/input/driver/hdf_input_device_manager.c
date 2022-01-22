@@ -18,7 +18,7 @@
 #define SERVICE_NAME_LEN     24
 #define INPUT_DEV_EXIST      1
 #define INPUT_DEV_NOT_EXIST  0
-#define INPUTDEV_FIRST_ID    1
+#define INPUTDEV_FIRST_ID    2
 #define FILLER_FLAG          1
 #define PLACEHOLDER_LENGTH   2
 #define PLACEHOLDER_LIMIT    10
@@ -35,6 +35,11 @@ static bool IsHidDevice(uint32_t devType)
     if ((devType > INDEV_TYPE_HID_BEGIN_POS) && (devType < INDEV_TYPE_UNKNOWN)) {
         return true;
     }
+#ifdef CONFIG_ARCH_ROCKCHIP
+    else if (devType == INDEV_TYPE_KEY) {
+        return true;
+    }
+#endif
     return false;
 }
 
