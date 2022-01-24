@@ -55,7 +55,7 @@ void ASTSharedMemQueueType::EmitCppReadVar(const String& parcelName, const Strin
     const String& prefix, bool initVariable, unsigned int innerLevel) const
 {
     String metaVarName = String::Format("%sMeta_", name.string());
-    sb.Append(prefix).AppendFormat("SharedMemQueueMeta<%s> *%s = ",
+    sb.Append(prefix).AppendFormat("std::shared_ptr<SharedMemQueueMeta<%s>> %s = ",
         innerType_->EmitCppType().string(), metaVarName.string());
     sb.AppendFormat("SharedMemQueueMeta<%s>::UnMarshalling(%s);\n",
         innerType_->EmitCppType().string(), parcelName.string());
