@@ -48,7 +48,7 @@ struct HdfIoService;
  */
 typedef enum {
     DEVICE_CLASS_DEFAULT = 0x1 << 0,    /** Default device */
-    DEVICE_CLASS_PALT    = 0x1 << 1,    /** Platform device */
+    DEVICE_CLASS_PLAT    = 0x1 << 1,    /** Platform device */
     DEVICE_CLASS_SENSOR  = 0x1 << 2,    /** Sensor device */
     DEVICE_CLASS_INPUT   = 0x1 << 3,    /** Input device */
     DEVICE_CLASS_DISPLAY = 0x1 << 4,    /** Display device */
