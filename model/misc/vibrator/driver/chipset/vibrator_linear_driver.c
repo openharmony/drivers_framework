@@ -16,7 +16,7 @@
 #include "vibrator_driver.h"
 #include "vibrator_driver_type.h"
 
-#define HDF_LOG_TAG    vibrator_linear_driver_c
+#define HDF_LOG_TAG    hdf_vibrator_driver
 
 struct VibratorLinearDriverData *g_linearVibratorData = NULL;
 static struct VibratorLinearDriverData *GetLinearVibratorData(void)

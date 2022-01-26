@@ -14,6 +14,8 @@
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 
+#define HDF_LOG_TAG    hdf_sensor_als
+
 /* IO config for int-pin and I2C-pin */
 #define SENSOR_I2C6_DATA_REG_ADDR 0x114f004c
 #define SENSOR_I2C6_CLK_REG_ADDR  0x114f0048

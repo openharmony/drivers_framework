@@ -14,7 +14,7 @@
 #include "sensor_config_controller.h"
 #include "sensor_device_manager.h"
 
-#define HDF_LOG_TAG    gyro_bmi160_c
+#define HDF_LOG_TAG    hdf_sensor_gyro
 
 static struct Bmi160DrvData *g_bmi160DrvData = NULL;
 

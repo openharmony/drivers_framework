@@ -13,7 +13,7 @@
 #include "osal_mem.h"
 #include "vibrator_haptic.h"
 
-#define HDF_LOG_TAG    vibrator_driver_c
+#define HDF_LOG_TAG    hdf_vibrator_driver
 
 #define VIBRATOR_WORK_QUEUE_NAME    "vibrator_queue"
 #define VIBRATOR_START_TIME    10

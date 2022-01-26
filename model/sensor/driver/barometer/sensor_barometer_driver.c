@@ -16,7 +16,7 @@
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
 
-#define HDF_LOG_TAG    sensor_barometer_driver_c
+#define HDF_LOG_TAG    hdf_sensor_barometer_driver
 
 #define HDF_BAROMETER_WORK_QUEUE_NAME    "hdf_barometer_work_queue"
 
