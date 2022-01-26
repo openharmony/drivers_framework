@@ -38,7 +38,7 @@ int32_t HdfWifiEventNewSta(const struct NetDevice *netDev, const uint8_t *macAdd
         return HDF_FAILURE;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -48,7 +48,7 @@ int32_t HdfWifiEventNewSta(const struct NetDevice *netDev, const uint8_t *macAdd
         !HdfSbufWriteBuffer(data, info->assocReqIes, info->assocReqIesLen) ||
         !HdfSbufWriteBuffer(data, macAddr, addrLen)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
@@ -56,7 +56,7 @@ int32_t HdfWifiEventNewSta(const struct NetDevice *netDev, const uint8_t *macAdd
         (addrLen > 0) ? macAddr[addrLen - 1] : -1);
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_NEW_STA, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -70,7 +70,7 @@ int32_t HdfWifiEventDelSta(struct NetDevice *netDev, const uint8_t *macAddr, uin
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -78,12 +78,12 @@ int32_t HdfWifiEventDelSta(struct NetDevice *netDev, const uint8_t *macAddr, uin
 
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteBuffer(data, macAddr, addrLen)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_DEL_STA, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -100,7 +100,7 @@ int32_t HdfWifiEventInformBssFrame(const struct NetDevice *netDev,
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -117,12 +117,12 @@ int32_t HdfWifiEventInformBssFrame(const struct NetDevice *netDev,
         !HdfSbufWriteBuffer(data, bssInfo->mgmt->u.probeResp.variable, ieLen) ||
         !HdfSbufWriteBuffer(data, bssInfo->mgmt->u.beacon.variable, beaconLen)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_SCAN_RESULT, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -137,7 +137,7 @@ int32_t HdfWifiEventScanDone(const struct NetDevice *netDev, WifiScanStatus stat
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -145,12 +145,12 @@ int32_t HdfWifiEventScanDone(const struct NetDevice *netDev, WifiScanStatus stat
 
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteUint32(data, code)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_SCAN_DONE, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -211,7 +211,7 @@ int32_t HdfWifiEventConnectResult(const struct NetDevice *netDev, const struct C
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -222,12 +222,12 @@ int32_t HdfWifiEventConnectResult(const struct NetDevice *netDev, const struct C
         !HdfSbufWriteBuffer(data, result->reqIe, result->reqIeLen) ||
         !HdfSbufWriteBuffer(data, result->rspIe, result->rspIeLen)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_CONNECT_RESULT, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 
 #if (_PRE_OS_VERSION_LITEOS == _PRE_OS_VERSION)
     if (result->connectStatus == WIFI_HMAC_MGMT_SUCCESS) {
@@ -248,7 +248,7 @@ int32_t HdfWifiEventDisconnected(const struct NetDevice *netDev, uint16_t reason
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -257,12 +257,12 @@ int32_t HdfWifiEventDisconnected(const struct NetDevice *netDev, uint16_t reason
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteUint16(data, reason) ||
         !HdfSbufWriteBuffer(data, ie, len)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_DISCONNECT, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -276,7 +276,7 @@ int32_t HdfWifiEventMgmtTxStatus(const struct NetDevice *netDev, const uint8_t *
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -285,12 +285,12 @@ int32_t HdfWifiEventMgmtTxStatus(const struct NetDevice *netDev, const uint8_t *
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteUint8(data, ack) ||
         !HdfSbufWriteBuffer(data, buf, len)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_TX_STATUS, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -304,7 +304,7 @@ int32_t HdfWifiEventCsaChannelSwitch(const struct NetDevice *netDev, int32_t fre
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -312,12 +312,12 @@ int32_t HdfWifiEventCsaChannelSwitch(const struct NetDevice *netDev, int32_t fre
 
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteUint32(data, freq)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_CHANNEL_SWITCH, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -331,19 +331,19 @@ int32_t HdfWifiEventTimeoutDisconnected(const struct NetDevice *netDev)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteString(data, netDev->name)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_TIMEOUT_DISCONN, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -357,7 +357,7 @@ int32_t HdfWifiEventRxMgmt(const struct NetDevice *netDev, int32_t freq, int32_t
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
@@ -366,12 +366,12 @@ int32_t HdfWifiEventRxMgmt(const struct NetDevice *netDev, int32_t freq, int32_t
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteUint32(data, freq) ||
         !HdfSbufWriteUint32(data, sigMbm) || !HdfSbufWriteBuffer(data, buf, len)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_RX_MGMT, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -384,19 +384,19 @@ int32_t HdfWifiEventEapolRecv(const char *name, void *context)
     if (name == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteString(data, name)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_EAPOL_RECV, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -405,28 +405,28 @@ int32_t HdfWifiEventResetResult(const uint8_t chipId, int32_t resetStatus, const
     struct HdfSBuf *data = NULL;
     int32_t ret;
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteString(data, ifName)) {
         HDF_LOGE("%s: Serialize failed!", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteInt32(data, resetStatus)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteUint8(data, chipId)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_RESET_DRIVER, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -435,23 +435,23 @@ int32_t HdfWifiEventRemainOnChannel(const struct NetDevice *netDev, uint32_t fre
     struct HdfSBuf *data = NULL;
     int32_t ret;
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteUint32(data, freq)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteUint32(data, duration)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_REMAIN_ON_CHANNEL, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -460,18 +460,18 @@ int32_t HdfWifiEventCancelRemainOnChannel(const struct NetDevice *netDev, uint32
     struct HdfSBuf *data = NULL;
     int32_t ret;
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s InitDataBlock failed", __func__);
         return HDF_FAILURE;
     }
     if (!HdfSbufWriteString(data, netDev->name) || !HdfSbufWriteUint32(data, freq)) {
         HDF_LOGE("%s sbuf write failed", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
     ret = HdfWlanSendBroadcastEvent(WIFI_WPA_EVENT_CANCEL_REMAIN_ON_CHANNEL, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 

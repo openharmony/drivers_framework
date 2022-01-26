@@ -34,9 +34,9 @@ static struct HdfSBuf *UsbDdkPnpLoaderBufCreate(const char *moduleName,
 {
     struct HdfSBuf *pnpData = NULL;
 
-    pnpData = HdfSBufObtainDefaultSize();
+    pnpData = HdfSbufObtainDefaultSize();
     if (pnpData == NULL) {
-        HDF_LOGE("%s: HdfSBufTypedObtain pnpData fail", __func__);
+        HDF_LOGE("%s: HdfSbufTypedObtain pnpData fail", __func__);
         return NULL;
     }
 
@@ -63,7 +63,7 @@ static struct HdfSBuf *UsbDdkPnpLoaderBufCreate(const char *moduleName,
     return pnpData;
 
 OUT:
-    HdfSBufRecycle(pnpData);
+    HdfSbufRecycle(pnpData);
 
     return NULL;
 }
@@ -818,7 +818,7 @@ static int UsbDdkPnpLoaderrAddPnpDevice(struct HdfDeviceObject *usbPnpManagerDev
         }
     }
 ERROR:
-    HdfSBufRecycle(pnpData);
+    HdfSbufRecycle(pnpData);
     return ret;
 }
 
@@ -881,7 +881,7 @@ static int UsbDdkPnpLoaderRemoveHandle(struct HdfDeviceObject *usbPnpManager,
     }
 
 ERROR:
-    HdfSBufRecycle(pnpData);
+    HdfSbufRecycle(pnpData);
     return ret;
 }
 
@@ -983,14 +983,14 @@ static int UsbDdkPnpLoaderEventSend(const struct HdfIoService *serv, const char 
     int replyData = 0;
     struct HdfSBuf *data = NULL;
 
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         ret = HDF_DEV_ERR_NO_MEMORY;
         HDF_LOGE("%s: fail to obtain sbuf data", __func__);
         return ret;
     }
 
-    struct HdfSBuf *reply = HdfSBufObtainDefaultSize();
+    struct HdfSBuf *reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         ret = HDF_DEV_ERR_NO_MEMORY;
         HDF_LOGE("%s: fail to obtain sbuf reply", __func__);
@@ -1018,8 +1018,8 @@ static int UsbDdkPnpLoaderEventSend(const struct HdfIoService *serv, const char 
     HDF_LOGI("%s:%d get reply is 0x%x", __func__, __LINE__, replyData);
 
 OUT:
-    HdfSBufRecycle(data);
-    HdfSBufRecycle(reply);
+    HdfSbufRecycle(data);
+    HdfSbufRecycle(reply);
 
     return ret;
 }

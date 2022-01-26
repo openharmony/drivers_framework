@@ -68,7 +68,7 @@ static int32_t PcieUserRead(DevHandle handle, uint32_t pos, uint8_t *data, uint3
         return HDF_ERR_INVALID_PARAM;
     }
 
-    buf = HdfSBufObtainDefaultSize();
+    buf = HdfSbufObtainDefaultSize();
     if (buf == NULL) {
         HDF_LOGE("PcieUserRead: failed to obtain buf");
         ret = HDF_ERR_MALLOC_FAIL;
@@ -85,7 +85,7 @@ static int32_t PcieUserRead(DevHandle handle, uint32_t pos, uint8_t *data, uint3
         goto EXIT;
     }
 
-    reply = HdfSBufObtainDefaultSize();
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("PcieUserRead: failed to obtain reply");
         ret = HDF_ERR_MALLOC_FAIL;
@@ -101,10 +101,10 @@ static int32_t PcieUserRead(DevHandle handle, uint32_t pos, uint8_t *data, uint3
 
 EXIT :
     if (reply != NULL) {
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
     }
     if (buf != NULL) {
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
     }
     return ret;
 }
@@ -119,7 +119,7 @@ static int32_t PcieUserWrite(DevHandle handle, uint32_t pos, uint8_t *data, uint
         HDF_LOGE("PcieUserWrite: service is invalid");
         return HDF_ERR_INVALID_PARAM;
     }
-    buf = HdfSBufObtainDefaultSize();
+    buf = HdfSbufObtainDefaultSize();
     if (buf == NULL) {
         HDF_LOGE("PcieUserWrite: failed to obtain buf");
         return HDF_ERR_MALLOC_FAIL;
@@ -140,7 +140,7 @@ static int32_t PcieUserWrite(DevHandle handle, uint32_t pos, uint8_t *data, uint
         HDF_LOGE("PcieUserWrite: failed to write, ret %d", ret);
     }
 EXIT:
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 #endif

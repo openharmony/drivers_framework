@@ -137,7 +137,7 @@ static struct HdfSBuf *HdfSbufCopyFromUser(uintptr_t data, size_t size)
     struct HdfSBuf *sbuf = NULL;
 
     if (size == 0) {
-        return HdfSBufObtain(VOID_DATA_SIZE);
+        return HdfSbufObtain(VOID_DATA_SIZE);
     }
 
     kData = OsalMemAlloc(size);
@@ -151,7 +151,7 @@ static struct HdfSBuf *HdfSbufCopyFromUser(uintptr_t data, size_t size)
         return NULL;
     }
 
-    sbuf = HdfSBufBind((uintptr_t)kData, size);
+    sbuf = HdfSbufBind((uintptr_t)kData, size);
     if (sbuf == NULL) {
         OsalMemFree(kData);
     }
@@ -185,7 +185,7 @@ static void DevEventFree(struct HdfDevEvent *event)
         return;
     }
     if (event->data != NULL) {
-        HdfSBufRecycle(event->data);
+        HdfSbufRecycle(event->data);
         event->data = NULL;
     }
     OsalMemFree(event);
@@ -221,18 +221,18 @@ static int HdfVNodeAdapterServCall(const struct HdfVNodeAdapterClient *client, u
         HDF_LOGE("vnode adapter bind data is null");
         return HDF_FAILURE;
     }
-    reply = HdfSBufObtainDefaultSize();
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("%s: oom", __func__);
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
     (void)HdfSbufWriteUint64(reply, (uintptr_t)&client->ioServiceClient);
     ret = client->adapter->ioService.dispatcher->Dispatch(client->adapter->ioService.target,
         bwr.cmdCode, data, reply);
     if (bwr.readSize != 0 && HdfSbufCopyToUser(reply, (void*)(uintptr_t)bwr.readBuffer, bwr.readSize) != HDF_SUCCESS) {
-        HdfSBufRecycle(data);
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(data);
+        HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
     bwr.readConsumed = HdfSbufGetDataSize(reply);
@@ -241,8 +241,8 @@ static int HdfVNodeAdapterServCall(const struct HdfVNodeAdapterClient *client, u
         ret = HDF_FAILURE;
     }
 
-    HdfSBufRecycle(data);
-    HdfSBufRecycle(reply);
+    HdfSbufRecycle(data);
+    HdfSbufRecycle(reply);
     return ret;
 }
 
@@ -330,7 +330,7 @@ static int VNodeAdapterSendDevEventToClient(struct HdfVNodeAdapterClient *vnodeC
         return HDF_DEV_ERR_NO_MEMORY;
     }
     event->id = id;
-    event->data = HdfSBufCopy(data);
+    event->data = HdfSbufCopy(data);
     if (event->data == NULL) {
         OsalMutexUnlock(&vnodeClient->mutex);
         HDF_LOGE("%s: sbuf oom", __func__);

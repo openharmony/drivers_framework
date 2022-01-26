@@ -47,7 +47,7 @@ int32_t EmmcServiceGetCid(struct HdfIoService *service, uint8_t *cid, uint32_t s
     int32_t ret;
     struct HdfSBuf *reply = NULL;
 
-    reply = HdfSBufObtainDefaultSize();
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("EmmcServiceGetCid: failed to obtain reply!");
         ret = HDF_ERR_MALLOC_FAIL;
@@ -74,7 +74,7 @@ int32_t EmmcServiceGetCid(struct HdfIoService *service, uint8_t *cid, uint32_t s
 
 __EXIT:
     if (reply != NULL) {
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
     }
     return ret;
 }

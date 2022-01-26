@@ -39,7 +39,7 @@ typedef uint16_t char16_t;
 #endif /* __cplusplus */
 
 struct HdfSBuf;
-struct HdfSbufImpl;
+struct HdfSBufImpl;
 struct HdfRemoteService;
 
 /**
@@ -235,7 +235,7 @@ bool HdfSbufWriteFileDescriptor(struct HdfSBuf *sbuf, int fd);
  *
  * @since 1.0
  */
-int32_t HdfSBufWriteRemoteService(struct HdfSBuf *sbuf, const struct HdfRemoteService *service);
+int32_t HdfSbufWriteRemoteService(struct HdfSBuf *sbuf, const struct HdfRemoteService *service);
 
 /**
  * @brief Reads an IPC service from a <b>SBuf</b>.
@@ -247,7 +247,7 @@ int32_t HdfSBufWriteRemoteService(struct HdfSBuf *sbuf, const struct HdfRemoteSe
  *
  * @since 1.0
  */
-struct HdfRemoteService *HdfSBufReadRemoteService(struct HdfSBuf *sbuf);
+struct HdfRemoteService *HdfSbufReadRemoteService(struct HdfSBuf *sbuf);
 
 /**
  * @brief Reads a file descriptor from a <b>SBuf</b>.
@@ -295,7 +295,7 @@ bool HdfSbufReadFloat(struct HdfSBuf *sbuf, float *value);
  *
  * @since 1.0
  */
-const char16_t *HdfSBufReadString16(struct HdfSBuf *sbuf);
+const char16_t *HdfSbufReadString16(struct HdfSBuf *sbuf);
 
 /**
  * @brief Reads a data segment from a <b>SBuf</b>.
@@ -479,7 +479,7 @@ void HdfSbufSetDataSize(struct HdfSBuf *sbuf, size_t size);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufObtain(size_t capacity);
+struct HdfSBuf *HdfSbufObtain(size_t capacity);
 
 /**
  * @brief Obtains a <b>SBuf</b> instance of the default capacity (256 bytes).
@@ -488,7 +488,7 @@ struct HdfSBuf *HdfSBufObtain(size_t capacity);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufObtainDefaultSize(void);
+struct HdfSBuf *HdfSbufObtainDefaultSize(void);
 
 /**
  * @brief Creates a <b>SBuf</b> instance with the specified data and size.
@@ -501,7 +501,7 @@ struct HdfSBuf *HdfSBufObtainDefaultSize(void);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufBind(uintptr_t base, size_t size);
+struct HdfSBuf *HdfSbufBind(uintptr_t base, size_t size);
 
 /**
  * @brief Releases a <b>SBuf</b>.
@@ -510,7 +510,7 @@ struct HdfSBuf *HdfSBufBind(uintptr_t base, size_t size);
  *
  * @since 1.0
  */
-void HdfSBufRecycle(struct HdfSBuf *sbuf);
+void HdfSbufRecycle(struct HdfSBuf *sbuf);
 
 /**
  * @brief Creates a <b>SBuf</b> instance with an original <b>SBuf</b>.
@@ -521,7 +521,7 @@ void HdfSBufRecycle(struct HdfSBuf *sbuf);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufMove(struct HdfSBuf *sbuf);
+struct HdfSBuf *HdfSbufMove(struct HdfSBuf *sbuf);
 
 /**
  * @brief Creates a <b>SBuf</b> instance with an original <b>SBuf</b>.
@@ -532,11 +532,11 @@ struct HdfSBuf *HdfSBufMove(struct HdfSBuf *sbuf);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufCopy(const struct HdfSBuf *sbuf);
+struct HdfSBuf *HdfSbufCopy(const struct HdfSBuf *sbuf);
 
 /**
  * @brief Transfers the data ownership to a <b>SBuf</b>. Once the <b>SBuf</b> is released,
- * the bound data memory is also released. This function is used together with {@link HdfSBufBind}.
+ * the bound data memory is also released. This function is used together with {@link HdfSbufBind}.
  *
  * @param sbuf Indicates the pointer to the target <b>SBuf</b>.
  *
@@ -552,7 +552,7 @@ void HdfSbufTransDataOwnership(struct HdfSBuf *sbuf);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufTypedObtain(uint32_t type);
+struct HdfSBuf *HdfSbufTypedObtain(uint32_t type);
 
 /**
  * @brief Obtains a <b>SBuf</b> instance of a specified type based on the implementation of an existing <b>SBuf</b>.
@@ -563,7 +563,7 @@ struct HdfSBuf *HdfSBufTypedObtain(uint32_t type);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufTypedObtainInplace(uint32_t type, struct HdfSbufImpl *impl);
+struct HdfSBuf *HdfSbufTypedObtainInplace(uint32_t type, struct HdfSBufImpl *impl);
 
 /**
  * @brief Obtains a <b>SBuf</b> instance of a specified type with the given initial capacity.
@@ -574,7 +574,7 @@ struct HdfSBuf *HdfSBufTypedObtainInplace(uint32_t type, struct HdfSbufImpl *imp
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufTypedObtainCapacity(uint32_t type, size_t capacity);
+struct HdfSBuf *HdfSbufTypedObtainCapacity(uint32_t type, size_t capacity);
 
 /**
  * @brief Creates a <b>SBuf</b> instance of a specified type with the specified data and size.
@@ -588,7 +588,7 @@ struct HdfSBuf *HdfSBufTypedObtainCapacity(uint32_t type, size_t capacity);
  *
  * @since 1.0
  */
-struct HdfSBuf *HdfSBufTypedBind(uint32_t type, uintptr_t base, size_t size);
+struct HdfSBuf *HdfSbufTypedBind(uint32_t type, uintptr_t base, size_t size);
 
 /**
  * @brief Obtains the implementation of a <b>SBuf</b>.
@@ -598,7 +598,7 @@ struct HdfSBuf *HdfSBufTypedBind(uint32_t type, uintptr_t base, size_t size);
  *
  * @since 1.0
  */
-struct HdfSbufImpl *HdfSbufGetImpl(struct HdfSBuf *sbuf);
+struct HdfSBufImpl *HdfSbufGetImpl(struct HdfSBuf *sbuf);
 
 #ifdef __cplusplus
 }

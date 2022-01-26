@@ -32,7 +32,7 @@ static int32_t DacTestGetConfig(struct DacTestConfig *config)
         return HDF_ERR_NOT_SUPPORT;
     }
 
-    reply = HdfSBufObtain(sizeof(*config) + sizeof(uint64_t));
+    reply = HdfSbufObtain(sizeof(*config) + sizeof(uint64_t));
     if (reply == NULL) {
         HDF_LOGE("%s: failed to obtain reply", __func__);
         return HDF_ERR_MALLOC_FAIL;
@@ -46,22 +46,22 @@ static int32_t DacTestGetConfig(struct DacTestConfig *config)
 
     if (!HdfSbufReadBuffer(reply, &buf, &len)) {
         HDF_LOGE("%s: read buf failed", __func__);
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
 
     if (len != sizeof(*config)) {
         HDF_LOGE("%s: config size:%zu, read size:%u", __func__, sizeof(*config), len);
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
 
     if (memcpy_s(config, sizeof(*config), buf, sizeof(*config)) != EOK) {
         HDF_LOGE("%s: memcpy buf failed", __func__);
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
-    HdfSBufRecycle(reply);
+    HdfSbufRecycle(reply);
     HDF_LOGD("%s: exit", __func__);
     return HDF_SUCCESS;
 }

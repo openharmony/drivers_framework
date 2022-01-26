@@ -129,14 +129,14 @@ static int32_t HdmiUserAvmuteSet(DevHandle handle, bool enable)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    buf = HdfSBufObtain(sizeof(enable));
+    buf = HdfSbufObtain(sizeof(enable));
     if (buf == NULL) {
         HDF_LOGE("HdmiUserAvmuteSet: failed to obtain buf");
         return HDF_ERR_MALLOC_FAIL;
     }
     if (!HdfSbufWriteBuffer(buf, &enable, sizeof(enable))) {
         HDF_LOGE("HdmiUserAvmuteSet: sbuf write buffer failed");
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
         return HDF_ERR_IO;
     }
 
@@ -144,7 +144,7 @@ static int32_t HdmiUserAvmuteSet(DevHandle handle, bool enable)
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("HdmiUserAvmuteSet: failed to write, ret %d", ret);
     }
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 
@@ -159,14 +159,14 @@ static int32_t HdmiUserDeepColorSet(DevHandle handle, enum HdmiDeepColor color)
         return HDF_ERR_INVALID_PARAM;
     }
 
-    buf = HdfSBufObtain(sizeof(color));
+    buf = HdfSbufObtain(sizeof(color));
     if (buf == NULL) {
         HDF_LOGE("HdmiUserDeepColorSet: failed to obtain buf");
         return HDF_ERR_MALLOC_FAIL;
     }
     if (!HdfSbufWriteBuffer(buf, &color, sizeof(color))) {
         HDF_LOGE("HdmiUserDeepColorSet: sbuf write color failed");
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
         return HDF_ERR_IO;
     }
 
@@ -174,7 +174,7 @@ static int32_t HdmiUserDeepColorSet(DevHandle handle, enum HdmiDeepColor color)
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("HdmiUserDeepColorSet: failed to write, ret %d", ret);
     }
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 
@@ -192,14 +192,14 @@ static int32_t HdmiUserSetVideoAttribute(DevHandle handle, struct HdmiVideoAttr 
         return HDF_ERR_INVALID_PARAM;
     }
 
-    buf = HdfSBufObtain(sizeof(struct HdmiVideoAttr));
+    buf = HdfSbufObtain(sizeof(struct HdmiVideoAttr));
     if (buf == NULL) {
         HDF_LOGE("HdmiUserSetVideoAttribute: failed to obtain buf");
         return HDF_ERR_MALLOC_FAIL;
     }
     if (!HdfSbufWriteBuffer(buf, attr, sizeof(struct HdmiVideoAttr))) {
         HDF_LOGE("HdmiUserSetVideoAttribute: sbuf write attr failed");
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
         return HDF_ERR_IO;
     }
 
@@ -207,7 +207,7 @@ static int32_t HdmiUserSetVideoAttribute(DevHandle handle, struct HdmiVideoAttr 
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("HdmiUserSetVideoAttribute: failed to write, ret %d", ret);
     }
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 
@@ -226,14 +226,14 @@ static int32_t HdmiUserSetAudioAttribute(DevHandle handle, struct HdmiAudioAttr 
         return HDF_ERR_INVALID_PARAM;
     }
 
-    buf = HdfSBufObtain(sizeof(struct HdmiAudioAttr));
+    buf = HdfSbufObtain(sizeof(struct HdmiAudioAttr));
     if (buf == NULL) {
         HDF_LOGE("HdmiUserSetAudioAttribute: failed to obtain buf");
         return HDF_ERR_MALLOC_FAIL;
     }
     if (!HdfSbufWriteBuffer(buf, attr, sizeof(struct HdmiAudioAttr))) {
         HDF_LOGE("HdmiUserSetAudioAttribute: sbuf write attr failed");
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
         return HDF_ERR_IO;
     }
 
@@ -241,7 +241,7 @@ static int32_t HdmiUserSetAudioAttribute(DevHandle handle, struct HdmiAudioAttr 
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("HdmiUserSetAudioAttribute: failed to write, ret %d", ret);
     }
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 
@@ -260,14 +260,14 @@ static int32_t HdmiUserSetHdrAttribute(DevHandle handle, struct HdmiHdrAttr *att
         return HDF_ERR_INVALID_PARAM;
     }
 
-    buf = HdfSBufObtain(sizeof(struct HdmiHdrAttr));
+    buf = HdfSbufObtain(sizeof(struct HdmiHdrAttr));
     if (buf == NULL) {
         HDF_LOGE("HdmiUserSetHdrAttribute: failed to obtain buf");
         return HDF_ERR_MALLOC_FAIL;
     }
     if (!HdfSbufWriteBuffer(buf, attr, sizeof(struct HdmiHdrAttr))) {
         HDF_LOGE("HdmiUserSetHdrAttribute: sbuf write attr failed");
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
         return HDF_ERR_IO;
     }
 
@@ -275,7 +275,7 @@ static int32_t HdmiUserSetHdrAttribute(DevHandle handle, struct HdmiHdrAttr *att
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("HdmiUserSetAudioAttribute: failed to write, ret %d", ret);
     }
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 
@@ -294,7 +294,7 @@ static int32_t HdmiUserDeepColorGet(DevHandle handle, enum HdmiDeepColor *color)
     }
 
     /* Four bytes are used to store the buffer length, and four bytes are used to align the memory. */
-    reply = HdfSBufObtain(sizeof(*color) + sizeof(uint64_t));
+    reply = HdfSbufObtain(sizeof(*color) + sizeof(uint64_t));
     if (reply == NULL) {
         HDF_LOGE("HdmiUserDeepColorGet: failed to obtain reply");
         ret = HDF_ERR_MALLOC_FAIL;
@@ -310,7 +310,7 @@ static int32_t HdmiUserDeepColorGet(DevHandle handle, enum HdmiDeepColor *color)
 
 __EXIT :
     if (reply != NULL) {
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
     }
     return ret;
 }
@@ -329,7 +329,7 @@ static int32_t HdmiUserGetSinkEdid(DevHandle handle, uint8_t *buffer, uint32_t l
         return HDF_ERR_INVALID_PARAM;
     }
 
-    reply = HdfSBufObtain(len);
+    reply = HdfSbufObtain(len);
     if (reply == NULL) {
         HDF_LOGE("HdmiUserGetSinkEdid: failed to obtain reply");
         ret = HDF_ERR_MALLOC_FAIL;
@@ -345,7 +345,7 @@ static int32_t HdmiUserGetSinkEdid(DevHandle handle, uint8_t *buffer, uint32_t l
 
 __EXIT :
     if (reply != NULL) {
-        HdfSBufRecycle(reply);
+        HdfSbufRecycle(reply);
     }
     return ret;
 }
@@ -365,14 +365,14 @@ static int32_t HdmiUserRegisterHpdCallbackFunc(DevHandle handle, struct HdmiHpdC
         return HDF_ERR_INVALID_PARAM;
     }
 
-    buf = HdfSBufObtain(sizeof(uint32_t));
+    buf = HdfSbufObtain(sizeof(uint32_t));
     if (buf == NULL) {
         HDF_LOGE("HdmiUserRegisterHpdCallbackFunc: failed to obtain buf");
         return HDF_ERR_MALLOC_FAIL;
     }
     if (!HdfSbufWriteBuffer(buf, (void *)&addr, sizeof(uint32_t))) {
         HDF_LOGE("HdmiUserRegisterHpdCallbackFunc: sbuf write attr failed");
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
         return HDF_ERR_IO;
     }
 
@@ -380,7 +380,7 @@ static int32_t HdmiUserRegisterHpdCallbackFunc(DevHandle handle, struct HdmiHpdC
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("HdmiUserRegisterHpdCallbackFunc: failed to write, ret %d", ret);
     }
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 

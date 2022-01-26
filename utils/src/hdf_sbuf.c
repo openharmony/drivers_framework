@@ -37,16 +37,16 @@
     } while (0)
 
 struct HdfSBuf {
-    struct HdfSbufImpl *impl;
+    struct HdfSBufImpl *impl;
     uint32_t type;
 };
 
-struct HdfSbufImpl *SbufObtainRaw(size_t capacity);
-struct HdfSbufImpl *SbufBindRaw(uintptr_t base, size_t size);
-struct HdfSbufImpl *SbufObtainIpc(size_t capacity) __attribute__((weak));
-struct HdfSbufImpl *SbufBindIpc(uintptr_t base, size_t size) __attribute__((weak));
-struct HdfSbufImpl *SbufObtainIpcHw(size_t capacity) __attribute__((weak));
-struct HdfSbufImpl *SbufBindRawIpcHw(uintptr_t base, size_t size) __attribute__((weak));
+struct HdfSBufImpl *SbufObtainRaw(size_t capacity);
+struct HdfSBufImpl *SbufBindRaw(uintptr_t base, size_t size);
+struct HdfSBufImpl *SbufObtainIpc(size_t capacity) __attribute__((weak));
+struct HdfSBufImpl *SbufBindIpc(uintptr_t base, size_t size) __attribute__((weak));
+struct HdfSBufImpl *SbufObtainIpcHw(size_t capacity) __attribute__((weak));
+struct HdfSBufImpl *SbufBindRawIpcHw(uintptr_t base, size_t size) __attribute__((weak));
 
 static const struct HdfSbufConstructor g_sbufConstructorMap[SBUF_TYPE_MAX] = {
     [SBUF_RAW] = {
@@ -250,19 +250,19 @@ bool HdfSBufWriteString16(struct HdfSBuf *sbuf, const char16_t *value, uint32_t 
     return sbuf->impl->writeString16(sbuf->impl, value, size);
 }
 
-const char16_t *HdfSBufReadString16(struct HdfSBuf *sbuf)
+const char16_t *HdfSbufReadString16(struct HdfSBuf *sbuf)
 {
     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readString16, NULL);
     return sbuf->impl->readString16(sbuf->impl);
 }
 
-int32_t HdfSBufWriteRemoteService(struct HdfSBuf *sbuf, const struct HdfRemoteService *service)
+int32_t HdfSbufWriteRemoteService(struct HdfSBuf *sbuf, const struct HdfRemoteService *service)
 {
     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, writeRemoteService, false);
     return sbuf->impl->writeRemoteService(sbuf->impl, service);
 }
 
-struct HdfRemoteService *HdfSBufReadRemoteService(struct HdfSBuf *sbuf)
+struct HdfRemoteService *HdfSbufReadRemoteService(struct HdfSBuf *sbuf)
 {
     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, readRemoteService, NULL);
     return sbuf->impl->readRemoteService(sbuf->impl);
@@ -304,7 +304,7 @@ bool HdfSbufReadFloat(struct HdfSBuf *sbuf, float *data)
     return sbuf->impl->readFloat(sbuf->impl, data);
 }
 
-struct HdfSBuf *HdfSBufTypedObtainCapacity(uint32_t type, size_t capacity)
+struct HdfSBuf *HdfSbufTypedObtainCapacity(uint32_t type, size_t capacity)
 {
     struct HdfSBuf *sbuf = NULL;
     const struct HdfSbufConstructor *constructor = HdfSbufConstructorGet(type);
@@ -333,7 +333,7 @@ struct HdfSBuf *HdfSBufTypedObtainCapacity(uint32_t type, size_t capacity)
     return sbuf;
 }
 
-struct HdfSBuf *HdfSBufTypedObtainInplace(uint32_t type, struct HdfSbufImpl *impl)
+struct HdfSBuf *HdfSbufTypedObtainInplace(uint32_t type, struct HdfSBufImpl *impl)
 {
     struct HdfSBuf *sbuf = NULL;
     if (type >= SBUF_TYPE_MAX || impl == NULL) {
@@ -351,12 +351,12 @@ struct HdfSBuf *HdfSBufTypedObtainInplace(uint32_t type, struct HdfSbufImpl *imp
     return sbuf;
 }
 
-struct HdfSBuf *HdfSBufTypedObtain(uint32_t type)
+struct HdfSBuf *HdfSbufTypedObtain(uint32_t type)
 {
-    return HdfSBufTypedObtainCapacity(type, HDF_SBUF_DEFAULT_SIZE);
+    return HdfSbufTypedObtainCapacity(type, HDF_SBUF_DEFAULT_SIZE);
 }
 
-struct HdfSBuf *HdfSBufTypedBind(uint32_t type, uintptr_t base, size_t size)
+struct HdfSBuf *HdfSbufTypedBind(uint32_t type, uintptr_t base, size_t size)
 {
     struct HdfSBuf *sbuf = NULL;
     const struct HdfSbufConstructor *constructor = HdfSbufConstructorGet(type);
@@ -386,22 +386,27 @@ struct HdfSBuf *HdfSBufTypedBind(uint32_t type, uintptr_t base, size_t size)
     return sbuf;
 }
 
-struct HdfSBuf *HdfSBufObtain(size_t capacity)
+struct HdfSBuf *HdfSbufObtain(size_t capacity)
 {
-    return HdfSBufTypedObtainCapacity(SBUF_RAW, capacity);
+    return HdfSbufTypedObtainCapacity(SBUF_RAW, capacity);
+}
+
+struct HdfSBuf *HdfSbufObtainDefaultSize()
+{
+    return HdfSbufObtain(HDF_SBUF_DEFAULT_SIZE);
 }
 
 struct HdfSBuf *HdfSBufObtainDefaultSize()
 {
-    return HdfSBufObtain(HDF_SBUF_DEFAULT_SIZE);
+    return HdfSbufObtain(HDF_SBUF_DEFAULT_SIZE);
 }
 
-struct HdfSBuf *HdfSBufBind(uintptr_t base, size_t size)
+struct HdfSBuf *HdfSbufBind(uintptr_t base, size_t size)
 {
-    return HdfSBufTypedBind(SBUF_RAW, base, size);
+    return HdfSbufTypedBind(SBUF_RAW, base, size);
 }
 
-struct HdfSBuf *HdfSBufCopy(const struct HdfSBuf *sbuf)
+struct HdfSBuf *HdfSbufCopy(const struct HdfSBuf *sbuf)
 {
     struct HdfSBuf *newBuf = NULL;
     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, copy, NULL);
@@ -418,7 +423,7 @@ struct HdfSBuf *HdfSBufCopy(const struct HdfSBuf *sbuf)
     return newBuf;
 }
 
-struct HdfSBuf *HdfSBufMove(struct HdfSBuf *sbuf)
+struct HdfSBuf *HdfSbufMove(struct HdfSBuf *sbuf)
 {
     struct HdfSBuf *newBuf = NULL;
     HDF_SBUF_IMPL_CHECK_RETURN(sbuf, move, NULL);
@@ -440,6 +445,17 @@ void HdfSbufTransDataOwnership(struct HdfSBuf *sbuf)
     sbuf->impl->transDataOwnership(sbuf->impl);
 }
 
+void HdfSbufRecycle(struct HdfSBuf *sbuf)
+{
+    if (sbuf != NULL) {
+        if (sbuf->impl != NULL && sbuf->impl->recycle != NULL) {
+            sbuf->impl->recycle(sbuf->impl);
+            sbuf->impl = NULL;
+        }
+        OsalMemFree(sbuf);
+    }
+}
+
 void HdfSBufRecycle(struct HdfSBuf *sbuf)
 {
     if (sbuf != NULL) {
@@ -451,7 +467,7 @@ void HdfSBufRecycle(struct HdfSBuf *sbuf)
     }
 }
 
-struct HdfSbufImpl *HdfSbufGetImpl(struct HdfSBuf *sbuf)
+struct HdfSBufImpl *HdfSbufGetImpl(struct HdfSBuf *sbuf)
 {
     if (sbuf != NULL) {
         return sbuf->impl;

@@ -158,7 +158,7 @@ static ErrorCode SideCarSendAsyncMessageInner(const Service *sideCar, ServiceId 
     if (context == NULL) {
         return ME_ERROR_NULL_PTR;
     }
-    rspData = HdfSBufObtainDefaultSize();
+    rspData = HdfSbufObtainDefaultSize();
     if (rspData == NULL) {
         OsalMemFree(context);
         return HDF_FAILURE;
@@ -180,7 +180,7 @@ static ErrorCode SideCarSendAsyncMessageInner(const Service *sideCar, ServiceId 
         targetService->Disref(targetService);
     }
     if (errCode != ME_SUCCESS) {
-        HdfSBufRecycle(rspData);
+        HdfSbufRecycle(rspData);
         OsalMemFree(context);
     }
     return errCode;

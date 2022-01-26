@@ -129,7 +129,7 @@ static int32_t UartUserReceive(DevHandle handle, void *data, uint32_t size, enum
         return HDF_ERR_INVALID_PARAM;
     }
     /* Four bytes are used to store the buffer length, and four bytes are used to align the memory. */
-    reply = HdfSBufObtain(size + sizeof(uint64_t));
+    reply = HdfSbufObtain(size + sizeof(uint64_t));
     if (reply == NULL) {
         HDF_LOGE("%s: failed to obtain reply", __func__);
         return HDF_ERR_MALLOC_FAIL;
@@ -158,7 +158,7 @@ static int32_t UartUserReceive(DevHandle handle, void *data, uint32_t size, enum
         ret = (int32_t)rLen;
     }
 __EXIT:
-    HdfSBufRecycle(reply);
+    HdfSbufRecycle(reply);
     return ret;
 }
 
@@ -172,14 +172,14 @@ static int32_t UartUserSend(DevHandle handle, void *data, uint32_t size, enum Ua
         HDF_LOGE("%s: service is invalid", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    buf = HdfSBufObtain(size);
+    buf = HdfSbufObtain(size);
     if (buf == NULL) {
         HDF_LOGE("%s: failed to obtain buf", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
     if (!HdfSbufWriteBuffer(buf, data, size)) {
         HDF_LOGE("%s: sbuf write buffer failed", __func__);
-        HdfSBufRecycle(buf);
+        HdfSbufRecycle(buf);
         return HDF_ERR_IO;
     }
 
@@ -187,7 +187,7 @@ static int32_t UartUserSend(DevHandle handle, void *data, uint32_t size, enum Ua
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to write, ret %d", __func__, ret);
     }
-    HdfSBufRecycle(buf);
+    HdfSbufRecycle(buf);
     return ret;
 }
 #endif

@@ -32,7 +32,7 @@ void ReleaseMessageContext(MessageContext *context)
         return;
     }
     if (context->rspData != NULL) {
-        HdfSBufRecycle(context->rspData);
+        HdfSbufRecycle(context->rspData);
         context->rspData = NULL;
     }
 
@@ -40,7 +40,7 @@ void ReleaseMessageContext(MessageContext *context)
         (context->requestType != MESSAGE_TYPE_SYNC_REQ && context->requestType != MESSAGE_TYPE_SYNC_RSP)) {
         // Sync request message may use stack mem.Memory is managed by user
         if (context->reqData != NULL) {
-            HdfSBufRecycle(context->reqData);
+            HdfSbufRecycle(context->reqData);
             context->reqData = NULL;
         }
         OsalMemFree(context);

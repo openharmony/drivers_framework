@@ -23,7 +23,7 @@ int32_t HdfLoadDriverByServiceName(const char *serviceName)
         HDF_LOGE("failed to get %s service", DEV_MGR_NODE);
         return ret;
     }
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("failed to obtain sbuf data");
         ret = HDF_DEV_ERR_NO_MEMORY;
@@ -40,7 +40,7 @@ int32_t HdfLoadDriverByServiceName(const char *serviceName)
     }
 out:
     HdfIoServiceRecycle(ioService);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 
@@ -57,7 +57,7 @@ int32_t HdfGetServiceNameByDeviceClass(DeviceClass deviceClass, struct HdfSBuf *
         HDF_LOGE("failed to get %s service", DEV_MGR_NODE);
         return ret;
     }
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("failed to obtain sbuf data");
         ret = HDF_DEV_ERR_NO_MEMORY;
@@ -74,7 +74,7 @@ int32_t HdfGetServiceNameByDeviceClass(DeviceClass deviceClass, struct HdfSBuf *
     }
 out:
     HdfIoServiceRecycle(ioService);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
     return ret;
 }
 

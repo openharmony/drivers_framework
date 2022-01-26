@@ -245,9 +245,9 @@ protected:
   */
 HWTEST_F(HdfSBufTest, SbufTestObtain001, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtain(DEFAULT_SBUF_SIZE);
+    HdfSBuf *sBuf = HdfSbufObtain(DEFAULT_SBUF_SIZE);
     ASSERT_NE(sBuf, nullptr);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -258,11 +258,11 @@ HWTEST_F(HdfSBufTest, SbufTestObtain001, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestWriteUint64002, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     auto ret = HdfSbufWriteInt64(sBuf, INT64_MAX);
     ASSERT_EQ(ret, true);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -273,13 +273,13 @@ HWTEST_F(HdfSBufTest, SbufTestWriteUint64002, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestWriteUint64Loop003, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     for (int i = 0; i < DEFAULT_BIG_LOOP_COUNT; ++i) {
         auto ret = HdfSbufWriteInt64(sBuf, INT64_MAX);
         ASSERT_EQ(ret, true);
     }
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -290,14 +290,14 @@ HWTEST_F(HdfSBufTest, SbufTestWriteUint64Loop003, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestReadUint64Loop004, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     int loop = DEFAULT_BIG_LOOP_COUNT;
     for (int i = 0; i < loop; ++i) {
         auto ret = HdfSbufWriteInt64(sBuf, INT64_MAX);
         ASSERT_EQ(ret, true);
     }
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
     uint64_t val = 0;
     for (int j = 0; j < loop; ++j) {
@@ -308,8 +308,8 @@ HWTEST_F(HdfSBufTest, SbufTestReadUint64Loop004, TestSize.Level1)
     }
     auto ret = HdfSbufReadUint64(readBuf, &val);
     ASSERT_EQ(ret, false);
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -320,7 +320,7 @@ HWTEST_F(HdfSBufTest, SbufTestReadUint64Loop004, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestInt8005, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -331,7 +331,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt8005, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int8_t val = 0;
@@ -341,8 +341,8 @@ HWTEST_F(HdfSBufTest, SbufTestInt8005, TestSize.Level1)
         ASSERT_EQ(ret, true);
         ASSERT_EQ(val, INT8_MAX);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -353,7 +353,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt8005, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestInt16006, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -364,7 +364,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt16006, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int16_t val = 0;
@@ -374,8 +374,8 @@ HWTEST_F(HdfSBufTest, SbufTestInt16006, TestSize.Level1)
         ASSERT_EQ(ret, true);
         ASSERT_EQ(val, INT16_MAX);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -386,7 +386,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt16006, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestInt32007, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -397,7 +397,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt32007, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int32_t val = 0;
@@ -407,8 +407,8 @@ HWTEST_F(HdfSBufTest, SbufTestInt32007, TestSize.Level1)
         ASSERT_EQ(ret, true);
         ASSERT_EQ(val, INT32_MAX);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -419,7 +419,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt32007, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestInt64008, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -430,7 +430,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt64008, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint64_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     int64_t val = 0;
@@ -440,8 +440,8 @@ HWTEST_F(HdfSBufTest, SbufTestInt64008, TestSize.Level1)
         ASSERT_EQ(ret, true);
         ASSERT_EQ(val, INT64_MAX);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -452,7 +452,7 @@ HWTEST_F(HdfSBufTest, SbufTestInt64008, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestUInt32009, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -463,7 +463,7 @@ HWTEST_F(HdfSBufTest, SbufTestUInt32009, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     uint32_t val = 0;
@@ -473,8 +473,8 @@ HWTEST_F(HdfSBufTest, SbufTestUInt32009, TestSize.Level1)
         ASSERT_EQ(ret, true);
         ASSERT_EQ(val, UINT32_MAX);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -485,7 +485,7 @@ HWTEST_F(HdfSBufTest, SbufTestUInt32009, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestUInt16010, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -496,7 +496,7 @@ HWTEST_F(HdfSBufTest, SbufTestUInt16010, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     uint16_t val = 0;
@@ -506,8 +506,8 @@ HWTEST_F(HdfSBufTest, SbufTestUInt16010, TestSize.Level1)
         ASSERT_EQ(ret, true);
         ASSERT_EQ(val, UINT16_MAX);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -518,7 +518,7 @@ HWTEST_F(HdfSBufTest, SbufTestUInt16010, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestUInt8011, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -529,7 +529,7 @@ HWTEST_F(HdfSBufTest, SbufTestUInt8011, TestSize.Level1)
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_EQ(dataSize, loop * sizeof(uint32_t));
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     uint8_t val = 0;
@@ -539,8 +539,8 @@ HWTEST_F(HdfSBufTest, SbufTestUInt8011, TestSize.Level1)
         ASSERT_EQ(ret, true);
         ASSERT_EQ(val, UINT8_MAX);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -551,7 +551,7 @@ HWTEST_F(HdfSBufTest, SbufTestUInt8011, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestString012, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = DEFAULT_LOOP_COUNT;
@@ -561,15 +561,15 @@ HWTEST_F(HdfSBufTest, SbufTestString012, TestSize.Level1)
         ASSERT_EQ(ret, true);
     }
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     for (int j = 0; j < loop; ++j) {
         const char *readStr = HdfSbufReadString(readBuf);
         ASSERT_EQ(std::string(readStr), str);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -580,7 +580,7 @@ HWTEST_F(HdfSBufTest, SbufTestString012, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestNullString013, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     auto ret = HdfSbufWriteString(sBuf, nullptr);
     ASSERT_EQ(true, ret);
@@ -588,7 +588,7 @@ HWTEST_F(HdfSBufTest, SbufTestNullString013, TestSize.Level1)
     ASSERT_EQ(true, ret);
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_NE((size_t)0, dataSize);
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
     auto val = HdfSbufReadString(readBuf);
     ASSERT_EQ(nullptr, val);
@@ -596,8 +596,8 @@ HWTEST_F(HdfSBufTest, SbufTestNullString013, TestSize.Level1)
     ret = HdfSbufReadInt32(readBuf, &intVal);
     ASSERT_EQ(true, ret);
     ASSERT_EQ(INT32_MIN, intVal);
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -608,7 +608,7 @@ HWTEST_F(HdfSBufTest, SbufTestNullString013, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestBuffer014, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     bool ret;
     int loop = 1;
@@ -618,7 +618,7 @@ HWTEST_F(HdfSBufTest, SbufTestBuffer014, TestSize.Level1)
         ASSERT_EQ(ret, true);
     }
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     for (int j = 0; j < loop; ++j) {
@@ -629,8 +629,8 @@ HWTEST_F(HdfSBufTest, SbufTestBuffer014, TestSize.Level1)
         ASSERT_EQ(readSize, str.size() + 1);
         ASSERT_EQ(std::string(data), str);
     }
-    HdfSBufRecycle(readBuf);
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -641,7 +641,7 @@ HWTEST_F(HdfSBufTest, SbufTestBuffer014, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestNullBuffer015, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
     auto ret = HdfSbufWriteBuffer(sBuf, nullptr, 0);
     ASSERT_EQ(true, ret);
@@ -649,7 +649,7 @@ HWTEST_F(HdfSBufTest, SbufTestNullBuffer015, TestSize.Level1)
     ASSERT_EQ(true, ret);
     size_t dataSize = HdfSbufGetDataSize(sBuf);
     ASSERT_NE((size_t)0, dataSize);
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
     const uint8_t *buffVal = nullptr;
     uint32_t buffLen = 0;
@@ -662,8 +662,8 @@ HWTEST_F(HdfSBufTest, SbufTestNullBuffer015, TestSize.Level1)
     ret = HdfSbufReadInt16(readBuf, &intVal);
     ASSERT_EQ(true, ret);
     ASSERT_EQ(INT16_MIN, intVal);
-    HdfSBufRecycle(sBuf);
-    HdfSBufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
 }
 
 /**
@@ -674,7 +674,7 @@ HWTEST_F(HdfSBufTest, SbufTestNullBuffer015, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestRandomDataSeq016, TestSize.Level0)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
 
     GenDataTable();
@@ -682,13 +682,13 @@ HWTEST_F(HdfSBufTest, SbufTestRandomDataSeq016, TestSize.Level0)
     bool ret = PushDataSequence(sBuf);
     ASSERT_EQ(true, ret);
 
-    HdfSBuf *readBuf = HdfSBufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
+    HdfSBuf *readBuf = HdfSbufBind((uintptr_t)HdfSbufGetData(sBuf), HdfSbufGetDataSize(sBuf));
     ASSERT_NE(readBuf, nullptr);
 
     ret = PullDataSequence(readBuf);
     ASSERT_EQ(true, ret);
-    HdfSBufRecycle(sBuf);
-    HdfSBufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
 }
 
 /**
@@ -699,7 +699,7 @@ HWTEST_F(HdfSBufTest, SbufTestRandomDataSeq016, TestSize.Level0)
   */
 HWTEST_F(HdfSBufTest, SbufTestRandomRWDataSeq017, TestSize.Level0)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
 
     GenDataTable();
@@ -721,7 +721,7 @@ HWTEST_F(HdfSBufTest, SbufTestRandomRWDataSeq017, TestSize.Level0)
     ASSERT_EQ(false, ret);
     ASSERT_EQ(0, val);
 
-    HdfSBufRecycle(sBuf);
+    HdfSbufRecycle(sBuf);
 }
 
 /**
@@ -732,7 +732,7 @@ HWTEST_F(HdfSBufTest, SbufTestRandomRWDataSeq017, TestSize.Level0)
   */
 HWTEST_F(HdfSBufTest, SbufTestSbufMove018, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
 
     GenDataTable();
@@ -746,7 +746,7 @@ HWTEST_F(HdfSBufTest, SbufTestSbufMove018, TestSize.Level1)
         ASSERT_EQ(ret, true);
     }
 
-    HdfSBuf *readBuf = HdfSBufMove(sBuf);
+    HdfSBuf *readBuf = HdfSbufMove(sBuf);
     ASSERT_NE(readBuf, nullptr);
 
     for (int j = 0; j < loop; ++j) {
@@ -757,8 +757,8 @@ HWTEST_F(HdfSBufTest, SbufTestSbufMove018, TestSize.Level1)
         ASSERT_EQ(readSize, str.size() + 1);
         ASSERT_EQ(std::string(data), str);
     }
-    HdfSBufRecycle(sBuf);
-    HdfSBufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
 }
 
 /**
@@ -769,7 +769,7 @@ HWTEST_F(HdfSBufTest, SbufTestSbufMove018, TestSize.Level1)
   */
 HWTEST_F(HdfSBufTest, SbufTestSbufMoveHalf019, TestSize.Level1)
 {
-    HdfSBuf *sBuf = HdfSBufObtainDefaultSize();
+    HdfSBuf *sBuf = HdfSbufObtainDefaultSize();
     ASSERT_NE(sBuf, nullptr);
 
     bool ret;
@@ -788,7 +788,7 @@ HWTEST_F(HdfSBufTest, SbufTestSbufMoveHalf019, TestSize.Level1)
         ASSERT_EQ(std::string(data), str);
     }
 
-    HdfSBuf *readBuf = HdfSBufMove(sBuf);
+    HdfSBuf *readBuf = HdfSbufMove(sBuf);
     ASSERT_NE(readBuf, nullptr);
 
     for (int j = 0; j < loop; ++j) {
@@ -805,6 +805,6 @@ HWTEST_F(HdfSBufTest, SbufTestSbufMoveHalf019, TestSize.Level1)
     ret = HdfSbufReadBuffer(readBuf, (const void **)(&data), &readSize);
     ASSERT_EQ(ret, false);
 
-    HdfSBufRecycle(sBuf);
-    HdfSBufRecycle(readBuf);
+    HdfSbufRecycle(sBuf);
+    HdfSbufRecycle(readBuf);
 }

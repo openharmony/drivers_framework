@@ -1253,7 +1253,7 @@ static int32_t WifiCmdResetDriver(const RequestContext *context, struct HdfSBuf 
         return HDF_ERR_INVALID_PARAM;
     }
 
-    data = HdfSBufCopy(reqData);
+    data = HdfSbufCopy(reqData);
     if (data == NULL) {
         HDF_LOGE("%s: sbuf copy fail", __func__);
         return HDF_FAILURE;
@@ -1262,7 +1262,7 @@ static int32_t WifiCmdResetDriver(const RequestContext *context, struct HdfSBuf 
     ret = g_baseService->SendAsyncMessage(g_baseService, BASE_SERVICE_ID, CMD_BASE_DO_RESET_PRIVATE, data,
         SendMessageResetDriverCallBack);
     if (ret != HDF_SUCCESS) {
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         HDF_LOGE("%s: fail to reset the driver,%d", __func__, ret);
     }
     return ret;

@@ -39,18 +39,18 @@ static void ProcessRequestParam(void)
 
     info.event = EVENT_WLAN_PARAM;
     info.value = (uint32_t)OsalGetSysTimeMs();
-    data = HdfSBufObtainDefaultSize();
+    data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("get sbuf fail");
         return;
     }
     if (!HdfSbufWriteBuffer(data, (const void *)&info, sizeof(info))) {
         HDF_LOGE("sbuf write report value fail");
-        HdfSBufRecycle(data);
+        HdfSbufRecycle(data);
         return;
     }
     HdfSoftbusBroadcastEvent(SOFTBUS_MODULE_WLAN_PARAM_MONITOR, data);
-    HdfSBufRecycle(data);
+    HdfSbufRecycle(data);
 }
 
 int32_t SoftbusWlanParamMonitorInit(struct HdfDeviceObject *device)
