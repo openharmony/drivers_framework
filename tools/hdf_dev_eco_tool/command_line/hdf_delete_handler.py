@@ -204,17 +204,16 @@ class HdfDeleteHandler(HdfCommandHandlerBase):
                             path=os.path.join(root, dot_path))
         elif key == "module_path":
             for file_name, value2 in model_info[key].items():
-                if file_name.startswith("ohos"):
-                    ohos_json_info = json.loads(
-                        hdf_utils.read_file(os.path.join(root, value2)))
+                if file_name.startswith("adapter"):
+                    file_path = os.path.join(root, value2)
+                    file_info = hdf_utils.read_file_lines(file_path)
                     delete_info = "libhdf_%s_hotplug" % model
-                    temp_list = ohos_json_info["parts"]["hdf"]["module_list"]
-                    for config_line in temp_list:
-                        if config_line.find(delete_info) > 0:
-                            ohos_json_info["parts"]["hdf"]["module_list"].\
-                                remove(config_line)
-                    hdf_utils.write_file(os.path.join(root, value2),
-                                         json.dumps(ohos_json_info, indent=4))
+
+                    for index, line_info in enumerate(file_info):
+                        if line_info.find(delete_info) > 0:
+                            file_info.pop(index)
+                            hdf_utils.write_file_lines(file_path, file_info)
+                            break
                 else:
                     if value2.endswith("hcs"):
                         hcs_path = os.path.join(root, value2)

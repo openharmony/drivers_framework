@@ -368,16 +368,20 @@ class HdfAddHandler(HdfCommandHandlerBase):
                     self._render(user_template_build,
                                  user_model_file_path, data_model)
                     linux_file_path["BUILD.gn"] = user_model_file_path
-        # ohos.build file add path
-        ohos_path = os.path.join(root, relative_path, 'ohos.build')
-        ohos_json_info = json.loads(hdf_utils.read_file(ohos_path))
+
+        # build.gn file add path
+        ohos_path = os.path.join(root, '/'.join(relative_path.split("/")[:-1]), 'build.gn')
+        user_build_info = hdf_utils.read_file_lines(ohos_path)
         ohos_template_line = "${model_path}:libhdf_${model_name}_hotplug"
         temp = Template(ohos_template_line)
         need_add_line = temp.substitute(data_model)
-        if need_add_line not in ohos_json_info["parts"]["hdf"]["module_list"]:
-            ohos_json_info["parts"]["hdf"]["module_list"].append(need_add_line)
-            hdf_utils.write_file(ohos_path, json.dumps(ohos_json_info, indent=4))
-        linux_file_path["ohos.build"] = ohos_path
+        for index, info in enumerate(user_build_info):
+            if info.find("else") > 0:
+                temp = ('      "%s",' % need_add_line) + '\n'
+                user_build_info.insert(index + 3, temp)
+                hdf_utils.write_file_lines(ohos_path, user_build_info)
+                break
+        linux_file_path["adapter_build.gn"] = ohos_path
 
         # add hcs file
         # board = "Hi3516DV300"
