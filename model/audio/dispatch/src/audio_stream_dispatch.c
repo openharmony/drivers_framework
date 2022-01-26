@@ -99,11 +99,9 @@ static int32_t HwDspDaiDispatch(const struct AudioCard *audioCard, const struct 
         return HDF_FAILURE;
     }
     struct DaiDevice *dspDai = rtd->dspDai;
-    if (dspDai == NULL || dspDai->devData == NULL || dspDai->devData->ops == NULL) {
-        ADM_LOG_ERR("dspDai param is NULL.");
-        return HDF_FAILURE;
-    }
-    if (dspDai->devData->ops->HwParams != NULL) {
+
+    if (dspDai != NULL && dspDai->devData != NULL && dspDai->devData->ops != NULL &&
+        dspDai->devData->ops->HwParams != NULL) {
         int ret = dspDai->devData->ops->HwParams(audioCard, params);
         if (ret < 0) {
             ADM_LOG_ERR("dspDai hardware params failed ret=%d", ret);

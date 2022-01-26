@@ -23,66 +23,66 @@ int32_t AudioDmaBufFree(struct PlatformData *data, enum AudioStreamType streamTy
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaRequestChannel(struct PlatformData *data)
+int32_t AudioDmaRequestChannel(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaConfigChannel != NULL) {
-        return data->ops->DmaRequestChannel(data);
+        return data->ops->DmaRequestChannel(data, streamType);
     }
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaConfigChannel(struct PlatformData *data)
+int32_t AudioDmaConfigChannel(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaConfigChannel != NULL) {
-        return data->ops->DmaConfigChannel(data);
+        return data->ops->DmaConfigChannel(data, streamType);
     }
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaPrep(struct PlatformData *data)
+int32_t AudioDmaPrep(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaPrep != NULL) {
-        return data->ops->DmaPrep(data);
+        return data->ops->DmaPrep(data, streamType);
     }
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaSubmit(struct PlatformData *data)
+int32_t AudioDmaSubmit(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaSubmit != NULL) {
-        return data->ops->DmaSubmit(data);
+        return data->ops->DmaSubmit(data, streamType);
     }
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaPending(struct PlatformData *data)
+int32_t AudioDmaPending(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaPending != NULL) {
-        return data->ops->DmaPending(data);
+        return data->ops->DmaPending(data, streamType);
     }
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaPause(struct PlatformData *data)
+int32_t AudioDmaPause(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaPause != NULL) {
-        return data->ops->DmaPause(data);
+        return data->ops->DmaPause(data, streamType);
     }
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaResume(struct PlatformData *data)
+int32_t AudioDmaResume(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaResume != NULL) {
-        return data->ops->DmaResume(data);
+        return data->ops->DmaResume(data, streamType);
     }
     return HDF_FAILURE;
 }
 
-int32_t AudioDmaPointer(struct PlatformData *data, uint32_t *pointer)
+int32_t AudioDmaPointer(struct PlatformData *data, enum AudioStreamType streamType, uint32_t *pointer)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaPointer != NULL) {
-        return data->ops->DmaPointer(data, pointer);
+        return data->ops->DmaPointer(data, streamType, pointer);
     }
     return HDF_FAILURE;
 }

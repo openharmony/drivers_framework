@@ -908,11 +908,13 @@ static void AudioSapmPowerUpSeqRun(const struct DListHead *list)
                 val = !val;
             }
             if (sapmComponent->codec != NULL) {
-                AudioUpdateCodecRegBits(sapmComponent->codec, &mixerControl, val);
+                AudioUpdateCodecRegBits(sapmComponent->codec, mixerControl.reg, mixerControl.mask,
+                    mixerControl.shift, val);
                 ADM_LOG_DEBUG("Sapm Codec Power Up.");
             }
             if (sapmComponent->accessory != NULL) {
-                AudioUpdateAccessoryRegBits(sapmComponent->accessory, &mixerControl, val);
+                AudioUpdateAccessoryRegBits(sapmComponent->accessory, mixerControl.reg, mixerControl.mask,
+                    mixerControl.shift, val);
                 ADM_LOG_DEBUG("Sapm Accessory Power Up.");
             }
         }
@@ -944,11 +946,13 @@ static void AudioSapmPowerDownSeqRun(const struct DListHead *list)
                 val = !val;
             }
             if (sapmComponent->codec != NULL) {
-                AudioUpdateCodecRegBits(sapmComponent->codec, &mixerControl, val);
+                AudioUpdateCodecRegBits(sapmComponent->codec, mixerControl.reg, mixerControl.mask,
+                    mixerControl.shift, val);
                 ADM_LOG_DEBUG("Sapm Codec Power Down.");
             }
             if (sapmComponent->accessory != NULL) {
-                AudioUpdateAccessoryRegBits(sapmComponent->accessory, &mixerControl, val);
+                AudioUpdateAccessoryRegBits(sapmComponent->accessory, mixerControl.reg, mixerControl.mask,
+                    mixerControl.shift, val);
                 ADM_LOG_DEBUG("Sapm Accessory Power Down.");
             }
         }
@@ -1229,7 +1233,8 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
             ADM_LOG_ERR("update power status is failure!");
             return HDF_FAILURE;
         }
-        if (AudioUpdateCodecRegBits(codec, mixerCtrl, elemValue->value[0]) != HDF_SUCCESS) {
+        if (AudioUpdateCodecRegBits(codec, mixerCtrl->reg, mixerCtrl->mask, mixerCtrl->shift,
+            elemValue->value[0]) != HDF_SUCCESS) {
             ADM_LOG_ERR("update reg bits fail!");
             return HDF_FAILURE;
         }
@@ -1266,7 +1271,8 @@ int32_t AudioAccessorySapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const
             ADM_LOG_ERR("update power status fail!");
             return HDF_FAILURE;
         }
-        if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl, elemValue->value[0]) != HDF_SUCCESS) {
+        if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl->reg, mixerCtrl->mask, mixerCtrl->shift,
+            elemValue->value[0]) != HDF_SUCCESS) {
             ADM_LOG_ERR("update reg bits fail!");
             return HDF_FAILURE;
         }

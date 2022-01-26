@@ -19,14 +19,14 @@ extern "C" {
 
 int32_t AudioDmaBufAlloc(struct PlatformData *data, enum AudioStreamType streamType);
 int32_t AudioDmaBufFree(struct PlatformData *data, enum AudioStreamType streamType);
-int32_t AudioDmaRequestChannel(struct PlatformData *data);
-int32_t AudioDmaConfigChannel(struct PlatformData *data);
-int32_t AudioDmaPrep(struct PlatformData *data);
-int32_t AudioDmaSubmit(struct PlatformData *data);
-int32_t AudioDmaPending(struct PlatformData *data);
-int32_t AudioDmaPause(struct PlatformData *data);
-int32_t AudioDmaResume(struct PlatformData *data);
-int32_t AudioDmaPointer(struct PlatformData *data, uint32_t *pointer);
+int32_t AudioDmaRequestChannel(struct PlatformData *data, enum AudioStreamType streamType);
+int32_t AudioDmaConfigChannel(struct PlatformData *data, enum AudioStreamType streamType);
+int32_t AudioDmaPrep(struct PlatformData *data, enum AudioStreamType streamType);
+int32_t AudioDmaSubmit(struct PlatformData *data, enum AudioStreamType streamType);
+int32_t AudioDmaPending(struct PlatformData *data, enum AudioStreamType streamType);
+int32_t AudioDmaPause(struct PlatformData *data, enum AudioStreamType streamType);
+int32_t AudioDmaResume(struct PlatformData *data, enum AudioStreamType streamType);
+int32_t AudioDmaPointer(struct PlatformData *data, enum AudioStreamType streamType, uint32_t *pointer);
 
 #ifdef __cplusplus
 #if __cplusplus

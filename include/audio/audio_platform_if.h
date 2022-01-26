@@ -43,7 +43,8 @@ struct PlatformData {
     struct AudioDmaOps *ops;             /**< Platform module private data */
     struct CircleBufInfo renderBufInfo;  /**< Render pcm stream transfer */
     struct CircleBufInfo captureBufInfo; /**< Capture pcm stream transfer */
-    struct PcmInfo pcmInfo;              /**< Pcm stream info */
+    struct PcmInfo renderPcmInfo;        /**< Render pcm stream info */
+    struct PcmInfo capturePcmInfo;       /**< Capture pcm stream info */
     bool platformInitFlag;               /**< Platform init flag */
     struct AudioMmapData mmapData;       /**< Mmap mode transfer data */
     uint32_t mmapLoopCount;              /**< Loop count for mmap mode pcm stream */
@@ -81,7 +82,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaBufFree)(struct PlatformData *platformData,  const enum AudioStreamType streamType);
+    int32_t (*DmaBufFree)(struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines dma request channel.
@@ -93,7 +94,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaRequestChannel)(const struct PlatformData *platformData);
+    int32_t (*DmaRequestChannel)(const struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines dma channel config.
@@ -105,7 +106,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaConfigChannel)(const struct PlatformData *platformData);
+    int32_t (*DmaConfigChannel)(const struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines dma prepare function.
@@ -117,7 +118,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaPrep)(const struct PlatformData *platformData);
+    int32_t (*DmaPrep)(const struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines dma submit function.
@@ -129,7 +130,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaSubmit)(const struct PlatformData *platformData);
+    int32_t (*DmaSubmit)(const struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines dma pending function.
@@ -141,7 +142,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaPending)(struct PlatformData *platformData);
+    int32_t (*DmaPending)(struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines pcm stream transfer pause.
@@ -153,7 +154,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaPause)(struct PlatformData *platformData);
+    int32_t (*DmaPause)(struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines pcm stream transfer resume.
@@ -165,7 +166,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaResume)(const struct PlatformData *platformData);
+    int32_t (*DmaResume)(const struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines Get the function of the current playback or recording position.
@@ -178,7 +179,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaPointer)(struct PlatformData *platformData, uint32_t *pointer);
+    int32_t (*DmaPointer)(struct PlatformData *platformData, const enum AudioStreamType streamType, uint32_t *pointer);
 };
 
 /**
