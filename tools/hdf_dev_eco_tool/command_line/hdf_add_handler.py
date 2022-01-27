@@ -356,9 +356,15 @@ class HdfAddHandler(HdfCommandHandlerBase):
         template_path = "/".join([framework_hdf]
                                  + ["tools", "hdf_dev_eco_tool",
                                     "resources", "templates", "lite"])
+        if (platform.system() == "Windows"):
+            driver_file_name = "//" + driver_file_path.strip(root).replace("\\", "/"),
+        elif (platform.system() == "Linux"):
+            driver_file_name = "//" + driver_file_path.strip(root).replace("\\", "/") + "c",
+        else:
+            driver_file_name = "//" + driver_file_path.strip(root).replace("\\", "/"),
         data_model = {
             "model_path": "//drivers/adapter/uhdf2/" + module,
-            "driver_file_name": "//" + driver_file_path.strip(root).replace("\\", "/"),
+            "driver_file_name": driver_file_name[0],
             "model_name": module,
         }
         for file_name in os.listdir(template_path):
@@ -370,7 +376,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
                     linux_file_path["BUILD.gn"] = user_model_file_path
 
         # build.gn file add path
-        ohos_path = os.path.join(root, '/'.join(relative_path.split("/")[:-1]), 'build.gn')
+        ohos_path = os.path.join(root, '/'.join(relative_path.split("/")[:-1]), 'BUILD.gn')
         user_build_info = hdf_utils.read_file_lines(ohos_path)
         ohos_template_line = "${model_path}:libhdf_${model_name}_hotplug"
         temp = Template(ohos_template_line)
