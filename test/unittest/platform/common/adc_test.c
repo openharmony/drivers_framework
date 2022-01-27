@@ -113,7 +113,7 @@ int32_t AdcTestRead(void)
         value[i] = 0;
         ret = AdcRead(tester->handle, tester->config.channel, &value[i]);
         if (ret != HDF_SUCCESS || value[i] >= (1U << tester->config.dataWidth)) {
-            HDF_LOGE("%s: read value invalid:%u, ret:%d", __func__, value[i], ret);
+            HDF_LOGE("%s: read value failed, ret:%d", __func__, ret);
             return HDF_ERR_IO;
         }
     }
@@ -141,6 +141,7 @@ static int AdcTestThreadFunc(void *param)
         ret = AdcRead(tester->handle, tester->config.channel, &val);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: AdcRead failed, ret:%d", __func__, ret);
+            *((int32_t *)param) = 1;
             return HDF_ERR_IO;
         }
     }
@@ -155,9 +156,9 @@ int32_t AdcTestMultiThread(void)
     int32_t ret;
     struct OsalThread thread1, thread2;
     struct OsalThreadParam cfg1, cfg2;
-    int32_t count1, count2;
+    int32_t count1 = 0; 
+    int32_t count2 = 0;
 
-    count1 = count2 = 0;
     HDF_LOGI("%s: enter", __func__);
     ret = OsalThreadCreate(&thread1, (OsalThreadEntry)AdcTestThreadFunc, (void *)&count1);
     if (ret != HDF_SUCCESS) {

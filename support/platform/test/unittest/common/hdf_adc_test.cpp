@@ -55,6 +55,11 @@ HWTEST_F(HdfLiteAdcTest, AdcTestRead001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_ADC_TYPE, ADC_TEST_CMD_READ, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+
+    printf("%s: kernel test done, then for user...\n", __func__);
+    EXPECT_EQ(0, AdcTestExecute(ADC_TEST_CMD_READ));
+    printf("%s: exit!\n", __func__);
+
 }
 
 /**
@@ -67,6 +72,11 @@ HWTEST_F(HdfLiteAdcTest, AdcTestMultiThread001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_ADC_TYPE, ADC_TEST_CMD_MULTI_THREAD, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+
+    printf("%s: kernel test done, then for user...\n", __func__);
+    EXPECT_EQ(0, AdcTestExecute(ADC_TEST_CMD_MULTI_THREAD));
+    printf("%s: exit!\n", __func__);
+
 }
 
 /**
@@ -79,5 +89,10 @@ HWTEST_F(HdfLiteAdcTest, AdcTestReliability001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_ADC_TYPE, ADC_TEST_CMD_RELIABILITY, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+
+    printf("%s: kernel test done, then for user...\n", __func__);
+    EXPECT_EQ(0, AdcTestExecute(ADC_TEST_CMD_RELIABILITY));
+    printf("%s: exit!\n", __func__);
+
 }
 

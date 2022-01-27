@@ -18,6 +18,8 @@
 #define LOCK_WAIT_SECONDS_M 1
 #define ADC_BUFF_SIZE 4
 
+#define ADC_HANDLE_SHIFT    0xFF00U
+
 struct AdcManager {
     struct IDeviceIoService service;
     struct HdfDeviceObject *device;
@@ -47,6 +49,69 @@ static const struct AdcLockMethod g_adcLockOpsDefault = {
     .lock = AdcDeviceLockDefault,
     .unlock = AdcDeviceUnlockDefault,
 };
+
+static inline int32_t AdcDeviceLock(struct AdcDevice *device)
+{
+    if (device->lockOps == NULL || device->lockOps->lock == NULL) {
+        return HDF_ERR_NOT_SUPPORT;
+    }
+    return device->lockOps->lock(device);
+}
+
+static inline void AdcDeviceUnlock(struct AdcDevice *device)
+{
+    if (device->lockOps != NULL && device->lockOps->unlock != NULL) {
+        device->lockOps->unlock(device);
+    }
+}
+
+int32_t AdcDeviceStart(struct AdcDevice *device)
+{
+    int32_t ret;
+
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (device->ops == NULL || device->ops->start == NULL) {
+        HDF_LOGE("%s: ops or start is null", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    if (AdcDeviceLock(device) != HDF_SUCCESS) {
+        HDF_LOGE("%s: lock add device failed", __func__);
+        return HDF_ERR_DEVICE_BUSY;
+    }
+
+    ret = device->ops->start(device);
+    AdcDeviceUnlock(device);
+    return ret;
+}
+
+int32_t AdcDeviceStop(struct AdcDevice *device)
+{
+    int32_t ret;
+
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (device->ops == NULL || device->ops->stop == NULL) {
+        HDF_LOGE("%s: ops or stop is null", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    if (AdcDeviceLock(device) != HDF_SUCCESS) {
+        HDF_LOGE("%s: lock add device failed", __func__);
+        return HDF_ERR_DEVICE_BUSY;
+    }
+
+    ret = device->ops->stop(device);
+    AdcDeviceUnlock(device);
+    return ret;
+}
 
 static int32_t AdcManagerAddDevice(struct AdcDevice *device)
 {
@@ -134,6 +199,45 @@ static struct AdcDevice *AdcManagerFindDevice(uint32_t number)
     return device;
 }
 
+struct AdcDevice *AdcDeviceGet(uint32_t number)
+{
+    return AdcManagerFindDevice(number);
+}
+
+void AdcDevicePut(struct AdcDevice *device)
+{
+    (void)device;
+}
+
+static struct AdcDevice *AdcDeviceOpen(uint32_t number)
+{
+    int32_t ret;
+    struct AdcDevice *device = NULL;
+
+    device = AdcDeviceGet(number);
+    if (device == NULL) {
+        return NULL;
+    }
+
+    ret = AdcDeviceStart(device);
+    if (ret != HDF_SUCCESS) {
+        return NULL;
+    }
+
+    return device;
+}
+
+static void AdcDeviceClose(struct AdcDevice *device)
+{
+    if (device == NULL) {
+        HDF_LOGE("%s: close adc device fail", __func__);
+        return;
+    }
+
+    (void)AdcDeviceStop(device);
+    AdcDevicePut(device);
+}
+
 int32_t AdcDeviceAdd(struct AdcDevice *device)
 {
     int32_t ret;
@@ -173,31 +277,6 @@ void AdcDeviceRemove(struct AdcDevice *device)
     (void)OsalSpinDestroy(&device->spin);
 }
 
-struct AdcDevice *AdcDeviceGet(uint32_t number)
-{
-    return AdcManagerFindDevice(number);
-}
-
-void AdcDevicePut(struct AdcDevice *device)
-{
-    (void)device;
-}
-
-static inline int32_t AdcDeviceLock(struct AdcDevice *device)
-{
-    if (device->lockOps == NULL || device->lockOps->lock == NULL) {
-        return HDF_ERR_NOT_SUPPORT;
-    }
-    return device->lockOps->lock(device);
-}
-
-static inline void AdcDeviceUnlock(struct AdcDevice *device)
-{
-    if (device->lockOps != NULL && device->lockOps->unlock != NULL) {
-        device->lockOps->unlock(device);
-    }
-}
-
 int32_t AdcDeviceRead(struct AdcDevice *device, uint32_t channel, uint32_t *val)
 {
     int32_t ret;
@@ -227,73 +306,36 @@ int32_t AdcDeviceRead(struct AdcDevice *device, uint32_t channel, uint32_t *val)
     return ret;
 }
 
-int32_t AdcDeviceStart(struct AdcDevice *device)
-{
-    int32_t ret;
-
-    if (device == NULL) {
-        HDF_LOGE("%s: device is null", __func__);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    if (device->ops == NULL || device->ops->start == NULL) {
-        HDF_LOGE("%s: ops or start is null", __func__);
-        return HDF_ERR_NOT_SUPPORT;
-    }
-
-    if (AdcDeviceLock(device) != HDF_SUCCESS) {
-        HDF_LOGE("%s: lock add device failed", __func__);
-        return HDF_ERR_DEVICE_BUSY;
-    }
-
-    ret = device->ops->start(device);
-    AdcDeviceUnlock(device);
-    return ret;
-}
-
-int32_t AdcDeviceStop(struct AdcDevice *device)
-{
-    int32_t ret;
-
-    if (device == NULL) {
-        HDF_LOGE("%s: device is null", __func__);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
-    if (device->ops == NULL || device->ops->stop == NULL) {
-        HDF_LOGE("%s: ops or stop is null", __func__);
-        return HDF_ERR_NOT_SUPPORT;
-    }
-
-    if (AdcDeviceLock(device) != HDF_SUCCESS) {
-        HDF_LOGE("%s: lock add device failed", __func__);
-        return HDF_ERR_DEVICE_BUSY;
-    }
-
-    ret = device->ops->stop(device);
-    AdcDeviceUnlock(device);
-    return ret;
-}
-
 static int32_t AdcManagerIoOpen(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     uint32_t number;
 
+    if (data == NULL || reply == NULL) {
+        HDF_LOGE("%s: invalid data or reply!", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
     if (!HdfSbufReadUint32(data, &number)) {
+        HDF_LOGE("%s: read data failed!", __func__);
         return HDF_ERR_IO;
     }
 
     if (number < 0 || number >= ADC_DEVICES_MAX || reply == NULL) {
+        HDF_LOGE("%s: invalid number!", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
-    if (AdcDeviceGet(number) == NULL) {
+    if (AdcDeviceOpen(number) == NULL) {
+        HDF_LOGE("%s: get device %u failed", __func__, number);
         return HDF_ERR_NOT_SUPPORT;
     }
 
-    if (!HdfSbufWriteUint32(reply, number)) {
+    number = (uint32_t)(number + ADC_HANDLE_SHIFT);
+    if (!HdfSbufWriteUint32(reply, (uint32_t)(uintptr_t)number)) {
+        HDF_LOGE("%s: write reply failed!", __func__);
         return HDF_ERR_IO;
     }
+
     return HDF_SUCCESS;
 }
 
@@ -301,28 +343,66 @@ static int32_t AdcManagerIoClose(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     uint32_t number;
 
+    if (data == NULL) {
+        HDF_LOGE("%s: invalid data!", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
     if (!HdfSbufReadUint32(data, &number)) {
+        HDF_LOGE("%s: read data failed!", __func__);
         return HDF_ERR_IO;
     }
 
+    number = (uint32_t)(number - ADC_HANDLE_SHIFT);
     if (number < 0 || number >= ADC_DEVICES_MAX) {
+        HDF_LOGE("%s: get device %u failed", __func__, number);
         return HDF_ERR_INVALID_PARAM;
     }
-    AdcDevicePut(AdcManagerFindDevice(number));
+
+    AdcDeviceClose(AdcManagerFindDevice(number));
     return HDF_SUCCESS;
 }
 
 static int32_t AdcManagerIoRead(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    (void)data;
-    (void)reply;
-    return HDF_SUCCESS;
+    int32_t ret;
+    uint32_t number;
+    uint32_t channel;
+    uint32_t val;
+
+    if (data == NULL || reply == NULL) {
+        HDF_LOGE("%s: invalid data or reply!", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+     if (!HdfSbufReadUint32(data, &number)) {
+        HDF_LOGE("AdcManagerIoRead: read handle failed!");
+        return HDF_ERR_IO;
+    }
+
+     if (!HdfSbufReadUint32(data, &channel)) {
+        HDF_LOGE("AdcManagerIoRead: read handle failed!");
+        return HDF_ERR_IO;
+    }
+
+    number  = (uint32_t)(number - ADC_HANDLE_SHIFT);
+    ret = AdcDeviceRead(AdcManagerFindDevice(number), channel, &val);
+    if(ret != HDF_SUCCESS) {
+       HDF_LOGE("AdcManagerIoRead: read val failed!");
+       return HDF_ERR_IO;
+    }
+
+    if (!HdfSbufWriteUint32(reply, val)) {
+        HDF_LOGE("%s: write val fail!", __func__);
+	    return HDF_ERR_IO;
+    }
+
+    return ret;
 }
 
 static int32_t AdcManagerDispatch(struct HdfDeviceIoClient *client, int cmd,
     struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    int32_t ret;
 
     switch (cmd) {
         case ADC_IO_OPEN:
@@ -332,10 +412,15 @@ static int32_t AdcManagerDispatch(struct HdfDeviceIoClient *client, int cmd,
         case ADC_IO_READ:
             return AdcManagerIoRead(data, reply);
         default:
-            ret = HDF_ERR_NOT_SUPPORT;
-            break;
+            return HDF_ERR_NOT_SUPPORT;
     }
-    return ret;
+    return HDF_SUCCESS;
+}
+
+static int32_t AdcManagerBind(struct HdfDeviceObject *device)
+{
+    (void)device;
+    return HDF_SUCCESS;
 }
 
 static int32_t AdcManagerInit(struct HdfDeviceObject *device)
@@ -391,6 +476,7 @@ static void AdcManagerRelease(struct HdfDeviceObject *device)
 
 struct HdfDriverEntry g_adcManagerEntry = {
     .moduleVersion = 1,
+    .Bind = AdcManagerBind,
     .Init = AdcManagerInit,
     .Release = AdcManagerRelease,
     .moduleName = "HDF_PLATFORM_ADC_MANAGER",

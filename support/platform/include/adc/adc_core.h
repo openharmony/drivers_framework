@@ -46,12 +46,6 @@ struct AdcLockMethod {
     void (*unlock)(struct AdcDevice *device);
 };
 
-enum AdcIoCmd {
-    ADC_IO_READ = 0,
-    ADC_IO_OPEN,
-    ADC_IO_CLOSE,
-};
-
 int32_t AdcDeviceAdd(struct AdcDevice *device);
 
 void AdcDeviceRemove(struct AdcDevice *device);
