@@ -112,6 +112,8 @@ int32_t AccessoryGetConfigInfoTest(void)
 {
     struct HdfDeviceObject device;
     struct AccessoryData codecData;
+    (void)memset_s(&device, sizeof(struct HdfDeviceObject), 0, sizeof(struct HdfDeviceObject));
+    (void)memset_s(&codecData, sizeof(struct AccessoryData), 0, sizeof(struct AccessoryData));
 
     if (AccessoryGetConfigInfo(NULL, NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;

@@ -188,7 +188,7 @@ int32_t AudioUpdateCodecRegBitsTest(void)
     struct CodecDevice codec;
     HDF_LOGI("%s: enter", __func__);
 
-    if (AudioUpdateCodecRegBits(NULL, NULL, 0) == HDF_SUCCESS) {
+    if (AudioUpdateCodecRegBits(NULL, 0, 0, 0, 0) == HDF_SUCCESS) {
         HDF_LOGE("%s_[%d] AudioUpdateCodecRegBits fail", __func__, __LINE__);
         return HDF_FAILURE;
     }
@@ -200,7 +200,8 @@ int32_t AudioUpdateCodecRegBitsTest(void)
     codec.devCodecName = "codec_service_0";
     OsalMutexInit(&codec.mutex);
     codec.devData = &codecData;
-    if (AudioUpdateCodecRegBits(&codec, &g_audioTestReg, g_audioTestReg.min + 1) != HDF_SUCCESS) {
+    if (AudioUpdateCodecRegBits(&codec, g_audioTestReg.reg, g_audioTestReg.mask,
+        g_audioTestReg.shift, g_audioTestReg.min + 1) != HDF_SUCCESS) {
         HDF_LOGE("%s_[%d] AudioUpdateCodecRegBits fail", __func__, __LINE__);
         OsalMutexDestroy(&codec.mutex);
         return HDF_FAILURE;
@@ -216,7 +217,7 @@ int32_t AudioUpdateAccessoryRegBitsTest(void)
     struct AccessoryDevice accessory;
     HDF_LOGI("%s: enter", __func__);
 
-    if (AudioUpdateAccessoryRegBits(NULL, NULL, 0) == HDF_SUCCESS) {
+    if (AudioUpdateAccessoryRegBits(NULL, 0, 0, 0, 0) == HDF_SUCCESS) {
         HDF_LOGE("%s_[%d] AudioUpdateAccessoryRegBits fail", __func__, __LINE__);
         return HDF_FAILURE;
     }
@@ -224,7 +225,8 @@ int32_t AudioUpdateAccessoryRegBitsTest(void)
     (void)memset_s(&accessory, sizeof(struct AccessoryDevice), 0, sizeof(struct AccessoryDevice));
     accessory.devAccessoryName = "codec_service_1";
     OsalMutexInit(&accessory.mutex);
-    if (AudioUpdateAccessoryRegBits(&accessory, &g_audioTestReg, g_audioTestReg.min + 1) != HDF_SUCCESS) {
+    if (AudioUpdateAccessoryRegBits(&accessory, g_audioTestReg.reg, g_audioTestReg.mask,
+        g_audioTestReg.shift, g_audioTestReg.min + 1) != HDF_SUCCESS) {
         HDF_LOGE("%s_[%d] AudioUpdateAccessoryRegBits fail", __func__, __LINE__);
         OsalMutexDestroy(&accessory.mutex);
     }
@@ -239,14 +241,15 @@ int32_t AudioUpdateDaiRegBitsTest(void)
     struct DaiDevice dai;
     HDF_LOGI("%s: enter", __func__);
 
-    if (AudioUpdateDaiRegBits(NULL, NULL, 0) == HDF_SUCCESS) {
+    if (AudioUpdateDaiRegBits(NULL, 0, 0, 0, 0) == HDF_SUCCESS) {
         HDF_LOGE("%s_[%d] AudioUpdateDaiRegBits fail", __func__, __LINE__);
         return HDF_FAILURE;
     }
 
     (void)memset_s(&dai, sizeof(struct DaiDevice), 0, sizeof(struct DaiDevice));
     dai.devDaiName = "dai_service";
-    if (AudioUpdateDaiRegBits(&dai, &g_audioTestReg, g_audioTestReg.min + 1) != HDF_SUCCESS) {
+    if (AudioUpdateDaiRegBits(&dai, g_audioTestReg.reg, g_audioTestReg.mask,
+        g_audioTestReg.shift, g_audioTestReg.min + 1) != HDF_SUCCESS) {
         HDF_LOGE("%s_[%d] AudioUpdateAccessoryRegBits fail", __func__, __LINE__);
     }
 
@@ -298,7 +301,7 @@ int32_t AudioAddControlsTest(void)
     HDF_LOGI("%s: enter", __func__);
 
     if (AudioAddControls(NULL, NULL, 0) == HDF_SUCCESS) {
-        HDF_LOGE("%s_[%d] AudioUpdateDaiRegBits fail", __func__, __LINE__);
+        HDF_LOGE("%s_[%d] AudioAddControls fail", __func__, __LINE__);
         return HDF_FAILURE;
     }
 
