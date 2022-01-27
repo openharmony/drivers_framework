@@ -30,6 +30,9 @@ int32_t DaiGetConfigInfoTest(void)
 {
     struct HdfDeviceObject device;
     struct DaiData data;
+    (void)memset_s(&device, sizeof(struct HdfDeviceObject), 0, sizeof(struct HdfDeviceObject));
+    (void)memset_s(&data, sizeof(struct DaiData), 0, sizeof(struct DaiData));
+
     if (DaiGetConfigInfo(NULL, NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }

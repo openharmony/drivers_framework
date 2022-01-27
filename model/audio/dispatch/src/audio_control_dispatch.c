@@ -192,6 +192,7 @@ static int32_t ControlHostElemWrite(const struct HdfDeviceIoClient *client,
         ADM_LOG_ERR("Read request elemValue failed!");
         return HDF_FAILURE;
     }
+    elemValue.value[1] = elemValue.value[0];
 
     if (!HdfSbufReadInt32(reqData, &elemValue.id.iface)) {
         ADM_LOG_ERR("Read request id failed!");

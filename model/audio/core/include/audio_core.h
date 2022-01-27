@@ -35,12 +35,12 @@ int32_t AudioRegisterAccessory(struct HdfDeviceObject *device,
 
 int32_t AudioBindDaiLink(struct AudioCard *audioCard, const struct AudioConfigData *configData);
 
-int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec,
-    const struct AudioMixerControl *mixerControl, uint32_t value);
-int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
-    const struct AudioMixerControl *mixerControl, uint32_t value);
-int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, const struct AudioMixerControl *mixerControl,
-    uint32_t value);
+int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec, uint32_t reg,
+    const uint32_t mask, const uint32_t shift, uint32_t value);
+int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory, uint32_t reg,
+    const uint32_t mask, const uint32_t shift, uint32_t value);
+int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, uint32_t reg,
+    const uint32_t mask, const uint32_t shift, uint32_t value);
 
 struct DaiDevice *AudioKcontrolGetCpuDai(const struct AudioKcontrol *kcontrol);
 struct CodecDevice *AudioKcontrolGetCodec(const struct AudioKcontrol *kcontrol);

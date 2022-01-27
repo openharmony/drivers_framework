@@ -77,7 +77,7 @@ int32_t AudioPcmMmapRead(const struct AudioCard *card, const struct AudioMmapDat
 int32_t AudioRenderOpen(const struct AudioCard *card);
 int32_t AudioCaptureOpen(const struct AudioCard *card);
 int32_t AudioRenderClose(const struct AudioCard *card);
-int32_t AudioPcmPointer(const struct AudioCard *card, uint32_t *pointer);
+int32_t AudioPcmPointer(const struct AudioCard *card, uint32_t *pointer, enum AudioStreamType streamType);
 int32_t AudioCaptureClose(const struct AudioCard *card);
 int32_t AudioHwParams(const struct AudioCard *card, const struct AudioPcmHwParams *param);
 int32_t AudioRenderPrepare(const struct AudioCard *card);

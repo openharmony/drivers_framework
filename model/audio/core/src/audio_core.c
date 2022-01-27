@@ -388,30 +388,30 @@ int32_t AudioBindDaiLink(struct AudioCard *audioCard, const struct AudioConfigDa
     return HDF_SUCCESS;
 }
 
-int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec,
-    const struct AudioMixerControl *mixerControl, uint32_t value)
+int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec, uint32_t reg,
+    const uint32_t mask, const uint32_t shift, uint32_t value)
 {
     int32_t ret;
     uint32_t curValue = 0;
-    uint32_t mixerControlMask;
-    if (codec == NULL || mixerControl == NULL) {
+    uint32_t controlMask;
+    if (codec == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    value = value << mixerControl->shift;
-    mixerControlMask = mixerControl->mask << mixerControl->shift;
+    value = value << shift;
+    controlMask = mask << shift;
 
     OsalMutexLock(&codec->mutex);
-    ret = AudioCodecReadReg(codec, mixerControl->reg, &curValue);
+    ret = AudioCodecReadReg(codec, reg, &curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&codec->mutex);
         ADM_LOG_ERR("Read reg fail ret=%d.", ret);
         return HDF_FAILURE;
     }
 
-    curValue = (curValue & ~mixerControlMask) | (value & mixerControlMask);
-    ret = AudioCodecWriteReg(codec, mixerControl->reg, curValue);
+    curValue = (curValue & ~controlMask) | (value & controlMask);
+    ret = AudioCodecWriteReg(codec, reg, curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&codec->mutex);
         ADM_LOG_ERR("Write reg fail ret=%d", ret);
@@ -423,29 +423,29 @@ int32_t AudioUpdateCodecRegBits(struct CodecDevice *codec,
     return HDF_SUCCESS;
 }
 
-int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
-    const struct AudioMixerControl *mixerControl, uint32_t value)
+int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory, uint32_t reg,
+    const uint32_t mask, const uint32_t shift, uint32_t value)
 {
     int32_t ret;
     uint32_t curValue = 0;
     uint32_t mixerControlMask;
-    if (accessory == NULL || mixerControl == NULL) {
+    if (accessory == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    value = value << mixerControl->shift;
-    mixerControlMask = mixerControl->mask << mixerControl->shift;
+    value = value << shift;
+    mixerControlMask = mask << shift;
 
     OsalMutexLock(&accessory->mutex);
-    ret = AudioAccessoryReadReg(accessory, mixerControl->reg, &curValue);
+    ret = AudioAccessoryReadReg(accessory, reg, &curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&accessory->mutex);
         ADM_LOG_ERR("Read reg fail ret=%d", ret);
         return HDF_FAILURE;
     }
     curValue = (curValue & ~mixerControlMask) | (value & mixerControlMask);
-    ret = AudioAccessoryWriteReg(accessory, mixerControl->reg, curValue);
+    ret = AudioAccessoryWriteReg(accessory, reg, curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&accessory->mutex);
         ADM_LOG_ERR("Write reg fail ret=%d", ret);
@@ -457,28 +457,24 @@ int32_t AudioUpdateAccessoryRegBits(struct AccessoryDevice *accessory,
     return HDF_SUCCESS;
 }
 
-int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, const struct AudioMixerControl *mixerControl, uint32_t value)
+int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, uint32_t reg,
+    const uint32_t mask, const uint32_t shift, uint32_t value)
 {
     int32_t ret;
     uint32_t curValue = 0;
     uint32_t mixerControlMask;
     struct DaiData *data = NULL;
 
-    if (dai == NULL || dai->devData == NULL || mixerControl == NULL) {
+    if (dai == NULL || dai->devData == NULL) {
         ADM_LOG_ERR("Invalid accessory param.");
         return HDF_ERR_INVALID_OBJECT;
     }
     data = dai->devData;
-
-    if (value > mixerControl->max || value < mixerControl->min) {
-        ADM_LOG_ERR("value is invalued=%d.", value);
-        return HDF_FAILURE;
-    }
-    value = value << mixerControl->shift;
-    mixerControlMask = mixerControl->mask << mixerControl->shift;
+    value = value << shift;
+    mixerControlMask = mask << shift;
 
     OsalMutexLock(&data->mutex);
-    ret = AudioDaiReadReg(dai, mixerControl->reg, &curValue);
+    ret = AudioDaiReadReg(dai, reg, &curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&data->mutex);
         ADM_LOG_ERR("Read reg fail ret=%d.", ret);
@@ -487,8 +483,8 @@ int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, const struct AudioMix
 
     curValue = (curValue & ~mixerControlMask) | (value & mixerControlMask);
 
-    ADM_LOG_DEBUG("reg: 0x%x curValue: 0x%x.", mixerControl->reg, curValue);
-    ret = AudioDaiWriteReg(dai, mixerControl->reg, curValue);
+    ADM_LOG_DEBUG("reg: 0x%x curValue: 0x%x.", reg, curValue);
+    ret = AudioDaiWriteReg(dai, reg, curValue);
     if (ret != HDF_SUCCESS) {
         OsalMutexUnlock(&data->mutex);
         ADM_LOG_ERR("Write reg fail ret=%d", ret);
@@ -499,7 +495,6 @@ int32_t AudioUpdateDaiRegBits(const struct DaiDevice *dai, const struct AudioMix
     ADM_LOG_DEBUG("Success.");
     return HDF_SUCCESS;
 }
-
 
 struct CodecDevice *AudioKcontrolGetCodec(const struct AudioKcontrol *kcontrol)
 {
@@ -903,7 +898,7 @@ int32_t AudioCodecSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct 
         ADM_LOG_ERR("AudioKcontrolGetCodec is fail.");
         return HDF_ERR_INVALID_OBJECT;
     }
-    if (AudioUpdateCodecRegBits(codec, mixerCtrl, value) != HDF_SUCCESS) {
+    if (AudioUpdateCodecRegBits(codec, mixerCtrl->reg, mixerCtrl->mask, mixerCtrl->shift, value) != HDF_SUCCESS) {
         ADM_LOG_ERR("Audio codec stereo update reg bits fail.");
         return HDF_FAILURE;
     }
@@ -914,7 +909,8 @@ int32_t AudioCodecSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct 
     }
 
     if (updateRReg) {
-        if (AudioUpdateCodecRegBits(codec, mixerCtrl, rvalue) != HDF_SUCCESS) {
+        if (AudioUpdateCodecRegBits(codec, mixerCtrl->rreg, mixerCtrl->mask,
+            mixerCtrl->rshift, rvalue) != HDF_SUCCESS) {
             ADM_LOG_ERR("Audio codec stereo update reg bits fail.");
             return HDF_FAILURE;
         }
@@ -941,7 +937,8 @@ int32_t AudioAccessorySetCtrlOps(const struct AudioKcontrol *kcontrol, const str
     }
 
     accessory = AudioKcontrolGetAccessory(kcontrol);
-    if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl, value) != HDF_SUCCESS) {
+    if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl->reg, mixerCtrl->mask,
+        mixerCtrl->shift, value) != HDF_SUCCESS) {
         ADM_LOG_ERR("Audio accessory stereo update reg bits fail.");
         return HDF_FAILURE;
     }
@@ -952,7 +949,8 @@ int32_t AudioAccessorySetCtrlOps(const struct AudioKcontrol *kcontrol, const str
     }
 
     if (updateRReg) {
-        if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl, rvalue) != HDF_SUCCESS) {
+        if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl->rreg, mixerCtrl->mask,
+            mixerCtrl->rshift, rvalue) != HDF_SUCCESS) {
             ADM_LOG_ERR("Audio accessory stereo update reg bits fail.");
             return HDF_FAILURE;
         }
@@ -983,7 +981,7 @@ int32_t AudioCpuDaiSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct
         ADM_LOG_ERR("AudioKcontrolGetCodec is fail.");
         return HDF_ERR_INVALID_OBJECT;
     }
-    if (AudioUpdateDaiRegBits(dai, mixerCtrl, value) != HDF_SUCCESS) {
+    if (AudioUpdateDaiRegBits(dai, mixerCtrl->reg, mixerCtrl->mask, mixerCtrl->shift, value) != HDF_SUCCESS) {
         ADM_LOG_ERR("Audio codec stereo update reg bits fail.");
         return HDF_FAILURE;
     }
@@ -994,7 +992,7 @@ int32_t AudioCpuDaiSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct
     }
 
     if (updateRReg) {
-        if (AudioUpdateDaiRegBits(dai, mixerCtrl, rvalue) != HDF_SUCCESS) {
+        if (AudioUpdateDaiRegBits(dai, mixerCtrl->rreg, mixerCtrl->mask, mixerCtrl->rshift, rvalue) != HDF_SUCCESS) {
             ADM_LOG_ERR("Audio codec stereo update reg bits fail.");
             return HDF_FAILURE;
         }
