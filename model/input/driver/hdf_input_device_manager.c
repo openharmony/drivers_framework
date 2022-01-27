@@ -272,6 +272,11 @@ static uint32_t AllocDeviceID(InputDevice *inputDev)
         }
         tmpDev = tmpDev->next;
     }
+
+    if (inputDev->devType == INDEV_TYPE_TOUCH) {
+        inputDev->devId = 1;
+        return HDF_SUCCESS;
+    }
     for (id = INPUTDEV_FIRST_ID; id < MAX_INPUT_DEV_NUM + 1; id++) {
         if (idList[id] == 0) {
             inputDev->devId = id;
