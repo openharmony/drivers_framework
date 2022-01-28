@@ -14,17 +14,10 @@
 
 int32_t HdfTimerUnitTestEntry(HdfTestMsg *msg)
 {
-    struct TimerTest *test = NULL;
-
     if (msg == NULL) {
         return HDF_FAILURE;
     }
-    test = GetTimerTest();
-    if (test == NULL || test->TestEntry == NULL) {
-        HDF_LOGE("%s: tester is NULL!\n", __func__);
-        msg->result = HDF_FAILURE;
-        return HDF_FAILURE;
-    }
-    msg->result = test->TestEntry(test, msg->subCmd);
+
+    msg->result = TimerTestExecute(msg->subCmd);
     return msg->result;
 }

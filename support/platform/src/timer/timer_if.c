@@ -9,12 +9,12 @@
 #include "hdf_log.h"
 #include "timer_core.h"
 
-DevHandle TimerOpen(const uint32_t number)
+DevHandle HwTimerOpen(const uint32_t number)
 {
     return (DevHandle)TimerCntrlOpen(number);
 }
 
-void TimerClose(DevHandle handle)
+void HwTimerClose(DevHandle handle)
 {
     struct TimerCntrl *cntrl = (struct TimerCntrl *)handle;
     if (cntrl == NULL) {
@@ -28,7 +28,7 @@ void TimerClose(DevHandle handle)
     }
 }
 
-int32_t TimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
+int32_t HwTimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
 {
     struct TimerCntrl *cntrl = (struct TimerCntrl *)handle;
     if (cntrl == NULL || cb == NULL) {
@@ -44,7 +44,7 @@ int32_t TimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
     return HDF_SUCCESS;
 }
 
-int32_t TimerSetOnce(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
+int32_t HwTimerSetOnce(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
 {
     struct TimerCntrl *cntrl = (struct TimerCntrl *)handle;
     if (cntrl == NULL || cb == NULL) {
@@ -60,7 +60,7 @@ int32_t TimerSetOnce(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
     return HDF_SUCCESS;
 }
 
-int32_t TimerGet(DevHandle handle, uint32_t *useconds, bool *isPeriod)
+int32_t HwTimerGet(DevHandle handle, uint32_t *useconds, bool *isPeriod)
 {
     struct TimerCntrl *cntrl = (struct TimerCntrl *)handle;
     if (cntrl == NULL || useconds == NULL || isPeriod == NULL) {
@@ -76,7 +76,7 @@ int32_t TimerGet(DevHandle handle, uint32_t *useconds, bool *isPeriod)
     return HDF_SUCCESS;
 }
 
-int32_t TimerStart(DevHandle handle)
+int32_t HwTimerStart(DevHandle handle)
 {
     struct TimerCntrl *cntrl = (struct TimerCntrl *)handle;
     if (cntrl == NULL) {
@@ -92,7 +92,7 @@ int32_t TimerStart(DevHandle handle)
     return HDF_SUCCESS;
 }
 
-int32_t TimerStop(DevHandle handle)
+int32_t HwTimerStop(DevHandle handle)
 {
     struct TimerCntrl *cntrl = (struct TimerCntrl *)handle;
     if (cntrl == NULL) {

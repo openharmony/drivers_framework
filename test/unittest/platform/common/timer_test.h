@@ -9,8 +9,11 @@
 #ifndef TIMER_TEST_H
 #define TIMER_TEST_H
 
-#include "hdf_device_desc.h"
 #include "platform_if.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 enum TimerTestCmd {
     TIMER_START_TEST = 1,
@@ -24,7 +27,7 @@ enum TimerTestCmd {
 };
 
 #define TIMER_TEST_STACK_SIZE    (1024 * 100)
-#define TIMER_TEST_WAIT_TIMES    20
+#define TIMER_TEST_WAIT_TIMES    4
 #define TIMER_TEST_WAIT_TIMEOUT  5
 #define TIMER_TEST_PERIOD_TIMES  2
 
@@ -32,19 +35,23 @@ enum TimerTestCmd {
 #define TIMER_TEST_TIME_ID_THREAD2  5
 #define TIMER_TEST_TIME_USECONDS    5000
 
+struct TimerTestConfig {
+    uint32_t number;
+    uint32_t uSecond;
+    uint32_t isPeriod;
+};
+
 struct TimerTest {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    int32_t (*TestEntry)(struct TimerTest *test, int32_t cmd);
     DevHandle handle;
     uint32_t number;
     uint32_t uSecond;
     uint32_t isPeriod;
 };
 
-static inline struct TimerTest *GetTimerTest(void)
-{
-    return (struct TimerTest *)DevSvcManagerClntGetService("TIMER_TEST");
+int32_t TimerTestExecute(int cmd);
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif /* TIMER_TEST_H */
