@@ -46,12 +46,6 @@ struct DacLockMethod {
     void (*unlock)(struct DacDevice *device);
 };
 
-enum DacIoCmd {
-    DAC_IO_READ = 0,
-    DAC_IO_OPEN,
-    DAC_IO_CLOSE,
-};
-
 int32_t DacDeviceAdd(struct DacDevice *device);
 
 void DacDeviceRemove(struct DacDevice *device);
