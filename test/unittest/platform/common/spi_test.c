@@ -6,13 +6,16 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "spi_test.h"
+#include "securec.h"
 #include "device_resource_if.h"
+#include "hdf_io_service_if.h"
 #include "hdf_base.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_time.h"
 #include "spi_if.h"
-#include "spi_test.h"
+
 
 #define HDF_LOG_TAG spi_test_c
 
@@ -20,27 +23,130 @@
 #define SPI_TEST_8BITS  8
 #define SPI_TEST_16BITS 16
 
-struct SpiTestFunc {
-    enum SpiTestCmd type;
-    int32_t (*Func)(struct SpiTest *test);
-};
-
-static DevHandle SpiTestGetHandle(struct SpiTest *test)
+static int32_t SpiTestGetConfig(struct SpiTestConfig *config)
 {
-    struct SpiDevInfo info;
+    int32_t ret;
+    struct HdfSBuf *reply = NULL;
+    struct HdfIoService *service = NULL;
+    struct SpiTestConfig *cfg = NULL;
+    const void *buf = NULL;
+    uint32_t len;
 
-    info.busNum = test->bus;
-    info.csNum = test->cs;
-    return SpiOpen(&info);
+    service = HdfIoServiceBind("SPI_TEST");
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: failed to bind service", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    reply = HdfSbufObtainDefaultSize();
+    if (reply == NULL) {
+        HDF_LOGE("%s: failed to obtain reply", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    ret = service->dispatcher->Dispatch(&service->object, 0, NULL, reply);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: remote dispatch failed", __func__);
+        goto EXIT;
+    }
+
+    if (!HdfSbufReadBuffer(reply, (const void **)&cfg, &len)) {
+        HDF_LOGE("%s: read buf failed", __func__);
+        ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+
+    if (len != sizeof(*cfg)) {
+        HDF_LOGE("%s: cfg size:%zu, read size:%u", __func__, sizeof(*cfg), len);
+        ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+
+    if (memcpy_s(config, sizeof(*config), cfg, sizeof(*cfg)) != EOK) {
+        HDF_LOGE("%s: memcpy config failed", __func__);
+        ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+
+    if (!HdfSbufReadBuffer(reply, (const void **)&buf, &len)) {
+        HDF_LOGE("%s: read buf failed", __func__);
+        ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+
+    if (len != config->len) {
+        HDF_LOGE("%s: buffer size:%zu, read size:%u", __func__, config->len, len);
+        ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+
+    config->wbuf = NULL;
+    config->wbuf = (uint8_t *)OsalMemCalloc(config->len);
+    if (config->wbuf == NULL) {
+        HDF_LOGE("%s: malloc wbuf failed", __func__);
+        ret = HDF_ERR_MALLOC_FAIL;
+        goto EXIT;
+    }
+
+    if (memcpy_s(config->wbuf, config->len, buf, len) != EOK) {
+        HDF_LOGE("%s: memcpy config failed", __func__);
+        ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+    ret = HDF_SUCCESS;
+EXIT:
+    HdfSbufRecycle(reply);
+    HdfIoServiceRecycle(service);
+    return ret;
 }
 
-static void SpiTestReleaseHandle(DevHandle handle)
+static struct SpiTester *SpiTesterGet(void)
 {
-    if (handle == NULL) {
+    int32_t ret;
+    struct SpiDevInfo info;
+    static struct SpiTester tester;
+
+    HDF_LOGE("%s: enter", __func__);
+    ret = SpiTestGetConfig(&tester.config);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read config failed:%d", __func__, ret);
+        return NULL;
+    }
+
+    tester.config.rbuf = (uint8_t *)OsalMemCalloc(tester.config.len);
+    if (tester.config.rbuf == NULL) {
+        HDF_LOGE("%s: malloc rbuf failed", __func__);
+        return NULL;
+    }
+
+    info.busNum = tester.config.bus;
+    info.csNum = tester.config.cs;
+
+    tester.handle = SpiOpen(&info);
+    if (tester.handle == NULL) {
+        HDF_LOGE("%s: open spi: %u, cs: %u failed", __func__, tester.config.bus, tester.config.cs);
+        return NULL;
+    }
+
+    return &tester;
+}
+
+static void SpiTesterPut(struct SpiTester *tester)
+{
+    if (tester == NULL || tester->handle == NULL) {
         HDF_LOGE("%s: spi handle is null", __func__);
         return;
     }
-    SpiClose(handle);
+    SpiClose(tester->handle);
+    if(tester->config.rbuf != NULL) {
+        OsalMemFree(tester->config.rbuf);
+        tester->config.rbuf = NULL;
+    }
+    if(tester->config.wbuf != NULL) {
+        OsalMemFree(tester->config.wbuf);
+        tester->config.wbuf = NULL;
+    }
+    tester->handle = NULL;
 }
 
 #define BITS_PER_WORD_DEFAULT    8
@@ -55,8 +161,8 @@ static struct SpiCfg g_spiCfg = {
     .transferMode = SPI_POLLING_TRANSFER,
 };
 
-#define SPI_TEST_ONE_BYTE 1
-#define SPI_TEST_TWO_BYTE 2
+#define SPI_TEST_ONE_BYTE        1
+#define SPI_TEST_TWO_BYTE        2
 
 static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8_t bits)
 {
@@ -89,17 +195,17 @@ static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8
     return HDF_SUCCESS;
 }
 
-static int32_t SpiDoTransferTest(struct SpiTest *test, struct SpiCfg *cfg, struct SpiMsg *msg)
+static int32_t SpiDoTransferTest(struct SpiTester *tester, struct SpiCfg *cfg, struct SpiMsg *msg)
 {
     int32_t ret;
 
-    ret = SpiSetCfg(test->handle, cfg);
+    ret = SpiSetCfg(tester->handle, cfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: set config fail", __func__);
         return ret;
     }
 
-    ret = SpiTransfer(test->handle, msg, 1);
+    ret = SpiTransfer(tester->handle, msg, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: spi transfer err", __func__);
         return ret;
@@ -110,13 +216,13 @@ static int32_t SpiDoTransferTest(struct SpiTest *test, struct SpiCfg *cfg, struc
         return ret;
     }
 
-    ret = SpiWrite(test->handle, msg->wbuf, msg->len);
+    ret = SpiWrite(tester->handle, msg->wbuf, msg->len);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: spi write err", __func__);
         return ret;
     }
 
-    ret = SpiRead(test->handle, msg->rbuf, msg->len);
+    ret = SpiRead(tester->handle, msg->rbuf, msg->len);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: spi read err", __func__);
         return ret;
@@ -126,7 +232,7 @@ static int32_t SpiDoTransferTest(struct SpiTest *test, struct SpiCfg *cfg, struc
     return HDF_SUCCESS;
 }
 
-static int32_t SpiTransferTest(struct SpiTest *test)
+static int32_t SpiTransferTest(struct SpiTester *tester)
 {
     int32_t ret;
     struct SpiMsg msg;
@@ -134,23 +240,68 @@ static int32_t SpiTransferTest(struct SpiTest *test)
     g_spiCfg.bitsPerWord = BITS_PER_WORD_8BITS;
     g_spiCfg.transferMode = SPI_POLLING_TRANSFER;
 
-    msg.rbuf = test->rbuf;
-    msg.wbuf = test->wbuf;
-    msg.len = test->len;
+    msg.rbuf = tester->config.rbuf;
+    msg.wbuf = tester->config.wbuf;
+    msg.len = tester->config.len;
     msg.csChange = 1; // switch off the CS after transfer
     msg.delayUs = 0;
     msg.speed = 0;    // use default speed
 
-    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    ret = SpiDoTransferTest(tester, &g_spiCfg, &msg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
         return ret;
     }
 
     g_spiCfg.bitsPerWord = BITS_PER_WORD_10BITS;
-    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    ret = SpiDoTransferTest(tester, &g_spiCfg, &msg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
+        return ret;
+    }
+
+    return HDF_SUCCESS;
+}
+
+#define SPI_TEST_MSG_NUM         3
+#define SPI_TEST_MSG_0           0
+#define SPI_TEST_MSG_1           1
+#define SPI_TEST_MSG_2           2
+
+static int32_t SpiMultiTransferTest(struct SpiTester *tester)
+{
+    int32_t ret;
+    struct SpiMsg msgs[SPI_TEST_MSG_NUM];
+
+    g_spiCfg.bitsPerWord = BITS_PER_WORD_8BITS;
+    g_spiCfg.transferMode = SPI_POLLING_TRANSFER;
+
+    msgs[SPI_TEST_MSG_0].rbuf = tester->config.rbuf;
+    msgs[SPI_TEST_MSG_0].wbuf = tester->config.wbuf;
+    msgs[SPI_TEST_MSG_0].len = tester->config.len;
+    msgs[SPI_TEST_MSG_0].delayUs = 0;
+    msgs[SPI_TEST_MSG_0].speed = 0;    // use default speed
+
+    msgs[SPI_TEST_MSG_1].wbuf = tester->config.wbuf;
+    msgs[SPI_TEST_MSG_1].rbuf = NULL;
+    msgs[SPI_TEST_MSG_1].len = tester->config.len;
+    msgs[SPI_TEST_MSG_1].speed = 0;
+
+    msgs[SPI_TEST_MSG_2].wbuf = NULL;
+    msgs[SPI_TEST_MSG_2].rbuf = tester->config.rbuf;
+    msgs[SPI_TEST_MSG_2].len = tester->config.len;
+    msgs[SPI_TEST_MSG_2].speed = 0;
+    msgs[SPI_TEST_MSG_2].csChange = 1; // switch off the CS after transfer
+
+    ret = SpiSetCfg(tester->handle, &g_spiCfg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: set config fail", __func__);
+        return ret;
+    }
+
+    ret = SpiTransfer(tester->handle, (struct SpiMsg *)&msgs, SPI_TEST_MSG_NUM);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: multi transfer test fail", __func__);
         return ret;
     }
 
@@ -204,7 +355,7 @@ static void SpiUnsetDmaIntMsg(struct SpiMsg *msg)
     }
 }
 
-static int32_t SpiDmaTransferTest(struct SpiTest *test)
+static int32_t SpiDmaTransferTest(struct SpiTester *tester)
 {
     int32_t ret;
     struct SpiMsg msg;
@@ -212,7 +363,7 @@ static int32_t SpiDmaTransferTest(struct SpiTest *test)
     g_spiCfg.transferMode = SPI_DMA_TRANSFER;
     g_spiCfg.bitsPerWord = BITS_PER_WORD_8BITS;
 
-    if (test->testDma == 0) {
+    if (tester->config.testDma == 0) {
         HDF_LOGI("%s: testDma not set", __func__);
         return HDF_SUCCESS;
     }
@@ -222,7 +373,7 @@ static int32_t SpiDmaTransferTest(struct SpiTest *test)
         return ret;
     }
 
-    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    ret = SpiDoTransferTest(tester, &g_spiCfg, &msg);
     if (ret != HDF_SUCCESS) {
         SpiUnsetDmaIntMsg(&msg);
         HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
@@ -230,7 +381,7 @@ static int32_t SpiDmaTransferTest(struct SpiTest *test)
     }
 
     g_spiCfg.bitsPerWord = BITS_PER_WORD_10BITS;
-    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    ret = SpiDoTransferTest(tester, &g_spiCfg, &msg);
     if (ret != HDF_SUCCESS) {
         SpiUnsetDmaIntMsg(&msg);
         HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
@@ -241,7 +392,7 @@ static int32_t SpiDmaTransferTest(struct SpiTest *test)
     return HDF_SUCCESS;
 }
 
-static int32_t SpiIntTransferTest(struct SpiTest *test)
+static int32_t SpiIntTransferTest(struct SpiTester *tester)
 {
     int32_t ret;
     struct SpiMsg msg;
@@ -254,7 +405,7 @@ static int32_t SpiIntTransferTest(struct SpiTest *test)
         return ret;
     }
 
-    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    ret = SpiDoTransferTest(tester, &g_spiCfg, &msg);
     if (ret != HDF_SUCCESS) {
         SpiUnsetDmaIntMsg(&msg);
         HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
@@ -262,7 +413,7 @@ static int32_t SpiIntTransferTest(struct SpiTest *test)
     }
 
     g_spiCfg.bitsPerWord = BITS_PER_WORD_10BITS;
-    ret = SpiDoTransferTest(test, &g_spiCfg, &msg);
+    ret = SpiDoTransferTest(tester, &g_spiCfg, &msg);
     if (ret != HDF_SUCCESS) {
         SpiUnsetDmaIntMsg(&msg);
         HDF_LOGE("%s: fail, bitsPerWord = %u, ret = %d", __func__, g_spiCfg.bitsPerWord, ret);
@@ -273,201 +424,99 @@ static int32_t SpiIntTransferTest(struct SpiTest *test)
     return HDF_SUCCESS;
 }
 
-static int32_t SpiReliabilityTest(struct SpiTest *test)
+static int32_t SpiReliabilityTest(struct SpiTester *tester)
 {
     struct SpiCfg cfg = {0};
     struct SpiMsg msg = {0};
 
-    (void)SpiSetCfg(test->handle, &cfg);
-    (void)SpiSetCfg(test->handle, NULL);
-    (void)SpiTransfer(test->handle, &msg, 1);
-    (void)SpiTransfer(test->handle, NULL, -1);
-    (void)SpiWrite(test->handle, test->wbuf, test->len);
-    (void)SpiWrite(test->handle, NULL, -1);
-    (void)SpiRead(test->handle, test->rbuf, test->len);
-    (void)SpiRead(test->handle, NULL, -1);
+    (void)SpiSetCfg(tester->handle, &cfg);
+    (void)SpiSetCfg(tester->handle, NULL);
+    (void)SpiTransfer(tester->handle, &msg, 1);
+    (void)SpiTransfer(tester->handle, NULL, -1);
+    (void)SpiWrite(tester->handle, tester->config.wbuf, tester->config.len);
+    (void)SpiWrite(tester->handle, NULL, -1);
+    (void)SpiRead(tester->handle, tester->config.rbuf, tester->config.len);
+    (void)SpiRead(tester->handle, NULL, -1);
 
-    (void)test;
+    (void)tester;
     HDF_LOGE("%s: success", __func__);
     return HDF_SUCCESS;
 }
 
-static int32_t SpiTestAll(struct SpiTest *test)
+static int32_t SpiTestAll(struct SpiTester *tester)
 {
     int32_t total = 0;
     int32_t error = 0;
 
-    if (SpiTransferTest(test) != HDF_SUCCESS) {
+    if (SpiTransferTest(tester) != HDF_SUCCESS) {
         error++;
     }
     total++;
 
-    if (SpiDmaTransferTest(test) != HDF_SUCCESS) {
+    if (SpiDmaTransferTest(tester) != HDF_SUCCESS) {
         error++;
     }
     total++;
 
-    if (SpiIntTransferTest(test) != HDF_SUCCESS) {
+    if (SpiIntTransferTest(tester) != HDF_SUCCESS) {
         error++;
     }
     total++;
 
-    if (SpiReliabilityTest(test) != HDF_SUCCESS) {
+    if (SpiReliabilityTest(tester) != HDF_SUCCESS) {
         error++;
     }
     total++;
 
-    HDF_LOGE("%s: Spi Test Total %d Error %d", __func__, total, error);
+    HDF_LOGE("%s: Spi Tester Total %d Error %d", __func__, total, error);
     return HDF_SUCCESS;
 }
 
-static struct SpiTestFunc g_spiTestFunc[] = {
-    {SPI_TRANSFER_TEST, SpiTransferTest},
-    {SPI_DMA_TRANSFER_TEST, SpiDmaTransferTest},
-    {SPI_INT_TRANSFER_TEST, SpiIntTransferTest},
-    {SPI_RELIABILITY_TEST, SpiReliabilityTest},
-    {SPI_PERFORMANCE_TEST, NULL},
-    {SPI_TEST_ALL, SpiTestAll},
+struct SpiTestFunc {
+    int cmd;
+    int32_t (*func)(struct SpiTester *tester);
+    const char *name;
 };
 
-static int32_t SpiTestEntry(struct SpiTest *test, int32_t cmd)
+static struct SpiTestFunc g_spiTestEntry[] = {
+    {SPI_TRANSFER_TEST, SpiTransferTest, "SpiTransferTest"},
+    {SPI_MULTI_TRANSFER_TEST, SpiMultiTransferTest, "SpiMultiTransferTest"},
+    {SPI_DMA_TRANSFER_TEST, SpiDmaTransferTest, "SpiDmaTransferTest"},
+    {SPI_INT_TRANSFER_TEST, SpiIntTransferTest, "SpiIntTransferTest"},
+    {SPI_RELIABILITY_TEST, SpiReliabilityTest, "SpiIntTransferTest"},
+    {SPI_PERFORMANCE_TEST, NULL, "SpiPerformanceTest"},
+    {SPI_TEST_ALL,SpiTestAll,"SpiTestAll"},
+};
+
+int32_t SpiTestExecute(int cmd)
 {
-    int32_t i;
+    uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
+    struct SpiTester *tester = NULL;
 
     HDF_LOGE("%s: enter cmd %d", __func__, cmd);
-    if (test == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
+    if (cmd > SPI_TEST_CMD_MAX) {
+        HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
+        ret = HDF_ERR_INVALID_OBJECT;
+        goto EXIT;
     }
-    test->handle = SpiTestGetHandle(test);
-    if (test->handle == NULL) {
-        HDF_LOGE("%s: spi test get handle fail", __func__);
-        return HDF_FAILURE;
+
+    tester = SpiTesterGet();
+    if (tester == NULL || tester->handle == NULL) {
+        HDF_LOGE("%s: get tester failed!", __func__);
+        ret =  HDF_ERR_NOT_SUPPORT;
+        goto EXIT;
     }
-    for (i = 0; i < sizeof(g_spiTestFunc) / sizeof(g_spiTestFunc[0]); i++) {
-        if (cmd == g_spiTestFunc[i].type && g_spiTestFunc[i].Func != NULL) {
-            ret = g_spiTestFunc[i].Func(test);
-            HDF_LOGE("%s: cmd %d ret %d", __func__, cmd, ret);
-            break;
+
+    for (i = 0; i < sizeof(g_spiTestEntry) / sizeof(g_spiTestEntry[0]); i++) {
+        if (g_spiTestEntry[i].cmd != cmd || g_spiTestEntry[i].func == NULL) {
+            continue;
         }
+        ret = g_spiTestEntry[i].func(tester);
+        break;
     }
-    SpiTestReleaseHandle(test->handle);
+EXIT:
+    HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
+    SpiTesterPut(tester);
     return ret;
 }
-
-static int32_t SpiTestBind(struct HdfDeviceObject *device)
-{
-    static struct SpiTest test;
-
-    if (device != NULL) {
-        device->service = &test.service;
-    } else {
-        HDF_LOGE("%s: device is NULL", __func__);
-    }
-    return HDF_SUCCESS;
-}
-
-static int32_t SpiTestInitFromHcs(struct SpiTest *test, const struct DeviceResourceNode *node)
-{
-    int32_t ret;
-    int32_t i;
-    uint32_t *tmp = NULL;
-    struct DeviceResourceIface *face = NULL;
-
-    face = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
-    if (face == NULL) {
-        HDF_LOGE("%s: face is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (face->GetUint32 == NULL || face->GetUint32Array == NULL) {
-        HDF_LOGE("%s: GetUint32 or GetUint32Array not support", __func__);
-        return HDF_ERR_NOT_SUPPORT;
-    }
-    ret = face->GetUint32(node, "bus", &test->bus, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read bus fail", __func__);
-        return HDF_FAILURE;
-    }
-    ret = face->GetUint32(node, "cs", &test->cs, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read cs fail", __func__);
-        return HDF_FAILURE;
-    }
-    ret = face->GetUint32(node, "len", &test->len, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read len fail", __func__);
-        return HDF_FAILURE;
-    }
-    test->wbuf = (uint8_t *)OsalMemCalloc(test->len);
-    if (test->wbuf == NULL) {
-        HDF_LOGE("%s: wbuf OsalMemCalloc error\n", __func__);
-        return HDF_ERR_MALLOC_FAIL;
-    }
-    tmp = (uint32_t *)OsalMemCalloc(test->len * sizeof(uint32_t));
-    if (tmp == NULL) {
-        HDF_LOGE("%s: tmp OsalMemCalloc error\n", __func__);
-        OsalMemFree(test->wbuf);
-        return HDF_ERR_MALLOC_FAIL;
-    }
-    ret = face->GetUint32Array(node, "wbuf", tmp, test->len, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read wbuf fail", __func__);
-        OsalMemFree(test->wbuf);
-        OsalMemFree(tmp);
-        return HDF_FAILURE;
-    }
-    for (i = 0; i < test->len; i++) {
-        test->wbuf[i] = tmp[i];
-    }
-    OsalMemFree(tmp);
-    test->rbuf = (uint8_t *)OsalMemCalloc(test->len);
-    if (test->rbuf == NULL) {
-        HDF_LOGE("%s: rbuf OsalMemCalloc error\n", __func__);
-        OsalMemFree(test->wbuf);
-        return HDF_ERR_MALLOC_FAIL;
-    }
-    return HDF_SUCCESS;
-}
-
-static int32_t SpiTestInit(struct HdfDeviceObject *device)
-{
-    struct SpiTest *test = NULL;
-
-    if (device == NULL || device->service == NULL || device->property == NULL) {
-        HDF_LOGE("%s: invalid parameter", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-    test = (struct SpiTest *)device->service;
-    SpiTestInitFromHcs(test, device->property);
-    HDF_LOGE("%s: success", __func__);
-    test->TestEntry = SpiTestEntry;
-    return HDF_SUCCESS;
-}
-
-static void SpiTestRelease(struct HdfDeviceObject *device)
-{
-    struct SpiTest *test = NULL;
-
-    if (device == NULL) {
-        return;
-    }
-    test = (struct SpiTest *)device->service;
-    if (test == NULL) {
-        return;
-    }
-    if (test->wbuf != NULL) {
-        OsalMemFree(test->wbuf);
-    }
-    if (test->rbuf != NULL) {
-        OsalMemFree(test->rbuf);
-    }
-}
-
-struct HdfDriverEntry g_spiTestEntry = {
-    .moduleVersion = 1,
-    .Bind = SpiTestBind,
-    .Init = SpiTestInit,
-    .Release = SpiTestRelease,
-    .moduleName = "PLATFORM_SPI_TEST",
-};
-HDF_INIT(g_spiTestEntry);

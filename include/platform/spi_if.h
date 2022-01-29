@@ -250,6 +250,19 @@ int32_t SpiSetCfg(DevHandle handle, struct SpiCfg *cfg);
  */
 int32_t SpiGetCfg(DevHandle handle, struct SpiCfg *cfg);
 
+/**
+ * @brief Enumerates SPI I/O commands.
+ *
+ * @since 1.0
+ */
+enum SpiIoCmd {
+    SPI_IO_OPEN = 0,        /**< Open the SPI device. */
+    SPI_IO_CLOSE,           /**< Close the SPI device. */
+    SPI_IO_TRANSFER,        /**< Execute one or more SPI messages. */
+    SPI_IO_SET_CONFIG,      /**< Set the configurations. */
+    SPI_IO_GET_CONFIG,      /**< Get the configurations. */
+};
+
 #ifdef __cplusplus
 #if __cplusplus
 }

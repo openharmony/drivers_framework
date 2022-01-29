@@ -71,12 +71,6 @@ struct I2cLockMethod {
     void (*unlock)(struct I2cCntlr *cntlr);
 };
 
-enum I2cIoCmd {
-    I2C_IO_TRANSFER = 0,
-    I2C_IO_OPEN = 1,
-    I2C_IO_CLOSE = 2,
-};
-
 /**
  * @brief Bind to a HdfDeviceObject, and do some necessary check
  *
