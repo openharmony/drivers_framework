@@ -94,10 +94,10 @@ typedef enum {
 #define HDF_ETC_DIR "/etc"
 #define HDF_CONFIG_DIR "/etc"
 #else
-#define HDF_LIBRARY_FULL_PATH(x) "/system/lib/" x ".z.so"
-#define HDF_LIBRARY_DIR "/system/lib"
-#define HDF_ETC_DIR "/system/etc"
-#define HDF_CONFIG_DIR "/system/etc/hdfconfig"
+#define HDF_LIBRARY_FULL_PATH(x) "/vendor/lib/" x ".z.so"
+#define HDF_LIBRARY_DIR "/vendor/lib"
+#define HDF_ETC_DIR "/vendor/etc"
+#define HDF_CONFIG_DIR "/vendor/etc/hdfconfig"
 #endif
 
 #ifdef __cplusplus
