@@ -8,18 +8,21 @@
 
 #include "timer_test.h"
 #include "device_resource_if.h"
+#include "hdf_io_service_if.h"
 #include "hdf_log.h"
 #include "osal_thread.h"
+#include "osal_mem.h"
 #include "osal_time.h"
+#include "securec.h"
 #include "timer_if.h"
 
 #define HDF_LOG_TAG timer_test_c
 
-static bool g_theard1Flag;
-static bool g_theard2Flag;
+static bool g_theard1Flag = false;
+static bool g_theard2Flag = false;
 
 struct TimerTestFunc {
-    enum TimerTestCmd type;
+    int type;
     int32_t (*Func)(struct TimerTest *test);
 };
 
@@ -48,7 +51,7 @@ static int32_t TimerSetTest(struct TimerTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    TimerSet(test->handle, test->uSecond, TimerTestcaseCb);
+    HwTimerSet(test->handle, test->uSecond, TimerTestcaseCb);
     return HDF_SUCCESS;
 }
 
@@ -59,7 +62,7 @@ static int32_t TimerSetOnceTest(struct TimerTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    TimerSetOnce(test->handle, test->uSecond, TimerTestcaseOnceCb);
+    HwTimerSetOnce(test->handle, test->uSecond, TimerTestcaseOnceCb);
     return HDF_SUCCESS;
 }
 
@@ -73,7 +76,7 @@ static int32_t TimerGetTest(struct TimerTest *test)
     uint32_t uSecond;
     bool isPeriod;
 
-    if (TimerGet(test->handle, &uSecond, &isPeriod) != HDF_SUCCESS) {
+    if (HwTimerGet(test->handle, &uSecond, &isPeriod) != HDF_SUCCESS) {
         HDF_LOGE("func: %s, TimerGet dailed", __func__);
         return HDF_FAILURE;
     }
@@ -89,7 +92,7 @@ static int32_t TimerStartTest(struct TimerTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    TimerStart(test->handle);
+    HwTimerStart(test->handle);
     return HDF_SUCCESS;
 }
 
@@ -100,7 +103,7 @@ static int32_t TimerStopTest(struct TimerTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    TimerStop(test->handle);
+    HwTimerStop(test->handle);
     return HDF_SUCCESS;
 }
 
@@ -113,13 +116,13 @@ static int TimerOnceTestThreadFunc(void *param)
         return HDF_FAILURE;
     }
 
-    if(TimerSetOnce(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseOnceCb) != HDF_SUCCESS) {
+    if(HwTimerSetOnce(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseOnceCb) != HDF_SUCCESS) {
         HDF_LOGE("%s: TimerSetOnce fail", __func__);
         g_theard1Flag = true;
         return HDF_FAILURE;
     }
-    if (TimerStart(handle) != HDF_SUCCESS) {
-        HDF_LOGE("%s: TimerStart fail", __func__);
+    if (HwTimerStart(handle) != HDF_SUCCESS) {
+        HDF_LOGE("%s: HwTimerStart fail", __func__);
         g_theard1Flag = true;
         return HDF_FAILURE;
     }
@@ -135,13 +138,13 @@ static int TimerPeriodTestThreadFunc(void *param)
         return HDF_FAILURE;
     }
 
-    if(TimerSet(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseCb) != HDF_SUCCESS) {
+    if(HwTimerSet(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseCb) != HDF_SUCCESS) {
         HDF_LOGE("%s: TimerSet fail", __func__);
         g_theard2Flag = true;
         return HDF_FAILURE;
     }
-    if (TimerStart(handle) != HDF_SUCCESS) {
-        HDF_LOGE("%s: TimerStart fail", __func__);
+    if (HwTimerStart(handle) != HDF_SUCCESS) {
+        HDF_LOGE("%s: HwTimerStart fail", __func__);
         g_theard2Flag = true;
         return HDF_FAILURE;
     }
@@ -164,13 +167,13 @@ int32_t TimerTestMultiThread(struct TimerTest *test)
     thread2.realThread = NULL;
 
     do {
-        handle1 = TimerOpen(TIMER_TEST_TIME_ID_THREAD1);
+        handle1 = HwTimerOpen(TIMER_TEST_TIME_ID_THREAD1);
         if (handle1 == NULL) {
             HDF_LOGE("%s: timer test get handle1 fail", __func__);
             ret = HDF_FAILURE;
             break;
         }
-        handle2 = TimerOpen(TIMER_TEST_TIME_ID_THREAD2);
+        handle2 = HwTimerOpen(TIMER_TEST_TIME_ID_THREAD2);
         if (handle1 == NULL) {
             HDF_LOGE("%s: timer test get handle2 fail", __func__);
             ret = HDF_FAILURE;
@@ -222,11 +225,11 @@ int32_t TimerTestMultiThread(struct TimerTest *test)
     } while(0);
 
     if (handle1 != NULL) {
-        TimerClose(handle1);
+        HwTimerClose(handle1);
         handle1 = NULL;
     }
     if (handle2 != NULL) {
-        TimerClose(handle2);
+        HwTimerClose(handle2);
         handle2 = NULL;
     }
     if (thread1.realThread != NULL) {
@@ -247,10 +250,92 @@ int32_t TimerTestReliability(struct TimerTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    TimerSet(test->handle, test->uSecond, NULL);
-    TimerSetOnce(test->handle, test->uSecond, NULL);
-    TimerStart(NULL);
+    HwTimerSet(test->handle, test->uSecond, NULL);
+    HwTimerSetOnce(test->handle, test->uSecond, NULL);
+    HwTimerStart(NULL);
     return HDF_SUCCESS;
+}
+
+static int32_t TimerTestGetConfig(struct TimerTestConfig *config)
+{
+    int32_t ret;
+    struct HdfSBuf *reply = NULL;
+    struct HdfIoService *service = NULL;
+    const void *buf = NULL;
+    uint32_t len;
+
+    if (config == NULL) {
+        HDF_LOGE("%s: param null", __func__);
+        return HDF_FAILURE;
+    }
+
+    service = HdfIoServiceBind("TIMER_TEST");
+    if (service == NULL) {
+        HDF_LOGE("%s: service TIMER_TEST bind fail", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    reply = HdfSbufObtain(sizeof(*config) + sizeof(uint64_t));
+    if (reply == NULL) {
+        HDF_LOGE("%s: failed to obtain reply", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    ret = service->dispatcher->Dispatch(&service->object, 0, NULL, reply);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: remote dispatch failed", __func__);
+        HdfSbufRecycle(reply);
+        return ret;
+    }
+
+    if (!HdfSbufReadBuffer(reply, &buf, &len)) {
+        HDF_LOGE("%s: read buf failed", __func__);
+        HdfSbufRecycle(reply);
+        HdfIoServiceRecycle(service);
+        return HDF_ERR_IO;
+    }
+
+    if (len != sizeof(*config)) {
+        HDF_LOGE("%s: config size:%zu, read size:%u", __func__, sizeof(*config), len);
+        HdfSbufRecycle(reply);
+        HdfIoServiceRecycle(service);
+        return HDF_ERR_IO;
+    }
+
+    if (memcpy_s(config, sizeof(*config), buf, sizeof(*config)) != EOK) {
+        HDF_LOGE("%s: memcpy buf failed", __func__);
+        HdfSbufRecycle(reply);
+        HdfIoServiceRecycle(service);
+        return HDF_ERR_IO;
+    }
+
+    HdfSbufRecycle(reply);
+    HdfIoServiceRecycle(service);
+    return HDF_SUCCESS;
+}
+
+struct TimerTest *TimerTestGet(void)
+{
+    int32_t ret;
+    static struct TimerTest tester;
+    static bool hasInit = false;
+
+    if (hasInit) {
+        return &tester;
+    }
+
+    struct TimerTestConfig config;
+    ret = TimerTestGetConfig(&config);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read config failed:%d", __func__, ret);
+        return NULL;
+    }
+
+    tester.number = config.number;
+    tester.uSecond = config.uSecond;
+    tester.isPeriod = config.isPeriod;
+    hasInit = true;
+    return &tester;
 }
 
 static struct TimerTestFunc g_timerTestFunc[] = {
@@ -259,22 +344,28 @@ static struct TimerTestFunc g_timerTestFunc[] = {
     {TIMER_TEST_GET, TimerGetTest},
     {TIMER_TEST_START, TimerStartTest},
     {TIMER_TEST_STOP, TimerStopTest},
-    {TIMER_RELIABILITY_TEST, TimerTestMultiThread},
-    {TIMER_MULTI_THREAD_TEST, TimerTestReliability},
+    {TIMER_MULTI_THREAD_TEST, TimerTestMultiThread},
+    {TIMER_RELIABILITY_TEST, TimerTestReliability},
 };
 
-static int32_t TimerTestEntry(struct TimerTest *test, int32_t cmd)
+int32_t TimerTestExecute(int cmd)
 {
-    int32_t i;
+    uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
+    
+    if (cmd > TIMER_RELIABILITY_TEST) {
+        HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
+        return HDF_ERR_NOT_SUPPORT;
+    }
 
+    struct TimerTest *test = TimerTestGet();
     if (test == NULL) {
         HDF_LOGE("%s: test null cmd %d", __func__, cmd);
         return HDF_ERR_INVALID_OBJECT;
     }
 
     if (cmd != TIMER_MULTI_THREAD_TEST) {
-         test->handle = TimerOpen(test->number);
+         test->handle = HwTimerOpen(test->number);
         if (test->handle == NULL) {
             HDF_LOGE("%s: timer test get handle fail", __func__);
             return HDF_FAILURE;
@@ -289,96 +380,8 @@ static int32_t TimerTestEntry(struct TimerTest *test, int32_t cmd)
     }
 
     if (cmd != TIMER_MULTI_THREAD_TEST) {
-        TimerClose(test->handle);
+        HwTimerClose(test->handle);
     }
 
     return ret;
 }
-
-static int32_t TimerTestBind(struct HdfDeviceObject *device)
-{
-    static struct TimerTest test;
-
-    if (device != NULL) {
-        device->service = &test.service;
-    } else {
-        HDF_LOGE("%s: device is NULL", __func__);
-    }
-
-    HDF_LOGD("%s: success", __func__);
-    return HDF_SUCCESS;
-}
-
-static int32_t TimerTestInitFromHcs(struct TimerTest *test, const struct DeviceResourceNode *node)
-{
-    int32_t ret;
-    struct DeviceResourceIface *face = NULL;
-
-    face = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
-    if (face == NULL) {
-        HDF_LOGE("%s: face is null", __func__);
-        return HDF_FAILURE;
-    }
-    if (face->GetUint32 == NULL) {
-        HDF_LOGE("%s: GetUint32 not support", __func__);
-        return HDF_ERR_NOT_SUPPORT;
-    }
-
-    ret = face->GetUint32(node, "number", &test->number, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read id fail!", __func__);
-        return HDF_FAILURE;
-    }
-
-    ret = face->GetUint32(node, "useconds", &test->uSecond, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read useconds fail!", __func__);
-        return HDF_FAILURE;
-    }
-
-    ret = face->GetUint32(node, "isPeriod", &test->isPeriod, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read isPeriod fail!", __func__);
-        return HDF_FAILURE;
-    }
-
-    HDF_LOGD("timer test init:number[%u][%u][%d]", test->number, test->uSecond, test->isPeriod);
-    return HDF_SUCCESS;
-}
-
-static int32_t TimerTestInit(struct HdfDeviceObject *device)
-{
-    struct TimerTest *test = NULL;
-
-    if (device == NULL || device->service == NULL || device->property == NULL) {
-        HDF_LOGE("%s: invalid parameter", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-    test = (struct TimerTest *)device->service;
-
-    if (TimerTestInitFromHcs(test, device->property) != HDF_SUCCESS) {
-        HDF_LOGE("%s: RegulatorTestInitFromHcs failed", __func__);
-        return HDF_FAILURE;
-    }
-
-    test->TestEntry = TimerTestEntry;
-    g_theard1Flag = false;
-    g_theard2Flag = false;
-    HDF_LOGD("%s: success", __func__);
-
-    return HDF_SUCCESS;
-}
-
-static void TimerTestRelease(struct HdfDeviceObject *device)
-{
-    (void)device;
-}
-
-struct HdfDriverEntry g_timerTestEntry = {
-    .moduleVersion = 1,
-    .Bind = TimerTestBind,
-    .Init = TimerTestInit,
-    .Release = TimerTestRelease,
-    .moduleName = "PLATFORM_TIMER_TEST",
-};
-HDF_INIT(g_timerTestEntry);

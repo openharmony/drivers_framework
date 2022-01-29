@@ -24,21 +24,21 @@ extern "C" {
 typedef int32_t (*TimerHandleCb)(void);
 
 /**
- * @brief Gets a timer.
+ * @brief Gets a hardware timer.
  * This function must be called to get its device handle before operating the timer.
  * @param number Indicates a timer id.
  * @return If the operation is successful, a pointer to the timer device handle is returned.
  * @since 1.0
  */
-DevHandle TimerOpen(const uint32_t number);
+DevHandle HwTimerOpen(const uint32_t number);
 
 /**
- * @brief Close a timer.
+ * @brief Close a hardware timer.
  * If you no longer need the timer, call this function to close it
  * @param handle Represents a pointer to the timer device handle.
  * @since 1.0
  */
-void TimerClose(DevHandle handle);
+void HwTimerClose(DevHandle handle);
 
 /**
  * @brief Start a timer.
@@ -47,7 +47,7 @@ void TimerClose(DevHandle handle);
  * @return success or fail
  * @since 1.0
  */
-int32_t TimerStart(DevHandle handle);
+int32_t HwTimerStart(DevHandle handle);
 
 /**
  * @brief Stop a timer.
@@ -56,7 +56,7 @@ int32_t TimerStart(DevHandle handle);
  * @return success or fail
  * @since 1.0
  */
-int32_t TimerStop(DevHandle handle);
+int32_t HwTimerStop(DevHandle handle);
 
 /**
  * @brief Set a period timer.
@@ -67,7 +67,7 @@ int32_t TimerStop(DevHandle handle);
  * @return success or fail
  * @since 1.0
  */
-int32_t TimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb);
+int32_t HwTimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb);
 
 /**
  * @brief Set a oneshot timer.
@@ -77,7 +77,7 @@ int32_t TimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb);
  * @return success or fail
  * @since 1.0
  */
-int32_t TimerSetOnce(DevHandle handle, uint32_t useconds, TimerHandleCb cb);
+int32_t HwTimerSetOnce(DevHandle handle, uint32_t useconds, TimerHandleCb cb);
 
 /**
  * @brief Get the timer info.
@@ -88,7 +88,28 @@ int32_t TimerSetOnce(DevHandle handle, uint32_t useconds, TimerHandleCb cb);
  * @return success or fail
  * @since 1.0
  */
-int32_t TimerGet(DevHandle handle, uint32_t *useconds, bool *isPeriod);
+int32_t HwTimerGet(DevHandle handle, uint32_t *useconds, bool *isPeriod);
+
+/**
+ * @brief Enumerates TIMER I/O commands.
+ *
+ * @since 1.0
+ */
+enum TimerIoCmd {
+    TIMER_IO_OPEN = 0,     /**< Open the TIMER device. */
+    TIMER_IO_CLOSE,        /**< Close the TIMER device. */
+    TIMER_IO_START,        /**< Start the TIMER. */
+    TIMER_IO_STOP,         /**< Stop the TIMER. */
+    TIMER_IO_SET,          /**< Set the period TIMER info. */
+    TIMER_IO_SETONCE,      /**< Set the once TIMER info. */
+    TIMER_IO_GET,          /**< Get the TIMER info. */
+};
+
+struct TimerConfig {
+    uint32_t number;
+    uint32_t useconds;
+    bool isPeriod;
+};
 
 #ifdef __cplusplus
 #if __cplusplus

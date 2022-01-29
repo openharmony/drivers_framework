@@ -15,20 +15,10 @@
 #include <string>
 #include <unistd.h>
 #include "hdf_uhdf_test.h"
+#include "timer_test.h"
 #include "hdf_io_service_if.h"
 
 using namespace testing::ext;
-
-enum TimerTestCmd {
-    TIMER_START_TEST = 1,
-    TIMER_TEST_SET,
-    TIMER_TEST_SETONCE,
-    TIMER_TEST_GET,
-    TIMER_TEST_START,
-    TIMER_TEST_STOP,
-    TIMER_MULTI_THREAD_TEST,
-    TIMER_RELIABILITY_TEST,
-};
 
 class HdfLiteTimerTest : public testing::Test {
 public:
@@ -65,6 +55,7 @@ HWTEST_F(HdfLiteTimerTest, TimerTestSet001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_TIMER_TYPE, TIMER_TEST_SET, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, TimerTestExecute(TIMER_TEST_SET));
 }
 
 /**
@@ -77,6 +68,7 @@ HWTEST_F(HdfLiteTimerTest, TimerTestSetOnce001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_TIMER_TYPE, TIMER_TEST_SETONCE, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, TimerTestExecute(TIMER_TEST_SETONCE));
 }
 
 /**
@@ -89,6 +81,7 @@ HWTEST_F(HdfLiteTimerTest, TimerTestGet001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_TIMER_TYPE, TIMER_TEST_GET, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, TimerTestExecute(TIMER_TEST_GET));
 }
 
 /**
@@ -101,6 +94,7 @@ HWTEST_F(HdfLiteTimerTest, TimerTestStart001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_TIMER_TYPE, TIMER_TEST_START, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, TimerTestExecute(TIMER_TEST_START));
 }
 
 /**
@@ -113,6 +107,7 @@ HWTEST_F(HdfLiteTimerTest, TimerTestStop001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_TIMER_TYPE, TIMER_TEST_STOP, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, TimerTestExecute(TIMER_TEST_STOP));
 }
 
 /**
@@ -125,6 +120,7 @@ HWTEST_F(HdfLiteTimerTest, TimerTestMultiThread001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_TIMER_TYPE, TIMER_MULTI_THREAD_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, TimerTestExecute(TIMER_MULTI_THREAD_TEST));
 }
 
 /**
@@ -137,4 +133,5 @@ HWTEST_F(HdfLiteTimerTest, TimerTestReliability001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_TIMER_TYPE, TIMER_RELIABILITY_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, TimerTestExecute(TIMER_RELIABILITY_TEST));
 }
