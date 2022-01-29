@@ -24,7 +24,8 @@ enum GpioTestCmd {
     GPIO_TEST_IRQ_EDGE = 3,
     GPIO_TEST_IRQ_THREAD = 4,
     GPIO_TEST_RELIABILITY = 5,
-    GPIO_TEST_MAX = 6,
+    GPIO_TEST_PERFORMANCE = 6,
+    GPIO_TEST_MAX = 7,
 };
 
 struct GpioTestConfig {
