@@ -220,6 +220,7 @@ static struct DacDevice *DacDeviceOpen(uint32_t number)
 static void DacDeviceClose(struct DacDevice *device)
 {
     if (device == NULL) {
+        HDF_LOGE("%s: close dac device fail", __func__);
         return;
     }
 
