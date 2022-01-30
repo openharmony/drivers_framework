@@ -39,9 +39,11 @@ DevHandle DacOpen(uint32_t number)
     uint32_t handle;
 
     service = DacManagerServiceGet();
-    if (service == NULL) {
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
         return NULL;
     }
+
     data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("DacOpen: malloc data failed!");
@@ -86,8 +88,14 @@ void DacClose(DevHandle handle)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
+    if (handle == NULL) {
+        HDF_LOGE("%s: handle is invalid", __func__);
+        return;
+    }
+
     service = (struct HdfIoService *)DacManagerServiceGet();
-    if (service == NULL) {
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
         return;
     }
 
@@ -115,9 +123,15 @@ int32_t DacWrite(DevHandle handle, uint32_t channel, uint32_t val)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
+    if (handle == NULL) {
+        HDF_LOGE("%s: handle is invalid", __func__);
+        return HDF_FAILURE;
+    }
+
     service = (struct HdfIoService *)DacManagerServiceGet();
-    if (service == NULL) {
-        return HDF_PLT_ERR_DEV_GET;
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
+        return HDF_ERR_INVALID_PARAM;
     }
 
     data = HdfSbufObtainDefaultSize();
