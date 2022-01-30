@@ -410,7 +410,6 @@ static int32_t DacManagerDispatch(struct HdfDeviceIoClient *client, int cmd,
             return DacManagerIoWrite(data, reply);
         default:
             return HDF_ERR_NOT_SUPPORT;
-            break;
     }
     return HDF_SUCCESS;
 }
