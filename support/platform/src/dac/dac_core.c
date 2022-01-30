@@ -29,6 +29,7 @@ static struct DacManager *g_dacManager = NULL;
 static int32_t DacDeviceLockDefault(struct DacDevice *device)
 {
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
     return OsalSpinLock(&device->spin);
@@ -37,6 +38,7 @@ static int32_t DacDeviceLockDefault(struct DacDevice *device)
 static void DacDeviceUnlockDefault(struct DacDevice *device)
 {
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return;
     }
     (void)OsalSpinUnlock(&device->spin);
@@ -49,6 +51,10 @@ static const struct DacLockMethod g_dacLockOpsDefault = {
 
 static inline int32_t DacDeviceLock(struct DacDevice *device)
 {
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
     if (device->lockOps == NULL || device->lockOps->lock == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
@@ -57,6 +63,10 @@ static inline int32_t DacDeviceLock(struct DacDevice *device)
 
 static inline void DacDeviceUnlock(struct DacDevice *device)
 {
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return;
+    }
     if (device->lockOps != NULL && device->lockOps->unlock != NULL) {
         device->lockOps->unlock(device);
     }
@@ -67,6 +77,10 @@ static int32_t DacManagerAddDevice(struct DacDevice *device)
     int32_t ret;
     struct DacManager *manager = g_dacManager;
 
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
     if (device->devNum >= DAC_DEVICES_MAX) {
         HDF_LOGE("%s: devNum:%u exceed", __func__, device->devNum);
         return HDF_ERR_INVALID_OBJECT;
@@ -98,6 +112,10 @@ static void DacManagerRemoveDevice(struct DacDevice *device)
 {
     struct DacManager *manager = g_dacManager;
 
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return;
+    }
     if (device->devNum < 0 || device->devNum >= DAC_DEVICES_MAX) {
         HDF_LOGE("%s: invalid devNum:%u", __func__, device->devNum);
         return;
@@ -153,6 +171,7 @@ int32_t DacDeviceAdd(struct DacDevice *device)
     int32_t ret;
 
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -181,6 +200,7 @@ int32_t DacDeviceAdd(struct DacDevice *device)
 void DacDeviceRemove(struct DacDevice *device)
 {
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return;
     }
     DacManagerRemoveDevice(device);
