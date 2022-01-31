@@ -78,6 +78,17 @@ void DacClose(DevHandle handle);
  */
 int32_t DacWrite(DevHandle handle, uint32_t channel, uint32_t val);
 
+/**
+ * @brief Enumerates DAC I/O commands.
+ *
+ * @since 1.0
+ */
+enum DacIoCmd {
+    DAC_IO_READ = 0,
+    DAC_IO_OPEN,
+    DAC_IO_CLOSE,
+    DAC_IO_WRITE,
+};
 #ifdef __cplusplus
 #if __cplusplus
 }

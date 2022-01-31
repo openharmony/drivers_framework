@@ -41,6 +41,7 @@ static int32_t DacTestGetConfig(struct DacTestConfig *config)
     ret = service->dispatcher->Dispatch(&service->object, 0, NULL, reply);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: remote dispatch failed", __func__);
+        HdfSbufRecycle(reply);
         return ret;
     }
 
@@ -102,10 +103,10 @@ int32_t DacTestWrite(void)
         return HDF_ERR_INVALID_OBJECT;
     }
     for (i = 0; i < TEST_DAC_VAL_NUM; i++) {
-        value[i] = 0;
+        value[i] = i;
         ret = DacWrite(tester->handle, tester->config.channel, value[i]);
         if (ret != HDF_SUCCESS || value[i] >= (1U << tester->config.dataWidth)) {
-            HDF_LOGE("%s: write value invalid:%u, ret:%d", __func__, value[i], ret);
+            HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, value[i], ret);
             return HDF_ERR_IO;
         }
     }
@@ -119,6 +120,7 @@ static int DacTestThreadFunc(void *param)
     uint32_t val;
     uint32_t i;
     int32_t ret;
+
     tester = DacTesterGet();
     if (tester == NULL) {
         HDF_LOGE("%s: get tester failed", __func__);
@@ -130,6 +132,7 @@ static int DacTestThreadFunc(void *param)
         ret = DacWrite(tester->handle, tester->config.channel, val);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: DacWrite failed, ret:%d", __func__, ret);
+            *((int32_t *)param) = 1;
             return HDF_ERR_IO;
         }
     }

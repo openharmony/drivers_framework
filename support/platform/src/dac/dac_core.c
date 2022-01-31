@@ -14,6 +14,7 @@
 #include "osal_time.h"
 #include "platform_core.h"
 
+#define DAC_HANDLE_SHIFT    0xFF00U
 #define HDF_LOG_TAG dac_core_c
 
 struct DacManager {
@@ -28,6 +29,7 @@ static struct DacManager *g_dacManager = NULL;
 static int32_t DacDeviceLockDefault(struct DacDevice *device)
 {
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
     return OsalSpinLock(&device->spin);
@@ -36,6 +38,7 @@ static int32_t DacDeviceLockDefault(struct DacDevice *device)
 static void DacDeviceUnlockDefault(struct DacDevice *device)
 {
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return;
     }
     (void)OsalSpinUnlock(&device->spin);
@@ -46,11 +49,38 @@ static const struct DacLockMethod g_dacLockOpsDefault = {
     .unlock = DacDeviceUnlockDefault,
 };
 
+static inline int32_t DacDeviceLock(struct DacDevice *device)
+{
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (device->lockOps == NULL || device->lockOps->lock == NULL) {
+        return HDF_ERR_NOT_SUPPORT;
+    }
+    return device->lockOps->lock(device);
+}
+
+static inline void DacDeviceUnlock(struct DacDevice *device)
+{
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return;
+    }
+    if (device->lockOps != NULL && device->lockOps->unlock != NULL) {
+        device->lockOps->unlock(device);
+    }
+}
+
 static int32_t DacManagerAddDevice(struct DacDevice *device)
 {
     int32_t ret;
     struct DacManager *manager = g_dacManager;
 
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
     if (device->devNum >= DAC_DEVICES_MAX) {
         HDF_LOGE("%s: devNum:%u exceed", __func__, device->devNum);
         return HDF_ERR_INVALID_OBJECT;
@@ -82,6 +112,10 @@ static void DacManagerRemoveDevice(struct DacDevice *device)
 {
     struct DacManager *manager = g_dacManager;
 
+    if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
+        return;
+    }
     if (device->devNum < 0 || device->devNum >= DAC_DEVICES_MAX) {
         HDF_LOGE("%s: invalid devNum:%u", __func__, device->devNum);
         return;
@@ -137,6 +171,7 @@ int32_t DacDeviceAdd(struct DacDevice *device)
     int32_t ret;
 
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -165,6 +200,7 @@ int32_t DacDeviceAdd(struct DacDevice *device)
 void DacDeviceRemove(struct DacDevice *device)
 {
     if (device == NULL) {
+        HDF_LOGE("%s: device is null", __func__);
         return;
     }
     DacManagerRemoveDevice(device);
@@ -181,19 +217,35 @@ void DacDevicePut(struct DacDevice *device)
     (void)device;
 }
 
-static inline int32_t DacDeviceLock(struct DacDevice *device)
+static struct DacDevice *DacDeviceOpen(uint32_t number)
 {
-    if (device->lockOps == NULL || device->lockOps->lock == NULL) {
-        return HDF_ERR_NOT_SUPPORT;
+    int32_t ret;
+    struct DacDevice *device = NULL;
+
+    device = DacDeviceGet(number);
+    if (device == NULL) {
+        HDF_LOGE("%s: Get device failed!", __func__);
+        return NULL;
     }
-    return device->lockOps->lock(device);
+
+    ret = DacDeviceStart(device);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: start device failed!", __func__);
+        return NULL;
+    }
+
+    return device;
 }
 
-static inline void DacDeviceUnlock(struct DacDevice *device)
+static void DacDeviceClose(struct DacDevice *device)
 {
-    if (device->lockOps != NULL && device->lockOps->unlock != NULL) {
-        device->lockOps->unlock(device);
+    if (device == NULL) {
+        HDF_LOGE("%s: close dac device fail", __func__);
+        return;
     }
+
+    (void)DacDeviceStop(device);
+    DacDevicePut(device);
 }
 
 int32_t DacDeviceWrite(struct DacDevice *device, uint32_t channel, uint32_t val)
@@ -273,22 +325,28 @@ static int32_t DacManagerIoOpen(struct HdfSBuf *data, struct HdfSBuf *reply)
     uint32_t number;
 
     if (data == NULL || reply == NULL) {
+        HDF_LOGE("%s: invalid data or reply", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
     if (!HdfSbufReadUint32(data, &number)) {
+        HDF_LOGE("%s: read number failed!", __func__);
         return HDF_ERR_IO;
     }
 
     if (number < 0 || number >= DAC_DEVICES_MAX || reply == NULL) {
+        HDF_LOGE("%s: invalid number %u", __func__, number);
         return HDF_ERR_INVALID_PARAM;
     }
 
-    if (DacDeviceGet(number) == NULL) {
+    if (DacDeviceOpen(number) == NULL) {
+        HDF_LOGE("%s: get device %u failed!", __func__, number);
         return HDF_ERR_NOT_SUPPORT;
     }
 
-    if (!HdfSbufWriteUint32(reply, number)) {
+    number = (uint32_t)(number + DAC_HANDLE_SHIFT);
+    if (!HdfSbufWriteUint32(reply, (uint32_t)(uintptr_t)number)) {
+        HDF_LOGE("%s: write number failed!", __func__);
         return HDF_ERR_IO;
     }
     return HDF_SUCCESS;
@@ -298,47 +356,88 @@ static int32_t DacManagerIoClose(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     uint32_t number;
 
-    if (data == NULL || reply == NULL) {
+    if (data == NULL) {
+        HDF_LOGE("%s: invalid data", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
     if (!HdfSbufReadUint32(data, &number)) {
+        HDF_LOGE("%s: read number failed!", __func__);
         return HDF_ERR_IO;
     }
 
+    number  = (uint32_t)(number - DAC_HANDLE_SHIFT);
     if (number < 0 || number >= DAC_DEVICES_MAX) {
+        HDF_LOGE("%s: invalid number %u", __func__, number);
         return HDF_ERR_INVALID_PARAM;
     }
-    DacDevicePut(DacManagerFindDevice(number));
+
+    DacDeviceClose(DacDeviceGet(number));
     return HDF_SUCCESS;
 }
 
-static int32_t DacManagerIoRead(struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t DacManagerIoWrite(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    (void)data;
-    (void)reply;
+    int32_t ret;
+    uint32_t channel;
+    uint32_t val;
+    uint32_t number;
+
+    if (data == NULL) {
+        HDF_LOGE("%s: invalid data", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    if (!HdfSbufReadUint32(data, &number)) {
+        HDF_LOGE("%s: read number failed!", __func__);
+        return HDF_ERR_IO;
+    }
+
+    number  = (uint32_t)(number - DAC_HANDLE_SHIFT);
+    if (number < 0 || number >= DAC_DEVICES_MAX) {
+        HDF_LOGE("%s: invalid number %u", __func__, number);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    if (!HdfSbufReadUint32(data, &channel)) {
+        HDF_LOGE("%s: read dac channel failed", __func__);
+        return HDF_ERR_IO;
+    }
+
+    if (!HdfSbufReadUint32(data, &val)) {
+        HDF_LOGE("%s: read dac value failed", __func__);
+        return HDF_ERR_IO;
+    }
+
+    ret = DacDeviceWrite(DacDeviceGet(number), channel, val);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: write dac failed:%d", __func__, ret);
+        return ret;
+    }
+
     return HDF_SUCCESS;
 }
 
 static int32_t DacManagerDispatch(struct HdfDeviceIoClient *client, int cmd,
     struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-    int32_t ret;
-
     switch (cmd) {
         case DAC_IO_OPEN:
             return DacManagerIoOpen(data, reply);
         case DAC_IO_CLOSE:
             return DacManagerIoClose(data, reply);
-        case DAC_IO_READ:
-            return DacManagerIoRead(data, reply);
+        case DAC_IO_WRITE:
+            return DacManagerIoWrite(data, reply);
         default:
-            ret = HDF_ERR_NOT_SUPPORT;
-            break;
+            return HDF_ERR_NOT_SUPPORT;
     }
-    return ret;
+    return HDF_SUCCESS;
 }
-
+static int32_t DacManagerBind(struct HdfDeviceObject *device)
+{
+    (void)device;
+    return HDF_SUCCESS;
+}
 static int32_t DacManagerInit(struct HdfDeviceObject *device)
 {
     int32_t ret;
@@ -390,6 +489,7 @@ static void DacManagerRelease(struct HdfDeviceObject *device)
 
 struct HdfDriverEntry g_dacManagerEntry = {
     .moduleVersion = 1,
+    .Bind = DacManagerBind,
     .Init = DacManagerInit,
     .Release = DacManagerRelease,
     .moduleName = "HDF_PLATFORM_DAC_MANAGER",
