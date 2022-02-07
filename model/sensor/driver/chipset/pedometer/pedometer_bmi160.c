@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -14,7 +14,7 @@
 #include "sensor_device_manager.h"
 #include "sensor_pedometer_driver.h"
 
-#define HDF_LOG_TAG    pedometer_bmi160_c
+#define HDF_LOG_TAG    hdf_sensor_pedometer
 
 static struct Bmi160DrvData *g_bmi160DrvData = NULL;
 
@@ -54,7 +54,7 @@ static int32_t ReadBmi160PedometerRawData(struct SensorCfgData *data, struct Ped
     rawData->pedometer = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[PEDOMETER_NU_MSB], SENSOR_DATA_WIDTH_8_BIT) |
         reg[PEDOMETER_NU_LSB]);
     rawData->pedometer = PEDOMETER_TEST_NUM;
-    HDF_LOGE("%s: Pedometer number = %d", __func__, rawData->pedometer);
+
     return HDF_SUCCESS;
 }
 
@@ -65,7 +65,8 @@ int32_t ReadBmi160PedometerData(struct SensorCfgData *data)
     static int32_t tmp;
     struct SensorReportEvent event;
 
-    (void)memset_s(&event, sizeof(event), 0, sizeof(event));
+    ret = memset_s(&event, sizeof(event), 0, sizeof(event));
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "memset_s");
  
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 

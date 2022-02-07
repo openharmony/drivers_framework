@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -16,7 +16,7 @@
 #include "sensor_device_manager.h"
 #include "sensor_platform_if.h"
 
-#define HDF_LOG_TAG    sensor_pedometer_driver_c
+#define HDF_LOG_TAG    hdf_sensor_pedometer_driver
 
 #define HDF_PEDOMETER_WORK_QUEUE_NAME    "hdf_pedometer_work_queue"
 
