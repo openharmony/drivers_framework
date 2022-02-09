@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -11,13 +11,12 @@
 
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
+#include "hdf_sbuf.h"
 #include "osal_atomic.h"
 #include "uart_if.h"
 
 #ifdef __cplusplus
-#if __cplusplus
 extern "C" {
-#endif
 #endif /* __cplusplus */
 
 /**
@@ -142,10 +141,11 @@ static inline int32_t UartHostPollEvent(struct UartHost *host, void *filep, void
     return host->method->pollEvent(host, filep, table);
 }
 
+int32_t UartIoDispatch(struct HdfDeviceIoClient *client, int cmd,
+    struct HdfSBuf *data, struct HdfSBuf *reply);
+
 #ifdef __cplusplus
-#if __cplusplus
 }
-#endif
 #endif /* __cplusplus */
 
 #endif /* UART_CORE_H */
