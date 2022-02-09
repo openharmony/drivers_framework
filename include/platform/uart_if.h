@@ -33,9 +33,7 @@
 #include "platform_if.h"
 
 #ifdef __cplusplus
-#if __cplusplus
 extern "C" {
-#endif
 #endif /* __cplusplus */
 
 /**
@@ -367,9 +365,7 @@ int32_t UartSetAttribute(DevHandle handle, struct UartAttribute *attribute);
 int32_t UartSetTransMode(DevHandle handle, enum UartTransMode mode);
 
 #ifdef __cplusplus
-#if __cplusplus
 }
-#endif
 #endif /* __cplusplus */
 
 #endif /* PAL_UART_IF_H */

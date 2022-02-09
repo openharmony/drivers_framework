@@ -9,36 +9,43 @@
 #ifndef UART_TEST_H
 #define UART_TEST_H
 
-#include "hdf_device_desc.h"
-#include "platform_if.h"
+#include "uart_if.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
+int32_t UartTestExecute(int cmd);
 
 enum UartTestCmd {
-    UAER_WRITE_TEST = 0,
-    UART_READ_TEST,
-    UART_SET_BAUD_TEST,
-    UART_GET_BAUD_TEST,
-    UART_SET_ATTRIBUTE_TEST,
-    UART_GET_ATTRIBUTE_TEST,
-    UART_SET_TRANSMODE_TEST,
-    UART_RELIABILITY_TEST,
-    UART_PERFORMANCE_TEST,
-    UART_TEST_ALL,
+    UART_TEST_CMD_WRITE = 0,
+    UART_TEST_CMD_READ = 1,
+    UART_TEST_CMD_SET_BAUD = 2,
+    UART_TEST_CMD_GET_BAUD = 3,
+    UART_TEST_CMD_SET_ATTRIBUTE = 4,
+    UART_TEST_CMD_GET_ATTRIBUTE = 5,
+    UART_TEST_CMD_SET_TRANSMODE = 6,
+    UART_TEST_CMD_RELIABILITY = 7,
+    UART_TEST_CMD_PERFORMANCE = 8,
+    UART_TEST_CMD_MAX = 9,
 };
 
-struct UartTest {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    int32_t (*TestEntry)(struct UartTest *test, int32_t cmd);
+struct UartTestConfig {
     uint32_t port;
     uint32_t len;
     uint8_t *wbuf;
     uint8_t *rbuf;
-    DevHandle handle;
 };
 
-static inline struct UartTest *GetUartTest(void)
-{
-    return (struct UartTest *)DevSvcManagerClntGetService("UART_TEST");
+struct UartTester {
+    struct UartTestConfig config;
+    DevHandle handle;
+    uint16_t total;
+    uint16_t fails;
+};
+
+#ifdef __cplusplus
 }
+#endif /* __cplusplus */
 
 #endif /* UART_TEST_H */

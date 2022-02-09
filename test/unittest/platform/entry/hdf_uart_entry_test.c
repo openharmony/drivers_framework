@@ -13,16 +13,11 @@
 
 int32_t HdfUartUnitTestEntry(HdfTestMsg *msg)
 {
-    struct UartTest *test = NULL;
-
     if (msg == NULL) {
         return HDF_FAILURE;
     }
-    test = GetUartTest();
-    if (test == NULL || test->TestEntry == NULL) {
-        msg->result = HDF_FAILURE;
-        return HDF_FAILURE;
-    }
-    msg->result = test->TestEntry(test, msg->subCmd);
+
+    msg->result = UartTestExecute(msg->subCmd);
+
     return msg->result;
 }
