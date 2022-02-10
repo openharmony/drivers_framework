@@ -31,6 +31,11 @@ static void *PwmGetDevByNum(uint32_t num)
         return NULL;
     }
     pwm = (void *)DevSvcManagerClntGetService(name);
+    if (pwm == NULL) {
+        HDF_LOGE("%s: get service failed", __func__);
+        OsalMemFree(name);
+        return NULL;
+    }
     OsalMemFree(name);
     return pwm;
 }
@@ -60,7 +65,10 @@ void PwmClose(DevHandle handle)
         return;
     }
 
-    PwmDevicePut((struct PwmDev *)handle);
+    if (PwmDevicePut((struct PwmDev *)handle) != HDF_SUCCESS) {
+        HDF_LOGE("%s: PwmDevicePut fail", __func__);
+        return;
+    }
 }
 
 int32_t PwmSetPeriod(DevHandle handle, uint32_t period)
@@ -69,8 +77,8 @@ int32_t PwmSetPeriod(DevHandle handle, uint32_t period)
     uint32_t curValue;
     int32_t ret;
 
-    HDF_LOGI("%s: enter.", __func__);
     if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: PwmGetConfig fail", __func__);
         return HDF_FAILURE;
     }
     curValue = config.period;
@@ -88,8 +96,8 @@ int32_t PwmSetDuty(DevHandle handle, uint32_t duty)
     uint32_t curValue;
     int32_t ret;
 
-    HDF_LOGI("%s: enter.", __func__);
     if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: PwmGetConfig fail", __func__);
         return HDF_FAILURE;
     }
     curValue = config.duty;
@@ -107,8 +115,8 @@ int32_t PwmSetPolarity(DevHandle handle, uint8_t polarity)
     uint32_t curValue;
     int32_t ret;
 
-    HDF_LOGI("%s: enter.", __func__);
     if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: PwmGetConfig fail", __func__);
         return HDF_FAILURE;
     }
     curValue = config.polarity;
@@ -126,8 +134,8 @@ int32_t PwmEnable(DevHandle handle)
     uint32_t curValue;
     int32_t ret;
 
-    HDF_LOGI("%s: enter.", __func__);
     if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: PwmGetConfig fail", __func__);
         return HDF_FAILURE;
     }
     curValue = config.status;
@@ -145,8 +153,8 @@ int32_t PwmDisable(DevHandle handle)
     uint32_t curValue;
     int32_t ret;
 
-    HDF_LOGI("%s: enter.", __func__);
     if (PwmGetConfig(handle, &config) != HDF_SUCCESS) {
+        HDF_LOGE("%s: PwmGetConfig fail", __func__);
         return HDF_FAILURE;
     }
     curValue = config.status;
@@ -162,7 +170,6 @@ int32_t PwmSetConfig(DevHandle handle, struct PwmConfig *config)
 {
     int32_t ret;
 
-    HDF_LOGI("%s: enter.", __func__);
     if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL", __func__);
         return HDF_ERR_INVALID_OBJECT;
@@ -177,7 +184,6 @@ int32_t PwmSetConfig(DevHandle handle, struct PwmConfig *config)
         HDF_LOGE("%s: PwmSetConfig failed, ret: %d", __func__, ret);
     }
 
-    HDF_LOGI("%s: success.", __func__);
     return HDF_SUCCESS;
 }
 
@@ -185,7 +191,6 @@ int32_t PwmGetConfig(DevHandle handle, struct PwmConfig *config)
 {
     struct PwmDev *pwm = NULL;
 
-    HDF_LOGI("%s: enter.", __func__);
     if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL", __func__);
         return HDF_ERR_INVALID_OBJECT;
@@ -196,7 +201,6 @@ int32_t PwmGetConfig(DevHandle handle, struct PwmConfig *config)
     }
     pwm = (struct PwmDev *)handle;
     *config = pwm->cfg;
-    HDF_LOGI("%s: success.", __func__);
 
     return HDF_SUCCESS;
 }

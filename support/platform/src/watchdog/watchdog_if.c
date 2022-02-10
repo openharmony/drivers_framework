@@ -19,10 +19,10 @@
 #define WATCHDOG_ID_MAX   8
 #define WATCHDOG_NAME_LEN 32
 
-static struct Watchdog *WatchdogGetById(int16_t wdtId)
+static void *WatchdogGetById(int16_t wdtId)
 {
     char *serviceName = NULL;
-    struct Watchdog *service = NULL;
+    void *obj = NULL;
 
     if (wdtId < 0 || wdtId >= WATCHDOG_ID_MAX) {
         HDF_LOGE("WatchdogGetById: invalid id:%d", wdtId);
@@ -38,18 +38,23 @@ static struct Watchdog *WatchdogGetById(int16_t wdtId)
         OsalMemFree(serviceName);
         return NULL;
     }
-    service = (struct Watchdog *)DevSvcManagerClntGetService(serviceName);
-    if (service == NULL) {
-        HDF_LOGE("WatchdogGetById: get service fail!");
+    obj = (void *)DevSvcManagerClntGetService(serviceName);
+    if (obj == NULL) {
+        HDF_LOGE("WatchdogGetById: get obj fail!");
     }
     OsalMemFree(serviceName);
-    return service;
+    return obj;
 }
 
 int32_t WatchdogOpen(int16_t wdtId, DevHandle *handle)
 {
     struct Watchdog *service = NULL;
     int32_t ret;
+
+    if (handle == NULL) {
+        HDF_LOGE("%s: handle null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
 
     service = WatchdogGetById(wdtId);
     if (service == NULL) {
@@ -68,8 +73,14 @@ int32_t WatchdogOpen(int16_t wdtId, DevHandle *handle)
 
 void WatchdogClose(DevHandle handle)
 {
-    WatchdogReleasePriv((struct WatchdogCntlr *)handle);
-    (void)handle;
+    if (handle == NULL) {
+        HDF_LOGE("%s handle null", __func__);
+        return;
+    }
+    if (WatchdogReleasePriv((struct WatchdogCntlr *)handle) != HDF_SUCCESS) {
+        HDF_LOGE("%s WatchdogReleasePriv fail", __func__);
+        return;
+    }
 }
 
 int32_t WatchdogGetStatus(DevHandle handle, int32_t *status)

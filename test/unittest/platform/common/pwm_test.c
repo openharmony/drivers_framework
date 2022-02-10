@@ -8,441 +8,381 @@
 
 #include "pwm_test.h"
 #include "device_resource_if.h"
-#include "hdf_base.h"
+#include "hdf_io_service_if.h"
 #include "hdf_log.h"
+#include "osal_mem.h"
 #include "osal_time.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG           pwm_test
 #define SEQ_OUTPUT_DELAY      100 /* Delay time of sequential output, unit: ms */
 #define OUTPUT_WAVES_DELAY    1 /* Delay time of waves output, unit: second */
 #define TEST_WAVES_NUMBER     10 /* The number of waves for test. */
 
-struct PwmTestFunc {
-    enum PwmTestCmd type;
-    int32_t (*Func)(struct PwmTest *test);
-};
-
-static DevHandle PwmTestGetHandle(struct PwmTest *test)
+static int32_t PwmTesterGetConfig(struct PwmTestConfig *config)
 {
-    return PwmOpen(test->num);
+    int32_t ret;
+    struct HdfSBuf *reply = NULL;
+    struct HdfIoService *service = NULL;
+    const void *buf = NULL;
+    uint32_t len;
+
+    service = HdfIoServiceBind("PWM_TEST");
+    if ((service == NULL) || (service->dispatcher == NULL) || (service->dispatcher->Dispatch == NULL)) {
+        HDF_LOGE("%s: HdfIoServiceBind failed\n", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    reply = HdfSbufObtain(sizeof(*config) + sizeof(uint64_t));
+    if (reply == NULL) {
+        HDF_LOGE("%s: failed to obtain reply", __func__);
+        HdfIoServiceRecycle(service);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    ret = service->dispatcher->Dispatch(&service->object, 0, NULL, reply);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: remote dispatch failed", __func__);
+        HdfIoServiceRecycle(service);
+        HdfSbufRecycle(reply);
+        return ret;
+    }
+
+    if (!HdfSbufReadBuffer(reply, &buf, &len)) {
+        HDF_LOGE("%s: read buf failed", __func__);
+        HdfIoServiceRecycle(service);
+        HdfSbufRecycle(reply);
+        return HDF_ERR_IO;
+    }
+
+    if (len != sizeof(*config)) {
+        HDF_LOGE("%s: config size:%zu, read size:%u", __func__, sizeof(*config), len);
+        HdfIoServiceRecycle(service);
+        HdfSbufRecycle(reply);
+        return HDF_ERR_IO;
+    }
+
+    if (memcpy_s(config, sizeof(*config), buf, sizeof(*config)) != EOK) {
+        HDF_LOGE("%s: memcpy buf failed", __func__);
+        HdfIoServiceRecycle(service);
+        HdfSbufRecycle(reply);
+        return HDF_ERR_IO;
+    }
+
+    HdfIoServiceRecycle(service);
+    HdfSbufRecycle(reply);
+    return HDF_SUCCESS;
 }
 
-static void PwmTestReleaseHandle(DevHandle handle)
+struct PwmTester *PwmTesterGet(void)
 {
-    if (handle == NULL) {
-        HDF_LOGE("%s: pwm handle is null.", __func__);
+    int32_t ret;
+    static struct PwmTester tester;
+
+    OsalMSleep(SEQ_OUTPUT_DELAY);
+    ret = PwmTesterGetConfig(&tester.config);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read config failed:%d", __func__, ret);
+        return NULL;
+    }
+
+    tester.handle = PwmOpen(tester.config.num);
+    if (tester.handle == NULL) {
+        HDF_LOGE("%s: open pwm device:%u failed", __func__, tester.config.num);
+        return NULL;
+    }
+
+    return &tester;
+}
+
+static void PwmTesterPut(struct PwmTester *tester)
+{
+    if (tester == NULL) {
+        HDF_LOGE("%s: tester is NULL", __func__);
         return;
     }
-    PwmClose(handle);
+    PwmClose(tester->handle);
+    tester->handle = NULL;
+    OsalMSleep(SEQ_OUTPUT_DELAY);
 }
 
-static int32_t PwmSetConfigTest(struct PwmTest *test)
+static int32_t PwmSetGetConfigTest(struct PwmTester *tester)
 {
     int32_t ret;
     struct PwmConfig cfg = {0};
     uint32_t number;
 
-    HDF_LOGI("%s: enter. Test [PwmSetConfig].", __func__);
-    number = test->cfg.number;
-    test->cfg.number = ((number > 0) ? 0 : TEST_WAVES_NUMBER);
-    HDF_LOGI("%s: Set number %u.", __func__, test->cfg.number);
-    ret = PwmSetConfig(test->handle, &(test->cfg));
+    number = tester->config.cfg.number;
+    tester->config.cfg.number = ((number > 0) ? 0 : TEST_WAVES_NUMBER);
+    HDF_LOGI("%s: Set number %u.", __func__, tester->config.cfg.number);
+    ret = PwmSetConfig(tester->handle, &(tester->config.cfg));
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmSetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
+
     OsalSleep(OUTPUT_WAVES_DELAY);
-    test->cfg.number = number;
-    HDF_LOGI("%s: Set number %u.", __func__, test->cfg.number);
-    ret = PwmSetConfig(test->handle, &(test->cfg));
+    tester->config.cfg.number = number;
+    HDF_LOGI("%s: Set number %u.", __func__, tester->config.cfg.number);
+    ret = PwmSetConfig(tester->handle, &(tester->config.cfg));
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmSetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    ret = PwmGetConfig(test->handle, &cfg);
+
+    ret = PwmGetConfig(tester->handle, &cfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    if (memcmp(&cfg, &(test->cfg), sizeof(cfg)) != 0) {
-        HDF_LOGE("%s: [memcmp] failed.", __func__);
+
+    if (memcmp(&cfg, &(tester->config.cfg), sizeof(cfg)) != 0) {
+        HDF_LOGE("%s: [memcmp_s] failed.", __func__);
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("%s: success.", __func__);
-    return ret;
+    return HDF_SUCCESS;
 }
 
-static int32_t PwmGetConfigTest(struct PwmTest *test)
-{
-    int32_t ret;
-    struct PwmConfig cfg = {0};
-
-    HDF_LOGI("%s: enter. Test [PwmGetConfig].", __func__);
-    ret = PwmGetConfig(test->handle, &cfg);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
-    }
-    HDF_LOGI("%s: success.", __func__);
-    return ret;
-}
-
-static int32_t PwmSetPeriodTest(struct PwmTest *test)
+static int32_t PwmSetPeriodTest(struct PwmTester *tester)
 {
     int32_t ret;
     struct PwmConfig cfg = {0};
     uint32_t period;
 
-    period = test->cfg.period + test->originCfg.period;
-    HDF_LOGI("%s: enter. Test [PwmSetPeriod] period %u.", __func__, period);
-    ret = PwmSetPeriod(test->handle, period);
+    period = tester->config.cfg.period + tester->originCfg.period;
+    ret = PwmSetPeriod(tester->handle, period);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmSetPeriod] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    ret = PwmGetConfig(test->handle, &cfg);
+
+    ret = PwmGetConfig(tester->handle, &cfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
+
     if (cfg.period != period) {
-        HDF_LOGE("%s: failed.", __func__);
+        HDF_LOGE("%s: failed: cfg.period:%d period:%d", __func__, cfg.period, period);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: success.", __func__);
-    return ret;
+
+    return HDF_SUCCESS;
 }
 
-static int32_t PwmSetDutyTest(struct PwmTest *test)
+static int32_t PwmSetDutyTest(struct PwmTester *tester)
 {
     int32_t ret;
     struct PwmConfig cfg = {0};
     uint32_t duty;
 
-    duty = test->cfg.duty + test->originCfg.duty;
-    HDF_LOGI("%s: enter. Test [PwmSetDuty] duty %u.", __func__, duty);
-    ret = PwmSetDuty(test->handle, duty);
+    duty = tester->config.cfg.duty+ tester->originCfg.duty;
+    ret = PwmSetDuty(tester->handle, duty);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmSetDuty] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    ret = PwmGetConfig(test->handle, &cfg);
+
+    ret = PwmGetConfig(tester->handle, &cfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
+
     if (cfg.duty != duty) {
         HDF_LOGE("%s: failed.", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: success.", __func__);
-    return ret;
+
+    return HDF_SUCCESS;
 }
 
-static int32_t PwmSetPolarityTest(struct PwmTest *test)
+static int32_t PwmSetPolarityTest(struct PwmTester *tester)
 {
     int32_t ret;
     struct PwmConfig cfg = {0};
 
-    HDF_LOGI("%s: enter.", __func__);
-    test->cfg.polarity = PWM_NORMAL_POLARITY;
-    HDF_LOGI("%s: Test [PwmSetPolarity] polarity %u.", __func__, test->cfg.polarity);
-    ret = PwmSetPolarity(test->handle, test->cfg.polarity);
+    tester->config.cfg.polarity = PWM_NORMAL_POLARITY;
+    HDF_LOGI("%s: Test [PwmSetPolarity] polarity %u.", __func__, tester->config.cfg.polarity);
+    ret = PwmSetPolarity(tester->handle, tester->config.cfg.polarity);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmSetPolarity] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    test->cfg.polarity = PWM_INVERTED_POLARITY;
-    HDF_LOGI("%s: Test [PwmSetPolarity] polarity %u.", __func__, test->cfg.polarity);
-    ret = PwmSetPolarity(test->handle, test->cfg.polarity);
+
+    tester->config.cfg.polarity = PWM_INVERTED_POLARITY;
+    HDF_LOGI("%s: Test [PwmSetPolarity] polarity %u.", __func__, tester->config.cfg.polarity);
+    ret = PwmSetPolarity(tester->handle, tester->config.cfg.polarity);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmSetPolarity] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    ret = PwmGetConfig(test->handle, &cfg);
+
+    ret = PwmGetConfig(tester->handle, &cfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    if (cfg.polarity != test->cfg.polarity) {
+
+    if (cfg.polarity != tester->config.cfg.polarity) {
         HDF_LOGE("%s: failed.", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: success.", __func__);
-    return ret;
+
+    return HDF_SUCCESS;
 }
 
-static int32_t PwmEnableTest(struct PwmTest *test)
+static int32_t PwmEnableTest(struct PwmTester *tester)
 {
     int32_t ret;
     struct PwmConfig cfg = {0};
 
-    HDF_LOGI("%s: enter.", __func__);
-    ret = PwmDisable(test->handle);
+    ret = PwmDisable(tester->handle);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmDisable] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
+
     HDF_LOGI("%s: Test [PwmEnable] enable.", __func__);
-    ret = PwmEnable(test->handle);
+    ret = PwmEnable(tester->handle);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmEnable] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    ret = PwmGetConfig(test->handle, &cfg);
+
+    ret = PwmGetConfig(tester->handle, &cfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
+
     if (cfg.status == PWM_DISABLE_STATUS) {
         HDF_LOGE("%s: failed", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: success.", __func__);
-    return ret;
+
+    return HDF_SUCCESS;
 }
 
-static int32_t PwmDisableTest(struct PwmTest *test)
+static int32_t PwmDisableTest(struct PwmTester *tester)
 {
     int32_t ret;
     struct PwmConfig cfg = {0};
 
-    HDF_LOGI("%s: enter.", __func__);
-    ret = PwmEnable(test->handle);
+    ret = PwmEnable(tester->handle);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmEnable] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
+
     HDF_LOGI("%s: Test [PwmDisable] disable.", __func__);
-    ret = PwmDisable(test->handle);
+    ret = PwmDisable(tester->handle);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmDisable] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
-    ret = PwmGetConfig(test->handle, &cfg);
+
+    ret = PwmGetConfig(tester->handle, &cfg);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
+
     if (cfg.status == PWM_ENABLE_STATUS) {
         HDF_LOGE("%s: failed.", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: success.", __func__);
-    return ret;
+
+    return HDF_SUCCESS;
 }
 
 #define TEST_PERIOD 2147483647
 #define TEST_DUTY 2147483647
 #define TEST_POLARITY 10
-static int32_t PwmReliabilityTest(struct PwmTest *test)
+static int32_t PwmReliabilityTest(struct PwmTester *tester)
 {
     struct PwmConfig cfg = {0};
 
-    (void)PwmSetConfig(test->handle, &(test->cfg));
-    (void)PwmSetConfig(test->handle, NULL);
-    (void)PwmGetConfig(test->handle, &cfg);
-    (void)PwmGetConfig(test->handle, NULL);
+    (void)PwmSetConfig(tester->handle, &(tester->config.cfg));
+    (void)PwmSetConfig(tester->handle, NULL);
+    (void)PwmGetConfig(tester->handle, &cfg);
+    (void)PwmGetConfig(tester->handle, NULL);
 
-    (void)PwmSetPeriod(test->handle, 0);
-    (void)PwmSetPeriod(test->handle, TEST_PERIOD);
+    (void)PwmSetPeriod(tester->handle, 0);
+    (void)PwmSetPeriod(tester->handle, TEST_PERIOD);
 
-    (void)PwmSetDuty(test->handle, 0);
-    (void)PwmSetDuty(test->handle, TEST_DUTY);
+    (void)PwmSetDuty(tester->handle, 0);
+    (void)PwmSetDuty(tester->handle, TEST_DUTY);
 
-    (void)PwmSetPolarity(test->handle, 0);
-    (void)PwmSetPolarity(test->handle, TEST_POLARITY);
+    (void)PwmSetPolarity(tester->handle, 0);
+    (void)PwmSetPolarity(tester->handle, TEST_POLARITY);
 
-    (void)PwmEnable(test->handle);
-    (void)PwmEnable(test->handle);
+    (void)PwmEnable(tester->handle);
+    (void)PwmEnable(tester->handle);
 
-    (void)PwmDisable(test->handle);
-    (void)PwmDisable(test->handle);
+    (void)PwmDisable(tester->handle);
+    (void)PwmDisable(tester->handle);
     HDF_LOGI("%s: success.", __func__);
     return HDF_SUCCESS;
 }
 
-static int32_t PwmTestAll(struct PwmTest *test)
-{
-    int32_t total = 0;
-    int32_t error = 0;
+struct PwmTestEntry {
+    int cmd;
+    int32_t (*func)(struct PwmTester *tester);
+};
 
-    if (PwmSetPeriodTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-    if (PwmSetDutyTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-    if (PwmSetPolarityTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-    if (PwmGetConfigTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-    if (PwmEnableTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-    if (PwmSetConfigTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-    if (PwmDisableTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-    if (PwmReliabilityTest(test) != HDF_SUCCESS) {
-        error++;
-    }
-    total++;
-
-    HDF_LOGI("%s: Pwm Test Total %d Error %d.", __func__, total, error);
-    return HDF_SUCCESS;
-}
-
-static struct PwmTestFunc g_pwmTestFunc[] = {
+static struct PwmTestEntry g_entry[] = {
     { PWM_SET_PERIOD_TEST, PwmSetPeriodTest },
     { PWM_SET_DUTY_TEST, PwmSetDutyTest },
     { PWM_SET_POLARITY_TEST, PwmSetPolarityTest },
     { PWM_ENABLE_TEST, PwmEnableTest },
     { PWM_DISABLE_TEST, PwmDisableTest },
-    { PWM_SET_CONFIG_TEST, PwmSetConfigTest },
-    { PWM_GET_CONFIG_TEST, PwmGetConfigTest },
+    { PWM_SET_GET_CONFIG_TEST, PwmSetGetConfigTest },
     { PWM_RELIABILITY_TEST, PwmReliabilityTest },
-    { PWM_TEST_ALL, PwmTestAll },
 };
 
-static int32_t PwmTestEntry(struct PwmTest *test, int32_t cmd)
+int32_t PwmTestExecute(int cmd)
 {
-    int32_t i;
-    int32_t ret = HDF_ERR_NOT_SUPPORT;
-
-    if (test == NULL) {
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    OsalMSleep(SEQ_OUTPUT_DELAY);
-    test->handle = PwmTestGetHandle(test);
-    if (test->handle == NULL) {
-        HDF_LOGE("%s: pwm test get handle fail.", __func__);
-        return HDF_FAILURE;
-    }
-    // At first test case.
-    if (cmd == PWM_SET_PERIOD_TEST) {
-        ret = PwmGetConfig(test->handle, &(test->originCfg));
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-            return HDF_FAILURE;
-        }
-    }
-    for (i = 0; i < sizeof(g_pwmTestFunc) / sizeof(g_pwmTestFunc[0]); i++) {
-        if (cmd == g_pwmTestFunc[i].type && g_pwmTestFunc[i].Func != NULL) {
-            ret = g_pwmTestFunc[i].Func(test);
-            HDF_LOGI("%s: cmd %d ret %d.", __func__, cmd, ret);
-            break;
-        }
-    }
-    // At last test case.
-    if (cmd == PWM_DISABLE_TEST) {
-        PwmSetConfig(test->handle, &(test->originCfg));
-    }
-    PwmTestReleaseHandle(test->handle);
-    OsalMSleep(SEQ_OUTPUT_DELAY);
-
-    return ret;
-}
-
-static int32_t PwmTestBind(struct HdfDeviceObject *device)
-{
-    static struct PwmTest test;
-
-    if (device != NULL) {
-        device->service = &test.service;
-    } else {
-        HDF_LOGE("%s: device is NULL.", __func__);
-    }
-    HDF_LOGE("%s: success.", __func__);
-    return HDF_SUCCESS;
-}
-
-static int32_t PwmTestInitFromHcs(struct PwmTest *test, const struct DeviceResourceNode *node)
-{
+    uint32_t i;
     int32_t ret;
-    uint32_t tmp;
+    struct PwmTester *tester = NULL;
 
-    struct DeviceResourceIface *face = NULL;
-
-    face = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
-    if (face == NULL) {
-        HDF_LOGE("%s: face is null.", __func__);
-        return HDF_FAILURE;
-    }
-    if (face->GetUint32 == NULL) {
-        HDF_LOGE("%s: GetUint32 not support.", __func__);
+    if (cmd > PWM_TEST_CMD_MAX) {
+        HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
         return HDF_ERR_NOT_SUPPORT;
     }
-    ret = face->GetUint32(node, "num", &(test->num), 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read num fail.", __func__);
-        return HDF_FAILURE;
+
+    tester = PwmTesterGet();
+    if (tester == NULL) {
+        HDF_LOGE("%s: get tester failed", __func__);
+        return HDF_ERR_INVALID_OBJECT;
     }
-    ret = face->GetUint32(node, "period", &(test->cfg.period), 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read period fail.", __func__);
-        return HDF_FAILURE;
+
+    // At first test case.
+    if (cmd == PWM_SET_PERIOD_TEST) {
+        ret = PwmGetConfig(tester->handle, &(tester->originCfg));
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
+            goto __EXIT__;
+        }
     }
-    ret = face->GetUint32(node, "duty", &(test->cfg.duty), 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read duty fail.", __func__);
-        return HDF_FAILURE;
+
+    for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
+        if (g_entry[i].cmd != cmd || g_entry[i].func == NULL) {
+            continue;
+        }
+        ret = g_entry[i].func(tester);
+        break;
     }
-    ret = face->GetUint32(node, "polarity", &tmp, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read polarity fail.", __func__);
-        return HDF_FAILURE;
+
+    // At last test case.
+    if (cmd == PWM_DISABLE_TEST) {
+        PwmSetConfig(tester->handle, &(tester->originCfg));
     }
-    test->cfg.polarity = tmp;
-    ret = face->GetUint32(node, "status", &tmp, 0);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read status fail", __func__);
-        return HDF_FAILURE;
-    }
-    test->cfg.status = tmp;
-    return HDF_SUCCESS;
+
+__EXIT__:
+    HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
+    PwmTesterPut(tester);
+    return ret;
 }
-
-static int32_t PwmTestInit(struct HdfDeviceObject *device)
-{
-    struct PwmTest *test = NULL;
-
-    if (device == NULL || device->service == NULL || device->property == NULL) {
-        HDF_LOGE("%s: invalid parameter.", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-    test = (struct PwmTest *)device->service;
-    if (PwmTestInitFromHcs(test, device->property) != HDF_SUCCESS) {
-        return HDF_FAILURE;
-    }
-    HDF_LOGE("%s: success.", __func__);
-    test->TestEntry = PwmTestEntry;
-    return HDF_SUCCESS;
-}
-
-static void PwmTestRelease(struct HdfDeviceObject *device)
-{
-    (void)device;
-    HDF_LOGE("%s: success.", __func__);
-}
-
-struct HdfDriverEntry g_pwmTestEntry = {
-    .moduleVersion = 1,
-    .Bind = PwmTestBind,
-    .Init = PwmTestInit,
-    .Release = PwmTestRelease,
-    .moduleName = "PLATFORM_PWM_TEST",
-};
-HDF_INIT(g_pwmTestEntry);

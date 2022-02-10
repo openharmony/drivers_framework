@@ -8,6 +8,7 @@
 
 #include "pwm_core.h"
 #include "hdf_log.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG pwm_core
 
@@ -16,6 +17,7 @@ int32_t PwmDeviceGet(struct PwmDev *pwm)
     int32_t ret;
 
     if (pwm == NULL) {
+        HDF_LOGE("%s pwm is null\n", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -39,24 +41,26 @@ int32_t PwmDeviceGet(struct PwmDev *pwm)
     return HDF_SUCCESS;
 }
 
-void PwmDevicePut(struct PwmDev *pwm)
+int32_t PwmDevicePut(struct PwmDev *pwm)
 {
     int32_t ret;
     
     if (pwm == NULL) {
-        return;
+        HDF_LOGE("%s pwm is null\n", __func__);
+        return HDF_ERR_INVALID_PARAM;
     }
 
     if (pwm->method != NULL && pwm->method->close != NULL) {
         ret = pwm->method->close(pwm);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: close failed, ret %d", __func__, ret);
-            return;
+            return ret;
         }
     }
     (void)OsalSpinLock(&(pwm->lock));
     pwm->busy = false;
     (void)OsalSpinUnlock(&(pwm->lock));
+    return HDF_SUCCESS;
 }
 
 int32_t PwmDeviceSetConfig(struct PwmDev *pwm, struct PwmConfig *config)
@@ -64,6 +68,7 @@ int32_t PwmDeviceSetConfig(struct PwmDev *pwm, struct PwmConfig *config)
     int32_t ret;
     
     if (pwm == NULL || config == NULL) {
+        HDF_LOGE("%s param is null\n", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -71,19 +76,34 @@ int32_t PwmDeviceSetConfig(struct PwmDev *pwm, struct PwmConfig *config)
         HDF_LOGE("%s: do not need to set config", __func__);
         return HDF_SUCCESS;
     }
+
     if (pwm->method == NULL || pwm->method->setConfig == NULL) {
         HDF_LOGE("%s: setConfig is not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    HDF_LOGI("%s: set PwmConfig: number %u, period %u, duty %u, polarity %u, enable %u.", __func__,
-        config->number, config->period, config->duty, config->polarity, config->status);
+
     ret = pwm->method->setConfig(pwm, config);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: failed, ret %d", __func__, ret);
         return ret;
     }
-    pwm->cfg = *config;
 
+    (void)OsalSpinLock(&(pwm->lock));
+    pwm->cfg = *config;
+    (void)OsalSpinUnlock(&(pwm->lock));
+    return HDF_SUCCESS;
+}
+
+int32_t PwmDeviceGetConfig(struct PwmDev *pwm, struct PwmConfig *config)
+{
+    if (pwm == NULL || config == NULL) {
+        HDF_LOGE("%s param is null\n", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    (void)OsalSpinLock(&(pwm->lock));
+    *config = pwm->cfg;
+    (void)OsalSpinUnlock(&(pwm->lock));
     return HDF_SUCCESS;
 }
 
@@ -93,7 +113,10 @@ int32_t PwmSetPriv(struct PwmDev *pwm, void *priv)
         HDF_LOGE("%s: pwm is null", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
+
+    (void)OsalSpinLock(&(pwm->lock));
     pwm->priv = priv;
+    (void)OsalSpinUnlock(&(pwm->lock));
     return HDF_SUCCESS;
 }
 
@@ -104,6 +127,75 @@ void *PwmGetPriv(struct PwmDev *pwm)
         return NULL;
     }
     return pwm->priv;
+}
+
+static int32_t PwmUserSetConfig(struct PwmDev *pwm, struct HdfSBuf *data)
+{
+    size_t size;
+    struct PwmConfig *config = NULL;;
+
+    if (data == NULL) {
+        HDF_LOGE("%s: data null", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+    if (!HdfSbufReadBuffer(data, (const void **)&config, &size)) {
+        HDF_LOGE("%s: sbuf read buffer failed", __func__);
+        return HDF_ERR_IO;
+    }
+
+    if ((config == NULL) || (size != sizeof(struct PwmConfig))) {
+        HDF_LOGE("%s: read buff error", __func__);
+        return HDF_ERR_IO;
+    }
+    return PwmDeviceSetConfig(pwm, config);
+}
+
+static int32_t PwmUserGetConfig(struct PwmDev *pwm, struct HdfSBuf *reply)
+{
+    int32_t ret;
+    struct PwmConfig config;
+
+    if (reply == NULL) {
+        HDF_LOGE("%s: reply null", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+    ret = PwmDeviceGetConfig(pwm, &config);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: get config fail", __func__);
+        return ret;
+    }
+
+    if (!HdfSbufWriteBuffer(reply, &config, sizeof(config))) {
+        HDF_LOGE("%s: sbuf write buffer failed", __func__);
+        return HDF_ERR_IO;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t PwmIoDispatch(struct HdfDeviceIoClient *client, int cmd,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    struct PwmDev *pwm = NULL;
+
+    if (client == NULL || client->device == NULL || client->device->service == NULL) {
+        HDF_LOGE("%s: client info is NULL", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    pwm = (struct PwmDev *)client->device->service;
+    switch (cmd) {
+        case PWM_IO_GET:
+            return PwmDeviceGet(pwm);
+        case PWM_IO_PUT:
+            return PwmDevicePut(pwm);
+        case PWM_IO_SET_CONFIG:
+            return PwmUserSetConfig(pwm, data);
+        case PWM_IO_GET_CONFIG:
+            return PwmUserGetConfig(pwm, reply);
+        default:
+            HDF_LOGE("%s: cmd %d not support", __func__, cmd);
+            return HDF_ERR_NOT_SUPPORT;
+    }
 }
 
 int32_t PwmDeviceAdd(struct HdfDeviceObject *obj, struct PwmDev *pwm)
@@ -122,6 +214,7 @@ int32_t PwmDeviceAdd(struct HdfDeviceObject *obj, struct PwmDev *pwm)
     }
     pwm->device = obj;
     obj->service = &(pwm->service);
+    pwm->device->service->Dispatch = PwmIoDispatch;
     return HDF_SUCCESS;
 }
 
