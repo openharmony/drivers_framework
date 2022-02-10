@@ -13,16 +13,11 @@
 
 int32_t HdfSpiUnitTestEntry(HdfTestMsg *msg)
 {
-    struct SpiTest *test = NULL;
 
     if (msg == NULL) {
         return HDF_FAILURE;
     }
-    test = GetSpiTest();
-    if (test == NULL || test->TestEntry == NULL) {
-        msg->result = HDF_FAILURE;
-        return HDF_FAILURE;
-    }
-    msg->result = test->TestEntry(test, msg->subCmd);
+
+    msg->result = SpiTestExecute(msg->subCmd);
     return msg->result;
 }

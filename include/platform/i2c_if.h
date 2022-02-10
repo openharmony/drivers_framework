@@ -136,6 +136,17 @@ void I2cClose(DevHandle handle);
  */
 int32_t I2cTransfer(DevHandle handle, struct I2cMsg *msgs, int16_t count);
 
+/**
+ * @brief Enumerates I2C I/O commands.
+ *
+ * @since 1.0
+ */
+enum I2cIoCmd {
+    I2C_IO_TRANSFER = 0,      /**< Execute one or more I2C messages. */
+    I2C_IO_OPEN = 1,          /**< Open the I2C device. */
+    I2C_IO_CLOSE = 2,         /**< Close the I2C device. */
+};
+
 #ifdef __cplusplus
 #if __cplusplus
 }

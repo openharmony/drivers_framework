@@ -9,34 +9,47 @@
 #ifndef SPI_TEST_H
 #define SPI_TEST_H
 
-#include "hdf_device_desc.h"
 #include "platform_if.h"
 
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif /* __cplusplus */
+
 enum SpiTestCmd {
-    SPI_TRANSFER_TEST,
+    SPI_TRANSFER_TEST = 0,
+    SPI_MULTI_TRANSFER_TEST,
     SPI_DMA_TRANSFER_TEST,
     SPI_INT_TRANSFER_TEST,
     SPI_RELIABILITY_TEST,
     SPI_PERFORMANCE_TEST,
     SPI_TEST_ALL,
+    SPI_TEST_CMD_MAX,
 };
 
-struct SpiTest {
-    struct IDeviceIoService service;
-    struct HdfDeviceObject *device;
-    int32_t (*TestEntry)(struct SpiTest *test, int32_t cmd);
+struct SpiTestConfig {
     uint32_t bus;
     uint32_t cs;
     uint32_t len;
     uint8_t *wbuf;
     uint8_t *rbuf;
-    DevHandle handle;
     uint32_t testDma;
 };
 
-static inline struct SpiTest *GetSpiTest(void)
-{
-    return (struct SpiTest *)DevSvcManagerClntGetService("SPI_TEST");
+struct SpiTester {
+    struct SpiTestConfig config;
+    DevHandle handle;
+    uint16_t total;
+    uint16_t fails;
+};
+
+int32_t SpiTestExecute(int cmd);
+
+#ifdef __cplusplus
+#if __cplusplus
 }
+#endif
+#endif /* __cplusplus */
 
 #endif /* SPI_TEST_H */

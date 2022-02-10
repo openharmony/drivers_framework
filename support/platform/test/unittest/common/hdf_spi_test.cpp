@@ -15,17 +15,9 @@
 #include <unistd.h>
 #include "hdf_uhdf_test.h"
 #include "hdf_io_service_if.h"
+#include "spi_test.h"
 
 using namespace testing::ext;
-
-// pal spi test case number
-enum HdfTestCaseCmd {
-    SPI_TRANSFER_TEST,
-    SPI_DMA_TRANSFER_TEST,
-    SPI_INT_TRANSFER_TEST,
-    SPI_RELIABILITY_TEST,
-    SPI_PERFORMANCE_TEST,
-};
 
 class HdfLiteSpiTest : public testing::Test {
 public:
@@ -54,19 +46,6 @@ void HdfLiteSpiTest::TearDown()
 }
 
 /**
-  * @tc.name: SpiSetCfgTest001
-  * @tc.desc: spi function test
-  * @tc.type: FUNC
-  * @tc.require: SR000DQ0VO
-  */
-/*HWTEST_F(HdfLiteSpiTest, SpiSetCfgTest001, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_SET_CFG_TEST, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-*/
-
-/**
   * @tc.name: SpiTransferTest001
   * @tc.desc: spi function test
   * @tc.type: FUNC
@@ -76,33 +55,25 @@ HWTEST_F(HdfLiteSpiTest, SpiTransferTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_TRANSFER_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+
+    EXPECT_EQ(0, SpiTestExecute(SPI_TRANSFER_TEST));
 }
 
 /**
-  * @tc.name: SpiWriteTest001
+  * @tc.name: SpiMultiTransferTest001
   * @tc.desc: spi function test
   * @tc.type: FUNC
   * @tc.require: SR000DQ0VO
   */
-/*HWTEST_F(HdfLiteSpiTest, SpiWriteTest001, TestSize.Level1)
+#ifdef __LITEOS__
+HWTEST_F(HdfLiteSpiTest, SpiMultiTransferTest001, TestSize.Level1)
 {
-    struct HdfTestMsg msg = { TEST_PAL_SPI_TYPE, SPI_WRITE_TEST, -1};
+    struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_MULTI_TRANSFER_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-*/
 
-/**
-  * @tc.name: SpiReadTest001
-  * @tc.desc: Spi function test
-  * @tc.type: FUNC
-  * @tc.require: SR000DQ0VO
-  */
-/*HWTEST_F(HdfLiteSpiTest, SpiReadTest001, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_READ_TEST, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, SpiTestExecute(SPI_MULTI_TRANSFER_TEST));
 }
-*/
+#endif
 
 /**
   * @tc.name: SpiDmaTransferTest001
@@ -114,6 +85,8 @@ HWTEST_F(HdfLiteSpiTest, SpiDmaTransferTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_DMA_TRANSFER_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+
+    EXPECT_EQ(0, SpiTestExecute(SPI_DMA_TRANSFER_TEST));
 }
 
 /**
@@ -126,6 +99,8 @@ HWTEST_F(HdfLiteSpiTest, SpiIntTransferTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_INT_TRANSFER_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+
+    EXPECT_EQ(0, SpiTestExecute(SPI_INT_TRANSFER_TEST));
 }
 
 /**
@@ -138,4 +113,6 @@ HWTEST_F(HdfLiteSpiTest, SpiReliabilityTest001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_SPI_TYPE, SPI_RELIABILITY_TEST, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+
+    EXPECT_EQ(0, SpiTestExecute(SPI_RELIABILITY_TEST));
 }

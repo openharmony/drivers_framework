@@ -53,30 +53,33 @@ static int32_t I2cTestGetConfig(struct I2cTestConfig *config)
     ret = service->dispatcher->Dispatch(&service->object, 0, NULL, reply);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("I2cTestGetConfig: remote dispatch fail:%d", ret);
+        ret = HDF_ERR_IO;
+        goto EXIT;
     }
 
     if (!HdfSbufReadBuffer(reply, &buf, &len)) {
         HDF_LOGE("I2cTestGetConfig: read buf fail!");
-        HdfSbufRecycle(reply);
-        return HDF_ERR_IO;
+        ret = HDF_ERR_IO;
+        goto EXIT;
     }
 
     if (len != sizeof(*config)) {
         HDF_LOGE("I2cTestGetConfig: config size:%u, but read size:%u!", sizeof(*config), len);
-        HdfSbufRecycle(reply);
-        return HDF_ERR_IO;
+        ret = HDF_ERR_IO;
+        goto EXIT;
     }
 
     if (memcpy_s(config, sizeof(*config), buf, sizeof(*config)) != EOK) {
         HDF_LOGE("I2cTestGetConfig: memcpy buf fail!");
-        HdfSbufRecycle(reply);
-        return HDF_ERR_IO;
+        ret = HDF_ERR_IO;
+        goto EXIT;
     }
-
+    ret = HDF_SUCCESS;
+EXIT:
     HdfSbufRecycle(reply);
     HDF_LOGD("I2cTestGetConfig: exit!");
     HdfIoServiceRecycle(service);
-    return HDF_SUCCESS;
+    return ret;
 }
 
 struct I2cTester *I2cTesterGet(void)
