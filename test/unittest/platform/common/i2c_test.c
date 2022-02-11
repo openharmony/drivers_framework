@@ -319,6 +319,38 @@ int32_t I2cTestReliability(void)
     return HDF_SUCCESS;
 }
 
+int32_t I2cTestPeformance(void)
+{
+#ifdef __LITEOS__
+    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    return HDF_SUCCESS;
+#endif
+    uint64_t startMs;
+    uint64_t endMs;
+    uint64_t useTime; /*ms*/
+    struct I2cTester *tester = NULL;
+
+    tester = I2cTesterGet();
+    if (tester == NULL || tester->handle == NULL) {
+        HDF_LOGE("%s:get tester fail", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    tester->handle = NULL;
+
+    startMs = OsalGetSysTimeMs();
+    tester->handle = I2cOpen(tester->config.busNum);
+    endMs = OsalGetSysTimeMs();
+
+    if (tester->handle != NULL) {
+        useTime = endMs - startMs;
+        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
+        startMs, endMs, useTime, useTime < 1 ? true : false );
+        return HDF_SUCCESS;
+    }
+
+    return HDF_FAILURE;
+}
+
 struct I2cTestEntry {
     int cmd;
     int32_t (*func)(void);
@@ -330,6 +362,7 @@ static struct I2cTestEntry g_entry[] = {
     { I2C_TEST_CMD_WRITE_READ, I2cTestWriteRead, "I2cTestWriteRead" },
     { I2C_TEST_CMD_MULTI_THREAD, I2cTestMultiThread, "I2cTestMultiThread" },
     { I2C_TEST_CMD_RELIABILITY, I2cTestReliability, "I2cTestReliability" },
+    { I2C_TEST_CMD_PERFORMANCE, I2cTestPeformance, "I2cTestPeformance" },
     { I2C_TEST_CMD_SETUP_ALL, I2cTestSetUpAll, "I2cTestSetUpAll" },
     { I2C_TEST_CMD_TEARDOWN_ALL, I2cTestTearDownAll, "I2cTestTearDownAll" },
     { I2C_TEST_CMD_SETUP_SINGLE, I2cTestSetUpSingle, "I2cTestSetUpSingle" },
