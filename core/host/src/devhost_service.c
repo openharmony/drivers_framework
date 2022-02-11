@@ -74,8 +74,7 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
 
     device = DevHostServiceGetDevice(hostService, deviceInfo->deviceId);
     if (device == NULL || device->super.Attach == NULL) {
-        ret = HDF_DEV_ERR_NO_DEVICE;
-        goto error;
+        return HDF_DEV_ERR_NO_DEVICE;
     }
 
     devNode = driverLoader->LoadNode(driverLoader, deviceInfo);
