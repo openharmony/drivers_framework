@@ -8,9 +8,12 @@
 
 #include "watchdog_core.h"
 #include "hdf_log.h"
+#include "watchdog_if.h"
 
 #define HDF_LOG_TAG watchdog_core
 
+static int32_t WatchdogIoDispatch(struct HdfDeviceIoClient *client, int cmd,
+    struct HdfSBuf *data, struct HdfSBuf *reply);
 int32_t WatchdogCntlrAdd(struct WatchdogCntlr *cntlr)
 {
     int32_t ret;
@@ -36,6 +39,7 @@ int32_t WatchdogCntlrAdd(struct WatchdogCntlr *cntlr)
     }
 
     cntlr->device->service = &cntlr->service;
+    cntlr->device->service->Dispatch = WatchdogIoDispatch;
     return HDF_SUCCESS;
 }
 
@@ -65,14 +69,16 @@ int32_t WatchdogGetPrivData(struct WatchdogCntlr *cntlr)
     return HDF_SUCCESS;
 }
 
-void WatchdogReleasePriv(struct WatchdogCntlr *cntlr)
+int32_t WatchdogReleasePriv(struct WatchdogCntlr *cntlr)
 {
     if (cntlr == NULL || cntlr->ops == NULL) {
-        return;
+        HDF_LOGE("cntlr or cntlr->ops is null");
+        return HDF_SUCCESS;
     }
     if (cntlr->ops->releasePriv != NULL) {
         cntlr->ops->releasePriv(cntlr);
     }
+    return HDF_SUCCESS;
 }
 
 int32_t WatchdogCntlrGetStatus(struct WatchdogCntlr *cntlr, int32_t *status)
@@ -94,6 +100,10 @@ int32_t WatchdogCntlrGetStatus(struct WatchdogCntlr *cntlr, int32_t *status)
         return HDF_ERR_DEVICE_BUSY;
     }
     ret = cntlr->ops->getStatus(cntlr, status);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s:getStatus fail", __func__);
+        return ret;
+    }
     (void)OsalSpinUnlockIrqRestore(&cntlr->lock, &flags);
     return ret;
 }
@@ -199,4 +209,120 @@ int32_t WatchdogCntlrFeed(struct WatchdogCntlr *cntlr)
     ret = cntlr->ops->feed(cntlr);
     (void)OsalSpinUnlockIrqRestore(&cntlr->lock, &flags);
     return ret;
+}
+
+static int32_t WatchdogUserGetPrivData(struct WatchdogCntlr *cntlr, struct HdfSBuf *reply)
+{
+    int32_t ret;
+    if (reply == NULL) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    ret = WatchdogGetPrivData(cntlr);
+    if (!HdfSbufWriteInt32(reply, ret)) {
+        HDF_LOGE("%s: sbuf write buffer failed", __func__);
+        return HDF_ERR_IO;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t WatchdogUserGetStatus(struct WatchdogCntlr *cntlr, struct HdfSBuf *reply)
+{
+    int32_t ret;
+    int32_t status;
+
+    if (reply == NULL) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    ret = WatchdogCntlrGetStatus(cntlr, &status);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: WatchdogCntlrGetStatus failed, ret: %d", __func__, ret);
+        return ret;
+    }
+    if (!HdfSbufWriteInt32(reply, status)) {
+        HDF_LOGE("%s: sbuf write status failed", __func__);
+        return HDF_ERR_IO;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t WatchdogUserSetTimeout(struct WatchdogCntlr *cntlr, struct HdfSBuf *data)
+{
+    uint32_t seconds;
+
+    if (data == NULL) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (!HdfSbufReadUint32(data, &seconds)) {
+        HDF_LOGE("%s: sbuf read seconds failed", __func__);
+        return HDF_ERR_IO;
+    }
+
+    return WatchdogCntlrSetTimeout(cntlr, seconds);
+}
+
+static int32_t WatchdogUserGetTimeout(struct WatchdogCntlr *cntlr, struct HdfSBuf *reply)
+{
+    int32_t ret;
+    uint32_t seconds;
+    if (reply == NULL) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    ret = WatchdogCntlrGetTimeout(cntlr, &seconds);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: WatchdogCntlrGetTimeout failed, ret: %d", __func__, ret);
+        return ret;
+    }
+    
+    if (!HdfSbufWriteUint32(reply, seconds)) {
+        HDF_LOGE("%s: sbuf write buffer failed", __func__);
+        return HDF_ERR_IO;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t WatchdogIoDispatch(struct HdfDeviceIoClient *client, int cmd,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
+{
+    struct WatchdogCntlr *cntlr = NULL;
+
+    if (client == NULL) {
+        HDF_LOGE("%s: client is NULL", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (client->device == NULL) {
+        HDF_LOGE("%s: client->device is NULL", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (client->device->service == NULL) {
+        HDF_LOGE("%s: client->device->service is NULL", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    cntlr = (struct WatchdogCntlr *)client->device->service;
+    switch (cmd) {
+        case WATCHDOG_IO_GET_PRIV:
+            return WatchdogUserGetPrivData(cntlr, reply);
+        case WATCHDOG_IO_RELEASE_PRIV:
+            return WatchdogReleasePriv(cntlr);
+        case WATCHDOG_IO_GET_STATUS:
+            return WatchdogUserGetStatus(cntlr, reply);
+        case WATCHDOG_IO_START:
+            return WatchdogCntlrStart(cntlr);
+        case WATCHDOG_IO_STOP:
+            return WatchdogCntlrStop(cntlr);
+        case WATCHDOG_IO_SET_TIMEOUT:
+            return WatchdogUserSetTimeout(cntlr, data);
+        case WATCHDOG_IO_GET_TIMEOUT:
+            return WatchdogUserGetTimeout(cntlr, reply);
+        case WATCHDOG_IO_FEED:
+            return WatchdogCntlrFeed(cntlr);
+        default:
+            HDF_LOGE("%s: cmd %d not support", __func__, cmd);
+            return HDF_ERR_NOT_SUPPORT;
+    }
 }

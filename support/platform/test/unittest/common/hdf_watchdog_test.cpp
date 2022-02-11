@@ -15,18 +15,9 @@
 #include <gtest/gtest.h>
 #include "hdf_uhdf_test.h"
 #include "hdf_io_service_if.h"
+#include "watchdog_test.h"
 
 using namespace testing::ext;
-
-// pal watchdog test case number
-enum WatchdogTestCmd {
-    WATCHDOG_TEST_SET_GET_TIMEOUT = 0,
-    WATCHDOG_TEST_START_STOP = 1,
-    WATCHDOG_TEST_FEED = 2,
-    WATCHDOG_TEST_RELIABILITY = 3,
-    WATCHDOG_TEST_BARK = 4,
-    WATCHDOG_TEST_MAX = 5,
-};
 
 class HdfLiteWatchdogTest : public testing::Test {
 public:
@@ -64,6 +55,7 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestSetGetTimeout001, TestSize.Leve
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_SET_GET_TIMEOUT, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, WatchdogTestExecute(WATCHDOG_TEST_SET_GET_TIMEOUT));
 }
 
 /**
@@ -76,6 +68,7 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestStartStop001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_START_STOP, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, WatchdogTestExecute(WATCHDOG_TEST_START_STOP));
 }
 
 /**
@@ -88,6 +81,7 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestFeed001, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_FEED, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, WatchdogTestExecute(WATCHDOG_TEST_FEED));
 }
 
 /**
@@ -100,5 +94,6 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestReliability001, TestSize.Level1
 {
     struct HdfTestMsg msg = {TEST_PAL_WDT_TYPE, WATCHDOG_TEST_RELIABILITY, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
+    EXPECT_EQ(0, WatchdogTestExecute(WATCHDOG_TEST_RELIABILITY));
 }
 

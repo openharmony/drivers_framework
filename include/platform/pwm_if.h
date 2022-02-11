@@ -69,6 +69,18 @@ extern "C" {
 #define PWM_ENABLE_STATUS 1
 
 /**
+ * @brief Enumerates PWM I/O commands.
+ *
+ * @since 1.0
+ */
+enum PwmIoCmd {
+    PWM_IO_GET = 0,         /**< Get the PWM device. */
+    PWM_IO_PUT,             /**< Put the PWM device. */
+    PWM_IO_SET_CONFIG,      /**< Set config. */
+    PWM_IO_GET_CONFIG,      /**< Get config. */
+};
+
+/**
  * @brief Defines the PWM device configuration parameters.
  *
  * @attention The specific PWM device determines which variables in this structure are supported.

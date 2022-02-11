@@ -14,19 +14,11 @@
 
 int32_t HdfWatchdogTestEntry(HdfTestMsg *msg)
 {
-    struct WatchdogTester *tester = NULL;
-
     if (msg == NULL) {
         return HDF_FAILURE;
     }
 
-    tester = WatchdogTesterGet();
-    if (tester == NULL) {
-        HDF_LOGE("%s: tester is NULL!\n", __func__);
-        return HDF_FAILURE;
-    }
-
-    msg->result = tester->doTest(tester, msg->subCmd);
+    msg->result = WatchdogTestExecute(msg->subCmd);
 
     return HDF_SUCCESS;
 }
