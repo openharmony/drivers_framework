@@ -9,6 +9,13 @@
 #include "audio_core.h"
 #include "audio_driver_log.h"
 
+static const char *g_audioControlsList[AUDIO_CTRL_LIST_MAX] = {
+    "Main Playback Volume", "Main Capture Volume",
+    "Playback Mute", "Capture Mute", "Mic Left Gain",
+    "Mic Right Gain", "External Codec Enable",
+    "Internally Codec Enable", "Render Channel Mode", "Captrue Channel Mode"
+};
+
 struct DaiData *DaiDataFromCard(const struct AudioCard *card)
 {
     if (card == NULL || card->rtd == NULL || card->rtd->cpuDai == NULL) {

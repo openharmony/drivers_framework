@@ -23,21 +23,6 @@ extern "C" {
 #define AUDIO_SAPM_COMP_NAME_LIST_MAX 9
 #define AUDIO_SAPM_CFG_NAME_LIST_MAX 4
 
-static const char *g_audioControlsList[AUDIO_CTRL_LIST_MAX] = {
-    "Main Playback Volume", "Main Capture Volume",
-    "Playback Mute", "Capture Mute", "Mic Left Gain",
-    "Mic Right Gain", "External Codec Enable",
-    "Internally Codec Enable", "Render Channel Mode", "Captrue Channel Mode"
-};
-
-static char *g_audioSapmCompNameList[AUDIO_SAPM_COMP_NAME_LIST_MAX] = {
-    "ADCL", "ADCR", "DACL", "DACR", "LPGA", "RPGA", "SPKL", "SPKR", "MIC"
-};
-
-static char *g_audioSapmCfgNameList[AUDIO_SAPM_CFG_NAME_LIST_MAX] = {
-    "LPGA MIC Switch", "RPGA MIC Switch", "Dacl enable", "Dacr enable"
-};
-
 enum AudioRegOpsType {
     AUDIO_RSET_GROUP = 0,
     AUDIO_INIT_GROUP,

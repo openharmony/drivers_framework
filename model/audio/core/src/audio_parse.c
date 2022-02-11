@@ -67,6 +67,15 @@ int32_t AudioFillConfigData(const struct HdfDeviceObject *device, struct AudioCo
 {
     const struct DeviceResourceNode *node = NULL;
     struct DeviceResourceIface *drsOps = NULL;
+    int32_t serviceRet;
+    int32_t codecRet;
+    int32_t platformRet;
+    int32_t cpuRet;
+    int32_t codeDaiRet;
+    int32_t dspRet;
+    int32_t dspDaiRet;
+    int32_t accessoryRet;
+    int32_t accessoryDaiRet;
     ADM_LOG_DEBUG("Entry.");
 
     if (device == NULL || configData == NULL) {
@@ -85,15 +94,15 @@ int32_t AudioFillConfigData(const struct HdfDeviceObject *device, struct AudioCo
         return HDF_FAILURE;
     }
 
-    int32_t serviceRet = drsOps->GetString(node, "serviceName", &(configData->cardServiceName), 0);
-    int32_t codecRet = drsOps->GetString(node, "codecName", &(configData->codecName), 0);
-    int32_t platformRet = drsOps->GetString(node, "platformName", &(configData->platformName), 0);
-    int32_t cpuRet = drsOps->GetString(node, "cpuDaiName", &(configData->cpuDaiName), 0);
-    int32_t codeDaiRet = drsOps->GetString(node, "codecDaiName", &(configData->codecDaiName), 0);
-    int32_t dspRet = drsOps->GetString(node, "dspName", &(configData->dspName), 0);
-    int32_t dspDaiRet = drsOps->GetString(node, "dspDaiName", &(configData->dspDaiName), 0);
-    int32_t accessoryRet = drsOps->GetString(node, "accessoryName", &(configData->accessoryName), 0);
-    int32_t accessoryDaiRet = drsOps->GetString(node, "accessoryDaiName", &(configData->accessoryDaiName), 0);
+    serviceRet = drsOps->GetString(node, "serviceName", &(configData->cardServiceName), 0);
+    codecRet = drsOps->GetString(node, "codecName", &(configData->codecName), 0);
+    platformRet = drsOps->GetString(node, "platformName", &(configData->platformName), 0);
+    cpuRet = drsOps->GetString(node, "cpuDaiName", &(configData->cpuDaiName), 0);
+    codeDaiRet = drsOps->GetString(node, "codecDaiName", &(configData->codecDaiName), 0);
+    dspRet = drsOps->GetString(node, "dspName", &(configData->dspName), 0);
+    dspDaiRet = drsOps->GetString(node, "dspDaiName", &(configData->dspDaiName), 0);
+    accessoryRet = drsOps->GetString(node, "accessoryName", &(configData->accessoryName), 0);
+    accessoryDaiRet = drsOps->GetString(node, "accessoryDaiName", &(configData->accessoryDaiName), 0);
     if (serviceRet || codecRet || platformRet || cpuRet || codeDaiRet ||
         dspRet || dspDaiRet || accessoryRet || accessoryDaiRet) {
         ADM_LOG_ERR("Read audioDeviceName fail: serviceRet=%d, codecRet=%d, platformRet=%d, cpuRet=%d, codeDaiRet=%d,"
@@ -133,19 +142,21 @@ static uint32_t* GetRegArray(const struct DeviceResourceIface *parser, const str
     struct AudioRegCfgGroupNode* group, uint32_t indexMax)
 {
     int32_t ret;
-
+    int32_t index;
+    int32_t num;
+    uint32_t *buf;
     if (group == NULL || parser == NULL || regNode == NULL || indexMax == 0) {
         ADM_LOG_ERR("Input para check error");
         return NULL;
     }
 
-    int32_t index = group->groupIndex;
+    index = group->groupIndex;
     if (index >= AUDIO_GROUP_MAX) {
         ADM_LOG_ERR("Input indexMax=%d error", index);
         return NULL;
     }
 
-    int32_t num = parser->GetElemNum(regNode, g_audioRegGroupName[index]);
+    num = parser->GetElemNum(regNode, g_audioRegGroupName[index]);
     if (num <= 0 || num > AUDIO_CONFIG_MAX_ITEM) {
         ADM_LOG_ERR("parser %s element num failed", g_audioRegGroupName[index]);
         return NULL;
@@ -153,7 +164,7 @@ static uint32_t* GetRegArray(const struct DeviceResourceIface *parser, const str
 
     group->itemNum =  num / indexMax;
 
-    uint32_t *buf = (uint32_t *)OsalMemCalloc(sizeof(uint32_t) * num);
+    buf = (uint32_t *)OsalMemCalloc(sizeof(uint32_t) * num);
     if (buf == NULL) {
         ADM_LOG_ERR("malloc reg array buf failed!");
         return NULL;
@@ -173,13 +184,13 @@ static int32_t ParseAudioRegItem(const struct DeviceResourceIface *parser, const
 {
     int32_t step;
     int32_t index;
-
+    int32_t *buf;
     if (group == NULL || parser == NULL || regNode == NULL) {
         ADM_LOG_ERR("Input para check error");
         return HDF_FAILURE;
     }
 
-    int32_t *buf = GetRegArray(parser, regNode, group, AUDIO_REG_CFG_INDEX_MAX);
+    buf = GetRegArray(parser, regNode, group, AUDIO_REG_CFG_INDEX_MAX);
     if (buf == NULL) {
         ADM_LOG_ERR("malloc reg array buf failed!");
         return HDF_FAILURE;
@@ -216,13 +227,13 @@ static int32_t ParseAudioSapmItem(const struct DeviceResourceIface *parser, cons
 {
     int32_t step;
     int32_t index;
-
+    uint32_t *buf;
     if (group == NULL || parser == NULL || regNode == NULL) {
         ADM_LOG_ERR("Input para check error");
         return HDF_FAILURE;
     }
 
-    uint32_t *buf = GetRegArray(parser, regNode, group, AUDIO_SAPM_COMP_INDEX_MAX);
+    buf = GetRegArray(parser, regNode, group, AUDIO_SAPM_COMP_INDEX_MAX);
     if (buf == NULL) {
         ADM_LOG_ERR("malloc reg array buf failed!");
         return HDF_FAILURE;
@@ -258,13 +269,13 @@ static int32_t ParseAudioCtrlItem(const struct DeviceResourceIface *parser, cons
 {
     int32_t step;
     int32_t index;
-
+    uint32_t *buf;
     if (parser == NULL || regNode == NULL || group == NULL) {
         ADM_LOG_ERR("Input para check error");
         return HDF_FAILURE;
     }
 
-    uint32_t *buf = GetRegArray(parser, regNode, group, AUDIO_CTRL_CFG_INDEX_MAX);
+    buf = GetRegArray(parser, regNode, group, AUDIO_CTRL_CFG_INDEX_MAX);
     if (buf == NULL) {
         ADM_LOG_ERR("malloc reg array buf failed!");
         return HDF_FAILURE;
@@ -294,13 +305,14 @@ static int32_t ParseAudioAddrItem(const struct DeviceResourceIface *parser, cons
 {
     int32_t step;
     int32_t index;
+    uint32_t *buf;
 
     if (parser == NULL || regNode == NULL || group == NULL) {
         ADM_LOG_ERR("Input para check error.");
         return HDF_FAILURE;
     }
 
-    uint32_t *buf = GetRegArray(parser, regNode, group, AUDIO_ADDR_CFG_INDEX_MAX);
+    buf = GetRegArray(parser, regNode, group, AUDIO_ADDR_CFG_INDEX_MAX);
     if (buf == NULL) {
         ADM_LOG_ERR("malloc reg array buf failed!");
         return HDF_FAILURE;

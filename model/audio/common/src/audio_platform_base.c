@@ -55,14 +55,17 @@ uint32_t AudioBytesToFrames(uint32_t frameBits, uint32_t size)
 
 int32_t AudioDataBigEndianChange(char *srcData, uint32_t audioLen, enum DataBitWidth bitWidth)
 {
+
+    uint64_t i;
+    uint16_t framesize;
+    char *changeData;
+    uint32_t *pData;
     if (srcData == NULL) {
         AUDIO_DRIVER_LOG_ERR("srcData is NULL.");
         return HDF_FAILURE;
     }
-    uint64_t i;
-    uint16_t framesize;
-    char *changeData = srcData;
-    uint32_t *pData = (uint32_t *)changeData;
+    changeData = srcData;
+    pData = (uint32_t *)changeData;
 
     switch (bitWidth) {
         case DATA_BIT_WIDTH8:
@@ -481,6 +484,10 @@ static int32_t MmapWriteData(struct PlatformData *data, char *tmpBuf)
 static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
 {
     uint32_t timeout = 0;
+    uint32_t totalSize;
+    uint32_t lastBuffSize;
+    uint32_t loopTimes;
+    char *tmpBuf;
     struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
@@ -491,12 +498,12 @@ static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
         return HDF_FAILURE;
     }
 
-    uint32_t totalSize = (uint32_t)data->mmapData.totalBufferFrames * data->renderPcmInfo.frameSize;
-    uint32_t lastBuffSize = ((totalSize % MIN_PERIOD_SIZE) == 0) ? MIN_PERIOD_SIZE : (totalSize % MIN_PERIOD_SIZE);
-    uint32_t loopTimes = (lastBuffSize == MIN_PERIOD_SIZE) ?
+    totalSize = (uint32_t)data->mmapData.totalBufferFrames * data->renderPcmInfo.frameSize;
+    lastBuffSize = ((totalSize % MIN_PERIOD_SIZE) == 0) ? MIN_PERIOD_SIZE : (totalSize % MIN_PERIOD_SIZE);
+    loopTimes = (lastBuffSize == MIN_PERIOD_SIZE) ?
         (totalSize / MIN_PERIOD_SIZE) : (totalSize / MIN_PERIOD_SIZE + 1);
     data->mmapLoopCount = 0;
-    char *tmpBuf = OsalMemCalloc(MIN_PERIOD_SIZE);
+    tmpBuf = OsalMemCalloc(MIN_PERIOD_SIZE);
     if (tmpBuf == NULL) {
         AUDIO_DRIVER_LOG_ERR("tmpBuf is null.");
         return HDF_FAILURE;
@@ -621,6 +628,9 @@ int32_t AudioMmapReadTransfer(const struct AudioCard *card, const struct AudioMm
     uint32_t offset = 0;
     enum CriBuffStatus status;
     uint32_t timeout = 0;
+    struct PlatformData *data;
+    uint32_t frameSize;
+    uint32_t totalSize;
 
     if (card == NULL || rxMmapData == NULL || rxMmapData->memoryAddress == NULL ||
         rxMmapData->totalBufferFrames <= 0) {
@@ -628,14 +638,14 @@ int32_t AudioMmapReadTransfer(const struct AudioCard *card, const struct AudioMm
         return HDF_ERR_INVALID_PARAM;
     }
 
-    struct PlatformData *data = PlatformDataFromCard(card);
+    data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
     }
 
-    uint32_t frameSize = data->capturePcmInfo.frameSize;
-    uint32_t totalSize = (uint32_t)rxMmapData->totalBufferFrames * frameSize;
+    frameSize = data->capturePcmInfo.frameSize;
+    totalSize = (uint32_t)rxMmapData->totalBufferFrames * frameSize;
     data->captureBufInfo.pointer = 0;
     data->captureBufInfo.curTrafSize = data->captureBufInfo.trafBufSize;
     if (data->captureBufInfo.virtAddr == NULL) {
@@ -836,12 +846,13 @@ int32_t AudioRenderClose(const struct AudioCard *card)
 
 int32_t AudioCaptureOpen(const struct AudioCard *card)
 {
+    struct PlatformData *platformData;
     if (card == NULL) {
         AUDIO_DRIVER_LOG_ERR("param card is NULL.");
         return HDF_FAILURE;
     }
 
-    struct PlatformData *platformData = PlatformDataFromCard(card);
+    platformData = PlatformDataFromCard(card);
     if (platformData == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -858,12 +869,13 @@ int32_t AudioCaptureOpen(const struct AudioCard *card)
 
 int32_t AudioCaptureClose(const struct AudioCard *card)
 {
+    struct PlatformData *platformData;
     if (card == NULL) {
         AUDIO_DRIVER_LOG_ERR("param card is NULL.");
         return HDF_FAILURE;
     }
 
-    struct PlatformData *platformData = PlatformDataFromCard(card);
+    platformData = PlatformDataFromCard(card);
     if (platformData == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -1037,7 +1049,7 @@ int32_t AudioHwParams(const struct AudioCard *card, const struct AudioPcmHwParam
 {
     const int chnlCntMin = 1;
     const int chnlCntMax = 2;
-
+    struct PlatformData *platformData;
     if (card == NULL || param == NULL || param->cardServiceName == NULL) {
         AUDIO_DRIVER_LOG_ERR("input param is NULL.");
         return HDF_FAILURE;
@@ -1048,7 +1060,7 @@ int32_t AudioHwParams(const struct AudioCard *card, const struct AudioPcmHwParam
         return HDF_FAILURE;
     }
 
-    struct PlatformData *platformData = PlatformDataFromCard(card);
+    platformData = PlatformDataFromCard(card);
     if (platformData == NULL) {
         AUDIO_DRIVER_LOG_ERR("platformData is null.");
         return HDF_FAILURE;
@@ -1087,12 +1099,13 @@ int32_t AudioHwParams(const struct AudioCard *card, const struct AudioPcmHwParam
 int32_t AudioRenderPrepare(const struct AudioCard *card)
 {
     int ret;
+    struct PlatformData *platformData;
     if (card == NULL) {
         AUDIO_DRIVER_LOG_ERR("param card is NULL.");
         return HDF_FAILURE;
     }
 
-    struct PlatformData *platformData = PlatformDataFromCard(card);
+    platformData = PlatformDataFromCard(card);
     if (platformData == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -1120,12 +1133,13 @@ int32_t AudioRenderPrepare(const struct AudioCard *card)
 int32_t AudioCapturePrepare(const struct AudioCard *card)
 {
     int ret;
+    struct PlatformData *platformData;
     if (card == NULL) {
         AUDIO_DRIVER_LOG_ERR("param card is NULL.");
         return HDF_FAILURE;
     }
 
-    struct PlatformData *platformData = PlatformDataFromCard(card);
+    platformData = PlatformDataFromCard(card);
     if (platformData == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -1154,12 +1168,13 @@ int32_t AudioCapturePrepare(const struct AudioCard *card)
 int32_t AudioPcmPointer(const struct AudioCard *card, uint32_t *pointer, enum AudioStreamType streamType)
 {
     int ret;
+    struct PlatformData *data;
     if (card == NULL || pointer == NULL) {
         AUDIO_DRIVER_LOG_ERR("param card is NULL.");
         return HDF_FAILURE;
     }
 
-    struct PlatformData *data = PlatformDataFromCard(card);
+    data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
