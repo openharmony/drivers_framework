@@ -370,7 +370,7 @@ static struct HdfWlanDevice *ProbeDevice(struct HdfConfigWlanDevInst *deviceConf
         ret = HDF_SUCCESS;
         OsalMSleep(50);
         device->bus = NULL;
-        device->driverName = "hisi"; // from BDH6_DRIVER_NAME
+        device->driverName = "hisi";  // from BDH6_DRIVER_NAME
         HDF_LOGW("Do not call GPIO and HdfWlanBusInit");
 #endif
 
