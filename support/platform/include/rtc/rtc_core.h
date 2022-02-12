@@ -44,7 +44,6 @@ struct RtcMethod {
     int32_t (*WriteReg)(struct RtcHost *host, uint8_t usrDefIndex, uint8_t value);
 };
 
-int RtcSetHostMethod(struct RtcHost *host, struct RtcMethod *method);
 struct RtcHost *RtcHostCreate(struct HdfDeviceObject *device);
 void RtcHostDestroy(struct RtcHost *host);
 
@@ -52,6 +51,30 @@ static inline struct RtcHost *RtcHostFromDevice(struct HdfDeviceObject *device)
 {
     return (device == NULL) ? NULL : (struct RtcHost *)device->service;
 }
+
+int32_t RtcHostReadTime(struct RtcHost *host, struct RtcTime *time);
+
+int32_t RtcHostWriteTime(struct RtcHost *host, const struct RtcTime *time);
+
+int32_t RtcHostReadAlarm(struct RtcHost *host, enum RtcAlarmIndex alarmIndex, struct RtcTime *time);
+
+int32_t RtcHostWriteAlarm(struct RtcHost *host, enum RtcAlarmIndex alarmIndex, const struct RtcTime *time);
+
+int32_t RtcHostRegisterAlarmCallback(struct RtcHost *host, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb);
+
+int32_t RtcHostAlarmInterruptEnable(struct RtcHost *host, enum RtcAlarmIndex alarmIndex, uint8_t enable);
+
+int32_t RtcHostGetFreq(struct RtcHost *host, uint32_t *freq);
+
+int32_t RtcHostSetFreq(struct RtcHost *host, uint32_t freq);
+
+int32_t RtcHostReset(struct RtcHost *host);
+
+int32_t RtcHostReadReg(struct RtcHost *host, uint8_t usrDefIndex, uint8_t *value);
+
+int32_t RtcHostWriteReg(struct RtcHost *host, uint8_t usrDefIndex, uint8_t value);
+
+int32_t RtcIoDispatch(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply);
 
 #ifdef __cplusplus
 #if __cplusplus

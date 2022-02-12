@@ -393,6 +393,33 @@ static int32_t GpioTestReliability(void)
     return HDF_SUCCESS;
 }
 
+static int32_t GpioIfPerformanceTest(void)
+{
+#ifdef __LITEOS__
+    return HDF_SUCCESS;
+#endif
+    uint16_t val;
+    uint64_t startMs;
+    uint64_t endMs;
+    uint64_t useTime; /*ms*/
+    struct GpioTester *tester = NULL;
+
+    tester = GpioTesterGet();
+    if (tester == NULL) {
+        HDF_LOGE("%s: get tester failed", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    startMs = OsalGetSysTimeMs();
+    GpioRead(tester->cfg.gpio, &val);
+    endMs = OsalGetSysTimeMs();
+
+    useTime = endMs - startMs;
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
+        startMs, endMs, useTime, useTime < 1 ? true : false );
+    return HDF_SUCCESS;
+}
+
 struct GpioTestEntry {
     int cmd;
     int32_t (*func)(void);
@@ -406,6 +433,7 @@ static struct GpioTestEntry g_entry[] = {
     { GPIO_TEST_IRQ_EDGE, GpioTestIrqEdge, "GpioTestIrqEdge" },
     { GPIO_TEST_IRQ_THREAD, GpioTestIrqThread, "GpioTestIrqThread" },
     { GPIO_TEST_RELIABILITY, GpioTestReliability, "GpioTestReliability" },
+    { GPIO_TEST_PERFORMANCE, GpioIfPerformanceTest, "GpioIfPerformanceTest" },
 };
 
 int32_t GpioTestExecute(int cmd)

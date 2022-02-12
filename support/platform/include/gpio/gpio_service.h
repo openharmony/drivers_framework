@@ -20,6 +20,10 @@ enum GpioIoCmd {
     GPIO_IO_WRITE = 1,
     GPIO_IO_GETDIR = 2,
     GPIO_IO_SETDIR = 3,
+    GPIO_IO_SETIRQ = 4,
+    GPIO_IO_UNSETIRQ = 5,
+    GPIO_IO_ENABLEIRQ = 6,
+    GPIO_IO_DISABLEIRQ = 7,
 };
 
 #ifdef __cplusplus

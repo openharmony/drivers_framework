@@ -131,7 +131,7 @@ HdfTestFuncList g_hdfTestFuncList[] = {
     { TEST_PAL_WDT_TYPE, HdfWatchdogTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_RTC) || defined(CONFIG_DRIVERS_HDF_PLATFORM_RTC)
-    { TEST_PAL_RTC_TYPE, HdfRtcEntry },
+    { TEST_PAL_RTC_TYPE, HdfRtcTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_MIPI_DSI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_MIPI_DSI)
     { TEST_PAL_MIPI_DSI_TYPE, HdfMipiDsiEntry },

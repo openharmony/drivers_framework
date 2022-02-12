@@ -140,3 +140,14 @@ HWTEST_F(HdfLiteGpioTest, GpioTestReliability001, TestSize.Level1)
     EXPECT_EQ(0, GpioTestExecute(GPIO_TEST_RELIABILITY));
     printf("%s: exit!\n", __func__);
 }
+
+/**
+  * @tc.name: GpioIfPerformanceTest001
+  * @tc.desc: gpio user if performance test
+  * @tc.type: FUNC
+  * @tc.require: 
+  */
+HWTEST_F(HdfLiteGpioTest, GpioIfPerformanceTest001, TestSize.Level1)
+{
+    EXPECT_EQ(0, GpioTestExecute(GPIO_TEST_PERFORMANCE));
+}
