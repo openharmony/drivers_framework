@@ -21,7 +21,7 @@ static int32_t RtcServiceIoReadTime(struct RtcHost *host, struct HdfSBuf *reply)
 
     ret = RtcHostReadTime(host, &time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: host is NULL!", __func__);
+        HDF_LOGE("%s: host read time fail!", __func__);
         return ret;
     }
 
@@ -46,7 +46,7 @@ static int32_t RtcServiceIoWriteTime(struct RtcHost *host, struct HdfSBuf *data)
 
     ret = RtcHostWriteTime(host, time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write time fail!", __func__);
+        HDF_LOGE("%s: host write time fail!", __func__);
         return ret;
     }
 
@@ -60,7 +60,7 @@ static int32_t RtcServiceIoReadAlarm(struct RtcHost *host, struct HdfSBuf *data,
     struct RtcTime time;
 
     if (!HdfSbufReadUint32(data, &alarmIndex)) {
-        HDF_LOGE("%s: read rtc alarmIndex fail!", __func__);
+        HDF_LOGE("%s: read alarmIndex fail!", __func__);
         return HDF_ERR_IO;
     }
 
@@ -86,7 +86,7 @@ static int32_t RtcServiceIoWriteAlarm(struct RtcHost *host, struct HdfSBuf *data
     struct RtcTime *time = NULL;
 
     if (!HdfSbufReadUint32(data, &alarmIndex)) {
-        HDF_LOGE("%s: read rtc alarmIndex fail!", __func__);
+        HDF_LOGE("%s: read alarmIndex fail!", __func__);
         return HDF_ERR_IO;
     }
 
@@ -97,7 +97,7 @@ static int32_t RtcServiceIoWriteAlarm(struct RtcHost *host, struct HdfSBuf *data
 
     ret = RtcHostWriteAlarm(host, (enum RtcAlarmIndex)alarmIndex, time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write alarm fail!", __func__);
+        HDF_LOGE("%s: host write alarm fail!", __func__);
         return ret;
     }
 
@@ -118,18 +118,18 @@ static int32_t RtcServiceIoInterruptEnable(struct RtcHost *host, struct HdfSBuf 
     uint8_t enable = 0;
 
     if (!HdfSbufReadUint32(data, &alarmIndex))  {
-        HDF_LOGE("%s: read rtc alarmIndex fail!", __func__);
+        HDF_LOGE("%s: read alarmIndex fail!", __func__);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufReadUint8(data, &enable)) {
-        HDF_LOGE("%s: read rtc enable fail!", __func__);
+        HDF_LOGE("%s: read enable fail!", __func__);
         return HDF_ERR_IO;
     }
 
     ret = RtcHostAlarmInterruptEnable(host, (enum RtcAlarmIndex)alarmIndex, enable);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: host is NULL!", __func__);
+        HDF_LOGE("%s: host alarm interrupt enable fail! ret :%d", __func__, ret);
         return ret;
     }
 
@@ -139,16 +139,16 @@ static int32_t RtcServiceIoInterruptEnable(struct RtcHost *host, struct HdfSBuf 
 static int32_t RtcServiceIoGetFreq(struct RtcHost *host, struct HdfSBuf *reply)
 {
     int32_t ret;
-    uint32_t freq;
+    uint32_t freq = 0;
 
     ret = RtcHostGetFreq(host, &freq);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: get freq failde! ret :%d", __func__, ret);
+        HDF_LOGE("%s: host get freq fail! ret :%d", __func__, ret);
         return ret;
     }
 
     if (!HdfSbufWriteUint32(reply, freq)) {
-        HDF_LOGE("%s: write rtc freq fail!", __func__);
+        HDF_LOGE("%s: write freq fail!", __func__);
         return HDF_ERR_IO;
     }
 
@@ -167,7 +167,7 @@ static int32_t RtcServiceIoSetFreq(struct RtcHost *host, struct HdfSBuf *data)
 
     ret = RtcHostSetFreq(host, freq);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: set freq fail! ret :%d", __func__, ret);
+        HDF_LOGE("%s: host set freq fail! ret :%d", __func__, ret);
         return ret;
     }
 
@@ -180,7 +180,7 @@ static int32_t RtcServiceIoReset(struct RtcHost *host)
 
     ret = RtcHostReset(host);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: host reset fail!", __func__);
+        HDF_LOGE("%s: host reset fail! ret :%d", __func__, ret);
         return ret;
     }
 
@@ -190,7 +190,7 @@ static int32_t RtcServiceIoReset(struct RtcHost *host)
 static int32_t RtcServiceIoReadReg(struct RtcHost *host, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
-    uint8_t usrDefIndex;
+    uint8_t usrDefIndex = 0;
     uint8_t value = 0;
 
     if (!HdfSbufReadUint8(data, &usrDefIndex)) {
@@ -200,11 +200,11 @@ static int32_t RtcServiceIoReadReg(struct RtcHost *host, struct HdfSBuf *data, s
 
     ret = RtcHostReadReg(host, usrDefIndex, &value);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read reg fail! ret :%d", __func__, ret);
+        HDF_LOGE("%s: host read reg fail! ret :%d", __func__, ret);
         return ret;
     }
 
-    if (!HdfSbufWriteUint8(data, value)) {
+    if (!HdfSbufWriteUint8(reply, value)) {
         HDF_LOGE("%s: write value fail!", __func__);
         return HDF_ERR_IO;
     }
@@ -215,8 +215,8 @@ static int32_t RtcServiceIoReadReg(struct RtcHost *host, struct HdfSBuf *data, s
 static int32_t RtcServiceIoWriteReg(struct RtcHost *host, struct HdfSBuf *data)
 {
     int32_t ret;
-    uint8_t usrDefIndex;
-    uint8_t value;
+    uint8_t usrDefIndex = 0;
+    uint8_t value = 0;
 
     if (!HdfSbufReadUint8(data, &usrDefIndex)) {
         HDF_LOGE("%s: read usrDefIndex fail!", __func__);
@@ -224,13 +224,13 @@ static int32_t RtcServiceIoWriteReg(struct RtcHost *host, struct HdfSBuf *data)
     }
 
     if (!HdfSbufReadUint8(data, &value)) {
-        HDF_LOGE("%s: read usrDefIndex fail!", __func__);
+        HDF_LOGE("%s: read value fail!", __func__);
         return HDF_ERR_IO;
     }
 
     ret = RtcHostWriteReg(host, usrDefIndex, value);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write reg fail! ret :%d", __func__, ret);
+        HDF_LOGE("%s: host write reg fail! ret :%d", __func__, ret);
         return ret;
     }
 

@@ -172,3 +172,14 @@ HWTEST_F(HdfLiteUartTest, UartReliabilityTest001, TestSize.Level1)
     EXPECT_EQ(0, UartTestExecute(UART_TEST_CMD_RELIABILITY));
     printf("%s: exit!\n", __func__);
 }
+
+/**
+  * @tc.name: UartIfPerformanceTest001
+  * @tc.desc: uart user if performance test
+  * @tc.type: FUNC
+  * @tc.require: 
+  */
+HWTEST_F(HdfLiteUartTest, UartIfPerformanceTest001, TestSize.Level1)
+{
+    EXPECT_EQ(0, UartTestExecute(UART_TEST_CMD_PERFORMANCE));
+}

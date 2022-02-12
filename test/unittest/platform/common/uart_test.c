@@ -258,6 +258,29 @@ static int32_t UartReliabilityTest(struct UartTester *tester)
     return HDF_SUCCESS;
 }
 
+static int32_t UartIfPerformanceTest(struct UartTester *tester)
+{
+#ifdef __LITEOS__
+    if (tester == NULL) {
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+#endif
+    uint32_t baudRate;
+    uint64_t startMs;
+    uint64_t endMs;
+    uint64_t useTime; /*ms*/
+
+    startMs = OsalGetSysTimeMs();
+    UartGetBaud(tester->handle, &baudRate);
+    endMs = OsalGetSysTimeMs();
+
+    useTime = endMs - startMs;
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
+        startMs, endMs, useTime, useTime < 1 ? true : false );
+    return HDF_SUCCESS;
+}
+
 struct UartTestEntry {
     int cmd;
     int32_t (*func)(struct UartTester *tester);
@@ -273,7 +296,7 @@ static struct UartTestEntry g_entry[] = {
     { UART_TEST_CMD_GET_ATTRIBUTE, UartGetAttributeTest, "UartGetAttributeTest" },
     { UART_TEST_CMD_SET_TRANSMODE, UartSetTransModeTest, "UartSetTransModeTest" },
     { UART_TEST_CMD_RELIABILITY, UartReliabilityTest, "UartReliabilityTest" },
-    { UART_TEST_CMD_PERFORMANCE, NULL, "NULL" },
+    { UART_TEST_CMD_PERFORMANCE, UartIfPerformanceTest, "UartIfPerformanceTest" },
 };
 
 int32_t UartTestExecute(int cmd)
