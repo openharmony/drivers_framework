@@ -135,3 +135,14 @@ HWTEST_F(HdfLiteTimerTest, TimerTestReliability001, TestSize.Level1)
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
     EXPECT_EQ(0, TimerTestExecute(TIMER_RELIABILITY_TEST));
 }
+
+/**
+  * @tc.name: TimerTestIfPerformance001
+  * @tc.desc: timer user if performance test
+  * @tc.type: FUNC
+  * @tc.require: NA
+  */
+HWTEST_F(HdfLiteTimerTest, TimerTestIfPerformance001, TestSize.Level1)
+{
+    EXPECT_EQ(0, TimerTestExecute(TIMER_IF_PERFORMANCE_TEST));
+}

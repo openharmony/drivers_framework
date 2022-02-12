@@ -338,6 +338,32 @@ struct TimerTest *TimerTestGet(void)
     return &tester;
 }
 
+static int32_t TimerIfPerformanceTest(struct TimerTest *test)
+{
+#ifdef __LITEOS__
+    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    if (test == NULL) {
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+#endif
+
+    uint64_t startMs;
+    uint64_t endMs;
+    uint64_t useTime; /*ms*/
+    uint32_t uSecond;
+    bool isPeriod;
+
+    startMs = OsalGetSysTimeMs();
+    HwTimerGet(test->handle, &uSecond, &isPeriod);
+    endMs = OsalGetSysTimeMs();
+
+    useTime = endMs - startMs;
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
+        startMs, endMs, useTime, useTime < 1 ? true : false );
+    return HDF_SUCCESS;
+}
+
 static struct TimerTestFunc g_timerTestFunc[] = {
     {TIMER_TEST_SET, TimerSetTest},
     {TIMER_TEST_SETONCE, TimerSetOnceTest},
@@ -346,6 +372,7 @@ static struct TimerTestFunc g_timerTestFunc[] = {
     {TIMER_TEST_STOP, TimerStopTest},
     {TIMER_MULTI_THREAD_TEST, TimerTestMultiThread},
     {TIMER_RELIABILITY_TEST, TimerTestReliability},
+    {TIMER_IF_PERFORMANCE_TEST, TimerIfPerformanceTest},
 };
 
 int32_t TimerTestExecute(int cmd)
@@ -353,7 +380,7 @@ int32_t TimerTestExecute(int cmd)
     uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
     
-    if (cmd > TIMER_RELIABILITY_TEST) {
+    if (cmd > TIMER_TEST_MAX_CMD) {
         HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
         return HDF_ERR_NOT_SUPPORT;
     }
