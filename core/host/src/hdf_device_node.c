@@ -267,10 +267,15 @@ struct HdfDeviceNode *HdfDeviceNodeNewInstance(const struct HdfDeviceInfo *devic
         HdfDeviceNodeFreeInstance(devNode);
         return NULL;
     }
+#ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
+    devNode->deviceObject.deviceMatchAttr = deviceInfo->deviceMatchAttr;
+#else
     devNode->deviceObject.property = HcsGetNodeByMatchAttr(HdfGetHcsRootNode(), deviceInfo->deviceMatchAttr);
     if (devNode->deviceObject.property == NULL) {
         HDF_LOGD("node %s property empty, match attr: %s", deviceInfo->moduleName, deviceInfo->deviceMatchAttr);
     }
+#endif
+
     devNode->devStatus = DEVNODE_INITED;
     return devNode;
 }

@@ -177,9 +177,9 @@ bool MacroGen::GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &
         for (iter = subList.begin(); iter != subList.end(); iter++) {
             index--;
             if (index) {
-                ofs_ << TAB << "func(" << *iter << ") \\\n";
+                ofs_ << TAB << "func(" << *iter << "); \\\n";
             } else {
-                ofs_ << TAB << "func(" << *iter << ")\n";
+                ofs_ << TAB << "func(" << *iter << ");\n";
             }
         }
         ofs_ << std::endl;
@@ -189,9 +189,9 @@ bool MacroGen::GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &
         for (iter = subList.begin(); iter != subList.end(); iter++) {
             index--;
             if (index) {
-                ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__) \\\n";
+                ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__); \\\n";
             } else {
-                ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__)\n";
+                ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__);\n";
             }
         }
         ofs_ << std::endl;
