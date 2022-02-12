@@ -97,3 +97,13 @@ HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestReliability001, TestSize.Level1
     EXPECT_EQ(0, WatchdogTestExecute(WATCHDOG_TEST_RELIABILITY));
 }
 
+/**
+  * @tc.name: HdfLiteWatchdogTestIfPerformance001
+  * @tc.desc: watchdog user if performance test
+  * @tc.type: FUNC
+  * @tc.require:
+  */
+HWTEST_F(HdfLiteWatchdogTest, HdfLiteWatchdogTestIfPerformance001, TestSize.Level1)
+{
+    EXPECT_EQ(0, WatchdogTestExecute(WATCHDOG_IF_PERFORMANCE_TEST));
+}

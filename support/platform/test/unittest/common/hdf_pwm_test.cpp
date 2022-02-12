@@ -122,3 +122,14 @@ HWTEST_F(HdfLitePwmTest, PwmDisableTest001, TestSize.Level1)
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
     EXPECT_EQ(0, PwmTestExecute(PWM_DISABLE_TEST));
 }
+
+/**
+  * @tc.name: PwmIfPerformanceTest001
+  * @tc.desc: pwm user if performance test
+  * @tc.type: FUNC
+  * @tc.require: 
+  */
+HWTEST_F(HdfLitePwmTest, PwmIfPerformanceTest001, TestSize.Level1)
+{
+    EXPECT_EQ(0, PwmTestExecute(PWM_IF_PERFORMANCE_TEST));
+}
