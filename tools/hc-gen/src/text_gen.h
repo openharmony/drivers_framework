@@ -61,17 +61,17 @@ private:
 
     bool OutputImplGlobalVariables();
 
-    uint32_t ImplementGenTraversal(const std::shared_ptr<AstObject> &object, uint32_t depth);
+    uint32_t ImplementGenTraversal(const std::shared_ptr<AstObject> &object, int32_t depth);
 
-    uint32_t ImplementCloseBraceGen(const std::shared_ptr<AstObject> &object, uint32_t depth);
+    uint32_t ImplementCloseBraceGen(const std::shared_ptr<AstObject> &object, int32_t depth);
 
     static const std::string & Indent(uint32_t times = 1);
 
     static bool IsInSubClassNode(const std::shared_ptr<AstObject> &object);
 
-    uint32_t ObjectImplementGen(const std::shared_ptr<AstObject> &object, uint32_t depth);
+    uint32_t ObjectImplementGen(const std::shared_ptr<AstObject> &object, int32_t depth);
 
-    bool TemplateObjectImplGen(const std::shared_ptr<AstObject> &object, uint32_t depth);
+    bool TemplateObjectImplGen(const std::shared_ptr<AstObject> &object, int32_t depth);
 
     std::string GenTemplateVariableName(const std::shared_ptr<AstObject> &object);
 
@@ -94,13 +94,13 @@ private:
     std::string rootVariableName_;
     std::map<std::string, std::shared_ptr<Symbol>> symMap;
 
-    uint32_t PrintTermImplement(const std::shared_ptr<AstObject> &object, uint32_t depth);
+    uint32_t PrintTermImplement(const std::shared_ptr<AstObject> &object, int32_t depth);
 
     bool PrintBaseTypeValue(const std::shared_ptr<AstObject>& object);
 
-    uint32_t PrintArrayImplement(const std::shared_ptr<AstObject> &object, uint32_t depth);
+    uint32_t PrintArrayImplement(const std::shared_ptr<AstObject> &object, int32_t depth);
 
-    bool PrintArrayImplInSubClass(const std::shared_ptr<AstObject> &object, uint32_t depth);
+    bool PrintArrayImplInSubClass(const std::shared_ptr<AstObject> &object, int32_t depth);
 
     bool HcsPrintArrayContent(const std::shared_ptr<AstObject>& object, uint32_t indent);
 

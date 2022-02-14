@@ -49,7 +49,7 @@ bool Decompile::VerifyDecompileFile()
         Logger().Error() << "read header failed";
         return false;
     }
-    Logger().Debug() << "read Header: magic is: " << header.magicNumber << " version major: " << header.versionMajor << 
+    Logger().Debug() << "read Header: magic is: " << header.magicNumber << " version major: " << header.versionMajor <<
         " version minor: " << header.versionMinor << " checksum: " << header.checkSum << " totalSize: " << header.totalSize;
     if (header.magicNumber != HCB_MAGIC_NUM) {
         Logger().Error() << "magic number is: " << header.magicNumber <<  ", check failed!";
@@ -149,8 +149,8 @@ std::shared_ptr<AstObject> Decompile::RebuildNode()
     node->SetSize(nodeSize);
     node->SetHash(nodeHash);
     Logger().Debug() << "node name is: " << node->Name() << ", size is: " << nodeSize << ", hash is: " << nodeHash;
-    uint32_t pos = file_.tellg();
-    uint32_t nodeEnd = pos + nodeSize;
+    int32_t pos = file_.tellg();
+    int32_t nodeEnd = pos + nodeSize;
     while (pos < nodeEnd) {
         uint32_t childOpCode;
         if (!GetNextByteCode(childOpCode)) {
@@ -312,7 +312,7 @@ bool Decompile::DoDecompile()
     if(!InitDecompileFile()) {
         return false;
     }
-    
+
     if (!VerifyDecompileFile()) {
         Logger().Error() << "Verify decompile file failed!";
         return false;

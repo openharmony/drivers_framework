@@ -83,7 +83,7 @@ bool TextGen::HeaderOutput()
 
 bool TextGen::HeaderOutputTraversal()
 {
-    auto ret = ast_->WalkBackward([this](const std::shared_ptr<AstObject> &current, uint32_t) -> uint32_t {
+    auto ret = ast_->WalkBackward([this](const std::shared_ptr<AstObject> &current, int32_t) -> uint32_t {
         if (!current->IsNode()) {
             return NOERR;
         }
@@ -339,11 +339,11 @@ const std::string &TextGen::TypeToStr(uint32_t type)
 
 bool TextGen::OutputImplGlobalVariables()
 {
-    auto forwardWalkFunc = [this](const std::shared_ptr<AstObject>& current, uint32_t depth) -> uint32_t {
+    auto forwardWalkFunc = [this](const std::shared_ptr<AstObject>& current, int32_t depth) -> uint32_t {
         return ImplementGenTraversal(current, depth);
     };
 
-    auto backwardWalkFunc = [this](const std::shared_ptr<AstObject>& current, uint32_t depth) -> uint32_t {
+    auto backwardWalkFunc = [this](const std::shared_ptr<AstObject>& current, int32_t depth) -> uint32_t {
         return ImplementCloseBraceGen(current, depth);
     };
 
@@ -365,7 +365,7 @@ const std::string &TextGen::Indent(uint32_t times)
     return indentMap.at(times);
 }
 
-uint32_t TextGen::ImplementCloseBraceGen(const std::shared_ptr<AstObject> &object, uint32_t depth)
+uint32_t TextGen::ImplementCloseBraceGen(const std::shared_ptr<AstObject> &object, int32_t depth)
 {
     if (!object->IsNode() || ConfigNode::CastFrom(object)->GetNodeType() == NODE_INHERIT) {
         return NOERR;
@@ -378,7 +378,7 @@ uint32_t TextGen::ImplementCloseBraceGen(const std::shared_ptr<AstObject> &objec
     return ofs_.good() ? NOERR : EOUTPUT;
 }
 
-uint32_t TextGen::ImplementGenTraversal(const std::shared_ptr<AstObject> &object, uint32_t depth)
+uint32_t TextGen::ImplementGenTraversal(const std::shared_ptr<AstObject> &object, int32_t depth)
 {
     if (!object->IsNode() && !object->IsTerm()) {
         return NOERR;
@@ -411,7 +411,7 @@ bool TextGen::IsInSubClassNode(const std::shared_ptr<AstObject> &object)
     return false;
 }
 
-uint32_t TextGen::ObjectImplementGen(const std::shared_ptr<AstObject> &object, uint32_t depth)
+uint32_t TextGen::ObjectImplementGen(const std::shared_ptr<AstObject> &object, int32_t depth)
 {
     switch (object->Type()) {
         case PARSEROP_CONFNODE: {
@@ -434,7 +434,7 @@ uint32_t TextGen::ObjectImplementGen(const std::shared_ptr<AstObject> &object, u
     return ofs_.good() ? NOERR : EOUTPUT;
 }
 
-bool TextGen::TemplateObjectImplGen(const std::shared_ptr<AstObject> &object, uint32_t depth)
+bool TextGen::TemplateObjectImplGen(const std::shared_ptr<AstObject> &object, int32_t depth)
 {
     auto node = ConfigNode::CastFrom(object);
     if (node->GetNodeType() != NODE_TEMPLATE) {
@@ -487,7 +487,7 @@ void TextGen::SymbolAdd(const std::string &name, const std::shared_ptr<AstObject
     symMap.insert(std::make_pair(std::string(name), std::make_shared<Symbol>(object, 1)));
 }
 
-uint32_t TextGen::PrintTermImplement(const std::shared_ptr<AstObject> &object, uint32_t depth)
+uint32_t TextGen::PrintTermImplement(const std::shared_ptr<AstObject> &object, int32_t depth)
 {
     auto term = ConfigTerm::CastFrom(object);
     auto value = object->Child();
@@ -536,7 +536,7 @@ bool TextGen::PrintBaseTypeValue(const std::shared_ptr<AstObject> &object)
     return ofs_.good();
 }
 
-uint32_t TextGen::PrintArrayImplement(const std::shared_ptr<AstObject> &object, uint32_t depth)
+uint32_t TextGen::PrintArrayImplement(const std::shared_ptr<AstObject> &object, int32_t depth)
 {
     if (IsInSubClassNode(object)) {
         return PrintArrayImplInSubClass(object, depth) ? NOERR : EOUTPUT;
@@ -554,7 +554,7 @@ uint32_t TextGen::PrintArrayImplement(const std::shared_ptr<AstObject> &object, 
     return ofs_.good() ? NOERR : EOUTPUT;
 }
 
-bool TextGen::PrintArrayImplInSubClass(const std::shared_ptr<AstObject> &object, uint32_t depth)
+bool TextGen::PrintArrayImplInSubClass(const std::shared_ptr<AstObject> &object, int32_t depth)
 {
     auto array = ConfigArray::CastFrom(object->Child());
     auto arrayName = GenArrayName(object);
@@ -611,7 +611,7 @@ bool TextGen::OutputTemplateImpl()
         return false;
     }
 
-    return ast_->WalkBackward([this](const std::shared_ptr<AstObject> &object, uint32_t) -> uint32_t {
+    return ast_->WalkBackward([this](const std::shared_ptr<AstObject> &object, int32_t) -> uint32_t {
         if (!object->IsNode() ||
             (object->IsNode() && ConfigNode::CastFrom(object)->GetNodeType() != NODE_TEMPLATE)) {
             return NOERR;
@@ -640,7 +640,7 @@ bool TextGen::OutputTemplateImpl()
 
 bool TextGen::OutputTemplateVariablesDeclare()
 {
-    return ast_->WalkBackward([this](const std::shared_ptr<AstObject> &object, uint32_t) -> uint32_t {
+    return ast_->WalkBackward([this](const std::shared_ptr<AstObject> &object, int32_t) -> uint32_t {
         if (object->IsTerm() && object->Child()->IsArray()) {
             return ArrayVariablesDeclareGen(object);
         } else if (!object->IsNode() ||

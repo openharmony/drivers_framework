@@ -70,7 +70,7 @@ bool ByteCodeGen::Initialize()
 
 bool ByteCodeGen::ByteCodeConvert()
 {
-    return ast_->WalkBackward([this](std::shared_ptr<AstObject> &object, uint32_t depth) {
+    return ast_->WalkBackward([this](std::shared_ptr<AstObject> &object, int32_t depth) {
         if (object->IsNode() && ConfigNode::CastFrom(object)->GetNodeType() == NODE_TEMPLATE) {
             object->Separate();
             return NOERR;
@@ -186,7 +186,7 @@ bool ByteCodeGen::ByteCodeWrite(bool dummy)
 
 bool ByteCodeGen::ByteCodeWriteWalk()
 {
-    return ast_->WalkForward([this](std::shared_ptr<AstObject> &current, uint32_t depth) {
+    return ast_->WalkForward([this](std::shared_ptr<AstObject> &current, int32_t depth) {
         current->SetHash(writeSize_);
         auto opcode = current->OpCode();
         Write(opcode);

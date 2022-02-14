@@ -66,8 +66,9 @@ static int DevmgrServiceStartHostProcess(struct DevHostServiceClnt *hostClnt, bo
         return HDF_SUCCESS;
     }
 
-    while (hostClnt->hostService == NULL && waitCount-- > 0) {
+    while (hostClnt->hostService == NULL && waitCount > 0) {
         OsalMSleep(WAIT_HOST_SLEEP_TIME);
+        waitCount--;
     }
 
     if (waitCount <= 0) {
@@ -268,7 +269,7 @@ static int DevmgrServiceStartDeviceHost(struct DevmgrService *devmgr, struct Hdf
 
 static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
 {
-    uint32_t ret;
+    int ret;
     struct HdfSList hostList;
     struct HdfSListIterator it;
     struct HdfHostInfo *hostAttr = NULL;

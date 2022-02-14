@@ -28,9 +28,9 @@ typedef uint32_t devid_t;
 #define DEVNODEID_MASK ((1 << DEVNODEID_BITS) - 1)
 #define DEVICEID_MASK ((1 << DEVICEID_BITS) - 1)
 
-#define HOSTID(devid) (devid >> (DEVICEID_BITS + DEVNODEID_BITS))
-#define DEVICEID(devid) ((devid >> DEVNODEID_BITS) & DEVICEID_MASK)
-#define DEVNODEID(devid) (devid & DEVNODEID_MASK)
+#define HOSTID(devid) ((uint32_t)devid >> (DEVICEID_BITS + DEVNODEID_BITS))
+#define DEVICEID(devid) (((uint32_t)devid >> DEVNODEID_BITS) & DEVICEID_MASK)
+#define DEVNODEID(devid) ((uint32_t)devid & DEVNODEID_MASK)
 
 #define MK_DEVID(hostId, deviceId, devnodeId) \
     (hostId << (DEVICEID_BITS + DEVNODEID_BITS) | deviceId << DEVNODEID_BITS | devnodeId)
