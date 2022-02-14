@@ -7,8 +7,8 @@
  */
 
 #include "rtc_if.h"
-#include "hdf_log.h"
 #include "hdf_io_service_if.h"
+#include "hdf_log.h"
 #include "hdf_sbuf.h"
 #include "osal_mem.h"
 #include "securec.h"
@@ -66,7 +66,7 @@ int32_t RtcReadTime(DevHandle handle, struct RtcTime *time)
 
     host = (struct RtcHost *)handle;
 
-    reply = HdfSbufObtain(sizeof(*time) + sizeof(uint64_t));
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("%s: fail to obtain reply!", __func__);
         return HDF_ERR_MALLOC_FAIL;
@@ -88,6 +88,12 @@ int32_t RtcReadTime(DevHandle handle, struct RtcTime *time)
     if (!HdfSbufReadBuffer(reply, (const void **)&temp, &len) || temp == NULL) {
         HDF_LOGE("%s: read buffer fail", __func__);
         ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+
+    if (len != sizeof(*time)) {
+        HDF_LOGE("%s: read error, len: %u, size: %zu", __func__, len, sizeof(*time));
+        ret = HDF_FAILURE;
         goto EXIT;
     }
 
@@ -169,7 +175,7 @@ int32_t RtcReadAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, struct Rtc
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    reply = HdfSbufObtain(sizeof(*time) + sizeof(uint64_t));
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("%s: fail to obtain reply!", __func__);
         HdfSbufRecycle(data);
@@ -177,7 +183,7 @@ int32_t RtcReadAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, struct Rtc
     }
 
     if (!HdfSbufWriteUint32(data, (uint32_t)alarmIndex)) {
-        HDF_LOGE("%s: write rtc alarmIndex fail!", __func__);
+        HDF_LOGE("%s: write alarmIndex fail!", __func__);
         ret = HDF_ERR_IO;
         goto EXIT;
     }
@@ -198,6 +204,12 @@ int32_t RtcReadAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, struct Rtc
     if (!HdfSbufReadBuffer(reply, (const void **)&temp, &len) || temp == NULL) {
         HDF_LOGE("%s: read buffer fail", __func__);
         ret = HDF_ERR_IO;
+        goto EXIT;
+    }
+
+    if (len != sizeof(*time)) {
+        HDF_LOGE("%s: read error, len: %u, size: %zu", __func__, len, sizeof(*time));
+        ret = HDF_FAILURE;
         goto EXIT;
     }
 
@@ -267,7 +279,7 @@ int32_t RtcRegisterAlarmCallback(DevHandle handle, enum RtcAlarmIndex alarmIndex
 {
     (void)alarmIndex;
     if(handle == NULL || cb == NULL) {
-        HDF_LOGE("%s: handle orcb is NULL.", __func__);
+        HDF_LOGE("%s: handle or cb is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -295,13 +307,13 @@ int32_t RtcAlarmInterruptEnable(DevHandle handle, enum RtcAlarmIndex alarmIndex,
     }
 
     if (!HdfSbufWriteUint32(data, (uint32_t)alarmIndex)) {
-        HDF_LOGE("%s: write rtc alarmIndex fail!", __func__);
+        HDF_LOGE("%s: write alarmIndex fail!", __func__);
         HdfSbufRecycle(data);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufWriteUint8(data, enable)) {
-        HDF_LOGE("%s: write rtc time fail!", __func__);
+        HDF_LOGE("%s: write enable fail!", __func__);
         HdfSbufRecycle(data);
         return HDF_ERR_IO;
     }
@@ -338,7 +350,7 @@ int32_t RtcGetFreq(DevHandle handle, uint32_t *freq)
 
     host = (struct RtcHost *)handle;
 
-    reply = HdfSbufObtain(sizeof(*freq) + sizeof(uint64_t));
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("%s: fail to obtain data", __func__);
         return HDF_ERR_MALLOC_FAIL;
@@ -432,7 +444,7 @@ int32_t RtcReset(DevHandle handle)
 
     ret = service->dispatcher->Dispatch(&service->object, RTC_IO_RESET, NULL, NULL);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: rtc close error, ret %d", __func__, ret);
+        HDF_LOGE("%s: rtc reset fail, ret %d", __func__, ret);
         return ret;
     }
 
@@ -460,7 +472,7 @@ int32_t RtcReadReg(DevHandle handle, uint8_t usrDefIndex, uint8_t *value)
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    reply = HdfSbufObtain(sizeof(*value) + sizeof(uint64_t));
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("%s: fail to obtain reply!", __func__);
         HdfSbufRecycle(data);
@@ -519,13 +531,13 @@ int32_t RtcWriteReg(DevHandle handle, uint8_t usrDefIndex, uint8_t value)
     }
 
     if (!HdfSbufWriteUint8(data, usrDefIndex)) {
-        HDF_LOGE("%s: write rtc usrDefIndex fail!", __func__);
+        HDF_LOGE("%s: write usrDefIndex fail!", __func__);
         HdfSbufRecycle(data);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufWriteUint8(data, value)) {
-        HDF_LOGE("%s: write rtc value fail!", __func__);
+        HDF_LOGE("%s: write value fail!", __func__);
         HdfSbufRecycle(data);
         return HDF_ERR_IO;
     }

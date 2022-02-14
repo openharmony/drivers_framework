@@ -32,7 +32,7 @@ static int32_t RtcTestGetConfig(struct RtcTestConfig *config)
         return HDF_ERR_NOT_SUPPORT;
     }
 
-    reply = HdfSbufObtain(sizeof(*config) + sizeof(uint64_t));
+    reply = HdfSbufObtainDefaultSize();
     if (reply == NULL) {
         HDF_LOGE("%s: Failed to obtain reply", __func__);
         HdfIoServiceRecycle(service);
@@ -96,7 +96,7 @@ struct RtcTester *RtcTesterGet(void)
 static void RtcTesterPut(struct RtcTester *tester)
 {
     if (tester == NULL ||  tester->handle == NULL) {
-        HDF_LOGE("%s: rtc handle is null", __func__);
+        HDF_LOGE("%s: tester or handle is null", __func__);
         return;
     }
 
@@ -109,7 +109,7 @@ static int8_t g_rtcIrqCallback = HDF_FAILURE;
 int32_t RtcAlarmACallback(enum RtcAlarmIndex alarmIndex)
 {
     if (alarmIndex == RTC_ALARM_INDEX_A) {
-        HDF_LOGE("RtcAlarmACallback: alarm a callback success");
+        HDF_LOGI("%s: alarm a callback success", __func__);
         g_rtcIrqCallback = HDF_SUCCESS;
     } else {
         g_rtcIrqCallback = HDF_FAILURE;
@@ -170,7 +170,7 @@ static int32_t RtcReadWriteTimeTest(struct RtcTester *tester)
 
     ret = TestReadWriteTime(tester);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: test fail", __func__);
+        HDF_LOGE("%s: test ReadWriteTime fail", __func__);
         return HDF_FAILURE;
     }
 
@@ -227,7 +227,7 @@ static int32_t TestReadWriteAlarm(struct RtcTester *tester) {
 
     ret = RtcWriteAlarm(tester->handle, RTC_ALARM_INDEX_A, &tester->time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write alarm fail,ret:%d", __func__, ret);
+        HDF_LOGE("%s: write alarm fail, ret :%d", __func__, ret);
         return HDF_FAILURE;
     }
 
@@ -235,7 +235,7 @@ static int32_t TestReadWriteAlarm(struct RtcTester *tester) {
 
     ret = RtcReadAlarm(tester->handle, RTC_ALARM_INDEX_A, &readTime);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read alarm fail,ret:%d",__func__, ret);
+        HDF_LOGE("%s: read alarm fail, ret :%d",__func__, ret);
         return HDF_FAILURE;
     }
 
@@ -329,13 +329,13 @@ static int32_t RtcAlarmEnableTest(struct RtcTester *tester)
 
     ret = TestReadWriteAlarm(tester);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s:read write alarm time fail.", __func__);
+        HDF_LOGE("%s:read write alarm fail.", __func__);
         return HDF_FAILURE;
     }
 
     ret = RtcAlarmInterruptEnable(tester->handle, RTC_ALARM_INDEX_A, 1);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: alarm enable fail.", __func__);
+        HDF_LOGE("%s: alarm interrupt enable fail.", __func__);
         return ret;
     }
 
@@ -356,13 +356,13 @@ static int32_t RtcAlarmIrqAttachConfig(struct RtcTester *tester)
     freq = tester->config.frequence;
     ret = RtcSetFreq(tester->handle, freq);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: rtc set freq fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: set freq fail, ret :%d", __func__, ret);
         return ret;
     }
 
     ret = RtcAlarmInterruptEnable(tester->handle, RTC_ALARM_INDEX_A, 1);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: alarm interrupt enable fail", __func__);
+        HDF_LOGE("%s: alarm interrupt enable fail, ret :%d", __func__, ret);
         return ret;
     }
 
@@ -387,13 +387,13 @@ static int32_t RtcAlarmIrqTest(struct RtcTester *tester)
     
     ret = RtcAlarmIrqAttachConfig(tester);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: alarm irq attach config fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: alarm irq attach config fail, ret :%d", __func__, ret);
         return ret;
     }
 
     ret = RtcWriteTime(tester->handle, &tester->time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write time fail", __func__);
+        HDF_LOGE("%s: write time fail, ret :%d", __func__, ret);
         return HDF_FAILURE;
     }
 
@@ -401,7 +401,7 @@ static int32_t RtcAlarmIrqTest(struct RtcTester *tester)
     tester->time.second = tester->config.second + 1;
     ret = RtcWriteAlarm(tester->handle, RTC_ALARM_INDEX_A, &tester->time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write alarm fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: write alarm fail, ret :%d", __func__, ret);
         return HDF_FAILURE;
     }
 
@@ -423,7 +423,7 @@ static int32_t RtcRegisterCallbackTest(struct RtcTester *tester)
 
     ret = RtcRegisterAlarmCallback(tester->handle, RTC_ALARM_INDEX_A, RtcAlarmACallback);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: register alarm callback fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: register alarm callback fail, ret :%d", __func__, ret);
         return ret;
     }
 
@@ -449,7 +449,7 @@ static int32_t RtcSetNormalFreqTest(struct RtcTester *tester)
 
     ret = RtcSetFreq(tester->handle, tester->config.frequence);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: set normal frequence fail,ret:%d", __func__, ret);
+        HDF_LOGE("%s: set normal frequence fail, ret :%d", __func__, ret);
         return HDF_FAILURE;
     }
 
@@ -498,12 +498,12 @@ static int32_t RtcReadWriteUserRegTest(struct RtcTester *tester)
 
     ret = RtcReadReg(tester->handle, 0, &value);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read min frequence fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: read reg fail, ret :%d", __func__, ret);
         return ret;
     }
 
     if (value != tester->config.userValue) {
-        HDF_LOGE("%s: value is not same.", __func__);
+        HDF_LOGE("%s: value is not same. value :%u, userValue :%u", __func__, value, tester->config.userValue);
         return HDF_FAILURE;
     }
 
@@ -518,16 +518,17 @@ static int32_t RtcReadWriteMaxUserIndexTest(struct RtcTester *tester)
     value = tester->config.userValue;
     ret = RtcWriteReg(tester->handle, tester->config.userMaxIndex, value);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write reg max index test success", __func__);
+        HDF_LOGI("%s: write reg max index test success", __func__);
         return HDF_SUCCESS;
     }
 
     ret = RtcReadReg(tester->handle, tester->config.userMaxIndex, &value);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read reg max index test success", __func__);
+        HDF_LOGI("%s: read reg max index test success", __func__);
         return HDF_SUCCESS;
     }
 
+    HDF_LOGE("%s: read write reg max index test fail", __func__);
     return HDF_FAILURE;
 }
 
@@ -539,20 +540,20 @@ static int32_t RtcTestSample(struct RtcTester *tester)
 
     ret = RtcRegisterAlarmCallback(tester->handle, RTC_ALARM_INDEX_A, RtcAlarmACallback);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: register alarm callback fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: register alarm callback fail, ret :%d", __func__, ret);
         return ret;
     }
 
     freq = tester->config.frequence;
     ret = RtcSetFreq(tester->handle, freq);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: set frequence fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: set frequence fail, ret :%d", __func__, ret);
         return ret;
     }
 
     ret = RtcAlarmInterruptEnable(tester->handle, RTC_ALARM_INDEX_A, 1);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: alarm interrupt enable fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: alarm interrupt enable fail, ret :%d", __func__, ret);
         return ret;
     }
 
@@ -566,14 +567,14 @@ static int32_t RtcTestSample(struct RtcTester *tester)
 
     ret = RtcWriteTime(tester->handle, &tester->time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write time fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: write time fail, ret :%d", __func__, ret);
         return ret;
     }
 
     tester->time.second = tester->config.second;
     ret = RtcWriteAlarm(tester->handle, RTC_ALARM_INDEX_A, &tester->time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write alarm fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: write alarm fail, ret :%d", __func__, ret);
         return ret;
     }
 
@@ -581,13 +582,13 @@ static int32_t RtcTestSample(struct RtcTester *tester)
 
     ret = RtcReadAlarm(tester->handle, RTC_ALARM_INDEX_A, &readTime);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read alarm fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: read alarm fail, ret :%d", __func__, ret);
         return ret;
     }
 
     ret = RtcReadTime(tester->handle, &tester->time);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read time fail, ret:%d", __func__, ret);
+        HDF_LOGE("%s: read time fail, ret :%d", __func__, ret);
         return ret;
     }
 
@@ -601,7 +602,9 @@ static int32_t RtcReadWriteReliability(struct RtcTester *tester)
     for (i = 0; i < tester->config.time; i++) {
         (void)RtcReadWriteTimeTest(tester);
         (void)RtcReadWriteAlarmTimeTest(tester);
+#ifdef __LITEOS__
         (void)RtcSetNormalFreqTest(tester);
+#endif
     }
 
     return HDF_SUCCESS;
@@ -647,7 +650,7 @@ int32_t RtcTestExecute(int cmd)
     }
 
     if (cmd > RTC_TEST_CMD_MAX) {
-        HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
+        HDF_LOGE("%s: invalid cmd :%d", __func__, cmd);
         ret = HDF_ERR_NOT_SUPPORT;
         goto EXIT;
     }
