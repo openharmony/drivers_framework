@@ -116,3 +116,14 @@ HWTEST_F(HdfLiteSpiTest, SpiReliabilityTest001, TestSize.Level1)
 
     EXPECT_EQ(0, SpiTestExecute(SPI_RELIABILITY_TEST));
 }
+
+/**
+  * @tc.name: SpiIfPerformanceTest001
+  * @tc.desc: spi function test
+  * @tc.type: FUNC
+  * @tc.require: SR000DQ0VO
+  */
+HWTEST_F(HdfLiteSpiTest, SpiIfPerformanceTest001, TestSize.Level1)
+{
+    EXPECT_EQ(0, SpiTestExecute(SPI_PERFORMANCE_TEST));
+}

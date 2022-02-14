@@ -122,3 +122,14 @@ HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestReliability001, TestSize.Level1)
     EXPECT_EQ(0, I2cTestExecute(I2C_TEST_CMD_RELIABILITY));
     printf("%s: exit!\n", __func__);
 }
+
+/**
+  * @tc.name: HdfLiteI2cTestPeformance001
+  * @tc.desc: i2c reliability test
+  * @tc.type: FUNC
+  * @tc.require: AR000F8688
+  */
+HWTEST_F(HdfLiteI2cTest, HdfLiteI2cTestPeformance001, TestSize.Level1)
+{
+    EXPECT_EQ(0, I2cTestExecute(I2C_TEST_CMD_PERFORMANCE));
+}

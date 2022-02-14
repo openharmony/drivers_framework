@@ -472,6 +472,34 @@ static int32_t SpiTestAll(struct SpiTester *tester)
     return HDF_SUCCESS;
 }
 
+static int32_t SpiIfPerformanceTest(struct SpiTester *tester)
+{
+#ifdef __LITEOS__
+    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    if (tester == NULL || tester->handle == NULL) {
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+#endif
+    int32_t ret;
+    struct SpiCfg cfg = {0};
+    uint64_t startMs;
+    uint64_t endMs;
+    uint64_t useTime; /*ms*/
+
+    startMs = OsalGetSysTimeMs();
+    ret = SpiGetCfg(tester->handle, &cfg);
+    endMs = OsalGetSysTimeMs();
+
+    if (ret == HDF_SUCCESS) {
+        useTime = endMs - startMs;
+        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
+        startMs, endMs, useTime, useTime < 1 ? true : false );
+        return HDF_SUCCESS;
+    }
+    return HDF_FAILURE;
+}
+
 struct SpiTestFunc {
     int cmd;
     int32_t (*func)(struct SpiTester *tester);
@@ -483,8 +511,8 @@ static struct SpiTestFunc g_spiTestEntry[] = {
     {SPI_MULTI_TRANSFER_TEST, SpiMultiTransferTest, "SpiMultiTransferTest"},
     {SPI_DMA_TRANSFER_TEST, SpiDmaTransferTest, "SpiDmaTransferTest"},
     {SPI_INT_TRANSFER_TEST, SpiIntTransferTest, "SpiIntTransferTest"},
-    {SPI_RELIABILITY_TEST, SpiReliabilityTest, "SpiIntTransferTest"},
-    {SPI_PERFORMANCE_TEST, NULL, "SpiPerformanceTest"},
+    {SPI_RELIABILITY_TEST, SpiReliabilityTest, "SpiReliabilityTest"},
+    {SPI_PERFORMANCE_TEST, SpiIfPerformanceTest, "SpiIfPerformanceTest"},
     {SPI_TEST_ALL,SpiTestAll,"SpiTestAll"},
 };
 
