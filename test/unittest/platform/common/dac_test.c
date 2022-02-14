@@ -213,6 +213,41 @@ int32_t DacTestReliability(void)
     return HDF_SUCCESS;
 }
 
+static int32_t DacIfPerformanceTest(void)
+{
+#ifdef __LITEOS__
+    // liteos the accuracy of the obtained time is too large and inaccurate.
+    return HDF_SUCCESS;
+#endif
+
+    uint64_t startMs;
+    uint64_t endMs;
+    uint64_t useTime; /*ms*/
+    struct DacTester *tester = NULL;
+    int32_t ret;
+    uint32_t val;
+
+    val = 0;    
+    tester = DacTesterGet();
+    if (tester == NULL || tester->handle == NULL) {
+        HDF_LOGE("%s: get tester failed", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    startMs = OsalGetSysTimeMs();
+    ret = DacWrite(tester->handle, tester->config.channel, val);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, val, ret);
+        return HDF_ERR_IO;
+    }    
+    endMs = OsalGetSysTimeMs();
+
+    useTime = endMs - startMs;
+    HDF_LOGE("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false );
+    return HDF_SUCCESS;
+}
+
 struct DacTestEntry {
     int cmd;
     int32_t (*func)(void);
@@ -222,6 +257,7 @@ static struct DacTestEntry g_entry[] = {
     { DAC_TEST_CMD_WRITE, DacTestWrite, "DacTestWrite" },
     { DAC_TEST_CMD_MULTI_THREAD, DacTestMultiThread, "DacTestMultiThread" },
     { DAC_TEST_CMD_RELIABILITY, DacTestReliability, "DacTestReliability" },
+    { DAC_TEST_CMD_IF_PERFORMANCE, DacIfPerformanceTest, "DacIfPerformanceTest" },
 };
 
 int32_t DacTestExecute(int cmd)
