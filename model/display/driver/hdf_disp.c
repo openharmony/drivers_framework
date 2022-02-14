@@ -62,9 +62,9 @@ struct DispManager *GetDispManager(void)
 }
 
 static int32_t InitDisp(uint32_t devId);
-static int32_t DispOn(uint32_t devId);
-static int32_t DispOff(uint32_t devId);
-static int32_t SetDispBacklight(uint32_t devId, uint32_t level);
+int32_t DispOn(uint32_t devId);
+int32_t DispOff(uint32_t devId);
+int32_t SetDispBacklight(uint32_t devId, uint32_t level);
 static int32_t GetDispInfo(uint32_t devId, struct DispInfo *info);
 static int32_t SetDispPower(uint32_t devId, uint32_t powerStatus);
 static void EsdCheckStartUp(struct DispEsd *esd, uint32_t devId);
@@ -84,6 +84,9 @@ struct DispOperations *GetDispOps(void)
 
 #ifdef __KERNEL__
 EXPORT_SYMBOL(GetDispOps);
+EXPORT_SYMBOL(DispOn);
+EXPORT_SYMBOL(DispOff);
+EXPORT_SYMBOL(SetDispBacklight);
 #endif
 
 static int32_t InitDisp(uint32_t devId)
@@ -91,17 +94,17 @@ static int32_t InitDisp(uint32_t devId)
     return 0;
 }
 
-static int32_t DispOn(uint32_t devId)
+int32_t DispOn(uint32_t devId)
 {
     return SetDispPower(devId, POWER_STATUS_ON);
 }
 
-static int32_t DispOff(uint32_t devId)
+int32_t DispOff(uint32_t devId)
 {
     return SetDispPower(devId, POWER_STATUS_OFF);
 }
 
-static int32_t SetDispBacklight(uint32_t devId, uint32_t level)
+int32_t SetDispBacklight(uint32_t devId, uint32_t level)
 {
     struct DispManager *disp = NULL;
     struct PanelData *panel = NULL;
