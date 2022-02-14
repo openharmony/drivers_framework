@@ -221,6 +221,37 @@ int32_t AdcTestReliability(void)
     return HDF_SUCCESS;
 }
 
+static int32_t AdcIfPerformanceTest(void)
+{
+#ifdef __LITEOS__
+    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    return HDF_SUCCESS;
+#endif
+    struct AdcTester *tester = NULL;
+    uint64_t startMs;
+    uint64_t endMs;
+    uint64_t useTime; /*ms*/
+    uint32_t val;
+    int32_t ret;
+    
+
+    tester = AdcTesterGet();
+    if (tester == NULL || tester->handle == NULL) {
+        HDF_LOGE("%s:get tester fail", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    startMs = OsalGetSysTimeMs();
+    ret = AdcRead(tester->handle, tester->config.channel, &val);
+    if (ret == HDF_SUCCESS) {
+        endMs = OsalGetSysTimeMs();
+        useTime = endMs - startMs;
+        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
+        startMs, endMs, useTime, useTime < 1 ? true : false );
+    }
+    return HDF_FAILURE;
+}
+
 struct AdcTestEntry {
     int cmd;
     int32_t (*func)(void);
@@ -231,6 +262,7 @@ static struct AdcTestEntry g_entry[] = {
     { ADC_TEST_CMD_READ, AdcTestRead, "AdcTestRead" },
     { ADC_TEST_CMD_MULTI_THREAD, AdcTestMultiThread, "AdcTestMultiThread" },
     { ADC_TEST_CMD_RELIABILITY, AdcTestReliability, "AdcTestReliability" },
+    { ADC_IF_PERFORMANCE_TEST, AdcIfPerformanceTest, "AdcIfPerformanceTest" },
 };
 
 int32_t AdcTestExecute(int cmd)

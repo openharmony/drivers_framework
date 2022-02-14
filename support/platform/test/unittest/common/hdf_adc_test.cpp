@@ -96,3 +96,13 @@ HWTEST_F(HdfLiteAdcTest, AdcTestReliability001, TestSize.Level1)
 
 }
 
+/**
+  * @tc.name: AdcIfPerformanceTest001
+  * @tc.desc: adc user if performance test
+  * @tc.type: FUNC
+  * @tc.require:
+  */
+HWTEST_F(HdfLiteAdcTest, AdcIfPerformanceTest001, TestSize.Level1)
+{
+    EXPECT_EQ(0, AdcTestExecute(ADC_IF_PERFORMANCE_TEST));
+}
