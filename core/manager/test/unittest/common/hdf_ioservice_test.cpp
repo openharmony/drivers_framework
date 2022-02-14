@@ -687,10 +687,7 @@ HWTEST_F(IoServiceTest, HdfIoService014, TestSize.Level0)
 }
 
 struct IoServiceStatusData {
-    IoServiceStatusData()
-        : devClass(0)
-        , servStatus(0)
-        , callbacked(false)
+    IoServiceStatusData(): devClass(0), servStatus(0), callbacked(false)
     {
     }
     ~IoServiceStatusData() = default;
@@ -708,7 +705,7 @@ static void TestOnServiceStatusReceived(struct ServiceStatusListener *listener, 
         return;
     }
     issd->servName = servstat->serviceName;
-    issd->servInfo = servstat->info != NULL ? servstat->info : "";
+    issd->servInfo = ((servstat->info != NULL) ? (servstat->info) : (""));
     issd->devClass = servstat->deviceClass;
     issd->servStatus = servstat->status;
     issd->callbacked = true;

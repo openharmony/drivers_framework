@@ -665,6 +665,7 @@ static int32_t HdfSyscallAdapterDispatch(struct HdfObject *object, int32_t code,
     int32_t ret = ioctl(ioService->fd,  HDF_WRITE_READ, &wrBuf);
     if (ret < 0) {
         HDF_LOGE("Failed to dispatch serv call ioctl %{public}d", errno);
+        ret = errno;
     }
     if (reply != NULL) {
         HdfSbufSetDataSize(reply, wrBuf.readConsumed);

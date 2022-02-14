@@ -23,8 +23,14 @@
 #define RE_DIGIT        "[0-9]+"
 #define RE_IDENTIFIER   "[a-zA-Z_][a-zA-Z0-9_]*"
 
+#define RE_PACKAGE_NUM 3
+#define RE_PACKAGE_INDEX 0
+#define RE_PACKAGE_MAJOR_VER_INDEX 1
+#define RE_PACKAGE_MINOR_VER_INDEX 2
+
 static const std::regex rePackage(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" "(" RE_DIGIT ")_(" RE_DIGIT ")");
-static const std::regex reImport(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" RE_DIGIT "_" RE_DIGIT "." RE_IDENTIFIER);
+static const std::regex reImport(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" \
+                                 RE_DIGIT "_" RE_DIGIT "." RE_IDENTIFIER);
 
 namespace OHOS {
 namespace HDI {
@@ -308,13 +314,13 @@ bool Parser::ParserPackageInfo(const String& packageName)
         return false;
     }
 
-    if (result.size() < 3) {
+    if (result.size() < RE_PACKAGE_NUM) {
         return false;
     }
 
-    ast_->SetPackageName(result.str(0).c_str());
-    size_t majorVersion = std::atoi(result.str(1).c_str());
-    size_t minorVersion = std::atoi(result.str(2).c_str());
+    ast_->SetPackageName(result.str(RE_PACKAGE_INDEX).c_str());
+    size_t majorVersion = std::atoi(result.str(RE_PACKAGE_MAJOR_VER_INDEX).c_str());
+    size_t minorVersion = std::atoi(result.str(RE_PACKAGE_MINOR_VER_INDEX).c_str());
     ast_->SetVersion(majorVersion, minorVersion);
     return true;
 }

@@ -69,6 +69,5 @@ void ASTSharedMemQueueType::EmitCppReadVar(const String& parcelName, const Strin
     sb.AppendFormat("std::make_shared<SharedMemQueue<%s>>(*%s);\n",
         innerType_->EmitCppType().string(), metaVarName.string());
 }
-
 } // namespace HDI
 } // namespace OHOS
