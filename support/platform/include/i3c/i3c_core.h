@@ -10,7 +10,6 @@
 #define I3C_CORE_H
 
 #include "i3c_if.h"
-#include "i3c_ccc.h"
 #include "hdf_base.h"
 #include "hdf_dlist.h"
 #include "osal_spinlock.h"
