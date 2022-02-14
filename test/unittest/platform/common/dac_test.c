@@ -90,6 +90,16 @@ struct DacTester *DacTesterGet(void)
     return &tester;
 }
 
+static void DacTesterPut(struct DacTester *tester)
+{
+    if (tester == NULL) {
+        HDF_LOGE("%s: tester is NULL", __func__);
+        return;
+    }
+    DacClose(tester->handle);
+    tester->handle = NULL;
+}
+
 int32_t DacTestWrite(void)
 {
     struct DacTester *tester = NULL;
@@ -110,6 +120,7 @@ int32_t DacTestWrite(void)
             return HDF_ERR_IO;
         }
     }
+    DacTesterPut(tester);
 
     return HDF_SUCCESS;
 }
@@ -138,6 +149,7 @@ static int DacTestThreadFunc(void *param)
     }
 
     *((int32_t *)param) = 1;
+    DacTesterPut(tester);
     return val;
 }
 
@@ -210,6 +222,7 @@ int32_t DacTestReliability(void)
     (void)DacWrite(NULL, tester->config.channel, val);
     // invalid channel
     (void)DacWrite(tester->handle, tester->config.maxChannel + 1, val);
+    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
@@ -245,6 +258,7 @@ static int32_t DacIfPerformanceTest(void)
     useTime = endMs - startMs;
     HDF_LOGE("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
         startMs, endMs, useTime, useTime < 1 ? true : false );
+    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
