@@ -7,6 +7,7 @@
  */
 
 #include "codegen/cpp_code_emitter.h"
+#include <regex>
 #include <cctype>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -37,6 +38,35 @@ String CppCodeEmitter::FileName(const String& name)
     }
 
     return sb.ToString().Replace('.', '/');
+}
+
+String CppCodeEmitter::PascalName(const String& name)
+{
+    if (name.IsEmpty()) {
+        return name;
+    }
+
+    StringBuilder sb;
+    for (int i = 0; i < name.GetLength(); i++) {
+        char c = name[i];
+        if (i == 0) {
+            if (islower(c)) {
+                c = toupper(c);
+            }
+            sb.Append(c);
+        } else {
+            if (c == '_') {
+                continue;
+            }
+
+            if (islower(c) && name[i - 1] == '_') {
+                c = toupper(c);
+            }
+            sb.Append(c);
+        }
+    }
+
+    return sb.ToString();
 }
 
 String CppCodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod>& method)
@@ -152,26 +182,68 @@ void CppCodeEmitter::EmitTailExternC(StringBuilder& sb)
     sb.Append("#endif /* __cplusplus */\n");
 }
 
+bool CppCodeEmitter::isVersion(const String& name)
+{
+    std::regex rVer("[V|v][0-9]+_[0-9]+");
+    return std::regex_match(name.string(), rVer);
+}
+
+std::vector<String> CppCodeEmitter::EmitCppNameSpaceVec(const String& namespaceStr)
+{
+    std::vector<String> result;
+    std::vector<String> namespaceVec = namespaceStr.Split(".");
+    bool findVersion = false;
+
+    for (const auto& nspace : namespaceVec) {
+        String name;
+        if (!findVersion && isVersion(nspace)) {
+            name = nspace.Replace('v', 'V');
+            findVersion = true;
+        } else {
+            if (findVersion) {
+                name = nspace;
+            } else {
+                name = PascalName(nspace);
+            }
+        }
+
+        result.emplace_back(name);
+    }
+    return result;
+}
+
+String CppCodeEmitter::EmitPackageToNameSpace(const String& packageName)
+{
+    if (packageName.IsEmpty()) {
+        return packageName;
+    }
+
+    StringBuilder nameSpaceStr;
+    std::vector<String> namespaceVec = EmitCppNameSpaceVec(packageName);
+    for (auto nameIter = namespaceVec.begin(); nameIter != namespaceVec.end(); nameIter++) {
+        nameSpaceStr.Append(*nameIter);
+        if (nameIter != namespaceVec.end() - 1) {
+            nameSpaceStr.Append("::");
+        }
+    }
+
+    return nameSpaceStr.ToString();
+}
+
 void CppCodeEmitter::EmitBeginNamespace(StringBuilder& sb)
 {
-    String nspace = interface_->GetNamespace()->ToString();
-    int index = nspace.IndexOf('.');
-    while (index != -1) {
-        sb.AppendFormat("namespace %s {\n", nspace.Substring(0, index).string());
-        nspace = nspace.Substring(index + 1);
-        index = nspace.IndexOf('.');
+    std::vector<String> cppNamespaceVec = EmitCppNameSpaceVec(interface_->GetNamespace()->ToString());
+    for (const auto& nspace : cppNamespaceVec) {
+        sb.AppendFormat("namespace %s {\n", nspace.string());
     }
 }
 
 void CppCodeEmitter::EmitEndNamespace(StringBuilder& sb)
 {
-    String nspace = interface_->GetNamespace()->ToString();
-    nspace = nspace.Substring(0, nspace.GetLength() - 1);
-    while (!nspace.IsEmpty()) {
-        int index = nspace.LastIndexOf('.');
-        sb.AppendFormat("} // %s\n",
-            (index != -1) ? nspace.Substring(index + 1, nspace.GetLength()).string() : nspace.string());
-        nspace = nspace.Substring(0, index);
+    std::vector<String> cppNamespaceVec = EmitCppNameSpaceVec(interface_->GetNamespace()->ToString());
+
+    for (auto nspaceIter = cppNamespaceVec.rbegin(); nspaceIter != cppNamespaceVec.rend(); nspaceIter++) {
+        sb.AppendFormat("} // %s\n", nspaceIter->string());
     }
 }
 
@@ -181,15 +253,25 @@ void CppCodeEmitter::EmitUsingNamespace(StringBuilder& sb)
     EmitImportUsingNamespace(sb);
 }
 
+String CppCodeEmitter::EmitNamespace(const String& packageName)
+{
+    if (packageName.IsEmpty()) {
+        return packageName;
+    }
+
+    int index = packageName.LastIndexOf('.');
+    return index > 0 ? packageName.Substring(0, index) : packageName;
+}
+
 void CppCodeEmitter::EmitImportUsingNamespace(StringBuilder& sb)
 {
     using StringSet = std::unordered_set<String, StringHashFunc, StringEqualFunc>;
     StringSet namespaceSet;
-    String selfNameSpace = CppNameSpace(ast_->GetFullName());
+    String selfNameSpace = EmitPackageToNameSpace(EmitNamespace(ast_->GetFullName()));
 
     for (const auto& importPair : ast_->GetImports()) {
         AutoPtr<AST> import = importPair.second;
-        String nameSpace = CppNameSpace(import->GetFullName());
+        String nameSpace = EmitPackageToNameSpace(EmitNamespace(import->GetFullName()));
         if (nameSpace.Equals(selfNameSpace)) {
             continue;
         }
@@ -239,15 +321,6 @@ String CppCodeEmitter::MacroName(const String& name)
     return macro;
 }
 
-String CppCodeEmitter::CppFullName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    return name.Replace(".", "::");
-}
-
 String CppCodeEmitter::ConstantName(const String& name)
 {
     if (name.IsEmpty()) {
@@ -269,23 +342,6 @@ String CppCodeEmitter::ConstantName(const String& name)
     }
 
     return sb.ToString();
-}
-
-String CppCodeEmitter::CppNameSpace(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    String space;
-    int lastIndex = name.LastIndexOf('.');
-    if (lastIndex != -1) {
-        space = name.Substring(0, lastIndex);
-    } else {
-        space = name;
-    }
-
-    return CppFullName(space);
 }
 
 String CppCodeEmitter::SpecificationParam(StringBuilder& paramSb, const String& prefix)

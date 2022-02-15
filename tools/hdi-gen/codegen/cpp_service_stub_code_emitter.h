@@ -62,8 +62,6 @@ private:
     void EmitStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
     void EmitStubCallMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
-
-    String EmitStubServiceUsings(String nameSpace);
 };
 } // namespace HDI
 } // namespace OHOS
