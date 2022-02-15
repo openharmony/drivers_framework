@@ -298,7 +298,7 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
     CHECK_LIGHT_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     CHECK_LIGHT_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
 
-    drvData->lightNum = parser->GetElemNum(node, "lightType");
+    drvData->lightNum = (uint32_t)parser->GetElemNum(node, "lightType");
     if(drvData->lightNum > LIGHT_TYPE_BUTT || drvData->lightNum < LIGHT_TYPE_NONE) {
         HDF_LOGE("%s: lightNum cross the border", __func__);
         return HDF_FAILURE;

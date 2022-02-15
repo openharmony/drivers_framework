@@ -136,7 +136,7 @@ int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct Dev
         }
 
         *groupNode = group;
-        group->itemNum = num / SENSOR_REG_CFG_INDEX_MAX;
+        group->itemNum = (uint32_t)(num / SENSOR_REG_CFG_INDEX_MAX);
         group->itemNum = ((SENSOR_REG_CFG_INDEX_MAX * group->itemNum) < num) ? (group->itemNum + 1) : group->itemNum;
 
         group->regCfgItem = (struct SensorRegCfg*)OsalMemCalloc(group->itemNum * sizeof(*(group->regCfgItem)));
@@ -411,7 +411,7 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
     num = parser->GetElemNum(directionNode, "convert");
     ret = parser->GetUint32(directionNode, "direction", &index, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "direction"); 
-    if ((num <= 0 || num > MAX_SENSOR_INDEX_NUM) || (index < 0 || index > num / AXIS_INDEX_MAX)) {
+    if ((num <= 0 || num > MAX_SENSOR_INDEX_NUM) || (index < 0 || (int32_t)index > num / AXIS_INDEX_MAX)) {
         return HDF_FAILURE;
     }
 
