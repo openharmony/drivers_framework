@@ -1,0 +1,10 @@
+*.pyc
+*.egg-info
+build
+dist
+_build
+
+/CppHeaderParser/version.py
+
+__pycache__
+.vscode
