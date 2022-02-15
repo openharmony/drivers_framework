@@ -10,7 +10,6 @@
 #include "hdf_base.h"
 #include "hdf_io_service_if.h"
 #include "hdf_log.h"
-#include "i3c_ccc.h"
 #include "i3c_if.h"
 #include "osal_mem.h"
 #include "osal_thread.h"
