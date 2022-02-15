@@ -14,6 +14,10 @@
 #include "osal_mem.h"
 #include "osal_timer.h"
 
+#ifdef CONFIG_DFX_ZEROHUNG
+#include <dfx/hung_wp_screen.h>
+#endif
+
 #define TIMER_INTERVAL 500
 #define REPEAT_VALUE   2
 #define MEMCPY_CHECK_RETURN(ret) do { \
@@ -283,6 +287,10 @@ static void RepateEvent(const InputDevice *device)
 
 void HidReportEvent(const void *inputDev, uint32_t type, uint32_t code, int32_t value)
 {
+#ifdef CONFIG_DFX_ZEROHUNG
+    if (type == EV_KEY && code == KEY_POWER)
+        hung_wp_screen_powerkey_ncb(value);
+#endif
     InputDevice *device = (InputDevice *)inputDev;
     PushOnePackage(device, type, code, value);
     if (type == EV_KEY && KEY_RESERVED < code && code < KEY_MAX && value == 0 && code == g_kbdcode) {
