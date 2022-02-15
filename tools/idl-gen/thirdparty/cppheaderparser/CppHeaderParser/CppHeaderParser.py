@@ -263,7 +263,7 @@ def set_location_info(thing, location):
 _nhack = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
-def _split_namespace(namestack):
+def _split_namespace(name_stack):
     """
     Given a list of name elements, find the namespace portion
     and return that as a string
@@ -272,29 +272,29 @@ def _split_namespace(namestack):
     """
     # TODO: this should be using tokens instead of nhack
     typename = None
-    if namestack and namestack[0] == "typename":
-        typename = namestack[0]
-        namestack = namestack[1:]
+    if name_stack and name_stack[0] == "typename":
+        typename = name_stack[0]
+        name_stack = name_stack[1:]
 
     last_colon = None
-    for i, n in enumerate(namestack):
+    for i, n in enumerate(name_stack):
         if n == "::":
             last_colon = i
         if i and n != "::" and not _nhack.match(n):
             break
 
     if last_colon:
-        ns, namestack = (
-            "".join(namestack[: last_colon + 1]),
-            namestack[last_colon + 1:],
+        ns, name_stack = (
+            "".join(name_stack[: last_colon + 1]),
+            name_stack[last_colon + 1:],
         )
     else:
         ns = ""
 
     if typename:
-        namestack = [typename] + namestack
+        name_stack = [typename] + name_stack
 
-    return ns, namestack
+    return ns, name_stack
 
 
 def _iter_ns_str_reversed(namespace):
@@ -1210,7 +1210,7 @@ class CppVariable(_CppVariable):
             self["extern"] = False
 
         _stack_ = name_stack
-        if "[" in name_stack:  # strip off array informatin
+        if "[" in name_stack:  # strip off array information
             array_stack = name_stack[name_stack.index("["):]
             if name_stack.count("[") > 1:
                 debug_print("Multi dimensional array")
@@ -2188,7 +2188,7 @@ class _CppHeader(Resolver):
                     meth["returns"] = meth["returns"].replace(":: ", "::")
 
         for cls in list(self.classes.values()):
-            methnames = cls.get_all_method_names()
+            method_names = cls.get_all_method_names()
 
             for d in cls["inherits"]:
                 c = d["class"]
@@ -2204,7 +2204,7 @@ class _CppHeader(Resolver):
                             "pure virtual",
                             meth["pure_virtual"],
                         )
-                        if meth["pure_virtual"] and meth["name"] not in methnames:
+                        if meth["pure_virtual"] and meth["name"] not in method_names:
                             cls["abstract"] = True
                             break
 
@@ -2589,7 +2589,7 @@ class _CppHeader(Resolver):
             debug_print("found nested subclass")
             self.accessSpecifierStack.append(self.curAccessSpecifier)
 
-        # When dealing with typedefed structs, get rid of typedef keyword to handle later on
+        # When dealing with typedef structs, get rid of typedef keyword to handle later on
         if self.nameStack[0] == "typedef":
             del self.nameStack[0]
 
@@ -2817,16 +2817,16 @@ class _CppHeader(Resolver):
     def _parse_error(self, tokens, expected):
         if not tokens:
             # common case after a failed token_if
-            errtok = self.lex.token()
+            err_tok = self.lex.token()
         else:
-            errtok = tokens[-1]
+            err_tok = tokens[-1]
         if expected:
             expected = ", expected '" + expected + "'"
 
-        msg = "unexpected '%s'%s" % (errtok.value, expected)
+        msg = "unexpected '%s'%s" % (err_tok.value, expected)
 
         # TODO: better error message
-        return CppParseError(msg, errtok)
+        return CppParseError(msg, err_tok)
 
 
 # fmt: off
