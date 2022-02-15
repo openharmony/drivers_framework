@@ -142,7 +142,7 @@ struct AudioDmaOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*DmaPending)(const struct PlatformData *platformData, const enum AudioStreamType streamType);
+    int32_t (*DmaPending)(struct PlatformData *platformData, const enum AudioStreamType streamType);
 
     /**
      * @brief Defines pcm stream transfer pause.
