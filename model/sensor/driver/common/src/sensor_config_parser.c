@@ -156,7 +156,7 @@ int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct Dev
 
 int32_t ParseSensorRegConfig(struct SensorCfgData *config)
 {
-    int32_t index;
+    uint32_t index;
     const struct DeviceResourceNode *regCfgNode = NULL;
     struct DeviceResourceIface *parser = NULL;
     const struct DeviceResourceAttr *regAttr = NULL;
@@ -198,7 +198,7 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_ERR_INVALID_PARAM);
 
     if (busCfg->busType == SENSOR_BUS_I2C) {
-        int16_t busNum = busCfg->i2cCfg.busNum;
+        uint16_t busNum = busCfg->i2cCfg.busNum;
         busCfg->i2cCfg.handle = I2cOpen(busNum);
         if (busCfg->i2cCfg.handle == NULL) {
             HDF_LOGE("%s: sensor i2c Handle invalid", __func__);
@@ -446,7 +446,7 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
 
 int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *remapData, uint32_t num)
 {
-    int32_t axis;
+    uint32_t axis;
     int32_t directionSign[MAX_SENSOR_AXIS_NUM];
     int32_t newData[MAX_SENSOR_AXIS_NUM];
 

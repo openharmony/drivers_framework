@@ -93,7 +93,7 @@ struct SensorBasicInfo {
 struct SensorReportEvent {
     int32_t sensorId;  /**< Sensor ID */
     int32_t version;   /**< Sensor algorithm version */
-    int64_t timestamp; /**< Time when sensor data was generated */
+    uint64_t timestamp; /**< Time when sensor data was generated */
     uint32_t option;   /**< Sensor data options, including the measurement range and accuracy */
     int32_t mode;      /**< Sensor data reporting mode */
     uint8_t *data;     /**< Sensor data address */
