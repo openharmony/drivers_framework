@@ -96,7 +96,7 @@ bool MacroGen::Initialize()
 
 bool MacroGen::TemplateNodeSeparate()
 {
-    return ast_->WalkBackward([this](std::shared_ptr<AstObject> &object, uint32_t depth) {
+    return ast_->WalkBackward([this](std::shared_ptr<AstObject> &object, int32_t depth) {
         if (object->IsNode() && ConfigNode::CastFrom(object)->GetNodeType() == NODE_TEMPLATE) {
             object->Separate();
             return NOERR;
@@ -105,7 +105,7 @@ bool MacroGen::TemplateNodeSeparate()
     });
 }
 
-std::string MacroGen::GenFullName(uint32_t depth, const std::shared_ptr<AstObject> &node, const std::string &sep)
+std::string MacroGen::GenFullName(int32_t depth, const std::shared_ptr<AstObject> &node, const std::string &sep)
 {
     std::string name;
     for (int i = 0; i < depth; i++) {
@@ -151,7 +151,7 @@ bool MacroGen::GenArray(const std::string &arrName, uint32_t &arrSize, uint32_t 
     return true;
 }
 
-bool MacroGen::GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &node)
+bool MacroGen::GenNodeForeach(int32_t depth, const std::shared_ptr<AstObject> &node)
 {
     std::list<std::string> subList;
     auto child = node->Child();
@@ -200,7 +200,7 @@ bool MacroGen::GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &
     return true;
 }
 
-std::string MacroGen::GenRefObjName(uint32_t depth, const std::shared_ptr<AstObject> &object)
+std::string MacroGen::GenRefObjName(int32_t depth, const std::shared_ptr<AstObject> &object)
 {
     std::string name(object->StringValue());
     if (name.find(".") == std::string::npos) {
@@ -217,7 +217,7 @@ std::string MacroGen::GenRefObjName(uint32_t depth, const std::shared_ptr<AstObj
 
 bool MacroGen::NodeWalk()
 {
-    return ast_->WalkForward([this](std::shared_ptr<AstObject> &current, uint32_t depth) {
+    return ast_->WalkForward([this](std::shared_ptr<AstObject> &current, int32_t depth) {
         auto type = current->Type();
         static uint32_t arraySize = 0;
 
@@ -225,13 +225,13 @@ bool MacroGen::NodeWalk()
                          << "] depth:" << depth \
                          << " arraySize:" << std::dec << arraySize << '\n';
         SetTypeData(type, current, arraySize, depth);
-        
+
         return NOERR;
     });
 }
 
 void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current,
-    uint32_t &arraySize, uint32_t depth)
+    uint32_t &arraySize, int32_t depth)
 {
     static std::string nodeName;
     static std::string arrayName;

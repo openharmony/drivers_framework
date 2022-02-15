@@ -28,13 +28,13 @@ private:
 
     bool TemplateNodeSeparate();
 
-    std::string GenFullName(uint32_t depth, const std::shared_ptr<AstObject> &node, const std::string &sep);
+    std::string GenFullName(int32_t depth, const std::shared_ptr<AstObject> &node, const std::string &sep);
 
-    bool GenNodeForeach(uint32_t depth, const std::shared_ptr<AstObject> &node);
+    bool GenNodeForeach(int32_t depth, const std::shared_ptr<AstObject> &node);
 
     bool NodeWalk();
 
-    void SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current, uint32_t &arraySize, uint32_t depth);
+    void SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current, uint32_t &arraySize, int32_t depth);
 
     void SetTypeDataUinit64(const std::string &arrayName, uint32_t &arraySize, uint32_t arrayType,
         const std::shared_ptr<AstObject> &current);
@@ -47,7 +47,7 @@ private:
 
     bool GenArray(const std::string &name, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node);
 
-    std::string GenRefObjName(uint32_t depth, const std::shared_ptr<AstObject> &object);
+    std::string GenRefObjName(int32_t depth, const std::shared_ptr<AstObject> &object);
 
     std::ofstream ofs_;
     std::string outFileName_;

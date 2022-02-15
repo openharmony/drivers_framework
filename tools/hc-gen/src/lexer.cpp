@@ -270,7 +270,7 @@ bool Lexer::LexFromNumber(Token &token)
                     ConsumeChar();
                     value.push_back(c);
                 }
-                v = strtoll(value.data(), nullptr, 8);
+                v = (uint64_t)strtoll(value.data(), nullptr, 8);
                 break;
             }
             switch (c) {
