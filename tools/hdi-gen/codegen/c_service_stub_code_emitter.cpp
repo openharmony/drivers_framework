@@ -429,7 +429,7 @@ void CServiceStubCodeEmitter::EmitStubOnRequestMethodImpl(StringBuilder& sb, con
     AutoPtr<ASTMethod> getVerMethod = interface_->GetVersionMethod();
     sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(getVerMethod).string());
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return SerStub%s(serviceImpl, data, reply);\n",
-            getVerMethod->GetName().string());
+              getVerMethod->GetName().string());
 
     sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat(
@@ -460,7 +460,7 @@ void CServiceStubCodeEmitter::EmitServiceStubOnRequestMethodImpl(StringBuilder& 
     AutoPtr<ASTMethod> getVerMethod = interface_->GetVersionMethod();
     sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(getVerMethod).string());
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return SerStub%s(serviceImpl, data, reply);\n",
-            getVerMethod->GetName().string());
+              getVerMethod->GetName().string());
 
     sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat(

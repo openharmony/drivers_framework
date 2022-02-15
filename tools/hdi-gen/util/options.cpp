@@ -210,11 +210,11 @@ void Options::ShowUsage() const
 }
 
 /*
-*For Example
-*-r option: -r OHOS.Hdi:drivers/interface
-*package:OHOS.Hdi.foo.v1_0
-*rootPackage:OHOS.Hdi
-*/
+ * For Example
+ * -r option: -r OHOS.Hdi:drivers/interface
+ * package:OHOS.Hdi.foo.v1_0
+ * rootPackage:OHOS.Hdi
+ */
 String Options::GetRootPackage(const String& package)
 {
     const auto& packagePaths = GetPackagePath();
@@ -228,11 +228,11 @@ String Options::GetRootPackage(const String& package)
 }
 
 /*
-*For Example
-*-r option: -r OHOS.Hdi:drivers/interface
-*package:OHOS.Hdi.foo.v1_0
-*subPackage:foo.v1_0
-*/
+ * For Example
+ * -r option: -r OHOS.Hdi:drivers/interface
+ * package:OHOS.Hdi.foo.v1_0
+ * subPackage:foo.v1_0
+ */
 String Options::GetSubPackage(const String& package)
 {
     String rootPackage = GetRootPackage(package);
@@ -244,11 +244,11 @@ String Options::GetSubPackage(const String& package)
 }
 
 /*
-*For Example
-*-r option: -r OHOS.Hdi:drivers/interface
-*package:OHOS.Hdi.foo.v1_0
-*packagePath:drivers/interface/foo/v1_0
-*/
+ * For Example
+ * -r option: -r OHOS.Hdi:drivers/interface
+ * package:OHOS.Hdi.foo.v1_0
+ * packagePath:drivers/interface/foo/v1_0
+ */
 String Options::GetPackagePath(const String& package)
 {
     String rootPackage = "";

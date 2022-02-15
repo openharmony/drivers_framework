@@ -81,7 +81,6 @@ String CodeEmitter::GetFilePath(const String& outDir)
     String outPath = outDir.EndsWith(File::pathSeparator) ?
         outDir.Substring(0, outDir.GetLength() - 1) : outDir;
     String packagePath = Options::GetInstance().GetPackagePath(ast_->GetPackageName());
-
     if (packagePath.EndsWith(File::pathSeparator)) {
         return String::Format("%s/%s", outPath.string(), packagePath.string());
     } else {

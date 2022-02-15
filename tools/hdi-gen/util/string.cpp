@@ -511,7 +511,7 @@ String String::ToUnderLineUpper() const
         char c = string_[i];
         if (isupper(c) != 0) {
             if (i > 1) {
-                sb.Append('_');;
+                sb.Append('_');
             }
             sb.Append(c);
         } else {

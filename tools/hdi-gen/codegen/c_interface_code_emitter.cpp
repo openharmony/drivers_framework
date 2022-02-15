@@ -165,6 +165,5 @@ void CInterfaceCodeEmitter::EmitInterfaceReleaseMethodDecl(StringBuilder& sb)
 {
     sb.AppendFormat("void %sRelease(struct %s *instance);\n", infName_.string(), interfaceName_.string());
 }
-
 } // namespace HDI
 } // namespace OHOS
