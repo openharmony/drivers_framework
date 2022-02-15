@@ -329,22 +329,23 @@ int32_t I2cTestPeformance(void)
     uint64_t endMs;
     uint64_t useTime; /*ms*/
     struct I2cTester *tester = NULL;
+    DevHandle handle = NULL;
 
     tester = I2cTesterGet();
     if (tester == NULL || tester->handle == NULL) {
         HDF_LOGE("%s:get tester fail", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-    tester->handle = NULL;
 
     startMs = OsalGetSysTimeMs();
-    tester->handle = I2cOpen(tester->config.busNum);
+    handle = I2cOpen(tester->config.busNum);
     endMs = OsalGetSysTimeMs();
 
-    if (tester->handle != NULL) {
+    if (handle != NULL) {
         useTime = endMs - startMs;
         HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
         startMs, endMs, useTime, useTime < 1 ? true : false );
+        I2cClose(handle);
         return HDF_SUCCESS;
     }
 
