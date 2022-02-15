@@ -462,11 +462,11 @@ static int32_t HdfWlanInitThread(void *para)
         return HDF_SUCCESS;
     }
     for (i = 0; i < devList->deviceListSize; i++) {
-    #ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
+#ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
         ret = HdfWlanConfigSDIO(devList->deviceInst[i].bus.busIdx);
-    #else
+#else
         ret = HDF_SUCCESS;
-    #endif
+#endif
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:HdfWlanConfigSDIO %d failed!ret=%d", __func__, devList->deviceInst[i].bus.busIdx, ret);
             continue;
