@@ -94,7 +94,11 @@ struct HdfDeviceObject {
     struct IDeviceIoService *service;
     /** Pointer to the property of the device, which is read by the HDF from the configuration file and
     transmitted to the driver. */
+#ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
+    const char *deviceMatchAttr;
+#else
     const struct DeviceResourceNode *property;
+#endif
     DeviceClass deviceClass;
     /** Pointer to the private data of the device */
     void *priv;

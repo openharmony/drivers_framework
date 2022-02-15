@@ -167,7 +167,11 @@ bool HdfDeviceSetClass(struct HdfDeviceObject *deviceObject, DeviceClass deviceC
 void HdfDeviceObjectConstruct(struct HdfDeviceObject *deviceObject)
 {
     if (deviceObject != NULL) {
+#ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
+        deviceObject->deviceMatchAttr = NULL;
+#else
         deviceObject->property = NULL;
+#endif
         deviceObject->service = NULL;
         deviceObject->deviceClass = DEVICE_CLASS_DEFAULT;
     }
