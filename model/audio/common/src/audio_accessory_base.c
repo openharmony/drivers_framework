@@ -26,7 +26,7 @@ uint16_t g_i2cDevAddr, g_i2cBusNumber;
 struct AudioRegCfgGroupNode **g_audioRegCfgGroupNode = NULL;
 struct AudioKcontrol *g_audioControls = NULL;
 
-static const char *g_audioControlsList[AUDIO_CTRL_LIST_MAX] = {
+static const char *g_audioAccessoryControlsList[AUDIO_CTRL_LIST_MAX] = {
     "Main Playback Volume", "Main Capture Volume",
     "Playback Mute", "Capture Mute", "Mic Left Gain",
     "Mic Right Gain", "External Codec Enable",
@@ -334,7 +334,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
     accessoryTransferData->accessoryControls = g_audioControls;
     for (index = 0; index < audioCfgCtrlCount; index++) {
         g_audioControls[index].iface = ctlcfgItem[index].iface;
-        g_audioControls[index].name  = g_audioControlsList[ctlcfgItem[index].arrayIndex];
+        g_audioControls[index].name  = g_audioAccessoryControlsList[ctlcfgItem[index].arrayIndex];
         g_audioControls[index].Info  = AudioInfoCtrlOps;
         g_audioControls[index].privateValue =
             (unsigned long)(uintptr_t)(void*)(&g_audioRegCfgGroupNode[AUDIO_CTRL_PATAM_GROUP]->regCfgItem[index]);

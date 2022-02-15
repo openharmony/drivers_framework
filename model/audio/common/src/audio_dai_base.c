@@ -9,7 +9,7 @@
 #include "audio_core.h"
 #include "audio_driver_log.h"
 
-static const char *g_audioControlsList[AUDIO_CTRL_LIST_MAX] = {
+static const char *g_audioDaiControlsList[AUDIO_CTRL_LIST_MAX] = {
     "Main Playback Volume", "Main Capture Volume",
     "Playback Mute", "Capture Mute", "Mic Left Gain",
     "Mic Right Gain", "External Codec Enable",
@@ -109,7 +109,7 @@ int32_t DaiSetConfigInfo(struct DaiData *data)
             AUDIO_DRIVER_LOG_ERR("Array super index.");
             return HDF_FAILURE;
         }
-        data->controls[index].name     = g_audioControlsList[item[index].arrayIndex];
+        data->controls[index].name     = g_audioDaiControlsList[item[index].arrayIndex];
         data->controls[index].Info     = AudioInfoCtrlOps;
         data->controls[index].privateValue = (unsigned long)(uintptr_t)(void*)(&patRegCfgItemTmp[index]);
         data->controls[index].Get = AudioCpuDaiGetCtrlOps;

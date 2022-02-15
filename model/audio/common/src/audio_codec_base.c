@@ -21,7 +21,7 @@ static char *g_audioSapmCfgNameList[AUDIO_SAPM_CFG_NAME_LIST_MAX] = {
     "LPGA MIC Switch", "RPGA MIC Switch", "Dacl enable", "Dacr enable"
 };
 
-static const char *g_audioControlsList[AUDIO_CTRL_LIST_MAX] = {
+static const char *g_audioCodecControlsList[AUDIO_CTRL_LIST_MAX] = {
     "Main Playback Volume", "Main Capture Volume",
     "Playback Mute", "Capture Mute", "Mic Left Gain",
     "Mic Right Gain", "External Codec Enable",
@@ -234,7 +234,7 @@ int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData)
 
     for (index = 0; index < codeData->numControls; index++) {
         codeData->controls[index].iface   = compItem[index].iface;
-        codeData->controls[index].name    = g_audioControlsList[compItem[index].arrayIndex];
+        codeData->controls[index].name    = g_audioCodecControlsList[compItem[index].arrayIndex];
         codeData->controls[index].Info    = AudioInfoCtrlOps;
         codeData->controls[index].privateValue = (unsigned long)(uintptr_t)(void*)(&ctlRegCfgItem[index]);
         if (compItem[index].enable) {
