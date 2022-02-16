@@ -121,6 +121,30 @@ static struct NetDeviceImpl *GetImplByNetDevice(const struct NetDevice *netDevic
     return ndImpl;
 }
 
+#ifdef CONFIG_DRIVERS_HDF_NETDEV_EXT
+struct net_device * GetLinuxInfByNetDevice(const struct NetDevice *netDevice)
+{
+    struct NetDeviceImpl *impl = NULL;
+    struct FullNetDevicePriv *priv = NULL;
+    
+    impl = GetImplByNetDevice(netDevice);
+    if (impl == NULL || impl->osPrivate == NULL) {
+        return NULL;
+    }
+    
+    priv = (struct FullNetDevicePriv *)impl->osPrivate;
+    return priv->dev;
+}
+
+struct NetDevice * GetHdfNetDeviceByLinuxInf(struct net_device *dev)
+{
+    struct NetDevice *netDev = NULL;
+    struct FullNetDevicePriv *priv = (struct FullNetDevicePriv *)netdev_priv(dev);
+    netDev = priv->impl->netDevice;
+    return netDev;
+}
+#endif
+
 struct NetDevice *NetDeviceInit(const char *ifName, uint32_t len, NetLinkType type, NetIfCategory ifCategory)
 {
     NetDevice *netDevice = NULL;
