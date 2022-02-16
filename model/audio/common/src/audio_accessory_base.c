@@ -26,6 +26,12 @@ uint16_t g_i2cDevAddr, g_i2cBusNumber;
 struct AudioRegCfgGroupNode **g_audioRegCfgGroupNode = NULL;
 struct AudioKcontrol *g_audioControls = NULL;
 
+static const char *g_audioAccessoryControlsList[AUDIO_CTRL_LIST_MAX] = {
+    "Main Playback Volume", "Main Capture Volume",
+    "Playback Mute", "Capture Mute", "Mic Left Gain",
+    "Mic Right Gain", "External Codec Enable",
+    "Internally Codec Enable", "Render Channel Mode", "Captrue Channel Mode"
+};
 /*
  * release I2C object public function
  */
@@ -303,7 +309,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
     int32_t ret;
     int32_t index;
     int32_t audioCfgCtrlCount;
-
+    struct AudioControlConfig *ctlcfgItem;
     ret = (accessoryData == NULL || accessoryData->regConfig == NULL || accessoryTransferData == NULL);
     if (ret) {
         AUDIO_DRIVER_LOG_ERR("input para is NULL.");
@@ -320,7 +326,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
         AUDIO_DRIVER_LOG_ERR("parsing params is NULL.");
         return HDF_FAILURE;
     }
-    struct AudioControlConfig *ctlcfgItem = g_audioRegCfgGroupNode[AUDIO_CTRL_CFG_GROUP]->ctrlCfgItem;
+    ctlcfgItem = g_audioRegCfgGroupNode[AUDIO_CTRL_CFG_GROUP]->ctrlCfgItem;
     audioCfgCtrlCount = g_audioRegCfgGroupNode[AUDIO_CTRL_CFG_GROUP]->itemNum;
     g_audioControls = (struct AudioKcontrol *)OsalMemCalloc(audioCfgCtrlCount * sizeof(struct AudioKcontrol));
     accessoryTransferData->accessoryRegCfgGroupNode = g_audioRegCfgGroupNode;
@@ -328,7 +334,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
     accessoryTransferData->accessoryControls = g_audioControls;
     for (index = 0; index < audioCfgCtrlCount; index++) {
         g_audioControls[index].iface = ctlcfgItem[index].iface;
-        g_audioControls[index].name  = g_audioControlsList[ctlcfgItem[index].arrayIndex];
+        g_audioControls[index].name  = g_audioAccessoryControlsList[ctlcfgItem[index].arrayIndex];
         g_audioControls[index].Info  = AudioInfoCtrlOps;
         g_audioControls[index].privateValue =
             (unsigned long)(uintptr_t)(void*)(&g_audioRegCfgGroupNode[AUDIO_CTRL_PATAM_GROUP]->regCfgItem[index]);
@@ -344,6 +350,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
 int32_t AccessoryDeviceCtrlRegInit(void)
 {
     int32_t ret, i;
+    struct AudioAddrConfig *initCfg;
     // Set codec control register(00h-14h) default value
     ret = (g_audioRegCfgGroupNode == NULL || g_audioRegCfgGroupNode[AUDIO_INIT_GROUP] == NULL
            || g_audioRegCfgGroupNode[AUDIO_INIT_GROUP]->addrCfgItem == NULL);
@@ -351,7 +358,7 @@ int32_t AccessoryDeviceCtrlRegInit(void)
         AUDIO_DRIVER_LOG_ERR("g_audioRegCfgGroupNode[AUDIO_INIT_GROUP] is NULL.");
         return HDF_FAILURE;
     }
-    struct AudioAddrConfig *initCfg = g_audioRegCfgGroupNode[AUDIO_INIT_GROUP]->addrCfgItem;
+    initCfg = g_audioRegCfgGroupNode[AUDIO_INIT_GROUP]->addrCfgItem;
     for (i = 0; i < g_audioRegCfgGroupNode[AUDIO_INIT_GROUP]->itemNum; i++) {
         AUDIO_DRIVER_LOG_DEBUG("i=%d, Addr = [0x%2x]", i, initCfg[i].addr);
         ret = AccessoryI2cReadWrite(&initCfg[i], 0);

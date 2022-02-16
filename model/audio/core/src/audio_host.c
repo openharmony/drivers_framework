@@ -48,14 +48,14 @@ struct AudioCard *GetCardInstance(const char *serviceName)
 
 static int32_t AudioCodecDevInit(struct AudioCard *audioCard)
 {
+    struct AudioRuntimeDeivces *rtd = NULL;
+    struct CodecDevice *codec = NULL;
+    ADM_LOG_DEBUG("entry.");
+
     if (audioCard == NULL) {
         ADM_LOG_ERR("audioCard is NULL.");
         return HDF_ERR_IO;
     }
-
-    ADM_LOG_DEBUG("entry.");
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct CodecDevice *codec = NULL;
     rtd = audioCard->rtd;
     if (rtd == NULL) {
         ADM_LOG_ERR("rtd is NULL.");
@@ -77,14 +77,16 @@ static int32_t AudioCodecDevInit(struct AudioCard *audioCard)
 
 static int32_t AudioAccessoryDevInit(struct AudioCard *audioCard)
 {
+    struct AudioRuntimeDeivces *rtd = NULL;
+    struct AccessoryDevice *accessory = NULL;
+    ADM_LOG_DEBUG("entry.");
+
     if (audioCard == NULL) {
         ADM_LOG_ERR("audioCard is NULL.");
         return HDF_ERR_IO;
     }
 
-    ADM_LOG_DEBUG("entry.");
-    struct AudioRuntimeDeivces *rtd = NULL;
-    struct AccessoryDevice *accessory = NULL;
+
     rtd = audioCard->rtd;
     if (rtd == NULL) {
         ADM_LOG_ERR("rtd is NULL.");
