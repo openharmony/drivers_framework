@@ -289,8 +289,12 @@ int32_t DacTestExecute(int cmd)
         break;
     }
 
+    // At last test case.
+    if (cmd == DAC_TEST_CMD_IF_PERFORMANCE) {
+        DacTesterPut(DacTesterGet());
+    }
+
 __EXIT__:
     HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
-    DacTesterPut(DacTesterGet());
     return ret;
 }
