@@ -62,6 +62,7 @@ static int DevmgrServiceStartHostProcess(struct DevHostServiceClnt *hostClnt, bo
             HDF_LOGW("failed to start device host(%s, %u)", hostClnt->hostName, hostClnt->hostId);
             return HDF_FAILURE;
     }
+    hostClnt->stopFlag = false;
     if (!sync) {
         return HDF_SUCCESS;
     }
@@ -107,10 +108,24 @@ static int DevmgrServiceLoadDevice(struct IDevmgrService *devMgrSvc, const char 
     return hostClnt->hostService->AddDevice(hostClnt->hostService, deviceInfo);
 }
 
+static int DevmgrServiceStopHost(struct DevHostServiceClnt *hostClnt)
+{
+    struct IDriverInstaller *installer = DriverInstallerGetInstance();
+    if (installer == NULL || installer->StopDeviceHost == NULL) {
+        HDF_LOGE("invalid installer");
+        return HDF_FAILURE;
+    }
+    installer->StopDeviceHost(hostClnt->hostId, hostClnt->hostName);
+    hostClnt->stopFlag = true;
+    return HDF_SUCCESS;
+}
+
 static int DevmgrServiceUnloadDevice(struct IDevmgrService *devMgrSvc, const char *serviceName)
 {
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct DevHostServiceClnt *hostClnt = NULL;
+    bool isHostEmpty = false;
+    int ret;
     (void)devMgrSvc;
 
     if (serviceName == NULL) {
@@ -126,7 +141,18 @@ static int DevmgrServiceUnloadDevice(struct IDevmgrService *devMgrSvc, const cha
     if (hostClnt->hostService == NULL) {
         return HDF_FAILURE;
     }
-    return hostClnt->hostService->DelDevice(hostClnt->hostService, deviceInfo->deviceId);
+    ret = hostClnt->hostService->DelDevice(hostClnt->hostService, deviceInfo->deviceId);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGI("%{public}s:unload service %{public}s delDevice failed", __func__, serviceName);
+        return ret;
+    }
+
+    isHostEmpty = HdfSListIsEmpty(&hostClnt->devices);
+    if (!isHostEmpty) {
+        HDF_LOGI("%{public}s host %{public}s devices is not empty", __func__, hostClnt->hostName);
+        return HDF_SUCCESS;
+    }
+    return DevmgrServiceStopHost(hostClnt);
 }
 
 int32_t DevmgrServiceLoadLeftDriver(struct DevmgrService *devMgrSvc)
