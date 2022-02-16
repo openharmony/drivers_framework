@@ -78,6 +78,7 @@ struct DevHostServiceClnt *DevHostServiceClntNewInstance(uint16_t hostId, const 
         hostClnt->hostName = hostName;
         hostClnt->devCount = 0;
         hostClnt->hostPid = -1;
+        hostClnt->stopFlag = false;
         DevHostServiceClntConstruct(hostClnt);
     }
     return hostClnt;

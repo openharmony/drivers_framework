@@ -24,6 +24,7 @@ struct DevHostServiceClnt {
     uint16_t hostId;
     int hostPid;
     const char *hostName;
+    bool stopFlag;
 };
 
 int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt);
