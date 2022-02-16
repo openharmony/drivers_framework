@@ -71,11 +71,7 @@ struct DacTester *DacTesterGet(void)
 {
     int32_t ret;
     static struct DacTester tester;
-    static bool hasInit = false;
 
-    if (hasInit) {
-        return &tester;
-    }
     ret = DacTestGetConfig(&tester.config);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: write config failed:%d", __func__, ret);
@@ -86,7 +82,6 @@ struct DacTester *DacTesterGet(void)
         HDF_LOGE("%s: open dac device:%u failed", __func__, tester.config.devNum);
         return NULL;
     }
-    hasInit = true;
     return &tester;
 }
 
@@ -121,6 +116,7 @@ int32_t DacTestWrite(void)
         }
     }
 
+    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
@@ -148,6 +144,7 @@ static int DacTestThreadFunc(void *param)
     }
 
     *((int32_t *)param) = 1;
+    DacTesterPut(tester);
     return val;
 }
 
@@ -220,6 +217,7 @@ int32_t DacTestReliability(void)
     (void)DacWrite(NULL, tester->config.channel, val);
     // invalid channel
     (void)DacWrite(tester->handle, tester->config.maxChannel + 1, val);
+    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
@@ -255,6 +253,7 @@ static int32_t DacIfPerformanceTest(void)
     useTime = endMs - startMs;
     HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
         startMs, endMs, useTime, useTime < 1 ? true : false );
+    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
@@ -287,11 +286,6 @@ int32_t DacTestExecute(int cmd)
         }
         ret = g_entry[i].func();
         break;
-    }
-
-    // At last test case.
-    if (cmd == DAC_TEST_CMD_IF_PERFORMANCE) {
-        DacTesterPut(DacTesterGet());
     }
 
 __EXIT__:
