@@ -116,7 +116,7 @@ int32_t UsbFnDviceTestCreate006(void)
 
 int32_t UsbFnDviceTestStatus(void)
 {
-    int ret;
+    int32_t ret;
     UsbFnDeviceState devState;
     if (g_acmDevice == NULL || g_acmDevice->fnDev == NULL) {
         HDF_LOGE("%s: fnDev is invail", __func__);
@@ -136,7 +136,7 @@ int32_t UsbFnDviceTestStatus(void)
 
 int32_t UsbFnDviceTestStatus002(void)
 {
-    int ret;
+    int32_t ret;
     UsbFnDeviceState devState;
     ret = UsbFnGetDeviceState(NULL, &devState);
     if (HDF_SUCCESS == ret) {
@@ -148,8 +148,8 @@ int32_t UsbFnDviceTestStatus002(void)
 
 int32_t UsbFnDviceTestStatus003(void)
 {
-    int ret;
-    int count;
+    int32_t ret;
+    int32_t count;
     UsbFnDeviceState devState;
     if (g_acmDevice == NULL || g_acmDevice->fnDev == NULL) {
         HDF_LOGE("%s: fnDev is invail", __func__);
@@ -171,7 +171,7 @@ int32_t UsbFnDviceTestStatus003(void)
 
 int32_t UsbFnDviceTestStatus004(void)
 {
-    int ret;
+    int32_t ret;
     ret = UsbFnGetDeviceState(NULL, NULL);
     if (HDF_SUCCESS == ret) {
         HDF_LOGE("%s: get status success!!", __func__);
@@ -182,7 +182,7 @@ int32_t UsbFnDviceTestStatus004(void)
 
 int32_t UsbFnDviceTestStatus005(void)
 {
-    int ret;
+    int32_t ret;
     UsbFnDeviceState *devState = NULL;
     if (g_acmDevice == NULL || g_acmDevice->fnDev == NULL) {
         HDF_LOGE("%s: fnDev is invail", __func__);
@@ -344,7 +344,7 @@ int32_t UsbFnDviceTestGetInterface005(void)
 int32_t UsbFnDviceTestGetInterface006(void)
 {
     struct UsbFnInterface *fnInterface = NULL;
-    int idCount;
+    int32_t idCount;
     if (g_acmDevice == NULL || g_acmDevice->fnDev == NULL) {
         HDF_LOGE("%s: fnDev is invail", __func__);
         return HDF_FAILURE;
@@ -361,7 +361,7 @@ int32_t UsbFnDviceTestGetInterface006(void)
 
 int32_t UsbFnDviceTestGetPipeInfo(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnPipeInfo info;
 
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
@@ -382,7 +382,7 @@ int32_t UsbFnDviceTestGetPipeInfo(void)
 
 int32_t UsbFnDviceTestGetPipeInfo002(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnPipeInfo info;
 
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
@@ -403,7 +403,7 @@ int32_t UsbFnDviceTestGetPipeInfo002(void)
 
 int32_t UsbFnDviceTestGetPipeInfo003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnPipeInfo info;
 
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
@@ -420,7 +420,7 @@ int32_t UsbFnDviceTestGetPipeInfo003(void)
 
 int32_t UsbFnDviceTestGetPipeInfo004(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnPipeInfo *info = NULL;
 
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
@@ -437,7 +437,7 @@ int32_t UsbFnDviceTestGetPipeInfo004(void)
 
 int32_t UsbFnDviceTestGetPipeInfo005(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnPipeInfo info;
     struct UsbFnInterface *fn = NULL;
 
@@ -451,7 +451,7 @@ int32_t UsbFnDviceTestGetPipeInfo005(void)
 
 int32_t UsbFnDviceTestGetPipeInfo006(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnPipeInfo info;
 
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
@@ -481,7 +481,7 @@ static int32_t PropCallBack(const struct UsbFnInterface *intf, const char *name,
 
 int32_t UsbFnDviceTestRegistProp(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRegistInfo info;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -501,7 +501,7 @@ int32_t UsbFnDviceTestRegistProp(void)
 
 int32_t UsbFnDviceTestRegistProp002(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRegistInfo info;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -521,7 +521,7 @@ int32_t UsbFnDviceTestRegistProp002(void)
 
 int32_t UsbFnDviceTestRegistProp003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRegistInfo info;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -541,7 +541,7 @@ int32_t UsbFnDviceTestRegistProp003(void)
 
 int32_t UsbFnDviceTestRegistProp004(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRegistInfo info;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -561,7 +561,7 @@ int32_t UsbFnDviceTestRegistProp004(void)
 
 int32_t UsbFnDviceTestRegistProp005(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRegistInfo info;
     struct UsbFnInterface *fn = NULL;
 
@@ -579,7 +579,7 @@ int32_t UsbFnDviceTestRegistProp005(void)
 
 int32_t UsbFnDviceTestRegistProp006(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRegistInfo *info = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -595,7 +595,7 @@ int32_t UsbFnDviceTestRegistProp006(void)
 
 int32_t UsbFnDviceTestRegistProp007(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRegistInfo info;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -615,7 +615,7 @@ int32_t UsbFnDviceTestRegistProp007(void)
 
 int32_t UsbFnDviceTestGetProp(void)
 {
-    int ret;
+    int32_t ret;
     char buffer[BUFFER_LEN] = {0};
     char *buff = buffer;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
@@ -636,7 +636,7 @@ int32_t UsbFnDviceTestGetProp(void)
 
 int32_t UsbFnDviceTestGetProp002(void)
 {
-    int ret;
+    int32_t ret;
     char buffer[BUFFER_LEN] = {0};
     char *buff = buffer;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
@@ -653,7 +653,7 @@ int32_t UsbFnDviceTestGetProp002(void)
 
 int32_t UsbFnDviceTestGetProp003(void)
 {
-    int ret;
+    int32_t ret;
     char buffer[BUFFER_LEN] = {0};
     char *buff = buffer;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
@@ -670,7 +670,7 @@ int32_t UsbFnDviceTestGetProp003(void)
 
 int32_t UsbFnDviceTestGetProp004(void)
 {
-    int ret;
+    int32_t ret;
     char buffer[BUFFER_LEN] = {0};
     char *buff = buffer;
     struct UsbFnInterface *fn = NULL;
@@ -685,7 +685,7 @@ int32_t UsbFnDviceTestGetProp004(void)
 
 int32_t UsbFnDviceTestGetProp005(void)
 {
-    int ret;
+    int32_t ret;
     char buffer[BUFFER_LEN] = {0};
     char *buff = buffer;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
@@ -702,7 +702,7 @@ int32_t UsbFnDviceTestGetProp005(void)
 
 int32_t UsbFnDviceTestGetProp006(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
@@ -717,7 +717,7 @@ int32_t UsbFnDviceTestGetProp006(void)
 
 int32_t UsbFnDviceTestGetProp007(void)
 {
-    int ret;
+    int32_t ret;
     char buffer[BUFFER_LEN] = {0};
     char *buff = buffer;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
@@ -738,7 +738,7 @@ int32_t UsbFnDviceTestGetProp007(void)
 
 int32_t UsbFnDviceTestGetProp008(void)
 {
-    int ret;
+    int32_t ret;
     char buffer[BUFFER_LEN] = {0};
     char *buff = buffer;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
@@ -755,7 +755,7 @@ int32_t UsbFnDviceTestGetProp008(void)
 
 int32_t UsbFnDviceTestSetProp(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
@@ -770,7 +770,7 @@ int32_t UsbFnDviceTestSetProp(void)
 
 int32_t UsbFnDviceTestSetProp002(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
@@ -785,7 +785,7 @@ int32_t UsbFnDviceTestSetProp002(void)
 
 int32_t UsbFnDviceTestSetProp003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnInterface *fn = NULL;
 
     ret = UsbFnSetInterfaceProp(fn, "name_test", "hellotest");
@@ -798,7 +798,7 @@ int32_t UsbFnDviceTestSetProp003(void)
 
 int32_t UsbFnDviceTestSetProp004(void)
 {
-    int ret;
+    int32_t ret;
     const char *propName = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
@@ -814,7 +814,7 @@ int32_t UsbFnDviceTestSetProp004(void)
 
 int32_t UsbFnDviceTestSetProp005(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
@@ -829,7 +829,7 @@ int32_t UsbFnDviceTestSetProp005(void)
 
 int32_t UsbFnDviceTestSetProp006(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
@@ -844,7 +844,7 @@ int32_t UsbFnDviceTestSetProp006(void)
 
 int32_t UsbFnDviceTestSetProp007(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
@@ -859,7 +859,7 @@ int32_t UsbFnDviceTestSetProp007(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -881,7 +881,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest002(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -903,7 +903,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest002(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -924,7 +924,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest003(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest004(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -945,7 +945,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest004(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest005(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     UsbFnInterfaceHandle handle = NULL;
 
@@ -969,7 +969,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest005(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest006(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -990,7 +990,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest006(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest007(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -1011,7 +1011,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest007(void)
 
 int32_t UsbFnDviceTestAllocCtrlRequest008(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     UsbFnInterfaceHandle handle = NULL;
 
@@ -1030,7 +1030,7 @@ int32_t UsbFnDviceTestAllocCtrlRequest008(void)
 
 int32_t UsbFnDviceTestAllocRequest(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1052,7 +1052,7 @@ int32_t UsbFnDviceTestAllocRequest(void)
 
 int32_t UsbFnDviceTestAllocRequest002(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1074,7 +1074,7 @@ int32_t UsbFnDviceTestAllocRequest002(void)
 
 int32_t UsbFnDviceTestAllocRequest003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1096,7 +1096,7 @@ int32_t UsbFnDviceTestAllocRequest003(void)
 
 int32_t UsbFnDviceTestAllocRequest004(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     UsbFnInterfaceHandle handle = NULL;
 
@@ -1119,7 +1119,7 @@ int32_t UsbFnDviceTestAllocRequest004(void)
 
 int32_t UsbFnDviceTestAllocRequest005(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1140,7 +1140,7 @@ int32_t UsbFnDviceTestAllocRequest005(void)
 
 int32_t UsbFnDviceTestAllocRequest006(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1162,7 +1162,7 @@ int32_t UsbFnDviceTestAllocRequest006(void)
 
 int32_t UsbFnDviceTestAllocRequest007(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1184,7 +1184,7 @@ int32_t UsbFnDviceTestAllocRequest007(void)
 
 int32_t UsbFnDviceTestAllocRequest008(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     uint32_t length;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
@@ -1207,7 +1207,7 @@ int32_t UsbFnDviceTestAllocRequest008(void)
 
 int32_t UsbFnDviceTestAllocRequest009(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1229,7 +1229,7 @@ int32_t UsbFnDviceTestAllocRequest009(void)
 
 int32_t UsbFnDviceTestFreeRequest(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1251,7 +1251,7 @@ int32_t UsbFnDviceTestFreeRequest(void)
 
 int32_t UsbFnDviceTestFreeRequest002(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1273,7 +1273,7 @@ int32_t UsbFnDviceTestFreeRequest002(void)
 
 int32_t UsbFnDviceTestFreeRequest003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1295,7 +1295,7 @@ int32_t UsbFnDviceTestFreeRequest003(void)
 
 int32_t UsbFnDviceTestFreeRequest004(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1317,8 +1317,8 @@ int32_t UsbFnDviceTestFreeRequest004(void)
 
 int32_t UsbFnDviceTestFreeRequest005(void)
 {
-    int ret;
-    int count;
+    int32_t ret;
+    int32_t count;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1342,7 +1342,7 @@ int32_t UsbFnDviceTestFreeRequest005(void)
 
 int32_t UsbFnDviceTestFreeRequest006(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     ret = UsbFnFreeRequest(req);
     if (HDF_SUCCESS == ret) {
@@ -1354,7 +1354,7 @@ int32_t UsbFnDviceTestFreeRequest006(void)
 
 int32_t UsbFnDviceTestGetRequestStatus(void)
 {
-    int ret;
+    int32_t ret;
     UsbRequestStatus status;
     struct UsbFnRequest *notifyReq = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
@@ -1386,7 +1386,7 @@ int32_t UsbFnDviceTestGetRequestStatus(void)
 
 int32_t UsbFnDviceTestGetRequestStatus002(void)
 {
-    int ret;
+    int32_t ret;
     UsbRequestStatus status;
     struct UsbFnRequest *notifyReq = NULL;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
@@ -1419,7 +1419,7 @@ int32_t UsbFnDviceTestGetRequestStatus002(void)
 
 int32_t UsbFnDviceTestGetRequestStatus003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
@@ -1447,7 +1447,7 @@ int32_t UsbFnDviceTestGetRequestStatus003(void)
 
 int32_t UsbFnDviceTestGetRequestStatus004(void)
 {
-    int ret;
+    int32_t ret;
     UsbRequestStatus status;
     struct UsbFnRequest *notifyReq = NULL;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
@@ -1484,7 +1484,7 @@ int32_t UsbFnDviceTestGetRequestStatus004(void)
 
 int32_t UsbFnDviceTestGetRequestStatus005(void)
 {
-    int ret;
+    int32_t ret;
     UsbRequestStatus status;
     struct UsbFnRequest *notifyReq = NULL;
     ret = UsbFnGetRequestStatus(notifyReq, &status);
@@ -1497,7 +1497,7 @@ int32_t UsbFnDviceTestGetRequestStatus005(void)
 
 int32_t UsbFnDviceTestGetRequestStatus006(void)
 {
-    int ret;
+    int32_t ret;
     UsbRequestStatus *status = NULL;
     struct UsbFnRequest *notifyReq = NULL;
     ret = UsbFnGetRequestStatus(notifyReq, status);
@@ -1510,7 +1510,7 @@ int32_t UsbFnDviceTestGetRequestStatus006(void)
 
 int32_t UsbFnDviceTestStopReceEvent(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1525,7 +1525,7 @@ int32_t UsbFnDviceTestStopReceEvent(void)
 
 int32_t UsbFnDviceTestStopReceEvent002(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnInterface *fn = NULL;
     ret = UsbFnStopRecvInterfaceEvent(fn);
     if (HDF_SUCCESS == ret) {
@@ -1537,7 +1537,7 @@ int32_t UsbFnDviceTestStopReceEvent002(void)
 
 int32_t UsbFnDviceTestStopReceEvent003(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1552,7 +1552,7 @@ int32_t UsbFnDviceTestStopReceEvent003(void)
 
 int32_t UsbFnDviceTestStopReceEvent004(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1572,7 +1572,7 @@ static void EventCallBack(struct UsbFnEvent *event)
 
 int32_t UsbFnDviceTestStartReceEvent(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1588,7 +1588,7 @@ int32_t UsbFnDviceTestStartReceEvent(void)
 
 int32_t UsbFnDviceTestStartReceEvent002(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1604,7 +1604,7 @@ int32_t UsbFnDviceTestStartReceEvent002(void)
 
 int32_t UsbFnDviceTestStartReceEvent003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnInterface *fn = NULL;
 
     if (g_acmDevice == NULL) {
@@ -1622,7 +1622,7 @@ int32_t UsbFnDviceTestStartReceEvent003(void)
 
 int32_t UsbFnDviceTestStartReceEvent004(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1638,8 +1638,8 @@ int32_t UsbFnDviceTestStartReceEvent004(void)
 
 int32_t UsbFnDviceTestStartReceEvent005(void)
 {
-    int ret;
-    int count;
+    int32_t ret;
+    int32_t count;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1662,7 +1662,7 @@ int32_t UsbFnDviceTestStartReceEvent005(void)
 
 int32_t UsbFnDviceTestStartReceEvent006(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1678,7 +1678,7 @@ int32_t UsbFnDviceTestStartReceEvent006(void)
 
 int32_t UsbFnDviceTestStartReceEvent007(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1732,7 +1732,7 @@ int32_t UsbFnDviceTestOpenInterface002(void)
 
 int32_t UsbFnDviceTestOpenInterface003(void)
 {
-    int ret;
+    int32_t ret;
     UsbFnInterfaceHandle handle;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.fn == NULL) {
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
@@ -1759,7 +1759,7 @@ int32_t UsbFnDviceTestOpenInterface003(void)
 
 int32_t UsbFnDviceTestOpenInterface004(void)
 {
-    int ret;
+    int32_t ret;
     UsbFnInterfaceHandle handle;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.fn == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -1799,7 +1799,7 @@ int32_t UsbFnDviceTestOpenInterface005(void)
 
 int32_t UsbFnDviceTestCloseInterface(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->ctrlIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1816,7 +1816,7 @@ int32_t UsbFnDviceTestCloseInterface(void)
 
 int32_t UsbFnDviceTestCloseInterface002(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: ctrlIface.handle is invail", __func__);
         return HDF_FAILURE;
@@ -1833,7 +1833,7 @@ int32_t UsbFnDviceTestCloseInterface002(void)
 
 int32_t UsbFnDviceTestCloseInterface003(void)
 {
-    int ret;
+    int32_t ret;
 
     if (g_acmDevice == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -1850,7 +1850,7 @@ int32_t UsbFnDviceTestCloseInterface003(void)
 
 int32_t UsbFnDviceTestCloseInterface004(void)
 {
-    int ret;
+    int32_t ret;
 
     if (g_acmDevice == NULL) {
         HDF_LOGE("%s: dataIface.handle is invail", __func__);
@@ -1867,7 +1867,7 @@ int32_t UsbFnDviceTestCloseInterface004(void)
 
 int32_t UsbFnDviceTestRemove(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnDevice *fnDev = NULL;
 
     ret = UsbFnRemoveDevice(fnDev);
@@ -1880,7 +1880,7 @@ int32_t UsbFnDviceTestRemove(void)
 
 int32_t UsbFnDviceTestRemove002(void)
 {
-    int ret;
+    int32_t ret;
     if (g_acmDevice == NULL || g_acmDevice->fnDev == NULL) {
         HDF_LOGE("%s: fndev is null", __func__);
         return HDF_FAILURE;

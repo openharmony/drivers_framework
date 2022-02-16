@@ -69,13 +69,13 @@ struct Serial {
     bool                        writeBusy;
     bool                        suspended;
     bool                        startDelayed;
-    int                         refCount;
+    int32_t                         refCount;
 };
 
 struct AcmNotifyMethod {
     void (*Connect)(struct AcmDevice *acm);
     void (*Disconnect)(struct AcmDevice *acm);
-    int (*SendBreak)(struct AcmDevice *acm, int duration);
+    int32_t (*SendBreak)(struct AcmDevice *acm, int32_t duration);
 };
 
 struct AcmPipe {
@@ -132,7 +132,7 @@ struct AcmDevice *SetUpAcmDevice(void);
 void ReleaseAcmDevice(struct AcmDevice *acm);
 void AcmEventCallback(struct UsbFnEvent *event);
 void AcmDeviceRelease(struct AcmDevice *acmDevice);
-int remove_usb_device(void);
+int32_t remove_usb_device(void);
 
 struct AcmDevice *UsbGetAcmDevice(void);
 int32_t UsbFnDviceTestCreate(void);
