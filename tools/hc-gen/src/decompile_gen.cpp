@@ -72,15 +72,17 @@ int32_t DecompileGen::PrintArrayType(const std::shared_ptr<AstObject>& astObj)
 {
     WriteFile("[");
     auto arrayElement = astObj->Child();
-    while (arrayElement->Next()) {
+    if (arrayElement != nullptr) {
+        while (arrayElement->Next()) {
+            if (PrintBaseType(arrayElement) != NOERR) {
+                return EOUTPUT;
+            }
+            WriteFile(", ");
+            arrayElement = arrayElement->Next();
+        }
         if (PrintBaseType(arrayElement) != NOERR) {
             return EOUTPUT;
         }
-        WriteFile(", ");
-        arrayElement = arrayElement->Next();
-    }
-    if (PrintBaseType(arrayElement) != NOERR) {
-        return EOUTPUT;
     }
     WriteFile("]");
     return NOERR;
