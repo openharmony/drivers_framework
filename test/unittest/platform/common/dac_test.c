@@ -112,6 +112,7 @@ int32_t DacTestWrite(void)
         ret = DacWrite(tester->handle, tester->config.channel, value[i]);
         if (ret != HDF_SUCCESS || value[i] >= (1U << tester->config.dataWidth)) {
             HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, value[i], ret);
+            DacTesterPut(tester);
             return HDF_ERR_IO;
         }
     }
@@ -139,6 +140,7 @@ static int DacTestThreadFunc(void *param)
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: DacWrite failed, ret:%d", __func__, ret);
             *((int32_t *)param) = 1;
+            DacTesterPut(tester);
             return HDF_ERR_IO;
         }
     }
@@ -246,6 +248,7 @@ static int32_t DacIfPerformanceTest(void)
     ret = DacWrite(tester->handle, tester->config.channel, val);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, val, ret);
+        DacTesterPut(tester);
         return HDF_ERR_IO;
     }    
     endMs = OsalGetSysTimeMs();
