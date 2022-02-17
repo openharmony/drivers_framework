@@ -36,7 +36,7 @@ static void AcmReadBulk(struct UsbRequest *req)
     uint32_t size;
     int status = req->compInfo.status;
     size = req->compInfo.actualLength;
-    printf("Bulk status:%d,actualLength:%d\n", status, size);
+    printf("Bulk status:%d,actualLength:%u\n", status, size);
     switch (status) {
         case 0:
             break;
@@ -91,7 +91,7 @@ static int AcmWriteBufAllocHandle(const struct AcmDevice *acm)
     for (wb = (struct AcmWb *)&acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
         wb->buf = (uint8_t *)OsalMemCalloc(acm->writeSize);
         if (!wb->buf) {
-            while (i != 0) {
+            while (i > 0) {
                 --i;
                 --wb;
                 OsalMemFree(wb->buf);
@@ -1415,7 +1415,8 @@ static int32_t CheckHostSdkIfFillRequest002(void)
         g_acm->wb[i].len = size;
         ret = memcpy_s(g_acm->wb[i].buf, g_acm->writeSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s failed", __func__);
+            return HDF_FAILURE;
         }
         parmas.interfaceId = g_acm->dataOutPipe->interfaceId;
         parmas.pipeAddress = g_acm->dataOutPipe->pipeAddress;
@@ -1594,7 +1595,8 @@ static int32_t CheckHostSdkIfFillRequest006(void)
         g_acm->wb[i].len = size;
         ret = memcpy_s(g_acm->wb[i].buf, g_acm->writeSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s failed", __func__);
+            return HDF_FAILURE;
         }
         parmas.interfaceId = g_acm->dataOutPipe->interfaceId;
         parmas.pipeAddress = g_acm->dataOutPipe->pipeAddress;

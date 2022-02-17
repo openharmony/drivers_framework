@@ -313,7 +313,7 @@ int32_t CheckRawSdkIfFillIsoRequest001(void)
     char sendData[] = {"abcde\0"};
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     size = strlen(sendData) + 1;
-    printf("---size:%d\n", size);
+    printf("---size:%u\n", size);
     size = (size > rawAcm->isoEp.maxPacketSize) ? rawAcm->isoEp.maxPacketSize : size;
     for (i = 0; i < 1; i++) {
         reqData.endPoint      = rawAcm->isoEp.addr;
@@ -341,7 +341,7 @@ int32_t CheckRawSdkIfFillIsoRequest002(void)
     char sendData[] = {"abcde\0"};
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     size = strlen(sendData) + 1;
-    printf("---size:%d\n", size);
+    printf("---size:%u\n", size);
     size = (size > rawAcm->isoEp.maxPacketSize) ? rawAcm->isoEp.maxPacketSize : size;
     for (i = 0; i < 1; i++) {
         reqData.endPoint      = rawAcm->isoEp.addr;
@@ -369,7 +369,7 @@ int32_t CheckRawSdkIfFillIsoRequest003(void)
     char sendData[] = {"abcde\0"};
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     size = strlen(sendData) + 1;
-    printf("---size:%d\n", size);
+    printf("---size:%u\n", size);
     size = (size > rawAcm->isoEp.maxPacketSize) ? rawAcm->isoEp.maxPacketSize : size;
     for (i = 0; i < 1; i++) {
         reqData.endPoint      = rawAcm->isoEp.addr;
@@ -397,7 +397,7 @@ int32_t CheckRawSdkIfFillIsoRequest004(void)
     char sendData[] = {"abcde\0"};
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     size = strlen(sendData) + 1;
-    printf("---size:%d\n", size);
+    printf("---size:%u\n", size);
     size = (size > rawAcm->isoEp.maxPacketSize) ? rawAcm->isoEp.maxPacketSize : size;
     for (i = 0; i < 1; i++) {
         reqData.endPoint      = rawAcm->isoEp.addr;
@@ -425,7 +425,7 @@ int32_t CheckRawSdkIfFillIsoRequest005(void)
     char sendData[] = {"abcde\0"};
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     size = strlen(sendData) + 1;
-    printf("---size:%d\n", size);
+    printf("---size:%u\n", size);
     size = (size > rawAcm->isoEp.maxPacketSize) ? rawAcm->isoEp.maxPacketSize : size;
     for (i = 0; i < 1; i++) {
         reqData.endPoint      = rawAcm->isoEp.addr;
@@ -453,7 +453,7 @@ int32_t CheckRawSdkIfFillIsoRequest006(void)
     char sendData[] = {"abcde\0"};
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
     size = strlen(sendData) + 1;
-    printf("---size:%d\n", size);
+    printf("---size:%u\n", size);
     size = (size > rawAcm->isoEp.maxPacketSize) ? rawAcm->isoEp.maxPacketSize : size;
     for (i = 0; i < 1; i++) {
         reqData.endPoint      = rawAcm->isoEp.addr;
@@ -956,7 +956,7 @@ int32_t CheckRawSdkIfFillBulkRequest001(void)
     struct AcmRawDevice *rawAcm = UsbGetIoAcm();
 
     size = strlen(sendData) + 1;
-    printf("---size:%d\n", size);
+    printf("---size:%u\n", size);
 
     size = (size > rawAcm->dataOutEp.maxPacketSize) ? rawAcm->dataOutEp.maxPacketSize : size;
     for (i = 0; i < 1; i++) {
@@ -964,7 +964,8 @@ int32_t CheckRawSdkIfFillBulkRequest001(void)
         snd->len = size;
         ret = memcpy_s(snd->buf, rawAcm->dataOutEp.maxPacketSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s fail", __func__);
+            return HDF_FAILURE;
         }
         rawAcm->transmitting++;
 
@@ -975,7 +976,7 @@ int32_t CheckRawSdkIfFillBulkRequest001(void)
         reqData.timeout       = USB_CTRL_SET_TIMEOUT;
         reqData.buffer        = snd->buf;
         reqData.length        = snd->len;
-        printf("maxPacketSize:%d+snd->request:%p\n", rawAcm->dataOutEp.maxPacketSize, snd->request);
+        printf("maxPacketSize:%d+snd->request\n", rawAcm->dataOutEp.maxPacketSize);
         ret = UsbRawFillBulkRequest(snd->request, rawAcm->devHandle, &reqData);
         if (ret) {
             printf("%s: error++ret=%d\n", __func__, ret);
@@ -1536,7 +1537,8 @@ int32_t CheckRawSdkIfSendBulkRequest001(void)
         snd->len = size;
         ret = memcpy_s(snd->buf, rawAcm->dataOutEp.maxPacketSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s fail", __func__);
+            return HDF_FAILURE;
         }
         rawAcm->transmitting++;
 
@@ -1756,7 +1758,8 @@ int32_t CheckRawSdkIfFillBulkRequest003(void)
         snd->len = size;
         ret = memcpy_s(snd->buf, rawAcm->dataOutEp.maxPacketSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s fail", __func__);
+            return HDF_FAILURE;
         }
         rawAcm->transmitting++;
 

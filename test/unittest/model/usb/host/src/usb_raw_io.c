@@ -175,7 +175,7 @@ void AcmReadBulkCallback(const void *requestArg)
             }
             break;
         case USB_REQUEST_CANCELLED:
-            printf("%s: the request is cancelled request:%p\n", __func__, req);
+            printf("%s: the request is cancelled request \n", __func__);
             return;
         default:
             printf("%s: the request is failed\n", __func__);
@@ -218,7 +218,7 @@ static int AcmWriteBufAllocHandle(const struct AcmRawDevice *acm)
     for (wb = (struct RawWb *)&acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
         wb->buf = OsalMemCalloc(acm->dataOutEp.maxPacketSize);
         if (!wb->buf) {
-            while (i != 0) {
+            while (i > 0) {
                 --i;
                 --wb;
                 OsalMemFree(wb->buf);

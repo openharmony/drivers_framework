@@ -839,8 +839,8 @@ static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, struct HdfDe
         }
 
         HDF_LOGD("%s:%d matchDevice end, index=%d tableCount=%d is match \
-            idTable=%p, moduleName=%s, serviceName=%s",
-            __func__, __LINE__, index, tableCount, idTable, idTable->moduleName, idTable->serviceName);
+            moduleName=%s, serviceName=%s",
+            __func__, __LINE__, index, tableCount, idTable->moduleName, idTable->serviceName);
 
         ret = UsbDdkPnpLoaderrAddPnpDevice(usbPnpManagerDevice, infoTable, idTable, cmdId);
         if (ret != HDF_SUCCESS) {
@@ -1036,8 +1036,8 @@ int UsbDdkPnpLoaderEventReceived(void *usbPnpManagerPtr, uint32_t id, struct Hdf
     flag = HdfSbufReadBuffer(data, (const void **)(&infoTable), &infoSize);
     if ((flag == false) || (infoTable == NULL)) {
         ret = HDF_ERR_INVALID_PARAM;
-        HDF_LOGE("%s: fail to read infoTable in event data, flag=%d, infoTable=%p", \
-            __func__, flag, infoTable);
+        HDF_LOGE("%s: fail to read infoTable in event data, flag=%d", \
+            __func__, flag);
         return ret;
     }
 

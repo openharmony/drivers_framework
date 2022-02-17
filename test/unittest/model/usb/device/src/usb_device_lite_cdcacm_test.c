@@ -421,13 +421,13 @@ static int AllocCtrlRequests(struct AcmDevice *acmDevice)
 
     for (i = 0; i < count; i++) {
         ctrlInfo = (struct CtrlInfo *)OsalMemCalloc(sizeof(*ctrlInfo));
-        if (NULL == ctrlInfo) {
+        if (ctrlInfo == NULL) {
             return -1;
         }
         ctrlInfo->acm = acmDevice;
         req = UsbFnAllocCtrlRequest(acmDevice->ctrlIface.handle,
             sizeof(struct UsbCdcLineCoding) + sizeof(struct UsbCdcLineCoding));
-        if (NULL == req) {
+        if (req == NULL) {
             return -1;
         }
         req->complete = CtrlComplete;
