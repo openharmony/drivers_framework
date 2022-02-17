@@ -28,13 +28,13 @@
 #define RE_PACKAGE_MAJOR_VER_INDEX 1
 #define RE_PACKAGE_MINOR_VER_INDEX 2
 
-static const std::regex rePackage(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" "(" RE_DIGIT ")_(" RE_DIGIT ")");
-static const std::regex reImport(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" \
-                                 RE_DIGIT "_" RE_DIGIT "." RE_IDENTIFIER);
-
 namespace OHOS {
 namespace HDI {
 const char* Parser::TAG = "Parser";
+
+static const std::regex rePackage(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" "(" RE_DIGIT ")_(" RE_DIGIT ")");
+static const std::regex reImport(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" \
+                                 RE_DIGIT "_" RE_DIGIT "." RE_IDENTIFIER);
 
 Parser::Parser(const Options& options, const AutoPtr<ASTModule>& module)
     :options_(options), lexer_(nullptr), errors_(nullptr), ast_(nullptr), astModule_(module)
