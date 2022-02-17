@@ -110,7 +110,7 @@ int32_t DacTestWrite(void)
     for (i = 0; i < TEST_DAC_VAL_NUM; i++) {
         value[i] = i;
         ret = DacWrite(tester->handle, tester->config.channel, value[i]);
-        if (ret != HDF_SUCCESS || value[i] >= (1U << tester->config.dataWidth)) {
+        if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, value[i], ret);
             DacTesterPut(tester);
             return HDF_ERR_IO;
