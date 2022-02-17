@@ -1,12 +1,12 @@
 import json
 import sys
 import unittest
+import CppHeaderParser
 
 sys.path.insert(0, '..')
 try:
     from _header_parser import HeaderParser
     from idl_generator import IDLGenerator
-    from thirdparty.cppheaderparser import CppHeaderParser
 finally:
     pass
 
@@ -256,7 +256,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             } InputController;
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_interface(hjson["classes"]["InputController"])
         generator = IDLGenerator()
         generator._key_list["InputController"] = "struct"
@@ -274,7 +274,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             };
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_interface(hjson["classes"]["IFooCallback"])
         generator = IDLGenerator()
         generator._install_interface(parser._header_dict["interface"][0])

@@ -16,8 +16,9 @@
 """
 
 import json
+from shutil import copyfile, move
 
-from thirdparty.cppheaderparser.CppHeaderParser import *
+from CppHeaderParser import *
 
 
 class HeaderParser:
@@ -42,10 +43,11 @@ class HeaderParser:
 
     def parse(self, header_file):
         try:
-            hjson = json.loads(CppHeaderParser.CppHeader(header_file).to_json())
-        except Exception as e:
-            print(e)
-            return None
+            hjson = json.loads(CppHeaderParser.CppHeader(header_file).toJSON())
+        except CppParseError:
+            back_file = self._pre_handle(header_file)
+            hjson = json.loads(CppHeaderParser.CppHeader(header_file).toJSON())
+            move(back_file, header_file)
 
         self._extract_path_and_file(header_file)
         self._extract_include(hjson["includes"])
@@ -56,6 +58,31 @@ class HeaderParser:
             self._extract_interface(hjson["classes"][i])
         self._extract_typedef(hjson["typedefs"])
         return self._header_dict
+
+    @staticmethod
+    def _pre_handle(header_file):
+        back_file = header_file + ".back"
+        copyfile(header_file, back_file)
+        f = open(header_file, 'r')
+        new_lines = ""
+        for line in f:
+            tt = re.match(r".*enum *((\w+) *\*) *\w* *;", line)
+            if tt:
+                new_line = line.replace(tt[1], tt[2] + "_ENUM_POINTER ")
+                new_lines += new_line
+                continue
+            tt = re.match(r".*(\[\w* *\(.*\) *]) *", line)
+            if tt:
+                new_line = line.replace(tt[1], "[]")
+                new_lines += new_line
+                continue
+            else:
+                new_lines += line
+        f.close()
+        f = open(header_file, 'w')
+        f.writelines(new_lines)
+        f.close()
+        return back_file
 
     @staticmethod
     def _has_function_pointer(jvs):

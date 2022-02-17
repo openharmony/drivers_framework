@@ -1,12 +1,13 @@
 import json
 import sys
 import unittest
+from os import remove
 
 sys.path.insert(0, '..')
 
 try:
     from _header_parser import HeaderParser
-    from thirdparty.cppheaderparser.CppHeaderParser import *
+    from CppHeaderParser import *
 finally:
     pass
 
@@ -53,7 +54,7 @@ class HeaderParserTestCase(unittest.TestCase):
                    DISPLAY_FAILURE = 1,
             } DispErrCode;
         """
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser = HeaderParser()
         parser._extract_enum(hjson["enums"])
         self.assertSequenceEqual(parser._header_dict["enum"], [{'name': 'DispErrCode',
@@ -67,7 +68,7 @@ class HeaderParserTestCase(unittest.TestCase):
                 CAMERA_BUSY = 1,
             };
         """
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser = HeaderParser()
         parser._extract_enum(hjson["enums"])
         self.assertSequenceEqual(parser._header_dict["enum"], [{'name': 'CamRetCode',
@@ -82,7 +83,7 @@ class HeaderParserTestCase(unittest.TestCase):
                    HBM_USE_CPU_READ = (1 << 0),
             } DispErrCode;
         """
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         hjson["enums"][0]["filename"] = "test_header_parser.py"
         hjson["enums"][0]["line_number"] = 0
         parser = HeaderParser()
@@ -106,7 +107,7 @@ class HeaderParserTestCase(unittest.TestCase):
                    DISPLAY_END = 2,
             };
         """
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser = HeaderParser()
         parser._extract_enum(hjson["enums"])
         self.assertSequenceEqual(parser._header_dict["enum"], [{'name': 'LostName_0',
@@ -128,7 +129,7 @@ class HeaderParserTestCase(unittest.TestCase):
             };
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_union(hjson["classes"]["SceneDesc"])
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': 'SceneDesc',
                                                                  'type': 'union',
@@ -149,7 +150,7 @@ class HeaderParserTestCase(unittest.TestCase):
             };
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_union(hjson["classes"]["<anon-union-1>"])
         parser._extract_union(hjson["classes"]["<anon-union-2>"])
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': '<anon-union-1>',
@@ -176,7 +177,7 @@ class HeaderParserTestCase(unittest.TestCase):
             };
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_union(hjson["classes"]["AudioSceneDescriptor::SceneDesc"])
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': 'SceneDesc',
                                                                  'type': 'union',
@@ -208,13 +209,12 @@ class HeaderParserTestCase(unittest.TestCase):
                 void path;
                 char chipInfo[32];
                 enum RetStatus status;
-                enum RetStatus *statusPtr;
                 struct EvtPack package;
                 struct EvtPack *pkgPtr;
             } DevAbility;
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_struct(hjson["classes"]["DevAbility"])
         self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'DevAbility',
                                                                   'type': 'struct',
@@ -233,9 +233,32 @@ class HeaderParserTestCase(unittest.TestCase):
                                                                       {'name': 'path', 'type': 'void'},
                                                                       {'name': 'chipInfo', 'type': 'char *'},
                                                                       {'name': 'status', 'type': 'RetStatus'},
-                                                                      {'name': 'statusPtr', 'type': 'RetStatus *'},
                                                                       {'name': 'package', 'type': 'struct EvtPack'},
                                                                       {'name': 'pkgPtr', 'type': 'struct EvtPack *'}
+                                                                  ]}])
+
+    def test_extract_struct_with_enum_pointer(self):
+        header_file = """
+            typedef struct {
+                enum Status *staPtr;
+                enum Test *testPtr;
+            } DevAbility;
+        """
+        file_name = "header_file.h"
+        with open(file_name, 'w') as f:
+            f.write(header_file)
+
+        parser = HeaderParser()
+        back_file = parser._pre_handle(file_name)
+        hjson = json.loads(CppHeaderParser.CppHeader(file_name).toJSON())
+        remove(back_file)
+        remove(file_name)
+        parser._extract_struct(hjson["classes"]["DevAbility"])
+        self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'DevAbility',
+                                                                  'type': 'struct',
+                                                                  'members': [
+                                                                      {'name': 'staPtr', 'type': 'Status_ENUM_POINTER'},
+                                                                      {'name': 'testPtr', 'type': 'Test_ENUM_POINTER'}
                                                                   ]}])
 
     def test_extract_struct_with_macro(self):
@@ -249,8 +272,16 @@ class HeaderParserTestCase(unittest.TestCase):
                 unsigned long absCode[BITS_TO_UINT64(CODE_SIZE)];
             } DevAbility;
         """
+        file_name = "header_file.h"
+        with open(file_name, 'w') as f:
+            f.write(header_file)
+
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        back_file = parser._pre_handle(file_name)
+        hjson = json.loads(CppHeaderParser.CppHeader(file_name).toJSON())
+        remove(back_file)
+        remove(file_name)
+
         parser._extract_struct(hjson["classes"]["DevAbility"])
         self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'DevAbility',
                                                                   'type': 'struct',
@@ -268,7 +299,7 @@ class HeaderParserTestCase(unittest.TestCase):
             };
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_union(hjson["classes"]["AudioSceneDescriptor::<anon-union-1>"])
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': '<anon-union-1>',
                                                                  'type': 'union',
@@ -291,7 +322,7 @@ class HeaderParserTestCase(unittest.TestCase):
             } InputController;
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_interface(hjson["classes"]["InputController"])
         self.assertSequenceEqual(parser._header_dict["interface"], [{'name': 'InputController',
                                                                      'members': [
@@ -315,7 +346,7 @@ class HeaderParserTestCase(unittest.TestCase):
             } InputController;
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_interface(hjson["classes"]["InputController"])
         self.assertSequenceEqual(parser._header_dict["interface"], [{'name': 'InputController',
                                                                      'members': [
@@ -350,7 +381,7 @@ class HeaderParserTestCase(unittest.TestCase):
             typedef void *AudioHandle;
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_typedef(hjson["typedefs"])
         self.assertSequenceEqual(parser._header_dict["typedef"],
                                  [{'name': 'HotPlugCallback',
@@ -365,12 +396,12 @@ class HeaderParserTestCase(unittest.TestCase):
                 int32_t (*Minute)(struct Test st, const struct Test st);
                 int32_t (*Hour)(const struct Test *st, const struct Test * st);
                 int32_t (*Day)(const struct Test  *  st, const struct Test* st);
-                int32_t (*Month)(std::string str, unsigned int a, unsigned short);
+                int32_t (*Month)(std::string str, unsigned int a, unsigned short, enum Test *c);
                 int32_t (*Year)(unsigned int **out1, const struct Test **out2);
             } IFoo;
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         stack = hjson["classes"]["IFoo"]
         second = stack["properties"]["public"][0]
         params = parser._checkout_function_pointer_param(second["type"])
@@ -394,7 +425,8 @@ class HeaderParserTestCase(unittest.TestCase):
         params = parser._checkout_function_pointer_param(month["type"])
         self.assertSequenceEqual(params, [{'name': 'str', 'type': 'std::string'},
                                           {'name': 'a', 'type': 'unsigned int'},
-                                          {'name': 'rand_name_0', 'type': 'unsigned short'}])
+                                          {'name': 'rand_name_0', 'type': 'unsigned short'},
+                                          {'name': 'c', 'type': 'Test *'}])
 
         year = stack["properties"]["public"][5]
         params = parser._checkout_function_pointer_param(year["type"])
@@ -409,7 +441,7 @@ class HeaderParserTestCase(unittest.TestCase):
             } AudioAdapter;
         """
         parser = HeaderParser()
-        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").to_json())
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         stack = hjson["classes"]["AudioAdapter"]
         function = stack["properties"]["public"][0]
         params = parser._checkout_function_pointer_param(function["type"])

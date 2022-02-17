@@ -31,17 +31,17 @@ need %s module, try install first:
 
 
 try:
-    import ply
+    import CppHeaderParser
     from _header_parser import HeaderParser
 except ImportError:
-    pip.main(["--disable-pip-version-check", "install", "ply"])
+    pip.main(["--disable-pip-version-check", "install", "robotpy-cppheaderparser"])
     try:
-        import ply
+        import CppHeaderParser
         from _header_parser import HeaderParser
     except ImportError:
         ply = None
         HeaderParser = None
-        lost_module("opencv-python")
+        lost_module("robotpy-cppheaderparser")
 
 
 class IDLGenerator:
@@ -224,6 +224,8 @@ class IDLGenerator:
 
     def _convert_structure(self, c_type):
         for type_name in self._key_list:
+            if "_ENUM_POINTER" in c_type:
+                c_type = c_type.replace("_ENUM_POINTER", " * ")
             tt = re.fullmatch("(enum)*(union)*(struct)* *%s *\\** * *\\**" % type_name, c_type)
             if tt:
                 if len(self._key_list[type_name]) > 0:
