@@ -266,28 +266,19 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& s
 
 void CppCustomTypesCodeEmitter::EmitBeginNamespace(StringBuilder& sb)
 {
-    String nspace = ast_->GetPackageName();
-    int index = nspace.IndexOf('.');
-    while (index != -1) {
-        sb.AppendFormat("namespace %s {\n", nspace.Substring(0, index).string());
-        nspace = nspace.Substring(index + 1);
-        index = nspace.IndexOf('.');
-    }
+    std::vector<String> cppNamespaceVec = EmitCppNameSpaceVec(ast_->GetPackageName());
+    for (const auto& nspace : cppNamespaceVec) {
+        Logger::D("EmitBeginNamespace", "%s", nspace.string());
 
-    if (!nspace.IsEmpty()) {
         sb.AppendFormat("namespace %s {\n", nspace.string());
     }
 }
 
 void CppCustomTypesCodeEmitter::EmitEndNamespace(StringBuilder& sb)
 {
-    String nspace = ast_->GetPackageName();
-    nspace = nspace.Substring(0, nspace.GetLength() - 1);
-    while (!nspace.IsEmpty()) {
-        int index = nspace.LastIndexOf('.');
-        sb.AppendFormat("} // %s\n",
-            (index != -1) ? nspace.Substring(index + 1, nspace.GetLength()).string() : nspace.string());
-        nspace = nspace.Substring(0, index);
+    std::vector<String> cppNamespaceVec = EmitCppNameSpaceVec(ast_->GetPackageName());
+    for (auto nspaceIter = cppNamespaceVec.rbegin(); nspaceIter != cppNamespaceVec.rend(); nspaceIter++) {
+        sb.AppendFormat("} // %s\n", nspaceIter->string());
     }
 }
 } // namespace HDI

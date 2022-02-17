@@ -293,11 +293,11 @@ void CClientProxyCodeEmitter::EmitCreateBuf(const String& dataBufName, const Str
     StringBuilder& sb, const String& prefix)
 {
     if (isKernelCode_) {
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufObtainDefaultSize();\n", dataBufName.string());
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufObtainDefaultSize();\n", replyBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufObtainDefaultSize();\n", dataBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufObtainDefaultSize();\n", replyBufName.string());
     } else {
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufTypedObtain(SBUF_IPC);\n", dataBufName.string());
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufTypedObtain(SBUF_IPC);\n", replyBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufTypedObtain(SBUF_IPC);\n", dataBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufTypedObtain(SBUF_IPC);\n", replyBufName.string());
     }
 
     sb.Append("\n");
@@ -312,10 +312,10 @@ void CClientProxyCodeEmitter::EmitReleaseBuf(const String& dataBufName, const St
     const String& prefix)
 {
     sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", dataBufName.string());
-    sb.Append(prefix + g_tab).AppendFormat("HdfSbufRecycle(%s);\n", dataBufName.string());
+    sb.Append(prefix + g_tab).AppendFormat("HdfSBufRecycle(%s);\n", dataBufName.string());
     sb.Append(prefix).Append("}\n");
     sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", replyBufName.string());
-    sb.Append(prefix + g_tab).AppendFormat("HdfSbufRecycle(%s);\n", replyBufName.string());
+    sb.Append(prefix + g_tab).AppendFormat("HdfSBufRecycle(%s);\n", replyBufName.string());
     sb.Append(prefix).Append("}\n");
 }
 

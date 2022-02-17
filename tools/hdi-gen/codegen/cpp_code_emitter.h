@@ -24,6 +24,8 @@ public:
     bool OutPut(const AutoPtr<AST>& ast, const String& targetDirectory);
 
     static String FileName(const String& name);
+
+    static String PascalName(const String& name);
 protected:
     String EmitMethodCmdID(const AutoPtr<ASTMethod>& method);
 
@@ -45,11 +47,19 @@ protected:
 
     void EmitTailExternC(StringBuilder& sb);
 
+    bool isVersion(const String& name);
+
+    std::vector<String> EmitCppNameSpaceVec(const String& namespaceStr);
+
+    String EmitPackageToNameSpace(const String& packageName);
+
     virtual void EmitBeginNamespace(StringBuilder& sb);
 
     virtual void EmitEndNamespace(StringBuilder& sb);
 
     void EmitUsingNamespace(StringBuilder& sb);
+
+    String EmitNamespace(const String& packageName);
 
     void EmitImportUsingNamespace(StringBuilder& sb);
 
@@ -63,11 +73,7 @@ protected:
 
     String MacroName(const String& name);
 
-    String CppFullName(const String& name);
-
     String ConstantName(const String& name);
-
-    String CppNameSpace(const String& name);
 
     bool isCallbackInterface()
     {

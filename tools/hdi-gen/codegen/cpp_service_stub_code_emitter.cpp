@@ -336,14 +336,5 @@ void CppServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& met
     sb.Append(prefix + g_tab).Append("return ec;\n");
     sb.Append(prefix).Append("}\n");
 }
-
-String CppServiceStubCodeEmitter::EmitStubServiceUsings(String nameSpace)
-{
-    int index = nameSpace.LastIndexOf('.');
-    if (index > 0) {
-        nameSpace = nameSpace.Substring(0, index);
-    }
-    return CppFullName(nameSpace);
-}
 } // namespace HDI
 } // namespace OHOS

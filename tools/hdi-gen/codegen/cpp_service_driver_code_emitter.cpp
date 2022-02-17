@@ -83,14 +83,8 @@ void CppServiceDriverCodeEmitter::EmitDriverIncluions(StringBuilder& sb)
 
 void CppServiceDriverCodeEmitter::EmitDriverUsings(StringBuilder& sb)
 {
-    String nspace(interface_->GetNamespace()->ToString());
-    int index = nspace.LastIndexOf('.');
-    if (index > 0) {
-        nspace = nspace.Substring(0, index);
-    }
-
-    String fullName = CppFullName(nspace);
-    sb.AppendFormat("using namespace %s;\n", fullName.string());
+    String nspace = EmitPackageToNameSpace(interface_->GetNamespace()->ToString());
+    sb.AppendFormat("using namespace %s;\n", nspace.string());
 }
 
 void CppServiceDriverCodeEmitter::EmitDriverServiceDecl(StringBuilder& sb)
