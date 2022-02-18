@@ -6,24 +6,25 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "token.h"
 #include <iomanip>
 #include <map>
+
+#include "token.h"
 
 using namespace OHOS::Hardware;
 
 std::string OHOS::Hardware::TokenType2String(int32_t type)
 {
     static std::map<int32_t, std::string> tokenTypeMap = {
-            {NUMBER,    "NUMBER"},
-            {TEMPLATE,  "TEMPLATE"},
-            {LITERAL,   "LITERAL"},
-            {ROOT,      "ROOT"},
-            {INCLUDE,   "INCLUDE"},
-            {DELETE,    "DELETE"},
-            {STRING,    "STRING"},
-            {REF_PATH,  "REF_PATH"},
-            {FILE_PATH, "FILE_PATH"}
+        {NUMBER,    "NUMBER"   },
+        {TEMPLATE,  "TEMPLATE" },
+        {LITERAL,   "LITERAL"  },
+        {ROOT,      "ROOT"     },
+        {INCLUDE,   "INCLUDE"  },
+        {DELETE,    "DELETE"   },
+        {STRING,    "STRING"   },
+        {REF_PATH,  "REF_PATH" },
+        {FILE_PATH, "FILE_PATH"}
     };
 
     std::string str;
@@ -65,5 +66,3 @@ bool Token::operator!=(Token &t) const
 {
     return t.type != type || t.numval != numval || t.strval != strval;
 }
-
-

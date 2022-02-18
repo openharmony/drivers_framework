@@ -6,10 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "parser.h"
 #include <memory>
+
 #include "file.h"
 #include "logger.h"
+#include "parser.h"
 
 using namespace OHOS::Hardware;
 
@@ -53,7 +54,6 @@ bool Parser::Parse()
     }
     return true;
 }
-
 
 std::shared_ptr<Ast> Parser::ParseOne(const std::string &src, std::list<std::string> &includeList)
 {
@@ -156,8 +156,8 @@ std::shared_ptr<AstObject> Parser::ParseNode(Token &name, bool bracesStart)
                 child = ParseNodeAndTerm();
                 break;
             default:
-                Logger().Error() << lexer_
-                    << "syntax error, except '}' or TEMPLATE or LITERAL for node '" << name.strval << '\'';
+                Logger().Error() << lexer_ << "syntax error, except '}' or TEMPLATE or LITERAL for node '"
+                                 << name.strval << '\'';
                 return nullptr;
         }
         if (child == nullptr) {
@@ -180,7 +180,7 @@ std::shared_ptr<AstObject> Parser::ParseTerm(Token &name)
         Logger().Error() << lexer_ << "syntax error, miss value of config term";
         return nullptr;
     }
-    auto term = std::shared_ptr<AstObject>(new(std::nothrow) ConfigTerm(name, nullptr));
+    auto term = std::shared_ptr<AstObject>(new (std::nothrow) ConfigTerm(name, nullptr));
     if (term == nullptr) {
         return nullptr;
     }

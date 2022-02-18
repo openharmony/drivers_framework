@@ -13,6 +13,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+
 #include "token.h"
 
 namespace OHOS {
@@ -69,16 +70,16 @@ private:
 
     std::ifstream src_;
     std::shared_ptr<std::string> srcName_;
-    char buffer_[BUFFER_SIZE]{0};
-    const char *bufferStart_{nullptr};
-    const char *bufferEnd_{nullptr};
+    char buffer_[BUFFER_SIZE] {0};
+    const char *bufferStart_ {nullptr};
+    const char *bufferEnd_ {nullptr};
     int32_t lineno_;
     int32_t lineLoc_;
 };
 
-std::ostream& operator<<(std::ostream &s, const Lexer &lexer);
+std::ostream &operator<<(std::ostream &s, const Lexer &lexer);
 
-} // Hardware
-} // OHOS
+} // namespace Hardware
+} // namespace OHOS
 
 #endif // HC_GEN_LEXER_H

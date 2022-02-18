@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <string>
+
 #include "ast.h"
 
 namespace OHOS {
@@ -37,7 +38,7 @@ struct HcbHeader {
     int32_t totalSize;
 };
 
-} // OHOS
-} // Hardware
+} // namespace Hardware
+} // namespace OHOS
 
 #endif // HC_GEN_OPCODE_H

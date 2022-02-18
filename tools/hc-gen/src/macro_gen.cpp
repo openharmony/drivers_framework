@@ -6,21 +6,20 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "macro_gen.h"
 #include <string>
+
 #include "file.h"
 #include "logger.h"
+#include "macro_gen.h"
 
 using namespace OHOS::Hardware;
 
-constexpr static const char *FILE_HEAD_COMMENT = \
-    "/*\n" \
-    " * This is an automatically generated HDF config file. Do not modify it manually.\n" \
+constexpr static const char *FILE_HEAD_COMMENT =
+    "/*\n"
+    " * This is an automatically generated HDF config file. Do not modify it manually.\n"
     " */\n\n";
 
-MacroGen::MacroGen(std::shared_ptr<Ast> ast) : Generator(ast)
-{
-}
+MacroGen::MacroGen(std::shared_ptr<Ast> ast) : Generator(ast) {}
 
 const std::string &MacroGen::ToUpperString(std::string &str)
 {
@@ -115,8 +114,8 @@ std::string MacroGen::GenFullName(int32_t depth, const std::shared_ptr<AstObject
     return name;
 }
 
-bool MacroGen::GenArray(const std::string &arrName, uint32_t &arrSize, uint32_t type,
-    const std::shared_ptr<AstObject> &node)
+bool MacroGen::GenArray(
+    const std::string &arrName, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node)
 {
     static uint32_t index = 0;
     const uint32_t ELEMENT_PER_LINE = 8;
@@ -157,10 +156,11 @@ bool MacroGen::GenNodeForeach(int32_t depth, const std::shared_ptr<AstObject> &n
     auto child = node->Child();
     uint32_t count = 0;
 
-    Logger().Debug() << "node:" << node->Name() << " child:" << " depth:" << depth;
+    Logger().Debug() << "node:" << node->Name() << " child:"
+                     << " depth:" << depth;
     while (child != nullptr) {
         if (child->IsNode()) {
-                Logger().Debug() << " " << child->Name();
+            Logger().Debug() << " " << child->Name();
             subList.push_back(GenFullName(depth + 1, child, "_"));
             count++;
         }
@@ -221,8 +221,7 @@ bool MacroGen::NodeWalk()
         auto type = current->Type();
         static uint32_t arraySize = 0;
 
-        Logger().Debug() << "name,type:[" << current->Name() << "," << type \
-                         << "] depth:" << depth \
+        Logger().Debug() << "name,type:[" << current->Name() << "," << type << "] depth:" << depth
                          << " arraySize:" << std::dec << arraySize << '\n';
         SetTypeData(type, current, arraySize, depth);
 
@@ -230,8 +229,7 @@ bool MacroGen::NodeWalk()
     });
 }
 
-void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current,
-    uint32_t &arraySize, int32_t depth)
+void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &current, uint32_t &arraySize, int32_t depth)
 {
     static std::string nodeName;
     static std::string arrayName;
@@ -248,7 +246,7 @@ void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &curr
             if (arraySize != 0) {
                 GenArray(arrayName, arraySize, arrayType, current);
             } else {
-                ofs_ << " " <<  '"' << current->StringValue() << '"' << std::endl;
+                ofs_ << " " << '"' << current->StringValue() << '"' << std::endl;
             }
             break;
         case PARSEROP_CONFTERM:
@@ -281,8 +279,8 @@ void MacroGen::SetTypeData(uint32_t type, const std::shared_ptr<AstObject> &curr
     }
 }
 
-void MacroGen::SetTypeDataUinit64(const std::string &arrayName, uint32_t &arraySize, uint32_t arrayType,
-    const std::shared_ptr<AstObject> &current)
+void MacroGen::SetTypeDataUinit64(
+    const std::string &arrayName, uint32_t &arraySize, uint32_t arrayType, const std::shared_ptr<AstObject> &current)
 {
     if (arraySize != 0) {
         GenArray(arrayName, arraySize, arrayType, current);

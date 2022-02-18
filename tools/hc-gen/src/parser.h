@@ -10,12 +10,12 @@
 #define HC_GEN_PARSER_H
 
 #include <memory>
+
 #include "ast.h"
 #include "lexer.h"
 
 namespace OHOS {
 namespace Hardware {
-
 
 class Parser {
 public:
@@ -58,6 +58,6 @@ private:
     std::list<std::string> srcQueue_;
 };
 
-} // OHOS
-} // Hardware
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_PARSER_H

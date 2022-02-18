@@ -7,6 +7,7 @@
  */
 
 #include <set>
+
 #include "file.h"
 #include "logger.h"
 #include "opcode.h"
@@ -14,14 +15,12 @@
 
 using namespace OHOS::Hardware;
 
-constexpr static const char *FILE_HEAD_COMMENT = \
-    "/*\n" \
-    " * This is an automatically generated HDF config file. Do not modify it manually.\n" \
+constexpr static const char *FILE_HEAD_COMMENT =
+    "/*\n"
+    " * This is an automatically generated HDF config file. Do not modify it manually.\n"
     " */\n\n";
 
-TextGen::TextGen(std::shared_ptr<Ast> ast) : Generator(ast)
-{
-}
+TextGen::TextGen(std::shared_ptr<Ast> ast) : Generator(ast) {}
 
 bool TextGen::Output()
 {
@@ -99,8 +98,8 @@ bool TextGen::HeaderOutputTraversal()
         return false;
     }
 
-    ofs_ << "const struct " << ToUpperCamelString(prefix_) << moduleName_ << "Root* HdfGet"
-        << moduleName_ << "ModuleConfigRoot(void);\n";
+    ofs_ << "const struct " << ToUpperCamelString(prefix_) << moduleName_ << "Root* HdfGet" << moduleName_
+         << "ModuleConfigRoot(void);\n";
     return ofs_.good();
 }
 
@@ -122,8 +121,9 @@ bool TextGen::ImplOutput()
         return ret;
     }
 
-    ofs_ << "\nconst struct " << ToUpperCamelString(prefix_) << moduleName_ << "Root* HdfGet" << moduleName_ << "ModuleConfigRoot(void)\n"
-         <<  "{\n"
+    ofs_ << "\nconst struct " << ToUpperCamelString(prefix_) << moduleName_ << "Root* HdfGet" << moduleName_
+         << "ModuleConfigRoot(void)\n"
+         << "{\n"
          << Indent() << "return &" << rootVariableName_ << ";\n"
          << "}\n";
 
@@ -248,7 +248,7 @@ std::string TextGen::GenConfigStructName(const std::shared_ptr<AstObject> &node)
     return ToUpperCamelString(prefix_).append(ToUpperCamelString(moduleName_)).append(ToUpperCamelString(node->Name()));
 }
 
-bool TextGen::GenObjectDefinitionGen(const std::shared_ptr<AstObject>& object)
+bool TextGen::GenObjectDefinitionGen(const std::shared_ptr<AstObject> &object)
 {
     if (!object->IsNode() && !object->IsTerm()) {
         return true;
@@ -289,8 +289,8 @@ bool TextGen::GenTermDefinition(const std::shared_ptr<AstObject> &term)
                 ofs_ << TAB << "const " << TypeToStr(array->ArrayType()) << "* " << term->Name() << ";\n";
                 ofs_ << TAB << "uint32_t " << term->Name() << "Size;\n";
             } else {
-                ofs_ << TAB << TypeToStr(array->ArrayType()) << " " << term->Name() << "["
-                     << array->ArraySize() << "];\n";
+                ofs_ << TAB << TypeToStr(array->ArrayType()) << " " << term->Name() << "[" << array->ArraySize()
+                     << "];\n";
             }
             break;
         }
@@ -304,8 +304,7 @@ bool TextGen::GenTermDefinition(const std::shared_ptr<AstObject> &term)
         case PARSEROP_NODEREF: {
             auto structName = GenConfigStructName(ConfigTerm::CastFrom(term)->RefNode().lock());
             ofs_ << TAB << "const struct " << structName << "* " << term->Name() << ";\n";
-        }
-            break;
+        } break;
         default:
             break;
     }
@@ -328,10 +327,10 @@ bool TextGen::IsInTemplate(const std::shared_ptr<AstObject> &object)
 const std::string &TextGen::TypeToStr(uint32_t type)
 {
     static std::map<uint32_t, std::string> typeMap = {
-        {PARSEROP_UINT8,  "uint8_t"},
-        {PARSEROP_UINT16, "uint16_t"},
-        {PARSEROP_UINT32, "uint32_t"},
-        {PARSEROP_UINT64, "uint64_t"},
+        {PARSEROP_UINT8,  "uint8_t"    },
+        {PARSEROP_UINT16, "uint16_t"   },
+        {PARSEROP_UINT32, "uint32_t"   },
+        {PARSEROP_UINT64, "uint64_t"   },
         {PARSEROP_STRING, "const char*"},
     };
     return typeMap[type];
@@ -339,11 +338,11 @@ const std::string &TextGen::TypeToStr(uint32_t type)
 
 bool TextGen::OutputImplGlobalVariables()
 {
-    auto forwardWalkFunc = [this](const std::shared_ptr<AstObject>& current, int32_t depth) -> uint32_t {
+    auto forwardWalkFunc = [this](const std::shared_ptr<AstObject> &current, int32_t depth) -> uint32_t {
         return ImplementGenTraversal(current, depth);
     };
 
-    auto backwardWalkFunc = [this](const std::shared_ptr<AstObject>& current, int32_t depth) -> uint32_t {
+    auto backwardWalkFunc = [this](const std::shared_ptr<AstObject> &current, int32_t depth) -> uint32_t {
         return ImplementCloseBraceGen(current, depth);
     };
 
@@ -468,8 +467,8 @@ std::string TextGen::GenTemplateVariableName(const std::shared_ptr<AstObject> &o
     }
 
     return node->TemplateSignNum() != 0 ?
-           std::string("g_").append(prefix_).append(name).append(std::to_string(node->TemplateSignNum())) :
-           std::string("g_").append(prefix_).append(name);
+        std::string("g_").append(prefix_).append(name).append(std::to_string(node->TemplateSignNum())) :
+        std::string("g_").append(prefix_).append(name);
 }
 
 std::shared_ptr<TextGen::Symbol> TextGen::SymbolFind(const std::string &name)
@@ -612,8 +611,7 @@ bool TextGen::OutputTemplateImpl()
     }
 
     return ast_->WalkBackward([this](const std::shared_ptr<AstObject> &object, int32_t) -> uint32_t {
-        if (!object->IsNode() ||
-            (object->IsNode() && ConfigNode::CastFrom(object)->GetNodeType() != NODE_TEMPLATE)) {
+        if (!object->IsNode() || (object->IsNode() && ConfigNode::CastFrom(object)->GetNodeType() != NODE_TEMPLATE)) {
             return NOERR;
         }
         auto node = ConfigNode::CastFrom(object);
@@ -621,8 +619,8 @@ bool TextGen::OutputTemplateImpl()
             return NOERR;
         }
 
-        ofs_ << "static const struct " << GenConfigStructName(object) << ' '
-             <<  GenTemplateVariableName(object) << "[] = {\n";
+        ofs_ << "static const struct " << GenConfigStructName(object) << ' ' << GenTemplateVariableName(object)
+             << "[] = {\n";
         auto subClass = node->SubClasses();
         for (auto nodeObj : subClass) {
             std::shared_ptr<AstObject> obj = std::shared_ptr<AstObject>(nodeObj, [](auto p) {});
@@ -644,7 +642,7 @@ bool TextGen::OutputTemplateVariablesDeclare()
         if (object->IsTerm() && object->Child()->IsArray()) {
             return ArrayVariablesDeclareGen(object);
         } else if (!object->IsNode() ||
-                   (object->IsNode() && ConfigNode::CastFrom(object)->GetNodeType() != NODE_TEMPLATE)) {
+            (object->IsNode() && ConfigNode::CastFrom(object)->GetNodeType() != NODE_TEMPLATE)) {
             return NOERR;
         }
         auto node = ConfigNode::CastFrom(object);
@@ -669,7 +667,8 @@ uint32_t TextGen::ArrayVariablesDeclareGen(const std::shared_ptr<AstObject> &obj
     auto arrayName = GenArrayName(object);
     auto array = ConfigArray::CastFrom(object->Child());
     ofs_ << "static const " << TypeToStr(array->ArrayType()) << ' ' << arrayName << '[' << array->ArraySize()
-         << "] = {\n" << Indent();
+         << "] = {\n"
+         << Indent();
     HcsPrintArrayContent(object->Child(), 1);
     ofs_ << "\n};\n\n";
 
@@ -685,7 +684,7 @@ std::string TextGen::GenArrayName(const std::shared_ptr<AstObject> &term)
     if (sym == nullptr) {
         SymbolAdd(arrayName, term);
         t->SetSigNum(1);
-    } else if (t->SigNum() == 0){
+    } else if (t->SigNum() == 0) {
         t->SetSigNum(sym->duplicateCount + 1);
         sym->duplicateCount++;
     }
@@ -698,12 +697,13 @@ uint32_t TextGen::TemplateVariableGen(const std::shared_ptr<AstObject> &nodeObje
 {
     auto child = nodeObject->Child();
     while (child != nullptr) {
-        auto res = Ast::WalkRound(child,
-            [this](const std::shared_ptr<AstObject>& object, uint32_t depth) -> uint32_t {
-              return ObjectImplementGen(object, depth + 2);
+        auto res = Ast::WalkRound(
+            child,
+            [this](const std::shared_ptr<AstObject> &object, uint32_t depth) -> uint32_t {
+                return ObjectImplementGen(object, depth + 2);
             },
-            [this](const std::shared_ptr<AstObject>& object, uint32_t depth) -> uint32_t {
-              return ImplementCloseBraceGen(object, depth + 2);
+            [this](const std::shared_ptr<AstObject> &object, uint32_t depth) -> uint32_t {
+                return ImplementCloseBraceGen(object, depth + 2);
             });
         if (!res) {
             return false;
@@ -717,7 +717,7 @@ bool TextGen::DuplicateNodeNameCheck()
 {
     std::map<std::string, std::shared_ptr<AstObject>> nodeMap;
 
-    return ast_->WalkForward([&](const std::shared_ptr<AstObject>& current, uint32_t) -> uint32_t {
+    return ast_->WalkForward([&](const std::shared_ptr<AstObject> &current, uint32_t) -> uint32_t {
         if (!current->IsNode() || IsInSubClassNode(current)) {
             return NOERR;
         }
@@ -729,7 +729,7 @@ bool TextGen::DuplicateNodeNameCheck()
         }
 
         Logger().Error() << current->SourceInfo() << "duplicate node name at " << node->second->SourceInfo() << "\n"
-            << "To avoid redefining structures, not allow duplicate node name at text config mode";
+                         << "To avoid redefining structures, not allow duplicate node name at text config mode";
         return EFAIL;
     });
 }

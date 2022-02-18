@@ -10,11 +10,12 @@
 #define HC_GEN_AST_H
 
 #include <cstdint>
-#include <string>
-#include <memory>
 #include <list>
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
+
 #include "token.h"
 #include "types.h"
 
@@ -283,7 +284,7 @@ public:
 
     std::shared_ptr<AstObject> Lookup(const std::shared_ptr<AstObject> &startObj, const std::string &path);
 
-    template<typename T>
+    template <typename T>
     static bool WalkForward(const std::shared_ptr<AstObject> &startObject, T callback)
     {
         std::shared_ptr<AstObject> forwardWalkObj = startObject;
@@ -319,7 +320,7 @@ public:
         return true;
     }
 
-    template<typename T>
+    template <typename T>
     static bool WalkBackward(const std::shared_ptr<AstObject> &startObject, T callback)
     {
         std::shared_ptr<AstObject> backWalkObj = startObject;
@@ -360,7 +361,7 @@ public:
         return true;
     }
 
-    template<typename T1, typename T2>
+    template <typename T1, typename T2>
     static bool WalkRound(const std::shared_ptr<AstObject> &startObject, T1 forwardCallback, T2 backwardCallback)
     {
         std::shared_ptr<AstObject> roundWalkObj = startObject;
@@ -400,20 +401,19 @@ public:
         return true;
     }
 
-
-    template<typename T>
+    template <typename T>
     bool WalkForward(T callback)
     {
         return WalkForward(astRoot_, callback);
     }
 
-    template<typename T>
+    template <typename T>
     bool WalkBackward(T callback)
     {
         return WalkBackward(astRoot_, callback);
     }
 
-    template<typename T1, typename T2>
+    template <typename T1, typename T2>
     bool WalkRound(T1 forwardCallback, T2 backwardCallback)
     {
         return WalkRound(astRoot_, forwardCallback, backwardCallback);
@@ -434,11 +434,11 @@ private:
     bool redefineChecked_;
 };
 
-std::ostream& operator<<(std::ostream &s, const AstObject &obj);
-std::ostream& operator<<(std::ostream &s, const ConfigNode &obj);
-std::ostream& operator<<(std::ostream &s, const ConfigTerm &obj);
+std::ostream &operator<<(std::ostream &s, const AstObject &obj);
+std::ostream &operator<<(std::ostream &s, const ConfigNode &obj);
+std::ostream &operator<<(std::ostream &s, const ConfigTerm &obj);
 
-} // Hardware
-} // OHOS
+} // namespace Hardware
+} // namespace OHOS
 
 #endif // HC_GEN_AST_H
