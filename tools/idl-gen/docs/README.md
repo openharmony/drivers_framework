@@ -22,7 +22,19 @@
 
 ### IDL简介
 
-当客户端与服务器通信时，需要定义双方都认可的接口，以保障双方可以成功通信。HarmonyOS IDL(Interface Definition Language) 则是一种定义此类接口的语言。HarmonyOS IDL先把需要传递的对象分解成操作系统能够理解的基本类型，并根据开发者的需要封装跨边界的对象。在HarmonyOS中，HarmonyOS IDL接口包含面向应用程序的北向接口和面向硬件设备的南向接口。
+​		当客户端与服务器通信时，需要定义双方都认可的接口，以保障双方可以成功通信。HarmonyOs IDL(Interface Definition Language) 则是一种定义此类接口的语言。
+
+​		HarmonyOS IDL先把需要传递的对象分解成操作系统能够理解的基本类型，并根据开发者的需要封装跨边界的对象。在HarmonyOS中，HarmonyOS IDL接口包含面向应用程序的北向接口和面向硬件设备的南向接口。
+
+HarmonyOs IDL接口描述语言主要用于：
+
+- 声明系统服务对外提供的服务接口，根据接口声明在编译时生成跨进程调用（IPC）或跨设备调用（RPC）的代理（Proxy）和桩（Stub）的C/C++代码。
+- 声明Ability对外提供的服务接口，根据接口声明在编译时生成跨进程调用（IPC）或跨设备调用（RPC）的代理（Proxy）和桩（Stub）的C/C++代码。
+
+使用HarmonyOS IDL接口描述语言声明接口具有以下优点：
+
+- HarmonyOS IDL中是以接口的形式定义服务，可以专注于定义而隐藏实现细节。
+- HarmonyOS IDL中定义的接口可以支持跨进程调用或跨设备调用。根据HarmonyOS IDL中的定义生成的信息或代码可以简化跨进程或跨设备调用接口的实现。
 
 ## 工具使用
 ### 安装python
