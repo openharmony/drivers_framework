@@ -118,7 +118,7 @@ class IDLGenerator:
     def _generate_type(self, header):
         if self._has_user_define_type(header):
             self._install_package(header["path"])
-            self._install_import(header, "/Types.idl")
+            self._install_import(header)
             self._install_enum(header["enum"])
             self._install_stack(header["union"])
             self._install_stack(header["struct"])
@@ -128,7 +128,7 @@ class IDLGenerator:
     def _generate_interface(self, header):
         for iface in header["interface"]:
             self._install_package(header["path"])
-            self._install_import(header, iface["name"])
+            self._install_import(header)
             self._install_interface(iface)
 
             self._write_file(header["path"], iface["name"] + ".idl")
@@ -136,7 +136,7 @@ class IDLGenerator:
     def _install_package(self, file_path):
         self._idl += "package " + self._get_package(file_path) + ";\n\n"
 
-    def _install_import(self, header, idl_file):
+    def _install_import(self, header):
         original_idl = self._idl
         for file_name in header["import"]:
             if file_name in self._parse_results:

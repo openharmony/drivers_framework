@@ -48,7 +48,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header, "test.h")
+        generator._install_import(header)
         self.assertEqual(generator._idl, "import include.audio.AudioRender;\n\n")
 
     def test_install_import_interfaces(self):
@@ -77,7 +77,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header, "test.h")
+        generator._install_import(header)
         self.assertEqual(generator._idl, "import include.audio.AudioRender;\n"
                                          "import include.audio.adapter.AudioAdapter;\n\n")
 
@@ -103,7 +103,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header, "test.h")
+        generator._install_import(header)
         self.assertEqual(generator._idl, "import include.AudioInterfaceOne;\nimport include.AudioInterfaceTwo;\n\n")
 
     def test_install_import_types(self):
@@ -125,7 +125,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results["audio_test.h"]
-        generator._install_import(header, "test.h")
+        generator._install_import(header)
         self.assertEqual(generator._idl, "import include.Types;\n\n")
 
     def test_install_import_merge_types(self):
@@ -154,7 +154,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header, "test.h")
+        generator._install_import(header)
         self.assertEqual(generator._idl, "import include.Types;\n\n")
 
     def test_install_import_types_and_interfaces(self):
@@ -183,7 +183,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header, "test.h")
+        generator._install_import(header)
         self.assertEqual(generator._idl, "import include.Types;\nimport include.audio.adapter.AudioAdapter;\n\n")
 
     def test_install_import_callback(self):
@@ -201,7 +201,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header, "test.h")
+        generator._install_import(header)
         self.assertEqual(generator._idl, "import include.audio.HotPlugCallback;\n"
                                          "import include.audio.VBlankCallback;\n\n")
 

@@ -239,7 +239,6 @@ class HeaderParser:
                                                           "line_number": mb["line_number"]})
                 self._header_dict["interface"].append(interface_dict)
 
-
     def _extract_typedef(self, typedefs):
         """
         Extract typedef from global typedefs
