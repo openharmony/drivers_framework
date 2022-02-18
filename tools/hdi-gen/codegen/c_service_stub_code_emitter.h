@@ -43,11 +43,11 @@ private:
 
     void EmitStubLocalVariable(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
 
-    void EmitReadStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, StringBuilder& sb,
-        const String& prefix);
+    void EmitReadStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix);
 
     void EmitReadCStringStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
-        StringBuilder& sb, const String& prefix, AutoPtr<ASTType>& type);
+        const String& gotoLabel, StringBuilder& sb, const String& prefix, AutoPtr<ASTType>& type);
 
     void EmitStubCallMethod(const AutoPtr<ASTMethod>& method, const String& gotoLabel, StringBuilder& sb,
         const String& prefix);

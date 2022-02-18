@@ -126,14 +126,20 @@ public:
 
     virtual String EmitJavaType(TypeMode mode, bool isInnerType = false) const;
 
-    virtual void EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
-        StringBuilder& sb, const String& prefix) const;
-
-    virtual void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
+    virtual void EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
         const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
 
-    virtual void EmitCStubReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const;
+    virtual void EmitCProxyWriteOutVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+
+    virtual void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
+        const String& ecName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+
+    virtual void EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+
+    virtual void EmitCStubReadOutVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
 
     virtual void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, unsigned int innerLevel = 0) const;
@@ -143,8 +149,8 @@ public:
 
     virtual void EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const;
 
-    virtual void EmitCUnMarshalling(const String& name, StringBuilder& sb, const String& prefix,
-        std::vector<String>& freeObjStatements) const;
+    virtual void EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb,
+        const String& prefix, std::vector<String>& freeObjStatements) const;
 
     void EmitFreeStatements(const std::vector<String>& freeObjStatements, StringBuilder& sb,
         const String& prefix) const;

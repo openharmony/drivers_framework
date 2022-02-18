@@ -177,20 +177,32 @@ String ASTType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return "unknow";
 }
 
-void ASTType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
-    StringBuilder& sb, const String& prefix) const
+void ASTType::EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
+    const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("//Writeing \"%s\" type of data is not supported\n", name_.string());
+    sb.Append(prefix).AppendFormat("//Writing \"%s\" type of data is not supported\n", name_.string());
+}
+
+void ASTType::EmitCProxyWriteOutVar(const String& parcelName, const String& name, const String& ecName,
+    const String& gotoLabel, StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("//Writing \"%s\" type of data is not supported\n", name_.string());
 }
 
 void ASTType::EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
+    const String& ecName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("//Reading \"%s\" type of data is not supported\n", name_.string());
+}
+
+void ASTType::EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
     const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("//Reading \"%s\" type of data is not supported\n", name_.string());
 }
 
-void ASTType::EmitCStubReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
+void ASTType::EmitCStubReadOutVar(const String& parcelName, const String& name, const String& ecName,
+    const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("//Reading \"%s\" type of data is not supported\n", name_.string());
 }
@@ -212,8 +224,8 @@ void ASTType::EmitCMarshalling(const String& name, StringBuilder& sb, const Stri
     sb.Append(prefix).AppendFormat("//Writing \"%s\" type of data is not supported\n", name_.string());
 }
 
-void ASTType::EmitCUnMarshalling(const String& name, StringBuilder& sb, const String& prefix,
-    std::vector<String>& freeObjStatements) const
+void ASTType::EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb,
+    const String& prefix, std::vector<String>& freeObjStatements) const
 {
     sb.Append(prefix).AppendFormat("//Reading \"%s\" type of data is not supported\n", name_.string());
 }

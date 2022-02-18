@@ -280,7 +280,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& sb,
     }
 
     sb.Append(g_tab).AppendFormat("return true;\n");
-    sb.Append("errors:\n");
+    sb.AppendFormat("%s:\n", errorsLabelName_);
     EmitCustomTypeMemoryRecycle(type, objName, sb, g_tab);
 
     sb.Append(g_tab).Append("return false;\n");
@@ -294,38 +294,38 @@ void CCustomTypesCodeEmitter::EmitMemberUnmarshalling(const AutoPtr<ASTType>& ty
     switch (type->GetTypeKind()) {
         case TypeKind::TYPE_STRING: {
             String tmpName = String::Format("%sCp", memberName.string());
-            type->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            type->EmitCUnMarshalling(tmpName, errorsLabelName_, sb, g_tab, freeObjStatements_);
 
             if (Options::GetInstance().DoGenerateKernelCode()) {
                 sb.Append(g_tab).AppendFormat("%s = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
                     varName.string(), tmpName.string());
                 sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", varName.string());
-                sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
+                sb.Append(g_tab).Append(g_tab).AppendFormat("goto %s;\n", errorsLabelName_);
                 sb.Append(g_tab).Append("}\n");
 
                 sb.Append(g_tab).AppendFormat("if (strcpy_s(%s, (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
                     varName.string(), tmpName.string(), tmpName.string());
-                sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
+                sb.Append(g_tab).Append(g_tab).AppendFormat("goto %s;\n", errorsLabelName_);
                 sb.Append(g_tab).Append("}\n");
             } else {
                 sb.Append(g_tab).AppendFormat("%s = strdup(%s);\n", varName.string(), tmpName.string());
             }
 
             sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", varName.string());
-            sb.Append(g_tab).Append(g_tab).Append("goto errors;\n");
+            sb.Append(g_tab).Append(g_tab).AppendFormat("goto %s;\n", errorsLabelName_);
             sb.Append(g_tab).Append("}\n");
             sb.Append("\n");
             break;
         }
         case TypeKind::TYPE_STRUCT: {
             String paramName = String::Format("&%s", varName.string());
-            type->EmitCUnMarshalling(paramName, sb, g_tab, freeObjStatements_);
+            type->EmitCUnMarshalling(paramName, errorsLabelName_, sb, g_tab, freeObjStatements_);
             sb.Append("\n");
             break;
         }
         case TypeKind::TYPE_UNION: {
             String tmpName = String::Format("%sCp", memberName.string());
-            type->EmitCUnMarshalling(tmpName, sb, g_tab, freeObjStatements_);
+            type->EmitCUnMarshalling(tmpName, errorsLabelName_, sb, g_tab, freeObjStatements_);
             sb.Append(g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n",
                 varName.string(), type->EmitCType().string(),
                 tmpName.string(), type->EmitCType().string());
@@ -339,7 +339,7 @@ void CCustomTypesCodeEmitter::EmitMemberUnmarshalling(const AutoPtr<ASTType>& ty
             break;
         }
         default: {
-            type->EmitCUnMarshalling(varName, sb, g_tab, freeObjStatements_);
+            type->EmitCUnMarshalling(varName, errorsLabelName_, sb, g_tab, freeObjStatements_);
             sb.Append("\n");
         }
     }
@@ -360,7 +360,7 @@ void CCustomTypesCodeEmitter::EmitArrayMemberUnmarshalling(const AutoPtr<ASTType
 
     sb.Append(prefix).AppendFormat("%s* %s = NULL;\n", elementType->EmitCType().string(), tmpName.string());
     sb.Append(prefix).AppendFormat("uint32_t %sLen = 0;\n", tmpName.string());
-    type->EmitCUnMarshalling(tmpName, sb, prefix, freeObjStatements_);
+    type->EmitCUnMarshalling(tmpName, errorsLabelName_, sb, prefix, freeObjStatements_);
     sb.Append(prefix).AppendFormat("%s = %s;\n", varName.string(), tmpName.string());
     sb.Append(prefix).AppendFormat("%sLen = %sLen;\n", varName.string(), tmpName.string());
 }

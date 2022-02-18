@@ -31,6 +31,8 @@ protected:
 
     void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& parameter, StringBuilder& sb, const String& prefix);
 
+    void EmitInitLoopVar(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+
     void EmitErrorHandle(const AutoPtr<ASTMethod>& method, const String& gotoLabel, bool isClient, StringBuilder& sb,
         const String& prefix);
 
@@ -58,6 +60,9 @@ protected:
     }
 
     String SpecificationParam(StringBuilder& sb, const String& prefix);
+
+    static constexpr const char *errorsLabelName_ = "ERRORS";
+    static constexpr const char *finishedLabelName_ = "FINISHED";
 };
 } // namespace HDI
 } // namespace OHOS

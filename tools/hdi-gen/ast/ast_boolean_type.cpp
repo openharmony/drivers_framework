@@ -62,39 +62,39 @@ String ASTBooleanType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return isInnerType ? "Boolean" : "boolean";
 }
 
-void ASTBooleanType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
-    StringBuilder& sb, const String& prefix) const
+void ASTBooleanType::EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
+    const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteInt8(%s, %s ? 1 : 0)) {\n",
         parcelName.string(), name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
 void ASTBooleanType::EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
+    const String& ecName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt8(%s, (int8_t *)%s)) {\n",
+        parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTBooleanType::EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
     const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt8(%s, (int8_t *)%s)) {\n",
         parcelName.string(), name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-    sb.Append(prefix).Append("}\n");
-}
-
-void ASTBooleanType::EmitCStubReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
-{
-    sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt8(%s, (int8_t *)%s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + g_tab).Append("goto errors;\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -129,14 +129,14 @@ void ASTBooleanType::EmitCMarshalling(const String& name, StringBuilder& sb, con
     sb.Append(prefix).Append("}\n");
 }
 
-void ASTBooleanType::EmitCUnMarshalling(const String& name, StringBuilder& sb, const String& prefix,
-    std::vector<String>& freeObjStatements) const
+void ASTBooleanType::EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb,
+    const String& prefix, std::vector<String>& freeObjStatements) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt8(data, (int8_t *)&%s)) {\n", name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
     EmitFreeStatements(freeObjStatements, sb, prefix + g_tab);
-    sb.Append(prefix + g_tab).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 

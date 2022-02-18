@@ -52,6 +52,12 @@ bool CodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory, 
     majorVerName_ = String::Format("%s_MAJOR_VERSION", interfaceName_.ToUnderLineUpper().string());
     minorVerName_ = String::Format("%s_MINOR_VERSION", interfaceName_.ToUnderLineUpper().string());
 
+    String prefix = String::Format("%c%s", tolower(infName_[0]), infName_.Substring(1).string());
+    dataParcelName_ = prefix + "Data";
+    replyParcelName_ = prefix + "Reply";
+    optionName_ = prefix + "Option";
+    errorCodeName_ = prefix + "Ret";
+
     if (!ResolveDirectory(targetDirectory)) {
         return false;
     }
@@ -74,6 +80,10 @@ void CodeEmitter::CleanData()
     stubFullName_ = "";
     implName_ = "";
     implFullName_ = "";
+    dataParcelName_ = "";
+    replyParcelName_ = "";
+    optionName_ = "";
+    errorCodeName_ = "";
 }
 
 String CodeEmitter::GetFilePath(const String& outDir)

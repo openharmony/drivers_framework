@@ -225,67 +225,44 @@ void CClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& meth
 void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
-    String dataName = "data_";
-    String replyName = "reply_";
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).Append("int32_t ec = HDF_FAILURE;\n");
+    sb.Append(prefix + g_tab).AppendFormat("int32_t %s = HDF_FAILURE;\n", errorCodeName_.string());
 
     // Local variable definitions must precede all execution statements.
-    if (isKernelCode_) {
-        for (size_t i = 0; i < method->GetParameterNumber(); i++) {
-            AutoPtr<ASTParameter> param = method->GetParameter(i);
-            AutoPtr<ASTType> type = param->GetType();
-            if (type->GetTypeKind() == TypeKind::TYPE_ARRAY ||
-                type->GetTypeKind() == TypeKind::TYPE_LIST) {
-                sb.Append(prefix + g_tab).Append("uint32_t i = 0;\n");
-                break;
-            }
-        }
-    }
+    EmitInitLoopVar(method, sb, prefix + g_tab);
 
     sb.Append("\n");
-    EmitCreateBuf(dataName, replyName, sb, prefix + g_tab);
+    EmitCreateBuf(dataParcelName_, replyParcelName_, sb, prefix + g_tab);
     sb.Append("\n");
 
-    String gotoName = GetGotLabel(method);
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            param->EmitCWriteVar(dataName, gotoName, sb, prefix + g_tab);
+            param->EmitCWriteVar(dataParcelName_, errorCodeName_, finishedLabelName_, sb, prefix + g_tab);
+            sb.Append("\n");
+        } else if (param->EmitCProxyWriteOutVar(dataParcelName_, errorCodeName_, finishedLabelName_, sb,
+            prefix + g_tab)) {
             sb.Append("\n");
         }
     }
 
-    if (!isKernelCode_) {
-        sb.Append(prefix + g_tab).AppendFormat("ec = %sCall(self, %s, %s, %s, %s);\n", proxyName_.string(),
-            EmitMethodCmdID(method).string(), dataName.string(), replyName.string(),
-            method->IsOneWay() ? "true" : "false");
-    } else {
-        sb.Append(prefix + g_tab).AppendFormat("ec = %sCall(self, %s, %s, %s);\n", proxyName_.string(),
-            EmitMethodCmdID(method).string(), dataName.string(), replyName.string());
-    }
-    sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
-    sb.Append(prefix + g_tab + g_tab).Append(
-        "HDF_LOGE(\"%{public}s: call failed! error code is %{public}d\", __func__, ec);\n");
-    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoName.string());
-    sb.Append(prefix + g_tab).Append("}\n");
+    EmitStubCallMethod(method, sb, prefix + g_tab);
     sb.Append("\n");
 
     if (!method->IsOneWay()) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-                EmitReadProxyMethodParameter(param, replyName, gotoName, sb, prefix + g_tab);
+                EmitReadProxyMethodParameter(param, replyParcelName_, finishedLabelName_, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }
     }
 
-    EmitErrorHandle(method, "errors", true, sb, prefix);
-    sb.Append(prefix).Append("finished:\n");
-    EmitReleaseBuf(dataName, replyName, sb, prefix + g_tab);
+    sb.Append(prefix).AppendFormat("%s:\n", finishedLabelName_);
+    EmitReleaseBuf(dataParcelName_, replyParcelName_, sb, prefix + g_tab);
 
-    sb.Append(prefix + g_tab).Append("return ec;\n");
+    sb.Append(prefix + g_tab).AppendFormat("return %s;\n", errorCodeName_.string());
     sb.Append("}\n");
 }
 
@@ -293,18 +270,18 @@ void CClientProxyCodeEmitter::EmitCreateBuf(const String& dataBufName, const Str
     StringBuilder& sb, const String& prefix)
 {
     if (isKernelCode_) {
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufObtainDefaultSize();\n", dataBufName.string());
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufObtainDefaultSize();\n", replyBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufObtainDefaultSize();\n", dataBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufObtainDefaultSize();\n", replyBufName.string());
     } else {
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufTypedObtain(SBUF_IPC);\n", dataBufName.string());
-        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSBufTypedObtain(SBUF_IPC);\n", replyBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufTypedObtain(SBUF_IPC);\n", dataBufName.string());
+        sb.Append(prefix).AppendFormat("struct HdfSBuf *%s = HdfSbufTypedObtain(SBUF_IPC);\n", replyBufName.string());
     }
 
     sb.Append("\n");
     sb.Append(prefix).AppendFormat("if (%s == NULL || %s == NULL) {\n", dataBufName.string(), replyBufName.string());
     sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
-    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-    sb.Append(prefix + g_tab).Append("goto finished;\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_MALLOC_FAIL;\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", finishedLabelName_);
     sb.Append(prefix).Append("}\n");
 }
 
@@ -312,10 +289,10 @@ void CClientProxyCodeEmitter::EmitReleaseBuf(const String& dataBufName, const St
     const String& prefix)
 {
     sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", dataBufName.string());
-    sb.Append(prefix + g_tab).AppendFormat("HdfSBufRecycle(%s);\n", dataBufName.string());
+    sb.Append(prefix + g_tab).AppendFormat("HdfSbufRecycle(%s);\n", dataBufName.string());
     sb.Append(prefix).Append("}\n");
     sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", replyBufName.string());
-    sb.Append(prefix + g_tab).AppendFormat("HdfSBufRecycle(%s);\n", replyBufName.string());
+    sb.Append(prefix + g_tab).AppendFormat("HdfSbufRecycle(%s);\n", replyBufName.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -325,69 +302,43 @@ void CClientProxyCodeEmitter::EmitReadProxyMethodParameter(const AutoPtr<ASTPara
     AutoPtr<ASTType> type = param->GetType();
     if (type->GetTypeKind() == TypeKind::TYPE_STRING) {
         String cloneName = String::Format("%sCopy", param->GetName().string());
-        type->EmitCProxyReadVar(parcelName, cloneName, false, gotoLabel, sb, prefix);
-        String leftVar = String::Format("*%s", param->GetName().string());
-        if (isKernelCode_) {
-            sb.Append("\n");
-            sb.Append(prefix).AppendFormat("%s = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
-                leftVar.string(), cloneName.string());
-            sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", leftVar.string());
-            sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-            sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-            sb.Append(prefix).Append("}\n\n");
-            sb.Append(prefix).AppendFormat("if (strcpy_s(%s, (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
-                leftVar.string(), cloneName.string(), cloneName.string());
-            sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
-                leftVar.string());
-            sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-            sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-            sb.Append(prefix).Append("}\n");
-        } else {
-            sb.Append(prefix).AppendFormat("%s = strdup(%s);\n", leftVar.string(), cloneName.string());
-        }
-    } else if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-        String name = String::Format("*%s", param->GetName().string());
-        sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemAlloc(sizeof(%s));\n",
-            name.string(), type->EmitCType().string(), type->EmitCType().string());
-        sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
-        sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
+        type->EmitCProxyReadVar(parcelName, cloneName, false, errorCodeName_, gotoLabel, sb, prefix);
+        sb.Append(prefix).AppendFormat("if (strcpy_s(%s, %sLen, %s) != EOK) {\n",
+            param->GetName().string(), param->GetName().string(), cloneName.string());
+        sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+            param->GetName().string());
+        sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", errorCodeName_.string());
         sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(prefix).Append("}\n");
-        type->EmitCProxyReadVar(parcelName, name, false, gotoLabel, sb, prefix);
+    } else if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
+        type->EmitCProxyReadVar(parcelName, param->GetName().string(), false, errorCodeName_, gotoLabel, sb, prefix);
     } else if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
         String cpName = String::Format("%sCp", param->GetName().string());
-        type->EmitCProxyReadVar(parcelName, cpName, false, gotoLabel, sb, prefix);
-        sb.Append(prefix).AppendFormat("*%s = (%s*)OsalMemAlloc(sizeof(%s));\n",
-            param->GetName().string(), type->EmitCType().string(), type->EmitCType().string());
-        sb.Append(prefix).AppendFormat("if (*%s == NULL) {\n", param->GetName().string());
-        sb.Append(prefix + g_tab).Append("ec = HDF_ERR_MALLOC_FAIL;\n");
-        sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
-        sb.Append(prefix).Append("}\n");
-        sb.Append(prefix).AppendFormat("(void)memcpy_s(*%s, sizeof(%s), %s, sizeof(%s));\n",
+        type->EmitCProxyReadVar(parcelName, cpName, false, errorCodeName_, gotoLabel, sb, prefix);
+        sb.Append(prefix).AppendFormat("(void)memcpy_s(%s, sizeof(%s), %s, sizeof(%s));\n",
             param->GetName().string(), type->EmitCType().string(), cpName.string(), type->EmitCType().string());
     } else {
-        type->EmitCProxyReadVar(parcelName, param->GetName(), false, gotoLabel, sb, prefix);
+        type->EmitCProxyReadVar(parcelName, param->GetName(), false, errorCodeName_, gotoLabel, sb, prefix);
     }
 }
 
-String CClientProxyCodeEmitter::GetGotLabel(const AutoPtr<ASTMethod>& method)
+void CClientProxyCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
+    const String& prefix)
 {
-    String labelName = "finished";
-    for (size_t i = 0; i < method->GetParameterNumber(); i++) {
-        AutoPtr<ASTParameter> param = method->GetParameter(i);
-        AutoPtr<ASTType> paramType = param->GetType();
-        if (param->GetAttribute() == ParamAttr::PARAM_OUT &&
-            (paramType->GetTypeKind() == TypeKind::TYPE_STRING
-            || paramType->GetTypeKind() == TypeKind::TYPE_ARRAY
-            || paramType->GetTypeKind() == TypeKind::TYPE_LIST
-            || paramType->GetTypeKind() == TypeKind::TYPE_STRUCT
-            || paramType->GetTypeKind() == TypeKind::TYPE_UNION)) {
-            labelName = "errors";
-            break;
-        }
+    if (!isKernelCode_) {
+        sb.Append(prefix).AppendFormat("%s = %sCall(self, %s, %s, %s, %s);\n", errorCodeName_.string(),
+            proxyName_.string(), EmitMethodCmdID(method).string(), dataParcelName_.string(),
+            replyParcelName_.string(), method->IsOneWay() ? "true" : "false");
+    } else {
+        sb.Append(prefix).AppendFormat("%s = %sCall(self, %s, %s, %s);\n", errorCodeName_.string(),
+            proxyName_.string(), EmitMethodCmdID(method).string(), dataParcelName_.string(),
+            replyParcelName_.string());
     }
-
-    return labelName;
+    sb.Append(prefix).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: call failed! error code is %%{public}d\", __func__, %s);\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", finishedLabelName_);
+    sb.Append(prefix).Append("}\n");
 }
 
 void CClientProxyCodeEmitter::EmitProxyAsObjectMethodImpl(StringBuilder& sb)
@@ -471,9 +422,9 @@ void CClientProxyCodeEmitter::EmitProxyGetInstanceMethodImpl(StringBuilder& sb)
     sb.Append(g_tab).AppendFormat("%sProxyConstruct(%s);\n", infName_.string(), objName.string());
     sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMajorName.string());
     sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMinorName.string());
-    sb.Append(g_tab).AppendFormat("int32_t ec = %s->GetVersion(%s, &%s, &%s);\n", objName.string(), objName.string(),
-        SerMajorName.string(), SerMinorName.string());
-    sb.Append(g_tab).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(g_tab).AppendFormat("int32_t %s = %s->GetVersion(%s, &%s, &%s);\n",
+        errorCodeName_.string(), objName.string(), objName.string(), SerMajorName.string(), SerMinorName.string());
+    sb.Append(g_tab).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
     sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: get version failed!\", __func__);\n");
     sb.Append(g_tab).Append(g_tab).AppendFormat("%sRelease(%s);\n", infName_.string(), objName.string());
     sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
@@ -546,9 +497,9 @@ void CClientProxyCodeEmitter::EmitCbProxyGetMethodImpl(StringBuilder& sb)
     sb.Append(g_tab).AppendFormat("%sProxyConstruct(%s);\n", infName_.string(), objName.string());
     sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMajorName.string());
     sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMinorName.string());
-    sb.Append(g_tab).AppendFormat("int32_t ec = %s->GetVersion(%s, &%s, &%s);\n", objName.string(), objName.string(),
-        SerMajorName.string(), SerMinorName.string());
-    sb.Append(g_tab).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(g_tab).AppendFormat("int32_t %s = %s->GetVersion(%s, &%s, &%s);\n",
+        errorCodeName_.string(), objName.string(), objName.string(), SerMajorName.string(), SerMinorName.string());
+    sb.Append(g_tab).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
     sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: get version failed!\", __func__);\n");
     sb.Append(g_tab).Append(g_tab).AppendFormat("%sRelease(%s);\n", infName_.string(), objName.string());
     sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");

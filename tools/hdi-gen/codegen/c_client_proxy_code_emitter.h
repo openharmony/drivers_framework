@@ -48,8 +48,8 @@ private:
 
     void EmitReadProxyMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
         const String& gotoLabel, StringBuilder& sb, const String& prefix);
-
-    String GetGotLabel(const AutoPtr<ASTMethod>& method);
+    
+    void EmitStubCallMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
     void EmitProxyAsObjectMethodImpl(StringBuilder& sb);
 
