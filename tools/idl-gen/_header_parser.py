@@ -51,15 +51,19 @@ class HeaderParser:
             hjson = json.loads(CppHeaderParser.CppHeader(header_file).toJSON())
             move(back_file, header_file)
 
-        self._extract_path_and_file(header_file)
-        self._extract_include(hjson["includes"])
-        self._extract_enum(hjson["enums"])
-        for i in hjson["classes"]:
-            self._extract_union(hjson["classes"][i])
-            self._extract_struct(hjson["classes"][i])
-            self._extract_interface(hjson["classes"][i])
-        self._extract_typedef(hjson["typedefs"])
-        return self._header_dict
+        try:
+            self._extract_path_and_file(header_file)
+            self._extract_include(hjson["includes"])
+            self._extract_enum(hjson["enums"])
+            for i in hjson["classes"]:
+                self._extract_union(hjson["classes"][i])
+                self._extract_struct(hjson["classes"][i])
+                self._extract_interface(hjson["classes"][i])
+            self._extract_typedef(hjson["typedefs"])
+            return self._header_dict
+        except Exception as e:
+            print(e)
+            return None
 
     @staticmethod
     def _pre_handle(header_file):

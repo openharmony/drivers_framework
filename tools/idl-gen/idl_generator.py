@@ -53,11 +53,14 @@ class IDLGenerator:
         self._parse_results = {}
 
     def generate(self):
-        self._parse_option()
-        self._parse_header()
-        for i in self._parse_results:
-            self._generate_type(self._parse_results.get(i))
-            self._generate_interface(self._parse_results.get(i))
+        try:
+            self._parse_option()
+            self._parse_header()
+            for i in self._parse_results:
+                self._generate_type(self._parse_results.get(i))
+                self._generate_interface(self._parse_results.get(i))
+        except Exception as e:
+            print(e)
 
     def _parse_option(self):
         parser = argparse.ArgumentParser(description="Compile C/C++ header files and generate .idl files.")
@@ -92,8 +95,8 @@ class IDLGenerator:
                 for header_file in file_list:
                     result = HeaderParser().parse(header_file)
                     if result is not None:
-                        self._parse_results[result["name"]] = result
-                        for file_name in result["import"]:  # 把include的文件加入列表
+                        self._parse_results[result.get("name")] = result
+                        for file_name in result.get("import"):  # 把include的文件加入列表
                             if file_name not in self._parse_results:  # 解析过的不重复解析
                                 file_path = self._search_file(root_path, file_name)
                                 if file_path is not None:
