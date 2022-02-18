@@ -64,7 +64,7 @@ struct SensorRegCfg {
 };
 
 struct SensorRegCfgGroupNode {
-    uint8_t itemNum;
+    uint32_t itemNum;
     struct SensorRegCfg *regCfgItem;
 };
 
