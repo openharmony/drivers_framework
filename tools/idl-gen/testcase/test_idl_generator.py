@@ -48,7 +48,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header)
+        generator._install_import(header, "test.h")
         self.assertEqual(generator._idl, "import include.audio.AudioRender;\n\n")
 
     def test_install_import_interfaces(self):
@@ -77,7 +77,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header)
+        generator._install_import(header, "test.h")
         self.assertEqual(generator._idl, "import include.audio.AudioRender;\n"
                                          "import include.audio.adapter.AudioAdapter;\n\n")
 
@@ -103,7 +103,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header)
+        generator._install_import(header, "test.h")
         self.assertEqual(generator._idl, "import include.AudioInterfaceOne;\nimport include.AudioInterfaceTwo;\n\n")
 
     def test_install_import_types(self):
@@ -125,7 +125,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results["audio_test.h"]
-        generator._install_import(header)
+        generator._install_import(header, "test.h")
         self.assertEqual(generator._idl, "import include.Types;\n\n")
 
     def test_install_import_merge_types(self):
@@ -154,7 +154,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header)
+        generator._install_import(header, "test.h")
         self.assertEqual(generator._idl, "import include.Types;\n\n")
 
     def test_install_import_types_and_interfaces(self):
@@ -183,7 +183,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header)
+        generator._install_import(header, "test.h")
         self.assertEqual(generator._idl, "import include.Types;\nimport include.audio.adapter.AudioAdapter;\n\n")
 
     def test_install_import_callback(self):
@@ -201,7 +201,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
             }
         }
         header = generator._parse_results['audio_test.h']
-        generator._install_import(header)
+        generator._install_import(header, "test.h")
         self.assertEqual(generator._idl, "import include.audio.HotPlugCallback;\n"
                                          "import include.audio.VBlankCallback;\n\n")
 
@@ -265,6 +265,21 @@ class IDLGeneratorTestCase(unittest.TestCase):
         self.assertEqual(generator._idl, "interface InputController {\n"
                                          "    RunExtraCommand([in] unsigned int devIndex,[out] unsigned int cmd);\n"
                                          "    RunExtra([in] struct InputControllerDesc desc);\n"
+                                         "};\n")
+
+    def test_install_interface_with_unknown_type(self):
+        header_file = """
+            typedef struct {
+                int32_t (*RunExtra)(struct InputControllerDesc desc);
+            } InputController;
+        """
+        parser = HeaderParser()
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
+        parser._extract_interface(hjson["classes"]["InputController"])
+        generator = IDLGenerator()
+        generator._install_interface(parser._header_dict["interface"][0])
+        self.assertEqual(generator._idl, "interface InputController {\n"
+                                         "    RunExtra([in] /* unknown type: [InputControllerDesc] */ desc);\n"
                                          "};\n")
 
     def test_install_interface_callback(self):

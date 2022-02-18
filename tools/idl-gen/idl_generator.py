@@ -118,7 +118,7 @@ class IDLGenerator:
     def _generate_type(self, header):
         if self._has_user_define_type(header):
             self._install_package(header["path"])
-            self._install_import(header)
+            self._install_import(header, "/Types.idl")
             self._install_enum(header["enum"])
             self._install_stack(header["union"])
             self._install_stack(header["struct"])
@@ -128,7 +128,7 @@ class IDLGenerator:
     def _generate_interface(self, header):
         for iface in header["interface"]:
             self._install_package(header["path"])
-            self._install_import(header)
+            self._install_import(header, iface["name"])
             self._install_interface(iface)
 
             self._write_file(header["path"], iface["name"] + ".idl")
@@ -136,7 +136,7 @@ class IDLGenerator:
     def _install_package(self, file_path):
         self._idl += "package " + self._get_package(file_path) + ";\n\n"
 
-    def _install_import(self, header):
+    def _install_import(self, header, idl_file):
         original_idl = self._idl
         for file_name in header["import"]:
             if file_name in self._parse_results:
@@ -151,6 +151,8 @@ class IDLGenerator:
                     self._idl += "import " + self._get_package(include_file['path']) + ".%s;\n" % cb["name"]
             else:
                 self._idl += "// can't import %s\n" % file_name
+                print("[IDLGenerator]: %s[line ?] can't find %s"
+                      % (os.path.normpath(header["path"] + "/" + header["name"]), file_name))
 
         for cb in header['callback']:
             self._idl += "import " + self._get_package(header['path']) + ".%s;\n" % cb["name"]
@@ -169,7 +171,11 @@ class IDLGenerator:
         for stack in stacks:
             self._idl += stack["type"] + " %s {\n" % stack["name"]
             for member in stack["members"]:
-                self._idl += "    %s %s;\n" % (self._swap_type_c2idl(member["type"]), member["name"])
+                param_type = self._swap_type_c2idl(member["type"])
+                if "unknown type" in param_type:
+                    print("[IDLGenerator]: %s[line %d] %s" % (
+                        os.path.normpath(member["file_name"]), member["line_number"], param_type))
+                self._idl += "    %s %s;\n" % (param_type, member["name"])
             self._idl += "};\n"
 
     def _install_interface(self, iface):
@@ -180,15 +186,19 @@ class IDLGenerator:
             self._install_function(iface["name"], member)
         self._idl += "};\n"
 
-    def _install_function(self, iface_name, func):
-        self._idl += "    %s(" % func["name"]
-        for i, param in enumerate(func["params"]):
-            tt = re.fullmatch("(enum)*(union)*(struct)* *%s *\\** * *\\**" % iface_name, param["type"])
+    def _install_function(self, iface_name, member):
+        self._idl += "    %s(" % member["name"]
+        for i, param in enumerate(member["params"]):
+            tt = re.fullmatch(r"(enum)*(union)*(struct)* *%s *\** * *\**" % iface_name, param["type"])
             if tt:
                 continue
+            param_type = self._swap_type_c2idl(param["type"])
+            if "unknown type" in param_type:
+                print("[IDLGenerator]: %s[line %d] %s" % (
+                    os.path.normpath(member["file_name"]), member["line_number"], param_type))
             self._idl += "%s %s %s," % (
                 '* *' in param["type"] and "[out]" or "[in]",
-                self._swap_type_c2idl(param["type"]),
+                param_type,
                 param["name"])
         if self._idl.endswith(','):
             self._idl = self._idl[:-1] + ");\n"
@@ -214,7 +224,7 @@ class IDLGenerator:
         ]
         for cti in type_c2idl:
             for ct in cti[0]:
-                tt = re.match("(const )* *%s *(\\**) *" % ct, c_type)
+                tt = re.match(r"(const )* *%s *(\**) *" % ct, c_type)
                 if tt:
                     idl_type = cti[1]
                     if c_type.count('*') == 1:
@@ -226,7 +236,7 @@ class IDLGenerator:
         for type_name in self._key_list:
             if "_ENUM_POINTER" in c_type:
                 c_type = c_type.replace("_ENUM_POINTER", " * ")
-            tt = re.fullmatch("(enum)*(union)*(struct)* *%s *\\** * *\\**" % type_name, c_type)
+            tt = re.fullmatch(r"(const )* *(enum)*(union)*(struct)* *%s *[*&]* * *[*&]*" % type_name, c_type)
             if tt:
                 if len(self._key_list[type_name]) > 0:
                     idl_type = self._key_list[type_name] + ' ' + type_name
@@ -239,7 +249,7 @@ class IDLGenerator:
 
     def _convert_typedef(self, c_type):
         for type_name in self._typedef_list:
-            tt = re.match("(const )* *%s *(\\**) *" % type_name, c_type)
+            tt = re.match(r"(const )* *%s *\** *" % type_name, c_type)
             if tt:
                 if self._typedef_list[type_name].count('*') == 1:
                     idl_type = self._typedef_list[type_name].split(' ')[0] + '[]'
@@ -280,14 +290,13 @@ class IDLGenerator:
             return idl_type
 
         idl_type = "/* unknown type: [%s] */" % c_type
-        print(">>>error:", idl_type)
         return idl_type
 
     def _write_file(self, file_path, file_name):
         file = os.path.join(self._make_output_dir(file_path), file_name).replace('\\', '/')
         with open(file, "w", encoding="utf8") as fp:
             fp.write(self._idl)
-        print("[Generate]: ", file)
+        print("Generate: --------------------- %s ---------------------\n" % os.path.normpath(file))
         self._idl = ""
 
     @staticmethod

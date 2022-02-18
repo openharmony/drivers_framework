@@ -134,8 +134,10 @@ class HeaderParserTestCase(unittest.TestCase):
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': 'SceneDesc',
                                                                  'type': 'union',
                                                                  'members': [
-                                                                     {'name': 'id', 'type': 'uint32_t'},
-                                                                     {'name': 'desc', 'type': 'const char *'}
+                                                                     {'file_name': '/', 'line_number': 3,
+                                                                      'name': 'id', 'type': 'uint32_t'},
+                                                                     {'file_name': '/', 'line_number': 4,
+                                                                      'name': 'desc', 'type': 'const char *'}
                                                                  ]}])
 
     def test_extract_union_without_name(self):
@@ -156,14 +158,18 @@ class HeaderParserTestCase(unittest.TestCase):
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': '<anon-union-1>',
                                                                  'type': 'union',
                                                                  'members': [
-                                                                     {'name': 'id', 'type': 'uint32_t'},
-                                                                     {'name': 'desc', 'type': 'const char *'}
+                                                                     {'file_name': '/', 'line_number': 3,
+                                                                      'name': 'id', 'type': 'uint32_t'},
+                                                                     {'file_name': '/', 'line_number': 4,
+                                                                      'name': 'desc', 'type': 'const char *'}
                                                                  ]},
                                                                 {'name': '<anon-union-2>',
                                                                  'type': 'union',
                                                                  'members': [
-                                                                     {'name': 'id2', 'type': 'uint32_t'},
-                                                                     {'name': 'desc2', 'type': 'const char *'}
+                                                                     {'file_name': '/', 'line_number': 7,
+                                                                      'name': 'id2', 'type': 'uint32_t'},
+                                                                     {'file_name': '/', 'line_number': 8,
+                                                                      'name': 'desc2', 'type': 'const char *'}
                                                                  ]}
                                                                 ])
 
@@ -182,17 +188,21 @@ class HeaderParserTestCase(unittest.TestCase):
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': 'SceneDesc',
                                                                  'type': 'union',
                                                                  'members': [
-                                                                     {'name': 'id', 'type': 'uint32_t'},
-                                                                     {'name': 'desc', 'type': 'const char *'}
+                                                                     {'file_name': '/', 'line_number': 4,
+                                                                      'name': 'id', 'type': 'uint32_t'},
+                                                                     {'file_name': '/', 'line_number': 5,
+                                                                      'name': 'desc', 'type': 'const char *'}
                                                                  ]}])
         parser._extract_struct(hjson["classes"]["AudioSceneDescriptor"])
         self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'AudioSceneDescriptor',
                                                                   'type': 'struct',
                                                                   'members': [
-                                                                      {'name': 'scene', 'type': 'SceneDesc'}
+                                                                      {'file_name': '/', 'line_number': 6,
+                                                                       'name': 'scene', 'type': 'SceneDesc'}
                                                                   ]}])
 
     def test_extract_struct(self):
+        self.maxDiff = None
         header_file = """
             typedef struct {
                 bool succeed;
@@ -216,26 +226,40 @@ class HeaderParserTestCase(unittest.TestCase):
         parser = HeaderParser()
         hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_struct(hjson["classes"]["DevAbility"])
-        self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'DevAbility',
-                                                                  'type': 'struct',
-                                                                  'members': [
-                                                                      {'name': 'succeed', 'type': 'bool'},
-                                                                      {'name': 'end', 'type': 'int8_t'},
-                                                                      {'name': 'rate', 'type': 'float'},
-                                                                      {'name': 'rate2', 'type': 'double'},
-                                                                      {'name': 'desc', 'type': 'cstring'},
-                                                                      {'name': 'location', 'type': 'std::string'},
-                                                                      {'name': 'status', 'type': 'uint8_t'},
-                                                                      {'name': 'busType', 'type': 'uint16_t'},
-                                                                      {'name': 'num', 'type': 'int32_t'},
-                                                                      {'name': 'count', 'type': 'uint32_t'},
-                                                                      {'name': 'timestamp', 'type': 'uint64_t'},
-                                                                      {'name': 'path', 'type': 'void'},
-                                                                      {'name': 'chipInfo', 'type': 'char *'},
-                                                                      {'name': 'status', 'type': 'RetStatus'},
-                                                                      {'name': 'package', 'type': 'struct EvtPack'},
-                                                                      {'name': 'pkgPtr', 'type': 'struct EvtPack *'}
-                                                                  ]}])
+        self.assertSequenceEqual(
+            parser._header_dict["struct"], [{'name': 'DevAbility',
+                                             'type': 'struct',
+                                             'members': [
+                                                 {'file_name': '/', 'line_number': 3, 'name': 'succeed',
+                                                  'type': 'bool'},
+                                                 {'file_name': '/', 'line_number': 4, 'name': 'end', 'type': 'int8_t'},
+                                                 {'file_name': '/', 'line_number': 5, 'name': 'rate', 'type': 'float'},
+                                                 {'file_name': '/', 'line_number': 6, 'name': 'rate2',
+                                                  'type': 'double'},
+                                                 {'file_name': '/', 'line_number': 7, 'name': 'desc',
+                                                  'type': 'cstring'},
+                                                 {'file_name': '/', 'line_number': 8, 'name': 'location',
+                                                  'type': 'std::string'},
+                                                 {'file_name': '/', 'line_number': 9, 'name': 'status',
+                                                  'type': 'uint8_t'},
+                                                 {'file_name': '/', 'line_number': 10, 'name': 'busType',
+                                                  'type': 'uint16_t'},
+                                                 {'file_name': '/', 'line_number': 11, 'name': 'num',
+                                                  'type': 'int32_t'},
+                                                 {'file_name': '/', 'line_number': 12, 'name': 'count',
+                                                  'type': 'uint32_t'},
+                                                 {'file_name': '/', 'line_number': 13, 'name': 'timestamp',
+                                                  'type': 'uint64_t'},
+                                                 {'file_name': '/', 'line_number': 14, 'name': 'path', 'type': 'void'},
+                                                 {'file_name': '/', 'line_number': 15, 'name': 'chipInfo',
+                                                  'type': 'char *'},
+                                                 {'file_name': '/', 'line_number': 16, 'name': 'status',
+                                                  'type': 'RetStatus'},
+                                                 {'file_name': '/', 'line_number': 17, 'name': 'package',
+                                                  'type': 'struct EvtPack'},
+                                                 {'file_name': '/', 'line_number': 18, 'name': 'pkgPtr',
+                                                  'type': 'struct EvtPack *'}
+                                             ]}])
 
     def test_extract_struct_with_enum_pointer(self):
         header_file = """
@@ -257,8 +281,10 @@ class HeaderParserTestCase(unittest.TestCase):
         self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'DevAbility',
                                                                   'type': 'struct',
                                                                   'members': [
-                                                                      {'name': 'staPtr', 'type': 'Status_ENUM_POINTER'},
-                                                                      {'name': 'testPtr', 'type': 'Test_ENUM_POINTER'}
+                                                                      {'file_name': '/', 'line_number': 3,
+                                                                       'name': 'staPtr', 'type': 'Status_ENUM_POINTER'},
+                                                                      {'file_name': '/', 'line_number': 4,
+                                                                       'name': 'testPtr', 'type': 'Test_ENUM_POINTER'}
                                                                   ]}])
 
     def test_extract_struct_with_macro(self):
@@ -286,7 +312,8 @@ class HeaderParserTestCase(unittest.TestCase):
         self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'DevAbility',
                                                                   'type': 'struct',
                                                                   'members': [
-                                                                      {'name': 'absCode', 'type': 'unsigned long *'}
+                                                                      {'file_name': '/', 'line_number': 8,
+                                                                       'name': 'absCode', 'type': 'unsigned long *'}
                                                                   ]}])
 
     def test_extract_struct_include_union_without_name(self):
@@ -304,14 +331,17 @@ class HeaderParserTestCase(unittest.TestCase):
         self.assertSequenceEqual(parser._header_dict["union"], [{'name': '<anon-union-1>',
                                                                  'type': 'union',
                                                                  'members': [
-                                                                     {'name': 'id', 'type': 'uint32_t'},
-                                                                     {'name': 'desc', 'type': 'const char *'}
+                                                                     {'file_name': '/', 'line_number': 4,
+                                                                      'name': 'id', 'type': 'uint32_t'},
+                                                                     {'file_name': '/', 'line_number': 5,
+                                                                      'name': 'desc', 'type': 'const char *'}
                                                                  ]}])
         parser._extract_struct(hjson["classes"]["AudioSceneDescriptor"])
         self.assertSequenceEqual(parser._header_dict["struct"], [{'name': 'AudioSceneDescriptor',
                                                                   'type': 'struct',
                                                                   'members': [
-                                                                      {'name': '', 'type': '<anon-union-1>'}
+                                                                      {'file_name': '/', 'line_number': 6,
+                                                                       'name': '', 'type': '<anon-union-1>'}
                                                                   ]}])
 
     def test_extract_interface_with_method(self):
@@ -328,13 +358,18 @@ class HeaderParserTestCase(unittest.TestCase):
                                                                      'members': [
                                                                          {'name': 'SetPowerStatus',
                                                                           'params': [{'name': 'devIndex',
-                                                                                      'type': 'uint32_t'}]},
+                                                                                      'type': 'uint32_t'}],
+                                                                          'file_name': '/',
+                                                                          'line_number': 3},
                                                                          {'name': 'RunExtraCommand',
                                                                           'params': [{'name': 'rand_name_0',
                                                                                       'type': 'uint32_t'},
                                                                                      {'name': 'rand_name_1',
                                                                                       'type': 'InputExtraCmd *'}
-                                                                                     ]}]}])
+                                                                                     ],
+                                                                          'file_name': '/',
+                                                                          'line_number': 4
+                                                                          }]}])
 
     def test_extract_interface_with_function_point(self):
         header_file = """
@@ -352,28 +387,66 @@ class HeaderParserTestCase(unittest.TestCase):
                                                                      'members': [
                                                                          {'name': 'SetPowerStatus',
                                                                           'params': [{'name': 'devIndex',
-                                                                                      'type': 'uint32_t'}]},
+                                                                                      'type': 'uint32_t'}],
+                                                                          'file_name': '/',
+                                                                          'line_number': 3
+                                                                          },
                                                                          {'name': 'RunExtraCommand',
                                                                           'params': [{'name': 'rand_name_0',
                                                                                       'type': 'uint32_t'},
                                                                                      {'name': 'rand_name_1',
                                                                                       'type': 'InputExtraCmd *'}
-                                                                                     ]},
+                                                                                     ],
+                                                                          'file_name': '/',
+                                                                          'line_number': 4
+                                                                          },
                                                                          {'name': 'RunCapacitanceTest',
                                                                           'params': [{'name': 'devIndex',
                                                                                       'type': 'uint32_t'},
                                                                                      {'name': 'testType',
                                                                                       'type': 'uint32_t'}
-                                                                                     ]}
+                                                                                     ],
+                                                                          'file_name': '/',
+                                                                          'line_number': 5
+                                                                          }
                                                                      ]}])
 
-    def test_extract_interface_callback(self):
-        # todo
-        pass
-
-    def test_extract_interface_with_function_pointer_and_properties(self):
-        # todo
-        pass
+    def test_extract_interface_for_class(self):
+        header_file = """
+                    class ICameraDevice{
+                    public:
+                        DECLARE_INTERFACE_DESCRIPTOR(u"HDI.Camera.V1_0.Device");
+                        virtual ~ICameraDevice() {}
+                        virtual CamRetCode ICamera();
+                        virtual CamRetCode GetEnabledResults(std::vector<MetaType> &results) = 0;
+                        virtual CamRetCode SetResultMode(const CallbackMode &mode) = 0;
+                    };
+                """
+        parser = HeaderParser()
+        hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
+        parser._extract_interface(hjson["classes"]["ICameraDevice"])
+        self.assertSequenceEqual(parser._header_dict["interface"], [{'name': 'ICameraDevice',
+                                                                     'members': [
+                                                                         {'name': 'ICamera',
+                                                                          'params': [],
+                                                                          'file_name': '/',
+                                                                          'line_number': 6
+                                                                          },
+                                                                         {'name': 'GetEnabledResults',
+                                                                          'params': [{'name': 'results',
+                                                                                      'type': 'std::vector<MetaType> &'}
+                                                                                     ],
+                                                                          'file_name': '/',
+                                                                          'line_number': 7
+                                                                          },
+                                                                         {'name': 'SetResultMode',
+                                                                          'params': [{'name': 'mode',
+                                                                                      'type': 'const CallbackMode &'}
+                                                                                     ],
+                                                                          'file_name': '/',
+                                                                          'line_number': 8
+                                                                          }
+                                                                     ]}])
 
     def test_extract_typedef(self):
         header_file = """

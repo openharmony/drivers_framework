@@ -94,7 +94,7 @@ class HeaderParser:
     def _checkout_function_pointer_param(self, params):
         if params == '':
             return []
-        tt = re.match("(typedef )* *\\w+ \\( \\* \\) \\(( .* )\\)", params)
+        tt = re.match(r"(typedef )* *\w+ \( \* \) \(( .* )\)", params)
         if tt:
             params = tt[2].strip() + ","
         else:
@@ -105,7 +105,7 @@ class HeaderParser:
             tt = re.match(" *(const )*(struct |enum |union )* *", params)
             if tt:  # 去掉结构类型头
                 params = params[tt.regs[0][1]:]
-                tt = re.match("((unsigned )*[a-zA-Z0-9_:]+( *\\** *\\**)) *", params)
+                tt = re.match(r"((unsigned )*[a-zA-Z0-9_:]+( *\** *\**)) *", params)
                 if tt:
                     param_type = params[tt.regs[1][0]:tt.regs[1][1]]  # 参数类型
                     params = params[tt.regs[0][1]:]
@@ -150,11 +150,11 @@ class HeaderParser:
             for value in enm["values"]:
                 v_value = value["value"]
                 if not isinstance(v_value, int):
-                    tt = re.match("0x|0X|\\(|-", v_value)
+                    tt = re.match(r"0x|0X|\(|-", v_value)
                     if tt:
                         errmsg = "unexpected '%s'" % tt[0]
                         v_value = v_value + " // " + errmsg
-                        print("[Parser]: %s[line %d] " % (enm["filename"], enm["line_number"]), errmsg)
+                        print("[HeaderParser]: %s[line %d] " % (enm["filename"], enm["line_number"]), errmsg)
                 enum_dict["members"].append({"name": value["name"], "value": v_value})
             self._header_dict["enum"].append(enum_dict)
 
@@ -167,8 +167,11 @@ class HeaderParser:
             union_dict["name"] = stack["name"].split(" ")[-1]
             union_dict["type"] = "union"
             union_dict["members"] = []
+            file_name = self._header_dict["path"] + "/" + self._header_dict["name"]
             for mb in stack["members"]:
-                union_dict["members"].append({"name": mb["name"], "type": mb["type"]})
+                union_dict["members"].append({"file_name": file_name,
+                                              "line_number": mb["line_number"],
+                                              "name": mb["name"], "type": mb["type"]})
             self._header_dict["union"].append(union_dict)
 
     def _extract_struct(self, stack):
@@ -179,17 +182,26 @@ class HeaderParser:
         if stack["declaration_method"] in ["struct", "class"]:
             if len(stack["methods"]["public"]) == 0:  # 不带函数
                 if not self._has_function_pointer(stack["properties"]["public"]):  # 变量中没有函数指针
-                    # print(cs["name"], "转换到struct")
                     struct_dict["name"] = stack["name"]
                     struct_dict["type"] = "struct"
                     struct_dict["members"] = []
+                    file_name = self._header_dict["path"] + "/" + self._header_dict["name"]
                     for mb in stack["properties"]["public"]:
                         if "enum_type" in mb:
-                            struct_dict["members"].append({"name": mb["name"], "type": mb["enum_type"]["name"]})
+                            struct_dict["members"].append({"file_name": file_name,
+                                                           "line_number": mb["line_number"],
+                                                           "name": mb["name"],
+                                                           "type": mb["enum_type"]["name"]})
                         elif mb["array"] == 1:
-                            struct_dict["members"].append({"name": mb["name"], "type": mb["type"] + " *"})
+                            struct_dict["members"].append({"file_name": file_name,
+                                                           "line_number": mb["line_number"],
+                                                           "name": mb["name"],
+                                                           "type": mb["type"] + " *"})
                         else:
-                            struct_dict["members"].append({"name": mb["name"], "type": mb["type"]})
+                            struct_dict["members"].append({"file_name": file_name,
+                                                           "line_number": mb["line_number"],
+                                                           "name": mb["name"],
+                                                           "type": mb["type"]})
                     self._header_dict["struct"].append(struct_dict)
 
     def _extract_interface(self, stack):
@@ -200,10 +212,11 @@ class HeaderParser:
         if stack["declaration_method"] in ["struct", "class"]:
             # 带函数，或变量中包含函数指针
             if len(stack["methods"]["public"]) > 0 or self._has_function_pointer(stack["properties"]["public"]):
-                # print(cs["name"], "转换到class")
                 interface_dict["name"] = stack["name"]
                 interface_dict["members"] = []
                 for mb in stack["methods"]["public"]:
+                    if mb["name"] in (stack["name"], "DECLARE_INTERFACE_DESCRIPTOR"):
+                        continue
                     params = []
                     for param in mb["parameters"]:
                         para_name = param["name"]
@@ -211,13 +224,21 @@ class HeaderParser:
                             para_name = "rand_name_%d" % self._rand_name_count
                             self._rand_name_count += 1
                         params.append({"name": para_name, "type": param["type"]})
-                    interface_dict["members"].append({"name": mb["name"], "params": params})
+                    interface_dict["members"].append({"name": mb["name"],
+                                                      "params": params,
+                                                      "file_name":
+                                                          self._header_dict["path"] + "/" + self._header_dict["name"],
+                                                      "line_number": mb["line_number"]})
                 for mb in stack["properties"]["public"]:
                     if mb["function_pointer"] > 0:
                         interface_dict["members"].append({"name": mb["name"],
-                                                          "params": self._checkout_function_pointer_param(
-                                                              mb["type"])})
+                                                          "params": self._checkout_function_pointer_param(mb["type"]),
+                                                          "file_name":
+                                                              self._header_dict["path"] + "/" + self._header_dict[
+                                                                  "name"],
+                                                          "line_number": mb["line_number"]})
                 self._header_dict["interface"].append(interface_dict)
+
 
     def _extract_typedef(self, typedefs):
         """
