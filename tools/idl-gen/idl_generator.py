@@ -57,8 +57,8 @@ class IDLGenerator:
             self._parse_option()
             self._parse_header()
             for i in self._parse_results:
-                self._generate_type(self._parse_results.get(i))
-                self._generate_interface(self._parse_results.get(i))
+                self._generate_type(self._parse_results[i])
+                self._generate_interface(self._parse_results[i])
         except Exception as e:
             print(e)
 
@@ -95,8 +95,8 @@ class IDLGenerator:
                 for header_file in file_list:
                     result = HeaderParser().parse(header_file)
                     if result is not None:
-                        self._parse_results[result.get("name")] = result
-                        for file_name in result.get("import"):  # 把include的文件加入列表
+                        self._parse_results[result["name"]] = result
+                        for file_name in result["import"]:  # 把include的文件加入列表
                             if file_name not in self._parse_results:  # 解析过的不重复解析
                                 file_path = self._search_file(root_path, file_name)
                                 if file_path is not None:
@@ -104,17 +104,17 @@ class IDLGenerator:
                 file_list = include_file
 
         for i in self._parse_results:
-            for enum in self._parse_results.get(i).get("enum"):
+            for enum in self._parse_results[i]["enum"]:
                 self._key_list[enum["name"]] = "enum"
-            for union in self._parse_results.get(i).get("union"):
+            for union in self._parse_results[i]["union"]:
                 self._key_list[union["name"]] = "union"
-            for struct in self._parse_results.get(i).get("struct"):
+            for struct in self._parse_results[i]["struct"]:
                 self._key_list[struct["name"]] = "struct"
-            for clas in self._parse_results.get(i).get("interface"):
+            for clas in self._parse_results[i]["interface"]:
                 self._key_list[clas["name"]] = ""
-            for cb in self._parse_results.get(i).get("callback"):
+            for cb in self._parse_results[i]["callback"]:
                 self._key_list[cb["name"]] = ""
-            for td in self._parse_results.get(i).get("typedef"):
+            for td in self._parse_results[i]["typedef"]:
                 self._typedef_list[td["name"]] = td["type"]
 
     def _generate_type(self, header):
@@ -142,7 +142,7 @@ class IDLGenerator:
         original_idl = self._idl
         for file_name in header["import"]:
             if file_name in self._parse_results:
-                include_file = self._parse_results.get(file_name)
+                include_file = self._parse_results[file_name]
                 if self._has_user_define_type(include_file):
                     tt = re.search("import\\s+\\S+.Types", self._idl)
                     if tt is None:
@@ -240,8 +240,8 @@ class IDLGenerator:
                 c_type = c_type.replace("_ENUM_POINTER", " * ")
             tt = re.fullmatch(r"(const )* *(enum)*(union)*(struct)* *%s *[*&]* * *[*&]*" % type_name, c_type)
             if tt:
-                if len(self._key_list.get(type_name)) > 0:
-                    idl_type = self._key_list.get(type_name) + ' ' + type_name
+                if len(self._key_list[type_name]) > 0:
+                    idl_type = self._key_list[type_name] + ' ' + type_name
                 else:
                     idl_type = type_name
                 if c_type.count('*') == 1:
@@ -253,10 +253,10 @@ class IDLGenerator:
         for type_name in self._typedef_list:
             tt = re.match(r"(const )* *%s *\** *" % type_name, c_type)
             if tt:
-                if self._typedef_list.get(type_name).count('*') == 1:
-                    idl_type = self._typedef_list.get(type_name).split(' ')[0] + '[]'
+                if self._typedef_list[type_name].count('*') == 1:
+                    idl_type = self._typedef_list[type_name].split(' ')[0] + '[]'
                 else:
-                    idl_type = self._typedef_list.get(type_name)
+                    idl_type = self._typedef_list[type_name]
                 return idl_type
         return ""
 
