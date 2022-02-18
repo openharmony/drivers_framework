@@ -18,7 +18,7 @@ static struct DispManager *g_dispManager = NULL;
 static struct PanelManager g_panelManager;
 int32_t RegisterPanel(struct PanelData *panel)
 {
-    int32_t panelNum;
+    uint32_t panelNum;
 
     if (panel == NULL) {
         HDF_LOGE("%s: panel data is null", __func__);
@@ -541,7 +541,7 @@ PANEL_ESD_EXIT:
 
 static void EsdMemFree(struct DispEsd *esd)
 {
-    int32_t i;
+    uint32_t i;
 
     for (i = 0; i < esd->panelNum; i++) {
         if (esd->workInit[i] == true) {
@@ -558,7 +558,7 @@ static void EsdMemFree(struct DispEsd *esd)
 
 static int32_t EsdResInit(struct DispEsd *esd, struct PanelData **panel)
 {
-    int32_t i;
+    uint32_t i;
     int32_t ret;
 
     for (i = 0; i < esd->panelNum; i++) {
@@ -594,10 +594,10 @@ static int32_t EsdResInit(struct DispEsd *esd, struct PanelData **panel)
 
 static int32_t EsdCheckInit(struct DispManager *disp)
 {
-    int32_t i;
+    uint32_t i;
     int32_t ret;
     int32_t count = 0;
-    int32_t panelNum;
+    uint32_t panelNum;
     struct DispEsd *esd = NULL;
     struct PanelData **panel = NULL;
 

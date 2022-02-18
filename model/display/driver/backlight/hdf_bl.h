@@ -22,7 +22,7 @@ enum FbPowerStatus {
 struct BacklightDev;
 struct BacklightOps {
     int32_t (*updateBrightness)(struct BacklightDev *bl, uint32_t brightness);
-    int32_t (*getBrightness)(struct BacklightDev *bl);
+    uint32_t (*getBrightness)(struct BacklightDev *bl);
 };
 
 struct BacklightProperties {
