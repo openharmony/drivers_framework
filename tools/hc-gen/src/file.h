@@ -16,12 +16,12 @@ namespace Hardware {
 namespace Util {
 class File {
 public:
-    static std::string AbsPath(const std::string& path);
+    static std::string AbsPath(const std::string &path);
     static std::string StripSuffix(std::string path);
     static std::string GetDir(std::string path);
-    static std::string FileNameBase(const std::string& path);
+    static std::string FileNameBase(const std::string &path);
 };
-} // Util
-} //Hardware
-} //OHOS
+} // namespace Util
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_FILE_H

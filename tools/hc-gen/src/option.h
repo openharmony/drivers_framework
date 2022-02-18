@@ -62,11 +62,12 @@ public:
     std::string GetSourceDir();
 
     static std::string RealPathSourcePath(const char *path);
+
 private:
     static void ShowOption(const std::string &option, const std::string &helpInfo);
     bool ParseOptions(int argc, char *argv[]);
     void SetOptionError(bool shouldShowUsage = true);
-    bool SetSourceOption(const char* srcName);
+    bool SetSourceOption(const char *srcName);
 
     bool showUsage_ = false;
     bool showVersion_ = false;
@@ -86,6 +87,6 @@ private:
     void SetOptionData(char op);
 };
 
-} // Hardware
-} // OHOS
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_OPTION_H

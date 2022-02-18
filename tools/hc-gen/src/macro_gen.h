@@ -9,9 +9,10 @@
 #ifndef HC_GEN_MACRO_GEN_H
 #define HC_GEN_MACRO_GEN_H
 
-#include "generator.h"
 #include <fstream>
 #include <map>
+
+#include "generator.h"
 
 namespace OHOS {
 namespace Hardware {
@@ -53,6 +54,6 @@ private:
     std::string outFileName_;
     std::map<int, std::string> nodeNameMap_;
 };
-} // Hardware
-} // OHOS
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_MACRO_GEN_H

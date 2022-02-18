@@ -6,21 +6,20 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "lexer.h"
 #include <sstream>
 #include <string>
+
+#include "lexer.h"
 #include "logger.h"
 
 using namespace OHOS::Hardware;
 
-Lexer::Lexer() : lineno_(0), lineLoc_(0)
-{
-}
+Lexer::Lexer() : lineno_(0), lineLoc_(0) {}
 
 std::map<std::string, TokenType> Lexer::keyWords_ = {
-    {"#include", INCLUDE},
-    {"root",     ROOT},
-    {"delete",   DELETE},
+    {"#include", INCLUDE },
+    {"root",     ROOT    },
+    {"delete",   DELETE  },
     {"template", TEMPLATE},
 };
 
@@ -172,15 +171,14 @@ bool Lexer::FillBuffer()
 bool Lexer::ProcessComment()
 {
     char c = 0;
-    ConsumeChar();// skip first '/'
+    ConsumeChar(); // skip first '/'
     if (!GetChar(c)) {
         Logger().Error() << *this << "unterminated comment";
         return false;
     }
 
     if (c == '/') {
-        while (c != '\n' && GetChar(c)) {
-        }
+        while (c != '\n' && GetChar(c)) {}
         if (c != '\n' && c != EOF) {
             Logger().Error() << *this << "unterminated signal line comment";
             return false;
@@ -277,8 +275,7 @@ bool Lexer::LexFromNumber(Token &token)
                 case 'x': // fall-through
                 case 'X': // hex number
                     ConsumeChar();
-                    while (PeekChar(c, false) && (IsNum(c) || (c >= 'a' && c <= 'f')
-                                                  || (c >= 'A' && c <= 'F'))) {
+                    while (PeekChar(c, false) && (IsNum(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
                         value.push_back(c);
                         ConsumeChar();
                     }
@@ -297,7 +294,7 @@ bool Lexer::LexFromNumber(Token &token)
             break;
         case '+': // fall-through
         case '-': // fall-through, signed decimal number
-        default: // unsigned decimal number
+        default:  // unsigned decimal number
             value.push_back(c);
             while (PeekChar(c, true) && IsNum(c)) {
                 ConsumeChar();
@@ -353,7 +350,6 @@ void Lexer::LexFromLiteral(Token &token)
         }
     } while (false);
 
-
     token.strval = std::move(value);
     token.lineNo = lineno_;
 }
@@ -361,7 +357,7 @@ void Lexer::LexFromLiteral(Token &token)
 void Lexer::ConsumeChar()
 {
     char c;
-    (void) GetChar(c, false);
+    (void)GetChar(c, false);
 }
 
 bool Lexer::IsNum(char c)
@@ -380,4 +376,3 @@ bool Lexer::LexInclude(Token &token)
     token.type = INCLUDE;
     return true;
 }
-

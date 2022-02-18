@@ -6,24 +6,20 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-
 #ifndef HC_GEN_BYTECODE_GEN_H
 #define HC_GEN_BYTECODE_GEN_H
 
+#include "generator.h"
 #include <fstream>
 #include <utility>
-#include "generator.h"
 
 namespace OHOS {
 namespace Hardware {
 
 struct OpCode {
-    OpCode() : opCode(0),
-        size(0) {}
+    OpCode() : opCode(0), size(0) {}
 
-    OpCode(uint8_t code, uint32_t s, std::string str) : opCode(code),
-        size(s),
-        opStr(std::move(str)) {}
+    OpCode(uint8_t code, uint32_t s, std::string str) : opCode(code), size(s), opStr(std::move(str)) {}
 
     ~OpCode() = default;
 
@@ -53,7 +49,7 @@ private:
 
     bool ByteCodeWriteWalk();
 
-    template<typename T>
+    template <typename T>
     void Write(T &data);
 
     void Write(const char *data, uint32_t size);
@@ -78,6 +74,6 @@ private:
     bool dummyOutput_;
     uint32_t writeSize_;
 };
-} // Hardware
-} // OHOS
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_BYTECODE_GEN_H

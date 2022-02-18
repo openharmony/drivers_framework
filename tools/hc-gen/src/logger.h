@@ -6,13 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-
 #ifndef HC_GEN_LOG_H
 #define HC_GEN_LOG_H
 
 #include <iostream>
 #include <map>
 #include <string>
+
 #include "option.h"
 
 namespace OHOS {
@@ -33,7 +33,7 @@ public:
         ::std::cout << ::std::endl;
     }
 
-    template<typename T>
+    template <typename T>
     inline Logger &operator<<(const T &v)
     {
         if (level_ <= DEBUG && !Option::Instance().VerboseLog()) {
@@ -93,12 +93,12 @@ private:
     void ShowLevel()
     {
         static ::std::map<LogLevel, ::std::string> levelStrMap = {
-            {NONE,    ""},
-            {DEBUG,   "Debug"},
-            {INFO,    "Info"},
+            {NONE,    ""       },
+            {DEBUG,   "Debug"  },
+            {INFO,    "Info"   },
             {WARNING, "Warning"},
-            {ERROR,   "Error"},
-            {FATAL,   "Fatal"}
+            {ERROR,   "Error"  },
+            {FATAL,   "Fatal"  }
         };
         if (level_ > INFO) {
             ::std::cout << ERROR_COLOR_PREFIX;
@@ -115,6 +115,6 @@ private:
 #endif
 };
 
-} // OHOS
-} // Hardware
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_LOG_H

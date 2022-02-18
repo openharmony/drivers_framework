@@ -7,21 +7,19 @@
  */
 
 #include "decompile.h"
-#include <cctype>
 #include "decompile_gen.h"
 #include "logger.h"
 #include "opcode.h"
+#include <cctype>
 
 using namespace OHOS::Hardware;
 
-Decompile::Decompile(std::string fileName) : isAlign_(false), fileName_(std::move(fileName))
-{
-}
+Decompile::Decompile(std::string fileName) : isAlign_(false), fileName_(std::move(fileName)) {}
 
 bool Decompile::InitDecompileFile()
 {
     file_.open(fileName_.data(), std::ios::binary);
-    if(!file_.is_open()) {
+    if (!file_.is_open()) {
         Logger().Error() << "Failed to open decompile file: " << fileName_;
         return false;
     }
@@ -30,7 +28,7 @@ bool Decompile::InitDecompileFile()
 
 bool Decompile::ReadFile(char *buffer, size_t readSize)
 {
-    if(!file_.read(buffer, static_cast<std::streamsize>(readSize))) {
+    if (!file_.read(buffer, static_cast<std::streamsize>(readSize))) {
         Logger().Error() << "read file failed, read size is: " << readSize;
         return false;
     }
@@ -44,15 +42,16 @@ void Decompile::SetAlign(bool isAlign)
 
 bool Decompile::VerifyDecompileFile()
 {
-    HcbHeader header{0};
+    HcbHeader header {0};
     if (!ReadFile(reinterpret_cast<char *>(&header), sizeof(header))) {
         Logger().Error() << "read header failed";
         return false;
     }
-    Logger().Debug() << "read Header: magic is: " << header.magicNumber << " version major: " << header.versionMajor <<
-        " version minor: " << header.versionMinor << " checksum: " << header.checkSum << " totalSize: " << header.totalSize;
+    Logger().Debug() << "read Header: magic is: " << header.magicNumber << " version major: " << header.versionMajor
+                     << " version minor: " << header.versionMinor << " checksum: " << header.checkSum
+                     << " totalSize: " << header.totalSize;
     if (header.magicNumber != HCB_MAGIC_NUM) {
-        Logger().Error() << "magic number is: " << header.magicNumber <<  ", check failed!";
+        Logger().Error() << "magic number is: " << header.magicNumber << ", check failed!";
         return false;
     }
     if (header.totalSize < 0) {
@@ -102,7 +101,7 @@ bool Decompile::ReadString(std::string &value)
 {
     value.clear();
     char c;
-    while(ReadFile(&c, sizeof(c))) {
+    while (ReadFile(&c, sizeof(c))) {
         if (c == '\0') {
             break;
         }
@@ -124,10 +123,10 @@ bool Decompile::ReadString(std::string &value)
 bool Decompile::GetNextByteCode(uint32_t &byteCode)
 {
     if (GetAlignSize(OPCODE_BYTE_WIDTH) == OPCODE_BYTE_WIDTH) {
-            uint8_t value = 0;
-            bool ret = ReadUint8(value);
-            byteCode = value;
-            return ret;
+        uint8_t value = 0;
+        bool ret = ReadUint8(value);
+        byteCode = value;
+        return ret;
     } else {
         return ReadUint32(byteCode);
     }
@@ -143,7 +142,7 @@ std::shared_ptr<AstObject> Decompile::RebuildNode()
 
     auto node = std::make_shared<ConfigNode>(nodeName, NODE_NOREF, "");
     uint32_t nodeSize = 0;
-    if(!ReadUint32(nodeSize)) {
+    if (!ReadUint32(nodeSize)) {
         return nullptr;
     }
     node->SetSize(nodeSize);
@@ -309,7 +308,7 @@ std::shared_ptr<Ast> Decompile::RebuildAst()
 
 bool Decompile::DoDecompile()
 {
-    if(!InitDecompileFile()) {
+    if (!InitDecompileFile()) {
         return false;
     }
 

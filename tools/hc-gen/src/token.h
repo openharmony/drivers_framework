@@ -42,13 +42,11 @@ struct Token {
     friend std::ostream &operator<<(std::ostream &stream, const Token &t);
 };
 
-std::ostream& operator<<(std::ostream &s, const Token &t);
+std::ostream &operator<<(std::ostream &s, const Token &t);
 
 std::string TokenType2String(int32_t type);
 
-} // Hardware
-} // OHOS
-
-
+} // namespace Hardware
+} // namespace OHOS
 
 #endif // HC_GEN_TOKEN_H

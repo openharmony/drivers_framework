@@ -7,15 +7,15 @@
  */
 
 #include "bytecode_gen.h"
-#include <string>
 #include "file.h"
 #include "logger.h"
 #include "opcode.h"
+#include <string>
 
 using namespace OHOS::Hardware;
 
-ByteCodeGen::ByteCodeGen(std::shared_ptr<Ast> ast) : Generator(ast),
-    needAlign_(false), dummyOutput_(false), writeSize_(0)
+ByteCodeGen::ByteCodeGen(std::shared_ptr<Ast> ast) :
+    Generator(ast), needAlign_(false), dummyOutput_(false), writeSize_(0)
 {
 }
 
@@ -94,14 +94,14 @@ uint32_t ByteCodeGen::Align(uint32_t size) const
 const OpCode &ByteCodeGen::ToOpCode(uint32_t objectType)
 {
     static std::map<uint32_t, OpCode> byteCodeMap = {
-        {PARSEROP_UINT8,    {HCS_BYTE_OP,    BYTE_SIZE,  "Uint8"}},
-        {PARSEROP_UINT16,   {HCS_WORD_OP,    WORD_SIZE,  "Uint16"}},
-        {PARSEROP_UINT32,   {HCS_DWORD_OP,   DWORD_SIZE, "Uint32"}},
-        {PARSEROP_UINT64,   {HCS_QWORD_OP,   QWORD_SIZE, "Uint64"}},
-        {PARSEROP_STRING,   {HCS_STRING_OP, 0,           "String"}},
-        {PARSEROP_ARRAY,    {HCS_ARRAY_OP,   WORD_SIZE,  "Array"}}, /* ElementCount - WORD */
-        {PARSEROP_CONFNODE, {HCS_NODE_OP,    DWORD_SIZE, "ConfigNode"}}, /* SubSize - DWORD */
-        {PARSEROP_CONFTERM, {HCS_TERM_OP,   0,           "ConfigTerm"}},
+        {PARSEROP_UINT8,    {HCS_BYTE_OP, BYTE_SIZE, "Uint8"}      },
+        {PARSEROP_UINT16,   {HCS_WORD_OP, WORD_SIZE, "Uint16"}     },
+        {PARSEROP_UINT32,   {HCS_DWORD_OP, DWORD_SIZE, "Uint32"}   },
+        {PARSEROP_UINT64,   {HCS_QWORD_OP, QWORD_SIZE, "Uint64"}   },
+        {PARSEROP_STRING,   {HCS_STRING_OP, 0, "String"}           },
+        {PARSEROP_ARRAY,    {HCS_ARRAY_OP, WORD_SIZE, "Array"}     }, /* ElementCount - WORD */
+        {PARSEROP_CONFNODE, {HCS_NODE_OP, DWORD_SIZE, "ConfigNode"}}, /* SubSize - DWORD */
+        {PARSEROP_CONFTERM, {HCS_TERM_OP, 0, "ConfigTerm"}         },
         {PARSEROP_NODEREF,  {HCS_NODEREF_OP, DWORD_SIZE, "NodeRef"}}, /* RefHashCode - DWORD */
     };
     return byteCodeMap[objectType];
@@ -112,7 +112,7 @@ void ByteCodeGen::Write(const std::string &data)
     Write(data.c_str(), static_cast<uint32_t>(data.size() + 1));
 }
 
-template<typename T>
+template <typename T>
 void ByteCodeGen::Write(T &data)
 {
     auto p = &data;
@@ -172,8 +172,8 @@ bool ByteCodeGen::ByteCodeWrite(bool dummy)
         .versionMajor = 0,
         .versionMinor = 0,
         .checkSum = 0,
-        .totalSize = static_cast<int32_t>(Option::Instance().ShouldAlign() ? -ast_->GetAstRoot()->GetSize()
-                                                                           : ast_->GetAstRoot()->GetSize()),
+        .totalSize = static_cast<int32_t>(
+            Option::Instance().ShouldAlign() ? -ast_->GetAstRoot()->GetSize() : ast_->GetAstRoot()->GetSize()),
     };
     Option::Instance().GetVersion(header.versionMinor, header.versionMajor);
     Write(header);
@@ -299,7 +299,7 @@ bool ByteCodeGen::HexdumpOutput(FILE *in, FILE *out)
     int32_t byte;
     while ((byte = getc(in)) != EOF) {
         if (fprintf(out, "%s0x%02x", (writeCount % NUMS_PER_LINE) ? ", " : &",\n    "[PRINT_SKIP_STEP * !writeCount],
-                    byte) < 0) {
+                byte) < 0) {
             return false;
         }
         writeCount++;
@@ -312,12 +312,12 @@ bool ByteCodeGen::HexdumpOutput(FILE *in, FILE *out)
         return false;
     }
     if (fprintf(out,
-                "void HdfGetBuildInConfigData(const unsigned char** data, unsigned int* size)\n"
-                "{\n"
-                "    *data = g_%s%s;\n"
-                "    *size = g_%s%sLen;\n"
-                "}",
-                prefix.data(), HCS_HEXDUMP_ENTRY_SYMBOL, prefix.data(), HCS_HEXDUMP_ENTRY_SYMBOL) < 0) {
+            "void HdfGetBuildInConfigData(const unsigned char** data, unsigned int* size)\n"
+            "{\n"
+            "    *data = g_%s%s;\n"
+            "    *size = g_%s%sLen;\n"
+            "}",
+            prefix.data(), HCS_HEXDUMP_ENTRY_SYMBOL, prefix.data(), HCS_HEXDUMP_ENTRY_SYMBOL) < 0) {
         return false;
     }
     return true;
