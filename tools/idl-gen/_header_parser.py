@@ -238,10 +238,10 @@ class HeaderParser:
                                                               "params": self._checkout_function_pointer_param(
                                                                   mb["type"]),
                                                               "file_name":
-                                                                  self._header_dict["path"] + "/"
-                                                                  + self._header_dict["name"],
+                                                                  self._header_dict.get("path") + "/"
+                                                                  + self._header_dict.get("name"),
                                                               "line_number": mb["line_number"]})
-                self._header_dict["interface"].append(interface_dict)
+                self._header_dict.get("interface").append(interface_dict)
 
     def _extract_typedef(self, typedefs):
         """
@@ -254,7 +254,7 @@ class HeaderParser:
         """
         for td in typedefs:
             if "typedef" in typedefs[td]:
-                self._header_dict["typedef"].append({"name": td,
-                                                     "type": "/* unsupported function pointer type: " + td + " */"})
+                self._header_dict.get("typedef").append({"name": td,
+                                                         "type": "/* unsupported function pointer type: " + td + " */"})
             else:
-                self._header_dict["typedef"].append({"name": td, "type": typedefs[td]})
+                self._header_dict.get("typedef").append({"name": td, "type": typedefs[td]})

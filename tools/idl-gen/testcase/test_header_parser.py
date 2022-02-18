@@ -219,7 +219,6 @@ class HeaderParserTestCase(unittest.TestCase):
                                                                   ]}])
 
     def test_extract_struct(self):
-        self.maxDiff = None
         header_file = """
             typedef struct {
                 bool succeed;
