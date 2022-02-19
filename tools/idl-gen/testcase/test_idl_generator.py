@@ -277,7 +277,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
         generator = IDLGenerator()
         generator._key_list["InputController"] = "struct"
         generator._key_list["InputControllerDesc"] = "struct"
-        generator._install_interface(parser._header_dict["interface"][0])
+        generator._install_interface(parser._header_dict.get("interface")[0])
         self.assertEqual(generator._idl, "interface InputController {\n"
                                          "    RunExtraCommand([in] unsigned int devIndex,[out] unsigned int cmd);\n"
                                          "    RunExtra([in] struct InputControllerDesc desc);\n"
@@ -293,7 +293,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
         hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_interface(hjson["classes"]["InputController"])
         generator = IDLGenerator()
-        generator._install_interface(parser._header_dict["interface"][0])
+        generator._install_interface(parser._header_dict.get("interface")[0])
         self.assertEqual(generator._idl, "interface InputController {\n"
                                          "    RunExtra([in] /* unknown type: [InputControllerDesc] */ desc);\n"
                                          "};\n")
@@ -308,7 +308,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
         hjson = json.loads(CppHeaderParser.CppHeader(header_file, "string").toJSON())
         parser._extract_interface(hjson["classes"]["IFooCallback"])
         generator = IDLGenerator()
-        generator._install_interface(parser._header_dict["interface"][0])
+        generator._install_interface(parser._header_dict.get("interface")[0])
         self.assertEqual(generator._idl, "[callback] interface IFooCallback {\n"
                                          "    PushData([in] byte[] message);\n"
                                          "};\n")
