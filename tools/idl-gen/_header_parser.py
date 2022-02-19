@@ -61,10 +61,8 @@ class HeaderParser:
                 self._extract_interface(hjson["classes"][i])
             self._extract_typedef(hjson["typedefs"])
             return self._header_dict
-        except KeyError as e:
-            print(e)
-        except Exception as e:
-            print(e)
+        except KeyError:
+            pass
 
     @staticmethod
     def _pre_handle(header_file):

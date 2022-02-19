@@ -59,10 +59,8 @@ class IDLGenerator:
             for i in self._parse_results:
                 self._generate_type(self._parse_results[i])
                 self._generate_interface(self._parse_results[i])
-        except KeyError as e:
-            print(e)
-        except Exception as e:
-            print(e)
+        except KeyError:
+            pass
 
     def _parse_option(self):
         parser = argparse.ArgumentParser(description="Compile C/C++ header files and generate .idl files.")
