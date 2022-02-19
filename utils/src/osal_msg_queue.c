@@ -59,7 +59,7 @@ struct HdfMessage* HdfMessageQueueNext(struct HdfMessageQueue *queue)
     struct HdfSListIterator it;
     struct HdfMessage *message = NULL;
     uint64_t currentTime = OsalGetSysTimeMs();
-    long miniTimeoutMs = OSAL_WAIT_FOREVER;
+
     OsalMutexLock(&queue->mutex);
     HdfSListIteratorInit(&it, &queue->list);
     while (HdfSListIteratorHasNext(&it)) {
@@ -72,7 +72,7 @@ struct HdfMessage* HdfMessageQueueNext(struct HdfMessageQueue *queue)
     }
 
     OsalMutexUnlock(&queue->mutex);
-    OsalSemWait(&queue->semaphore, miniTimeoutMs);
+    OsalSemWait(&queue->semaphore, OSAL_WAIT_FOREVER);
     return NULL;
 }
 

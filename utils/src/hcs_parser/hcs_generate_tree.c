@@ -34,7 +34,7 @@ static struct DeviceResourceNode *CreateTreeNode(const char *start, int32_t offs
     struct DeviceResourceNode *curNode = NULL;
     *treeMem += sizeof(struct DeviceResourceNode);
     newNode->name = start + offset + HCS_PREFIX_LENGTH;
-    newNode->hashValue = offset + sizeof(struct HbcHeader);
+    newNode->hashValue = (uint32_t)offset + sizeof(struct HbcHeader);
     if (parentNode != NULL) {
         newNode->parent = parentNode;
         curNode = parentNode->child;
@@ -103,7 +103,7 @@ static int32_t ParseByteCode(const char *treeStart, int32_t offset, char **treeM
             newNode = CreateTreeNode(treeStart, offset, parentOrCurNode, treeMem);
             (void)HcsSwapToUint32(&newNodeOffset, treeStart + offset + HCS_STRING_LENGTH(newNode->name) +
                 HCS_PREFIX_LENGTH, CONFIG_DWORD);
-            newNodeOffset += offset + termOffset;
+            newNodeOffset += (uint32_t)(offset + termOffset);
             if (!UpdateTreeStack(treeStack, treeLayerOrMemLen, newNode, newNodeOffset)) {
                 return HDF_FAILURE;
             }
