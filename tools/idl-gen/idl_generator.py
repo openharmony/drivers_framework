@@ -96,7 +96,7 @@ class IDLGenerator:
                     for header_file in file_list:
                         result = HeaderParser().parse(header_file)
                         if result is not None:
-                            self._parse_results[result.get["name"]] = result
+                            self._parse_results[result.get("name")] = result
                             for file_name in result["import"]:  # 把include的文件加入列表
                                 if file_name not in self._parse_results:  # 解析过的不重复解析
                                     file_path = self._search_file(root_path, file_name)
@@ -311,7 +311,13 @@ class IDLGenerator:
     def _split_path(file_path):
         normpath = os.path.normpath(file_path)
         drive, out_path = os.path.splitdrive(normpath)
-        return out_path.strip('.').strip('*/')
+        out_path = out_path.replace('\\', '/')
+        new_path = out_path.strip('.').strip('/')
+        while new_path != out_path:
+            out_path = new_path
+            new_path = out_path.strip('.').strip('/')
+
+        return new_path
 
     def _make_output_dir(self, file_path):
         output_dir = self._output_path + '/' + self._split_path(file_path)
