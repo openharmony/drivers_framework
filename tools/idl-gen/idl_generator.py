@@ -89,35 +89,38 @@ class IDLGenerator:
                     return path
 
     def _parse_header(self):
-        for file in self._file_list:
-            root_path, _ = os.path.split(file)  # 输入文件所在目录
-            file_list = [file]  # 需要解析的头文件列表,包括include包含的头文件
-            while len(file_list) > 0:
-                include_file = []
-                for header_file in file_list:
-                    result = HeaderParser().parse(header_file)
-                    if result is not None:
-                        self._parse_results[result["name"]] = result
-                        for file_name in result["import"]:  # 把include的文件加入列表
-                            if file_name not in self._parse_results:  # 解析过的不重复解析
-                                file_path = self._search_file(root_path, file_name)
-                                if file_path is not None:
-                                    include_file.append(file_path)
-                file_list = include_file
+        try:
+            for file in self._file_list:
+                root_path, _ = os.path.split(file)  # 输入文件所在目录
+                file_list = [file]  # 需要解析的头文件列表,包括include包含的头文件
+                while len(file_list) > 0:
+                    include_file = []
+                    for header_file in file_list:
+                        result = HeaderParser().parse(header_file)
+                        if result is not None:
+                            self._parse_results[result.get["name"]] = result
+                            for file_name in result["import"]:  # 把include的文件加入列表
+                                if file_name not in self._parse_results:  # 解析过的不重复解析
+                                    file_path = self._search_file(root_path, file_name)
+                                    if file_path is not None:
+                                        include_file.append(file_path)
+                    file_list = include_file
 
-        for i in self._parse_results:
-            for enum in self._parse_results[i]["enum"]:
-                self._key_list[enum["name"]] = "enum"
-            for union in self._parse_results[i]["union"]:
-                self._key_list[union["name"]] = "union"
-            for struct in self._parse_results[i]["struct"]:
-                self._key_list[struct["name"]] = "struct"
-            for clas in self._parse_results[i]["interface"]:
-                self._key_list[clas["name"]] = ""
-            for cb in self._parse_results[i]["callback"]:
-                self._key_list[cb["name"]] = ""
-            for td in self._parse_results[i]["typedef"]:
-                self._typedef_list[td["name"]] = td["type"]
+            for i in self._parse_results:
+                for enum in self._parse_results[i]["enum"]:
+                    self._key_list[enum["name"]] = "enum"
+                for union in self._parse_results[i]["union"]:
+                    self._key_list[union["name"]] = "union"
+                for struct in self._parse_results[i]["struct"]:
+                    self._key_list[struct["name"]] = "struct"
+                for clas in self._parse_results[i]["interface"]:
+                    self._key_list[clas["name"]] = ""
+                for cb in self._parse_results[i]["callback"]:
+                    self._key_list[cb["name"]] = ""
+                for td in self._parse_results[i]["typedef"]:
+                    self._typedef_list[td["name"]] = td["type"]
+        except KeyError:
+            pass
 
     def _generate_type(self, header):
         if self._has_user_define_type(header):
@@ -141,28 +144,31 @@ class IDLGenerator:
         self._idl += "package " + self._get_package(file_path) + ";\n\n"
 
     def _install_import(self, header):
-        original_idl = self._idl
-        for file_name in header["import"]:
-            if file_name in self._parse_results:
-                include_file = self._parse_results[file_name]
-                if self._has_user_define_type(include_file):
-                    tt = re.search("import\\s+\\S+.Types", self._idl)
-                    if tt is None:
-                        self._idl += "import " + self._get_package(include_file['path']) + ".Types;\n"
-                for iface in include_file["interface"]:
-                    self._idl += "import " + self._get_package(include_file['path']) + ".%s;\n" % iface["name"]
-                for cb in include_file["callback"]:
-                    self._idl += "import " + self._get_package(include_file['path']) + ".%s;\n" % cb["name"]
-            else:
-                self._idl += "// can't import %s\n" % file_name
-                print("[IDLGenerator]: %s[line ?] can't find %s"
-                      % (os.path.normpath(header["path"] + "/" + header["name"]), file_name))
+        try:
+            original_idl = self._idl
+            for file_name in header["import"]:
+                if file_name in self._parse_results:
+                    include_file = self._parse_results[file_name]
+                    if self._has_user_define_type(include_file):
+                        tt = re.search("import\\s+\\S+.Types", self._idl)
+                        if tt is None:
+                            self._idl += "import " + self._get_package(include_file['path']) + ".Types;\n"
+                    for iface in include_file["interface"]:
+                        self._idl += "import " + self._get_package(include_file['path']) + ".%s;\n" % iface["name"]
+                    for cb in include_file["callback"]:
+                        self._idl += "import " + self._get_package(include_file['path']) + ".%s;\n" % cb["name"]
+                else:
+                    self._idl += "// can't import %s\n" % file_name
+                    print("[IDLGenerator]: %s[line ?] can't find %s"
+                          % (os.path.normpath(header["path"] + "/" + header["name"]), file_name))
 
-        for cb in header['callback']:
-            self._idl += "import " + self._get_package(header['path']) + ".%s;\n" % cb["name"]
+            for cb in header['callback']:
+                self._idl += "import " + self._get_package(header['path']) + ".%s;\n" % cb["name"]
 
-        if original_idl != self._idl:
-            self._idl += "\n"
+            if original_idl != self._idl:
+                self._idl += "\n"
+        except KeyError:
+            pass
 
     def _install_enum(self, enums):
         for enum in enums:
@@ -242,8 +248,8 @@ class IDLGenerator:
                 c_type = c_type.replace("_ENUM_POINTER", " * ")
             tt = re.fullmatch(r"(const )* *(enum)*(union)*(struct)* *%s *[*&]* * *[*&]*" % type_name, c_type)
             if tt:
-                if len(self._key_list[type_name]) > 0:
-                    idl_type = self._key_list[type_name] + ' ' + type_name
+                if len(self._key_list.get(type_name)) > 0:
+                    idl_type = self._key_list.get(type_name) + ' ' + type_name
                 else:
                     idl_type = type_name
                 if c_type.count('*') == 1:
@@ -255,10 +261,10 @@ class IDLGenerator:
         for type_name in self._typedef_list:
             tt = re.match(r"(const )* *%s *\** *" % type_name, c_type)
             if tt:
-                if self._typedef_list[type_name].count('*') == 1:
-                    idl_type = self._typedef_list[type_name].split(' ')[0] + '[]'
+                if self._typedef_list.get(type_name).count('*') == 1:
+                    idl_type = self._typedef_list.get(type_name).split(' ')[0] + '[]'
                 else:
-                    idl_type = self._typedef_list[type_name]
+                    idl_type = self._typedef_list.get(type_name)
                 return idl_type
         return ""
 
