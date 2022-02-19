@@ -268,8 +268,6 @@ void CppCustomTypesCodeEmitter::EmitBeginNamespace(StringBuilder& sb)
 {
     std::vector<String> cppNamespaceVec = EmitCppNameSpaceVec(ast_->GetPackageName());
     for (const auto& nspace : cppNamespaceVec) {
-        Logger::D("EmitBeginNamespace", "%s", nspace.string());
-
         sb.AppendFormat("namespace %s {\n", nspace.string());
     }
 }

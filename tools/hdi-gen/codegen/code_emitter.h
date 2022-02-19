@@ -97,6 +97,11 @@ protected:
     String implFullName_;
     String majorVerName_;
     String minorVerName_;
+
+    String dataParcelName_;
+    String replyParcelName_;
+    String optionName_;
+    String errorCodeName_;
 };
 }
 }

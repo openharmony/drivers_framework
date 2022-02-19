@@ -36,7 +36,6 @@ String ASTParameter::Dump(const String& prefix)
 String ASTParameter::EmitCParameter()
 {
     StringBuilder sb;
-
     switch (type_->GetTypeKind()) {
         case TypeKind::TYPE_BOOLEAN:
         case TypeKind::TYPE_BYTE:
@@ -51,16 +50,21 @@ String ASTParameter::EmitCParameter()
         case TypeKind::TYPE_DOUBLE:
         case TypeKind::TYPE_ENUM:
         case TypeKind::TYPE_FILEDESCRIPTOR:
-        case TypeKind::TYPE_STRING:
         case TypeKind::TYPE_INTERFACE:
+        case TypeKind::TYPE_STRING:
         case TypeKind::TYPE_STRUCT:
         case TypeKind::TYPE_UNION:
         case TypeKind::TYPE_VOID: {
+            StringBuilder paramStr;
             if (attribute_ == ParamAttr::PARAM_IN) {
-                return String::Format("%s %s", type_->EmitCType(TypeMode::PARAM_IN).string(), name_.string());
+                paramStr.AppendFormat("%s %s", type_->EmitCType(TypeMode::PARAM_IN).string(), name_.string());
             } else {
-                return String::Format("%s %s", type_->EmitCType(TypeMode::PARAM_OUT).string(), name_.string());
+                paramStr.AppendFormat("%s %s", type_->EmitCType(TypeMode::PARAM_OUT).string(), name_.string());
             }
+            if (type_->GetTypeKind() == TypeKind::TYPE_STRING && attribute_ == ParamAttr::PARAM_OUT) {
+                paramStr.AppendFormat(", uint32_t %sLen", name_.string());
+            }
+            return paramStr.ToString();
         }
         case TypeKind::TYPE_ARRAY:
         case TypeKind::TYPE_LIST: {
@@ -70,19 +74,13 @@ String ASTParameter::EmitCParameter()
             } else {
                 paramStr.AppendFormat("%s %s", type_->EmitCType(TypeMode::PARAM_OUT).string(), name_.string());
             }
-
-            if (attribute_ == ParamAttr::PARAM_IN) {
-                paramStr.AppendFormat(", uint32_t %sLen", name_.string());
-            } else {
-                paramStr.AppendFormat(", uint32_t* %sLen", name_.string());
-            }
-
+            paramStr.AppendFormat(", uint32_t%s %sLen", (attribute_ == ParamAttr::PARAM_IN) ? "" : "*",
+                name_.string());
             return paramStr.ToString();
         }
         default:
             return String::Format("unknow type %s", name_.string());
     }
-
     return sb.ToString();
 }
 
@@ -206,14 +204,45 @@ String ASTParameter::EmitJavaLocalVar()
     return "";
 }
 
-void ASTParameter::EmitCWriteVar(const String& parcelName, const String& gotoLabel, StringBuilder& sb,
-    const String& prefix) const
+void ASTParameter::EmitCWriteVar(const String& parcelName, const String& ecName, const String& gotoLabel,
+    StringBuilder& sb, const String& prefix) const
 {
     if (type_ == nullptr) {
         return;
     }
 
-    type_->EmitCWriteVar(parcelName, name_, gotoLabel, sb, prefix);
+    type_->EmitCWriteVar(parcelName, name_, ecName, gotoLabel, sb, prefix);
+}
+
+bool ASTParameter::EmitCProxyWriteOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
+    StringBuilder& sb, const String& prefix) const
+{
+    if (type_ == nullptr) {
+        return false;
+    }
+
+    if (type_->IsStringType() || type_->IsArrayType() || type_->IsListType()) {
+        type_->EmitCProxyWriteOutVar(parcelName, name_, ecName, gotoLabel, sb, prefix);
+        return true;
+    }
+
+    return false;
+}
+
+bool ASTParameter::EmitCStubReadOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
+    StringBuilder& sb, const String& prefix) const
+{
+    if (type_ == nullptr) {
+        return false;
+    }
+
+    if (type_->IsStringType() || type_->IsArrayType() || type_->IsListType()
+        || type_->IsStructType() || type_->IsUnionType()) {
+        type_->EmitCStubReadOutVar(parcelName, name_, ecName, gotoLabel, sb, prefix);
+        return true;
+    }
+
+    return false;
 }
 
 void ASTParameter::EmitJavaWriteVar(const String& parcelName, StringBuilder& sb, const String& prefix) const

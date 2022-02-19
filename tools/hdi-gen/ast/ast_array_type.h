@@ -37,14 +37,20 @@ public:
 
     String EmitJavaType(TypeMode mode, bool isInnerType = false) const override;
 
-    void EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
-        StringBuilder& sb, const String& prefix) const override;
-
-    void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
+    void EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
         const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
 
-    void EmitCStubReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitCProxyWriteOutVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+
+    void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+
+    void EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+
+    void EmitCStubReadOutVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
 
     void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, unsigned int innerLevel = 0) const override;
@@ -54,7 +60,7 @@ public:
 
     void EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const override;
 
-    void EmitCUnMarshalling(const String& name, StringBuilder& sb, const String& prefix,
+    void EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb, const String& prefix,
         std::vector<String>& freeObjStatements) const override;
 
     void EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
@@ -78,17 +84,17 @@ private:
     void EmitJavaWriteArrayVar(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix) const;
 
-    void EmitCMallocVar(const String& name, const String& lenName, bool isClient, const String& gotoLabel,
-        StringBuilder& sb, const String& prefix) const;
+    void EmitCMallocVar(const String& name, const String& lenName, bool isClient, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
 
-    void EmitCProxyReadStrElement(const String& parcelName, const String& name, const String& gotoLabel,
-        StringBuilder& sb, const String& prefix) const;
+    void EmitCProxyReadStrElement(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
 
-    void EmitCStubReadStrElement(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const;
+    void EmitCStubReadStrElement(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
 
-    void EmitCStringElementUnMarshalling(const String& name, StringBuilder& sb, const String& newPrefix,
-        std::vector<String>& freeObjStatements) const;
+    void EmitCStringElementUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb,
+        const String& newPrefix, std::vector<String>& freeObjStatements) const;
 
     AutoPtr<ASTType> elementType_;
 };

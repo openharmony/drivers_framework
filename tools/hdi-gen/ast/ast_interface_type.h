@@ -105,11 +105,11 @@ public:
 
     String EmitJavaType(TypeMode mode, bool isInnerType = false) const override;
 
-    void EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
-        StringBuilder& sb, const String& prefix) const override;
+    void EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
 
-    void EmitCStubReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
 
     void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
         const String& prefix, unsigned int innerLevel = 0) const override;
