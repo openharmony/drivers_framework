@@ -27,8 +27,8 @@ int32_t OsalGetTime(OsalTimespec *time)
 
     (void)memset_s(&ts, sizeof(ts), 0, sizeof(ts));
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    time->sec = ts.tv_sec;
-    time->usec = ts.tv_nsec / HDF_KILO_UNIT;
+    time->sec = (uint64_t)ts.tv_sec;
+    time->usec = (uint64_t)ts.tv_nsec / HDF_KILO_UNIT;
 
     return HDF_SUCCESS;
 }
@@ -67,8 +67,8 @@ void OsalMSleep(uint32_t ms)
     int result;
     struct timespec ts;
 
-    ts.tv_sec = ms / HDF_KILO_UNIT;
-    ts.tv_nsec = HDF_KILO_UNIT * HDF_KILO_UNIT * ((long)(ms % HDF_KILO_UNIT));
+    ts.tv_sec = (time_t)ms / HDF_KILO_UNIT;
+    ts.tv_nsec = (time_t)HDF_KILO_UNIT * HDF_KILO_UNIT * ((long)(ms % HDF_KILO_UNIT));
     result = nanosleep(&ts, &ts);
     if (result != 0) {
         HDF_LOGE("%s OsalMSleep failed %d", __func__, errno);
@@ -80,8 +80,8 @@ void OsalUSleep(uint32_t us)
     int result;
     struct timespec ts;
 
-    ts.tv_sec = us / ((long)HDF_KILO_UNIT * HDF_KILO_UNIT);
-    ts.tv_nsec = HDF_KILO_UNIT * ((long)(us % HDF_KILO_UNIT));
+    ts.tv_sec = (time_t)us / ((long)HDF_KILO_UNIT * HDF_KILO_UNIT);
+    ts.tv_nsec = (time_t)HDF_KILO_UNIT * ((long)(us % HDF_KILO_UNIT));
     result = nanosleep(&ts, &ts);
     if (result != 0) {
         HDF_LOGE("%s OsalUSleep failed %d", __func__, errno);
