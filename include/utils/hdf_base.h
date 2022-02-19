@@ -98,6 +98,7 @@ typedef enum {
 #define HDF_LIBRARY_DIR "/vendor/lib"
 #define HDF_ETC_DIR "/vendor/etc"
 #define HDF_CONFIG_DIR "/vendor/etc/hdfconfig"
+#define HDF_MODULE_DIR "/vendor/modules/"
 #endif
 
 #ifdef __cplusplus

@@ -20,8 +20,8 @@
 
 #define HDF_LOG_TAG devmgr_service
 
-static bool DevmgrServiceDynamicDevInfoFound(const char *svcName, struct DevHostServiceClnt **targetHostClnt,
-    struct HdfDeviceInfo **targetDeviceInfo)
+static bool DevmgrServiceDynamicDevInfoFound(
+    const char *svcName, struct DevHostServiceClnt **targetHostClnt, struct HdfDeviceInfo **targetDeviceInfo)
 {
     struct HdfSListIterator itDeviceInfo;
     struct HdfDeviceInfo *deviceInfo = NULL;
@@ -59,8 +59,8 @@ static int DevmgrServiceStartHostProcess(struct DevHostServiceClnt *hostClnt, bo
 
     hostClnt->hostPid = installer->StartDeviceHost(hostClnt->hostId, hostClnt->hostName);
     if (hostClnt->hostPid == HDF_FAILURE) {
-            HDF_LOGW("failed to start device host(%s, %u)", hostClnt->hostName, hostClnt->hostId);
-            return HDF_FAILURE;
+        HDF_LOGW("failed to start device host(%s, %u)", hostClnt->hostName, hostClnt->hostId);
+        return HDF_FAILURE;
     }
     hostClnt->stopFlag = false;
     if (!sync) {
@@ -310,8 +310,8 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
         hostAttr = (struct HdfHostInfo *)HdfSListIteratorNext(&it);
         ret = DevmgrServiceStartDeviceHost(inst, hostAttr);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGW("%s failed to start device host, host id is %u, host name is '%s'",
-                __func__, hostAttr->hostId, hostAttr->hostName);
+            HDF_LOGW("%s failed to start device host, host id is %u, host name is '%s'", __func__, hostAttr->hostId,
+                hostAttr->hostName);
         }
     }
     HdfSListFlush(&hostList, HdfHostInfoDelete);
