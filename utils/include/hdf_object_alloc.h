@@ -32,7 +32,7 @@ void *HdfObjectAllocAlloc(size_t size);
 void HdfObjectAllocFree(void *object);
 
 const struct HdfObjectPoolConfig *ObjectAllocGetConfig(void);
-void HdfObjectAllocInit();
+void HdfObjectAllocInit(void);
 
 #ifdef __cplusplus
 }
