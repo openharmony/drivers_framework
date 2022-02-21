@@ -311,7 +311,7 @@ int32_t UartSetAttribute(DevHandle handle, struct UartAttribute *attribute)
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    if (!HdfSbufWriteBuffer(data, (void *)attribute, sizeof(attribute))) {
+    if (!HdfSbufWriteBuffer(data, (void *)attribute, sizeof(*attribute))) {
         HDF_LOGE("%s: sbuf write attribute failed", __func__);
         HdfSbufRecycle(data);
         return HDF_ERR_IO;
