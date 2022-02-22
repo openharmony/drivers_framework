@@ -137,15 +137,15 @@ struct AcmWb {
     struct UsbRequest *request;
     struct AcmDevice *instance;
     uint8_t *buf;
-    int len;
-    int use;
+    uint32_t len;
+    int32_t use;
 };
 
 struct AcmRb {
     uint8_t *base;
-    int size;
-    int index;
-    int use;
+    int32_t size;
+    int32_t index;
+    int32_t use;
     struct AcmDevice *instance;
 };
 
@@ -189,7 +189,7 @@ struct AcmDevice {
     struct SerialDevice *port;
     uint32_t nbIndex;
     uint32_t nbSize;
-    int transmitting;
+    int32_t transmitting;
     int32_t ctrlReqNum;
     uint8_t busNum;
     uint8_t devAddr;
