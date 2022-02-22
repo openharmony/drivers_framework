@@ -22,14 +22,15 @@ class IdlType(object):
 def translate_file_name(file_name):
     name = file_name[1:] if file_name.startswith("I") else file_name
     translate_name = ""
-    for i in range(len(name)):
-        c = name[i]
+    num = 0
+    for c in name:
         if c >= 'A' and c <= 'Z':
-            if i > 1:
+            if num > 1:
                 translate_name += "_"
             translate_name += c.lower()
         else:
             translate_name += c
+        num += 1
     return translate_name
 
 

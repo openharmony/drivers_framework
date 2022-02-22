@@ -10,12 +10,9 @@
 
 import os
 import re
-from string import Template
 
-from hdf_tool_settings import HdfToolSettings
-from .hdf_command_error_code import CommandErrorCode
-from hdf_tool_exception import HdfToolException
 import hdf_utils
+from hdf_tool_settings import HdfToolSettings
 
 
 class HdfDefconfigAndPatch(object):

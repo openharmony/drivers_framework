@@ -10,8 +10,9 @@
 
 import sys
 
-from command_line.hdf_command_line_server import HdfCommandLineServer
+
 from hdf_tool_exception import HdfToolException
+from command_line.hdf_command_line_server import HdfCommandLineServer
 
 
 class HdfToolDaemonServer(object):
@@ -25,6 +26,6 @@ class HdfToolDaemonServer(object):
 
     def run(self):
         if self.server_type in self.servers:
-            self.servers[self.server_type](self.read_obj, self.write_obj).run()
+            self.servers.get(self.server_type)(self.read_obj, self.write_obj).run()
         else:
             raise HdfToolException('unknown type: %s' % self.server_type)

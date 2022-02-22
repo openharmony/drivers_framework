@@ -12,11 +12,10 @@ import os
 import re
 from string import Template
 
-from .hdf_linux_scann import HdfLinuxScan
+import hdf_utils
+from hdf_tool_exception import HdfToolException
 from .hdf_liteos_scann import HdfLiteScan
 from .hdf_command_error_code import CommandErrorCode
-from hdf_tool_exception import HdfToolException
-import hdf_utils
 
 
 class EnableOperation(object):

@@ -8,13 +8,13 @@
 # See the LICENSE file in the root of this repository for complete details.
 
 
+from hdf_tool_exception import HdfToolException
 from .hdf_add_handler import HdfAddHandler
 from .hdf_delete_handler import HdfDeleteHandler
 from .hdf_get_handler import HdfGetHandler
 from .hdf_set_handler import HdfSetHandler
 from .hdf_ping_handler import HdfPingHandler
 from .hdf_command_error_code import CommandErrorCode
-from hdf_tool_exception import HdfToolException
 
 
 class HdfToolCommands(object):
@@ -29,7 +29,7 @@ class HdfToolCommands(object):
 
     def run(self, cmd, args):
         if cmd in self.commands:
-            result = self.commands[cmd](args).run()
+            result = self.commands.get(cmd)(args).run()
             return result
         else:
             raise HdfToolException('unknown cmd: "%s"' % cmd,

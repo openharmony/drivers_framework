@@ -21,7 +21,7 @@ def singleton(clazz):
     def create_instance():
         if clazz not in _instances:
             _instances[clazz] = clazz()
-        return _instances[clazz]
+        return _instances.get(clazz)
     return create_instance
 
 
@@ -56,15 +56,15 @@ class HdfToolSettings(object):
     def get_supported_boards(self):
         key = self.supported_boards_key
         if key in self.settings:
-            return ','.join(self.settings[key].keys())
+            return ','.join(self.settings.get(key).keys())
         return ''
 
     def get_board_parent_path(self, board_name):
         key = self.supported_boards_key
         board_entry = {}
         if key in self.settings:
-            if board_name in self.settings[key]:
-                board_entry = self.settings[key][board_name]
+            if board_name in self.settings.get(key):
+                board_entry = self.settings.get(key).get(board_name)
         key = self.board_path_key
         return board_entry.get(key, '')
 
@@ -97,13 +97,13 @@ class HdfToolSettings(object):
     def get_board_parent_file(self, board_name):
         key = self.supported_boards_key
         if key in self.settings:
-            if board_name in self.settings[key]:
-                return self.settings[key][board_name]["patch_and_config"]
+            if board_name in self.settings.get(key):
+                return self.settings.get(key).get(board_name).get("patch_and_config")
         return ''
 
     def get_board_list(self):
         key = self.supported_boards_key
-        return list(self.settings[key].keys())
+        return list(self.settings.get(key).keys())
 
     def get_user_adapter_path(self):
         key = self.user_adapter_path_key

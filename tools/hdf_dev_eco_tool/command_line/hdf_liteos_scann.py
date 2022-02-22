@@ -11,13 +11,13 @@
 import json
 import os
 import re
-from string import Template
-import platform
 import ast
+import platform
+from string import Template
 
-from .hdf_command_error_code import CommandErrorCode
-from hdf_tool_exception import HdfToolException
 import hdf_utils
+from hdf_tool_exception import HdfToolException
+from .hdf_command_error_code import CommandErrorCode
 
 
 class HdfLiteScan(object):
@@ -50,7 +50,7 @@ class HdfLiteScan(object):
         self.re_temp = r"^modules"
         self.re_temp_model = r'"[a-z 0-9]+'
         self.re_temp_module_switch = r"^module_switch"
-        self.re_temp_LOSCFG = r"LOSCFG[_ A-Z 0-9]+"
+        self.re_temp_loscfg = r"LOSCFG[_ A-Z 0-9]+"
         self.re_temp_sources = "^sources"
         self.re_source_file1 = r"\$[A-Z _ / a-z 0-9 .]+\.c"
         self.re_source_file2 = r"[_ / a-z 0-9]+\.c"
@@ -83,7 +83,6 @@ class HdfLiteScan(object):
             model_name = re.compile(self.re_temp_model).match(i.strip())
             if model_name:
                 model_list.append(i.strip())
-        # self.re_temp = r"^modules"
         return list(set(model_list))
 
     def _get_model_file_dict(self, liteos_model):
@@ -96,7 +95,7 @@ class HdfLiteScan(object):
             model_file_path = os.path.join(parent_path, model_path[1:-2])
             model_name = model_path[1:-2].split("/")[0]
             if model_path_dict.get(model_name, None):
-                model_path_dict[model_name].append(model_file_path)
+                model_path_dict.get(model_name).append(model_file_path)
             else:
                 model_path_dict[model_name] = [model_file_path]
         return model_path_dict
@@ -112,7 +111,7 @@ class HdfLiteScan(object):
                         if re.search(self.re_temp_module_switch, line) \
                                 and status:
                             enable_key = '%s=y\n' % re.search(
-                                self.re_temp_LOSCFG, line.strip()).group()
+                                self.re_temp_loscfg, line.strip()).group()
                             if enable_key not in self.contents_config_enable:
                                 model_path_dict[model_name].remove(path)
                             else:
@@ -133,7 +132,7 @@ class HdfLiteScan(object):
             replace_path = {}
             for index, line in enumerate(model_build_lines):
                 if re.search(self.re_temp_module_switch, line.strip()):
-                    temp_name = re.search(self.re_temp_LOSCFG,
+                    temp_name = re.search(self.re_temp_loscfg,
                                           line.strip()).group()
                 elif re.search(self.re_test, line.strip()):
                     if line.strip().endswith("="):
@@ -183,7 +182,7 @@ class HdfLiteScan(object):
                 )
                 for index, line in enumerate(model_build_lines):
                     if re.search(self.re_temp_module_switch, line.strip()):
-                        temp_name = re.search(self.re_temp_LOSCFG,
+                        temp_name = re.search(self.re_temp_loscfg,
                                               line.strip()).group()
                     elif re.search(self.re_test, line.strip()):
                         if line.strip().endswith("="):
@@ -244,13 +243,13 @@ class HdfLiteScan(object):
                                                   return_dict, need_replace)
 
         for k in list(return_dict.keys()):
-            for model_detail in list(return_dict[k].keys()):
+            for model_detail in list(return_dict.get(k).keys()):
                 enable_key = '%s=y\n' % model_detail
                 if enable_key not in self.contents_config_enable:
-                    del return_dict[k][model_detail]
+                    del return_dict.get(k)[model_detail]
                 else:
-                    if not return_dict[k][model_detail]:
-                        del return_dict[k][model_detail]
+                    if not return_dict.get(k).get(model_detail):
+                        del return_dict.get(k)[model_detail]
                     else:
                         return_dict = self.format_replace_string(
                             return_dict, model_name=k,
@@ -322,20 +321,20 @@ class HdfLiteScan(object):
             if header_name is not None:
                 if header_name.find("if") != -1:
                     enable_name = re.search(
-                        self.re_temp_LOSCFG, header_name).group()
+                        self.re_temp_loscfg, header_name).group()
                 else:
                     enable_name = "temp"
             else:
                 enable_name = "temp"
             temp_list0 = []
             for temp_info in temp_list:
-                Source_File_Path1 = re.search(
+                source_file_path1 = re.search(
                     self.re_source_file1, temp_info.strip())
-                Source_File_Path2 = re.search(
+                source_file_path2 = re.search(
                     self.re_source_file2, temp_info.strip())
-                if Source_File_Path1:
-                    temp_list0.append(Source_File_Path1.group())
-                elif Source_File_Path2:
+                if source_file_path1:
+                    temp_list0.append(source_file_path1.group())
+                elif source_file_path2:
                     list1 = temp_info.strip().split("=")
                     try:
                         str1 = ast.literal_eval(list1[-1].strip())[0]
@@ -379,15 +378,15 @@ class HdfLiteScan(object):
                                 self.root + replace_line[-1]\
                                     .strip().strip('"')
                             break
-        temp_Template = Template(json.dumps(need_replace))
-        dict000 = json.loads(temp_Template.substitute(test_dict))
+        temp_template = Template(json.dumps(need_replace))
+        dict000 = json.loads(temp_template.substitute(test_dict))
         for key_model in list(return_dict.keys()):
             dict000[key_model].update(test_dict)
             replace_dict = json.loads(json.dumps(
                 dict000[key_model]).replace("//", '/'))
-            temp_Template1 = Template(
+            temp_template1 = Template(
                 json.dumps(return_dict[key_model]))
-            temp_key_model = json.loads(temp_Template1.
+            temp_key_model = json.loads(temp_template1.
                                         substitute(replace_dict))
             for enable_name_lower in list(temp_key_model.keys()):
                 if enable_name_lower.find("HDF") != -1:
@@ -414,4 +413,3 @@ class HdfLiteScan(object):
             self.get_need_result(model_path_dict)
         return self.replace_file_path(return_dict, import_gni_path,
                                       import_replace_name, need_replace)
-

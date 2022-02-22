@@ -12,11 +12,10 @@ import os
 import re
 from string import Template
 
-
-from .hdf_command_error_code import CommandErrorCode
+import hdf_utils
 from hdf_tool_exception import HdfToolException
 from hdf_tool_settings import HdfToolSettings
-import hdf_utils
+from .hdf_command_error_code import CommandErrorCode
 
 
 class HdfDeviceInfoHcsFile(object):
@@ -97,7 +96,7 @@ class HdfDeviceInfoHcsFile(object):
             if line.find("%s :: host" % module) > 0:
                 index_info["start_index"] = index
                 for child_index in range(
-                        index_info["start_index"], len(hcs_config)):
+                        index_info.get("start_index"), len(hcs_config)):
                     if hcs_config[child_index].strip().find("{") != -1:
                         count += 1
                     elif hcs_config[child_index].strip() == "}":
@@ -107,8 +106,8 @@ class HdfDeviceInfoHcsFile(object):
                         break
                 break
         if index_info:
-            self.lines = hcs_config[0:index_info["start_index"]] \
-                         + hcs_config[index_info["end_index"] + 1:]
+            self.lines = hcs_config[0:index_info.get("start_index")] \
+                         + hcs_config[index_info.get("end_index") + 1:]
             self._save()
             return True
 
