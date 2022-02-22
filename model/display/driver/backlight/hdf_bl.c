@@ -39,7 +39,7 @@ struct BacklightDev {
 
 struct BlDevManager {
     struct BacklightDev *blDev[MAX_BL_DEV];
-    int32_t devNum;
+    uint32_t devNum;
 };
 
 static struct BlDevManager g_blDevManager;
@@ -193,7 +193,7 @@ int32_t UpdateBrightness(struct BacklightDev *blDev, uint32_t brightness)
     return ret;
 }
 
-static int32_t GetBlDevBrightness(struct BacklightDev *blDev, enum BrightnessType type)
+static uint32_t GetBlDevBrightness(struct BacklightDev *blDev, enum BrightnessType type)
 {
     uint32_t brightness;
 
@@ -269,7 +269,7 @@ static int32_t HdfGetBrightness(enum BrightnessType type,
     struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     uint32_t devId;
-    int32_t brightness;
+    uint32_t brightness;
     struct BlDevManager *blDevManager = NULL;
     struct BacklightDev *blDev = NULL;
 
