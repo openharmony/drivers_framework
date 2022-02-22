@@ -60,16 +60,15 @@ int32_t ReadSensor(struct SensorBusCfg *busCfg, uint16_t regAddr, uint8_t *data,
             HDF_LOGE("%s: i2c[%u] read failed", __func__, busCfg->i2cCfg.busNum);
             return HDF_FAILURE;
         }
-    }
 
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
-    else if (busCfg->busType == SENSOR_BUS_SPI) {
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
         if (SpiRead(busCfg->spiCfg.handle, data, dataLen) != HDF_SUCCESS) {
             HDF_LOGE("%s: spi read failed", __func__);
             return HDF_FAILURE;
         }
-    }
 #endif
+    }
 
     return HDF_SUCCESS;
 }
@@ -93,16 +92,15 @@ int32_t WriteSensor(struct SensorBusCfg *busCfg, uint8_t *writeData, uint16_t da
             HDF_LOGE("%s: i2c[%u] write failed", __func__, busCfg->i2cCfg.busNum);
             return HDF_FAILURE;
         }
-    }
 
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
-    else if (busCfg->busType == SENSOR_BUS_SPI) {
+    } else if (busCfg->busType == SENSOR_BUS_SPI) {
         if (SpiWrite(busCfg->spiCfg.handle, writeData, dataLen) != HDF_SUCCESS) {
             HDF_LOGE("%s: spi write failed", __func__);
             return HDF_FAILURE;
         }
-    }
 #endif
+    }
 
     return HDF_SUCCESS;
 }
