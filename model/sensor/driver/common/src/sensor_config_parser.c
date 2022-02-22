@@ -206,7 +206,7 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
         }
     }
 
-    #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
     else if (busCfg->busType == SENSOR_BUS_SPI) {
         struct SpiDevInfo spiDevinfo;
         struct SpiCfg cfg;
@@ -226,7 +226,7 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
             return ret;
         }
     }
-    #endif
+#endif
 
     return HDF_SUCCESS;
 }
@@ -241,13 +241,13 @@ int32_t ReleaseSensorBusHandle(struct SensorBusCfg *busCfg)
         I2cClose(busCfg->i2cCfg.handle);
         busCfg->i2cCfg.handle = NULL;
     }
-    
-    #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
+
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
     else if (busCfg->busType == SENSOR_BUS_SPI) {
         SpiClose(busCfg->spiCfg.handle);
         busCfg->spiCfg.handle = NULL;
     }
-    #endif
+#endif
 
     return HDF_SUCCESS;
 }
