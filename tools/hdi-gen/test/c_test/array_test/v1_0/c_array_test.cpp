@@ -27,8 +27,8 @@ class CArrayTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase();
-    void SetUp(){}
-    void TearDown(){}
+    void SetUp() {}
+    void TearDown() {}
 };
 
 void CArrayTest::SetUpTestCase()

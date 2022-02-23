@@ -28,9 +28,9 @@ static sptr<IListTest> g_testClient = nullptr;
 class CppListTest : public testing::Test {
 public:
     static void SetUpTestCase();
-    static void TearDownTestCase(){}
-    void SetUp(){}
-    void TearDown(){}
+    static void TearDownTestCase() {}
+    void SetUp() {}
+    void TearDown() {}
 };
 
 void CppListTest::SetUpTestCase()

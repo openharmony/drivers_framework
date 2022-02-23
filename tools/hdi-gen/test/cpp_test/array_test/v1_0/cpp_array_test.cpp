@@ -28,9 +28,9 @@ static sptr<IArrayTest> g_testClient = nullptr;
 class CppArrayTest : public testing::Test {
 public:
     static void SetUpTestCase();
-    static void TearDownTestCase(){}
-    void SetUp(){}
-    void TearDown(){}
+    static void TearDownTestCase() {}
+    void SetUp() {}
+    void TearDown() {}
 };
 
 void CppArrayTest::SetUpTestCase()
