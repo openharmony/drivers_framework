@@ -96,7 +96,7 @@ enum HdmiHdcpRegOptType {
 #define HDMI_HDCP_MSG_KSV_FIFO_LEN 1
 #define HDMI_HDCP_DEVICE_COUNT_MAX 127
 #define HDMI_HDCP_MSG_KSV_MAX_LEN (5 * HDMI_HDCP_DEVICE_COUNT_MAX)
-#define HDMI_HDCP_GET_KSV_LEN(x) (5 * x)
+#define HDMI_HDCP_GET_KSV_LEN(x) (5 * (x))
 
 #define HDMI_HDCP_AKSV_ONE_NUM 20
 #define HDMI_HDCP_BCAPS_REPEATER_MARK 0x40
@@ -131,7 +131,7 @@ enum HdmiHdcpRegOptType {
 #define HDMI_HDCP_MSG_REPEATER_AUTH_STREAM_READY_LEN 33
 
 #define HDMI_HDCP_2_2_VERSION 2
-#define HDMI_HDCP_GET_AUTH_RCVID_LIST_LEN(x) (22 + 5 * x)
+#define HDMI_HDCP_GET_AUTH_RCVID_LIST_LEN(x) (22 + (5 * (x)))
 
 struct HdmiHdcpMsg {
     /* HDCP 1.4 message */

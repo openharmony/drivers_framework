@@ -58,10 +58,10 @@ void HdfLiteHdmiTest::TearDown()
 
 static void HdmiUserHpdHandle(void *data, bool hpd)
 {
-    if (data == NULL) {
+    if (data == nullptr) {
         printf("data is null");
     }
-    if (hpd == true) {
+    if (hpd) {
         printf("HdmiUserHpdHandle: hpd.");
     } else {
         printf("HdmiUserHpdHandle: unhpd.");

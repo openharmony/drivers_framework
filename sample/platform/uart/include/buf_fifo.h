@@ -9,9 +9,7 @@
 #ifndef BUF_FIFO_H
 #define BUF_FIFO_H
 
-#include <stdint.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 struct BufferFifo {
     volatile uint32_t readPosition;
