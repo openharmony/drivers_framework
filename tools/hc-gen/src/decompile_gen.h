@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <string>
+
 #include "ast.h"
 
 namespace OHOS {
@@ -29,15 +30,15 @@ private:
 
     void WriteFile(const std::string &str);
 
-    int32_t PrintBaseType(const std::shared_ptr<AstObject>& astObj);
+    int32_t PrintBaseType(const std::shared_ptr<AstObject> &astObj);
 
     std::string GetNodeRefPath(uint32_t hash);
 
-    int32_t PrintArrayType(const std::shared_ptr<AstObject>& astObj);
+    int32_t PrintArrayType(const std::shared_ptr<AstObject> &astObj);
 
-    int32_t OutPutWalk(const std::shared_ptr<AstObject>& astObj, int32_t walkDepth);
+    int32_t OutPutWalk(const std::shared_ptr<AstObject> &astObj, int32_t walkDepth);
 
-    int32_t CloseBrace(const std::shared_ptr<AstObject>& astObj, int32_t walkDepth);
+    int32_t CloseBrace(const std::shared_ptr<AstObject> &astObj, int32_t walkDepth);
 
     const std::string fileHeader_ = "/*\n * HDF decompile hcs file\n */\n\n";
     std::string outPutFileName_;
@@ -45,6 +46,6 @@ private:
     std::shared_ptr<Ast> ast_;
 };
 
-} // OHOS
-} // Hardware
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_DECOMPILE_GEN_H

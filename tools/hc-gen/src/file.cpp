@@ -6,15 +6,16 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "file.h"
 #include <climits>
 #include <cstdlib>
 #include <unistd.h>
+
+#include "file.h"
 #include "types.h"
 
 using namespace OHOS::Hardware::Util;
 
-std::string File::AbsPath(const std::string& path)
+std::string File::AbsPath(const std::string &path)
 {
     char realPath[PATH_MAX];
 #ifdef MINGW32
@@ -48,7 +49,7 @@ std::string File::GetDir(std::string path)
     return path.substr(0, separatorPos + 1);
 }
 
-std::string File::FileNameBase(const std::string& path)
+std::string File::FileNameBase(const std::string &path)
 {
     auto sepPos = path.rfind(OS_SEPARATOR);
     auto dotPos = path.rfind('.');

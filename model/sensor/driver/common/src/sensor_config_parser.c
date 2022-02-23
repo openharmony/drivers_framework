@@ -136,7 +136,7 @@ int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct Dev
         }
 
         *groupNode = group;
-        group->itemNum = num / SENSOR_REG_CFG_INDEX_MAX;
+        group->itemNum = (uint32_t)(num / SENSOR_REG_CFG_INDEX_MAX);
         group->itemNum = ((SENSOR_REG_CFG_INDEX_MAX * group->itemNum) < num) ? (group->itemNum + 1) : group->itemNum;
 
         group->regCfgItem = (struct SensorRegCfg*)OsalMemCalloc(group->itemNum * sizeof(*(group->regCfgItem)));
@@ -156,7 +156,7 @@ int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct Dev
 
 int32_t ParseSensorRegConfig(struct SensorCfgData *config)
 {
-    int32_t index;
+    uint32_t index;
     const struct DeviceResourceNode *regCfgNode = NULL;
     struct DeviceResourceIface *parser = NULL;
     const struct DeviceResourceAttr *regAttr = NULL;
@@ -198,12 +198,14 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_ERR_INVALID_PARAM);
 
     if (busCfg->busType == SENSOR_BUS_I2C) {
-        int16_t busNum = busCfg->i2cCfg.busNum;
+        uint16_t busNum = busCfg->i2cCfg.busNum;
         busCfg->i2cCfg.handle = I2cOpen(busNum);
         if (busCfg->i2cCfg.handle == NULL) {
             HDF_LOGE("%s: sensor i2c Handle invalid", __func__);
             return HDF_FAILURE;
         }
+
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
     } else if (busCfg->busType == SENSOR_BUS_SPI) {
         struct SpiDevInfo spiDevinfo;
         struct SpiCfg cfg;
@@ -222,6 +224,7 @@ int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
             SpiClose(busCfg->i2cCfg.handle);
             return ret;
         }
+#endif
     }
 
     return HDF_SUCCESS;
@@ -236,9 +239,12 @@ int32_t ReleaseSensorBusHandle(struct SensorBusCfg *busCfg)
     if (busCfg->busType == SENSOR_BUS_I2C && busCfg->i2cCfg.handle != NULL) {
         I2cClose(busCfg->i2cCfg.handle);
         busCfg->i2cCfg.handle = NULL;
+
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
     } else if (busCfg->busType == SENSOR_BUS_SPI) {
         SpiClose(busCfg->spiCfg.handle);
         busCfg->spiCfg.handle = NULL;
+#endif
     }
 
     return HDF_SUCCESS;
@@ -411,7 +417,7 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
     num = parser->GetElemNum(directionNode, "convert");
     ret = parser->GetUint32(directionNode, "direction", &index, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "direction"); 
-    if ((num <= 0 || num > MAX_SENSOR_INDEX_NUM) || (index < 0 || index > num / AXIS_INDEX_MAX)) {
+    if ((num <= 0 || num > MAX_SENSOR_INDEX_NUM) || (index < 0 || (int32_t)index > num / AXIS_INDEX_MAX)) {
         return HDF_FAILURE;
     }
 
@@ -446,7 +452,7 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
 
 int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *remapData, uint32_t num)
 {
-    int32_t axis;
+    uint32_t axis;
     int32_t directionSign[MAX_SENSOR_AXIS_NUM];
     int32_t newData[MAX_SENSOR_AXIS_NUM];
 

@@ -7,9 +7,9 @@
  */
 
 #include "decompile_gen.h"
-#include <sstream>
 #include "file.h"
 #include "logger.h"
+#include <sstream>
 
 using namespace OHOS::Hardware;
 
@@ -68,7 +68,7 @@ std::string DecompileGen::GetNodeRefPath(uint32_t value)
     return std::string();
 }
 
-int32_t DecompileGen::PrintArrayType(const std::shared_ptr<AstObject>& astObj)
+int32_t DecompileGen::PrintArrayType(const std::shared_ptr<AstObject> &astObj)
 {
     WriteFile("[");
     auto arrayElement = astObj->Child();
@@ -88,7 +88,7 @@ int32_t DecompileGen::PrintArrayType(const std::shared_ptr<AstObject>& astObj)
     return NOERR;
 }
 
-int32_t DecompileGen::PrintBaseType(const std::shared_ptr<AstObject>& astObj)
+int32_t DecompileGen::PrintBaseType(const std::shared_ptr<AstObject> &astObj)
 {
     std::stringstream outStr;
     std::string refPath;
@@ -120,7 +120,7 @@ int32_t DecompileGen::PrintBaseType(const std::shared_ptr<AstObject>& astObj)
     return NOERR;
 }
 
-int32_t DecompileGen::OutPutWalk(const std::shared_ptr<AstObject>& astObj, int32_t walkDepth)
+int32_t DecompileGen::OutPutWalk(const std::shared_ptr<AstObject> &astObj, int32_t walkDepth)
 {
     if (astObj->Type() != PARSEROP_CONFNODE && astObj->Type() != PARSEROP_CONFTERM) {
         return NOERR;
@@ -155,7 +155,7 @@ int32_t DecompileGen::OutPutWalk(const std::shared_ptr<AstObject>& astObj, int32
     return 0;
 }
 
-int32_t DecompileGen::CloseBrace(const std::shared_ptr<AstObject>& astObj, int32_t walkDepth)
+int32_t DecompileGen::CloseBrace(const std::shared_ptr<AstObject> &astObj, int32_t walkDepth)
 {
     if (astObj->Type() != PARSEROP_CONFNODE) {
         return NOERR;
@@ -176,12 +176,12 @@ bool DecompileGen::OutPut()
     }
     WriteFile(fileHeader_);
     if (!ast_->WalkRound(
-        [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
-            return OutPutWalk(current, walkDepth);
-        },
-        [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
-            return CloseBrace(current, walkDepth);
-        })) {
+            [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
+                return OutPutWalk(current, walkDepth);
+            },
+            [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
+                return CloseBrace(current, walkDepth);
+            })) {
         return false;
     }
 

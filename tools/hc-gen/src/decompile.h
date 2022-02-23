@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <string>
+
 #include "ast.h"
 
 namespace OHOS {
@@ -74,6 +75,6 @@ private:
     std::ifstream file_;
 };
 
-} // OHOS
-} // Hardware
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_DECOMPILE_H

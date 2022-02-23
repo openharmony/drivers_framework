@@ -72,6 +72,21 @@ void CCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& par
     sb.Append(prefix).Append(parameter->EmitCParameter());
 }
 
+void CCodeEmitter::EmitInitLoopVar(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix)
+{
+    if (isKernelCode_) {
+        for (size_t i = 0; i < method->GetParameterNumber(); i++) {
+            AutoPtr<ASTParameter> param = method->GetParameter(i);
+            AutoPtr<ASTType> type = param->GetType();
+            if (type->GetTypeKind() == TypeKind::TYPE_ARRAY ||
+                type->GetTypeKind() == TypeKind::TYPE_LIST) {
+                sb.Append(prefix).Append("uint32_t i = 0;\n");
+                break;
+            }
+        }
+    }
+}
+
 void CCodeEmitter::EmitErrorHandle(const AutoPtr<ASTMethod>& method, const String& gotoLabel, bool isClient,
     StringBuilder& sb, const String& prefix)
 {
@@ -83,28 +98,6 @@ void CCodeEmitter::EmitErrorHandle(const AutoPtr<ASTMethod>& method, const Strin
             paramType->EmitMemoryRecycle(param->GetName(), isClient, true, sb, prefix + g_tab);
         }
         return;
-    }
-
-    bool errorLabel = false;
-    for (size_t i = 0; i < method->GetParameterNumber(); i++) {
-        AutoPtr<ASTParameter> param = method->GetParameter(i);
-        AutoPtr<ASTType> paramType = param->GetType();
-        if (param->GetAttribute() == ParamAttr::PARAM_OUT &&
-            (paramType->GetTypeKind() == TypeKind::TYPE_STRING
-            || paramType->GetTypeKind() == TypeKind::TYPE_ARRAY
-            || paramType->GetTypeKind() == TypeKind::TYPE_LIST
-            || paramType->GetTypeKind() == TypeKind::TYPE_STRUCT
-            || paramType->GetTypeKind() == TypeKind::TYPE_UNION)) {
-            if (!errorLabel) {
-                sb.Append(prefix + g_tab).Append("goto finished;\n");
-                sb.Append("\n");
-                sb.Append(prefix).AppendFormat("%s:\n", gotoLabel.string());
-                errorLabel = true;
-            }
-
-            paramType->EmitMemoryRecycle(param->GetName(), isClient, true, sb, prefix + g_tab);
-            sb.Append("\n");
-        }
     }
 }
 

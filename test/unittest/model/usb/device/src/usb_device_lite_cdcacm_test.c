@@ -338,7 +338,7 @@ static struct Serial *SerialAlloc(void)
 static void ParsePipes(struct AcmDevice *acmDevice, const struct UsbFnInterface *fnIface, UsbFnInterfaceHandle handle)
 {
     uint32_t j;
-    int ret;
+    int32_t ret;
     struct UsbFnPipeInfo pipeInfo = {0};
     for (j = 0; j < fnIface->info.numPipes; j++) {
         ret = UsbFnGetInterfacePipeInfo((struct UsbFnInterface *)fnIface, j, &pipeInfo);
@@ -366,7 +366,7 @@ static void ParsePipes(struct AcmDevice *acmDevice, const struct UsbFnInterface 
     }
 }
 
-static int ParseInterfaces(struct AcmDevice *acmDevice)
+static int32_t ParseInterfaces(struct AcmDevice *acmDevice)
 {
     uint32_t i;
     struct UsbFnInterface *fnIface = NULL;
@@ -408,13 +408,13 @@ OUT:
     DListInsertTail(&req->list, &acm->ctrlPool);
 }
 
-static int AllocCtrlRequests(struct AcmDevice *acmDevice)
+static int32_t AllocCtrlRequests(struct AcmDevice *acmDevice)
 {
     struct DListHead *head = &acmDevice->ctrlPool;
     struct UsbFnRequest *req = NULL;
     struct CtrlInfo *ctrlInfo = NULL;
-    int i;
-    int count = 2;
+    int32_t i;
+    int32_t count = 2;
 
     DListHeadInit(&acmDevice->ctrlPool);
     acmDevice->ctrlReqNum = 0;
@@ -444,7 +444,7 @@ static int32_t SendNotifyRequest(struct AcmDevice *acm, uint8_t type,
 {
     struct UsbFnRequest *req = NULL;
     struct UsbCdcNotification *notify = NULL;
-    int ret;
+    int32_t ret;
     if ((data == NULL) || (acm == NULL) || (acm->ctrlIface.fn == NULL)) {
         return -1;
     }
@@ -543,7 +543,7 @@ static void Disconnect(struct AcmDevice *acm)
     NotifySerialState(acm);
 }
 
-static int32_t SendBreak(struct AcmDevice *acm, int duration)
+static int32_t SendBreak(struct AcmDevice *acm, int32_t duration)
 {
     uint16_t state;
 
@@ -601,13 +601,13 @@ static struct UsbFnRequest *GetCtrlReq(struct AcmDevice *acm)
     return req;
 }
 
-static int Setup(struct AcmDevice *acm, const struct UsbFnCtrlRequest *setup)
+static int32_t Setup(struct AcmDevice *acm, const struct UsbFnCtrlRequest *setup)
 {
     struct UsbFnRequest *req = NULL;
     struct CtrlInfo *ctrlInfo = NULL;
     uint16_t value  = Le16ToCpu(setup->value);
     uint16_t length = Le16ToCpu(setup->length);
-    int ret = 0;
+    int32_t ret = 0;
     req = GetCtrlReq(acm);
     if (req == NULL) {
         return ret;
@@ -617,7 +617,7 @@ static int Setup(struct AcmDevice *acm, const struct UsbFnCtrlRequest *setup)
             if (length != sizeof(struct UsbCdcLineCoding)) {
                 goto OUT;
             }
-            ret = length;
+            ret = (int)length;
             break;
         case USB_DDK_CDC_REQ_GET_LINE_CODING:
             ret = (length > sizeof(struct UsbCdcLineCoding)) ? \
@@ -640,7 +640,7 @@ static int Setup(struct AcmDevice *acm, const struct UsbFnCtrlRequest *setup)
 OUT:
     ctrlInfo = (struct CtrlInfo *)req->context;
     ctrlInfo->request = setup->request;
-    req->length = ret;
+    req->length = (uint32_t)ret;
     ret = UsbFnSubmitRequestAsync(req);
     return ret;
 }
@@ -742,7 +742,7 @@ struct AcmDevice *SetUpAcmDevice(void)
 
 static int32_t FreeNotifyRequest(struct AcmDevice *acmDevice)
 {
-    int ret;
+    int32_t ret;
 
     /* allocate notification request */
     if (acmDevice->notifyReq == NULL) {
@@ -759,7 +759,7 @@ static int32_t FreeNotifyRequest(struct AcmDevice *acmDevice)
     return HDF_SUCCESS;
 }
 
-static int FreeCtrlRequests(struct AcmDevice *acmDevice)
+static int32_t FreeCtrlRequests(struct AcmDevice *acmDevice)
 {
     struct DListHead *head = &acmDevice->ctrlPool;
     struct UsbFnRequest *req = NULL;
@@ -788,15 +788,15 @@ void ReleaseAcmDevice(struct AcmDevice *acm)
     OsalMemFree(acm->port);
 }
 
-int remove_usb_device(void)
+int32_t remove_usb_device(void)
 {
     struct UsbFnDevice *device = NULL;
     struct UsbFnDeviceMgr *devMgr = NULL;
     struct UsbFnFuncMgr *funcMgr = NULL;
     struct UsbFnInterfaceMgr *intfMgr = NULL;
     const char *udcName = "100e0000.hidwc3_0";
-    int i = 0;
-    int ret;
+    uint8_t i = 0;
+    int32_t ret;
 
     device = (struct UsbFnDevice *)UsbFnGetDevice(udcName);
     if (device == NULL) {

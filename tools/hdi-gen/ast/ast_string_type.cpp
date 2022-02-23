@@ -33,7 +33,7 @@ String ASTStringType::EmitCType(TypeMode mode) const
         case TypeMode::PARAM_IN:
             return "const char*";
         case TypeMode::PARAM_OUT:
-            return "char**";
+            return "char*";
         case TypeMode::LOCAL_VAR:
             return "char*";
         default:
@@ -62,19 +62,45 @@ String ASTStringType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return "String";
 }
 
-void ASTStringType::EmitCWriteVar(const String& parcelName, const String& name, const String& gotoLabel,
-    StringBuilder& sb, const String& prefix) const
+void ASTStringType::EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
+    const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("if (!HdfSbufWriteString(%s, %s)) {\n",
         parcelName.string(), name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTStringType::EmitCProxyWriteOutVar(const String& parcelName, const String& name, const String& ecName,
+    const String& gotoLabel, StringBuilder& sb, const String& prefix) const
+{
+    String lenName = String::Format("%sLen", name.string());
+    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUint32(%s, %s)) {\n",
+        parcelName.string(), lenName.string());
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
 void ASTStringType::EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
+    const String& ecName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const
+{
+    sb.Append(prefix).AppendFormat("const char *%s = HdfSbufReadString(%s);\n",
+        name.string(), parcelName.string());
+    sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTStringType::EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
     const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
     sb.Append(prefix).AppendFormat("const char *%s = HdfSbufReadString(%s);\n",
@@ -82,21 +108,32 @@ void ASTStringType::EmitCProxyReadVar(const String& parcelName, const String& na
     sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
-void ASTStringType::EmitCStubReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
+void ASTStringType::EmitCStubReadOutVar(const String& parcelName, const String& name, const String& ecName,
+    const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("const char *%s = HdfSbufReadString(%s);\n",
-        name.string(), parcelName.string());
-    sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
+    String lenName = String::Format("%sLen", name.string());
+    sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(%s, &%s)) {\n",
+        parcelName.string(), lenName.string());
     sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("ec = HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + g_tab).Append("goto errors;\n");
+        "HDF_LOGE(\"%%{public}s: read %s size failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n\n");
+
+    sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = (%s)OsalMemCalloc(%s);\n", name.string(), EmitCType().string(),
+        lenName.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: malloc %s failed\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("%s = HDF_ERR_MALLOC_FAIL;\n", ecName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("}\n");
     sb.Append(prefix).Append("}\n");
 }
 
@@ -130,15 +167,15 @@ void ASTStringType::EmitCMarshalling(const String& name, StringBuilder& sb, cons
     sb.Append(prefix).Append("}\n");
 }
 
-void ASTStringType::EmitCUnMarshalling(const String& name, StringBuilder& sb, const String& prefix,
-    std::vector<String>& freeObjStatements) const
+void ASTStringType::EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb,
+    const String& prefix, std::vector<String>& freeObjStatements) const
 {
     sb.Append(prefix).AppendFormat("const char *%s = HdfSbufReadString(data);\n", name.string());
     sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
     EmitFreeStatements(freeObjStatements, sb, prefix + g_tab);
-    sb.Append(prefix + g_tab).Append("goto errors;\n");
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
 }
 
@@ -167,10 +204,9 @@ void ASTStringType::EmitCppUnMarshalling(const String& parcelName, const String&
 void ASTStringType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
     const String& prefix) const
 {
-    String varName = isClient ? String::Format("*%s", name.string()) : name;
-    sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", varName.string());
-    sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", varName.string());
-    sb.Append(prefix + g_tab).AppendFormat("%s = NULL;\n", varName.string());
+    sb.Append(prefix).AppendFormat("if (%s != NULL) {\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("OsalMemFree(%s);\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = NULL;\n", name.string());
     sb.Append(prefix).Append("}\n");
 }
 

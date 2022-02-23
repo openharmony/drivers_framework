@@ -511,7 +511,7 @@ String String::ToUnderLineUpper() const
         char c = string_[i];
         if (isupper(c) != 0) {
             if (i > 1) {
-                sb.Append('_');
+                sb.Append('_');;
             }
             sb.Append(c);
         } else {
@@ -634,6 +634,28 @@ String& String::Replace(int position, int len, const String& other)
     SharedData::AddRef(newStr.string_);
     string_ = newStr.string_;
     return *this;
+}
+
+std::vector<String> String::Split(const String& separator) const
+{
+    std::vector<String> result;
+    if (IsEmpty()) {
+        return result;
+    }
+
+    int startIndex = 0;
+    int endIndex = IndexOf(separator, startIndex);
+    while (endIndex != -1) {
+        result.push_back(Substring(startIndex, endIndex));
+        startIndex = endIndex + 1;
+        endIndex = IndexOf(separator, startIndex);
+    }
+
+    if (startIndex < GetLength()) {
+        result.push_back(Substring(startIndex));
+    }
+
+    return result;
 }
 
 String& String::insert(int index, const String& other)

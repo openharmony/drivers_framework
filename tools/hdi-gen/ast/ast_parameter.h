@@ -72,8 +72,14 @@ public:
 
     String EmitJavaLocalVar();
 
-    void EmitCWriteVar(const String& parcelName, const String& gotoLabel, StringBuilder& sb,
+    void EmitCWriteVar(const String& parcelName, const String& ecName, const String& gotoLabel, StringBuilder& sb,
         const String& prefix) const;
+
+    bool EmitCProxyWriteOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
+        StringBuilder& sb, const String& prefix) const;
+
+    bool EmitCStubReadOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
+        StringBuilder& sb, const String& prefix) const;
 
     void EmitJavaWriteVar(const String& parcelName, StringBuilder& sb, const String& prefix) const;
 

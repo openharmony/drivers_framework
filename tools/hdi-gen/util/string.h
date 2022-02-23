@@ -101,6 +101,8 @@ public:
 
     String& Replace(int position, int len, const String& other);
 
+    std::vector<String> Split(const String& separator) const;
+
     String& insert(int index, const String& other);
 
     String& operator=(const char* string);

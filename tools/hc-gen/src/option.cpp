@@ -6,13 +6,14 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "option.h"
 #include <cstring>
 #include <getopt.h>
-#include <iostream>
 #include <iomanip>
-#include "logger.h"
+#include <iostream>
+
 #include "file.h"
+#include "logger.h"
+#include "option.h"
 
 using namespace OHOS::Hardware;
 static constexpr int HCS_COMPILER_VERSION_MAJOR = 00;
@@ -59,6 +60,9 @@ bool Option::ParseOptions(int argc, char **argv)
     while (op != OPTION_END) {
         op = getopt(argc, argv, HCS_SUPPORT_ARGS);
         SetOptionData(op);
+        if (ShouldShowUsage() || ShouldShowVersion()) {
+            return false;
+        }
     }
 
     return true;
@@ -105,8 +109,6 @@ void Option::SetOptionData(char op)
             showUsage_ = true;
             break;
         case '?':
-            showUsage_ = true;
-            optionError_ = true;
             SetOptionError();
             break;
         default:
@@ -116,9 +118,9 @@ void Option::SetOptionData(char op)
 
 void Option::ShowUsage()
 {
-    Logger() <<
-             "Usage: hc-gen [Options] [File]\n" <<
-             "options:";
+    Logger() << "Usage: hc-gen [Options] [File]\n"
+             << "options:";
+    ShowOption("-o <file>", "output file name, default same as input");
     ShowOption("-a", "hcb align with four bytes");
     ShowOption("-b", "output binary output, default enable");
     ShowOption("-t", "output config in C language source file style");
@@ -234,7 +236,7 @@ bool Option::SetSourceOption(const char *srcName)
     }
 
     sourceName_ = srcAbsPath;
-    sourceNameBase_ = Util::File::FileNameBase(srcAbsPath) ;
+    sourceNameBase_ = Util::File::FileNameBase(srcAbsPath);
     return true;
 }
 

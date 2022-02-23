@@ -245,9 +245,9 @@ void CppClientProxyCodeEmitter::EmitGetInstanceMethodImpl(StringBuilder& sb, con
 
     sb.Append(prefix + g_tab).AppendFormat("uint32_t %s = 0;\n", SerMajorName.string());
     sb.Append(prefix + g_tab).AppendFormat("uint32_t %s = 0;\n", SerMinorName.string());
-    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = %s->GetVersion(%s, %s);\n",
+    sb.Append(prefix + g_tab).AppendFormat("int32_t %s = %s->GetVersion(%s, %s);\n", errorCodeName_.string(),
         objName.string(), SerMajorName.string(), SerMinorName.string());
-    sb.Append(prefix + g_tab).AppendFormat("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
     sb.Append(prefix + g_tab + g_tab).Append("HDF_LOGE(\"%{public}s:get version failed!\", __func__);\n");
     sb.Append(prefix + g_tab + g_tab).Append("return nullptr;\n");
     sb.Append(prefix + g_tab).Append("}\n\n");
@@ -301,32 +301,30 @@ void CppClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& me
 void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
-    String dataName = "data_";
-    String replyName = "reply_";
-    String optionName = "option_";
     String option = method->IsOneWay() ? "MessageOption::TF_ASYNC" : "MessageOption::TF_SYNC";
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", dataName.string());
-    sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", replyName.string());
-    sb.Append(prefix + g_tab).AppendFormat("MessageOption %s(%s);\n", optionName.string(), option.string());
+    sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", dataParcelName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("MessageParcel %s;\n", replyParcelName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("MessageOption %s(%s);\n", optionName_.string(), option.string());
     sb.Append("\n");
 
     if (method->GetParameterNumber() > 0) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-                EmitWriteMethodParameter(param, dataName, sb, prefix + g_tab);
+                EmitWriteMethodParameter(param, dataParcelName_, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }
     }
 
-    sb.Append(prefix + g_tab).AppendFormat("int32_t ec = Remote()->SendRequest(%s, %s, %s, %s);\n",
-        EmitMethodCmdID(method).string(), dataName.string(), replyName.string(), optionName.string());
-    sb.Append(prefix + g_tab).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix + g_tab).AppendFormat("int32_t %s = Remote()->SendRequest(%s, %s, %s, %s);\n",
+        errorCodeName_.string(), EmitMethodCmdID(method).string(), dataParcelName_.string(),
+        replyParcelName_.string(), optionName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
     sb.Append(prefix + g_tab + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s failed, error code is %%{public}d\", __func__, ec);\n", method->GetName().string());
-    sb.Append(prefix + g_tab + g_tab).Append("return ec;\n");
+        "HDF_LOGE(\"%%{public}s failed, error code is %%{public}d\", __func__, %s);\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("return %s;\n", errorCodeName_.string());
     sb.Append(prefix + g_tab).Append("}\n");
 
     if (!method->IsOneWay()) {
@@ -334,7 +332,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-                EmitReadMethodParameter(param, replyName, false, sb, prefix + g_tab);
+                EmitReadMethodParameter(param, replyParcelName_, false, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }

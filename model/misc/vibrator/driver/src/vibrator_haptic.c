@@ -250,7 +250,7 @@ static int32_t GetHapticSeqByEffect(struct VibratorEffectCfg *effectCfg)
     if ((effectCfg->cfgMode == VIBRATOR_MODE_PRESET) && (effectCfg->effect != NULL)) {
         DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &hapticData->effectSeqHead, struct VibratorEffectNode, node) {
             if (strcmp(effectCfg->effect, pos->effect) == 0 && pos->seq != NULL) {
-                hapticData->effectType = pos->type;
+                hapticData->effectType = (int32_t)pos->type;
                 HDF_LOGE("%s: pos_num = %d", __func__, pos->num);
                 hapticData->seqCount = pos->num;
                 hapticData->currentEffectSeq = &(pos->seq[0]);

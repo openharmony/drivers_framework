@@ -78,8 +78,8 @@ enum LightFlashMode {
 
 struct LightFlashEffect {
     int32_t flashMode;
-    int32_t onTime;
-    int32_t offTime;
+    uint32_t onTime;
+    uint32_t offTime;
 };
 
 struct LightEffect {
@@ -98,7 +98,7 @@ struct LightDeviceInfo {
     uint32_t busRNum;
     uint32_t busGNum;
     uint32_t busBNum;
-    int32_t lightBrightness;
+    uint32_t lightBrightness;
     uint32_t onTime;
     uint32_t offTime;
 };

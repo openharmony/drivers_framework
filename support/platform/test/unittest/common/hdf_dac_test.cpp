@@ -92,3 +92,14 @@ HWTEST_F(HdfLiteDacTest, DacTestReliability001, TestSize.Level1)
     EXPECT_EQ(0, DacTestExecute(DAC_TEST_CMD_RELIABILITY));
     printf("%s: exit!\n", __func__);
 }
+
+/**
+  * @tc.name: DacIfPerformanceTest001
+  * @tc.desc: dac user if performance test
+  * @tc.type: FUNC
+  * @tc.require:
+  */
+HWTEST_F(HdfLiteDacTest, DacIfPerformanceTest001, TestSize.Level1)
+{
+    EXPECT_EQ(0, DacTestExecute(DAC_TEST_CMD_IF_PERFORMANCE));
+}

@@ -12,6 +12,7 @@
 #include <fstream>
 #include <map>
 #include <utility>
+
 #include "generator.h"
 
 namespace OHOS {
@@ -51,7 +52,7 @@ private:
 
     std::string GenConfigStructName(const std::shared_ptr<AstObject> &node);
 
-    bool GenObjectDefinitionGen(const std::shared_ptr<AstObject>& object);
+    bool GenObjectDefinitionGen(const std::shared_ptr<AstObject> &object);
 
     bool GenTermDefinition(const std::shared_ptr<AstObject> &term);
 
@@ -65,7 +66,7 @@ private:
 
     uint32_t ImplementCloseBraceGen(const std::shared_ptr<AstObject> &object, int32_t depth);
 
-    static const std::string & Indent(uint32_t times = 1);
+    static const std::string &Indent(uint32_t times = 1);
 
     static bool IsInSubClassNode(const std::shared_ptr<AstObject> &object);
 
@@ -84,7 +85,7 @@ private:
 
     std::shared_ptr<Symbol> SymbolFind(const std::string &name);
 
-    void SymbolAdd(const std::string &name, const std::shared_ptr<AstObject>& object);
+    void SymbolAdd(const std::string &name, const std::shared_ptr<AstObject> &object);
 
     std::ofstream ofs_;
     std::string outputFileName_;
@@ -96,13 +97,13 @@ private:
 
     uint32_t PrintTermImplement(const std::shared_ptr<AstObject> &object, int32_t depth);
 
-    bool PrintBaseTypeValue(const std::shared_ptr<AstObject>& object);
+    bool PrintBaseTypeValue(const std::shared_ptr<AstObject> &object);
 
     uint32_t PrintArrayImplement(const std::shared_ptr<AstObject> &object, int32_t depth);
 
     bool PrintArrayImplInSubClass(const std::shared_ptr<AstObject> &object, int32_t depth);
 
-    bool HcsPrintArrayContent(const std::shared_ptr<AstObject>& object, uint32_t indent);
+    bool HcsPrintArrayContent(const std::shared_ptr<AstObject> &object, uint32_t indent);
 
     std::string HcsBuildObjectPath(std::shared_ptr<AstObject> object);
 
@@ -110,13 +111,13 @@ private:
 
     bool OutputTemplateVariablesDeclare();
 
-    uint32_t ArrayVariablesDeclareGen(const std::shared_ptr<AstObject>& object);
+    uint32_t ArrayVariablesDeclareGen(const std::shared_ptr<AstObject> &object);
 
-    std::string GenArrayName(const std::shared_ptr<AstObject>& term);
+    std::string GenArrayName(const std::shared_ptr<AstObject> &term);
 
-    uint32_t TemplateVariableGen(const std::shared_ptr<AstObject>& nodeObject);
+    uint32_t TemplateVariableGen(const std::shared_ptr<AstObject> &nodeObject);
 };
 
-} // Hardware
-} // OHOS
+} // namespace Hardware
+} // namespace OHOS
 #endif // HC_GEN_TEXT_GENERATOR_H

@@ -6,16 +6,17 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <iomanip>
-#include <sstream>
-#include <set>
 #include "ast.h"
+
+#include <iomanip>
+#include <set>
+#include <sstream>
+
 #include "logger.h"
 
 using namespace OHOS::Hardware;
 
-AstObject::AstObject(AstObject &obj) :
-    AstObject(obj.name_, obj.type_, obj.stringValue_)
+AstObject::AstObject(AstObject &obj) : AstObject(obj.name_, obj.type_, obj.stringValue_)
 {
     integerValue_ = obj.integerValue_;
 }
@@ -150,19 +151,19 @@ std::ostream &OHOS::Hardware::operator<<(std::ostream &stream, const AstObject &
     }
     switch (t.type_) {
         case PARSEROP_UINT8:
-            stream << "uint8 " << "0x" << std::hex << t.integerValue_;
+            stream << "uint8 0x" << std::hex << t.integerValue_;
             break;
         case PARSEROP_UINT16:
-            stream << "uint16 " << "0x" << std::hex << t.integerValue_;
+            stream << "uint16 0x" << std::hex << t.integerValue_;
             break;
         case PARSEROP_UINT32:
-            stream << "uint32 " << "0x" << std::hex << t.integerValue_;
+            stream << "uint32 0x" << std::hex << t.integerValue_;
             break;
         case PARSEROP_UINT64:
-            stream << "uint64 " << "0x" << std::hex << t.integerValue_;
+            stream << "uint64 0x" << std::hex << t.integerValue_;
             break;
         case PARSEROP_STRING:
-            stream << "string " << "\"" << t.stringValue_ << "\"";
+            stream << "string \"" << t.stringValue_ << "\"";
             break;
         case PARSEROP_ARRAY:
             stream << "array";
@@ -254,7 +255,7 @@ std::shared_ptr<AstObject> AstObject::Lookup(const std::string &name, uint32_t t
 
 bool AstObject::IsNumber() const
 {
-    return type_ >= PARSEROP_UINT8 && type_ <= PARSEROP_UINT64;;
+    return type_ >= PARSEROP_UINT8 && type_ <= PARSEROP_UINT64;
 }
 
 bool AstObject::IsNode() const
@@ -409,7 +410,6 @@ ConfigNode::ConfigNode(std::string name, uint32_t nodeType, std::string refName)
     inheritCount_(0),
     templateSignNum_(0)
 {
-
 }
 
 ConfigNode::ConfigNode(Token &name, uint32_t nodeType, std::string refName) :
@@ -425,12 +425,12 @@ ConfigNode::ConfigNode(Token &name, uint32_t nodeType, std::string refName) :
 const std::string &ConfigNode::NodeTypeToStr(uint32_t type)
 {
     static std::map<uint32_t, std::string> type2StringMap = {
-        {NODE_NOREF,    ""},
-        {NODE_COPY,     "NodeCopy"},
-        {NODE_REF,      "NodeReference"},
-        {NODE_DELETE,   "NodeDelete"},
-        {NODE_INHERIT,  "NodeInherit"},
-        {NODE_TEMPLATE, "NodeTemplate"},
+        {NODE_NOREF,     ""             },
+        { NODE_COPY,     "NodeCopy"     },
+        { NODE_REF,      "NodeReference"},
+        { NODE_DELETE,   "NodeDelete"   },
+        { NODE_INHERIT,  "NodeInherit"  },
+        { NODE_TEMPLATE, "NodeTemplate" },
     };
     return type2StringMap[type];
 }
@@ -592,7 +592,7 @@ bool ConfigNode::NodeRefExpand(const std::shared_ptr<AstObject> &ref)
         Logger().Error() << SourceInfo() << "reference node '" << refNodePath_ << "' not exist";
         return false;
     }
-    return ref->Move(std::shared_ptr<AstObject>(this, [](AstObject *p) { (void) p; }));
+    return ref->Move(std::shared_ptr<AstObject>(this, [](AstObject *p) { (void)p; }));
 }
 
 bool ConfigNode::NodeCopyExpand(const std::shared_ptr<AstObject> &ref)
@@ -654,8 +654,7 @@ ConfigTerm::ConfigTerm(ConfigTerm &term) : ConfigTerm(term.name_, nullptr)
 }
 
 ConfigTerm::ConfigTerm(std::string name, const std::shared_ptr<AstObject> &value) :
-    AstObject(std::move(name), PARSEROP_CONFTERM, 0),
-    signNum_(0)
+    AstObject(std::move(name), PARSEROP_CONFTERM, 0), signNum_(0)
 {
     if (value != nullptr) {
         child_ = value;
@@ -664,8 +663,7 @@ ConfigTerm::ConfigTerm(std::string name, const std::shared_ptr<AstObject> &value
 }
 
 ConfigTerm::ConfigTerm(Token &name, const std::shared_ptr<AstObject> &value) :
-    AstObject(name.strval, PARSEROP_CONFTERM, 0, name),
-    signNum_(0)
+    AstObject(name.strval, PARSEROP_CONFTERM, 0, name), signNum_(0)
 {
     if (value != nullptr) {
         child_ = value;
@@ -709,8 +707,7 @@ bool ConfigTerm::RefExpand(std::shared_ptr<AstObject> refObj)
         return true;
     }
 
-    if (refObj == nullptr || !refObj->IsNode() ||
-        ConfigNode::CastFrom(refObj)->GetNodeType() == NODE_REF ||
+    if (refObj == nullptr || !refObj->IsNode() || ConfigNode::CastFrom(refObj)->GetNodeType() == NODE_REF ||
         ConfigNode::CastFrom(refObj)->GetNodeType() == NODE_TEMPLATE ||
         ConfigNode::CastFrom(refObj)->GetNodeType() == NODE_DELETE) {
         Logger().Error() << SourceInfo() << "reference invalid node '" << child_->StringValue() << '\'';
@@ -753,10 +750,7 @@ uint32_t ConfigTerm::SigNum()
     return signNum_;
 }
 
-ConfigArray::ConfigArray() :
-    AstObject("", PARSEROP_ARRAY, 0),
-    arrayType_(0),
-    arraySize_(0)
+ConfigArray::ConfigArray() : AstObject("", PARSEROP_ARRAY, 0), arrayType_(0), arraySize_(0)
 {
 }
 
@@ -772,11 +766,7 @@ ConfigArray::ConfigArray(ConfigArray &array) : ConfigArray()
 }
 
 ConfigArray::ConfigArray(const Token &bindToken) :
-    AstObject("", PARSEROP_ARRAY, 0, bindToken),
-    arrayType_(0),
-    arraySize_(0)
-{
-};
+    AstObject("", PARSEROP_ARRAY, 0, bindToken), arrayType_(0), arraySize_(0) {};
 
 bool ConfigArray::AddChild(const std::shared_ptr<AstObject> &childObj)
 {
@@ -908,7 +898,7 @@ bool Ast::Expand()
 bool Ast::NodeExpand()
 {
     return WalkBackward([this](const std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
-        (void) walkDepth;
+        (void)walkDepth;
         if (current->IsNode()) {
             auto node = ConfigNode::CastFrom(current);
             if (node->GetNodeType() == NODE_DELETE) {
@@ -957,7 +947,6 @@ bool Ast::InheritExpand()
         return NOERR;
     });
 }
-
 
 bool Ast::RedefineCheck()
 {

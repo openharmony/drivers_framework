@@ -10,11 +10,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
+#include <gtest/gtest.h>
 #include <string>
 #include <unistd.h>
-#include <gtest/gtest.h>
-#include "hdf_uhdf_test.h"
+
 #include "hdf_io_service.h"
+#include "hdf_uhdf_test.h"
 #include "osal_time.h"
 #include "sample_driver_test.h"
 
@@ -38,20 +39,16 @@ void HdfManagerTest::TearDownTestCase()
     HdfTestCloseService();
 }
 
-void HdfManagerTest::SetUp()
-{
-}
+void HdfManagerTest::SetUp() {}
 
-void HdfManagerTest::TearDown()
-{
-}
+void HdfManagerTest::TearDown() {}
 
 /**
-  * @tc.name: HdfIoServiceBind001
-  * @tc.desc: service bind test
-  * @tc.type: FUNC
-  * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
-  */
+ * @tc.name: HdfIoServiceBind001
+ * @tc.desc: service bind test
+ * @tc.type: FUNC
+ * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
+ */
 HWTEST_F(HdfManagerTest, HdfIoServiceBind001, TestSize.Level0)
 {
     const char *svcName = "HDF_TEST";
@@ -61,11 +58,11 @@ HWTEST_F(HdfManagerTest, HdfIoServiceBind001, TestSize.Level0)
 }
 
 /**
-  * @tc.name: HdfIoServiceBind002
-  * @tc.desc: service bind test
-  * @tc.type: FUNC
-  * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
-  */
+ * @tc.name: HdfIoServiceBind002
+ * @tc.desc: service bind test
+ * @tc.type: FUNC
+ * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
+ */
 HWTEST_F(HdfManagerTest, HdfIoServiceBind002, TestSize.Level0)
 {
     struct HdfIoService *hdfSvc = HdfIoServiceBind(DEV_MGR_NODE);
@@ -74,11 +71,11 @@ HWTEST_F(HdfManagerTest, HdfIoServiceBind002, TestSize.Level0)
 }
 
 /**
-  * @tc.name: HdfRegisterDevice001
-  * @tc.desc: register device
-  * @tc.type: FUNC
-  * @tc.require: SR000F8697
-  */
+ * @tc.name: HdfRegisterDevice001
+ * @tc.desc: register device
+ * @tc.type: FUNC
+ * @tc.require: SR000F8697
+ */
 HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
 {
     int32_t ret = HDF_FAILURE;
@@ -110,11 +107,11 @@ HWTEST_F(HdfManagerTest, HdfRegisterDevice001, TestSize.Level0)
 }
 
 /**
-  * @tc.name: HdfGetServiceNameByDeviceClass001
-  * @tc.desc: get service test
-  * @tc.type: FUNC
-  * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
-  */
+ * @tc.name: HdfGetServiceNameByDeviceClass001
+ * @tc.desc: get service test
+ * @tc.type: FUNC
+ * @tc.require: AR000F8698 AR000F8699 AR000F869A AR000F869B AR000F869C
+ */
 HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
 {
     struct HdfSBuf *data = HdfSbufObtain(2000);
@@ -126,7 +123,7 @@ HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
         std::cout << "clasee " << i << " device list:" << std::endl;
         EXPECT_TRUE(ret == HDF_SUCCESS);
         const char *svcName = NULL;
-        while(true) {
+        while (true) {
             svcName = HdfSbufReadString(data);
             if (svcName == NULL) {
                 break;
@@ -141,4 +138,3 @@ HWTEST_F(HdfManagerTest, HdfGetServiceNameByDeviceClass001, TestSize.Level0)
     HdfSbufRecycle(data);
     EXPECT_TRUE(flag);
 }
-

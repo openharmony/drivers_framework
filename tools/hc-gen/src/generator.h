@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+
 #include "ast.h"
 
 namespace OHOS {
@@ -26,7 +27,7 @@ public:
 protected:
     std::shared_ptr<Ast> ast_;
 };
-} // Hardware
-} // OHOS
+} // namespace Hardware
+} // namespace OHOS
 
 #endif // HC_GEN_GENERATOR_H

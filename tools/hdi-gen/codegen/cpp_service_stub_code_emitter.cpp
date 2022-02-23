@@ -150,11 +150,9 @@ void CppServiceStubCodeEmitter::EmitStubMethodDecls(StringBuilder& sb, const Str
 void CppServiceStubCodeEmitter::EmitStubMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
-    String dataName = "data_";
-    String replyName = "reply_";
-    String optionName = "option_";
     sb.Append(prefix).AppendFormat("int32_t %s%s(MessageParcel& %s, MessageParcel& %s, MessageOption& %s);\n",
-        stubName_.string(), method->GetName().string(), dataName.string(), replyName.string(), optionName.string());
+        stubName_.string(), method->GetName().string(), dataParcelName_.string(), replyParcelName_.string(),
+        optionName_.string());
 }
 
 void CppServiceStubCodeEmitter::EmitStubSourceFile()
@@ -280,19 +278,16 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpls(StringBuilder& sb, const Str
 void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
-    String dataName = "data_";
-    String replyName = "reply_";
-    String optionName = "option_";
     sb.Append(prefix).AppendFormat(
         "int32_t %s::%s%s(MessageParcel& %s, MessageParcel& %s, MessageOption& %s)\n",
         stubName_.string(), stubName_.string(), method->GetName().string(),
-        dataName.string(), replyName.string(), optionName.string());
+        dataParcelName_.string(), replyParcelName_.string(), optionName_.string());
     sb.Append(prefix).Append("{\n");
 
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
-            EmitReadMethodParameter(param, dataName, true, sb, prefix + g_tab);
+            EmitReadMethodParameter(param, dataParcelName_, true, sb, prefix + g_tab);
             sb.Append("\n");
         } else {
             EmitLocalVariable(param, sb, prefix + g_tab);
@@ -307,7 +302,7 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             if (param->GetAttribute() == ParamAttr::PARAM_OUT) {
-                EmitWriteMethodParameter(param, replyName, sb, prefix + g_tab);
+                EmitWriteMethodParameter(param, replyParcelName_, sb, prefix + g_tab);
                 sb.Append("\n");
             }
         }
@@ -320,7 +315,7 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
 void CppServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
     const String& prefix)
 {
-    sb.Append(prefix).AppendFormat("int32_t ec = %s(", method->GetName().string());
+    sb.Append(prefix).AppendFormat("int32_t %s = %s(", errorCodeName_.string(), method->GetName().string());
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         sb.Append(param->GetName());
@@ -330,20 +325,11 @@ void CppServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& met
     }
     sb.Append(");\n");
 
-    sb.Append(prefix).Append("if (ec != HDF_SUCCESS) {\n");
+    sb.Append(prefix).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
     sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s failed, error code is %%d\", __func__, ec);\n", method->GetName().string());
-    sb.Append(prefix + g_tab).Append("return ec;\n");
+        "HDF_LOGE(\"%%{public}s failed, error code is %%d\", __func__, %s);\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("return %s;\n", errorCodeName_.string());
     sb.Append(prefix).Append("}\n");
-}
-
-String CppServiceStubCodeEmitter::EmitStubServiceUsings(String nameSpace)
-{
-    int index = nameSpace.LastIndexOf('.');
-    if (index > 0) {
-        nameSpace = nameSpace.Substring(0, index);
-    }
-    return CppFullName(nameSpace);
 }
 } // namespace HDI
 } // namespace OHOS

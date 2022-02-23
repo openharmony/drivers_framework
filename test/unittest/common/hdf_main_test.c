@@ -156,8 +156,6 @@ HdfTestFuncList g_hdfTestFuncList[] = {
         { TEST_PAL_TIMER_TYPE, HdfTimerUnitTestEntry },
 #endif
 #endif
-    { TEST_CONFIG_TYPE, HdfConfigEntry },
-    { TEST_OSAL_ITEM, HdfOsalEntry },
 #if defined(LOSCFG_DRIVERS_HDF_WIFI) || defined(CONFIG_DRIVERS_HDF_WIFI)
     {TEST_WIFI_TYPE, HdfWifiEntry},
 #endif

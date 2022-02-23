@@ -37,7 +37,7 @@ static void ReadComplete(uint8_t pipe, struct UsbFnRequest *req)
 int32_t UsbFnDviceTestRequestAsync(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
+    int32_t ret;
 
     ret = UsbFnSubmitRequestAsync(req);
     if (HDF_SUCCESS == ret) {
@@ -50,8 +50,8 @@ int32_t UsbFnDviceTestRequestAsync(void)
 int32_t UsbFnDviceTestRequestAsync002(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret = HDF_SUCCESS;
-    int ret1;
+    int32_t ret = HDF_SUCCESS;
+    int32_t ret1;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.fn is invail", __func__);
@@ -95,8 +95,8 @@ int32_t UsbFnDviceTestRequestAsync002(void)
 int32_t UsbFnDviceTestRequestAsync003(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret = HDF_SUCCESS;
-    int ret1;
+    int32_t ret = HDF_SUCCESS;
+    int32_t ret1;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.fn is invail", __func__);
@@ -148,7 +148,7 @@ static void WriteComplete(uint8_t pipe, struct UsbFnRequest *req)
 int32_t UsbFnDviceTestRequestAsync004(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
+    int32_t ret;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
@@ -196,8 +196,8 @@ int32_t UsbFnDviceTestRequestAsync004(void)
 int32_t UsbFnDviceTestRequestAsync005(void)
 {
     struct UsbFnRequest *req = NULL;
-    int loopTime = TEST_TIMES;
-    int ret;
+    int32_t loopTime = TEST_TIMES;
+    int32_t ret;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
@@ -245,7 +245,7 @@ int32_t UsbFnDviceTestRequestAsync006(void)
 int32_t UsbFnDviceTestRequestSync(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
+    int32_t ret;
     ret = UsbFnSubmitRequestSync(req, 0);
     if (HDF_SUCCESS == ret) {
         HDF_LOGE("%s: sync Request success!!", __func__);
@@ -257,7 +257,7 @@ int32_t UsbFnDviceTestRequestSync(void)
 int32_t UsbFnDviceTestRequestSync002(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
+    int32_t ret;
     uint8_t *data = NULL;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
@@ -290,8 +290,8 @@ int32_t UsbFnDviceTestRequestSync002(void)
 int32_t UsbFnDviceTestRequestSync003(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
-    int submitExit = 0;
+    int32_t ret;
+    int32_t submitExit = 0;
     uint8_t *data = NULL;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
@@ -330,7 +330,7 @@ int32_t UsbFnDviceTestRequestSync003(void)
 int32_t UsbFnDviceTestRequestSync004(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
+    int32_t ret;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
@@ -365,8 +365,8 @@ int32_t UsbFnDviceTestRequestSync004(void)
 int32_t UsbFnDviceTestRequestSync005(void)
 {
     struct UsbFnRequest *req = NULL;
-    int loopTime = TEST_TIMES;
-    int ret;
+    int32_t loopTime = TEST_TIMES;
+    int32_t ret;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
@@ -403,7 +403,7 @@ int32_t UsbFnDviceTestRequestSync005(void)
 int32_t UsbFnDviceTestRequestSync006(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
+    int32_t ret;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
     if (acmDevice == NULL || acmDevice->dataIface.handle == NULL) {
         HDF_LOGE("%s: dataIface.fn is invail", __func__);
@@ -432,7 +432,7 @@ int32_t UsbFnDviceTestRequestSync006(void)
 int32_t UsbFnDviceTestRequestSync007(void)
 {
     struct UsbFnRequest *req = NULL;
-    int ret;
+    int32_t ret;
 
     ret = UsbFnSubmitRequestSync(req, SYNC_5000MS);
     if (ret == 0) {
@@ -454,7 +454,7 @@ static void TestCancelComplete(uint8_t pipe, struct UsbFnRequest *req)
 
 int32_t UsbFnDviceTestCancelRequest(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *notifyReq = NULL;
     ret = UsbFnCancelRequest(notifyReq);
     if (HDF_SUCCESS == ret) {
@@ -466,7 +466,7 @@ int32_t UsbFnDviceTestCancelRequest(void)
 
 int32_t UsbFnDviceTestCancelRequest002(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
@@ -500,7 +500,7 @@ int32_t UsbFnDviceTestCancelRequest002(void)
 
 int32_t UsbFnDviceTestCancelRequest003(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
@@ -534,7 +534,7 @@ int32_t UsbFnDviceTestCancelRequest003(void)
 
 int32_t UsbFnDviceTestCancelRequest004(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
@@ -568,7 +568,7 @@ int32_t UsbFnDviceTestCancelRequest004(void)
 
 int32_t UsbFnDviceTestCancelRequest005(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();
 
@@ -614,7 +614,7 @@ int32_t UsbFnDviceTestCancelRequest005(void)
 
 int32_t TestCancelRequest(struct UsbFnRequest *req, struct UsbFnRequest *req2)
 {
-    int ret;
+    int32_t ret;
     ret = UsbFnSubmitRequestAsync(req2);
     if (HDF_SUCCESS != ret) {
         HDF_LOGE("%s: request async error", __func__);
@@ -645,7 +645,7 @@ int32_t TestCancelRequest(struct UsbFnRequest *req, struct UsbFnRequest *req2)
 
 int32_t UsbFnDviceTestCancelRequest006(void)
 {
-    int ret;
+    int32_t ret;
     struct UsbFnRequest *req = NULL;
     struct UsbFnRequest *req2 = NULL;
     struct AcmDevice *acmDevice = UsbGetAcmDevice();

@@ -95,8 +95,8 @@ int32_t OsalMutexTimedLock(struct OsalMutex *mutex, uint32_t ms)
         struct timespec time;
         (void)memset_s(&time, sizeof(time), 0, sizeof(time));
         clock_gettime(CLOCK_REALTIME, &time);
-        time.tv_sec += ms / HDF_KILO_UNIT;
-        time.tv_nsec += (ms % HDF_KILO_UNIT) * HDF_KILO_UNIT * HDF_KILO_UNIT;
+        time.tv_sec += (time_t)ms / HDF_KILO_UNIT;
+        time.tv_nsec += (time_t)(ms % HDF_KILO_UNIT) * HDF_KILO_UNIT * HDF_KILO_UNIT;
         if (time.tv_nsec >= HDF_NANO_UNITS) {
             time.tv_nsec -= HDF_NANO_UNITS;
             time.tv_sec += 1;

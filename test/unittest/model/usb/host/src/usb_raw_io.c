@@ -26,7 +26,7 @@ struct AcmRawDevice g_deviceService;
 struct AcmRawDevice *g_acm = &g_deviceService;
 UsbRawHandle *g_devHandle = NULL;
 UsbRawDevice *g_dev = NULL;
-int g_activeConfig;
+int32_t g_activeConfig;
 bool g_initFlag;
 bool g_stopIoThreadFlag = false;
 
@@ -35,9 +35,9 @@ struct AcmRawDevice *UsbGetIoAcm(void)
     return g_acm;
 }
 
-int UsbIoThread(void *data)
+int32_t UsbIoThread(void *data)
 {
-    int ret;
+    int32_t ret;
     struct AcmRawDevice *acm = (struct AcmRawDevice *)data;
 
     while (true) {
@@ -77,10 +77,10 @@ int UsbIoThread(void *data)
 }
 
 
-int UsbStartIo(void)
+int32_t UsbStartIo(void)
 {
     struct OsalThreadParam threadCfg;
-    int ret;
+    int32_t ret;
 
     printf("%s start\n", __func__);
     g_stopIoThreadFlag = false;
@@ -107,9 +107,9 @@ int UsbStartIo(void)
     return HDF_SUCCESS;
 }
 
-int UsbStopIo(void)
+int32_t UsbStopIo(void)
 {
-    int ret;
+    int32_t ret;
     g_stopIoThreadFlag = true;
     HDF_LOGD("%s:%d", __func__, __LINE__);
     ret = OsalThreadDestroy(&g_acm->ioThread);
@@ -164,7 +164,7 @@ void AcmReadBulkCallback(const void *requestArg)
         printf("%s:%d userData(acm) is NULL!", __func__, __LINE__);
         return;
     }
-    size_t size = req->actualLength;
+    size_t size = (size_t)req->actualLength;
 
     switch (req->status) {
         case USB_REQUEST_COMPLETED:
@@ -175,7 +175,6 @@ void AcmReadBulkCallback(const void *requestArg)
             }
             break;
         case USB_REQUEST_CANCELLED:
-            printf("%s: the request is cancelled request \n", __func__);
             return;
         default:
             printf("%s: the request is failed\n", __func__);
@@ -211,9 +210,9 @@ void AcmNotifyReqCallback(const void *requestArg)
     printf("Irqstatus:%d,actualLength:%u\n", req->status, currentSize);
 }
 
-static int AcmWriteBufAllocHandle(const struct AcmRawDevice *acm)
+static int32_t AcmWriteBufAllocHandle(const struct AcmRawDevice *acm)
 {
-    int i;
+    int32_t i;
     struct RawWb *wb;
     for (wb = (struct RawWb *)&acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
         wb->buf = OsalMemCalloc(acm->dataOutEp.maxPacketSize);
@@ -232,9 +231,9 @@ static int AcmWriteBufAllocHandle(const struct AcmRawDevice *acm)
     return HDF_SUCCESS;
 }
 
-int AcmWriteBufAlloc(struct AcmRawDevice *acm)
+int32_t AcmWriteBufAlloc(struct AcmRawDevice *acm)
 {
-    int ret = HDF_SUCCESS;
+    int32_t ret = HDF_SUCCESS;
 
     if (!g_writeBufFlag) {
         ret = AcmWriteBufAllocHandle(acm);
@@ -245,7 +244,7 @@ int AcmWriteBufAlloc(struct AcmRawDevice *acm)
 
 void AcmWriteBufFree(struct AcmRawDevice *acm)
 {
-    int i;
+    int32_t i;
     struct RawWb *wb;
     for (wb = &acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
         if (wb->buf) {
@@ -274,7 +273,7 @@ static void AcmParaseInterfaceClass(
     switch (ifaceClass) {
         case USB_DDK_CLASS_COMM:
             acm->ctrlIface = number;
-            /* get the first endpoint by default */
+            /* get the first endpoint  by default */
             acm->notifyEp.addr = interface->altsetting->endPoint[0].endpointDescriptor.bEndpointAddress;
             acm->notifyEp.interval = interface->altsetting->endPoint[0].endpointDescriptor.bInterval;
             acm->notifyEp.maxPacketSize = interface->altsetting->endPoint[0].endpointDescriptor.wMaxPacketSize;
@@ -284,13 +283,13 @@ static void AcmParaseInterfaceClass(
             for (uint8_t j = 0; j < numEndpoints; j++) {
                 const struct UsbRawEndpointDescriptor *endPoint = &interface->altsetting->endPoint[j];
 
-                /* get bulk in endpoint */
+                /* get bulk in endpoint  */
                 if ((endPoint->endpointDescriptor.bEndpointAddress
                     & USB_DDK_ENDPOINT_DIR_MASK) == USB_DDK_DIR_IN) {
                     acm->dataInEp.addr = endPoint->endpointDescriptor.bEndpointAddress;
                     acm->dataInEp.interval = endPoint->endpointDescriptor.bInterval;
                     acm->dataInEp.maxPacketSize = endPoint->endpointDescriptor.wMaxPacketSize;
-                } else { /* get bulk out endpoint */
+                } else { /* get bulk out endpoint  */
                     acm->dataOutEp.addr = endPoint->endpointDescriptor.bEndpointAddress;
                     acm->dataOutEp.interval = endPoint->endpointDescriptor.bInterval;
                     acm->dataOutEp.maxPacketSize = endPoint->endpointDescriptor.wMaxPacketSize;
@@ -303,11 +302,11 @@ static void AcmParaseInterfaceClass(
     }
 }
 
-int UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config)
+int32_t UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config)
 {
     uint8_t numInterfaces;
     uint8_t i;
-    int ret;
+    int32_t ret;
     const struct UsbRawInterface *interface = NULL;
 
     numInterfaces = config->configDescriptor.bNumInterfaces;
@@ -564,8 +563,8 @@ int32_t CheckRawSdkIfExit002(void)
 
 int32_t CheckRawSdkIfInit003(void)
 {
-    int ret;
-    int i;
+    int32_t ret;
+    int32_t i;
 
     for (i = 0; i < USB_LOOP_NUM; i++) {
         ret = UsbRawInit(&g_session);
@@ -588,8 +587,8 @@ int32_t CheckRawSdkIfInit003(void)
 
 int32_t CheckRawSdkIfInit004(void)
 {
-    int ret;
-    int i;
+    int32_t ret;
+    int32_t i;
 
     for (i = 0; i < USB_LOOP_NUM; i++) {
         ret = UsbRawInit(NULL);
@@ -845,8 +844,8 @@ int32_t CheckRawSdkIfGetDevice002(void)
 
 int32_t CheckRawSdkIfClaimInterface002(void)
 {
-    int ret;
-    int interfaceNumber = 1;
+    int32_t ret;
+    int32_t interfaceNumber = 1;
 
     ret = UsbRawClaimInterface(g_devHandle, interfaceNumber);
     if (ret) {
@@ -859,8 +858,8 @@ int32_t CheckRawSdkIfClaimInterface002(void)
 
 int32_t CheckRawSdkIfClaimInterface003(void)
 {
-    int ret;
-    int interfaceNumber = 0;
+    int32_t ret;
+    int32_t interfaceNumber = 0;
 
     ret = UsbRawClaimInterface(g_devHandle, interfaceNumber);
     if (ret) {
@@ -873,8 +872,8 @@ int32_t CheckRawSdkIfClaimInterface003(void)
 
 int32_t CheckRawSdkIfClaimInterface004(void)
 {
-    int ret;
-    int interfaceNumber = USB_MAX_BYTE;
+    int32_t ret;
+    int32_t interfaceNumber = USB_MAX_BYTE;
 
     ret = UsbRawClaimInterface(g_devHandle, interfaceNumber);
     if (ret != HDF_ERR_INVALID_PARAM) {
@@ -887,7 +886,7 @@ int32_t CheckRawSdkIfClaimInterface004(void)
 
 int32_t CheckRawSdkIfGetDeviceDescriptor002(void)
 {
-    int ret;
+    int32_t ret;
 
     ret = UsbRawGetDeviceDescriptor(g_dev, NULL);
     if (ret != HDF_ERR_INVALID_PARAM) {
@@ -900,7 +899,7 @@ int32_t CheckRawSdkIfGetDeviceDescriptor002(void)
 
 int32_t CheckRawSdkIfGetDeviceDescriptor003(void)
 {
-    int ret;
+    int32_t ret;
 
     ret = UsbRawGetDeviceDescriptor(NULL, NULL);
     if (ret != HDF_ERR_INVALID_PARAM) {
@@ -914,7 +913,7 @@ int32_t CheckRawSdkIfGetDeviceDescriptor003(void)
 int32_t CheckRawSdkIfGetDeviceDescriptor004(void)
 {
     struct UsbDeviceDescriptor desc;
-    int ret;
+    int32_t ret;
 
     ret = UsbRawGetDeviceDescriptor(g_dev, &desc);
     if (ret) {
@@ -942,7 +941,7 @@ int32_t CheckRawSdkIfGetConfigDescriptor005(void)
 int32_t CheckRawSdkIfGetDeviceDescriptor005(void)
 {
     struct UsbDeviceDescriptor desc;
-    int ret;
+    int32_t ret;
 
     ret = UsbRawGetDeviceDescriptor(g_dev, &desc);
     if (ret) {
@@ -1009,7 +1008,7 @@ int32_t CheckRawSdkIfGetConfigDescriptor004(void)
 int32_t CheckRawSdkIfSetConfiguration001(void)
 {
     int32_t ret;
-    int config = 0;
+    int32_t config = 0;
 
     ret = UsbRawSetConfiguration(NULL, config);
     if (ret != HDF_ERR_INVALID_PARAM) {
@@ -1023,7 +1022,7 @@ int32_t CheckRawSdkIfSetConfiguration001(void)
 int32_t CheckRawSdkIfSetConfiguration002(void)
 {
     int32_t ret;
-    int config = 0;
+    int32_t config = 0;
 
     ret = UsbRawSetConfiguration(g_acm->devHandle, config);
     if (ret) {
@@ -1037,7 +1036,7 @@ int32_t CheckRawSdkIfSetConfiguration002(void)
 int32_t CheckRawSdkIfSetConfiguration003(void)
 {
     int32_t ret;
-    int config = 1;
+    int32_t config = 1;
 
     ret = UsbRawSetConfiguration(g_acm->devHandle, config);
     if (ret) {
@@ -1051,7 +1050,7 @@ int32_t CheckRawSdkIfSetConfiguration003(void)
 int32_t CheckRawSdkIfSetConfiguration004(void)
 {
     int32_t ret;
-    int config = 10;
+    int32_t config = 10;
 
     ret = UsbRawSetConfiguration(g_acm->devHandle, config);
     if (ret != HDF_SUCCESS) {
@@ -1065,7 +1064,7 @@ int32_t CheckRawSdkIfSetConfiguration004(void)
 int32_t CheckRawSdkIfSetConfiguration005(void)
 {
     int32_t ret;
-    int config = 100;
+    int32_t config = 100;
 
     ret = UsbRawSetConfiguration(g_acm->devHandle, config);
     if (ret != HDF_SUCCESS) {
@@ -1079,7 +1078,7 @@ int32_t CheckRawSdkIfSetConfiguration005(void)
 int32_t CheckRawSdkIfSetConfiguration006(void)
 {
     int32_t ret;
-    int config = 200;
+    int32_t config = 200;
 
     ret = UsbRawSetConfiguration(g_acm->devHandle, config);
     if (ret != HDF_SUCCESS) {
@@ -1093,7 +1092,7 @@ int32_t CheckRawSdkIfSetConfiguration006(void)
 int32_t CheckRawSdkIfSetConfiguration007(void)
 {
     int32_t ret;
-    int config = USB_MAX_BYTE;
+    int32_t config = USB_MAX_BYTE;
 
     ret = UsbRawSetConfiguration(g_acm->devHandle, config);
     if (ret != HDF_SUCCESS) {
@@ -1107,7 +1106,7 @@ int32_t CheckRawSdkIfSetConfiguration007(void)
 int32_t CheckRawSdkIfSetConfiguration008(void)
 {
     int32_t ret;
-    int config = 0;
+    int32_t config = 0;
 
     ret = UsbRawSetConfiguration(g_acm->devHandle, config);
     if (ret) {

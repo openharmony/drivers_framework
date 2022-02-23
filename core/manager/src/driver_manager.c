@@ -10,10 +10,11 @@
 #include "hdf_driver.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
+#include "osal_sysevent.h"
 
 static struct DListHead *HdfDriverHead()
 {
-    static struct DListHead driverHead = { 0 };
+    static struct DListHead driverHead = {0};
     if (driverHead.next == NULL) {
         DListHeadInit(&driverHead);
     }
@@ -52,8 +53,7 @@ int32_t HdfUnregisterDriverEntry(const struct HdfDriverEntry *entry)
     }
 
     driverHead = HdfDriverHead();
-    DLIST_FOR_EACH_ENTRY_SAFE(driver, tmp, driverHead, struct HdfDriver, node)
-    {
+    DLIST_FOR_EACH_ENTRY_SAFE(driver, tmp, driverHead, struct HdfDriver, node) {
         if (driver->entry == entry) {
             DListRemove(&driver->node);
             OsalMemFree(driver);
@@ -85,8 +85,7 @@ int32_t HdfUnregisterDriver(struct HdfDriver *driver)
     }
 
     driverHead = HdfDriverHead();
-    DLIST_FOR_EACH_ENTRY_SAFE(it, tmp, driverHead, struct HdfDriver, node)
-    {
+    DLIST_FOR_EACH_ENTRY_SAFE(it, tmp, driverHead, struct HdfDriver, node) {
         if (it == driver) {
             DListRemove(&it->node);
             break;
@@ -96,24 +95,44 @@ int32_t HdfUnregisterDriver(struct HdfDriver *driver)
     return HDF_SUCCESS;
 }
 
-struct HdfDriver *HdfDriverManagerGetDriver(const char *driverName)
+static struct HdfDriver *HdfDriverManagerFoundDriver(const char *driverName)
 {
     struct DListHead *driverHead = NULL;
     struct HdfDriver *driver = NULL;
-
-    if (driverName == NULL) {
-        return NULL;
-    }
-
     driverHead = HdfDriverHead();
     DLIST_FOR_EACH_ENTRY(driver, driverHead, struct HdfDriver, node) {
         if (driver->entry != NULL && driver->entry->moduleName != NULL &&
             !strcmp(driver->entry->moduleName, driverName)) {
-                return driver;
-            }
+            return driver;
+        }
     }
-    HDF_LOGE("%s:driver %s not found", __func__, driverName);
+
     return NULL;
+}
+
+struct HdfDriver *HdfDriverManagerGetDriver(const char *driverName)
+{
+    struct HdfDriver *driver = NULL;
+    if (driverName == NULL) {
+        return NULL;
+    }
+    driver = HdfDriverManagerFoundDriver(driverName);
+    if (driver != NULL) {
+        return driver;
+    }
+
+    if (HdfSysEventSend != NULL) {
+        HDF_LOGI("%s:try to dynamic load driver %s", __func__, driverName);
+        if (HdfSysEventSend(HDF_SYSEVENT_CLASS_MODULE, KEVENT_MODULE_INSTALL, driverName, true) != HDF_SUCCESS) {
+            return NULL;
+        }
+
+        driver = HdfDriverManagerFoundDriver(driverName);
+    }
+    if (driver == NULL) {
+        HDF_LOGE("%s:driver %s not found", __func__, driverName);
+    }
+    return driver;
 }
 
 struct DListHead *HdfDriverManagerGetDriverList()

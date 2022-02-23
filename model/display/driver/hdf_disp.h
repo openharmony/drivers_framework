@@ -154,7 +154,7 @@ struct DispEsd {
     HdfWork **work;
     bool *workInit;
     OsalTimer **timer;
-    int32_t panelNum;
+    uint32_t panelNum;
 };
 
 struct DispManager {

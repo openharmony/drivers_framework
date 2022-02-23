@@ -43,7 +43,7 @@ static int32_t ReadBmi160PedometerRawData(struct SensorCfgData *data, struct Ped
         HDF_LOGE("%s: Get time failed", __func__);
         return HDF_FAILURE;
     }
-    *timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT; /* unit nanosecond */
+    *timestamp = time.sec * SENSOR_SECOND_CONVERT_NANOSECOND + time.usec * SENSOR_CONVERT_UNIT;
 
     int32_t ret = ReadSensor(&data->busCfg, BMI160_PEDOMETER_LSB_ADDR, &reg[PEDOMETER_NU_LSB], sizeof(uint8_t));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "read data");
@@ -53,7 +53,6 @@ static int32_t ReadBmi160PedometerRawData(struct SensorCfgData *data, struct Ped
 
     rawData->pedometer = (int16_t)(SENSOR_DATA_SHIFT_LEFT(reg[PEDOMETER_NU_MSB], SENSOR_DATA_WIDTH_8_BIT) |
         reg[PEDOMETER_NU_LSB]);
-    rawData->pedometer = PEDOMETER_TEST_NUM;
 
     return HDF_SUCCESS;
 }
@@ -67,7 +66,7 @@ int32_t ReadBmi160PedometerData(struct SensorCfgData *data)
 
     ret = memset_s(&event, sizeof(event), 0, sizeof(event));
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "memset_s");
- 
+
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
 
     ret = ReadBmi160PedometerRawData(data, &rawData, &event.timestamp);
@@ -193,7 +192,7 @@ void PedometerBmi160ReleaseDriver(struct HdfDeviceObject *device)
     struct Bmi160DrvData *drvData = (struct Bmi160DrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->sensorCfg != NULL) { 
+    if (drvData->sensorCfg != NULL) {
         PedometerReleaseCfgData(drvData->sensorCfg);
         drvData->sensorCfg = NULL;
     }

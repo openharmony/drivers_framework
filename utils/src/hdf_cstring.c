@@ -43,7 +43,7 @@ struct HdfCString *HdfCStringObtain(const char *str)
             OsalMemFree(instance);
             return NULL;
         }
-        instance->size = strLen;
+        instance->size = (int)strLen;
     }
     return instance;
 }

@@ -111,7 +111,7 @@ int32_t HcsGetNodeLength(const char *blob)
         HDF_LOGE("%s failed, the rootLen is %d", __func__, rootLen);
         return HDF_FAILURE;
     }
-    rootLen += HcsByteCodeToUint32(blob + HCS_PREFIX_LENGTH + HCS_STRING_LENGTH(blob + HCS_PREFIX_LENGTH));
+    rootLen += (int32_t)HcsByteCodeToUint32(blob + HCS_PREFIX_LENGTH + HCS_STRING_LENGTH(blob + HCS_PREFIX_LENGTH));
     return rootLen;
 }
 
@@ -176,11 +176,11 @@ static bool CheckHcsBlobLength(uint32_t length, struct HbcHeader *header)
     uint32_t minLength = rootNodeLen + HBC_HEADER_LENGTH;
     uint32_t blobLength;
     if (header->totalSize >= 0) {
-        blobLength = HBC_HEADER_LENGTH + header->totalSize;
+        blobLength = (uint32_t)(HBC_HEADER_LENGTH + header->totalSize);
         g_byteAlign = false;
         HDF_LOGI("%s: the blobLength: %u, byteAlign: %d", __func__, blobLength, g_byteAlign);
     } else {
-        blobLength = HBC_HEADER_LENGTH - header->totalSize;
+        blobLength = (uint32_t)(HBC_HEADER_LENGTH - header->totalSize);
         g_byteAlign = true;
         HDF_LOGI("%s: the blobLength: %u, byteAlign: %d", __func__, blobLength, g_byteAlign);
     }
