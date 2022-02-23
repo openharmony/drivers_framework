@@ -30,9 +30,9 @@ static sptr<IMapTest> g_testClient = nullptr;
 class CppMapTest : public testing::Test {
 public:
     static void SetUpTestCase();
-    static void TearDownTestCase();
-    void SetUp(){}
-    void TearDown(){}
+    static void TearDownTestCase() {}
+    void SetUp() {}
+    void TearDown() {}
 };
 
 void CppMapTest::SetUpTestCase()
@@ -40,14 +40,6 @@ void CppMapTest::SetUpTestCase()
     g_testClient = IMapTest::Get();
     if (g_testClient == nullptr) {
         std::cout << "CppMapTest: get g_testClient failed." << std::endl;
-    }
-}
-
-void CppMapTest::TearDownTestCase()
-{
-    if (g_testClient != nullptr) {
-        delete g_testClient;
-        g_testClient = nullptr;
     }
 }
 

@@ -161,7 +161,7 @@ void CServiceStubCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFile
         const AST::TypeStringMap& types = ast_->GetTypes();
         for (const auto& pair : types) {
             AutoPtr<ASTType> type = pair.second;
-            if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
+            if (type->GetTypeKind() == TypeKind::TYPE_STRING || type->GetTypeKind() == TypeKind::TYPE_UNION) {
                 headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
                 break;
             }

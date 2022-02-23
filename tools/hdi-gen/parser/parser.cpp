@@ -970,7 +970,7 @@ AutoPtr<ASTType> Parser::ParseSharedMemQueueMetaType()
     }
     lexer_->GetToken();
 
-    AutoPtr<ASTSharedMemQueueType> type = new ASTSharedMemQueueType();
+    AutoPtr<ASTSmqType> type = new ASTSmqType();
     type->SetInnerType(InnerType);
     AutoPtr<ASTType> ret = ast_->FindType(type->ToString());
     if (ret == nullptr) {

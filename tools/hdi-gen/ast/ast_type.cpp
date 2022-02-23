@@ -142,7 +142,7 @@ bool ASTType::IsFdType()
     return false;
 }
 
-bool ASTType::IsSharedMemQueueType()
+bool ASTType::IsSmqType()
 {
     return false;
 }
