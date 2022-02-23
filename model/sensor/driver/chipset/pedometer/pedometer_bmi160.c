@@ -30,7 +30,6 @@ struct Bmi160DrvData *PedometerBmi160GetDrvData(void)
 
 static int32_t ReadBmi160PedometerRawData(struct SensorCfgData *data, struct PedometerData *rawData, int64_t *timestamp)
 {
-    uint8_t status = 0;
     uint8_t reg[PEDOMETER_BUTT];
     OsalTimespec time;
 

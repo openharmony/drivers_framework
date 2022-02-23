@@ -142,7 +142,7 @@ static int32_t Enable(uint32_t lightType, struct HdfSBuf *data, struct HdfSBuf *
         return HDF_FAILURE;
     }
 
-    drvData->info[lightType]->lightBrightness = buf->lightBrightness == 0 ?
+    drvData->info[lightType]->lightBrightness = (buf->lightBrightness == 0) ?
         drvData->info[lightType]->lightBrightness : buf->lightBrightness;
 
     if ((drvData->info[lightType]->lightBrightness & LIGHT_MAKE_R_BIT) != 0) {
@@ -161,9 +161,9 @@ static int32_t Enable(uint32_t lightType, struct HdfSBuf *data, struct HdfSBuf *
     }
 
     if (buf->flashEffect.flashMode == LIGHT_FLASH_TIMED) {
-        drvData->info[lightType]->onTime = buf->flashEffect.onTime < drvData->info[lightType]->onTime ?
+        drvData->info[lightType]->onTime = (buf->flashEffect.onTime < drvData->info[lightType]->onTime) ?
         drvData->info[lightType]->onTime : buf->flashEffect.onTime;
-        drvData->info[lightType]->offTime = buf->flashEffect.offTime < drvData->info[lightType]->offTime ?
+        drvData->info[lightType]->offTime = (buf->flashEffect.offTime < drvData->info[lightType]->offTime) ?
         drvData->info[lightType]->offTime : buf->flashEffect.offTime;
 
         if (OsalTimerCreate(&drvData->timer, LIGHT_WAIT_TIME, LightTimerEntry, (uintptr_t)lightType) != HDF_SUCCESS) {
@@ -299,7 +299,7 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
     CHECK_LIGHT_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
 
     drvData->lightNum = (uint32_t)parser->GetElemNum(node, "lightType");
-    if(drvData->lightNum > LIGHT_TYPE_BUTT || drvData->lightNum < LIGHT_TYPE_NONE) {
+    if (drvData->lightNum > LIGHT_TYPE_BUTT || drvData->lightNum < LIGHT_TYPE_NONE) {
         HDF_LOGE("%s: lightNum cross the border", __func__);
         return HDF_FAILURE;
     }
