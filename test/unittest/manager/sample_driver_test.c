@@ -173,7 +173,7 @@ int32_t SampleDriverUpdateService(struct HdfDeviceIoClient *client, struct HdfSB
         return HDF_ERR_INVALID_PARAM;
     }
 
-    if(HdfDeviceObjectSetServInfo(client->device, servInfo) != HDF_SUCCESS) {
+    if (HdfDeviceObjectSetServInfo(client->device, servInfo) != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to set servce info", __func__);
         return HDF_ERR_INVALID_PARAM;
     }

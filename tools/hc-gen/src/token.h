@@ -9,7 +9,6 @@
 #ifndef HC_GEN_TOKEN_H
 #define HC_GEN_TOKEN_H
 
-#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>

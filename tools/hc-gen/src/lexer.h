@@ -18,7 +18,6 @@
 
 namespace OHOS {
 namespace Hardware {
-
 class Lexer {
 public:
     Lexer();
@@ -78,7 +77,6 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &s, const Lexer &lexer);
-
 } // namespace Hardware
 } // namespace OHOS
 

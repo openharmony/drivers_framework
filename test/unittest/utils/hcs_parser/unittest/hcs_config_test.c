@@ -12,6 +12,24 @@
 
 #define HDF_LOG_TAG hcs_config_test
 
+#define INDEX_NUM_ZERO 0
+#define INDEX_NUM_ONE 1
+#define INDEX_NUM_TWO 2
+#define INDEX_NUM_THREE 3
+#define INDEX_NUM_FOUR 4
+#define INDEX_NUM_FIVE 5
+#define INDEX_NUM_SIX 6
+#define INDEX_NUM_SEVEN 7
+#define TEST_DATA_ZERO 0
+#define TEST_DATA_ONE 1
+#define TEST_DATA_TWO 2
+#define TEST_DATA_THREE 3
+#define TEST_DATA_FOUR 4
+#define TEST_DATA_FIVE 5
+#define TEST_DATA_SIX 6
+#define TEST_DATA_SEVEN 7
+#define TEST_DATA_256 256
+#define TEST_DATA_257 257
 #define DATA_TYPE_NUM_U32 3
 #define DATA_TYPE_NUM_U64 4
 #define U8_DATA 1
@@ -316,8 +334,8 @@ int HcsTestGetUint8ArrayElemFail(void)
         ret = g_devResInstance->GetUint8ArrayElem(dataType, READ_FOUR_DATA_TYPE, i, &data1[i], DEFAULT_UINT8_MAX);
     }
     // the 0~3 represents the location in array.
-    if ((ret == HDF_SUCCESS) || (data1[0] != U8_DATA) || (data1[1] != DEFAULT_UINT8_MAX) ||
-        (data1[2] != DEFAULT_UINT8_MAX) || (data1[3] != DEFAULT_UINT8_MAX)) {
+    if ((ret == HDF_SUCCESS) || (data1[INDEX_NUM_ZERO] != U8_DATA) || (data1[INDEX_NUM_ONE] != DEFAULT_UINT8_MAX) ||
+        (data1[INDEX_NUM_TWO] != DEFAULT_UINT8_MAX) || (data1[INDEX_NUM_THREE] != DEFAULT_UINT8_MAX)) {
         HDF_LOGE("%s failed, line: %d, ret = %d, data = %x", __FUNCTION__, __LINE__, ret, data);
         return HDF_FAILURE;
     }
@@ -333,10 +351,14 @@ int HcsTestGetUint8ArraySuccess(void)
         return HDF_FAILURE;
     }
     dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
-    ret = g_devResInstance->GetUint8Array(dataType, TEST_U8_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH, DEFAULT_UINT8_MAX);
+    ret = g_devResInstance->GetUint8Array(dataType, TEST_U8_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH,
+                                          DEFAULT_UINT8_MAX);
     // the 0~7 represents the location in array or the value in hcs file.
-    if ((ret != HDF_SUCCESS) || (data[0] != 0) || (data[1] != 1) || (data[2] != 2) || (data[3] != 3) || (data[4] != 4)
-        || (data[5] != 5) || (data[6] != 6) || (data[7] != 7)) {
+    if ((ret != HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != TEST_DATA_ZERO) || (data[INDEX_NUM_ONE] != TEST_DATA_ONE) ||
+        (data[INDEX_NUM_TWO] != TEST_DATA_TWO) || (data[INDEX_NUM_THREE] != TEST_DATA_THREE) ||
+        (data[INDEX_NUM_FOUR] != TEST_DATA_FOUR) ||
+        (data[INDEX_NUM_FIVE] != TEST_DATA_FIVE) || (data[INDEX_NUM_SIX] != TEST_DATA_SIX) ||
+        (data[INDEX_NUM_SEVEN] != TEST_DATA_SEVEN)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -353,14 +375,16 @@ int HcsTestGetUint8ArrayFail(void)
     dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     ret = g_devResInstance->GetUint8Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT8_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
-    if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != TEST_DATA_ZERO) || (data[INDEX_NUM_ONE] != TEST_DATA_ZERO) ||
+        (data[INDEX_NUM_TWO] != TEST_DATA_ZERO)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint8Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64 + 1,
         DEFAULT_UINT8_MAX);
     // the 0, 1, 2, 3, 4 represents the location in array
-    if ((ret == HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != DEFAULT_UINT8_MAX) || (data[2] != DEFAULT_UINT8_MAX)
-        || (data[3] != DEFAULT_UINT8_MAX) || (data[4] != DEFAULT_UINT8_MAX)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != U8_DATA) || (data[INDEX_NUM_ONE] != DEFAULT_UINT8_MAX) ||
+        (data[INDEX_NUM_TWO] != DEFAULT_UINT8_MAX) ||
+        (data[INDEX_NUM_THREE] != DEFAULT_UINT8_MAX) || (data[INDEX_NUM_FOUR] != DEFAULT_UINT8_MAX)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -422,7 +446,8 @@ int HcsTestGetUint16ArrayElemSuccess(void)
     // the length of data is 8.
     uint16_t data[DATA_TEST_ARRAY_LENGTH] = { 0 };
     // the test data is 0, 1, 2, 3, 4, 5, 256, 257.
-    uint16_t testData[DATA_TEST_ARRAY_LENGTH] = { 0, 1, 2, 3, 4, 5, 256, 257 };
+    uint16_t testData[DATA_TEST_ARRAY_LENGTH] = { TEST_DATA_ZERO, TEST_DATA_ONE, TEST_DATA_TWO, TEST_DATA_THREE,
+                                                  TEST_DATA_FOUR, TEST_DATA_FIVE, TEST_DATA_256, TEST_DATA_257 };
     int32_t i;
     int32_t count;
     if (!TestGetRootNode()) {
@@ -469,8 +494,8 @@ int HcsTestGetUint16ArrayElemFail(void)
         ret = g_devResInstance->GetUint16ArrayElem(dataType, READ_FOUR_DATA_TYPE, i, &data1[i], DEFAULT_UINT16_MAX);
     }
     // the 0~3 represents the location in array.
-    if ((ret == HDF_SUCCESS) || (data1[0] != U8_DATA) || (data1[1] != U16_DATA) || (data1[2] != DEFAULT_UINT16_MAX) ||
-        (data1[3] != DEFAULT_UINT16_MAX)) {
+    if ((ret == HDF_SUCCESS) || (data1[INDEX_NUM_ZERO] != U8_DATA) || (data1[INDEX_NUM_ONE] != U16_DATA) ||
+        (data1[INDEX_NUM_TWO] != DEFAULT_UINT16_MAX) || (data1[INDEX_NUM_THREE] != DEFAULT_UINT16_MAX)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -488,8 +513,11 @@ int HcsTestGetUint16ArraySuccess(void)
     ret = g_devResInstance->GetUint16Array(dataType, TEST_U16_ELEM_DATA, data, DATA_TEST_ARRAY_LENGTH,
         DEFAULT_UINT16_MAX);
     // the data[0~7] represents the location in array, the test data is 0, 1, 2, 3, 4, 5, 256, 257.
-    if ((ret != HDF_SUCCESS) || (data[0] != 0) || (data[1] != 1) || (data[2] != 2) || (data[3] != 3) || (data[4] != 4)
-        || (data[5] != 5) || (data[6] != 256) || (data[7] != 257)) {
+    if ((ret != HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != TEST_DATA_ZERO) || (data[INDEX_NUM_ONE] != TEST_DATA_ONE) ||
+        (data[INDEX_NUM_TWO] != TEST_DATA_TWO) || (data[INDEX_NUM_THREE] != TEST_DATA_THREE) ||
+        (data[INDEX_NUM_FOUR] != TEST_DATA_FOUR) ||
+        (data[INDEX_NUM_FIVE] != TEST_DATA_FIVE) || (data[INDEX_NUM_SIX] != TEST_DATA_256) ||
+        (data[INDEX_NUM_SEVEN] != TEST_DATA_257)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -506,14 +534,16 @@ int HcsTestGetUint16ArrayFail(void)
     dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     ret = g_devResInstance->GetUint16Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT16_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
-    if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != TEST_DATA_ZERO) || (data[INDEX_NUM_ONE] != TEST_DATA_ZERO) ||
+        (data[INDEX_NUM_TWO] != TEST_DATA_ZERO)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint16Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64 + 1,
         DEFAULT_UINT16_MAX);
     // the 0, 1, 2, 3, 4 represents the location in array
-    if ((ret == HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != U16_DATA) || (data[2] != DEFAULT_UINT16_MAX)
-        || (data[3] != DEFAULT_UINT16_MAX) || (data[4] != DEFAULT_UINT16_MAX)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != U8_DATA) || (data[INDEX_NUM_ONE] != U16_DATA) ||
+        (data[INDEX_NUM_TWO] != DEFAULT_UINT16_MAX) || (data[INDEX_NUM_THREE] != DEFAULT_UINT16_MAX) ||
+        (data[INDEX_NUM_FOUR] != DEFAULT_UINT16_MAX)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -582,7 +612,8 @@ int HcsTestGetUint32ArrayElemSuccess(void)
         return HDF_FAILURE;
     }
     for (i = 0; i < count; i++) {
-        int32_t ret = g_devResInstance->GetUint32ArrayElem(fingerNode, READ_U32_INDEX, i, &data[i], DEFAULT_UINT32_MAX);
+        int32_t ret = g_devResInstance->GetUint32ArrayElem(fingerNode, READ_U32_INDEX, i, &data[i],
+                                                           DEFAULT_UINT32_MAX);
         if ((ret != HDF_SUCCESS) || (data[i] != testData[i])) {
             return HDF_FAILURE;
         }
@@ -616,7 +647,7 @@ int HcsTestGetUint32ArraySuccess(void)
     }
     ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, BOARDID_LENGTH, DEFAULT_UINT32_MAX);
     // the 0, 1 represents the location in array.
-    if ((ret != HDF_SUCCESS) || (data[0] != U32_DATA) || (data[1] != U16_DATA)) {
+    if ((ret != HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != U32_DATA) || (data[INDEX_NUM_ONE] != U16_DATA)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -631,12 +662,14 @@ int HcsTestGetUint32ArrayFail(void)
     }
     ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, 0, DEFAULT_UINT32_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
-    if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != TEST_DATA_ZERO) || (data[INDEX_NUM_ONE] != TEST_DATA_ZERO) ||
+        (data[INDEX_NUM_TWO] != TEST_DATA_ZERO)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint32Array(g_testRoot, BOARD_ID, data, DATA_TYPE_NUM_U32, DEFAULT_UINT32_MAX);
     // the 0, 1, 2 represents the location in array
-    if ((ret == HDF_SUCCESS) || (data[0] != U32_DATA) || (data[1] != U16_DATA) || (data[2] != DEFAULT_UINT32_MAX)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != U32_DATA) || (data[INDEX_NUM_ONE] != U16_DATA) ||
+        (data[INDEX_NUM_TWO] != DEFAULT_UINT32_MAX)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -748,8 +781,8 @@ int HcsTestGetUint64ArraySuccess(void)
     ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64,
         DEFAULT_UINT64_MAX);
     // the 0, 1, 2 represents the location in array.
-    if ((ret != HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != U16_DATA) || (data[2] != U32_DATA) ||
-        (data[3] != U64_DATA)) {
+    if ((ret != HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != U8_DATA) || (data[INDEX_NUM_ONE] != U16_DATA) ||
+        (data[INDEX_NUM_TWO] != U32_DATA) || (data[INDEX_NUM_THREE] != U64_DATA)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -766,14 +799,16 @@ int HcsTestGetUint64ArrayFail(void)
     dataType = g_devResInstance->GetNodeByMatchAttr(g_testRoot, HW_DATA_TYPE_TEST);
     ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, 0, DEFAULT_UINT64_MAX);
     // the 0, 1, 2 represents the location in array, the 0 of second param is default value.
-    if ((ret == HDF_SUCCESS) || (data[0] != 0) || (data[1] != 0) || (data[2] != 0)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != TEST_DATA_ZERO) || (data[INDEX_NUM_ONE] != TEST_DATA_ZERO) ||
+        (data[INDEX_NUM_TWO] != TEST_DATA_ZERO)) {
         return HDF_FAILURE;
     }
     ret = g_devResInstance->GetUint64Array(dataType, READ_FOUR_DATA_TYPE, data, DATA_TYPE_NUM_U64 + 1,
         DEFAULT_UINT64_MAX);
     // the 0, 1, 2, 3, 4 represents the location in array
-    if ((ret == HDF_SUCCESS) || (data[0] != U8_DATA) || (data[1] != U16_DATA) || (data[2] != U32_DATA)
-        || (data[3] != U64_DATA) || (data[4] != DEFAULT_UINT64_MAX)) {
+    if ((ret == HDF_SUCCESS) || (data[INDEX_NUM_ZERO] != U8_DATA) || (data[INDEX_NUM_ONE] != U16_DATA) ||
+        (data[INDEX_NUM_TWO] != U32_DATA) || (data[INDEX_NUM_THREE] != U64_DATA) ||
+        (data[INDEX_NUM_FOUR] != DEFAULT_UINT64_MAX)) {
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;

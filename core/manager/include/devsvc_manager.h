@@ -30,7 +30,7 @@ struct IDevSvcManager *DevSvcManagerGetInstance(void);
 int DevSvcManagerStartService(void);
 
 int DevSvcManagerAddService(struct IDevSvcManager *manager, const char *svcName,
-        uint16_t devClass, struct HdfDeviceObject *service, const char *servInfo);
+                            uint16_t devClass, struct HdfDeviceObject *service, const char *servInfo);
 struct HdfObject *DevSvcManagerGetService(struct IDevSvcManager *manager, const char *svcName);
 void DevSvcManagerRemoveService(struct IDevSvcManager *manager, const char *svcName);
 void DevSvcManagerListService(struct HdfSBuf *serviecNameSet, DeviceClass deviceClass);

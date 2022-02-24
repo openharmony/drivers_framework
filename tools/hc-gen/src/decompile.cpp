@@ -7,10 +7,10 @@
  */
 
 #include "decompile.h"
+#include <cctype>
 #include "decompile_gen.h"
 #include "logger.h"
 #include "opcode.h"
-#include <cctype>
 
 using namespace OHOS::Hardware;
 

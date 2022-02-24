@@ -6,23 +6,23 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_io_service.h"
-#include "hdf_log.h"
-#include "hdf_power_state.h"
-#include "hdf_uhdf_test.h"
-#include "osal_time.h"
-#include "sample_driver_test.h"
+#include <unistd.h>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
-#include <gtest/gtest.h>
-#include <hdf_sbuf.h>
-#include <inttypes.h>
-#include <ioservstat_listener.h>
+#include <cinttypes>
 #include <string>
-#include <svcmgr_ioservice.h>
-#include <unistd.h>
+#include <gtest/gtest.h>
+#include "hdf_io_service.h"
+#include "hdf_log.h"
+#include "hdf_power_state.h"
+#include "hdf_sbuf.h"
+#include "hdf_uhdf_test.h"
+#include "ioservstat_listener.h"
+#include "osal_time.h"
+#include "sample_driver_test.h"
+#include "svcmgr_ioservice.h"
 
 using namespace testing::ext;
 
@@ -719,7 +719,7 @@ static void TestOnServiceStatusReceived(struct ServiceStatusListener *listener, 
  * @tc.name: HdfIoService015
  * @tc.desc: ioservice status listener test
  * @tc.type: FUNC
- * @tc.require:
+ * @tc.require
  */
 void IoServiceTest::TestServiceStop(struct IoServiceStatusData* issd)
 {

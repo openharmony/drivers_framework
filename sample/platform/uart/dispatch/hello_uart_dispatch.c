@@ -14,7 +14,7 @@
 #define HDF_LOG_TAG hello_uart_dispatch
 #define UART_PORT 5
 
-int main()
+int main(void)
 {
     const char *info = " HELLO UART! ";
 

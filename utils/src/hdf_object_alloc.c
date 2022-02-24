@@ -138,7 +138,7 @@ void HdfObjectAllocLoadConfigs(const struct HdfObjectPoolConfig *configs)
     }
 }
 
-void HdfObjectAllocInit()
+void HdfObjectAllocInit(void)
 {
     const struct HdfObjectPoolConfig *config = HdfObjectAllocGetConfig();
 

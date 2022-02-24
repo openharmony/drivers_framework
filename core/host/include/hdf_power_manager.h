@@ -27,6 +27,8 @@ struct HdfPmRequest {
     struct HdfTaskType task;
 };
 
+struct PmTaskQueue *HdfPmTaskQueueInit(HdfTaskFunc func);
+
 int32_t HdfPowerManagerInit(void);
 void HdfPmTaskPut(struct PowerStateToken *powerToken, HDF_PM_REQUEST_TYPE type);
 void HdfPowerManagerExit(void);

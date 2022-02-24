@@ -10,7 +10,6 @@
 #define HC_GEN_GENERATOR_H
 
 #include <memory>
-#include <string>
 
 #include "ast.h"
 
@@ -18,7 +17,7 @@ namespace OHOS {
 namespace Hardware {
 class Generator {
 public:
-    Generator(std::shared_ptr<Ast> ast) : ast_(ast) {};
+    explicit Generator(std::shared_ptr<Ast> ast) : ast_(ast) {};
 
     virtual ~Generator() = default;
 

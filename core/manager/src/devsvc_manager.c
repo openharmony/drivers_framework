@@ -303,7 +303,7 @@ int DevSvcManagerStartService(void)
     return ret;
 }
 
-struct HdfObject *DevSvcManagerCreate()
+struct HdfObject *DevSvcManagerCreate(void)
 {
     static bool isDevSvcManagerInit = false;
     static struct DevSvcManager devSvcManagerInstance;

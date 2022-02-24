@@ -11,7 +11,6 @@
 
 #include <fstream>
 #include <map>
-#include <utility>
 
 #include "generator.h"
 
@@ -117,7 +116,6 @@ private:
 
     uint32_t TemplateVariableGen(const std::shared_ptr<AstObject> &nodeObject);
 };
-
 } // namespace Hardware
 } // namespace OHOS
 #endif // HC_GEN_TEXT_GENERATOR_H

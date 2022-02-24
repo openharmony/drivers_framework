@@ -6,13 +6,17 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "lexer.h"
 #include <sstream>
 #include <string>
-
-#include "lexer.h"
 #include "logger.h"
 
 using namespace OHOS::Hardware;
+
+static constexpr int BINARY_NUM = 2;
+static constexpr int OCTAL_NUM = 8;
+static constexpr int DECIMAL_NUM = 10;
+static constexpr int HEX_NUM = 16;
 
 Lexer::Lexer() : lineno_(0), lineLoc_(0) {}
 
@@ -62,6 +66,7 @@ bool Lexer::Lex(Token &token)
         if (IsNum(c)) {
             return LexFromNumber(token);
         }
+
         switch (c) {
             case '/':
                 if (!ProcessComment()) {
@@ -268,7 +273,7 @@ bool Lexer::LexFromNumber(Token &token)
                     ConsumeChar();
                     value.push_back(c);
                 }
-                v = (uint64_t)strtoll(value.data(), nullptr, 8);
+                v = static_cast<uint64_t>(strtoll(value.data(), nullptr, OCTAL_NUM));
                 break;
             }
             switch (c) {
@@ -279,7 +284,7 @@ bool Lexer::LexFromNumber(Token &token)
                         value.push_back(c);
                         ConsumeChar();
                     }
-                    v = strtoll(value.data(), nullptr, 16);
+                    v = strtoll(value.data(), nullptr, HEX_NUM);
                     break;
                 case 'b': // binary number
                     ConsumeChar();
@@ -287,7 +292,7 @@ bool Lexer::LexFromNumber(Token &token)
                         value.push_back(c);
                         ConsumeChar();
                     }
-                    v = strtoll(value.data(), nullptr, 2);
+                    v = strtoll(value.data(), nullptr, BINARY_NUM);
                     break;
                 default:; // fall-through
             }
@@ -300,7 +305,7 @@ bool Lexer::LexFromNumber(Token &token)
                 ConsumeChar();
                 value.push_back(c);
             }
-            v = strtoll(value.data(), nullptr, 10);
+            v = strtoll(value.data(), nullptr, DECIMAL_NUM);
             break;
     }
 
