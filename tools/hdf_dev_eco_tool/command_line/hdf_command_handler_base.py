@@ -9,11 +9,11 @@
 
 
 import os
+import hdf_utils
 
+from hdf_tool_exception import HdfToolException
 from .hdf_command_error_code import CommandErrorCode
 from .hdf_tool_argument_parser import HdfToolArgumentParser
-from hdf_tool_exception import HdfToolException
-import hdf_utils
 
 
 class HdfCommandHandlerBase(object):
@@ -27,7 +27,7 @@ class HdfCommandHandlerBase(object):
     def run(self):
         self.action_type = self._get_action_type()
         if self.action_type in self.handlers:
-            return self.handlers[self.action_type]()
+            return self.handlers.get(self.action_type)()
         else:
             raise HdfToolException(
                 'unknown action_type: "%s" for "%s" cmd' %

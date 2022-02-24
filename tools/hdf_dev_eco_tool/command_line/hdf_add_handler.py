@@ -13,6 +13,9 @@ import json
 import platform
 from string import Template
 
+import hdf_utils
+from hdf_tool_settings import HdfToolSettings
+from hdf_tool_exception import HdfToolException
 from .hdf_command_handler_base import HdfCommandHandlerBase
 from .hdf_command_error_code import CommandErrorCode
 from .hdf_device_info_hcs import HdfDeviceInfoHcsFile
@@ -20,11 +23,8 @@ from .hdf_vendor_build_file import HdfVendorBuildFile
 from .hdf_vendor_kconfig_file import HdfVendorKconfigFile
 from .hdf_vendor_mk_file import HdfVendorMkFile
 from .hdf_driver_config_file import HdfDriverConfigFile
-from hdf_tool_settings import HdfToolSettings
-from hdf_tool_exception import HdfToolException
 from .hdf_vendor_makefile import HdfVendorMakeFile
 from .hdf_defconfig_patch import HdfDefconfigAndPatch
-import hdf_utils
 
 
 class HdfAddHandler(HdfCommandHandlerBase):
@@ -296,7 +296,6 @@ class HdfAddHandler(HdfCommandHandlerBase):
 
         elif board.endswith("linux_l2"):
             # device_info.hcs
-            # board = "Hi3516DV300"
             device_info = HdfDeviceInfoHcsFile(
                 root, vendor, module, board, driver, path="")
             hcs_file_path = device_info.add_model_hcs_file_config()
@@ -367,7 +366,6 @@ class HdfAddHandler(HdfCommandHandlerBase):
         linux_file_path["adapter_build.gn"] = ohos_path
 
         # add hcs file
-        # board = "Hi3516DV300"
         device_info = HdfDeviceInfoHcsFile(
             root, vendor, module, board, driver, path="")
         hcs_file_path = device_info.add_model_hcs_file_config_user()

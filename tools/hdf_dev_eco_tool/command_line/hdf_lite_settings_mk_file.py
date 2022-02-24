@@ -11,9 +11,9 @@
 import os
 import re
 
-from .hdf_command_error_code import CommandErrorCode
-from hdf_tool_exception import HdfToolException
 import hdf_utils
+from hdf_tool_exception import HdfToolException
+from .hdf_command_error_code import CommandErrorCode
 
 
 class HdfLiteSettingsMkFile(object):

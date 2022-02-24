@@ -12,10 +12,10 @@ import os
 import re
 from string import Template
 
-from .hdf_command_error_code import CommandErrorCode
+import hdf_utils
 from hdf_tool_exception import HdfToolException
 from hdf_tool_settings import HdfToolSettings
-import hdf_utils
+from .hdf_command_error_code import CommandErrorCode
 
 
 class HdfVendorMkFile(object):

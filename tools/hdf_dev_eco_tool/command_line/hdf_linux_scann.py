@@ -14,9 +14,8 @@ import platform
 import re
 from string import Template
 
-from hdf_tool_exception import HdfToolException
 import hdf_utils
-
+from hdf_tool_exception import HdfToolException
 from .hdf_command_error_code import CommandErrorCode
 
 
@@ -86,7 +85,7 @@ class HdfLinuxScan(object):
                     if os.path.exists(model_path):
                         if model_enable_dict.get(model_name, None):
                             model_enable_dict[model_name] =\
-                                temp_list + model_enable_dict[model_name]
+                                temp_list + model_enable_dict.get(model_name)
                         else:
                             model_enable_dict[model_name] = temp_list
         return model_enable_dict
@@ -123,7 +122,7 @@ class HdfLinuxScan(object):
             path = os.path.join(self.framework_dir, model_name)
             for root_path, dirs, files in os.walk(path):
                 for file_name in files:
-                    model_file_dict[model_name].append(
+                    model_file_dict.get(model_name).append(
                         os.path.join(root_path, file_name))
         return model_file_dict
 
@@ -170,6 +169,8 @@ class HdfLinuxScan(object):
             temp_lines = lines
         temp_list00 = []
         for i in obj_list:
+            if i[0] == i[1]:
+                continue
             temp_result = re.search(re_temp3, temp_lines[i[0]].strip())
             temp_list2 = []
             if temp_result is not None:
@@ -184,7 +185,10 @@ class HdfLinuxScan(object):
                 key_name = temp_list00[-1]
 
             if test_dict.get(key_name, None):
-                test_dict[key_name] = test_dict[key_name] + temp_list2
+                if isinstance((test_dict[key_name]), list):
+                    test_dict[key_name] = test_dict[key_name] + temp_list2
+                else:
+                    test_dict[key_name] = test_dict[key_name][key_name] + temp_list2
             else:
                 test_dict[key_name] = temp_list2
 
@@ -208,7 +212,7 @@ class HdfLinuxScan(object):
                 break
         #  如果status 为1时说明没有找到结尾,将整个长度的结尾
         if status == 1:
-            list1.append(len(lines) + 1)
+            list1.append(len(lines))
         return list1
 
     def split_list(self, src_list):
@@ -239,7 +243,7 @@ class HdfLinuxScan(object):
                 name_split_dict, enable_dict,
                 makefile_path=model_makefile_path)
             if result_dict00.get(model_name, None):
-                result_dict00[model_name].update(result)
+                result_dict00.get(model_name).update(result)
             else:
                 result_dict00[model_name] = result
         result_dict00["deconfig"] = self.get_config_path()[0]
@@ -265,8 +269,8 @@ class HdfLinuxScan(object):
                                  makefile_path):
         config_file_path = self.scann_driver_configs(makefile_path)
         return_dict = {}
-        temp_Template = Template(json.dumps(name_split_dict))
-        dict000 = json.loads(temp_Template.substitute(enable_dict))
+        temp_template = Template(json.dumps(name_split_dict))
+        dict000 = json.loads(temp_template.substitute(enable_dict))
         for k0, v0 in dict000.items():
             if isinstance(v0, dict):
                 return_dict[k0] = {}
@@ -289,7 +293,7 @@ class HdfLinuxScan(object):
                                 i = os.path.join(replace_field, i)
                         if os.path.exists(i):
                             drivers_sources.append(i)
-                    return_dict[k0][k01] = {
+                    return_dict.get(k0)[k01] = {
                         "driver_configs": config_file_path,
                         "drivers_sources": drivers_sources,
                     }
@@ -409,7 +413,7 @@ class HdfLinuxScan(object):
                         # 先判断第二级的使能(没有使能的话直接下一个文件)
                         key1 = "%s=y\n" % k1
                         if key1 in config_enable_lines:
-                            name_split_dict[child_enable_key][grand_enable_key] = []
+                            name_split_dict.get(child_enable_key)[grand_enable_key] = []
                             for name in v1:
                                 # 分为 几种情况
                                 if name.find("+=") != -1:
@@ -421,7 +425,7 @@ class HdfLinuxScan(object):
                                     child_enable_list, str1 = \
                                         self.get_name(str1=name.strip())
                                 enable_list.extend(child_enable_list)
-                                name_split_dict[child_enable_key][grand_enable_key].append(str1)
+                                name_split_dict.get(child_enable_key).get(grand_enable_key).append(str1)
                         else:
                             continue
                 elif isinstance(enable_value, list):
@@ -441,10 +445,9 @@ class HdfLinuxScan(object):
                             child_enable_list, str1 = \
                                 self.get_name(str1=name.strip())
                         enable_list.extend(child_enable_list)
-                        name_split_dict[k2].append(str1)
+                        name_split_dict.get(k2).append(str1)
             else:
                 continue
-        # print(name_split_dict, enable_list)
         return name_split_dict, enable_list
 
     def get_name(self, str1):

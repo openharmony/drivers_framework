@@ -13,6 +13,7 @@ import os
 import shutil
 from string import Template
 
+import hdf_utils
 from hdf_tool_exception import HdfToolException
 from .hdf_command_error_code import CommandErrorCode
 from .hdf_command_handler_base import HdfCommandHandlerBase
@@ -25,7 +26,6 @@ from .hdf_vendor_mk_file import HdfVendorMkFile
 from .hdf_module_kconfig_file import HdfModuleKconfigFile
 from .hdf_module_mk_file import HdfModuleMkFile
 from .hdf_driver_config_file import HdfDriverConfigFile
-import hdf_utils
 
 
 class HdfDeleteHandler(HdfCommandHandlerBase):
