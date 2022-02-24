@@ -10,6 +10,7 @@
 import json
 import sys
 import unittest
+
 import CppHeaderParser
 
 sys.path.insert(0, '..')
@@ -274,7 +275,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
         self.assertEqual(generator._idl, "interface InputController {\n"
                                          "    RunExtraCommand([in] unsigned int devIndex,[out] unsigned int cmd);\n"
                                          "    RunExtra([in] struct InputControllerDesc desc);\n"
-                                         "};\n")
+                                         "}\n")
 
     def test_install_interface_with_unknown_type(self):
         header_file = """
@@ -289,7 +290,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
         generator._install_interface(parser._header_dict.get("interface")[0])
         self.assertEqual(generator._idl, "interface InputController {\n"
                                          "    RunExtra([in] /* unknown type: [InputControllerDesc] */ desc);\n"
-                                         "};\n")
+                                         "}\n")
 
     def test_install_interface_callback(self):
         header_file = """
@@ -304,7 +305,7 @@ class IDLGeneratorTestCase(unittest.TestCase):
         generator._install_interface(parser._header_dict.get("interface")[0])
         self.assertEqual(generator._idl, "[callback] interface IFooCallback {\n"
                                          "    PushData([in] byte[] message);\n"
-                                         "};\n")
+                                         "}\n")
 
     def test_convert_from_container_type(self):
         generator = IDLGenerator()
