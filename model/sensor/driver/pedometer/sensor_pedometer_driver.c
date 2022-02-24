@@ -145,7 +145,8 @@ static int32_t SetPedometerDisable(void)
         return HDF_SUCCESS;
     }
 
-    ret = SetSensorRegCfgArray(&drvData->pedometerCfg->busCfg, drvData->pedometerCfg->regCfgGroup[SENSOR_DISABLE_GROUP]);
+    ret = SetSensorRegCfgArray(&drvData->pedometerCfg->busCfg,
+        drvData->pedometerCfg->regCfgGroup[SENSOR_DISABLE_GROUP]);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: Pedometer sensor disable config failed", __func__);
         return ret;
@@ -299,7 +300,8 @@ INIT_EXIT:
     (void)ReleaseSensorBusHandle(&drvData->pedometerCfg->busCfg);
 BASE_CONFIG_EXIT:
     drvData->pedometerCfg->root = NULL;
-    (void)memset_s(&drvData->pedometerCfg->sensorInfo, sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
+    (void)memset_s(&drvData->pedometerCfg->sensorInfo,
+        sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&drvData->pedometerCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->pedometerCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
     return drvData->pedometerCfg;

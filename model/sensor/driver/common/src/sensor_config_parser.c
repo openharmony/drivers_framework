@@ -62,9 +62,9 @@ static int32_t ParseSensorRegItem(struct DeviceResourceIface *parser, const stru
 {
     int32_t ret;
     int32_t step;
-    int32_t index;
+    uint32_t index;
     int32_t num;
-    int32_t itemNum = group->itemNum;
+    uint32_t itemNum = group->itemNum;
     uint16_t *buf = NULL;
 
     CHECK_NULL_PTR_RETURN_VALUE(group->regCfgItem, HDF_ERR_INVALID_PARAM);
@@ -137,7 +137,8 @@ int32_t ParseSensorRegGroup(struct DeviceResourceIface *parser, const struct Dev
 
         *groupNode = group;
         group->itemNum = (uint32_t)(num / SENSOR_REG_CFG_INDEX_MAX);
-        group->itemNum = ((SENSOR_REG_CFG_INDEX_MAX * group->itemNum) < num) ? (group->itemNum + 1) : group->itemNum;
+        group->itemNum = ((SENSOR_REG_CFG_INDEX_MAX * group->itemNum) < (uint32_t)num) ?
+            (group->itemNum + 1) : group->itemNum;
 
         group->regCfgItem = (struct SensorRegCfg*)OsalMemCalloc(group->itemNum * sizeof(*(group->regCfgItem)));
         if (group->regCfgItem == NULL) {
