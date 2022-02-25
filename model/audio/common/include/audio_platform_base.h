@@ -17,9 +17,9 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define MIN_PERIOD_SIZE 4096
+#define MIN_PERIOD_SIZE (2 * 1024)
 #define BITSTOBYTE 8
-#define MAX_BUFF_SIZE (64 * 1024)
+#define MAX_BUFF_SIZE (128 * 1024)
 
 enum DataBitWidth {
     DATA_BIT_WIDTH8  =  8,      /* 8 bit witdth */
@@ -60,6 +60,51 @@ struct CircleBufInfo {
     uint32_t curTrafSize;       /* The size of each actual transmission of PCM data */
 };
 
+/* head file: pnp_message_report */
+enum PnpReportType {
+    DEVICE_PULG,
+    EVENT_REPORT,
+    REPORT_TYPE_INVALID
+};
+
+enum PnpEventID {
+    THRESHOLD_REPORT,
+    LOAD_ADAPTER,
+    SERVICE_STATUS,
+    EVENT_ID_INVALID
+};
+
+enum PnpDeviceType {
+    PRIMARY_DEVICE,
+    USB_DEVICE,
+    A2DP_DEVICE,
+    DEVICE_TYPE_INVALID
+};
+
+struct PnpReportDevPlugMsg {
+    uint8_t eventType;
+    uint8_t state;
+    uint8_t deviceType;
+    uint8_t deviceCap;
+    uint8_t id;
+};
+
+struct PnpReportEventMsg {
+    uint8_t eventType;
+    uint8_t eventId;
+    uint8_t eventValue;
+    uint8_t deviceType;
+    uint8_t reserve;      /* Reserved fields are not used for the time being */
+};
+
+struct PnpReportMsg {
+    enum PnpReportType reportType;
+    union {
+        struct PnpReportDevPlugMsg devPlugMsg;
+        struct PnpReportEventMsg eventMsg;
+    };
+};
+
 unsigned int SysReadl(unsigned long addr);
 void SysWritel(unsigned long addr, unsigned int value);
 
@@ -84,6 +129,7 @@ int32_t AudioRenderPrepare(const struct AudioCard *card);
 int32_t AudioCapturePrepare(const struct AudioCard *card);
 int32_t AudioRenderTrigger(struct AudioCard *card, int cmd);
 int32_t AudioCaptureTrigger(struct AudioCard *card, int cmd);
+int32_t AudioCapSilenceThresholdEvent(struct HdfDeviceObject *device, const struct PnpReportMsg *reportMsg);
 
 #ifdef __cplusplus
 #if __cplusplus
