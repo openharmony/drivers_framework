@@ -81,6 +81,29 @@ protected:
 
     String GetFilePath(const String& outDir);
 
+    String PackageToFilePath(const String& packageName);
+
+    String EmitMethodCmdID(const AutoPtr<ASTMethod>& method);
+
+    void EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix);
+
+    /* ForExample:
+     * MajorVersion: 1
+     * MinorVersion: 0
+     * name: IFoo
+     * result: v1_0/ifoo.h
+     */
+    String EmitVersionHeaderName(const String& name);
+
+    // file_name -> FILE_NAME
+    String ConstantName(const String& name);
+
+    // file_name -> FileName
+    String PascalName(const String& name);
+
+    // FileName -> file_name
+    String FileName(const String& name);
+
     bool isKernelCode_ = false;
     AutoPtr<AST> ast_ = nullptr;
     AutoPtr<ASTInterfaceType> interface_ = nullptr;
@@ -88,7 +111,7 @@ protected:
 
     String interfaceName_;
     String interfaceFullName_;
-    String infName_;
+    String baseName_;
     String proxyName_;
     String proxyFullName_;
     String stubName_;

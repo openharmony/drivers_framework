@@ -20,13 +20,7 @@ namespace HDI {
 class CCodeEmitter : public CodeEmitter {
 public:
     virtual ~CCodeEmitter() = default;
-
-    static String FileName(const String& name);
 protected:
-    String EmitMethodCmdID(const AutoPtr<ASTMethod>& method);
-
-    void EmitInterfaceMethodCommands(StringBuilder& sb);
-
     void GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
     void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& parameter, StringBuilder& sb, const String& prefix);

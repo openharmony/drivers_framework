@@ -60,7 +60,7 @@ void CppServiceStubCodeEmitter::EmitStubHeaderInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
     GetHeaderOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -183,7 +183,7 @@ void CppServiceStubCodeEmitter::EmitStubSourceFile()
 void CppServiceStubCodeEmitter::EmitStubSourceInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(stubName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -222,13 +222,13 @@ void CppServiceStubCodeEmitter::EmitStubOnRequestMethodImpl(StringBuilder& sb, c
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
         sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(method).string());
         sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return %sStub%s(data, reply, option);\n",
-            infName_.string(), method->GetName().string());
+            baseName_.string(), method->GetName().string());
     }
 
     AutoPtr<ASTMethod> getVerMethod = interface_->GetVersionMethod();
     sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(getVerMethod).string());
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return %sStub%s(data, reply, option);\n",
-        infName_.string(), getVerMethod->GetName().string());
+        baseName_.string(), getVerMethod->GetName().string());
 
     sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).Append(
@@ -243,7 +243,7 @@ void CppServiceStubCodeEmitter::EmitStubOnRequestMethodImpl(StringBuilder& sb, c
 void CppServiceStubCodeEmitter::EmitGetVersionMethodImpl(StringBuilder& sb, const String& prefix)
 {
     AutoPtr<ASTMethod> method = interface_->GetVersionMethod();
-    sb.Append(prefix).AppendFormat("int32_t %sStub::%s(", infName_.string(), method->GetName().string());
+    sb.Append(prefix).AppendFormat("int32_t %sStub::%s(", baseName_.string(), method->GetName().string());
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         EmitInterfaceMethodParameter(param, sb, "");

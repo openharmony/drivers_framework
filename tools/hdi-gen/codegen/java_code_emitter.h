@@ -21,8 +21,6 @@ namespace HDI {
 class JavaCodeEmitter : public CodeEmitter {
 public:
     virtual ~JavaCodeEmitter() = default;
-
-    static String FileName(const String& name);
 protected:
     bool CreateDirectory();
 
@@ -33,8 +31,6 @@ protected:
     void EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix);
 
     String MethodName(const String& name);
-
-    String ConstantName(const String& name);
 
     String SpecificationParam(StringBuilder& paramSb, const String& prefix);
 };

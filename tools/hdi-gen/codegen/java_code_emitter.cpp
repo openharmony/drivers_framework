@@ -13,15 +13,6 @@
 
 namespace OHOS {
 namespace HDI {
-String JavaCodeEmitter::FileName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    return name.Replace('.', '/');
-}
-
 void JavaCodeEmitter::EmitLicense(StringBuilder& sb)
 {
     if (ast_->GetLicense().IsEmpty()) {
@@ -51,29 +42,6 @@ String JavaCodeEmitter::MethodName(const String& name)
         return name;
     }
     return String::Format("%c%s", tolower(name[0]), name.Substring(1).string());
-}
-
-String JavaCodeEmitter::ConstantName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    StringBuilder sb;
-
-    for (int i = 0; i < name.GetLength(); i++) {
-        char c = name[i];
-        if (isupper(c) != 0) {
-            if (i > 1) {
-                sb.Append('_');
-            }
-            sb.Append(c);
-        } else {
-            sb.Append(toupper(c));
-        }
-    }
-
-    return sb.ToString();
 }
 
 String JavaCodeEmitter::SpecificationParam(StringBuilder& paramSb, const String& prefix)
