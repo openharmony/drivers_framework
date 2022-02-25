@@ -21,6 +21,7 @@ extern "C" {
 #define CID_BITS 128
 #define CID_BYTES_LEN 16
 #define CID_PNM_LEN 8
+#define CID_PNM_START_BIT 96
 #define CSD_LEN 4
 #define CSD_BITS 128
 #define EXT_CSD_BYTES_LEN 512

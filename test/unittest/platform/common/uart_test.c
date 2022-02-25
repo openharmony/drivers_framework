@@ -269,7 +269,7 @@ static int32_t UartIfPerformanceTest(struct UartTester *tester)
     uint32_t baudRate;
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime; /* ms */
 
     startMs = OsalGetSysTimeMs();
     UartGetBaud(tester->handle, &baudRate);

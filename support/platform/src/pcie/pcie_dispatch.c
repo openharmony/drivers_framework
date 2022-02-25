@@ -21,7 +21,7 @@ enum PcieIoCmd {
 };
 
 struct PcieDispatchFunc {
-    int32_t cmd;
+    uint32_t cmd;
     int32_t (*func)(struct PcieCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply);
 };
 
