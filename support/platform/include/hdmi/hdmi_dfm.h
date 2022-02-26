@@ -35,7 +35,7 @@ extern "C" {
  * four Scrambler Reset (SR) characters.
  */
 #define HDMI_DFM_FRL_CB_NUM_PER_SB 4
-#define HDMI_DFM_FRL_SB_LEN(lane) (HDMI_DFM_FRL_CB_NUM_PER_SB * HDMI_DFM_CHAR_NUM_PER_CB + lane)
+#define HDMI_DFM_FRL_SB_LEN(lane) (HDMI_DFM_FRL_CB_NUM_PER_SB * HDMI_DFM_CHAR_NUM_PER_CB + (lane))
 
 #define HDMI_DFM_FRL_PIXELCLK_TOLERANCE 5 /* 0.50% */
 #define HDMI_DFM_FRL_BITRATE_TOLERANCE 3  /* 300 */
