@@ -218,7 +218,8 @@ int32_t AudioSetCaptureBufInfo(struct PlatformData *data, const struct AudioPcmH
         data->capturePcmInfo.channels / BITSTOBYTE;
     data->captureBufInfo.periodCount = PERIOD_COUNT;
 
-    if (param->silenceThreshold < MIN_PERIOD_SILENCE_THRESHOLD || param->silenceThreshold > MAX_PERIOD_SILENCE_THRESHOLD) {
+    if (param->silenceThreshold < MIN_PERIOD_SILENCE_THRESHOLD ||
+        param->silenceThreshold > MAX_PERIOD_SILENCE_THRESHOLD) {
         AUDIO_DRIVER_LOG_ERR("silenceThreshold is invalid %d.", param->silenceThreshold);
         return HDF_FAILURE;
     }
