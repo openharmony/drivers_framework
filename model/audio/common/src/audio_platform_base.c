@@ -23,7 +23,7 @@ const int MIN_BUFF_SIZE = 16 * 1024;
 const int TIME_OUT_CONST = 50;
 const int SLEEP_TIME = 5;
 #define PNP_REPORT_MSG_LEN      32
-const int MIN_PERIOD_SILENCE_THRESHOLD = (8 * 1024);
+const int MIN_PERIOD_SILENCE_THRESHOLD = (4 * 1024);
 const int MAX_PERIOD_SILENCE_THRESHOLD = (16 * 1024);
 
 unsigned int SysReadl(unsigned long addr)
