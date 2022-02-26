@@ -247,8 +247,8 @@ enum UartTransMode {
  * @since 1.0
  */
 enum UartIoCmd {
-    UART_IO_INIT = 0,        /**< Initialize the UART device. */
-    UART_IO_DEINIT,          /**< Deinitialize the UART device. */
+    UART_IO_REQUEST = 0,     /**< Reference count management and initialize the UART device. */
+    UART_IO_RELEASE,         /**< Reference count management and deinitialize the UART device. */
     UART_IO_READ,            /**< Read data. */
     UART_IO_WRITE,           /**< Write data. */
     UART_IO_GET_BAUD,        /**< Obtain the baud rate. */

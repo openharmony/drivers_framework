@@ -119,8 +119,7 @@ static int32_t UartIoSetAttribute(struct UartHost *host, struct HdfSBuf *data)
     }
 
     if (size != sizeof(*attribute)) {
-        HDF_LOGE("%s: sbuf read size not match, exp:%zu, got:%u",
-            __func__, sizeof(*attribute), size);
+        HDF_LOGE("%s: sbuf read size not match, exp:%zu, got:%u", __func__, sizeof(*attribute), size);
         return HDF_ERR_IO;
     }
 
@@ -138,8 +137,7 @@ static int32_t UartIoSetTransMode(struct UartHost *host, struct HdfSBuf *data)
     return UartHostSetTransMode(host, mode);
 }
 
-int32_t UartIoDispatch(struct HdfDeviceIoClient *client, int cmd,
-    struct HdfSBuf *data, struct HdfSBuf *reply)
+int32_t UartIoDispatch(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     struct UartHost *host = NULL;
 
@@ -160,10 +158,10 @@ int32_t UartIoDispatch(struct HdfDeviceIoClient *client, int cmd,
 
     host = (struct UartHost *)client->device->service;
     switch (cmd) {
-        case UART_IO_INIT:
-            return UartHostInit(host);
-        case UART_IO_DEINIT:
-            return UartHostDeinit(host);
+        case UART_IO_REQUEST:
+            return UartHostRequest(host);
+        case UART_IO_RELEASE:
+            return UartHostRelease(host);
         case UART_IO_READ:
             return UartIoRead(host, data, reply);
         case UART_IO_WRITE:

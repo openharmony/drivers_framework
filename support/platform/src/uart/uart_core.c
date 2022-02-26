@@ -13,44 +13,56 @@
 
 #define HDF_LOG_TAG uart_core_c
 
-int32_t UartHostInit(struct UartHost *host)
+int32_t UartHostRequest(struct UartHost *host)
 {
     int32_t ret;
 
-    if (host == NULL || host->method == NULL) {
-        HDF_LOGE("%s: host or method is NULL", __func__);
+    if (host == NULL) {
+        HDF_LOGE("%s: host is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    if (OsalAtomicRead(&host->atom) == 1) {
-        HDF_LOGE("%s: device is busy", __func__);
+
+    if (host->method == NULL || host->method->Init == NULL) {
+        HDF_LOGE("%s: method or init is NULL", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+
+    if (OsalAtomicIncReturn(&host->atom) > 1) {
+        HDF_LOGE("%s: uart device is busy", __func__);
+        OsalAtomicDec(&host->atom);
         return HDF_ERR_DEVICE_BUSY;
     }
-    OsalAtomicInc(&host->atom);
-    if (host->method->Init != NULL) {
-        ret = host->method->Init(host);
-        if (ret != HDF_SUCCESS) {
-            OsalAtomicDec(&host->atom);
-            HDF_LOGE("%s: host init failed", __func__);
-            return ret;
-        }
+
+    ret = host->method->Init(host);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: host init fail", __func__);
+        OsalAtomicDec(&host->atom);
+        return ret;
     }
+
     return HDF_SUCCESS;
 }
 
-int32_t UartHostDeinit(struct UartHost *host)
+int32_t UartHostRelease(struct UartHost *host)
 {
     int32_t ret;
-    if (host == NULL || host->method == NULL) {
+
+    if (host == NULL) {
         HDF_LOGE("%s: host or method is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    if (host->method->Deinit != NULL) {
-        ret = host->method->Deinit(host);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: host deinit failed", __func__);
-            return ret;
-        }
+
+    if (host->method == NULL || host->method->Deinit == NULL) {
+        HDF_LOGE("%s: method or Deinit is NULL", __func__);
+        return HDF_ERR_NOT_SUPPORT;
     }
+
+    ret = host->method->Deinit(host);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: host deinit fail", __func__);
+        return ret;
+    }
+
     OsalAtomicDec(&host->atom);
     return HDF_SUCCESS;
 }
@@ -71,11 +83,13 @@ struct UartHost *UartHostCreate(struct HdfDeviceObject *device)
         HDF_LOGE("%s: invalid parameter", __func__);
         return NULL;
     }
+
     host = (struct UartHost *)OsalMemCalloc(sizeof(*host));
     if (host == NULL) {
         HDF_LOGE("%s: OsalMemCalloc error", __func__);
         return NULL;
     }
+
     host->device = device;
     device->service = &(host->service);
     host->device->service->Dispatch = UartIoDispatch;
