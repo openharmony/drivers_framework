@@ -378,7 +378,8 @@ int32_t I2cTestExecute(int cmd)
     if (cmd > I2C_TEST_CMD_MAX) {
         HDF_LOGE("I2cTestExecute: invalid cmd:%d", cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        HDF_LOGE("[I2cTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -389,7 +390,6 @@ int32_t I2cTestExecute(int cmd)
         break;
     }
 
-__EXIT__:
     HDF_LOGE("[I2cTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
     return ret;
 }

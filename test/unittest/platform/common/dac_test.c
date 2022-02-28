@@ -280,7 +280,8 @@ int32_t DacTestExecute(int cmd)
     if (cmd > DAC_TEST_CMD_MAX) {
         HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -291,7 +292,6 @@ int32_t DacTestExecute(int cmd)
         break;
     }
 
-__EXIT__:
     HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     return ret;
 }

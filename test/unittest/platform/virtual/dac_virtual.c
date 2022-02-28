@@ -99,7 +99,9 @@ static int32_t VirtualDacParseAndInit(struct HdfDeviceObject *device, const stru
     ret = VirtualDacReadDrs(virtual, node);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: Read drs fail! ret:%d", __func__, ret);
-        goto __ERR__;
+        OsalMemFree(virtual);
+        virtual = NULL;
+        return ret;
     }
 
     VirtualDacDeviceInit(virtual);
@@ -109,17 +111,12 @@ static int32_t VirtualDacParseAndInit(struct HdfDeviceObject *device, const stru
     ret = DacDeviceAdd(&virtual->device);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: add Dac controller failed! ret = %d", __func__, ret);
-        goto __ERR__;
+        OsalMemFree(virtual);
+        virtual = NULL;
+        return ret;
     }
 
     return HDF_SUCCESS;
-__ERR__:
-    if (virtual != NULL) {
-        OsalMemFree(virtual);
-        virtual = NULL;
-    }
-
-    return ret;
 }
 
 static int32_t VirtualDacInit(struct HdfDeviceObject *device)
