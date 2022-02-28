@@ -56,7 +56,6 @@ DevHandle UartOpen(uint32_t port)
         return NULL;
     }
     ret = service->dispatcher->Dispatch(&service->object, UART_IO_INIT, NULL, NULL);
-
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: UartHostInit error, ret %d", __func__, ret);
         UartPutObjByPointer(handle);

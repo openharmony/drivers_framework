@@ -130,12 +130,12 @@ int32_t AdcRead(DevHandle handle, uint32_t channel, uint32_t *val)
 
     if (!HdfSbufWriteUint32(data, (uint32_t)(uintptr_t)handle)) {
         HDF_LOGE("%s: write handle fail!", __func__);
-	    ret = HDF_ERR_IO;
+        ret = HDF_ERR_IO;
         goto EXIT;
     }
     if (!HdfSbufWriteUint32(data, (uint32_t)channel)) {
         HDF_LOGE("%s: write adc number failed!", __func__);
-	    ret = HDF_ERR_IO;
+        ret = HDF_ERR_IO;
         goto EXIT;
     }
     ret = service->dispatcher->Dispatch(&service->object, ADC_IO_READ, data, reply);
@@ -144,15 +144,15 @@ int32_t AdcRead(DevHandle handle, uint32_t channel, uint32_t *val)
         goto EXIT;
     }
 
-	if (!HdfSbufReadUint32(reply, val)) {
-	    HDF_LOGE("%s: read sbuf failed", __func__);
-	    ret = HDF_ERR_IO;
+    if (!HdfSbufReadUint32(reply, val)) {
+        HDF_LOGE("%s: read sbuf failed", __func__);
+        ret = HDF_ERR_IO;
         goto EXIT;
     }
 
     goto EXIT;
 EXIT:
-	HdfSbufRecycle(data);
-	HdfSbufRecycle(reply);
+    HdfSbufRecycle(data);
+    HdfSbufRecycle(reply);
     return ret;
 }

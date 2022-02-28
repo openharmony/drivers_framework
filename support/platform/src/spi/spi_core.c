@@ -201,7 +201,7 @@ static int32_t SpiIoTransfer(struct SpiCntlr *cntlr, uint32_t csNum, struct HdfS
     ret = SpiCntlrTransfer(cntlr, csNum, msgs, count);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: do transfer failed:%d", __func__, ret);
-         goto EXIT;
+        goto EXIT;
     }
 
     ret =  SpiTransferWriteBackMsgs(reply, msgs, count);

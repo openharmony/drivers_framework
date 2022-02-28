@@ -360,7 +360,7 @@ static int32_t RegulatorTestInitFromHcs(struct RegulatorTest *test, const struct
         return HDF_FAILURE;
     }
 
-    HDF_LOGI("regulator test init:[%s][%d]--[%d][%d]--[%d][%d]!", 
+    HDF_LOGI("regulator test init:[%s][%d]--[%d][%d]--[%d][%d]!",
         test->name, test->mode, test->minUv, test->maxUv, test->minUa, test->maxUa);
 
     return HDF_SUCCESS;

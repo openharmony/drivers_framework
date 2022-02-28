@@ -39,7 +39,7 @@ static struct I2sCntlr *I2sGetCntlrByBusNum(uint32_t num)
     return cntlr;
 }
 
-void I2sEnable(DevHandle handle) 
+void I2sEnable(DevHandle handle)
 {
     struct I2sCntlr *cntlr = (struct I2sCntlr *)handle;
     if (cntlr == NULL) {
@@ -54,7 +54,7 @@ void I2sEnable(DevHandle handle)
     }
 }
 
-void I2sDisable(DevHandle handle) 
+void I2sDisable(DevHandle handle)
 {
     struct I2sCntlr *cntlr = (struct I2sCntlr *)handle;
     if (cntlr == NULL) {
@@ -125,7 +125,7 @@ void I2sStopRead(DevHandle handle)
     }
 }
 
-int32_t I2sWrite(DevHandle handle, uint8_t *buf, uint32_t len, uint32_t *pWlen) 
+int32_t I2sWrite(DevHandle handle, uint8_t *buf, uint32_t len, uint32_t *pWlen)
 {
     struct I2sMsg msg = {0};
     if (pWlen == NULL) {
@@ -148,7 +148,7 @@ int32_t I2sWrite(DevHandle handle, uint8_t *buf, uint32_t len, uint32_t *pWlen)
     return HDF_SUCCESS;
 }
 
-int32_t I2sRead(DevHandle handle, uint8_t *buf, uint32_t len, uint32_t *pRlen) 
+int32_t I2sRead(DevHandle handle, uint8_t *buf, uint32_t len, uint32_t *pRlen)
 {
     struct I2sMsg msg = {0};
     if (pRlen == NULL) {

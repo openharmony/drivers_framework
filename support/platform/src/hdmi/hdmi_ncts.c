@@ -13,7 +13,7 @@
 #define HDMI_NCTS_INVALID_VALUE 0xffffffff
 
 /*
- * see hdmi1.4 table 7-1°¢7-2°¢7-3.
+ * see hdmi1.4 table 7-1„ÄÅ7-2„ÄÅ7-3.
  * The exact relationship: 128 * fs = tmdsClock * N / CTS.
  */
 static struct HdmiAudioNCts g_audioNctsMap[] = {

@@ -300,7 +300,7 @@ void I3cDeviceRemove(struct I3cDevice *device)
         return;
     }
 
-    ret = SetAddrStatus(device->cntlr, device->addr, I3C_ADDR_RESERVED); 
+    ret = SetAddrStatus(device->cntlr, device->addr, I3C_ADDR_RESERVED);
     if (ret != HDF_SUCCESS) {
         return;
     }
@@ -549,7 +549,7 @@ int32_t I3cCntlrGetConfig(struct I3cCntlr *cntlr, struct I3cConfig *config)
     I3cCntlrUnlock(cntlr);
 
     return ret;
-} 
+}
 
 int32_t I3cCntlrRequestIbi(struct I3cCntlr *cntlr, uint16_t addr, I3cIbiFunc func, uint32_t payload)
 {

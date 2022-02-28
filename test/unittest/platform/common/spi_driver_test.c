@@ -93,7 +93,7 @@ static int32_t SpiTestBind(struct HdfDeviceObject *device)
     struct IDeviceIoService *service = NULL;
 
     service = (struct IDeviceIoService *)OsalMemCalloc(sizeof(*service));
-    if(service == NULL) {
+    if (service == NULL) {
         HDF_LOGE("%s: malloc service failed!", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }

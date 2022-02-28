@@ -116,7 +116,7 @@ static int TimerOnceTestThreadFunc(void *param)
         return HDF_FAILURE;
     }
 
-    if(HwTimerSetOnce(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseOnceCb) != HDF_SUCCESS) {
+    if (HwTimerSetOnce(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseOnceCb) != HDF_SUCCESS) {
         HDF_LOGE("%s: TimerSetOnce fail", __func__);
         g_theard1Flag = true;
         return HDF_FAILURE;
@@ -138,7 +138,7 @@ static int TimerPeriodTestThreadFunc(void *param)
         return HDF_FAILURE;
     }
 
-    if(HwTimerSet(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseCb) != HDF_SUCCESS) {
+    if (HwTimerSet(handle, TIMER_TEST_TIME_USECONDS, TimerTestcaseCb) != HDF_SUCCESS) {
         HDF_LOGE("%s: TimerSet fail", __func__);
         g_theard2Flag = true;
         return HDF_FAILURE;
@@ -222,7 +222,7 @@ int32_t TimerTestMultiThread(struct TimerTest *test)
             }
         }
         ret = HDF_SUCCESS;
-    } while(0);
+    } while (0);
 
     if (handle1 != NULL) {
         HwTimerClose(handle1);
@@ -341,7 +341,7 @@ struct TimerTest *TimerTestGet(void)
 static int32_t TimerIfPerformanceTest(struct TimerTest *test)
 {
 #ifdef __LITEOS__
-    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    // liteos the accuracy of the obtained time is too large and inaccurate.
     if (test == NULL) {
         return HDF_FAILURE;
     }
@@ -350,7 +350,7 @@ static int32_t TimerIfPerformanceTest(struct TimerTest *test)
 
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
     uint32_t uSecond;
     bool isPeriod;
 
@@ -359,8 +359,8 @@ static int32_t TimerIfPerformanceTest(struct TimerTest *test)
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }
 
@@ -392,7 +392,7 @@ int32_t TimerTestExecute(int cmd)
     }
 
     if (cmd != TIMER_MULTI_THREAD_TEST) {
-         test->handle = HwTimerOpen(test->number);
+        test->handle = HwTimerOpen(test->number);
         if (test->handle == NULL) {
             HDF_LOGE("%s: timer test get handle fail", __func__);
             return HDF_FAILURE;

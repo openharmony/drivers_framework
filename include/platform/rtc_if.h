@@ -81,17 +81,18 @@ struct RtcTime {
  * @since 1.0
  */
 enum RtcIoCmd {
-	RTC_IO_READTIME = 0,                    /**< Read time. */
-	RTC_IO_WRITETIME,                       /**< Write format-compliant time. */
-	RTC_IO_READALARM,                       /**< Read the RTC alarm time. */
-	RTC_IO_WRITEALARM,                      /**< Write the RTC alarm time. */
-	RTC_IO_REGISTERALARMCALLBACK,           /**< Registers that will be invoked when an alarm is generated at the specified time. */
-	RTC_IO_ALARMINTERRUPTENABLE,            /**< Enables or disables alarm interrupts. */
-	RTC_IO_GETFREQ,                         /**< Get the RTC external frequency. */
-	RTC_IO_SETFREQ,                         /**< Set the oscillation frequency of RTC external crystal. */
-	RTC_IO_RESET,                           /**< Reset the RTC device. */
-	RTC_IO_READREG,                         /**< Reads the configuration of a custom RTC register. */
-	RTC_IO_WRITEREG,                        /**< Writes the configuration of a custom RTC register. */
+    RTC_IO_READTIME = 0,                    /**< Read time. */
+    RTC_IO_WRITETIME,                       /**< Write format-compliant time. */
+    RTC_IO_READALARM,                       /**< Read the RTC alarm time. */
+    RTC_IO_WRITEALARM,                      /**< Write the RTC alarm time. */
+    RTC_IO_REGISTERALARMCALLBACK,           /**< Registers that will be invoked when an alarm
+                                                is generated at the specified time. */
+    RTC_IO_ALARMINTERRUPTENABLE,            /**< Enables or disables alarm interrupts. */
+    RTC_IO_GETFREQ,                         /**< Get the RTC external frequency. */
+    RTC_IO_SETFREQ,                         /**< Set the oscillation frequency of RTC external crystal. */
+    RTC_IO_RESET,                           /**< Reset the RTC device. */
+    RTC_IO_READREG,                         /**< Reads the configuration of a custom RTC register. */
+    RTC_IO_WRITEREG,                        /**< Writes the configuration of a custom RTC register. */
 };
 
 /**

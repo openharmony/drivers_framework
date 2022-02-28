@@ -324,7 +324,7 @@ static int32_t TimerIoGet(struct HdfSBuf *data, struct HdfSBuf *reply)
         return HDF_ERR_IO;
     }
 
-     number = (int16_t)(handle - TIMER_HANDLE_SHIFT);
+    number = (int16_t)(handle - TIMER_HANDLE_SHIFT);
     if (number < 0) {
         HDF_LOGE("%s: number[%d] invalid", __func__, number);
         return HDF_ERR_INVALID_PARAM;

@@ -46,7 +46,7 @@ int32_t I3cTransfer(DevHandle handle, struct I3cMsg *msgs, int16_t count, enum T
         case CCC_CMD_MODE:
             ret = I3cCntlrSendCccCmd((struct I3cCntlr *)handle, msgs->ccc);
             break;
-        default: 
+        default:
             break;
     }
 
