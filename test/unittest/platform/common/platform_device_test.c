@@ -30,7 +30,7 @@ static int32_t PlatformDeviceTestSetName(struct PlatformDevice *device)
 
     PLAT_LOGD("%s: enter", __func__);
     // should set name success
-    ret = PlatformDeviceSetName(device, "platform_device_name_%d", 1); 
+    ret = PlatformDeviceSetName(device, "platform_device_name_%d", 1);
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
     ret = strcmp(device->name, "platform_device_name_1");
     CHECK_EQ_RETURN(ret, 0, HDF_FAILURE);
@@ -40,7 +40,7 @@ static int32_t PlatformDeviceTestSetName(struct PlatformDevice *device)
     CHECK_EQ_RETURN(device->name, NULL, HDF_FAILURE);
 
     // should set name success
-    ret = PlatformDeviceSetName(device, "platform_device_name"); 
+    ret = PlatformDeviceSetName(device, "platform_device_name");
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
     ret = strcmp(device->name, "platform_device_name");
     CHECK_EQ_RETURN(ret, 0, HDF_FAILURE);
@@ -67,24 +67,24 @@ static int32_t PlatformDeviceTestGetDevice(struct PlatformDevice *device)
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
 
     refCntAfterGet = PlatformDeviceRefCount(device);
-    // ref count should increase by 1 after get 
+    // ref count should increase by 1 after get
     CHECK_EQ_RETURN(refCntAfterGet, refCntBeforeGet + 1, ret);
 
     ret = PlatformDeviceGet(device);
     // should get device success again
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
     refCntAfterGet = PlatformDeviceRefCount(device);
-    // ref count should increase by 2 after double get 
+    // ref count should increase by 2 after double get
     CHECK_EQ_RETURN(refCntAfterGet, refCntBeforeGet + 2, ret);
 
     PlatformDevicePut(device);
     refCntAfterPut = PlatformDeviceRefCount(device);
-    // ref count should decrease by 1 after put 
+    // ref count should decrease by 1 after put
     CHECK_EQ_RETURN(refCntAfterPut, refCntBeforeGet + 1, ret);
 
     PlatformDevicePut(device);
     refCntAfterPut = PlatformDeviceRefCount(device);
-    // ref count should decrease by 2 after put 
+    // ref count should decrease by 2 after put
     CHECK_EQ_RETURN(refCntAfterPut, refCntBeforeGet, ret);
 
     PLAT_LOGD("%s: exit", __func__);
@@ -103,17 +103,17 @@ static int32_t PlatformDeviceTestWaitEvent(struct PlatformDevice *device)
     device->name = "platform_device_test_event";
     // should not wait success before post
     ret = PlatformDeviceWaitEvent(device, mask, PLAT_DEV_WAIT_TIMEOUT, &events);
-    CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE); 
+    CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
 
     // should post event success
     ret = PlatformDevicePostEvent(device, eventA | eventB);
-    CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret); 
+    CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
 
     // should wait success after post
     ret = PlatformDeviceWaitEvent(device, mask, PLAT_DEV_WAIT_TIMEOUT, &events);
     PLAT_LOGD("%s: events:%x", __func__, events);
-    CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret); 
-    CHECK_EQ_RETURN(events, eventA | eventB, ret); 
+    CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
+    CHECK_EQ_RETURN(events, eventA | eventB, ret);
 
     PLAT_LOGD("%s: exit", __func__);
     return HDF_SUCCESS;
@@ -143,7 +143,7 @@ static int32_t PlatformDeviceTestAddDevice(struct PlatformDevice *device)
     PlatformDevicePut(deviceGet);
 
     PlatformDeviceDel(device);
-    // should not get the device after del 
+    // should not get the device after del
     deviceGet = PlatformManagerGetDeviceByNumber(manager, device->number);
     CHECK_EQ_RETURN(deviceGet, NULL, ret);
 
@@ -222,11 +222,11 @@ static int32_t PlatformDeviceTestReliability(struct PlatformDevice *device)
     ret = PlatformDeviceSetName(NULL, "device_name");
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
 
-    ret = PlatformDeviceSetName(device, NULL); 
+    ret = PlatformDeviceSetName(device, NULL);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
     PlatformDeviceClearName(device);
 
-    ret = PlatformDeviceGet(NULL); 
+    ret = PlatformDeviceGet(NULL);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
     PlatformDevicePut(NULL);
 
@@ -239,22 +239,22 @@ static int32_t PlatformDeviceTestReliability(struct PlatformDevice *device)
     ret = PlatformDeviceWaitEvent(NULL, 0x1, 1, &events);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
 
-    ret = PlatformDeviceAdd(NULL); 
+    ret = PlatformDeviceAdd(NULL);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
     PlatformDeviceDel(NULL);
 
-    ret = PlatformDeviceCreateService(NULL, TestDispatch); 
+    ret = PlatformDeviceCreateService(NULL, TestDispatch);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
     PlatformDeviceDestroyService(NULL);
 
-    ret = PlatformDeviceBind(device, NULL); 
+    ret = PlatformDeviceBind(device, NULL);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
-    ret = PlatformDeviceBind(NULL, &hdfDev); 
+    ret = PlatformDeviceBind(NULL, &hdfDev);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
     PlatformDeviceUnbind(device, NULL);
     PlatformDeviceUnbind(NULL, NULL);
 
-    devGet = PlatformDeviceFromHdfDev(NULL); 
+    devGet = PlatformDeviceFromHdfDev(NULL);
     CHECK_NULL_RETURN(devGet, HDF_FAILURE);
 
     PLAT_LOGD("%s: exit", __func__);

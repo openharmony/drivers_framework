@@ -401,7 +401,7 @@ static int32_t GpioIfPerformanceTest(void)
     uint16_t val;
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
     struct GpioTester *tester = NULL;
 
     tester = GpioTesterGet();
@@ -415,8 +415,8 @@ static int32_t GpioIfPerformanceTest(void)
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }
 
@@ -438,7 +438,7 @@ static struct GpioTestEntry g_entry[] = {
 
 int32_t GpioTestExecute(int cmd)
 {
-    uint32_t i; 
+    uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
 
 #if defined(_LINUX_USER_) || defined(__USER__)

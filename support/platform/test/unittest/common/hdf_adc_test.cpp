@@ -59,7 +59,6 @@ HWTEST_F(HdfLiteAdcTest, AdcTestRead001, TestSize.Level1)
     printf("%s: kernel test done, then for user...\n", __func__);
     EXPECT_EQ(0, AdcTestExecute(ADC_TEST_CMD_READ));
     printf("%s: exit!\n", __func__);
-
 }
 
 /**
@@ -76,7 +75,6 @@ HWTEST_F(HdfLiteAdcTest, AdcTestMultiThread001, TestSize.Level1)
     printf("%s: kernel test done, then for user...\n", __func__);
     EXPECT_EQ(0, AdcTestExecute(ADC_TEST_CMD_MULTI_THREAD));
     printf("%s: exit!\n", __func__);
-
 }
 
 /**
@@ -93,7 +91,6 @@ HWTEST_F(HdfLiteAdcTest, AdcTestReliability001, TestSize.Level1)
     printf("%s: kernel test done, then for user...\n", __func__);
     EXPECT_EQ(0, AdcTestExecute(ADC_TEST_CMD_RELIABILITY));
     printf("%s: exit!\n", __func__);
-
 }
 
 /**

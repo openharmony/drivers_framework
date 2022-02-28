@@ -127,7 +127,7 @@ int32_t RegulatorNodeAdd(struct RegulatorNode *node);
 int32_t RegulatorNodeRemove(const char *name);
 /**
  * @brief remove all regulator controllers
- * @param 
+ * @param
  * @return success or fail
  */
 int32_t RegulatorNodeRemoveAll(void);

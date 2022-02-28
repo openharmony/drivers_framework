@@ -33,7 +33,7 @@ static int32_t PlatformQueueTestHandle(struct PlatformQueue *queue, struct Platf
         tmsg->status = HDF_ERR_INVALID_OBJECT;
         PLAT_LOGE("%s: queue object is NULL", __func__);
         return HDF_ERR_INVALID_OBJECT;
-    } 
+    }
 
     if (msg->data != queue) {
         tmsg->status = HDF_ERR_INVALID_OBJECT;

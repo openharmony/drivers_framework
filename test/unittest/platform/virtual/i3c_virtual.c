@@ -216,8 +216,8 @@ static int32_t VirtualI3cReservedAddrWorker(struct VirtualI3cCntlr *virtual, uin
         case I3C_RESERVED_ADDR_7H7A:
         case I3C_RESERVED_ADDR_7H7C:
         case I3C_RESERVED_ADDR_7H7F:
-        /* All cases of broadcast address single bit error detect */
-        HDF_LOGW("%s: broadcast Address single bit error!", __func__);
+            /* All cases of broadcast address single bit error detect */
+            HDF_LOGW("%s: broadcast Address single bit error!", __func__);
             break;
         default:
             HDF_LOGD("%s: Reserved address which is not supported!", __func__);
@@ -241,7 +241,7 @@ static int32_t I3cIbiHandle(uint32_t irq, void *data)
     }
     virtual = (struct VirtualI3cCntlr *)data;
     ibiAddr = VirtualI3cGetIbiAddr();
-    if (CHECK_RESERVED_ADDR(ibiAddr) == I3C_ADDR_RESERVED) {
+    if (I3cCheckReservedAddr(ibiAddr) == I3C_ADDR_RESERVED) {
         HDF_LOGD("%s: Calling VirtualI3cResAddrWorker...", __func__);
         return VirtualI3cReservedAddrWorker(virtual, ibiAddr);
     } else {
