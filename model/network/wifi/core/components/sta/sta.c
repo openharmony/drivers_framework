@@ -15,6 +15,7 @@
 #include "hdf_wlan_utils.h"
 
 #define HDF_LOG_TAG HDF_WIFI_CORE
+#define AERR_MIN_LEN 2
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,7 +91,7 @@ static int WifiFillScanParam(struct WlanScanRequest *params, struct HdfSBuf *req
 
     return HDF_SUCCESS;
 }
-#define AERR_MIN_LEN 2
+
 static uint8_t WifiValidIeAttr(const uint8_t *ie, uint32_t len)
 {
     uint8_t elemLen;
