@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "device_resource_if.h": "c",
+        "message_router_inner.h": "c"
+    }
+}

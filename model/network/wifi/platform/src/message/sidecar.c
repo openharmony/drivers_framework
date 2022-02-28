@@ -8,9 +8,9 @@
 #include "hdf_base.h"
 #include "securec.h"
 #include "utils/hdf_log.h"
-#include "sidecar.h"
 #include "message_router.h"
 #include "message_router_inner.h"
+#include "sidecar.h"
 
 #ifdef USERSPACE_CLIENT_SUPPORT
 #define HDF_LOG_TAG UMsgEngine

@@ -482,7 +482,7 @@ static void WifiGetChannelData(struct WlanBand *band, WifiHwFeatureData **featur
         (*featureData)->bands[iee80211band].iee80211Channel[loop].freq = band->channels[loop].centerFreq;
         (*featureData)->bands[iee80211band].iee80211Channel[loop].flags = band->channels[loop].flags;
         (*featureData)->bands[iee80211band].iee80211Channel[loop].channel = band->channels[loop].channelId;
-    }   
+    }
 }
 
 static int32_t WifiFillHwFeature(struct NetDevice *netdev, WifiHwFeatureData *featureData)
