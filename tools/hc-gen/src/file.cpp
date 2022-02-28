@@ -6,11 +6,9 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "file.h"
 #include <climits>
 #include <cstdlib>
-#include <unistd.h>
-
-#include "file.h"
 #include "types.h"
 
 using namespace OHOS::Hardware::Util;

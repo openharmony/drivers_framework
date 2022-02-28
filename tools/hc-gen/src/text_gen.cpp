@@ -93,7 +93,6 @@ bool TextGen::HeaderOutputTraversal()
 
         return GenNodeDefinition(current);
     });
-
     if (!ret) {
         return false;
     }
@@ -680,7 +679,6 @@ std::string TextGen::GenArrayName(const std::shared_ptr<AstObject> &term)
     auto arrayName = std::string("g_hcsConfigArray").append(ToUpperCamelString(term->Name()));
     auto t = ConfigTerm::CastFrom(term);
     auto sym = SymbolFind(arrayName);
-
     if (sym == nullptr) {
         SymbolAdd(arrayName, term);
         t->SetSigNum(1);

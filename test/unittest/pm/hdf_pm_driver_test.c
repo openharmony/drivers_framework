@@ -6,13 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdf_pm_driver_test.h"
 #include "devsvc_manager.h"
 #include "devsvc_manager_clnt.h"
 #include "hdf_device_desc.h"
 #include "hdf_device_node.h"
 #include "hdf_log.h"
 #include "hdf_pm.h"
-#include "hdf_pm_driver_test.h"
 #include "hdf_power_manager.h"
 #include "hdf_task_queue.h"
 #include "osal_time.h"
@@ -107,8 +107,6 @@ struct PmTestType {
     uint32_t resumeCnt;
     uint32_t suspendCnt;
 };
-
-extern struct PmWorkQueue *HdfPmTaskQueueInit(HdfTaskFunc func);
 
 static struct PmTestType pmTestType[PM_TEST_DRIVER + 1];
 
@@ -409,7 +407,7 @@ int32_t HdfPmTestThreeDriver(const int32_t times, bool sync)
 
     HDF_LOGI("%s %d %d", __func__, pmTestType[PM_TEST_DRIVER].resumeCnt, pmTestType[PM_TEST_DRIVER].suspendCnt);
     HDF_LOGI("%s %d %d", __func__, pmTestType[HDF_TEST_DRIVER].resumeCnt, pmTestType[HDF_TEST_DRIVER].suspendCnt);
-    HDF_LOGI("%s %d %d", __func__, 
+    HDF_LOGI("%s %d %d", __func__,
         pmTestType[SAMPLE_TEST_DRIVER].resumeCnt, pmTestType[SAMPLE_TEST_DRIVER].suspendCnt);
 
     expendTimes = OsalGetSysTimeMs() - beginTimes;
@@ -446,7 +444,7 @@ int32_t HdfPmTestThreeDriverSeqHundred(void)
 
     HDF_LOGI("%s %d %d", __func__, pmTestType[PM_TEST_DRIVER].resumeCnt, pmTestType[PM_TEST_DRIVER].suspendCnt);
     HDF_LOGI("%s %d %d", __func__, pmTestType[HDF_TEST_DRIVER].resumeCnt, pmTestType[HDF_TEST_DRIVER].suspendCnt);
-    HDF_LOGI("%s %d %d", __func__, 
+    HDF_LOGI("%s %d %d", __func__,
         pmTestType[SAMPLE_TEST_DRIVER].resumeCnt, pmTestType[SAMPLE_TEST_DRIVER].suspendCnt);
 
     expendTimes = OsalGetSysTimeMs() - beginTimes;

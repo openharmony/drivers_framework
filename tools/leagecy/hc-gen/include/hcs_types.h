@@ -9,10 +9,6 @@
 #ifndef HCS_COMPILER_TYPES_H
 #define HCS_COMPILER_TYPES_H
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <inttypes.h>
-
 #define HCS_OPTION_END  (-1)
 #define ALIGN_SIZE 4
 

@@ -176,12 +176,12 @@ bool DecompileGen::OutPut()
     }
     WriteFile(fileHeader_);
     if (!ast_->WalkRound(
-            [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
-                return OutPutWalk(current, walkDepth);
-            },
-            [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
-                return CloseBrace(current, walkDepth);
-            })) {
+        [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
+            return OutPutWalk(current, walkDepth);
+        },
+        [this](std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
+            return CloseBrace(current, walkDepth);
+        })) {
         return false;
     }
 

@@ -118,7 +118,7 @@ int DeviceManagerStart(void)
     return HdfPowerManagerInit();
 }
 
-int DeviceManagerStartStep2()
+int DeviceManagerStartStep2(void)
 {
     struct DevmgrService *devMgrSvc = NULL;
     if (DeviceManagerIsQuickLoad() == DEV_MGR_SLOW_LOAD) {

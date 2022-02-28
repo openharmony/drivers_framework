@@ -28,7 +28,6 @@ int ServiceStatusMarshalling(struct ServiceStatus *status, struct HdfSBuf *buf)
 
 int ServiceStatusUnMarshalling(struct ServiceStatus *status, struct HdfSBuf *buf)
 {
-
     if (status == NULL || buf == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }

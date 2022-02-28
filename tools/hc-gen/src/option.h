@@ -86,7 +86,6 @@ private:
     std::string sourceDir_;
     void SetOptionData(char op);
 };
-
 } // namespace Hardware
 } // namespace OHOS
 #endif // HC_GEN_OPTION_H

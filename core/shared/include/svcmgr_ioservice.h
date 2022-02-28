@@ -19,7 +19,7 @@ extern "C" {
 #define DEV_SVCMGR_NODE "devsvc_mgr"
 
 enum SvcMgrIoCmd {
-    SVCMGR_REGISTER_LISTENER ,
+    SVCMGR_REGISTER_LISTENER,
     SVCMGR_UNREGISTER_LISTENER,
 };
 

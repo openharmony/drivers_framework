@@ -6,11 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_attribute_manager.h"
 #include "hdf_attribute_macro.h"
 #include "devhost_service_clnt.h"
-#include "hdf_config_macro.h"
 #include "hcs_macro.h"
+#include "hdf_attribute_manager.h"
+#include "hdf_config_macro.h"
 #include "hdf_host_info.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
@@ -186,7 +186,8 @@ static void AttributeManagerFreeHost(struct HdfHostType *host)
     struct HdfDeviceNodeType *devNodeTemp = NULL;
 
     DLIST_FOR_EACH_ENTRY_SAFE(device, deviceTemp, &host->devices, struct HdfDeviceType, deviceEntry) {
-        DLIST_FOR_EACH_ENTRY_SAFE(devNode, devNodeTemp, &device->deviceNodes, struct HdfDeviceNodeType, deviceNodeEntry) {
+        DLIST_FOR_EACH_ENTRY_SAFE(devNode, devNodeTemp, &device->deviceNodes, struct HdfDeviceNodeType,
+                                  deviceNodeEntry) {
             OsalMemFree(devNode);
         }
         OsalMemFree(device);

@@ -228,7 +228,7 @@ int HdfAttributeManagerGetDeviceList(struct DevHostServiceClnt *hostClnt)
         return ret;
     }
 
-    for(device = hostNode->child; device != NULL; device = device->sibling, deviceIdx++) {
+    for (device = hostNode->child; device != NULL; device = device->sibling, deviceIdx++) {
         if (!GetDevcieNodeList(device, hostClnt, deviceIdx)) {
             return ret;
         }

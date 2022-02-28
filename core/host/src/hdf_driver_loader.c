@@ -60,7 +60,7 @@ void HdfDriverLoaderConstruct(struct HdfDriverLoader *inst)
     }
 }
 
-struct HdfObject *HdfDriverLoaderCreate()
+struct HdfObject *HdfDriverLoaderCreate(void)
 {
     static bool isDriverLoaderInit = false;
     static struct HdfDriverLoader driverLoader;
@@ -74,7 +74,7 @@ struct HdfObject *HdfDriverLoaderCreate()
     return (struct HdfObject *)&driverLoader;
 }
 
-struct IDriverLoader *HdfDriverLoaderGetInstance()
+struct IDriverLoader *HdfDriverLoaderGetInstance(void)
 {
     static struct IDriverLoader *instance = NULL;
     if (instance == NULL) {

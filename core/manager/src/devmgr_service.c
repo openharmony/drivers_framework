@@ -395,7 +395,7 @@ bool DevmgrServiceConstruct(struct DevmgrService *inst)
     }
 }
 
-struct HdfObject *DevmgrServiceCreate()
+struct HdfObject *DevmgrServiceCreate(void)
 {
     static bool isDevMgrServiceInit = false;
     static struct DevmgrService devmgrServiceInstance;
