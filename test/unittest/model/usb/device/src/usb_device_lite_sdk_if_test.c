@@ -1704,7 +1704,7 @@ int32_t UsbFnDviceTestOpenInterface(void)
         return HDF_FAILURE;
     }
     handle = UsbFnOpenInterface(g_acmDevice->ctrlIface.fn);
-    if (NULL != handle) {
+    if (handle != NULL) {
         HDF_LOGE("%s: open interface success!!", __func__);
         return HDF_FAILURE;
     }
@@ -1723,7 +1723,7 @@ int32_t UsbFnDviceTestOpenInterface002(void)
         return HDF_FAILURE;
     }
     handle = UsbFnOpenInterface(g_acmDevice->dataIface.fn);
-    if (NULL != handle) {
+    if (handle != NULL) {
         HDF_LOGE("%s: open interface success!!", __func__);
         return HDF_FAILURE;
     }
@@ -1749,7 +1749,7 @@ int32_t UsbFnDviceTestOpenInterface003(void)
     }
     g_acmDevice->ctrlIface.handle = NULL;
     handle = UsbFnOpenInterface(g_acmDevice->ctrlIface.fn);
-    if (NULL == handle) {
+    if (handle ==NULL) {
         HDF_LOGE("%s: open interface failed", __func__);
         return HDF_FAILURE;
     }
@@ -1776,7 +1776,7 @@ int32_t UsbFnDviceTestOpenInterface004(void)
     }
     g_acmDevice->dataIface.handle = NULL;
     handle = UsbFnOpenInterface(g_acmDevice->dataIface.fn);
-    if (NULL == handle) {
+    if (handle == NULL) {
         HDF_LOGE("%s: open interface failed", __func__);
         return HDF_FAILURE;
     }
@@ -1790,7 +1790,7 @@ int32_t UsbFnDviceTestOpenInterface005(void)
     struct UsbFnInterface *fn = NULL;
 
     handle = UsbFnOpenInterface(fn);
-    if (NULL != handle) {
+    if (handle != NULL) {
         HDF_LOGE("%s: open interface success!!", __func__);
         return HDF_FAILURE;
     }

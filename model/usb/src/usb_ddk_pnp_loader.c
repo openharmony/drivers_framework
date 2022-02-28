@@ -831,7 +831,8 @@ static void UsbDdkPnpLoaderAddDevice(uint32_t cmdId, uint8_t index, struct HdfDe
             continue;
         }
 
-        HDF_LOGD("%s:%d matchDevice end, index=%d tableCount=%d is match moduleName=%s, serviceName=%s",
+        HDF_LOGD("%s:%d matchDevice end, index=%d tableCount=%d is match \
+            moduleName=%s, serviceName=%s",
             __func__, __LINE__, index, tableCount, idTable->moduleName, idTable->serviceName);
 
         ret = UsbDdkPnpLoaderrAddPnpDevice(usbPnpManagerDevice, infoTable, idTable, cmdId);

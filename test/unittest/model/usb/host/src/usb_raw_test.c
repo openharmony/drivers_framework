@@ -964,7 +964,8 @@ int32_t CheckRawSdkIfFillBulkRequest001(void)
         snd->len = (int)size;
         ret = memcpy_s(snd->buf, rawAcm->dataOutEp.maxPacketSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s fail", __func__);
+            return HDF_FAILURE;
         }
         rawAcm->transmitting++;
 
@@ -1536,7 +1537,8 @@ int32_t CheckRawSdkIfSendBulkRequest001(void)
         snd->len = (int)size;
         ret = memcpy_s(snd->buf, rawAcm->dataOutEp.maxPacketSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s fail", __func__);
+            return HDF_FAILURE;
         }
         rawAcm->transmitting++;
 
@@ -1756,7 +1758,8 @@ int32_t CheckRawSdkIfFillBulkRequest003(void)
         snd->len = (int)size;
         ret = memcpy_s(snd->buf, rawAcm->dataOutEp.maxPacketSize, sendData, size);
         if (ret) {
-            printf("memcpy_s fial");
+            HDF_LOGE("%s: memcpy_s fail", __func__);
+            return HDF_FAILURE;
         }
         rawAcm->transmitting++;
 
