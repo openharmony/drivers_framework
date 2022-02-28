@@ -14,54 +14,12 @@
 
 namespace OHOS {
 namespace HDI {
-String CCodeEmitter::FileName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    String subName = Options::GetInstance().GetSubPackage(name);
-    StringBuilder sb;
-    for (int i = 0; i < subName.GetLength(); i++) {
-        char c = subName[i];
-        if (isupper(c) != 0) {
-            // 2->Index of the last char array.
-            if (i > 1 && subName[i - 1] != '.' && subName[i - 2] != '.') {
-                sb.Append('_');
-            }
-            sb.Append(tolower(c));
-        } else {
-            sb.Append(c);
-        }
-    }
-
-    return sb.ToString().Replace('.', '/');
-}
-
-String CCodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod>& method)
-{
-    return String::Format("CMD_%s_%s", infName_.ToUnderLineUpper().string(),
-        method->GetName().ToUnderLineUpper().string());
-}
-
-void CCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb)
-{
-    sb.Append("enum {\n");
-    for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
-        AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(g_tab).Append(EmitMethodCmdID(method)).Append(",\n");
-    }
-
-    sb.Append(g_tab).Append(EmitMethodCmdID(interface_->GetVersionMethod())).Append(",\n");
-    sb.Append("};\n");
-}
-
 void CCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
     for (const auto& importPair : ast_->GetImports()) {
         AutoPtr<AST> importAst = importPair.second;
-        String fileName = FileName(importAst->GetFullName());
-        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(importAst->GetFullName())));
+        String fileName = PackageToFilePath(importAst->GetFullName());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName));
     }
 }
 
@@ -144,29 +102,6 @@ String CCodeEmitter::MacroName(const String& name)
 
     String macro = name.Replace('.', '_').ToUpperCase() + "_H";
     return macro;
-}
-
-String CCodeEmitter::ConstantName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    StringBuilder sb;
-
-    for (int i = 0; i < name.GetLength(); i++) {
-        char c = name[i];
-        if (isupper(c) != 0) {
-            if (i > 1) {
-                sb.Append('_');
-            }
-            sb.Append(c);
-        } else {
-            sb.Append(toupper(c));
-        }
-    }
-
-    return sb.ToString();
 }
 
 String CCodeEmitter::SpecificationParam(StringBuilder& paramSb, const String& prefix)

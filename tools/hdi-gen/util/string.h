@@ -87,8 +87,6 @@ public:
 
     String ToUpperCase() const;
 
-    String ToUnderLineUpper() const;
-
     String Substring(int begin) const;
 
     String Substring(int begin, int end) const;

@@ -93,7 +93,6 @@ void SharedData::Release(const void* handle)
     };
 }
 
-
 const char* String::TAG = "String";
 
 String::String(const char* string)
@@ -497,29 +496,6 @@ String String::ToUpperCase() const
         }
     }
     return *this;
-}
-
-String String::ToUnderLineUpper() const
-{
-    if (IsEmpty()) {
-        return *this;
-    }
-
-    StringBuilder sb;
-
-    for (int i = 0; i < GetLength(); i++) {
-        char c = string_[i];
-        if (isupper(c) != 0) {
-            if (i > 1) {
-                sb.Append('_');
-            }
-            sb.Append(c);
-        } else {
-            sb.Append(toupper(c));
-        }
-    }
-
-    return sb.ToString();
 }
 
 String String::Substring(int begin) const

@@ -37,7 +37,7 @@ void CppClientProxyCodeEmitter::EmitCode()
 
 void CppClientProxyCodeEmitter::EmitProxyHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_ + "Proxy").string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Proxy").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -64,7 +64,7 @@ void CppClientProxyCodeEmitter::EmitProxyHeaderInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(interfaceName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
     GetHeaderOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -146,7 +146,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodParameter(const AutoPtr<ASTParame
 
 void CppClientProxyCodeEmitter::EmitProxySourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(infName_ + "Proxy").string());
+    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_ + "Proxy").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -174,7 +174,7 @@ void CppClientProxyCodeEmitter::EmitProxySourceFile()
 void CppClientProxyCodeEmitter::EmitProxySourceInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(proxyName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(proxyName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {

@@ -36,23 +36,23 @@ bool CodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory, 
         interface_ = ast_->GetInterfaceDef();
         interfaceName_ = interface_->GetName();
         interfaceFullName_ = interface_->GetNamespace()->ToString() + interfaceName_;
-        infName_ = interfaceName_.StartsWith("I") ? interfaceName_.Substring(1) : interfaceName_;
-        proxyName_ = infName_ + "Proxy";
+        baseName_ = interfaceName_.StartsWith("I") ? interfaceName_.Substring(1) : interfaceName_;
+        proxyName_ = baseName_ + "Proxy";
         proxyFullName_ = interface_->GetNamespace()->ToString() + proxyName_;
 
-        stubName_ = infName_ + "Stub";
+        stubName_ = baseName_ + "Stub";
         stubFullName_ = interface_->GetNamespace()->ToString() + stubName_;
 
-        implName_ = infName_ + "Service";
+        implName_ = baseName_ + "Service";
         implFullName_ = interface_->GetNamespace()->ToString() + implName_;
     } else if (ast_->GetASTFileType() == ASTFileType::AST_TYPES) {
-        infName_ = ast_->GetName();
+        baseName_ = ast_->GetName();
     }
 
-    majorVerName_ = String::Format("%s_MAJOR_VERSION", interfaceName_.ToUnderLineUpper().string());
-    minorVerName_ = String::Format("%s_MINOR_VERSION", interfaceName_.ToUnderLineUpper().string());
+    majorVerName_ = String::Format("%s_MAJOR_VERSION", ConstantName(interfaceName_).string());
+    minorVerName_ = String::Format("%s_MINOR_VERSION", ConstantName(interfaceName_).string());
 
-    String prefix = String::Format("%c%s", tolower(infName_[0]), infName_.Substring(1).string());
+    String prefix = String::Format("%c%s", tolower(baseName_[0]), baseName_.Substring(1).string());
     dataParcelName_ = prefix + "Data";
     replyParcelName_ = prefix + "Reply";
     optionName_ = prefix + "Option";
@@ -73,7 +73,7 @@ void CodeEmitter::CleanData()
     directory_ = "";
     interfaceName_ = "";
     interfaceFullName_ = "";
-    infName_ = "";
+    baseName_ = "";
     proxyName_ = "";
     proxyFullName_ = "";
     stubName_ = "";
@@ -96,6 +96,118 @@ String CodeEmitter::GetFilePath(const String& outDir)
     } else {
         return String::Format("%s/%s/", outPath.string(), packagePath.string());
     }
+}
+
+String CodeEmitter::PackageToFilePath(const String& packageName)
+{
+    std::vector<String> packageVec = Options::GetInstance().GetSubPackage(packageName).Split(".");
+    StringBuilder filePath;
+    for (auto iter = packageVec.begin(); iter != packageVec.end(); iter++) {
+        filePath.Append(FileName(*iter));
+        if (iter != packageVec.end() - 1) {
+            filePath.Append("/");
+        }
+    }
+
+    return filePath.ToString();
+}
+
+String CodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod>& method)
+{
+    return String::Format("CMD_%s_%s", ConstantName(baseName_).string(),
+        ConstantName(method->GetName()).string());
+}
+
+void CodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("enum {\n");
+    for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
+        AutoPtr<ASTMethod> method = interface_->GetMethod(i);
+        sb.Append(prefix + g_tab).Append(EmitMethodCmdID(method)).Append(",\n");
+    }
+
+    sb.Append(prefix + g_tab).Append(EmitMethodCmdID(interface_->GetVersionMethod())).Append(",\n");
+    sb.Append(prefix).Append("};\n");
+}
+
+String CodeEmitter::EmitVersionHeaderName(const String& name)
+{
+    return String::Format("v%u_%u/%s", ast_->GetMajorVer(), ast_->GetMinorVer(), FileName(name).string());
+}
+
+String CodeEmitter::ConstantName(const String& name)
+{
+    if (name.IsEmpty()) {
+        return name;
+    }
+
+    StringBuilder sb;
+
+    for (int i = 0; i < name.GetLength(); i++) {
+        char c = name[i];
+        if (isupper(c) != 0) {
+            if (i > 1) {
+                sb.Append('_');
+            }
+            sb.Append(c);
+        } else {
+            sb.Append(toupper(c));
+        }
+    }
+
+    return sb.ToString();
+}
+
+String CodeEmitter::PascalName(const String& name)
+{
+    if (name.IsEmpty()) {
+        return name;
+    }
+
+    StringBuilder sb;
+    for (int i = 0; i < name.GetLength(); i++) {
+        char c = name[i];
+        if (i == 0) {
+            if (islower(c)) {
+                c = toupper(c);
+            }
+            sb.Append(c);
+        } else {
+            if (c == '_') {
+                continue;
+            }
+
+            if (islower(c) && name[i - 1] == '_') {
+                c = toupper(c);
+            }
+            sb.Append(c);
+        }
+    }
+
+    return sb.ToString();
+}
+
+String CodeEmitter::FileName(const String& name)
+{
+    if (name.IsEmpty()) {
+        return name;
+    }
+
+    StringBuilder sb;
+    for (int i = 0; i < name.GetLength(); i++) {
+        char c = name[i];
+        if (isupper(c) != 0) {
+            // 2->Index of the last char array.
+            if (i > 1) {
+                sb.Append('_');
+            }
+            sb.Append(tolower(c));
+        } else {
+            sb.Append(c);
+        }
+    }
+
+    return sb.ToString();
 }
 } // namespace HDI
 } // namespace OHOS

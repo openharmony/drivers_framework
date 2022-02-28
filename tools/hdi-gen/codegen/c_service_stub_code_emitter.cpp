@@ -65,7 +65,8 @@ void CServiceStubCodeEmitter::EmitStubHeaderInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
 
     for (const auto& file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -75,14 +76,14 @@ void CServiceStubCodeEmitter::EmitStubHeaderInclusions(StringBuilder& sb)
 void CServiceStubCodeEmitter::EmitCbServiceStubMethodsDcl(StringBuilder& sb)
 {
     if (!isCallbackInterface()) {
-        sb.AppendFormat("int32_t %sServiceOnRemoteRequest(struct %s *serviceImpl, ", infName_.string(),
+        sb.AppendFormat("int32_t %sServiceOnRemoteRequest(struct %s *serviceImpl, ", baseName_.string(),
             interfaceName_.string());
         sb.Append("int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply);\n");
         sb.Append("\n");
     }
-    sb.AppendFormat("struct %s* %sStubGetInstance(void);\n", interfaceName_.string(), infName_.string());
+    sb.AppendFormat("struct %s* %sStubGetInstance(void);\n", interfaceName_.string(), baseName_.string());
     sb.Append("\n");
-    sb.AppendFormat("void %sStubRelease(struct %s *instance);\n", infName_.string(), interfaceName_.string());
+    sb.AppendFormat("void %sStubRelease(struct %s *instance);\n", baseName_.string(), interfaceName_.string());
 }
 
 void CServiceStubCodeEmitter::EmitServiceStubSourceFile()
@@ -133,18 +134,7 @@ void CServiceStubCodeEmitter::EmitStubSourceInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
-
-    if (!isKernelCode_ && !isCallbackInterface()) {
-        for (const auto& importPair : ast_->GetImports()) {
-            AutoPtr<AST> importAst = importPair.second;
-            if (importAst->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-                String fileName = FileName(importAst->GetInterfaceDef()->GetFullName());
-                headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName));
-            }
-        }
-    }
-
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(stubName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -171,13 +161,12 @@ void CServiceStubCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFile
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_device_desc"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
 }
 
 void CServiceStubCodeEmitter::EmitStubDefinitions(StringBuilder& sb)
 {
-    sb.AppendFormat("struct %sStub {\n", infName_.string());
+    sb.AppendFormat("struct %sStub {\n", baseName_.string());
     sb.Append(g_tab).AppendFormat("struct %s impl;\n", interfaceName_.string());
     sb.Append(g_tab).Append("struct HdfRemoteService *remote;\n");
     sb.Append(g_tab).Append("struct HdfRemoteDispatcher dispatcher;\n");
@@ -405,7 +394,7 @@ void CServiceStubCodeEmitter::EmitStubAsObjectMethodImpl(StringBuilder& sb, cons
 {
     String objName = "self";
     sb.Append(prefix).AppendFormat("static struct HdfRemoteService *%sStubAsObject(struct %s *%s)\n",
-        infName_.string(), interfaceName_.string(), objName.string());
+        baseName_.string(), interfaceName_.string(), objName.string());
     sb.Append(prefix).Append("{\n");
 
     sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
@@ -413,7 +402,7 @@ void CServiceStubCodeEmitter::EmitStubAsObjectMethodImpl(StringBuilder& sb, cons
     sb.Append(prefix + g_tab).Append("}\n");
 
     sb.Append(prefix + g_tab).AppendFormat("struct %sStub *stub = CONTAINER_OF(%s, struct %sStub, impl);\n",
-        infName_.string(), objName.string(), infName_.string());
+        baseName_.string(), objName.string(), baseName_.string());
     sb.Append(prefix + g_tab).Append("return stub->remote;\n");
     sb.Append(prefix).Append("}\n");
 }
@@ -456,7 +445,7 @@ void CServiceStubCodeEmitter::EmitServiceStubOnRequestMethodImpl(StringBuilder& 
     String implName = "serviceImpl";
     String codeName = "cmdId";
     sb.Append(prefix).AppendFormat("int32_t %sServiceOnRemoteRequest(struct %s *%s, int %s, ",
-        infName_.string(), interfaceName_.string(), implName.string(), codeName.string());
+        baseName_.string(), interfaceName_.string(), implName.string(), codeName.string());
     sb.Append("struct HdfSBuf *data, struct HdfSBuf *reply)\n");
     sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).AppendFormat("switch (%s) {\n", codeName.string());
@@ -484,10 +473,10 @@ void CServiceStubCodeEmitter::EmitServiceStubOnRequestMethodImpl(StringBuilder& 
 
 void CServiceStubCodeEmitter::EmitStubGetMethodImpl(StringBuilder& sb)
 {
-    String stubTypeName = String::Format("%sStub", infName_.string());
+    String stubTypeName = String::Format("%sStub", baseName_.string());
     String objName = "stub";
 
-    sb.AppendFormat("struct %s *%sStubGetInstance(void)\n", interfaceName_.string(), infName_.string());
+    sb.AppendFormat("struct %s *%sStubGetInstance(void)\n", interfaceName_.string(), baseName_.string());
     sb.Append("{\n");
     sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s *)OsalMemAlloc(sizeof(struct %s));\n",
         stubTypeName.string(), objName.string(), stubTypeName.string(), stubTypeName.string());
@@ -507,7 +496,7 @@ void CServiceStubCodeEmitter::EmitStubGetMethodImpl(StringBuilder& sb)
     sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
     sb.Append(g_tab).Append("}\n\n");
 
-    sb.Append(g_tab).AppendFormat("%s->impl.AsObject = %sStubAsObject;\n", objName.string(), infName_.string());
+    sb.Append(g_tab).AppendFormat("%s->impl.AsObject = %sStubAsObject;\n", objName.string(), baseName_.string());
     sb.Append(g_tab).AppendFormat("return &%s->impl;\n", objName.string());
     sb.Append("}\n");
 }
@@ -515,7 +504,7 @@ void CServiceStubCodeEmitter::EmitStubGetMethodImpl(StringBuilder& sb)
 void CServiceStubCodeEmitter::EmitKernelStubGetMethodImpl(StringBuilder& sb)
 {
     String objName("instance");
-    sb.AppendFormat("struct %s *%sStubGetInstance(void)\n", interfaceName_.string(), infName_.string());
+    sb.AppendFormat("struct %s *%sStubGetInstance(void)\n", interfaceName_.string(), baseName_.string());
     sb.Append("{\n");
     sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s*)OsalMemAlloc(sizeof(struct %s));\n",
         interfaceName_.string(), objName.string(), interfaceName_.string(), interfaceName_.string());
@@ -532,7 +521,7 @@ void CServiceStubCodeEmitter::EmitKernelStubGetMethodImpl(StringBuilder& sb)
 void CServiceStubCodeEmitter::EmitStubReleaseImpl(StringBuilder& sb)
 {
     String objName = "instance";
-    sb.AppendFormat("void %sStubRelease(struct %s *%s)\n", infName_.string(), interfaceName_.string(),
+    sb.AppendFormat("void %sStubRelease(struct %s *%s)\n", baseName_.string(), interfaceName_.string(),
         objName.string());
     sb.Append("{\n");
     sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
@@ -546,7 +535,7 @@ void CServiceStubCodeEmitter::EmitStubReleaseImpl(StringBuilder& sb)
 
 void CServiceStubCodeEmitter::EmitKernelStubReleaseImpl(StringBuilder& sb)
 {
-    sb.AppendFormat("void %sStubRelease(struct %s *instance)\n", infName_.string(), interfaceName_.string());
+    sb.AppendFormat("void %sStubRelease(struct %s *instance)\n", baseName_.string(), interfaceName_.string());
     sb.Append("{\n");
     sb.Append(g_tab).Append("if (instance == NULL) {\n");
     sb.Append(g_tab).Append(g_tab).Append("return;\n");

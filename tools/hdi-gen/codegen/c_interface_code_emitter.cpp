@@ -51,7 +51,7 @@ void CInterfaceCodeEmitter::EmitInterfaceHeaderFile()
     sb.Append("\n");
     EmitInterfaceVersionMacro(sb);
     sb.Append("\n");
-    EmitInterfaceMethodCommands(sb);
+    EmitInterfaceMethodCommands(sb, "");
     sb.Append("\n");
     EmitInterfaceDefinition(sb);
     sb.Append("\n");
@@ -153,17 +153,17 @@ void CInterfaceCodeEmitter::EmitAsObjectMethod(StringBuilder& sb, const String& 
 void CInterfaceCodeEmitter::EmitInterfaceGetMethodDecl(StringBuilder& sb)
 {
     String methodParamStr = isCallbackInterface() ? "struct HdfRemoteService *remote" : "void";
-    sb.AppendFormat("struct %s *%sGet(%s);\n", interfaceName_.string(), infName_.string(), methodParamStr.string());
+    sb.AppendFormat("struct %s *%sGet(%s);\n", interfaceName_.string(), baseName_.string(), methodParamStr.string());
     if (!isCallbackInterface()) {
         sb.Append("\n");
         sb.AppendFormat("struct %s *%sGetInstance(const char *instanceName);\n",
-            interfaceName_.string(), infName_.string());
+            interfaceName_.string(), baseName_.string());
     }
 }
 
 void CInterfaceCodeEmitter::EmitInterfaceReleaseMethodDecl(StringBuilder& sb)
 {
-    sb.AppendFormat("void %sRelease(struct %s *instance);\n", infName_.string(), interfaceName_.string());
+    sb.AppendFormat("void %sRelease(struct %s *instance);\n", baseName_.string(), interfaceName_.string());
 }
 } // namespace HDI
 } // namespace OHOS
