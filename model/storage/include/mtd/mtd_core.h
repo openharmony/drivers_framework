@@ -367,7 +367,7 @@ int32_t MtdDeviceMarkBadBlock(struct MtdDevice *mtdDevice, off_t addr);
  */
 static inline bool MtdDeviceIsPageAligned(struct MtdDevice *mtdDevice, off_t addr)
 {
-    return ((addr & (mtdDevice->writeSize - 1)) == 0);
+    return (((uint64_t)addr & (mtdDevice->writeSize - 1)) == 0);
 }
 
 /**
@@ -376,7 +376,7 @@ static inline bool MtdDeviceIsPageAligned(struct MtdDevice *mtdDevice, off_t add
  */
 static inline size_t MtdDeviceAddrToPage(struct MtdDevice *mtdDevice, off_t addr)
 {
-    return (size_t)(addr >> mtdDevice->writeSizeShift);
+    return (size_t)((uint64_t)addr >> mtdDevice->writeSizeShift);
 }
 
 /**

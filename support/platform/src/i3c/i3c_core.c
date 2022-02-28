@@ -114,8 +114,8 @@ static int32_t SetAddrStatus(struct I3cCntlr *cntlr, uint16_t addr, enum I3cAddr
     }
 
     statusMask = ADDR_STATUS_MASK << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS);
-    temp = (cntlr->addrSlot[addr / (uint16_t)ADDRS_PER_UINT16]) & ~statusMask;
-    temp |= ((uint16_t)status) << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS);
+    temp = (cntlr->addrSlot[addr / (uint16_t)ADDRS_PER_UINT16]) & (uint16_t)~statusMask;
+    temp |= (uint16_t)(((uint16_t)status) << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS));
     cntlr->addrSlot[addr / ADDRS_PER_UINT16] = temp;
 
     I3cCntlrUnlock(cntlr);

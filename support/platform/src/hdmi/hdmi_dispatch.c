@@ -33,7 +33,7 @@ enum HdmiIoCmd {
 };
 
 struct HdmiDispatchFunc {
-    int32_t cmd;
+    uint32_t cmd;
     int32_t (*func)(struct HdmiCntlr *cntlr, struct HdfSBuf *data, struct HdfSBuf *reply);
 };
 
