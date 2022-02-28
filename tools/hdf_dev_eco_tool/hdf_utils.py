@@ -82,13 +82,13 @@ class SectionContent(object):
 
 def find_section(file_content, section_content):
     if not file_content or not section_content:
-        return None
+        return False
     start_pos = file_content.find(section_content.begin_flag)
     if start_pos == -1:
-        return None
+        return False
     end_pos = file_content.find(section_content.end_flag)
     if end_pos == -1:
-        return None
+        return False
     return SectionRange(start_pos, end_pos + len(section_content.end_flag) - 1)
 
 
@@ -297,7 +297,6 @@ def is_commented_line(line, comment_start):
 
 
 def get_vendor_gn_path(root):
-    # return os.path.join(get_vendor_hdf_dir_adapter(root), 'BUILD.gn')
     return os.path.join(get_vendor_hdf_dir_adapter(root), 'model', 'BUILD.gn')
 
 

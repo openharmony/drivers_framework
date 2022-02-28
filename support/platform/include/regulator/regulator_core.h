@@ -49,8 +49,8 @@ dprintf("[HDF]-[REGULATOR]:[%s][%d]---" fmt "\r\n", __func__, __LINE__, ##arg)
 } while (0)
 
 #define CHECK_PARSER_RESULT_RETURN_VALUE(ret, str) do { \
-    if (ret != HDF_SUCCESS) { \
-        REGULATOR_PRINT_LOG_ERR("%s:line %d %s fail, ret = %d!", __func__, __LINE__, str, ret); \
+    if ((ret) != HDF_SUCCESS) { \
+        REGULATOR_PRINT_LOG_ERR("%s:line %d %s fail, ret = %d!", __func__, __LINE__, (str), (ret)); \
         return HDF_FAILURE; \
     } \
 } while (0)

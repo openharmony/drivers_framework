@@ -24,7 +24,7 @@ public:
     Options(const Options& other) = delete;
     Options operator=(const Options& other) = delete;
 
-    Options& Parse(int argc, char* const argv[]);
+    Options& Parse(int argc, char *argv[]);
 
     ~Options() = default;
 

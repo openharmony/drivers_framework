@@ -15,9 +15,9 @@
 #define PEDOMETER_TEST_NUM                   1000
 
 /* PEDOMETER DATA REGISTERS ADDR */
-#define BMI160_PEDOMETER_LSB_ADDR            0X78
-#define BMI160_PEDOMETER_MSB_ADDR            0X79
-#define BMI160_STATUS_ADDR                   0X1B
+#define BMI160_PEDOMETER_LSB_ADDR            0x78
+#define BMI160_PEDOMETER_MSB_ADDR            0x79
+#define BMI160_STATUS_ADDR                   0x1B
 
 /* PEDOMETER DATA READY */
 #define BMI160_PEDOMETER_DATA_READY_MASK     0x80

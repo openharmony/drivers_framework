@@ -7,7 +7,6 @@
  */
 
 #include "parser/lexer.h"
-#include <utility>
 #include "util/string_builder.h"
 
 namespace OHOS {
@@ -119,18 +118,17 @@ Token Lexer::ReadToken(bool skipComment)
         if (c == '/') {
             if (currentFile_->PeekChar() == '/') {
                 ReadLineComment(c);
-                if (!skipComment) {
-                    return currentToken_;
-                }
-                continue;
             } else if (currentFile_->PeekChar() == '*') {
                 ReadBlockComment(c);
-                if (!skipComment) {
-                    return currentToken_;
-                }
+            } else {
+                currentToken_ = Token::UNKNOWN;
+                return currentToken_;
+            }
+
+            if (skipComment) {
                 continue;
             }
-            currentToken_ = Token::UNKNOWN;
+
             return currentToken_;
         }
 
@@ -293,25 +291,6 @@ int Lexer::TokenToChar(Token token)
             return ':';
         case Token::SEMICOLON:
             return ';';
-        case Token::BOOLEAN:
-        case Token::BYTE:
-        case Token::CHAR:
-        case Token::COMMENT_BLOCK:
-        case Token::COMMENT_LINE:
-        case Token::DOUBLE:
-        case Token::END_OF_FILE:
-        case Token::FLOAT:
-        case Token::IDENTIFIER:
-        case Token::IN:
-        case Token::INTEGER:
-        case Token::LIST:
-        case Token::LONG:
-        case Token::MAP:
-        case Token::ONEWAY:
-        case Token::OUT:
-        case Token::SEQUENCEABLE:
-        case Token::SHORT:
-        case Token::STRING:
         default:
             return -1;
     }

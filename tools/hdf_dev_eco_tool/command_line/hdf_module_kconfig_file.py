@@ -12,8 +12,8 @@ import os
 import re
 from string import Template
 
-from .hdf_dot_config_file import HdfDotConfigFile
 import hdf_utils
+from .hdf_dot_config_file import HdfDotConfigFile
 
 
 class HdfModuleKconfigFile(object):
@@ -46,7 +46,7 @@ class HdfModuleKconfigFile(object):
         if name_ == self.module:
             self.module_models['self'] = model
         else:
-            self.module_models['children'].append(model)
+            self.module_models.get('children').append(model)
 
     def _is_any_top_res_match(self, line):
         for re_pair in self.top_res:

@@ -19,9 +19,9 @@
 
 using namespace testing::ext;
 
-#define PCIE_DISABLE_ADDR 0xB7
-#define PCIE_UPPER_ADDR 0x28
-#define PCIE_CMD_ADDR 0x04
+const uint32_t PCIE_DISABLE_ADDR = 0xB7;
+const uint32_t PCIE_UPPER_ADDR = 0x28;
+const uint32_t PCIE_CMD_ADDR = 0x04;
 
 enum PcieTestCmd {
     PCIE_READ_AND_WRITE_01 = 0,

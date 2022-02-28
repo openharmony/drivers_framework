@@ -112,7 +112,7 @@ public:
 
     virtual bool IsFdType();
 
-    virtual bool IsSharedMemQueueType();
+    virtual bool IsSmqType();
 
     virtual String ToShortString();
 

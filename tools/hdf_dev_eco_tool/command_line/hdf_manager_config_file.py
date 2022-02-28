@@ -45,10 +45,10 @@ class HdfManagerConfigFile(object):
     def _find_range(self, pattern):
         match_obj = re.search(pattern, self.contents)
         if not match_obj:
-            return None
+            return False
         start = match_obj.start()
         if start == -1:
-            return None
+            return False
         braces = []
         start += len(match_obj.group(0)) - 1
         end = start
@@ -58,7 +58,7 @@ class HdfManagerConfigFile(object):
             elif '}' == self.contents[i]:
                 count = len(braces)
                 if count == 0:
-                    return None
+                    return False
                 if count == 1:
                     end = i
                     break
@@ -69,7 +69,7 @@ class HdfManagerConfigFile(object):
                 if self.contents[end] not in [' ', '\t']:
                     break
             return hdf_utils.SectionRange(start, end)
-        return None
+        return False
 
     @staticmethod
     def _begin_end(module, driver):

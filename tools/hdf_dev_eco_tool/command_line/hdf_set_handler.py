@@ -12,6 +12,9 @@ import os
 import json
 import argparse
 
+import hdf_utils
+from hdf_tool_settings import HdfToolSettings
+from hdf_tool_exception import HdfToolException
 from .hdf_command_handler_base import HdfCommandHandlerBase
 from .hdf_command_error_code import CommandErrorCode
 from .hdf_dot_config_file import HdfDotConfigFile
@@ -20,9 +23,6 @@ from .hdf_vendor_kconfig_file import HdfVendorKconfigFile
 from .hdf_vendor_mk_file import HdfVendorMkFile
 from .hdf_lite_mk_file import HdfLiteMkFile
 from .hdf_lite_kconfig_file import HdfLiteKconfigFile
-from hdf_tool_settings import HdfToolSettings
-from hdf_tool_exception import HdfToolException
-import hdf_utils
 
 
 class ConfigItemsAction(argparse.Action):

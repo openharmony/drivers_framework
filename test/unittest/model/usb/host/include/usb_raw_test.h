@@ -188,15 +188,15 @@ struct RawWb {
     struct UsbRawRequest *request;
     struct AcmRawDevice *instance;
     uint8_t *buf;
-    int len;
-    int use;
+    uint32_t len;
+    int32_t use;
 };
 
 struct RawRb {
     uint8_t *base;
-    int size;
-    int index;
-    int use;
+    int32_t size;
+    int32_t index;
+    int32_t use;
     struct AcmRawDevice *instance;
 };
 
@@ -238,7 +238,7 @@ struct AcmRawDevice {
     struct SerialRawDevice *port;
     uint32_t nbIndex;
     uint32_t nbSize;
-    int transmitting;
+    int32_t transmitting;
     uint8_t busNum;
     uint8_t devAddr;
     uint8_t interfaceCnt;
@@ -255,9 +255,9 @@ typedef enum {
     USB_REQUEST_SELECT_CONFIGURATION,
     /* select an alternate setting for an interface */
     USB_REQUEST_SELECT_INTERFACE,
-    /* get the device descriptor from a specific USB device/interface/endpoint */
+    /* get the device descriptor from a specific USB device/interface/endpoint  */
     USB_REQUEST_GET_DESCRIPTOR,
-    /* set descriptor on a device/interface/endpoint */
+    /* set descriptor on a device/interface/endpoint  */
     USB_REQUEST_SET_DESCRIPTOR,
     /* set a feature on a device/interface/endpoint/other */
     USB_REQUEST_SET_FEATURE,
@@ -287,14 +287,14 @@ struct UsbIsoPacketDesc {
 struct UsbAdapterUrb {
     unsigned char type;
     unsigned char endPoint;
-    int status;
+    int32_t status;
     unsigned int flags;
     void *buffer;
-    int bufferLength;
-    int actualLength;
-    int startFrame;
-    int numberOfPackets;
-    int errorCount;
+    int32_t bufferLength;
+    int32_t actualLength;
+    int32_t startFrame;
+    int32_t numberOfPackets;
+    int32_t errorCount;
     unsigned int signr;
     void *userContext;
     struct UsbIsoPacketDesc isoFrameDesc[0];
@@ -305,9 +305,9 @@ struct UsbHostRequest {
     /* the address of data buffer */
     unsigned char *buffer;
     /* the length of data buffer */
-    int length;
+    uint32_t length;
     /* the actual length of the requested data */
-    int actualLength;
+    int32_t actualLength;
     /* the status of the request */
     UsbRequestStatus status;
     /* private user data */
@@ -318,7 +318,7 @@ struct UsbHostRequest {
     UsbRawRequestCallback callback;
     UsbRequestCallback userCallback;
     /* the length of data buffer */
-    int bufLen;
+    int32_t bufLen;
     struct OsalSem sem;
     unsigned char endPoint;
     unsigned int timeout;
@@ -327,13 +327,13 @@ struct UsbHostRequest {
         void *urbs;
         void **isoUrbs;
     };
-    int numUrbs;
-    int numRetired;
+    int32_t numUrbs;
+    int32_t numRetired;
     UsbRequestStatus reqStatus;
-    int isoPacketOffset;
+    int32_t isoPacketOffset;
     struct OsalMutex lock;
     void *privateObj;
-    int numIsoPackets;
+    int32_t numIsoPackets;
     /* isopacketdesc ptr */
     struct UsbIsoPacketDesc isoPacketDesc[0];
 }__attribute__((aligned(4)));
@@ -344,8 +344,8 @@ struct UsbHostRequest {
 struct UsbFillRequestData {
     unsigned char endPoint;
     unsigned char *buffer;
-    int length;
-    int numIsoPackets;
+    uint32_t length;
+    int32_t numIsoPackets;
     UsbRawRequestCallback callback;
     void *userData;
     unsigned int timeout;
@@ -358,15 +358,15 @@ struct UsbRawTestFunc {
 };
 
 struct AcmRawDevice *UsbGetIoAcm(void);
-int UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config);
-int AcmWriteBufAlloc(struct AcmRawDevice *acm);
+int32_t UsbParseConfigDescriptor(struct AcmRawDevice *acm, struct UsbRawConfigDescriptor *config);
+int32_t AcmWriteBufAlloc(struct AcmRawDevice *acm);
 void AcmNotifyReqCallback(const void *requestArg);
 void AcmReadBulkCallback(const void *requestArg);
 void AcmWriteIsoCallback(const void *requestArg);
 void AcmWriteBulkCallback(const void *requestArg);
-int UsbStopIo(void);
-int UsbStartIo(void);
-int UsbIoThread(void *data);
+int32_t UsbStopIo(void);
+int32_t UsbStartIo(void);
+int32_t UsbIoThread(void *data);
 void AcmWriteBufFree(struct AcmRawDevice *acm);
 void AcmCtrlReqCallback(const void *requestArg);
 int32_t CheckRawSdkIfInit001(void);

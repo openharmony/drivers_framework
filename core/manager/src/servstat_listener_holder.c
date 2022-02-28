@@ -36,35 +36,48 @@ void ServStatListenerHolderinit(void)
     KServStatListenerHolderListInit();
 }
 
-void KServStatListenerHolderNotifyStatus(struct ServStatListenerHolder *holder,
+int32_t KServStatListenerHolderNotifyStatus(struct ServStatListenerHolder *holder,
     struct ServiceStatus *status)
 {
     if (holder == NULL || status == NULL) {
-        return;
+        return HDF_ERR_INVALID_PARAM;
     }
     struct KServStatListenerHolder *holderInst = CONTAINER_OF(holder, struct KServStatListenerHolder, holder);
     if (holderInst->listenerClient == NULL) {
         HDF_LOGE("failed to notify service status, invalid holder");
-        return;
+        return HDF_ERR_INVALID_PARAM;
     }
 
     struct HdfSBuf *data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("failed to notify service status, oom");
-        return;
+        return HDF_ERR_MALLOC_FAIL;
     }
 
     if (ServiceStatusMarshalling(status, data) != HDF_SUCCESS) {
         HDF_LOGE("failed to marshalling service status");
         HdfSbufRecycle(data);
-        return;
+        return HDF_ERR_INVALID_PARAM;
     }
 
     if (HdfDeviceSendEventToClient(holderInst->listenerClient, 0, data) != HDF_SUCCESS) {
         HDF_LOGE("failed to notify service status, send error");
+        return HDF_FAILURE;
     }
 
     HdfSbufRecycle(data);
+    return HDF_SUCCESS;
+}
+
+void KServStatListenerHolderRecycle(struct ServStatListenerHolder *holder)
+{
+    if (holder == NULL) {
+        return;
+    }
+
+    ServStatListenerHolderRelease(holder);
+    HDF_LOGD("KServStatListenerHolderRecycle success");
+    return;
 }
 
 struct ServStatListenerHolder *ServStatListenerHolderCreate(uintptr_t listener, uint16_t listenClass)
@@ -84,6 +97,7 @@ struct ServStatListenerHolder *ServStatListenerHolderCreate(uintptr_t listener, 
     holder->holder.index = listener;
     holder->holder.listenClass = listenClass;
     holder->holder.NotifyStatus = KServStatListenerHolderNotifyStatus;
+    holder->holder.Recycle = KServStatListenerHolderRecycle;
 
     OsalMutexLock(&g_holoderList.mutex);
     DListInsertTail(&holder->node, &g_holoderList.list);

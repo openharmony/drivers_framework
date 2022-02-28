@@ -674,7 +674,11 @@ static void OsaMemoryTest(void)
     UT_TEST_CHECK_RET(buf != NULL, OSAL_MALLOC_BIG);
     OsalMemFree(buf);
     buf = OsalMemAllocAlign(MEM_ALIGN_TEST_3, MALLOC_TEST_CASE1_SIZE);
-    UT_TEST_CHECK_RET(buf == NULL, OSAL_MALLOC_BIG);
+    if (sizeof(void *) == MEM_ALIGN_TEST_3) {
+        UT_TEST_CHECK_RET(buf == NULL, OSAL_MALLOC_BIG);
+    } else {
+        UT_TEST_CHECK_RET(buf != NULL, OSAL_MALLOC_BIG);
+    }
     OsalMemFree(buf);
     buf = OsalMemAllocAlign(MEM_ALIGN_TEST_4, MALLOC_TEST_CASE1_SIZE);
     UT_TEST_CHECK_RET(buf != NULL, OSAL_MALLOC_BIG);

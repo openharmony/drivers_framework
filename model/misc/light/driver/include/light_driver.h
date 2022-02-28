@@ -83,7 +83,7 @@ struct LightFlashEffect {
 };
 
 struct LightEffect {
-    int32_t lightBrightness;
+    uint32_t lightBrightness;
     struct LightFlashEffect flashEffect;
 };
 

@@ -42,7 +42,7 @@ extern "C" {
 
 #define HDMI_HDMI14_MAX_TMDS_RATE 340000  /* unit: KHz */
 #define HDMI_HDMI20_MAX_TMDS_RATE 600000  /* unit: KHz */
-#define HDMI_MULTIPLE_2P0(x)    (2 * x)
+#define HDMI_MULTIPLE_2P0(x)    (2 * (x))
 #define HDMI_MULTIPLE_1P5(x)    (((x) * 3) >> 1)
 #define HDMI_MULTIPLE_1P25(x)   (((x) * 5) >> 2)
 #define HDMI_MULTIPLE_0P5(x)    ((x) >> 1)

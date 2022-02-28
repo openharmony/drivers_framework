@@ -11,10 +11,10 @@
 import sys
 import argparse
 
+from hdf_tool_exception import HdfToolException
+from .hdf_command_error_code import CommandErrorCode
 from .hdf_tool_commands import HdfToolCommands
 from .hdf_tool_argument_parser import HdfToolArgumentParser
-from command_line.hdf_command_error_code import CommandErrorCode
-from hdf_tool_exception import HdfToolException
 
 
 class Message(object):

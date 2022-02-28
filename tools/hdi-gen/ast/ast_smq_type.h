@@ -13,14 +13,14 @@
 
 namespace OHOS {
 namespace HDI {
-class ASTSharedMemQueueType : public ASTType {
+class ASTSmqType : public ASTType {
 public:
     inline void SetInnerType(const AutoPtr<ASTType>& innerType)
     {
         innerType_ = innerType;
     }
 
-    bool IsSharedMemQueueType() override;
+    bool IsSmqType() override;
 
     String ToString() override;
 

@@ -185,7 +185,7 @@ class IDLGenerator:
         self._idl += "interface %s {\n" % iface["name"]
         for member in iface["members"]:
             self._install_function(iface["name"], member)
-        self._idl += "};\n"
+        self._idl += "}\n"
 
     def _install_function(self, iface_name, member):
         self._idl += "    %s(" % member["name"]

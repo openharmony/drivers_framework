@@ -41,7 +41,7 @@ CMAKE_GEN_PATH = "cmake-build-debug/"
 WORK_DIR = ""
 ERROR_COLOR_PREFIX = "\033[31m"
 ERROR_COLOR_END = "\033[0m"
-aligned_parm = ''
+ALIGNED_PARM = ''
 
 
 def setup_hcgen_compiler():
@@ -117,7 +117,7 @@ def build_binary(hcgen_path, case_name):
     source_file = os.path.join(WORK_DIR, case_name, 'case.hcs')
     target_file = os.path.join(WORK_DIR, case_name, 'golden')
     command = "%s %s -o %s %s" % \
-              (hcgen_path, aligned_parm, target_file, source_file)
+              (hcgen_path, ALIGNED_PARM, target_file, source_file)
     status, output = subprocess.getstatusoutput(command)
     if case_name.endswith('_ei'):
         if status == 0:
@@ -238,7 +238,7 @@ def clean_up():
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[-1] == '--align':
-        aligned_parm = ' -a '
+        ALIGNED_PARM = ' -a '
     setup_work_dir()
     hc_gen = setup_hcgen_compiler()
     clean_up()

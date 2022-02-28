@@ -11,9 +11,9 @@
 import os
 import re
 
-from .hdf_command_error_code import CommandErrorCode
-from hdf_tool_exception import HdfToolException
 import hdf_utils
+from hdf_tool_exception import HdfToolException
+from .hdf_command_error_code import CommandErrorCode
 
 
 class HdfVendorBuildFile(object):
@@ -36,8 +36,8 @@ class HdfVendorBuildFile(object):
             if result:
                 new_line["index"] = index + 1
                 new_line["value"] = line
-        new_line["value"] = new_line["value"].replace("input", module)
-        data.insert(new_line["index"], new_line["value"])
+        new_line["value"] = new_line.get("value").replace("input", module)
+        data.insert(new_line.get("index"), new_line.get("value"))
         with open(self.file_path, 'w') as write_file:
             for i in data:
                 write_file.write(i)

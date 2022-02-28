@@ -6,11 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "hdf_device_desc.h"
+#include "platform_core.h"
 #include "gpio_if.h"
 #include "gpio/gpio_core.h"
 #include "gpio/gpio_service.h"
-#include "hdf_device_desc.h"
-#include "platform_core.h"
 
 #define HDF_LOG_TAG gpio_service
 

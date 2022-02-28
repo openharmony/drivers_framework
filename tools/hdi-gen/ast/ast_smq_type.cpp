@@ -10,24 +10,24 @@
 
 namespace OHOS {
 namespace HDI {
-bool ASTSharedMemQueueType::IsSharedMemQueueType()
+bool ASTSmqType::IsSmqType()
 {
     return true;
 }
 
-String ASTSharedMemQueueType::ToString()
+String ASTSmqType::ToString()
 {
     return String::Format("SharedMemQueue<%s>", innerType_->ToString().string());
 }
 
-TypeKind ASTSharedMemQueueType::GetTypeKind()
+TypeKind ASTSmqType::GetTypeKind()
 {
     return TypeKind::TYPE_SMQ;
 }
 
-String ASTSharedMemQueueType::EmitCppType(TypeMode mode) const
+String ASTSmqType::EmitCppType(TypeMode mode) const
 {
-    switch(mode) {
+    switch (mode) {
         case TypeMode::NO_MODE:
             return String::Format("SharedMemQueue<%s>", innerType_->EmitCppType().string());
         case TypeMode::PARAM_IN:
@@ -41,7 +41,7 @@ String ASTSharedMemQueueType::EmitCppType(TypeMode mode) const
     }
 }
 
-void ASTSharedMemQueueType::EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
+void ASTSmqType::EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
     const String& prefix, unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s->IsGood() || %s->GetMeta() == nullptr || ", name.string(), name.string());
@@ -51,7 +51,7 @@ void ASTSharedMemQueueType::EmitCppWriteVar(const String& parcelName, const Stri
     sb.Append(prefix).Append("}\n");
 }
 
-void ASTSharedMemQueueType::EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
+void ASTSmqType::EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
     const String& prefix, bool initVariable, unsigned int innerLevel) const
 {
     String metaVarName = String::Format("%sMeta_", name.string());

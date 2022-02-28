@@ -13,7 +13,6 @@
 
 namespace OHOS {
 namespace HDI {
-
 class CppInterfaceCodeEmitter : public CppCodeEmitter {
 public:
     CppInterfaceCodeEmitter() : CppCodeEmitter() {}
@@ -48,7 +47,6 @@ private:
 
     void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
 };
-
 } // namespace HDI
 } // namespace OHOS
 

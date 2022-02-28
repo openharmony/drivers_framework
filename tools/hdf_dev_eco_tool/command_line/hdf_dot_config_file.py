@@ -45,8 +45,8 @@ class HdfDotConfigFile(object):
 
     def _find(self, item):
         if item in self.cache:
-            index = self.cache[item].index
-            line = self.cache[item].line
+            index = self.cache.get(item).index
+            line = self.cache.get(item).line
             return index, line
         for index, line in enumerate(self.lines):
             item_pattern = r'%s\s*(=|is)' % item

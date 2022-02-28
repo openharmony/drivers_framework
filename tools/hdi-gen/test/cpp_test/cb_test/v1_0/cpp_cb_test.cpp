@@ -27,9 +27,9 @@ static sptr<ICallback> g_callbackObj = nullptr;
 class CppCbTest : public testing::Test {
 public:
     static void SetUpTestCase();
-    static void TearDownTestCase(){}
-    void SetUp(){}
-    void TearDown(){}
+    static void TearDownTestCase() {}
+    void SetUp() {}
+    void TearDown() {}
 };
 
 void CppCbTest::SetUpTestCase()
