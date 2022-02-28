@@ -398,7 +398,7 @@ void Bmp180ReleaseDriver(struct HdfDeviceObject *device)
     struct Bmp180DrvData *drvData = (struct Bmp180DrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->sensorCfg != NULL) { 
+    if (drvData->sensorCfg != NULL) {
         BarometerReleaseCfgData(drvData->sensorCfg);
         drvData->sensorCfg = NULL;
     }

@@ -142,13 +142,14 @@ static int32_t ParserVibratorHapticConfig(const struct DeviceResourceNode *node)
 static uint32_t ProcessHapticTime(struct VibratorHapticData *hapticData)
 {
     uint32_t duration;
+    int32_t num = 2; // Determine whether the number is an even numner or an odd number.
 
     CHECK_VIBRATOR_NULL_PTR_RETURN_VALUE(hapticData, HDF_FAILURE);
     if ((hapticData->currentSeqIndex < 0) || (hapticData->currentSeqIndex >= hapticData->seqCount)) {
         return 0;
     }
 
-    if (hapticData->currentSeqIndex % 2 == 0) {
+    if (hapticData->currentSeqIndex % num == 0) {
         StartTimeVibrator();
     } else {
         StopVibrator();

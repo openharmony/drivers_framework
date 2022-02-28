@@ -36,6 +36,6 @@ struct HallDrvData {
 
 int32_t HallRegisterChipOps(const struct HallOpsCall *ops);
 struct SensorCfgData *HallCreateCfgData(const struct DeviceResourceNode *node);
-void HallReleaseCfgData(struct SensorCfgData *sensorCfgData);
+void HallReleaseCfgData(struct SensorCfgData *hallCfg);
 
 #endif /* SENSOR_HALL_DRIVER_H */

@@ -60,6 +60,6 @@ struct MagneticDrvData {
 
 int32_t MagneticRegisterChipOps(const struct MagneticOpsCall *ops);
 struct SensorCfgData *MagneticCreateCfgData(const struct DeviceResourceNode *node);
-void MagneticReleaseCfgData(struct SensorCfgData *sensorCfgData);
+void MagneticReleaseCfgData(struct SensorCfgData *magneticCfg);
 
 #endif /* SENSOR_MAGNETIC_DRIVER_H */
