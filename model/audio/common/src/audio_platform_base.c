@@ -1242,7 +1242,6 @@ int32_t AudioCapSilenceThresholdEvent(struct HdfDeviceObject *device, const stru
         ADM_LOG_ERR("Malloc memory failed!");
         return HDF_FAILURE;
     }
-    memset_s(msgBuf, PNP_REPORT_MSG_LEN, 0, PNP_REPORT_MSG_LEN);
 
     ret = PnpReportMsgConvert(reportMsg, msgBuf, PNP_REPORT_MSG_LEN);
     if (ret != HDF_SUCCESS) {
