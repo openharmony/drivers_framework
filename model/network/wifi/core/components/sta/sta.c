@@ -15,7 +15,7 @@
 #include "hdf_wlan_utils.h"
 
 #define HDF_LOG_TAG HDF_WIFI_CORE
-#define AERR_MIN_LEN 2
+#define ATTR_MIN_LEN 2
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,16 +99,16 @@ static uint8_t WifiValidIeAttr(const uint8_t *ie, uint32_t len)
         return true;
     }
     while (len != 0) {
-        if (len < AERR_MIN_LEN) {
+        if (len < ATTR_MIN_LEN) {
             return false;
         }
-        len -= AERR_MIN_LEN;
+        len -= ATTR_MIN_LEN;
         elemLen = ie[1];
         if (elemLen > len) {
             return false;
         }
         len -= elemLen;
-        ie += AERR_MIN_LEN + elemLen;
+        ie += ATTR_MIN_LEN + elemLen;
     }
     return true;
 }

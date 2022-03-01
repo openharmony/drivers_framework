@@ -99,7 +99,6 @@ static void DeInitNetDeviceImpl(struct NetDeviceImpl *netDeviceImpl)
 
     /* last release netDeviceImpl */
     OsalMemFree(netDeviceImpl);
-    netDeviceImpl = NULL;
     HDF_LOGI("%s success!", __func__);
     return;
 }

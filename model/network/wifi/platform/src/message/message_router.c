@@ -262,30 +262,6 @@ static ErrorCode DoRegistService(const NodeId nodeId, const DispatcherId dispatc
     return ME_SUCCESS;
 }
 
-static ErrorCode CreateAddRemoteService(MessageNode *node, const DispatcherId dispatcherId, struct ServiceDef *mapper)
-{
-    ErrorCode errCode;
-
-    if (node->CreateRemoteService == NULL) {
-            HDF_LOGE("%s:Can not reg service to node %d", __func__, nodeId);
-            errCode = ME_ERROR_NOT_SUPPORTED;
-            return errCode;
-        }
-        dispatcher = RefDispatcherInner(dispatcherId, false);
-
-        if (remoteService == NULL) {
-        remoteService = node->CreateRemoteService(node, dispatcher, mapper);
-            HDF_LOGE("%s:Node create service failed!node=%d", __func__, nodeId);
-            errCode = ME_ERROR_NULL_PTR;
-            return errCode;
-        }
-
-        errCode = NotifyAllNodesServiceAdd(nodeId, mapper);
-        if (errCode != ME_SUCCESS) {
-            HDF_LOGE("%s:NotifyAllNodesServiceAdd failed!err=%d", __func__, errCode);
-        }
-        return errCode;
-}
 static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId dispatcherId, struct ServiceDef *mapper)
 {
     HDF_STATUS status;
@@ -293,9 +269,12 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
     RemoteService *remoteService = NULL;
     MessageDispatcher *dispatcher = NULL;
     ErrorCode errCode;
+    if (mapper == NULL) {
+        return ME_ERROR_NULL_PTR;
+    }
 
-    if ((mapper == NULL) || (mapper->serviceId >= MESSAGE_ENGINE_MAX_SERVICE)) {
-        HDF_LOGE("%s:mapper is null or serviceId exceed max value! ServiceId=%u", __func__, mapper->serviceId);
+    if (mapper->serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
+        HDF_LOGE("%s:serviceId exceed max value! ServiceId=%u", __func__, mapper->serviceId);
         return ME_ERROR_PARA_WRONG;
     }
     status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
@@ -311,11 +290,26 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
         return ME_ERROR_NO_SUCH_NODE;
     }
     do {
-        errCode = CreateAddRemoteService(nodeId, dispatcherId, mapper);
-        if (errCode != ME_SUCCESS) {
-            HDF_LOGE("%s:CreateRemoteServiceAdd failed!err=%d.", __func__, errCode);
+        if (node->CreateRemoteService == NULL) {
+            HDF_LOGE("%s:Can not reg service to node %d", __func__, nodeId);
+            errCode = ME_ERROR_NOT_SUPPORTED;
             break;
         }
+        dispatcher = RefDispatcherInner(dispatcherId, false);
+
+        remoteService = node->CreateRemoteService(node, dispatcher, mapper);
+        if (remoteService == NULL) {
+            HDF_LOGE("%s:Node create service failed!node=%d", __func__, nodeId);
+            errCode = ME_ERROR_NULL_PTR;
+            break;
+        }
+
+        errCode = NotifyAllNodesServiceAdd(nodeId, mapper);
+        if (errCode != ME_SUCCESS) {
+            HDF_LOGE("%s:NotifyAllNodesServiceAdd failed!err=%d", __func__, errCode);
+            break;
+        }
+
         errCode = DoRegistService(nodeId, dispatcherId, remoteService);
         if (errCode != ME_SUCCESS) {
             HDF_LOGE("%s:DoRegistService failed!err=%d.", __func__, errCode);
