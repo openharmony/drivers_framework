@@ -33,7 +33,7 @@ static struct DeviceResourceNode *CreateTreeNode(const char *start, int32_t offs
     struct DeviceResourceNode *newNode = (struct DeviceResourceNode *)(*treeMem);
     *treeMem += sizeof(struct DeviceResourceNode);
     newNode->name = start + offset + HCS_PREFIX_LENGTH;
-    newNode->hashValue = offset + sizeof(struct HbcHeader);
+    newNode->hashValue = (uint32_t)(offset + sizeof(struct HbcHeader));
     if (parentNode != NULL) {
         newNode->parent = parentNode;
         struct DeviceResourceNode *curNode = parentNode->child;
