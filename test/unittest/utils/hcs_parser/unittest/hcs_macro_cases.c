@@ -61,10 +61,10 @@
 
 #define FP_DEAL_VARGS(node, fpArgs, idx) \
     do { \
-        CHECK_STRING_EQU(HCS_PROP(node, product), fpArgs[(idx)].product); \
-        CHECK_STRING_EQU(HCS_PROP(node, chip), fpArgs[(idx)].chip); \
+        CHECK_STRING_EQU(HCS_PROP(node, product), (fpArgs)[(idx)].product); \
+        CHECK_STRING_EQU(HCS_PROP(node, chip), (fpArgs)[(idx)].chip); \
         node##_foreach_child_vargs(FP_CHILD_DEAL_VARGS, fpArgs, idx); \
-        CHECK_STRING_EQU(HCS_PROP(node, status), fpArgs[(idx)].status); \
+        CHECK_STRING_EQU(HCS_PROP(node, status), (fpArgs)[(idx)].status); \
         (idx)++; \
     } while (0)
 
