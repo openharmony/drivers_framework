@@ -13,15 +13,18 @@
 #include "audio_stream_dispatch.h"
 #include "osal_time.h"
 #include "osal_uaccess.h"
+#include "hdf_device_object.h"
 
 #define HDF_LOG_TAG audio_platform_base
-const int MAX_PERIOD_SIZE = 1024 * 16;
-const int MAX_PERIOD_COUNT = 32;
-const int MIN_PERIOD_COUNT = 4;
+const int MAX_PERIOD_SIZE = (1024 * 8);
+const int PERIOD_COUNT = 4;
 const int RENDER_TRAF_BUF_SIZE = 1024;
 const int MIN_BUFF_SIZE = 16 * 1024;
 const int TIME_OUT_CONST = 50;
 const int SLEEP_TIME = 5;
+#define PNP_REPORT_MSG_LEN      32
+const int MIN_PERIOD_SILENCE_THRESHOLD = (4 * 1024);
+const int MAX_PERIOD_SILENCE_THRESHOLD = (16 * 1024);
 
 unsigned int SysReadl(unsigned long addr)
 {
@@ -180,18 +183,14 @@ int32_t AudioSetRenderBufInfo(struct PlatformData *data, const struct AudioPcmHw
         AUDIO_DRIVER_LOG_ERR("platform is NULL.");
         return HDF_FAILURE;
     }
-    data->renderBufInfo.period = param->period;
-    if (param->periodSize < MIN_PERIOD_SIZE || param->periodSize > MAX_PERIOD_SIZE) {
-        AUDIO_DRIVER_LOG_ERR("periodSize is invalid.");
-        return HDF_FAILURE;
-    }
-    data->renderBufInfo.periodSize = param->periodSize;
-    if (param->periodCount < MIN_PERIOD_COUNT || param->periodCount > MAX_PERIOD_COUNT) {
-        AUDIO_DRIVER_LOG_ERR("periodCount is invalid.");
-        return HDF_FAILURE;
-    }
-    data->renderBufInfo.periodCount = param->periodCount;
 
+    if (param->period < MIN_PERIOD_SIZE || param->period > MAX_PERIOD_SIZE) {
+        AUDIO_DRIVER_LOG_ERR("periodSize is invalid %d.", param->period);
+        return HDF_FAILURE;
+    }
+    data->renderBufInfo.periodSize = param->period * data->renderPcmInfo.bitWidth *
+        data->renderPcmInfo.channels / BITSTOBYTE;
+    data->renderBufInfo.periodCount = PERIOD_COUNT;
     data->renderBufInfo.trafBufSize = RENDER_TRAF_BUF_SIZE;
 
     size = data->renderBufInfo.periodCount * data->renderBufInfo.periodSize;
@@ -211,24 +210,21 @@ int32_t AudioSetCaptureBufInfo(struct PlatformData *data, const struct AudioPcmH
         return HDF_FAILURE;
     }
 
-    data->captureBufInfo.period = param->period;
-    if (param->periodSize < MIN_PERIOD_SIZE || param->periodSize > MAX_PERIOD_SIZE) {
-        AUDIO_DRIVER_LOG_ERR("periodSize is invalid %d.", param->periodSize);
+    if (param->period < MIN_PERIOD_SIZE || param->period > MAX_PERIOD_SIZE) {
+        AUDIO_DRIVER_LOG_ERR("periodSize is invalid %d.", param->period);
         return HDF_FAILURE;
     }
-    data->captureBufInfo.periodSize = param->periodSize;
-    if (param->periodCount < MIN_PERIOD_COUNT || param->periodCount > MAX_PERIOD_COUNT) {
-        AUDIO_DRIVER_LOG_ERR("periodCount is invalid %d.", param->periodCount);
-        return HDF_FAILURE;
-    }
-    data->captureBufInfo.periodCount = param->periodCount;
+    data->captureBufInfo.periodSize = param->period * data->capturePcmInfo.bitWidth *
+        data->capturePcmInfo.channels / BITSTOBYTE;
+    data->captureBufInfo.periodCount = PERIOD_COUNT;
 
-    if (param->silenceThreshold < MIN_PERIOD_SIZE || param->silenceThreshold > MAX_PERIOD_SIZE) {
+    if (param->silenceThreshold < MIN_PERIOD_SILENCE_THRESHOLD ||
+        param->silenceThreshold > MAX_PERIOD_SILENCE_THRESHOLD) {
         AUDIO_DRIVER_LOG_ERR("silenceThreshold is invalid %d.", param->silenceThreshold);
         return HDF_FAILURE;
     }
     data->captureBufInfo.trafBufSize = param->silenceThreshold;
-    data->captureBufInfo.cirBufSize = param->periodSize * param->periodCount;
+    data->captureBufInfo.cirBufSize = data->captureBufInfo.periodSize * data->captureBufInfo.periodCount;
     if (data->captureBufInfo.cirBufSize > data->captureBufInfo.cirBufMax) {
         AUDIO_DRIVER_LOG_ERR("cirBufSize is invalid %d.", data->captureBufInfo.cirBufSize);
         return HDF_FAILURE;
@@ -1188,3 +1184,86 @@ int32_t AudioPcmPointer(const struct AudioCard *card, uint32_t *pointer, enum Au
 
     return HDF_SUCCESS;
 }
+
+static int32_t PnpReportMsgConvert(const struct PnpReportMsg *pnpReportMsg, char *msgBuf, const uint32_t bufLen)
+{
+    int ret;
+    if (pnpReportMsg == NULL || msgBuf == NULL || bufLen < PNP_REPORT_MSG_LEN) {
+        AUDIO_DRIVER_LOG_ERR("Parameter error!");
+        return HDF_FAILURE;
+    }
+
+    switch (pnpReportMsg->reportType) {
+        case DEVICE_PULG:
+            ret = snprintf_s(msgBuf, bufLen, bufLen - 1, "%d;%d;%d;%d;%d",
+                pnpReportMsg->devPlugMsg.eventType, pnpReportMsg->devPlugMsg.state,
+                pnpReportMsg->devPlugMsg.deviceType, pnpReportMsg->devPlugMsg.deviceCap,
+                pnpReportMsg->devPlugMsg.id);
+            if (ret < 0) {
+                AUDIO_DRIVER_LOG_ERR("snprintf_s failed");
+                return HDF_ERR_IO;
+            }
+            break;
+        case EVENT_REPORT:
+            ret = snprintf_s(msgBuf, bufLen, bufLen - 1, "%d;%d;%d;%d;%d",
+                pnpReportMsg->eventMsg.eventType, pnpReportMsg->eventMsg.eventId,
+                pnpReportMsg->eventMsg.eventValue, pnpReportMsg->eventMsg.deviceType,
+                pnpReportMsg->eventMsg.reserve);
+            if (ret < 0) {
+                AUDIO_DRIVER_LOG_ERR("snprintf_s failed");
+                return HDF_ERR_IO;
+            }
+            break;
+        default:
+            AUDIO_DRIVER_LOG_ERR("Unknown message type!");
+            return HDF_FAILURE;
+            break;
+    }
+
+    return HDF_SUCCESS;
+}
+
+int32_t AudioCapSilenceThresholdEvent(struct HdfDeviceObject *device, const struct PnpReportMsg *reportMsg)
+{
+    int ret;
+    char *msgBuf = NULL;
+
+    if (device == NULL || reportMsg == NULL) {
+        ADM_LOG_ERR("device is NULL!");
+        return HDF_ERR_INVALID_PARAM;
+    }
+    if (!HdfDeviceSetClass(device, DEVICE_CLASS_AUDIO)) {
+        ADM_LOG_ERR("set audio class failed.");
+        return HDF_FAILURE;
+    }
+
+    msgBuf = (char *)OsalMemCalloc(PNP_REPORT_MSG_LEN);
+    if (msgBuf == NULL) {
+        ADM_LOG_ERR("Malloc memory failed!");
+        return HDF_FAILURE;
+    }
+
+    ret = PnpReportMsgConvert(reportMsg, msgBuf, PNP_REPORT_MSG_LEN);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("PnpReportMsgConvert fail");
+        OsalMemFree(msgBuf);
+        return HDF_FAILURE;
+    }
+
+    if (HdfDeviceObjectSetServInfo(device, msgBuf) != HDF_SUCCESS) {
+        ADM_LOG_ERR("HdfDeviceObjectSetServInfo fail!");
+        OsalMemFree(msgBuf);
+        return HDF_FAILURE;
+    }
+
+    ret = HdfDeviceObjectUpdate(device);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("HdfDeviceObjectUpdate fail\n");
+        OsalMemFree(msgBuf);
+        return HDF_FAILURE;
+    }
+
+    OsalMemFree(msgBuf);
+    return HDF_SUCCESS;
+}
+
