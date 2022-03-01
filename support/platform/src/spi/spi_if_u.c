@@ -57,7 +57,7 @@ static int32_t SpiMsgWriteArray(struct SpiObject *object, struct HdfSBuf *data, 
     }
 
     for (i = 0; i < count; i++) {
-        if(msgs[i].wbuf == NULL) {
+        if (msgs[i].wbuf == NULL) {
             continue;
         }
 
@@ -93,13 +93,13 @@ static int32_t SpiMsgReadBack(struct HdfSBuf *data, struct SpiMsg *msg)
     return HDF_SUCCESS;
 }
 
-static inline int32_t SpiMsgReadArray(struct HdfSBuf *reply, struct SpiMsg *msgs, uint32_t count)
+static int32_t SpiMsgReadArray(struct HdfSBuf *reply, struct SpiMsg *msgs, uint32_t count)
 {
     uint32_t i;
     int32_t ret;
 
     for (i = 0; i < count; i++) {
-        if(msgs[i].rbuf == NULL) {
+        if (msgs[i].rbuf == NULL) {
             continue;
         }
         ret = SpiMsgReadBack(reply, &msgs[i]);
@@ -293,7 +293,7 @@ int32_t SpiGetCfg(DevHandle handle, struct SpiCfg *cfg)
         HDF_LOGE("%s: memcpy rBuf failed", __func__);
         ret = HDF_ERR_IO;
         goto EXIT;
-    } 
+    }
 EXIT:
     HdfSbufRecycle(data);
     HdfSbufRecycle(reply);

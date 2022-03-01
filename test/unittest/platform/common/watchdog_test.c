@@ -260,7 +260,7 @@ static int32_t TestCaseWatchdogReliability(struct WatchdogTester *tester)
 static int32_t TestCaseWatchdogIfPerformanceTest(struct WatchdogTester *tester)
 {
 #ifdef __LITEOS__
-    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    // liteos the accuracy of the obtained time is too large and inaccurate.
     if (tester == NULL) {
         return HDF_FAILURE;
     }
@@ -270,15 +270,15 @@ static int32_t TestCaseWatchdogIfPerformanceTest(struct WatchdogTester *tester)
     uint32_t timeoutGet = 0;
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
 
     startMs = OsalGetSysTimeMs();
     WatchdogGetTimeout(tester->handle, &timeoutGet);
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }
 
@@ -325,5 +325,5 @@ int32_t WatchdogTestExecute(int cmd)
 __EXIT__:
     HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     WatchdogTesterPut(tester);
-    return ret;    
+    return ret;
 }

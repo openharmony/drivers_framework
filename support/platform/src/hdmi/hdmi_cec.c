@@ -148,7 +148,7 @@ static struct HdmiCecMsgLenInfo *HdmiCecGetMsgLenInfo(uint8_t opcode)
 static bool HdmiCecCheckTimerStatusMsgLen(struct HdmiCecMsg *msg)
 {
     /* Progremmed Info or Not Progremmed Error Info. */
-    uint8_t info = (msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0xf);  
+    uint8_t info = (msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0xf);
 
     /* Progremmed Indicator Check. */
     if ((msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] & 0x10) > 0) {

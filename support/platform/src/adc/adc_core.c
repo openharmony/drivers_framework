@@ -375,26 +375,26 @@ static int32_t AdcManagerIoRead(struct HdfSBuf *data, struct HdfSBuf *reply)
         return HDF_ERR_INVALID_PARAM;
     }
 
-     if (!HdfSbufReadUint32(data, &number)) {
+    if (!HdfSbufReadUint32(data, &number)) {
         HDF_LOGE("AdcManagerIoRead: read handle failed!");
         return HDF_ERR_IO;
     }
 
-     if (!HdfSbufReadUint32(data, &channel)) {
+    if (!HdfSbufReadUint32(data, &channel)) {
         HDF_LOGE("AdcManagerIoRead: read handle failed!");
         return HDF_ERR_IO;
     }
 
     number  = (uint32_t)(number - ADC_HANDLE_SHIFT);
     ret = AdcDeviceRead(AdcManagerFindDevice(number), channel, &val);
-    if(ret != HDF_SUCCESS) {
-       HDF_LOGE("AdcManagerIoRead: read val failed!");
-       return HDF_ERR_IO;
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("AdcManagerIoRead: read val failed!");
+        return HDF_ERR_IO;
     }
 
     if (!HdfSbufWriteUint32(reply, val)) {
         HDF_LOGE("%s: write val fail!", __func__);
-	    return HDF_ERR_IO;
+        return HDF_ERR_IO;
     }
 
     return ret;
@@ -403,7 +403,6 @@ static int32_t AdcManagerIoRead(struct HdfSBuf *data, struct HdfSBuf *reply)
 static int32_t AdcManagerDispatch(struct HdfDeviceIoClient *client, int cmd,
     struct HdfSBuf *data, struct HdfSBuf *reply)
 {
-
     switch (cmd) {
         case ADC_IO_OPEN:
             return AdcManagerIoOpen(data, reply);

@@ -153,7 +153,7 @@ typedef enum {
     DATA_TYPE_YUV420_8BIT_LEGACY,
     DATA_TYPE_YUV422_8BIT,
     /** yuv422 8bit transform user define 16bit raw */
-    DATA_TYPE_YUV422_PACKED, 
+    DATA_TYPE_YUV422_PACKED,
     DATA_TYPE_BUTT
 } DataType;
 
@@ -170,7 +170,7 @@ typedef struct {
 } ExtDataType;
 
 /**
- * @brief MIPI D-PHY WDR MODE defines 
+ * @brief MIPI D-PHY WDR MODE defines
  *
  * @since 1.0
  */
@@ -181,7 +181,7 @@ typedef enum {
     /** Data Type */
     HI_MIPI_WDR_MODE_DT   = 0x2,
     /** DOL Mode */
-    HI_MIPI_WDR_MODE_DOL  = 0x3, 
+    HI_MIPI_WDR_MODE_DOL  = 0x3,
     HI_MIPI_WDR_MODE_BUTT
 } MipiWdrMode;
 

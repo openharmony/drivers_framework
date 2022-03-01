@@ -62,7 +62,7 @@ static void PlatformManagerTestDestroyDevices(void)
         PlatformDeviceUninit(g_platDevices[i]);
         OsalMemFree(g_platDevices[i]);
         g_platDevices[i] = NULL;
-    } 
+    }
 }
 
 static int32_t PlatformManagerTestAddAndDel(struct PlatformManager *manager)
@@ -111,16 +111,16 @@ static int32_t PlatformManagerTestAddAndDel(struct PlatformManager *manager)
     ret = PlatformManagerAddDevice(manager, device2);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, ret);
 
-    // should add fail on repeated name 
+    // should add fail on repeated name
     device2->number = number; // give it a right number
-    device2->name = device0->name; 
+    device2->name = device0->name;
     ret = PlatformManagerAddDevice(manager, device2);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, ret);
 
     refCntBeforeDel = PlatformDeviceRefCount(device0);
     (void)PlatformManagerDelDevice(manager, device0);
     refCntAfterDel = PlatformDeviceRefCount(device0);
-    // ref count should decrease by 1 after del 
+    // ref count should decrease by 1 after del
     CHECK_EQ_RETURN(refCntAfterDel + 1, refCntBeforeDel, HDF_FAILURE);
 
     // should not get the device removed
@@ -157,7 +157,7 @@ static int32_t PlatformManagerTestGetDevice(struct PlatformManager *manager)
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, ret);
 
     refCntBeforeGet = PlatformDeviceRefCount(device0);
-    // should get the device by number 
+    // should get the device by number
     device0Get = PlatformManagerGetDeviceByNumber(manager, device0->number);
     CHECK_EQ_RETURN(device0Get, device0, HDF_FAILURE);
 
@@ -168,11 +168,11 @@ static int32_t PlatformManagerTestGetDevice(struct PlatformManager *manager)
     refCntBeforePut = PlatformDeviceRefCount(device0);
     PlatformDevicePut(device0Get);
     refCntAfterPut = PlatformDeviceRefCount(device0);
-    // should dcrease refcount after put 
+    // should dcrease refcount after put
     CHECK_EQ_RETURN(refCntBeforePut, refCntAfterPut + 1, HDF_FAILURE);
 
     refCntBeforeGet = PlatformDeviceRefCount(device1);
-    // should get the device by name 
+    // should get the device by name
     device1Get = PlatformManagerGetDeviceByName(manager, "platform_device1");
 
     CHECK_EQ_RETURN(device1Get, device1, HDF_FAILURE);
@@ -183,11 +183,11 @@ static int32_t PlatformManagerTestGetDevice(struct PlatformManager *manager)
     refCntBeforePut = PlatformDeviceRefCount(device1);
     PlatformDevicePut(device1Get);
     refCntAfterPut = PlatformDeviceRefCount(device1);
-    // should dcrease refcount after put 
+    // should dcrease refcount after put
     CHECK_EQ_RETURN(refCntBeforePut, refCntAfterPut + 1, HDF_FAILURE);
 
     PLAT_LOGD("%s: exit", __func__);
-    return HDF_SUCCESS;    
+    return HDF_SUCCESS;
 }
 
 static int32_t PlatformManagerTestReliability(struct PlatformManager *manager)

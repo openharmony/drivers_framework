@@ -232,12 +232,12 @@ static int32_t DacIfPerformanceTest(void)
 
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
     struct DacTester *tester = NULL;
     int32_t ret;
     uint32_t val;
 
-    val = 0;    
+    val = 0;
     tester = DacTesterGet();
     if (tester == NULL || tester->handle == NULL) {
         HDF_LOGE("%s: get tester failed", __func__);
@@ -250,12 +250,12 @@ static int32_t DacIfPerformanceTest(void)
         HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, val, ret);
         DacTesterPut(tester);
         return HDF_ERR_IO;
-    }    
+    }
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
     HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     DacTesterPut(tester);
     return HDF_SUCCESS;
 }
