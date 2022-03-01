@@ -616,7 +616,8 @@ void HdmiCecEncodingSetTimerProgramTitleMsg(struct HdmiCecMsg *msg, uint8_t *tit
     length = ((len <= HDMI_CEC_PROGRAM_TITLE_STR_MAX_LEN) ? len : HDMI_CEC_PROGRAM_TITLE_STR_MAX_LEN);
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_TIMER_PROGRAM_TITLE;
-    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), title, length) != EOK) {
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - HDMI_CEC_MSG_DATA_SECOND_ELEMENT),
+        title, length) != EOK) {
         HDF_LOGE("encoding set timer program title, memcpy_s fail.");
     }
 }
@@ -634,9 +635,9 @@ void HdmiCecEncodingTimerStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecTimerSt
 
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TIMER_STATUS_DATA_MIN_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TIMER_STATUS;
-    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->timerOverlap << 7);
-    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->mediaInfo << 5);
-    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->progInfo.indicator << 4);
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->timerOverlap << HDMI_CEC_TIMER_OVERLAP_WARNING_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->mediaInfo << HDMI_CEC_MEDIA_INFO_SHIFT);
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->progInfo.indicator << HDMI_CEC_PROG_IND_SHIFT);
     msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] |= (status->progInfo.info);
     if (status->progInfo.indicator > 0) {
         /* Progremmed Info */
@@ -711,7 +712,8 @@ void HdmiCecEncodingSetMenuLanguageMsg(struct HdmiCecMsg *msg, uint8_t *language
     msg->len = HDMI_CEC_GET_MSG_LEN(len);
     msg->data[HDMI_CEC_MSG_DATA_ZEROTH_ELEMENT] |= HDMI_CEC_LOG_ADDR_UNREGISTERED_OR_BROADCAST;
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_MENU_LANGUAGE;
-    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), language, len) != EOK) {
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - HDMI_CEC_MSG_DATA_SECOND_ELEMENT),
+        language, len) != EOK) {
         HDF_LOGE("encoding set menu language, memcpy_s fail.");
     }
 }
@@ -819,7 +821,8 @@ void HdmiCecEncodingSelectDigitalServiceMsg(struct HdmiCecMsg *msg, struct HdmiC
 void HdmiCecEncodingTunerDeviceStatusMsg(struct HdmiCecMsg *msg, struct HdmiCecTunerDeviceInfo *info)
 {
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_TUNER_DEVICE_STATUS;
-    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (info->recordingFlag << 7) | (info->dispInfo);
+    msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (info->recordingFlag << HDMI_CEC_RECORDING_FALG_SHIFT) |
+        (info->dispInfo);
     if (info->isAnalogService == true) {
         msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_TUNER_DEVICE_STATUS_MSG_ANA_PARAM_LEN);
         msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = info->data.analog.anaBcastType;
@@ -895,7 +898,8 @@ void HdmiCecEncodingVendorCommandWithIdMsg(struct HdmiCecMsg *msg, uint32_t vend
     msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = (vendorId >> HDMI_TWO_BYTES_SHIFT) & HDMI_ONE_BYTE_MARK;
     msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT] = (vendorId >> HDMI_ONE_BYTE_SHIFT) & HDMI_ONE_BYTE_MARK;
     msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT] = (vendorId & HDMI_ONE_BYTE_MARK);
-    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT]), (msg->len - 5), data, length) != EOK) {
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_FIFTH_ELEMENT]), (msg->len - HDMI_CEC_MSG_DATA_FIFTH_ELEMENT),
+        data, length) != EOK) {
         HDF_LOGE("encoding vendor cmd with id, memcpy_s fail.");
     }
 }
@@ -911,7 +915,8 @@ void HdmiCecEncodingVendorRemoteButtonDownMsg(struct HdmiCecMsg *msg, uint8_t *r
     length = (len > HDMI_CEC_VENDOR_SPECIFIC_RC_CODE_MAX_LEN) ? HDMI_CEC_VENDOR_SPECIFIC_RC_CODE_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_VENDOR_REMOTE_BUTTON_DOWN;
-    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), rcCode, length) != EOK) {
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - HDMI_CEC_MSG_DATA_SECOND_ELEMENT),
+        rcCode, length) != EOK) {
         HDF_LOGE("encoding vendor remote button down, memcpy_s fail.");
     }
 }
@@ -934,7 +939,8 @@ void HdmiCecEncodingSetOsdStringMsg(struct HdmiCecMsg *msg, uint8_t dispControl,
     msg->len = HDMI_CEC_GET_MSG_LEN(length + HDMI_CEC_DISPLAY_CONTROL_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_OSD_STRING;
     msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT] = dispControl;
-    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]), (msg->len - 3), str, length) != EOK) {
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT]), (msg->len - HDMI_CEC_MSG_DATA_THIRD_ELEMENT),
+        str, length) != EOK) {
         HDF_LOGE("encoding set OSD string, memcpy_s fail.");
     }
 }
@@ -959,7 +965,8 @@ void HdmiCecEncodingSetOsdNameMsg(struct HdmiCecMsg *msg, uint8_t *name, uint32_
     length = (len > HDMI_CEC_OSD_NAME_MAX_LEN) ? HDMI_CEC_OSD_NAME_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_SET_OSD_NAME;
-    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), name, length) != EOK) {
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - HDMI_CEC_MSG_DATA_SECOND_ELEMENT),
+        name, length) != EOK) {
         HDF_LOGE("encoding set OSD name, memcpy_s fail.");
     }
 }
@@ -1093,7 +1100,8 @@ void HdmiCecEncodingRequestShortAudioDescriptorMsg(struct HdmiCecMsg *msg,
     msg->len = HDMI_CEC_GET_MSG_LEN(num * HDMI_CEC_AUDIO_FORMAT_LEN);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REQUEST_SHORT_AUDIO_DESCRIPTOR;
     for (i = 0; i < num; i++) {
-        msg->data[2 + i] = (id[i] << HDMI_CEC_AUDIO_FORMAT_ID_SHIFT) | (code[i] & HDMI_CEC_AUDIO_FORMAT_CODE_MARK);
+        msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT + i] = (id[i] << HDMI_CEC_AUDIO_FORMAT_ID_SHIFT) |
+            (code[i] & HDMI_CEC_AUDIO_FORMAT_CODE_MARK);
     }
     if (response == true) {
         msg->rspMsg = HDMI_CEC_OPCODE_REPORT_SHORT_AUDIO_DESCRIPTOR;
@@ -1112,11 +1120,12 @@ void HdmiCecEncodingReportShortAudioDescriptorMsg(struct HdmiCecMsg *msg, uint32
     msg->len = HDMI_CEC_GET_MSG_LEN(HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN * num);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_REPORT_SHORT_AUDIO_DESCRIPTOR;
     for (i = 0; i < num; i++) {
-        msg->data[2 + i * HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN] =
+        msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT + i * HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN] =
             (descriptor[i] >> HDMI_TWO_BYTES_SHIFT) & HDMI_ONE_BYTE_MARK;
-        msg->data[3 + i * HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN] =
+        msg->data[HDMI_CEC_MSG_DATA_THIRD_ELEMENT + i * HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN] =
             (descriptor[i] >> HDMI_ONE_BYTE_SHIFT) & HDMI_ONE_BYTE_MARK;
-        msg->data[4 + i * HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN] = descriptor[i] & HDMI_ONE_BYTE_MARK;
+        msg->data[HDMI_CEC_MSG_DATA_FORTH_ELEMENT + i * HDMI_CEC_SHORT_AUDIO_DESCRIPTOR_LEN] =
+            descriptor[i] & HDMI_ONE_BYTE_MARK;
     }
 }
 
