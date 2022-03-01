@@ -349,7 +349,7 @@ int32_t PinTestExecute(int cmd)
 
 __EXIT__:
     HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
-    return ret;    
+    return ret;
 }
 
 void PinTestExecuteAll(void)

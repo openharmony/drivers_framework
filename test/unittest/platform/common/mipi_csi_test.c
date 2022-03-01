@@ -122,7 +122,7 @@ static void InitLvdsDevAttr(LvdsDevAttr *lvdsAttr)
 
 /**
  * @brief Initialize MIPI device attributes.
- * 
+ *
  * Data type (DT: data type)
  * The data type describes the format and content of load data. Up to 64 data types are supported.
  * There are only two data types for short packets, and the others belong to long packets.
@@ -216,7 +216,7 @@ static void InitComboDevAttr(struct MipiCsiTest *test)
     } else if (interType == INTERFACE_LVDS) {
         HDF_LOGI("%s: call[InitLvdsDevAttr].", __func__);
         InitLvdsDevAttr(&attr.lvdsAttr);
-    } else { 
+    } else {
         HDF_LOGE("%s: interType = %d is error!", __func__, attr.inputMode);
     }
 

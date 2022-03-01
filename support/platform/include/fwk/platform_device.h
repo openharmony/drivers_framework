@@ -84,7 +84,7 @@ int32_t PlatformDeviceSetName(struct PlatformDevice *device, const char *fmt, ..
  *
  * @since 1.0
  */
-void PlatformDeviceClearName(struct PlatformDevice *device); 
+void PlatformDeviceClearName(struct PlatformDevice *device);
 
 /**
  * @brief Increase reference count for a platform device.

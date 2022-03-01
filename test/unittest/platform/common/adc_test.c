@@ -156,7 +156,7 @@ int32_t AdcTestMultiThread(void)
     int32_t ret;
     struct OsalThread thread1, thread2;
     struct OsalThreadParam cfg1, cfg2;
-    int32_t count1 = 0; 
+    int32_t count1 = 0;
     int32_t count2 = 0;
 
     HDF_LOGI("%s: enter", __func__);
@@ -224,16 +224,15 @@ int32_t AdcTestReliability(void)
 static int32_t AdcIfPerformanceTest(void)
 {
 #ifdef __LITEOS__
-    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    // liteos the accuracy of the obtained time is too large and inaccurate.
     return HDF_SUCCESS;
 #endif
     struct AdcTester *tester = NULL;
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
     uint32_t val;
     int32_t ret;
-    
 
     tester = AdcTesterGet();
     if (tester == NULL || tester->handle == NULL) {
@@ -246,8 +245,8 @@ static int32_t AdcIfPerformanceTest(void)
     if (ret == HDF_SUCCESS) {
         endMs = OsalGetSysTimeMs();
         useTime = endMs - startMs;
-        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     }
     return HDF_FAILURE;
 }

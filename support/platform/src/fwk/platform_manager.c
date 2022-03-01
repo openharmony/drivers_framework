@@ -129,13 +129,13 @@ static int32_t PlatformManagerAddDeviceDefault(struct PlatformManager *manager, 
     DLIST_FOR_EACH_ENTRY(tmp, &manager->devices, struct PlatformDevice, node) {
         if (device->number == tmp->number) {
             repeatId = true;
-            PLAT_LOGE("%s: device:%s(%d) num repeated in manager:%s", __func__, 
+            PLAT_LOGE("%s: device:%s(%d) num repeated in manager:%s", __func__,
                 device->name, device->number, manager->device.name);
             break;
         }
         if (device->name != NULL && device->name == tmp->name) {
             repeatName = true;
-            PLAT_LOGE("%s: device:%s(%d) name repeated in manager:%s", __func__, 
+            PLAT_LOGE("%s: device:%s(%d) name repeated in manager:%s", __func__,
                 device->name, device->number, manager->device.name);
             break;
         }
