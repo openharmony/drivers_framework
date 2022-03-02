@@ -416,14 +416,14 @@ static void *HdmiCntlrObjGet(uint16_t busNum)
     if (snprintf_s(serviceName, (HDMI_SERVICE_NAME_LEN + 1),
         HDMI_SERVICE_NAME_LEN, "HDF_PLATFORM_HDMI_%u", busNum) < 0) {
         HDF_LOGE("get HDMI service name fail.");
-        goto __ERR;
+        OsalMemFree(serviceName);
+        return obj;
     }
 #ifdef __USER__
     obj = (void *)HdfIoServiceBind(serviceName);
 #else
     obj = (void *)HdmiCntlrGetByBusNum(busNum);
 #endif
-__ERR:
     OsalMemFree(serviceName);
     return obj;
 }

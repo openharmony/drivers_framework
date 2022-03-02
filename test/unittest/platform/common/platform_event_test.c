@@ -205,7 +205,8 @@ int PlatformEventTestExecute(int cmd)
     if (cmd > PLAT_EVENT_TEST_CMD_MAX) {
         PLAT_LOGE("PlatformEventTestExecute: invalid cmd:%d", cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        PLAT_LOGE("[PlatformEventTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -229,7 +230,6 @@ int PlatformEventTestExecute(int cmd)
     ret = entry->func(&pe);
     PlatformEventUninit(&pe);
 
-__EXIT__:
     PLAT_LOGE("[PlatformEventTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
     return ret;
 }

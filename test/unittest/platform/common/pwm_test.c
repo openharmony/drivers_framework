@@ -390,7 +390,9 @@ int32_t PwmTestExecute(int cmd)
         ret = PwmGetConfig(tester->handle, &(tester->originCfg));
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-            goto __EXIT__;
+            HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
+            PwmTesterPut(tester);
+            return ret;
         }
     }
 
@@ -407,7 +409,6 @@ int32_t PwmTestExecute(int cmd)
         PwmSetConfig(tester->handle, &(tester->originCfg));
     }
 
-__EXIT__:
     HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     PwmTesterPut(tester);
     return ret;

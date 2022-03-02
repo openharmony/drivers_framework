@@ -388,7 +388,8 @@ static int32_t HdmiHdcpAuthentication(struct HdmiHdcp *hdcp)
     /* auth prepare, get aksv and driver clear registers. */
     ret = HdmiHdcpAuthenticationPrepare(hdcp);
     if (ret != HDF_SUCCESS) {
-        goto _END;
+        HdmiHdcpAuthenticationFail(hdcp);
+        return ret;
     }
 
     /*
@@ -396,12 +397,14 @@ static int32_t HdmiHdcpAuthentication(struct HdmiHdcp *hdcp)
      */
     ret = HdmiHdcpAuthenticationFirstPart(hdcp);
     if (ret != HDF_SUCCESS) {
-        goto _END;
+        HdmiHdcpAuthenticationFail(hdcp);
+        return ret;
     }
     HDF_LOGD("hdcp auth Part I success.");
     /* receiver (0), repeater (1) */
     if ((hdcp->bcaps & HDMI_HDCP_BCAPS_REPEATER_MARK) == 0) {
-        goto _END;
+        HdmiHdcpAuthenticationSucc(hdcp);
+        return ret;
     }
 
     /*
@@ -409,15 +412,11 @@ static int32_t HdmiHdcpAuthentication(struct HdmiHdcp *hdcp)
      */
     ret = HdmiHdcpAuthenticationSecondPart(hdcp);
     if (ret != HDF_SUCCESS) {
-        goto _END;
+        HdmiHdcpAuthenticationFail(hdcp);
+        return ret;
     }
 
-_END:
-    if (ret == HDF_SUCCESS) {
-        HdmiHdcpAuthenticationSucc(hdcp);
-    } else {
-        HdmiHdcpAuthenticationFail(hdcp);
-    }
+    HdmiHdcpAuthenticationSucc(hdcp);
     return ret;
 }
 
@@ -444,17 +443,18 @@ int32_t HdmiHdcpOpen(struct HdmiHdcp *hdcp)
     ret = HdmiHdcpAuthentication(hdcp);
     if (ret == HDF_SUCCESS) {
         HDF_LOGD("hdcp Authentication success!");
-        goto __END;
+        (void)OsalMutexUnlock(&(hdcp->hdcpMutex));
+        return ret;
     }
 
     while (hdcp->authRetryCnt <= HDMI_HDCP_AUTH_MAX_RETRY_CNT) {
         ret = HdmiHdcpAuthenticationRetry(hdcp);
         if (ret == HDF_SUCCESS) {
-            goto __END;
+            (void)OsalMutexUnlock(&(hdcp->hdcpMutex));
+            return ret;
         }
         hdcp->authRetryCnt++;
     }
- __END :
     (void)OsalMutexUnlock(&(hdcp->hdcpMutex));
     return ret;
 }

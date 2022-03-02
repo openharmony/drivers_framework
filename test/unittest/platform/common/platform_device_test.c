@@ -287,7 +287,8 @@ int PlatformDeviceTestExecute(int cmd)
     if (cmd > PLAT_DEVICE_TEST_CMD_MAX) {
         PLAT_LOGE("PlatformDeviceTestExecute: invalid cmd:%d", cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        PLAT_LOGE("[PlatformDeviceTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
+        return ret;
     }
 
     for (i = 0; i < (sizeof(g_entry) / sizeof(g_entry[0])); i++) {
@@ -311,7 +312,6 @@ int PlatformDeviceTestExecute(int cmd)
     ret = entry->func(&device);
     PlatformDeviceUninit(&device);
 
-__EXIT__:
     PLAT_LOGE("[PlatformDeviceTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
     return ret;
 }

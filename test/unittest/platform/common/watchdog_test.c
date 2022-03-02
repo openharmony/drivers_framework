@@ -310,7 +310,9 @@ int32_t WatchdogTestExecute(int cmd)
     if (cmd > WATCHDOG_TEST_MAX) {
         HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
+        WatchdogTesterPut(tester);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -322,7 +324,6 @@ int32_t WatchdogTestExecute(int cmd)
         break;
     }
 
-__EXIT__:
     HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     WatchdogTesterPut(tester);
     return ret;
