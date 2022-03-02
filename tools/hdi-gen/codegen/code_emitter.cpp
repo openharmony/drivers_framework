@@ -7,6 +7,7 @@
  */
 
 #include "codegen/code_emitter.h"
+#include <cctype>
 #include "util/file.h"
 #include "util/options.h"
 
