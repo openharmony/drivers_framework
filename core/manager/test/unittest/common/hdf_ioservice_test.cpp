@@ -702,7 +702,7 @@ struct IoServiceStatusData {
 static void TestOnServiceStatusReceived(struct ServiceStatusListener *listener, struct ServiceStatus *servstat)
 {
     struct IoServiceStatusData *issd = (struct IoServiceStatusData *)listener->priv;
-    if (issd == NULL) {
+    if (issd == nullptr) {
         return;
     }
     issd->servName = servstat->serviceName;

@@ -203,7 +203,7 @@ int HdfPmTestSuspend(struct HdfDeviceObject *deviceObject)
     return HDF_SUCCESS;
 }
 
-void HdfPmSetListeners()
+void HdfPmSetListeners(void)
 {
     pmTestType[HDF_TEST_DRIVER].listener.powerListener.DozeResume = HdfPmHdfTestDozeResume;
     pmTestType[HDF_TEST_DRIVER].listener.powerListener.DozeSuspend = HdfPmHdfTestDozeSuspend;
@@ -221,7 +221,7 @@ void HdfPmSetListeners()
     pmTestType[PM_TEST_DRIVER].listener.powerListener.Suspend = HdfPmTestSuspend;
 }
 
-void HdfPmClearTestCnt()
+void HdfPmClearTestCnt(void)
 {
     uint32_t index;
 

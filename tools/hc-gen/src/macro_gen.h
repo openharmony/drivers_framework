@@ -46,7 +46,7 @@ private:
 
     const std::string &ToUpperString(std::string &str);
 
-    bool GenArray(const std::string &name, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node);
+    bool GenArray(const std::string &arrName, uint32_t &arrSize, uint32_t type, const std::shared_ptr<AstObject> &node);
 
     std::string GenRefObjName(int32_t depth, const std::shared_ptr<AstObject> &object);
 
