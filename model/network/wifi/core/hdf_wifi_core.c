@@ -23,6 +23,7 @@
 #include "hdf_wlan_utils.h"
 
 #define HDF_LOG_TAG HDF_WIFI_CORE
+#define SLEEPTIME 50
 
 int32_t HdfWifiGetBusIdx(void)
 {
@@ -368,7 +369,7 @@ static struct HdfWlanDevice *ProbeDevice(struct HdfConfigWlanDevInst *deviceConf
         ret = HdfWlanBusInit(device, &deviceConfig->bus);
 #else
         ret = HDF_SUCCESS;
-        OsalMSleep(50);
+        OsalMSleep(SLEEPTIME);
         device->bus = NULL;
         device->driverName = "hisi";  // from BDH6_DRIVER_NAME
         HDF_LOGW("Do not call GPIO and HdfWlanBusInit");

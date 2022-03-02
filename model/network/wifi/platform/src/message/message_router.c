@@ -261,6 +261,7 @@ static ErrorCode DoRegistService(const NodeId nodeId, const DispatcherId dispatc
 
     return ME_SUCCESS;
 }
+
 static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId dispatcherId, struct ServiceDef *mapper)
 {
     HDF_STATUS status;
