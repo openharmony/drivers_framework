@@ -56,6 +56,8 @@ private:
     void EmitProxyMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
     void EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+
+    void EmitWriteInterfaceToken(const String& parcelName, StringBuilder& sb, const String& prefix);
 };
 } // namespace HDI
 } // namespace OHOS
