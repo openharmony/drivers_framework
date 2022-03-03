@@ -27,8 +27,8 @@ int32_t OsalGetTime(OsalTimespec *time)
 
     (void)memset_s(&ts, sizeof(ts), 0, sizeof(ts));
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    time->sec = ts.tv_sec;
-    time->usec = ts.tv_nsec / HDF_KILO_UNIT;
+    time->sec = (uint64_t)ts.tv_sec;
+    time->usec = (uint64_t)(ts.tv_nsec / HDF_KILO_UNIT);
 
     return HDF_SUCCESS;
 }

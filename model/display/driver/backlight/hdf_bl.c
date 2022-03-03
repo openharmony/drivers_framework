@@ -282,7 +282,7 @@ static int32_t HdfGetBrightness(enum BrightnessType type,
         return HDF_FAILURE;
     }
     blDevManager = GetBlDevManager();
-    if (devId >= blDevManager->devNum) {
+    if (devId >= (uint32_t)blDevManager->devNum) {
         HDF_LOGE("%s: devId is illegal", __func__);
         return HDF_FAILURE;
     }
