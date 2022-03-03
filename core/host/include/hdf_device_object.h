@@ -23,6 +23,8 @@ int HdfDeviceObjectPublishService(struct HdfDeviceObject *deviceObject,
 int HdfRemoveService(struct HdfDeviceObject *deviceObject);
 int HdfDeviceObjectSetServInfo(struct HdfDeviceObject *dev, const char *info);
 int HdfDeviceObjectUpdate(struct HdfDeviceObject *dev);
+int HdfDeviceObjectSetInterfaceDesc(struct HdfDeviceObject *dev, const char *interfaceDesc);
+bool HdfDeviceObjectCheckInterfaceDesc(struct HdfDeviceObject *dev, struct HdfSBuf *data);
 
 #ifdef __cplusplus
 }

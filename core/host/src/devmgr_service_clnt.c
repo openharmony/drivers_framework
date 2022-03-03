@@ -18,7 +18,7 @@ int DevmgrServiceClntAttachDeviceHost(uint16_t hostId, struct IDevHostService *h
 {
     struct IDevmgrService *devMgrSvcIf = NULL;
     struct DevmgrServiceClnt *inst = DevmgrServiceClntGetInstance();
-    if ((inst == NULL) || (inst->devMgrSvcIf == NULL)) {
+    if (inst == NULL || inst->devMgrSvcIf == NULL) {
         HDF_LOGE("failed to attach device host, get device manager service client is null");
         return HDF_FAILURE;
     }
