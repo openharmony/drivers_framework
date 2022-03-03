@@ -35,9 +35,9 @@ void CppCustomTypesCodeEmitter::EmitCode()
 
 void CppCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_).string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_).string());
     File file(filePath, File::WRITE);
-    String marcoName = String::Format("%s.%s", ast_->GetPackageName().string(), infName_.string());
+    String marcoName = String::Format("%s.%s", ast_->GetPackageName().string(), baseName_.string());
     StringBuilder sb;
 
     EmitLicense(sb);
@@ -147,7 +147,7 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingDecl(StringBuilder& s
 
 void CppCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(infName_).string());
+    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_).string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -170,7 +170,7 @@ void CppCustomTypesCodeEmitter::EmitSourceFileInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(infName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(baseName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {

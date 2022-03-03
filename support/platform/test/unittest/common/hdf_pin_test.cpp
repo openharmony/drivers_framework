@@ -88,7 +88,7 @@ HWTEST_F(HdfPinTest, PinSetGetPinFunc001, TestSize.Level1)
  * @tc.name: PinReliabilityTest001
  * @tc.desc: Pin function test
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require:
  */
 HWTEST_F(HdfPinTest, PinReliabilityTest001, TestSize.Level1)
 {

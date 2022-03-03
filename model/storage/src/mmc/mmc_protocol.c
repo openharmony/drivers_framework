@@ -769,7 +769,7 @@ static int32_t EmmcDecodeCid(struct MmcCntlr *cntlr)
     if (specVers == MMC_CSD_SPEC_VER_0 || specVers == MMC_CSD_SPEC_VER_1) {
         cid->mid = MmcParseBits(rawCid, CID_BITS, 104, 24);
         for (i = 0; i < 7; i++) {
-            cid->pnm[i] = MmcParseBits(rawCid, CID_BITS, 96 - (i * 8), 8);
+            cid->pnm[i] = (char)MmcParseBits(rawCid, CID_BITS, CID_PNM_START_BIT - (i * BITS_PER_BYTE), BITS_PER_BYTE);
         }
         cid->pnm[7] = '\0';
         cid->hwPrv = MmcParseBits(rawCid, CID_BITS, 44, 4);
@@ -782,7 +782,7 @@ static int32_t EmmcDecodeCid(struct MmcCntlr *cntlr)
         cid->oid = MmcParseBits(rawCid, CID_BITS, 104, 16);
         /* Product name(PNM): [103:56] */
         for (i = 0; i < 6; i++) {
-            cid->pnm[i] = MmcParseBits(rawCid, CID_BITS, 96 - (i * 8), 8);
+            cid->pnm[i] = (char)MmcParseBits(rawCid, CID_BITS, CID_PNM_START_BIT - (i * BITS_PER_BYTE), BITS_PER_BYTE);
         }
         cid->pnm[6] = '\0';
         /* Product serial number(PSN): [47:16] */
@@ -906,7 +906,7 @@ static void EmmcDecodeExtCsdEnhanceArea(struct EmmcDevice *emmcDev,
     shift = 0;
     extCsd->enhAreaSize = 0;
     for (i = 0; i < EMMC_EXT_CSD_ENH_SIZE_MULT_BYTES; i++) {
-        extCsd->enhAreaSize |= (rawExtCsd[EMMC_EXT_CSD_ENH_SIZE_MULT + i] << shift);
+        extCsd->enhAreaSize |= (uint32_t)(rawExtCsd[EMMC_EXT_CSD_ENH_SIZE_MULT + i] << shift);
         shift += BITS_PER_BYTE;
     }
     /* Max Enhanced Area = MAX_ENH_SIZE_MULT * HC_WP_GRP_SIZE * HC_ERASE_GPR_SIZE * 512kBytes */
@@ -1995,7 +1995,7 @@ static void SdDecodeCid(struct MmcCntlr *cntlr)
     cid->oid = MmcParseBits(rawCid, CID_BITS, 104, 16);
     /* Product name(PNM): [103:64] */
     for (i = 0; i < 5; i++) {
-        cid->pnm[i] = MmcParseBits(rawCid, CID_BITS, 96 - (i * 8), 8);
+        cid->pnm[i] = (char)MmcParseBits(rawCid, CID_BITS, CID_PNM_START_BIT - (i * BITS_PER_BYTE), BITS_PER_BYTE);
     }
     cid->pnm[5] = '\0';
     /*
@@ -3706,7 +3706,7 @@ static int32_t SdioReadCis(struct MmcCntlr *cntlr, struct SdioFunction *function
             HDF_LOGE("SdioReadCis: read CIS pointer fail, err = %d.", ret);
             return ret;
         }
-        cisStartAddr |= data << (i * BITS_PER_BYTE);
+        cisStartAddr |= (uint32_t)(data << (i * BITS_PER_BYTE));
     }
     return SdioDecodeCis(cntlr, function, cisStartAddr);
 }

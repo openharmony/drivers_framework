@@ -9,9 +9,8 @@
 #ifndef HC_GEN_BYTECODE_GEN_H
 #define HC_GEN_BYTECODE_GEN_H
 
-#include "generator.h"
 #include <fstream>
-#include <utility>
+#include "generator.h"
 
 namespace OHOS {
 namespace Hardware {

@@ -16,7 +16,8 @@
 
 static struct WatchdogTestConfig g_config;
 
-static int32_t WatchdogTestDispatch(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t WatchdogTestDispatch(struct HdfDeviceIoClient *client, int cmd,
+    struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     if (cmd == 0) {
         if (reply == NULL) {

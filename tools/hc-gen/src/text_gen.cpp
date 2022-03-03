@@ -93,7 +93,6 @@ bool TextGen::HeaderOutputTraversal()
 
         return GenNodeDefinition(current);
     });
-
     if (!ret) {
         return false;
     }
@@ -304,7 +303,8 @@ bool TextGen::GenTermDefinition(const std::shared_ptr<AstObject> &term)
         case PARSEROP_NODEREF: {
             auto structName = GenConfigStructName(ConfigTerm::CastFrom(term)->RefNode().lock());
             ofs_ << TAB << "const struct " << structName << "* " << term->Name() << ";\n";
-        } break;
+            break;
+        }
         default:
             break;
     }
@@ -680,7 +680,6 @@ std::string TextGen::GenArrayName(const std::shared_ptr<AstObject> &term)
     auto arrayName = std::string("g_hcsConfigArray").append(ToUpperCamelString(term->Name()));
     auto t = ConfigTerm::CastFrom(term);
     auto sym = SymbolFind(arrayName);
-
     if (sym == nullptr) {
         SymbolAdd(arrayName, term);
         t->SetSigNum(1);

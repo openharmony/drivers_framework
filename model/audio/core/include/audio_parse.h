@@ -18,7 +18,7 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define AUDIO_CONFIG_MAX_ITEM 100
+#define AUDIO_CONFIG_MAX_ITEM 500
 #define AUDIO_CTRL_LIST_MAX 10
 #define AUDIO_SAPM_COMP_NAME_LIST_MAX 9
 #define AUDIO_SAPM_CFG_NAME_LIST_MAX 4

@@ -8,7 +8,7 @@
 
  /* hcs topology for example
 dev  ---+-> Regulator-1(voltage) -+-> Regulator-2(voltage) -+-> Regulator-3(voltage) -+-> Regulator-4(voltage)
-           |                              |   
+           |                              |
            |                              | -+-> Regulator-5(voltage) -+-> Regulator-6(voltage) -+-> Regulator-7(voltage) -+-> Regulator-8(voltage)
            |                                       |
            |                                       | -+-> Regulator-9
@@ -61,7 +61,7 @@ static int32_t VirtualRegulatorSetVoltage(struct RegulatorNode *node, uint32_t m
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGD("VirtualRegulatorSetVoltage %s [%d, %d] success!\n", 
+    HDF_LOGD("VirtualRegulatorSetVoltage %s [%d, %d] success!\n",
         node->regulatorInfo.name, minUv, maxUv);
     return HDF_SUCCESS;
 }
@@ -85,7 +85,7 @@ static int32_t VirtualRegulatorSetCurrent(struct RegulatorNode *node, uint32_t m
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGD("VirtualRegulatorSetCurrent %s [%d, %d] success!\n", 
+    HDF_LOGD("VirtualRegulatorSetCurrent %s [%d, %d] success!\n",
         node->regulatorInfo.name, minUa, maxUa);
     return HDF_SUCCESS;
 }
@@ -237,7 +237,11 @@ static int32_t VirtualRegulatorParseAndInit(struct HdfDeviceObject *device, cons
     ret = VirtualRegulatorReadHcs(regNode, node);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read drs fail! ret:%d", __func__, ret);
-        goto __ERR__;
+        if (regNode != NULL) {
+            OsalMemFree(regNode);
+            regNode = NULL;
+        }
+        return ret;
     }
     
     regNode->priv = (void *)node;
@@ -246,17 +250,13 @@ static int32_t VirtualRegulatorParseAndInit(struct HdfDeviceObject *device, cons
     ret = RegulatorNodeAdd(regNode);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: add regulator controller fail:%d!", __func__, ret);
-        goto __ERR__;
+        if (regNode != NULL) {
+            OsalMemFree(regNode);
+            regNode = NULL;
+        }
+        return ret;
     }
     return HDF_SUCCESS;
-
-__ERR__:
-    HDF_LOGE("%s:fail ret:%d", __func__, ret);
-    if (regNode != NULL) {
-        OsalMemFree(regNode);
-        regNode = NULL;
-    }
-    return ret;
 }
 
 static int32_t VirtualRegulatorInit(struct HdfDeviceObject *device)

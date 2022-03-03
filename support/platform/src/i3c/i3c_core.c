@@ -25,6 +25,21 @@ static struct I3cManager *g_i3cManager = NULL;
 static struct DListHead g_i3cDeviceList;
 static OsalSpinlock g_listLock;
 
+int I3cCheckReservedAddr(uint16_t addr)
+{
+    if ((addr == I3C_RESERVED_ADDR_7H00) || (addr == I3C_RESERVED_ADDR_7H01) ||
+        (addr == I3C_RESERVED_ADDR_7H02) || (addr == I3C_RESERVED_ADDR_7H3E) ||
+        (addr == I3C_RESERVED_ADDR_7H5E) || (addr == I3C_RESERVED_ADDR_7H6E) ||
+        (addr == I3C_RESERVED_ADDR_7H76) || (addr == I3C_RESERVED_ADDR_7H78) ||
+        (addr == I3C_RESERVED_ADDR_7H79) || (addr == I3C_RESERVED_ADDR_7H7A) ||
+        (addr == I3C_RESERVED_ADDR_7H7B) || (addr == I3C_RESERVED_ADDR_7H7C) ||
+        (addr == I3C_RESERVED_ADDR_7H7D) || (addr == I3C_RESERVED_ADDR_7H7E) ||
+        (addr == I3C_RESERVED_ADDR_7H7F)) {
+        return I3C_ADDR_RESERVED;
+    }
+    return I3C_ADDR_FREE;
+}
+
 static inline int32_t I3cCntlrLockDefault(struct I3cCntlr *cntlr)
 {
     if (cntlr == NULL) {
@@ -114,8 +129,8 @@ static int32_t SetAddrStatus(struct I3cCntlr *cntlr, uint16_t addr, enum I3cAddr
     }
 
     statusMask = ADDR_STATUS_MASK << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS);
-    temp = (cntlr->addrSlot[addr / (uint16_t)ADDRS_PER_UINT16]) & ~statusMask;
-    temp |= ((uint16_t)status) << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS);
+    temp = (cntlr->addrSlot[addr / (uint16_t)ADDRS_PER_UINT16]) & (uint16_t)~statusMask;
+    temp |= (uint16_t)(((uint16_t)status) << ((addr % ADDRS_PER_UINT16) * ADDRS_STATUS_BITS));
     cntlr->addrSlot[addr / ADDRS_PER_UINT16] = temp;
 
     I3cCntlrUnlock(cntlr);
@@ -128,7 +143,7 @@ static void inline I3cInitAddrStatus(struct I3cCntlr *cntlr)
     uint16_t addr;
 
     for (addr = 0; addr <= I3C_ADDR_MAX; addr++) {
-        if (CHECK_RESERVED_ADDR(addr) == I3C_ADDR_RESERVED) {
+        if (I3cCheckReservedAddr(addr) == I3C_ADDR_RESERVED) {
             (void)SetAddrStatus(cntlr, addr, I3C_ADDR_RESERVED);
         }
     }
@@ -300,7 +315,7 @@ void I3cDeviceRemove(struct I3cDevice *device)
         return;
     }
 
-    ret = SetAddrStatus(device->cntlr, device->addr, I3C_ADDR_RESERVED); 
+    ret = SetAddrStatus(device->cntlr, device->addr, I3C_ADDR_RESERVED);
     if (ret != HDF_SUCCESS) {
         return;
     }
@@ -549,7 +564,7 @@ int32_t I3cCntlrGetConfig(struct I3cCntlr *cntlr, struct I3cConfig *config)
     I3cCntlrUnlock(cntlr);
 
     return ret;
-} 
+}
 
 int32_t I3cCntlrRequestIbi(struct I3cCntlr *cntlr, uint16_t addr, I3cIbiFunc func, uint32_t payload)
 {

@@ -207,11 +207,11 @@ void HdfSListIteratorRemove(struct HdfSListIterator *iterator);
  */
 void HdfSListIteratorInsert(struct HdfSListIterator *iterator, struct HdfSListNode *link);
 
-#define OFFSET_OF(type, mem)   ((size_t) &((type *)0)->mem)
+#define OFFSET_OF(type, mem) ((size_t) &((type *)0)->mem)
 
-#define HDF_SLIST_CONTAINER_OF(mtype, ptr, type, mem)  ({           \
-        const mtype*__mptr = (ptr);                        \
-        (type *)((char *)__mptr - OFFSET_OF(type, mem));  \
+#define HDF_SLIST_CONTAINER_OF(mtype, ptr, type, mem) ({ \
+        const mtype*__mptr = (ptr);                      \
+        (type *)((char *)__mptr - OFFSET_OF(type, mem)); \
 })
 
 #ifdef __cplusplus

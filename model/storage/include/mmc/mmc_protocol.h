@@ -21,6 +21,7 @@ extern "C" {
 #define CID_BITS 128
 #define CID_BYTES_LEN 16
 #define CID_PNM_LEN 8
+#define CID_PNM_START_BIT 96
 #define CSD_LEN 4
 #define CSD_BITS 128
 #define EXT_CSD_BYTES_LEN 512
@@ -251,7 +252,7 @@ enum MmcRspCardStatus {
  * state change, it will be visible to the host in the response to the next command.
  * The four bits([12:9]) are interpreted as a binary coded number between 0 and 15.
  */
-#define MMC_CARD_CURRENT_STATE(x) ((x & 0x00001E00) >> 9) /* sx, b (4 bits) */
+#define MMC_CARD_CURRENT_STATE(x) (((x) & 0x00001E00) >> 9) /* sx, b (4 bits) */
 enum MmcCardCurrentState {
     STATE_IDLE = 0,
     STATE_READY = 1,

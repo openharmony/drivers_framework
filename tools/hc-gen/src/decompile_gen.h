@@ -16,7 +16,6 @@
 
 namespace OHOS {
 namespace Hardware {
-
 class DecompileGen {
 public:
     DecompileGen(std::shared_ptr<Ast> ast, std::string outPutFileName);
@@ -45,7 +44,6 @@ private:
     std::ofstream file_;
     std::shared_ptr<Ast> ast_;
 };
-
 } // namespace Hardware
 } // namespace OHOS
 #endif // HC_GEN_DECOMPILE_GEN_H

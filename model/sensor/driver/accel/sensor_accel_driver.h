@@ -61,6 +61,6 @@ struct AccelDrvData {
 
 int32_t AccelRegisterChipOps(const struct AccelOpsCall *ops);
 struct SensorCfgData *AccelCreateCfgData(const struct DeviceResourceNode *node);
-void AccelReleaseCfgData(struct SensorCfgData *sensorCfgData);
+void AccelReleaseCfgData(struct SensorCfgData *accelCfg);
 int32_t SubscribeAccelDataCallbackFunc(GravitySubscribeAccelCallback cb);
 #endif /* SENSOR_ACCEL_DRIVER_H */

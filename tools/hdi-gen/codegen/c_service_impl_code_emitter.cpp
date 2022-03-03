@@ -37,7 +37,7 @@ void CServiceImplCodeEmitter::EmitCode()
 
 void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -64,7 +64,7 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(interfaceName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
 
     for (const auto& file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -73,12 +73,12 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderInclusions(StringBuilder& sb)
 
 void CServiceImplCodeEmitter::EmitServiceImplConstructDecl(StringBuilder& sb)
 {
-    sb.AppendFormat("void %sServiceConstruct(struct %s* service);\n", infName_.string(), interfaceName_.string());
+    sb.AppendFormat("void %sServiceConstruct(struct %s* service);\n", baseName_.string(), interfaceName_.string());
 }
 
 void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
 {
-    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(baseName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -99,7 +99,7 @@ void CServiceImplCodeEmitter::EmitServiceImplSourceInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(implName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(implName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -131,11 +131,11 @@ void CServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>
 {
     if (method->GetParameterNumber() == 0) {
         sb.Append(prefix).AppendFormat("int32_t %s%s(struct %s *self)\n",
-            infName_.string(), method->GetName().string(), interfaceName_.string());
+            baseName_.string(), method->GetName().string(), interfaceName_.string());
     } else {
         StringBuilder paramStr;
         paramStr.Append(prefix).AppendFormat("int32_t %s%s(struct %s *self, ",
-            infName_.string(), method->GetName().string(), interfaceName_.string());
+            baseName_.string(), method->GetName().string(), interfaceName_.string());
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             EmitInterfaceMethodParameter(param, paramStr, "");
@@ -158,12 +158,12 @@ void CServiceImplCodeEmitter::EmitServiceImplConstruct(StringBuilder& sb)
 {
     String objName("instance");
     sb.AppendFormat("void %sServiceConstruct(struct %s *%s)\n",
-        infName_.string(), interfaceName_.string(), objName.string());
+        baseName_.string(), interfaceName_.string(), objName.string());
     sb.Append("{\n");
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
         sb.Append(g_tab).AppendFormat("%s->%s = %s%s;\n",
-            objName.string(), method->GetName().string(), infName_.string(), method->GetName().string());
+            objName.string(), method->GetName().string(), baseName_.string(), method->GetName().string());
     }
     sb.Append("}");
 }

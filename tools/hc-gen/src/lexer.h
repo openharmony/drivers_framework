@@ -18,7 +18,6 @@
 
 namespace OHOS {
 namespace Hardware {
-
 class Lexer {
 public:
     Lexer();
@@ -28,6 +27,8 @@ public:
     bool Initialize(const std::string &sourceName);
 
     bool Lex(Token &token);
+
+    bool SetTokenCharacter(char c, Token &token);
 
     friend std::ostream &operator<<(std::ostream &stream, const Lexer &p);
 
@@ -62,6 +63,8 @@ private:
 
     bool LexFromNumber(Token &token);
 
+    void LexHexAndBinaryNum(std::string &value, char &c, uint64_t &v);
+
     void LexFromLiteral(Token &token);
 
     bool PeekChar(char &c, bool skipSpace = true);
@@ -78,7 +81,6 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &s, const Lexer &lexer);
-
 } // namespace Hardware
 } // namespace OHOS
 

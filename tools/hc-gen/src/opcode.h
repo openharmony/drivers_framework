@@ -10,9 +10,6 @@
 #define HC_GEN_OPCODE_H
 
 #include <cstdint>
-#include <string>
-
-#include "ast.h"
 
 namespace OHOS {
 namespace Hardware {
@@ -37,7 +34,6 @@ struct HcbHeader {
     uint32_t checkSum;
     int32_t totalSize;
 };
-
 } // namespace Hardware
 } // namespace OHOS
 

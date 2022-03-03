@@ -219,7 +219,7 @@ void Bmi160ReleaseDriver(struct HdfDeviceObject *device)
     struct Bmi160DrvData *drvData = (struct Bmi160DrvData *)device->service;
     CHECK_NULL_PTR_RETURN(drvData);
 
-    if (drvData->sensorCfg != NULL) { 
+    if (drvData->sensorCfg != NULL) {
         AccelReleaseCfgData(drvData->sensorCfg);
         drvData->sensorCfg = NULL;
     }

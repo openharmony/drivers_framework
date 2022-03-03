@@ -30,7 +30,7 @@ void HdfDeviceInfoConstruct(struct HdfDeviceInfo *deviceInfo)
     deviceInfo->deviceMatchAttr = NULL;
 }
 
-struct HdfDeviceInfo *HdfDeviceInfoNewInstance()
+struct HdfDeviceInfo *HdfDeviceInfoNewInstance(void)
 {
     struct HdfDeviceInfo *deviceInfo =
             (struct HdfDeviceInfo*)OsalMemCalloc(sizeof(struct HdfDeviceInfo));

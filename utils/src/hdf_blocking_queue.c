@@ -113,7 +113,7 @@ int HdfBlockingQueueOffer(struct HdfBlockingQueue *queue, void *val, long timeou
     struct HdfSListEntry *entry = NULL;
     if (OsalSemWait(&queue->sem, timeout) != 0) {
         return -1;
-    } 
+    }
     entry = HdfSListEntryNew(val);
     if (entry != NULL) {
         OsalMutexLock(&queue->mutex);

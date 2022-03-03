@@ -241,7 +241,7 @@ void DevHostServiceDestruct(struct DevHostService *service)
     HdfServiceObserverDestruct(&service->observer);
 }
 
-struct HdfObject *DevHostServiceCreate()
+struct HdfObject *DevHostServiceCreate(void)
 {
     struct DevHostService *devHostService = (struct DevHostService *)OsalMemCalloc(sizeof(struct DevHostService));
     if (devHostService != NULL) {

@@ -7,7 +7,7 @@
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
 
-
+import json
 import os
 import re
 import sys
@@ -63,10 +63,10 @@ def c_interface_file_translate(idl_file, out_dir, part, outputs):
     server_impl_header_file = os.path.join(out_dir, file_name + "_service.h")
     server_impl_source_file = os.path.join(out_dir, file_name + "_service.c")
 
-    if part == "client_lib_source":
+    if part == "-c":
         outputs.append(iface_header_file)
         outputs.append(client_proxy_source_file)
-    elif part == "server_lib_source":
+    elif part == "-s":
         outputs.append(iface_header_file)
         outputs.append(server_stub_header_file)
         outputs.append(server_stub_source_file)
@@ -91,11 +91,11 @@ def c_callback_file_translate(idl_file, out_dir, part, outputs):
     server_impl_header_file = os.path.join(out_dir, file_name + "_service.h")
     server_impl_source_file = os.path.join(out_dir, file_name + "_service.c")
 
-    if part == "client_lib_source":
+    if part == "-c":
         outputs.append(iface_header_file)
         outputs.append(server_stub_header_file)
         outputs.append(server_stub_source_file)
-    elif part == "server_lib_source":
+    elif part == "-s":
         outputs.append(iface_header_file)
         outputs.append(client_proxy_source_file)
     else:
@@ -118,19 +118,6 @@ def c_types_file_translate(idl_file, out_dir, outputs):
     outputs.append(types_source_file)
 
 
-def c_idl_translate(idl_files, out_dir):
-    outputs = []
-    for idl_file in idl_files:
-        idl_file_type = get_idl_file_type(idl_file)
-        if idl_file_type == IdlType.INTERFACE:
-            c_interface_file_translate(idl_file, out_dir, "all", outputs)
-        elif idl_file_type == IdlType.CALLBACK:
-            c_callback_file_translate(idl_file, out_dir, "all", outputs)
-        elif idl_file_type == IdlType.TYPES:
-            c_types_file_translate(idl_file, out_dir, outputs)
-    return outputs
-
-
 def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
     get_file_name = idl_file.split("/")[-1]
     file_name = translate_file_name(get_file_name.split(".")[0])
@@ -144,11 +131,11 @@ def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
     server_impl_header_file = os.path.join(out_dir, file_name + "_service.h")
     server_impl_source_file = os.path.join(out_dir, file_name + "_service.cpp")
 
-    if part == "client_lib_source":
+    if part == "-c":
         outputs.append(iface_header_file)
         outputs.append(client_proxy_header_file)
         outputs.append(client_proxy_source_file)
-    elif part == "server_lib_source":
+    elif part == "-s":
         outputs.append(iface_header_file)
         outputs.append(server_stub_header_file)
         outputs.append(server_stub_source_file)
@@ -175,11 +162,11 @@ def cpp_callback_file_translate(idl_file, out_dir, part, outputs):
     server_impl_header_file = os.path.join(out_dir, file_name + "_service.h")
     server_impl_source_file = os.path.join(out_dir, file_name + "_service.cpp")
 
-    if part == "client_lib_source":
+    if part == "-c":
         outputs.append(iface_header_file)
         outputs.append(server_stub_header_file)
         outputs.append(server_stub_source_file)
-    elif part == "server_lib_source":
+    elif part == "-s":
         outputs.append(iface_header_file)
         outputs.append(client_proxy_header_file)
         outputs.append(client_proxy_source_file)
@@ -202,28 +189,6 @@ def cpp_types_file_translate(idl_file, out_dir, outputs):
 
     outputs.append(types_header_file)
     outputs.append(types_source_file)
-
-
-def cpp_idl_translate(idl_files, out_dir):
-    outputs = []
-    for idl_file in idl_files:
-        idl_file_type = get_idl_file_type(idl_file)
-        if idl_file_type == IdlType.INTERFACE:
-            cpp_interface_file_translate(idl_file, out_dir, "all", outputs)
-        elif idl_file_type == IdlType.CALLBACK:
-            cpp_callback_file_translate(idl_file, out_dir, "all", outputs)
-        elif idl_file_type == IdlType.TYPES:
-            cpp_types_file_translate(idl_file, out_dir, outputs)   
-    return outputs
-
-
-def idl_translate(idl_files, language, out_dir):
-    outputs = []
-    if language == "c":
-        outputs = c_idl_translate(idl_files, out_dir)
-    elif language == "cpp":
-        outputs = cpp_idl_translate(idl_files, out_dir)
-    return outputs
 
 
 def c_get_compile_source_file(idl_files, out_dir, part):
@@ -261,57 +226,121 @@ def get_compile_source_file(idl_files, language, out_dir, part):
     return outputs
 
 
-def get_files(argv):
-    outputs = []
-    if len(argv) < 4:
-        return outputs
+# ./build_hdi_files.py -o <language> <gen_dir> <part> <idl_files>
+def get_output_files(argv):
+    result = []
+    if len(argv) >= 5:
+        language = argv[2]
+        gen_dir = argv[3]
+        part = argv[4]
+        idl_files = argv[5:]
 
-    option_mode = argv[1]
-    language = argv[2]
-    out_dir = argv[3]
-    files = argv[4:]
-
-    if option_mode == "-o":
-        outputs = idl_translate(files, language, out_dir)
-    elif option_mode == "-c":
-        outputs = get_compile_source_file(argv[4:], language, out_dir, "client_lib_source")
-    elif option_mode == "-s":
-        outputs = get_compile_source_file(argv[4:], language, out_dir, "server_lib_source")
-
-    sys.stdout.write('\n'.join(outputs))
+        result = get_compile_source_file(idl_files, language, gen_dir, part)
+    sys.stdout.write('\n'.join(result))
 
 
-def get_file_version(file_path):
-    major_version = 0
-    minor_version = 0
-    file_option = open(file_path, "r")
-    file_str = file_option.read()
-    result = re.findall(r'package\s\w+(?:\.\w+)*\.[V|v](\d+)_(\d+);', file_str)
-
-    if len(result) > 0:
-        major_version = result[0][0]
-        minor_version = result[0][1]
-    file_option.close()
-    version = str(major_version) + "." + str(minor_version)
-    return version
+# parse package name of this idl file
+def parse_file_package(file_path):
+    package_str = ""
+    idl_file = open(file_path, "r")
+    file_str = idl_file.read()
+    result = re.findall(r'package\s(\w+(?:\.\w+)*);', file_str)
+    if (len(result) > 0):
+        package_str = result[0]
+    idl_file.close()
+    return package_str
 
 
-def get_version(argv):
-    version = "0.0"
-    idl_files = argv[2:]
+# search all idl files and parse package name
+def parse_package(idl_files):
+    package_str = ""
     for idl_file in idl_files:
         idl_file_type = get_idl_file_type(idl_file)
         if idl_file_type == IdlType.INTERFACE:
-            version = get_file_version(idl_file)
+            package_str = parse_file_package(idl_file)
             break
-    sys.stdout.write(version)
+    return package_str
+
+
+# parse version from package name
+def parse_version(package_str):
+    # the version is empty by default
+    version_str = ""
+    result = re.findall(r'\w+(?:\.\w+)*\.[V|v](\d+)_(\d+)', package_str)
+    if len(result) > 0:
+        major_version = result[0][0]
+        minor_version = result[0][1]
+        version_str = str(major_version) + "." + str(minor_version)
+    return version_str
+
+
+def parse_out_dir(gen_dir, package_str, path_map):
+    package_path_vec = path_map.split(":")
+    if (len(package_path_vec) != 2):
+        return gen_dir
+
+    root_package = package_path_vec[0]
+    root_package_path = package_path_vec[1]
+
+    temp_dir = package_str.replace(root_package, root_package_path)
+    temp_dir = temp_dir.replace(".", "/")
+    return gen_dir.replace(temp_dir, "")
+
+
+def parse_root_package_dir(gen_dir, package_str, path_map):
+    package_path_vec = path_map.split(":")
+    if (len(package_path_vec) != 2):
+        return gen_dir
+    
+    root_package = package_path_vec[0]
+    root_package_path = package_path_vec[1]
+
+    temp_dir = package_str.replace(root_package, "")
+    temp_dir = temp_dir.replace(".", "/")
+    return gen_dir.replace(temp_dir, "")
+
+
+def parse_version_dir(gen_dir, version_str):
+    version_dir_name = "v" + version_str.replace(".", "_")
+    return gen_dir.replace(version_dir_name, "")
+
+
+# get information of package, version and generation files from idl files
+# ./build_hdi_files.py -i <language> <gen_dir> <path_mapping> <idl_files>
+def get_information(argv):
+    result = {}
+    if len(argv) >= 5:
+        language = argv[2]
+        gen_dir = argv[3]
+        path_map = argv[4]
+        idl_files = argv[5:]
+
+        package_str = parse_package(idl_files)
+        version_str = parse_version(package_str)
+
+        out_dir = parse_out_dir(gen_dir, package_str, path_map)
+
+        root_package_dir = parse_root_package_dir(gen_dir, package_str, path_map)
+
+        version_dir = parse_version_dir(gen_dir, version_str)
+
+        result = {
+            "package" : package_str,
+            "version" : version_str,
+            "out_dir" : out_dir,
+            "root_package_dir" : root_package_dir,
+            "version_dir" : version_dir,
+        }
+    sys.stdout.write(json.dumps(result))
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 1:
         sys.stdout.write('\n')
     option = sys.argv[1]
-    if option == "-v":
-        get_version(sys.argv)
+    if option == "-i":
+        get_information(sys.argv)
+    elif option == "-o":
+        get_output_files(sys.argv)
     else:
-        get_files(sys.argv)
+        sys.stdout.write('\n')

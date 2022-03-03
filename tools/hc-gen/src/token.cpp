@@ -13,6 +13,11 @@
 
 using namespace OHOS::Hardware;
 
+static constexpr int WIDTH_ZERO = 0;
+static constexpr int WIDTH_EIGHT = 8;
+static constexpr int WIDTH_EIGHTEEN = 18;
+static constexpr int WIDTH_TWENTY = 20;
+
 std::string OHOS::Hardware::TokenType2String(int32_t type)
 {
     static std::map<int32_t, std::string> tokenTypeMap = {
@@ -40,10 +45,11 @@ std::string OHOS::Hardware::TokenType2String(int32_t type)
 
 std::ostream &OHOS::Hardware::operator<<(std::ostream &stream, const OHOS::Hardware::Token &t)
 {
-    stream << "Token: type: " << std::setw(8) << ::std::left << TokenType2String(t.type).data();
-    stream << " value: " << std::setw(8) << ::std::left;
-    t.type != NUMBER ? stream << std::setw(20) << t.strval.data()
-                     : stream << std::setw(0) << "0x" << std::setw(18) << std::hex << t.numval;
+    stream << "Token: type: " << std::setw(WIDTH_EIGHT) << ::std::left << TokenType2String(t.type).data();
+    stream << " value: " << std::setw(WIDTH_EIGHT) << ::std::left;
+    t.type != NUMBER ? stream << std::setw(WIDTH_TWENTY) << t.strval.data()
+                     : stream << std::setw(WIDTH_ZERO) << "0x" << std::setw(WIDTH_EIGHTEEN) <<
+                       std::hex << t.numval;
     stream << " lineno:" << t.lineNo;
     return stream;
 }

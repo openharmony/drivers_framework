@@ -128,7 +128,8 @@ static int32_t IsSameRtcTestTime(const struct RtcTime *readTime, const struct Rt
     return HDF_SUCCESS;
 }
 
-static int32_t TestReadWriteTime(struct RtcTester *tester) {
+static int32_t TestReadWriteTime(struct RtcTester *tester)
+{
     int32_t ret;
     struct RtcTime readTime = {0};
 
@@ -221,7 +222,8 @@ static int32_t RtcReadWriteMinTimeTest(struct RtcTester *tester)
     return HDF_SUCCESS;
 }
 
-static int32_t TestReadWriteAlarm(struct RtcTester *tester) {
+static int32_t TestReadWriteAlarm(struct RtcTester *tester)
+{
     int32_t ret;
     struct RtcTime readTime = {0};
 
@@ -235,7 +237,7 @@ static int32_t TestReadWriteAlarm(struct RtcTester *tester) {
 
     ret = RtcReadAlarm(tester->handle, RTC_ALARM_INDEX_A, &readTime);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read alarm fail, ret :%d",__func__, ret);
+        HDF_LOGE("%s: read alarm fail, ret :%d", __func__, ret);
         return HDF_FAILURE;
     }
 
@@ -666,5 +668,5 @@ int32_t RtcTestExecute(int cmd)
 EXIT:
     HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     RtcTesterPut(tester);
-    return ret;   
+    return ret;
 }

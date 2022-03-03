@@ -220,7 +220,7 @@ void UartPl011SetLcrBits(struct UartRegisterMap *regMap, uint32_t bits);
 
 static inline void UartPl011Write(struct UartRegisterMap *regMap, uint8_t byte)
 {
-    while (UartPl011IsBusy(regMap));
+    while (UartPl011IsBusy(regMap)) { }
     regMap->dr = byte;
 }
 

@@ -37,7 +37,7 @@ void CppClientProxyCodeEmitter::EmitCode()
 
 void CppClientProxyCodeEmitter::EmitProxyHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_ + "Proxy").string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Proxy").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -64,7 +64,7 @@ void CppClientProxyCodeEmitter::EmitProxyHeaderInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(interfaceName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
     GetHeaderOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -146,7 +146,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodParameter(const AutoPtr<ASTParame
 
 void CppClientProxyCodeEmitter::EmitProxySourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(infName_ + "Proxy").string());
+    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_ + "Proxy").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -174,7 +174,7 @@ void CppClientProxyCodeEmitter::EmitProxySourceFile()
 void CppClientProxyCodeEmitter::EmitProxySourceInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(proxyName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(proxyName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
@@ -308,6 +308,10 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
     sb.Append(prefix + g_tab).AppendFormat("MessageOption %s(%s);\n", optionName_.string(), option.string());
     sb.Append("\n");
 
+    // write interface token
+    EmitWriteInterfaceToken(dataParcelName_, sb, prefix + g_tab);
+    sb.Append("\n");
+
     if (method->GetParameterNumber() > 0) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
@@ -339,6 +343,16 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& me
     }
 
     sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
+    sb.Append(prefix).Append("}\n");
+}
+
+void CppClientProxyCodeEmitter::EmitWriteInterfaceToken(const String& parcelName, StringBuilder& sb,
+    const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("if (!%s.WriteInterfaceToken(GetDescriptor())) {\n", parcelName.string());
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: write interface descriptor failed!\", __func__);\n");
+    sb.Append(prefix + g_tab).AppendFormat("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 } // namespace HDI

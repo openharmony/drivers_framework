@@ -14,7 +14,7 @@
 #define ERROR_AND_LOG(expr)                                             \
 do {                                                                    \
     PLAT_LOGE(__FILE__ "(line:%d): " #expr " is false!", __LINE__);     \
-} while (0) 
+} while (0)
 
 #define CHECK(expr)                                                     \
 ({                                                                      \
@@ -37,7 +37,7 @@ do {                                                                    \
 do {                                                                    \
     PLAT_LOGE(__FILE__ "(line:%d): " #expr " is false!", __LINE__);     \
     return ret;                                                         \
-} while (0) 
+} while (0)
 
 #define CHECK_AND_RETURN(expr, ret)                                     \
 ({                                                                      \

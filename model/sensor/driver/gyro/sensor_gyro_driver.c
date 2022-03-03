@@ -326,7 +326,6 @@ void GyroReleaseCfgData(struct SensorCfgData *gyroCfg)
 
 int32_t GyroInitDriver(struct HdfDeviceObject *device)
 {
-    HDF_LOGE("%s: cclog ----> 1111111111111111 ", __func__);
     CHECK_NULL_PTR_RETURN_VALUE(device, HDF_ERR_INVALID_PARAM);
     struct GyroDrvData *drvData = (struct GyroDrvData *)device->service;
     CHECK_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);

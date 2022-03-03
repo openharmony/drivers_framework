@@ -122,7 +122,7 @@ static void DeviceNodeExtDestruct(struct DeviceNodeExt *devnode)
     HdfDeviceNodeDestruct(&devnode->super);
 }
 
-struct HdfObject *DeviceNodeExtCreate()
+struct HdfObject *DeviceNodeExtCreate(void)
 {
     struct DeviceNodeExt *instance = (struct DeviceNodeExt *)OsalMemCalloc(sizeof(struct DeviceNodeExt));
     if (instance != NULL) {

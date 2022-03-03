@@ -16,77 +16,6 @@
 
 namespace OHOS {
 namespace HDI {
-String CppCodeEmitter::FileName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    String subName = Options::GetInstance().GetSubPackage(name);
-    StringBuilder sb;
-    for (int i = 0; i < subName.GetLength(); i++) {
-        char c = subName[i];
-        if (isupper(c) != 0) {
-            // 2->Index of the last char array.
-            if (i > 1 && subName[i - 1] != '.' && subName[i - 2] != '.') {
-                sb.Append('_');
-            }
-            sb.Append(tolower(c));
-        } else {
-            sb.Append(c);
-        }
-    }
-
-    return sb.ToString().Replace('.', '/');
-}
-
-String CppCodeEmitter::PascalName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    StringBuilder sb;
-    for (int i = 0; i < name.GetLength(); i++) {
-        char c = name[i];
-        if (i == 0) {
-            if (islower(c)) {
-                c = toupper(c);
-            }
-            sb.Append(c);
-        } else {
-            if (c == '_') {
-                continue;
-            }
-
-            if (islower(c) && name[i - 1] == '_') {
-                c = toupper(c);
-            }
-            sb.Append(c);
-        }
-    }
-
-    return sb.ToString();
-}
-
-String CppCodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod>& method)
-{
-    return String::Format("CMD_%s_%s", infName_.ToUnderLineUpper().string(),
-        method->GetName().ToUnderLineUpper().string());
-}
-
-void CppCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix)
-{
-    sb.Append(prefix).AppendFormat("enum {\n");
-    for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
-        AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(prefix + g_tab).Append(EmitMethodCmdID(method)).Append(",\n");
-    }
-
-    sb.Append(g_tab).Append(EmitMethodCmdID(interface_->GetVersionMethod())).Append(",\n");
-    sb.Append(prefix).Append("};\n");
-}
-
 void CppCodeEmitter::GetStdlibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
     bool includeString = false;
@@ -136,8 +65,8 @@ void CppCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
     for (const auto& importPair : ast_->GetImports()) {
         AutoPtr<AST> importAst = importPair.second;
-        String fileName = FileName(importAst->GetFullName());
-        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, FileName(importAst->GetFullName())));
+        String fileName = PackageToFilePath(importAst->GetFullName());
+        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName));
     }
 }
 
@@ -194,16 +123,21 @@ std::vector<String> CppCodeEmitter::EmitCppNameSpaceVec(const String& namespaceS
     std::vector<String> namespaceVec = namespaceStr.Split(".");
     bool findVersion = false;
 
-    for (const auto& nspace : namespaceVec) {
+    String rootPackage = Options::GetInstance().GetRootPackage(namespaceStr);
+    size_t rootPackageNum = rootPackage.Split(".").size();
+
+    for (size_t i = 0; i < namespaceVec.size(); i++) {
         String name;
-        if (!findVersion && isVersion(nspace)) {
-            name = nspace.Replace('v', 'V');
+        if (i < rootPackageNum) {
+            name = namespaceVec[i].ToUpperCase();
+        } else if (!findVersion && isVersion(namespaceVec[i])) {
+            name = namespaceVec[i].Replace('v', 'V');
             findVersion = true;
         } else {
             if (findVersion) {
-                name = nspace;
+                name = namespaceVec[i];
             } else {
-                name = PascalName(nspace);
+                name = PascalName(namespaceVec[i]);
             }
         }
 
@@ -319,29 +253,6 @@ String CppCodeEmitter::MacroName(const String& name)
 
     String macro = name.Replace('.', '_').ToUpperCase() + "_H";
     return macro;
-}
-
-String CppCodeEmitter::ConstantName(const String& name)
-{
-    if (name.IsEmpty()) {
-        return name;
-    }
-
-    StringBuilder sb;
-
-    for (int i = 0; i < name.GetLength(); i++) {
-        char c = name[i];
-        if (isupper(c) != 0) {
-            if (i > 1) {
-                sb.Append('_');
-            }
-            sb.Append(c);
-        } else {
-            sb.Append(toupper(c));
-        }
-    }
-
-    return sb.ToString();
 }
 
 String CppCodeEmitter::SpecificationParam(StringBuilder& paramSb, const String& prefix)

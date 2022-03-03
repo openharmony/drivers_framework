@@ -138,11 +138,11 @@ static void SpiTesterPut(struct SpiTester *tester)
         return;
     }
     SpiClose(tester->handle);
-    if(tester->config.rbuf != NULL) {
+    if (tester->config.rbuf != NULL) {
         OsalMemFree(tester->config.rbuf);
         tester->config.rbuf = NULL;
     }
-    if(tester->config.wbuf != NULL) {
+    if (tester->config.wbuf != NULL) {
         OsalMemFree(tester->config.wbuf);
         tester->config.wbuf = NULL;
     }
@@ -475,7 +475,7 @@ static int32_t SpiTestAll(struct SpiTester *tester)
 static int32_t SpiIfPerformanceTest(struct SpiTester *tester)
 {
 #ifdef __LITEOS__
-    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    // liteos the accuracy of the obtained time is too large and inaccurate.
     if (tester == NULL || tester->handle == NULL) {
         return HDF_FAILURE;
     }
@@ -485,7 +485,7 @@ static int32_t SpiIfPerformanceTest(struct SpiTester *tester)
     struct SpiCfg cfg = {0};
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
 
     startMs = OsalGetSysTimeMs();
     ret = SpiGetCfg(tester->handle, &cfg);
@@ -493,8 +493,8 @@ static int32_t SpiIfPerformanceTest(struct SpiTester *tester)
 
     if (ret == HDF_SUCCESS) {
         useTime = endMs - startMs;
-        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+            startMs, endMs, useTime, useTime < 1 ? true : false);
         return HDF_SUCCESS;
     }
     return HDF_FAILURE;
@@ -513,7 +513,7 @@ static struct SpiTestFunc g_spiTestEntry[] = {
     {SPI_INT_TRANSFER_TEST, SpiIntTransferTest, "SpiIntTransferTest"},
     {SPI_RELIABILITY_TEST, SpiReliabilityTest, "SpiReliabilityTest"},
     {SPI_PERFORMANCE_TEST, SpiIfPerformanceTest, "SpiIfPerformanceTest"},
-    {SPI_TEST_ALL,SpiTestAll,"SpiTestAll"},
+    {SPI_TEST_ALL, SpiTestAll, "SpiTestAll"},
 };
 
 int32_t SpiTestExecute(int cmd)

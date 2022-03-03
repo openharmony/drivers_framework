@@ -127,7 +127,7 @@ HWTEST_F(HdfLitePwmTest, PwmDisableTest001, TestSize.Level1)
   * @tc.name: PwmIfPerformanceTest001
   * @tc.desc: pwm user if performance test
   * @tc.type: FUNC
-  * @tc.require: 
+  * @tc.require:
   */
 HWTEST_F(HdfLitePwmTest, PwmIfPerformanceTest001, TestSize.Level1)
 {

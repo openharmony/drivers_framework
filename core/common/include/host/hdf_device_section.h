@@ -17,7 +17,7 @@
 
 #if (defined(__GNUC__) || defined(__clang__))
 #define HDF_DRIVER_SEC_NAME(type, name) \
-        ({ extern type name;            \
+        ({extern type name;            \
            &name;                       \
         })
 #define HDF_DRIVER_BEGIN() HDF_DRIVER_SEC_NAME(size_t, _hdf_drivers_start)

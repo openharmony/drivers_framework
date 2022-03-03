@@ -40,7 +40,7 @@ static int32_t PlatformEventTestInitAndUninit(struct PlatformEvent *pe)
     }
     (void)OsalSpinUnlock(&pe->spin);
 
-    // can use sem after init 
+    // can use sem after init
     ret = OsalSemPost(&pe->sem);
     if (!CHECK_EQ(ret, HDF_SUCCESS)) {
         return HDF_FAILURE;
@@ -154,7 +154,7 @@ static int32_t PlatformEventTestReliability(struct PlatformEvent *pe)
     struct PlatformEventListener listener;
 
     PLAT_LOGD("%s: enter", __func__);
-    // should return invalid obj when init null pointer 
+    // should return invalid obj when init null pointer
     ret = PlatformEventInit(NULL);
     CHECK_EQ_RETURN(ret, HDF_ERR_INVALID_OBJECT, HDF_FAILURE);
 
@@ -170,7 +170,7 @@ static int32_t PlatformEventTestReliability(struct PlatformEvent *pe)
     ret = PlatformEventWait(pe, 0, 0, PLAT_EVENT_TEST_TIMEOUT, &events);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
 
-    // should not listen success when event instance is NULL 
+    // should not listen success when event instance is NULL
     ret = PlatformEventListen(NULL, &listener);
     CHECK_NE_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
 
@@ -205,7 +205,8 @@ int PlatformEventTestExecute(int cmd)
     if (cmd > PLAT_EVENT_TEST_CMD_MAX) {
         PLAT_LOGE("PlatformEventTestExecute: invalid cmd:%d", cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        PLAT_LOGE("[PlatformEventTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -229,7 +230,6 @@ int PlatformEventTestExecute(int cmd)
     ret = entry->func(&pe);
     PlatformEventUninit(&pe);
 
-__EXIT__:
     PLAT_LOGE("[PlatformEventTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
     return ret;
 }

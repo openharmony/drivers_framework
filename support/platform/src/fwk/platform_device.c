@@ -101,7 +101,7 @@ void PlatformDeviceClearName(struct PlatformDevice *device)
     if (device != NULL && device->name != NULL) {
         OsalMemFree((char *)device->name);
         device->name = NULL;
-    } 
+    }
 }
 
 int32_t PlatformDeviceInit(struct PlatformDevice *device)
@@ -298,7 +298,7 @@ void PlatformDeviceUnbind(struct PlatformDevice *device, struct HdfDeviceObject 
     }
     if (device->hdfDev != hdfDev) {
         PLAT_LOGW("PlatformDeviceUnbind: hdf device not match!");
-	return;
+        return;
     }
 
     device->hdfDev->service = NULL;
@@ -360,6 +360,6 @@ int32_t PlatformDeviceListenEvent(struct PlatformDevice *device, struct Platform
 void PlatformDeviceUnListenEvent(struct PlatformDevice *device, struct PlatformEventListener *listener)
 {
     if (device != NULL && listener != NULL) {
-        PlatformEventUnlisten(&device->event, listener);    
+        PlatformEventUnlisten(&device->event, listener);
     }
 }

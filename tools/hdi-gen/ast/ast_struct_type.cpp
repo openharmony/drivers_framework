@@ -215,7 +215,7 @@ void ASTStructType::EmitCppReadVar(const String& parcelName, const String& name,
     }
     sb.Append(prefix).AppendFormat("if (!%sBlockUnmarshalling(%s, %s)) {\n",
         name_.string(), parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
     sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }

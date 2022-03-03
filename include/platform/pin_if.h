@@ -42,7 +42,7 @@ enum PinPullType {
  *
  * @param pinName Indicates the pin which you want to setting properties.
  *
- * @return Returns the pointer to the {@link DevHandle} of the pin controller which 
+ * @return Returns the pointer to the {@link DevHandle} of the pin controller which
  * to get a pin if the operation is successful;
  * returns <b>NULL</b> otherwise.
  * @since 1.0

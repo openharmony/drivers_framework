@@ -44,6 +44,6 @@ struct PedometerDrvData {
 
 int32_t PedometerRegisterChipOps(const struct PedometerOpsCall *ops);
 struct SensorCfgData *PedometerCreateCfgData(const struct DeviceResourceNode *node);
-void PedometerReleaseCfgData(struct SensorCfgData *sensorCfgData);
+void PedometerReleaseCfgData(struct SensorCfgData *pedometerCfg);
 
 #endif /* SENSOR_PEDOMETER_DRIVER_H */

@@ -47,7 +47,7 @@ class AstObject {
 public:
     friend class Ast;
 
-    AstObject(AstObject &obj);
+    AstObject(const AstObject &obj);
 
     AstObject(std::string name, uint32_t type, uint64_t value);
 
@@ -58,6 +58,8 @@ public:
     AstObject(std::string name, uint32_t type, std::string value, const Token &bindToken);
 
     virtual ~AstObject();
+
+    AstObject& operator=(const AstObject &obj);
 
     virtual bool AddChild(const std::shared_ptr<AstObject> &childObj);
 
@@ -144,13 +146,15 @@ private:
 
 class ConfigNode : public AstObject {
 public:
-    ConfigNode(ConfigNode &node);
+    ConfigNode(const ConfigNode &node);
 
     ConfigNode(std::string name, uint32_t nodeType, std::string refName);
 
     ConfigNode(Token &name, uint32_t nodeType, std::string refName);
 
     ~ConfigNode() override = default;
+
+    ConfigNode& operator=(const ConfigNode &node);
 
     friend std::ostream &operator<<(std::ostream &stream, const ConfigNode &t);
 
@@ -205,7 +209,7 @@ private:
 
 class ConfigTerm : public AstObject {
 public:
-    ConfigTerm(ConfigTerm &term);
+    ConfigTerm(const ConfigTerm &term);
 
     ConfigTerm(std::string name, const std::shared_ptr<AstObject> &value);
 
@@ -213,13 +217,15 @@ public:
 
     ~ConfigTerm() override = default;
 
+    ConfigTerm& operator=(const ConfigTerm &term);
+
     static ConfigTerm *CastFrom(const std::shared_ptr<AstObject> &astObject);
 
     bool Merge(std::shared_ptr<AstObject> &srcObj) override;
 
     friend std::ostream &operator<<(std::ostream &stream, const ConfigTerm &t);
 
-    bool RefExpand(std::shared_ptr<AstObject> refObject);
+    bool RefExpand(const std::shared_ptr<AstObject> refObj);
 
     bool Copy(std::shared_ptr<AstObject> src, bool overwrite) override;
 
@@ -240,11 +246,13 @@ class ConfigArray : public AstObject {
 public:
     ConfigArray();
 
-    ConfigArray(ConfigArray &array);
+    ConfigArray(const ConfigArray &array);
 
     explicit ConfigArray(const Token &bindToken);
 
     ~ConfigArray() override = default;
+
+    ConfigArray& operator=(const ConfigArray &array);
 
     static ConfigArray *CastFrom(const std::shared_ptr<AstObject> &astObject);
 

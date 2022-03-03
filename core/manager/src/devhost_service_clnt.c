@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "device_token_clnt.h"
 #include "devhost_service_clnt.h"
+#include "device_token_clnt.h"
 #include "devmgr_service_start.h"
 #include "hdf_base.h"
 #include "hdf_driver_installer.h"

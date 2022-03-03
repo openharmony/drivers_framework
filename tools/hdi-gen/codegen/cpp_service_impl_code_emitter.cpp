@@ -37,7 +37,7 @@ void CppServiceImplCodeEmitter::EmitCode()
 
 void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -59,7 +59,7 @@ void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 void CppServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(stubName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(stubName_)));
 
     for (const auto& file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -70,7 +70,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder& sb)
 {
     EmitBeginNamespace(sb);
     sb.Append("\n");
-    sb.AppendFormat("class %sService : public %s {\n", infName_.string(), stubName_.string());
+    sb.AppendFormat("class %sService : public %s {\n", baseName_.string(), stubName_.string());
     sb.Append("public:\n");
     EmitServiceImplBody(sb, g_tab);
     sb.Append("};\n");
@@ -88,7 +88,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplBody(StringBuilder& sb, const Str
 
 void CppServiceImplCodeEmitter::EmitServiceImplDestruction(StringBuilder& sb, const String& prefix)
 {
-    sb.Append(prefix).AppendFormat("virtual ~%sService() {}\n", infName_.string());
+    sb.Append(prefix).AppendFormat("virtual ~%sService() {}\n", baseName_.string());
 }
 
 void CppServiceImplCodeEmitter::EmitServiceImplMethodDecls(StringBuilder& sb, const String& prefix)
@@ -127,7 +127,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(const AutoPtr<ASTMetho
 
 void CppServiceImplCodeEmitter::EmitImplSourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(infName_ + "Service").string());
+    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_ + "Service").string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -149,7 +149,7 @@ void CppServiceImplCodeEmitter::EmitImplSourceFile()
 void CppServiceImplCodeEmitter::EmitImplSourceInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(implName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(implName_)));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
 
     for (const auto& file : headerFiles) {
@@ -177,10 +177,10 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMetho
     const String& prefix)
 {
     if (method->GetParameterNumber() == 0) {
-        sb.Append(prefix).AppendFormat("int32_t %sService::%s()\n", infName_.string(), method->GetName().string());
+        sb.Append(prefix).AppendFormat("int32_t %sService::%s()\n", baseName_.string(), method->GetName().string());
     } else {
         StringBuilder paramStr;
-        paramStr.Append(prefix).AppendFormat("int32_t %sService::%s(", infName_.string(), method->GetName().string());
+        paramStr.Append(prefix).AppendFormat("int32_t %sService::%s(", baseName_.string(), method->GetName().string());
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             EmitInterfaceMethodParameter(param, paramStr, "");

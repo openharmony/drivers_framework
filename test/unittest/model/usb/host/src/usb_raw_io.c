@@ -217,7 +217,7 @@ static int32_t AcmWriteBufAllocHandle(const struct AcmRawDevice *acm)
     for (wb = (struct RawWb *)&acm->wb[0], i = 0; i < ACM_NW; i++, wb++) {
         wb->buf = OsalMemCalloc(acm->dataOutEp.maxPacketSize);
         if (!wb->buf) {
-            while (i != 0) {
+            while (i > 0) {
                 --i;
                 --wb;
                 OsalMemFree(wb->buf);

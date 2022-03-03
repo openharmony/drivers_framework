@@ -129,7 +129,7 @@ void HdfDeviceDestruct(struct HdfDevice *device)
     DListHeadInit(&device->devNodes);
 }
 
-struct HdfObject *HdfDeviceCreate()
+struct HdfObject *HdfDeviceCreate(void)
 {
     struct HdfDevice *device = (struct HdfDevice *)OsalMemCalloc(sizeof(struct HdfDevice));
     if (device != NULL) {
@@ -147,7 +147,7 @@ void HdfDeviceRelease(struct HdfObject *object)
     }
 }
 
-struct HdfDevice *HdfDeviceNewInstance()
+struct HdfDevice *HdfDeviceNewInstance(void)
 {
     return (struct HdfDevice *)HdfObjectManagerGetObject(HDF_OBJECT_ID_DEVICE);
 }

@@ -15,12 +15,9 @@ namespace OHOS {
 namespace HDI {
 bool JavaClientInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
-    } else if (ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = File::AdapterPath(String::Format("%s/%s/", targetDirectory.string(),
-            FileName(ast_->GetPackageName()).string()));
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
+        ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+        directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
     }
@@ -40,7 +37,7 @@ void JavaClientInterfaceCodeEmitter::EmitCode()
 
 void JavaClientInterfaceCodeEmitter::EmitInterfaceFile()
 {
-    String filePath = String::Format("%s%s.java", directory_.string(), FileName(interfaceName_).string());
+    String filePath = String::Format("%s/%s.java", directory_.string(), FileName(interfaceName_).string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

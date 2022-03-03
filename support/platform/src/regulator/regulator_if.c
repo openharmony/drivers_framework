@@ -93,7 +93,7 @@ int32_t RegulatorSetVoltage(DevHandle handle, uint32_t minUv, uint32_t maxUv)
     }
 
     if (minUv > maxUv) {
-        HDF_LOGE("RegulatorSetVoltage: %s Uv [%d, %d] invalid!", 
+        HDF_LOGE("RegulatorSetVoltage: %s Uv [%d, %d] invalid!",
             node->regulatorInfo.name, minUv, maxUv);
         return HDF_FAILURE;
     }
@@ -133,7 +133,7 @@ int32_t RegulatorSetCurrent(DevHandle handle, uint32_t minUa, uint32_t maxUa)
     }
 
     if (minUa > maxUa) {
-        HDF_LOGE("RegulatorSetCurrent: %s Ua [%d, %d] invalid!", 
+        HDF_LOGE("RegulatorSetCurrent: %s Ua [%d, %d] invalid!",
             node->regulatorInfo.name, minUa, maxUa);
         return HDF_FAILURE;
     }

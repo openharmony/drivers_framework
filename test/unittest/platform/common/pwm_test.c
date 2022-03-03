@@ -330,7 +330,7 @@ static int32_t PwmReliabilityTest(struct PwmTester *tester)
 static int32_t PwmIfPerformanceTest(struct PwmTester *tester)
 {
 #ifdef __LITEOS__
-    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    // liteos the accuracy of the obtained time is too large and inaccurate.
     if (tester == NULL) {
         return HDF_FAILURE;
     }
@@ -340,15 +340,15 @@ static int32_t PwmIfPerformanceTest(struct PwmTester *tester)
     struct PwmConfig cfg = {0};
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
 
     startMs = OsalGetSysTimeMs();
     PwmGetConfig(tester->handle, &cfg);
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }
 
@@ -390,7 +390,9 @@ int32_t PwmTestExecute(int cmd)
         ret = PwmGetConfig(tester->handle, &(tester->originCfg));
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: [PwmGetConfig] failed, ret %d.", __func__, ret);
-            goto __EXIT__;
+            HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
+            PwmTesterPut(tester);
+            return ret;
         }
     }
 
@@ -407,7 +409,6 @@ int32_t PwmTestExecute(int cmd)
         PwmSetConfig(tester->handle, &(tester->originCfg));
     }
 
-__EXIT__:
     HDF_LOGI("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     PwmTesterPut(tester);
     return ret;

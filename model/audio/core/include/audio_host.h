@@ -88,6 +88,7 @@ enum AudioSapmTurnStandbyMode {
 };
 
 struct AudioCard {
+    struct HdfDeviceObject *device;
     struct AudioRuntimeDeivces *rtd;
     struct AudioConfigData configData;
 

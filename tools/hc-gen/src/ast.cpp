@@ -16,7 +16,7 @@
 
 using namespace OHOS::Hardware;
 
-AstObject::AstObject(AstObject &obj) : AstObject(obj.name_, obj.type_, obj.stringValue_)
+AstObject::AstObject(const AstObject &obj) : AstObject(obj.name_, obj.type_, obj.stringValue_)
 {
     integerValue_ = obj.integerValue_;
 }
@@ -68,6 +68,27 @@ AstObject::~AstObject()
     parent_ = nullptr;
     next_ = nullptr;
     child_ = nullptr;
+}
+
+AstObject& AstObject::operator=(const AstObject &obj)
+{
+    if (this != &obj) {
+        type_ = obj.type_;
+        name_ = obj.name_;
+        parent_ = obj.parent_;
+        next_ = obj.next_;
+        child_ = obj.child_;
+        lineno_ = obj.lineno_;
+        src_ = obj.src_;
+        opCode_ = obj.opCode_;
+        size_ = obj.size_;
+        subSize_ = obj.subSize_;
+        hash_ = obj.hash_;
+        integerValue_ = obj.integerValue_;
+        stringValue_ = obj.stringValue_;
+    }
+
+    return *this;
 }
 
 uint32_t AstObject::FitIntegerValueType(uint64_t value)
@@ -393,7 +414,7 @@ std::shared_ptr<AstObject> AstObject::Parent()
     return std::shared_ptr<AstObject>(parent_, [](auto p) {});
 }
 
-ConfigNode::ConfigNode(ConfigNode &node) : ConfigNode(node.name_, node.nodeType_, node.refNodePath_)
+ConfigNode::ConfigNode(const ConfigNode &node) : ConfigNode(node.name_, node.nodeType_, node.refNodePath_)
 {
     auto child = node.child_;
     while (child != nullptr) {
@@ -420,6 +441,20 @@ ConfigNode::ConfigNode(Token &name, uint32_t nodeType, std::string refName) :
     inheritCount_(0),
     templateSignNum_(0)
 {
+}
+
+ConfigNode& ConfigNode::operator=(const ConfigNode &node)
+{
+    if (this != &node) {
+        refNodePath_ = node.refNodePath_;
+        nodeType_ = node.nodeType_;
+        inheritIndex_ = node.inheritIndex_;
+        inheritCount_ = node.inheritCount_;
+        templateSignNum_ = node.templateSignNum_;
+        subClasses_ = node.subClasses_;
+    }
+
+    return *this;
 }
 
 const std::string &ConfigNode::NodeTypeToStr(uint32_t type)
@@ -648,13 +683,14 @@ const std::list<AstObject *> &ConfigNode::SubClasses()
     return subClasses_;
 }
 
-ConfigTerm::ConfigTerm(ConfigTerm &term) : ConfigTerm(term.name_, nullptr)
+ConfigTerm::ConfigTerm(const ConfigTerm &term) : ConfigTerm(term.name_, nullptr)
 {
     AstObject::AddChild(AstObjectFactory::Build(term.child_));
 }
 
 ConfigTerm::ConfigTerm(std::string name, const std::shared_ptr<AstObject> &value) :
-    AstObject(std::move(name), PARSEROP_CONFTERM, 0), signNum_(0)
+    AstObject(std::move(name), PARSEROP_CONFTERM, 0),
+    signNum_(0)
 {
     if (value != nullptr) {
         child_ = value;
@@ -663,12 +699,23 @@ ConfigTerm::ConfigTerm(std::string name, const std::shared_ptr<AstObject> &value
 }
 
 ConfigTerm::ConfigTerm(Token &name, const std::shared_ptr<AstObject> &value) :
-    AstObject(name.strval, PARSEROP_CONFTERM, 0, name), signNum_(0)
+    AstObject(name.strval, PARSEROP_CONFTERM, 0, name),
+    signNum_(0)
 {
     if (value != nullptr) {
         child_ = value;
         value->SetParent(this);
     }
+}
+
+ConfigTerm& ConfigTerm::operator=(const ConfigTerm &term)
+{
+    if (this != &term) {
+        refNode_ = term.refNode_;
+        signNum_ = term.signNum_;
+    }
+
+    return *this;
 }
 
 std::ostream &OHOS::Hardware::operator<<(std::ostream &stream, const ConfigTerm &t)
@@ -696,7 +743,7 @@ bool ConfigTerm::Merge(std::shared_ptr<AstObject> &srcObj)
     return true;
 }
 
-bool ConfigTerm::RefExpand(std::shared_ptr<AstObject> refObj)
+bool ConfigTerm::RefExpand(const std::shared_ptr<AstObject> refObj)
 {
     if (child_->Type() == PARSEROP_DELETE) {
         this->Separate();
@@ -754,7 +801,7 @@ ConfigArray::ConfigArray() : AstObject("", PARSEROP_ARRAY, 0), arrayType_(0), ar
 {
 }
 
-ConfigArray::ConfigArray(ConfigArray &array) : ConfigArray()
+ConfigArray::ConfigArray(const ConfigArray &array) : ConfigArray()
 {
     auto child = array.child_;
     while (child != nullptr) {
@@ -766,7 +813,19 @@ ConfigArray::ConfigArray(ConfigArray &array) : ConfigArray()
 }
 
 ConfigArray::ConfigArray(const Token &bindToken) :
-    AstObject("", PARSEROP_ARRAY, 0, bindToken), arrayType_(0), arraySize_(0) {};
+    AstObject("", PARSEROP_ARRAY, 0, bindToken),
+    arrayType_(0),
+    arraySize_(0) {};
+
+ConfigArray& ConfigArray::operator=(const ConfigArray &array)
+{
+    if (this != &array) {
+        arrayType_ = array.arrayType_;
+        arraySize_ = array.arraySize_;
+    }
+
+    return *this;
+}
 
 bool ConfigArray::AddChild(const std::shared_ptr<AstObject> &childObj)
 {

@@ -10,7 +10,6 @@
 #define HCS_COMPILER_LOG_H
 
 #include <stdio.h>
-#include <stdlib.h>
 #include "hcs_types.h"
 
 #ifdef DEBUG

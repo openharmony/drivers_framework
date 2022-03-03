@@ -74,7 +74,6 @@ private:
     std::string fileName_;
     std::ifstream file_;
 };
-
 } // namespace Hardware
 } // namespace OHOS
 #endif // HC_GEN_DECOMPILE_H

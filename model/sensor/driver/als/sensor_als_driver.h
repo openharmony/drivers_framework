@@ -16,7 +16,7 @@
 
 #define ALS_DEFAULT_SAMPLING_200_MS    200000000
 #define ALS_CHIP_NAME_BH1745           "bh1745"
-#define INVALID_VALUE                  -1
+#define INVALID_VALUE                  (-1)
 
 enum ExtendedAlsRegGroupType {
     EXTENDED_ALS_TIME_GROUP = 0,
@@ -87,7 +87,7 @@ struct AlsDrvData {
 
 int32_t AlsRegisterChipOps(const struct AlsOpsCall *ops);
 struct SensorCfgData *AlsCreateCfgData(const struct DeviceResourceNode *node);
-void AlsReleaseCfgData(struct SensorCfgData *sensorCfgData);
+void AlsReleaseCfgData(struct SensorCfgData *alsCfg);
 int32_t GetTimeByRegValue(uint8_t regValue, struct TimeRegAddrValueMap *map, int32_t itemNum);
 int32_t GetRegGroupIndexByTime(uint32_t timeValue, struct TimeRegAddrValueMap *map, int32_t itemNum);
 int32_t GetGainByRegValue(uint8_t regValue, struct GainRegAddrValueMap *map, int32_t itemNum);

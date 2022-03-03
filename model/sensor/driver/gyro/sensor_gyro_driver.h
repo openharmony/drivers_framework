@@ -58,6 +58,6 @@ struct GyroDrvData {
 
 int32_t GyroRegisterChipOps(const struct GyroOpsCall *ops);
 struct SensorCfgData *GyroCreateCfgData(const struct DeviceResourceNode *node);
-void GyroReleaseCfgData(struct SensorCfgData *sensorCfgData);
+void GyroReleaseCfgData(struct SensorCfgData *gyroCfg);
 
 #endif /* SENSOR_GYRO_DRIVER_H */

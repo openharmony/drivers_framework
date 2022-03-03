@@ -227,8 +227,7 @@ std::string Option::GetSourceDir()
 
 bool Option::SetSourceOption(const char *srcName)
 {
-    std::string srcAbsPath;
-    srcAbsPath = Util::File::AbsPath(srcName);
+    std::string srcAbsPath(Util::File::AbsPath(srcName));
     if (srcAbsPath.empty()) {
         Logger().Error() << "invalid source file: " << srcName << ", " << strerror(errno);
         SetOptionError(false);

@@ -43,7 +43,7 @@
     }
 
 #define FP_CHILD_DEAL(node) \
-    CHECK_STRING_EQU(HCS_PROP(node, status), g_fpData[index].child.status);
+    CHECK_STRING_EQU(HCS_PROP(node, status), g_fpData[index].child.status)
 
 #define FP_DEAL(node) \
     do { \
@@ -52,21 +52,21 @@
         node##_foreach_child(FP_CHILD_DEAL); \
         CHECK_STRING_EQU(HCS_PROP(node, status), g_fpData[index].status); \
         index++; \
-    } while (0);
+    } while (0)
 
 #define FP_DEAL_(node) FP_DEAL(node)
 
 #define FP_CHILD_DEAL_VARGS(node, fpArgs, idx) \
-    CHECK_STRING_EQU(HCS_PROP(node, status), fpArgs[idx].child.status);
+    CHECK_STRING_EQU(HCS_PROP(node, status), (fpArgs)[idx].child.status)
 
 #define FP_DEAL_VARGS(node, fpArgs, idx) \
     do { \
-        CHECK_STRING_EQU(HCS_PROP(node, product), fpArgs[(idx)].product); \
-        CHECK_STRING_EQU(HCS_PROP(node, chip), fpArgs[(idx)].chip); \
+        CHECK_STRING_EQU(HCS_PROP(node, product), (fpArgs)[(idx)].product); \
+        CHECK_STRING_EQU(HCS_PROP(node, chip), (fpArgs)[(idx)].chip); \
         node##_foreach_child_vargs(FP_CHILD_DEAL_VARGS, fpArgs, idx); \
-        CHECK_STRING_EQU(HCS_PROP(node, status), fpArgs[(idx)].status); \
+        CHECK_STRING_EQU(HCS_PROP(node, status), (fpArgs)[(idx)].status); \
         (idx)++; \
-    } while (0);
+    } while (0)
 
 #define FP_DEAL_VARGS_(node, fpArgs, idx) FP_DEAL_VARGS(node, fpArgs, idx)
 

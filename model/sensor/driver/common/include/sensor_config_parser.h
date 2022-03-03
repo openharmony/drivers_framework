@@ -96,7 +96,7 @@ struct SensorCfgData {
     struct SensorRegCfgGroupNode **regCfgGroup;
     struct SensorRegCfgGroupNode **extendedRegCfgGroup;
     const struct DeviceResourceNode *root;
-    struct SensorDirection *direction; 
+    struct SensorDirection *direction;
 };
 
 int32_t GetSensorBaseConfigData(const struct DeviceResourceNode *node, struct SensorCfgData *config);

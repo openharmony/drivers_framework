@@ -7,8 +7,8 @@
  */
 
 #include "sensor_gravity_driver.h"
-#include "sensor_accel_driver.h"
 #include <securec.h>
+#include "sensor_accel_driver.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_math.h"

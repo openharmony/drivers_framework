@@ -135,7 +135,7 @@ static int32_t UartWriteTest(struct UartTester *tester)
 }
 
 static int32_t UartReadTest(struct UartTester *tester)
-{    
+{
     int32_t ret;
 
     ret = UartSetTransMode(tester->handle, UART_MODE_RD_NONBLOCK);
@@ -269,15 +269,15 @@ static int32_t UartIfPerformanceTest(struct UartTester *tester)
     uint32_t baudRate;
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
 
     startMs = OsalGetSysTimeMs();
     UartGetBaud(tester->handle, &baudRate);
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }
 
@@ -314,7 +314,9 @@ int32_t UartTestExecute(int cmd)
     if (cmd > UART_TEST_CMD_MAX) {
         HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
+        UartTesterPut(tester);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -325,8 +327,7 @@ int32_t UartTestExecute(int cmd)
         break;
     }
 
-__EXIT__:
     HDF_LOGE("[%s][======cmd:%d====ret:%d======]", __func__, cmd, ret);
     UartTesterPut(tester);
-    return ret;    
+    return ret;
 }

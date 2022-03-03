@@ -36,12 +36,12 @@ void CCustomTypesCodeEmitter::EmitCode()
 
 void CCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(infName_).string());
+    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_).string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
     EmitLicense(sb);
-    EmitHeadMacro(sb, infName_);
+    EmitHeadMacro(sb, baseName_);
     sb.Append("\n");
     EmitHeaderInclusions(sb);
     sb.Append("\n");
@@ -53,7 +53,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
     sb.Append("\n");
     EmitTailExternC(sb);
     sb.Append("\n");
-    EmitTailMacro(sb, infName_);
+    EmitTailMacro(sb, baseName_);
 
     String data = sb.ToString();
     file.WriteData(data.string(), data.GetLength());
@@ -160,7 +160,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypeFreeDecl(StringBuilder& sb,
 
 void CCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 {
-    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(infName_).string());
+    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(baseName_).string());
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -178,7 +178,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 void CCustomTypesCodeEmitter::EmitSoucreIncludsions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, FileName(infName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(baseName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto& file : headerFiles) {
