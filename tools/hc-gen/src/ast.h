@@ -301,7 +301,7 @@ public:
 
         while (forwardWalkObj != nullptr) {
             if (!preVisited) {
-                int32_t ret = callback(forwardWalkObj, walkDepth);
+                int32_t ret = (int32_t)callback(forwardWalkObj, walkDepth);
                 if (ret && ret != EASTWALKBREAK) {
                     return false;
                 } else if (ret != EASTWALKBREAK && forwardWalkObj->child_ != nullptr) {

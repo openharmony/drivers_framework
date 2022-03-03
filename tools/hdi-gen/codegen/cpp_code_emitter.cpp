@@ -8,9 +8,6 @@
 
 #include "codegen/cpp_code_emitter.h"
 #include <regex>
-#include <cctype>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <unordered_set>
 #include "util/options.h"
 

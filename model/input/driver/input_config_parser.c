@@ -224,7 +224,7 @@ static int32_t ParsePowerSequence(struct DeviceResourceIface *parser, const stru
     ChipPwrSeq *pwrSeq)
 {
     int32_t ret;
-    uint32_t num = parser->GetElemNum(seqNode, "powerOnSeq");
+    uint32_t num = (uint32_t)parser->GetElemNum(seqNode, "powerOnSeq");
     pwrSeq->pwrOn.count = num;
     pwrSeq->pwrOn.buf = (uint32_t *)OsalMemAlloc(sizeof(uint32_t) * num);
     if (pwrSeq->pwrOn.buf == NULL) {

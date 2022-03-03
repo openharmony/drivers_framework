@@ -7,9 +7,6 @@
  */
 
 #include "codegen/c_code_emitter.h"
-#include <cctype>
-#include <sys/stat.h>
-#include <unistd.h>
 #include "util/options.h"
 
 namespace OHOS {

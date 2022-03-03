@@ -7,9 +7,6 @@
  */
 
 #include "codegen/java_code_emitter.h"
-#include <cctype>
-#include <sys/stat.h>
-#include <unistd.h>
 
 namespace OHOS {
 namespace HDI {
