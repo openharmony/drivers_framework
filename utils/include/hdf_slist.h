@@ -209,9 +209,9 @@ void HdfSListIteratorInsert(struct HdfSListIterator *iterator, struct HdfSListNo
 
 #define OFFSET_OF(type, mem) ((size_t) &((type *)0)->mem)
 
-#define HDF_SLIST_CONTAINER_OF(mtype, ptr, type, mem) ({ \
-        const mtype*__mptr = (ptr);                      \
-        (type *)((char *)__mptr - OFFSET_OF(type, mem)); \
+#define HDF_SLIST_CONTAINER_OF(mtype, ptr, type, mem) ( { \
+        const mtype*__mptr = (ptr);                       \
+        (type *)((char *)__mptr - OFFSET_OF(type, mem));  \
 })
 
 #ifdef __cplusplus

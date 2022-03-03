@@ -42,8 +42,9 @@ struct HeaderFile {
         }
     };
 
-    String ToString() const {
-        switch(type_) {
+    String ToString() const
+    {
+        switch (type_) {
             case HeaderFileType::OWN_HEADER_FILE:
             case HeaderFileType::OWN_MODULE_HEADER_FILE:
                 return String::Format("#include \"%s.h\"", fileName_.string());

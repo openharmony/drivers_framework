@@ -7,8 +7,6 @@
  */
 
 #include "util/string_builder.h"
-#include <cstdlib>
-#include <cstring>
 #include "securec.h"
 #include "util/logger.h"
 

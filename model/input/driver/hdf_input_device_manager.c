@@ -254,7 +254,7 @@ static int32_t AllocPackageBuffer(InputDevice *inputDev)
     return HDF_SUCCESS;
 }
 
-static uint32_t AllocDeviceID(InputDevice *inputDev)
+static int32_t AllocDeviceID(InputDevice *inputDev)
 {
     InputDevice *tmpDev = g_inputManager->inputDevList;
     uint32_t idList[MAX_INPUT_DEV_NUM + 1];
