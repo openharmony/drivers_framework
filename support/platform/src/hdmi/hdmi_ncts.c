@@ -9,6 +9,8 @@
 #include "hdmi_ncts.h"
 
 #define HDF_LOG_TAG hdmi_ncts_c
+#define HDMI_NCTS_KHZ 1000
+#define HDMI_NCTS_TMDS_PER_PIXEL 10
 
 #define HDMI_NCTS_INVALID_VALUE 0xffffffff
 
@@ -114,10 +116,11 @@ uint32_t HdmiGetCts(uint32_t sampleRate, uint32_t tmdsClock)
         }
     }
 
-    if (tmpCts == 0 && sampleRate >= 1000) {
-        tmpCts = (tmpN / HDMI_NCTS_FACTOR)  * tmdsClock * 10 / (sampleRate / 1000);
-    } else if (tmpCts == HDMI_NCTS_INVALID_VALUE && sampleRate >= 1000) {
-        tmpCts = (HDMI_NCTS_N_DEFAULT / HDMI_NCTS_FACTOR)  * tmdsClock * 10 / (sampleRate / 1000);
+    if (tmpCts == 0 && sampleRate >= HDMI_NCTS_KHZ) {
+        tmpCts = (tmpN / HDMI_NCTS_FACTOR)  * tmdsClock * HDMI_NCTS_TMDS_PER_PIXEL / (sampleRate / HDMI_NCTS_KHZ);
+    } else if (tmpCts == HDMI_NCTS_INVALID_VALUE && sampleRate >= HDMI_NCTS_KHZ) {
+        tmpCts = (HDMI_NCTS_N_DEFAULT / HDMI_NCTS_FACTOR)  * tmdsClock * HDMI_NCTS_TMDS_PER_PIXEL /
+            (sampleRate / HDMI_NCTS_KHZ);
     }
     return tmpCts;
 }

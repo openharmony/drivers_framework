@@ -62,6 +62,7 @@ extern "C" {
 /* edid vendor/product info */
 #define HDMI_EDID_MANUFACRURER_NAME_FIELD_LEN 2
 #define HDMI_EDID_MANUFACRURER_NAME_MAX_LEN 4
+#define HDMI_EDID_MANUFACRURER_NAME_EFFECTIVE_LEN 3
 #define HDMI_EDID_MANUFACRURER_NAME_CHAR_MARK 0x1F  /* 5 bits */
 #define HDMI_EDID_MANUFACRURER_NAME_CHAR_SHIFT 5
 #define HDMI_EDID_MANUFACRURER_NAME_LOW_INVALID 0
@@ -378,6 +379,17 @@ struct HdmiEdidVideoInfo {
 #define HDMI_EDID_EXTENSION_VSDB_3D_MULTI_PRESENT_SHIFT 5
 #define HDMI_EDID_EXTENSION_VSDB_3D_STR_INVALID_MARK 0x03
 
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_CEC_PHY_ADDR 5
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_COLOR_DEPTH 6
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_MAX_TMDS_CLOCK 7
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_SINK_PRESENT 8
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_VIDEO_LATENCY 9
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_AUDIO_LATENCY 10
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_INTERLACED_VIDEO_LATENCY 11
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_INTERLACED_AUDIO_LATENCY 12
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_3D_PRESENT_INFO 13
+#define HDMI_EDID_VSDB_MIN_LEN_FOR_VIC_INFO 14
+
 struct HdmiEdidVsdbCecAddr {
     bool addrValid;
     uint8_t phyAddrA;
@@ -425,6 +437,8 @@ struct HdmiEdidExtHfVsdbDeepColor {
     bool dc48bit;
 };
 
+#define HDMI_EDID_EXTENSION_HFVSDB_DSC_TOTAL_CHUNK_MARK 0x3F
+
 /* dsc(Display Stream Compression ) */
 struct HdmiEdidExtHfVsdbDscInfo {
     bool dsc1p2;
@@ -437,6 +451,10 @@ struct HdmiEdidExtHfVsdbDscInfo {
     uint8_t dscMaxFrlRate;
     uint8_t dscTotalChunkKBytes;
 };
+
+#define HDMI_EDID_EXTENSION_HFVSDB_VRRMIN_MARK 0x3F
+#define HDMI_EDID_EXTENSION_HFVSDB_VRRMAX_MARK 0xC0
+#define HDMI_EDID_EXTENSION_HFVSDB_VRRMAX_SHIFT 2
 
 struct HdmiEdidExtHfVsdbInfo {
     bool scdcPresent;
@@ -561,6 +579,9 @@ struct HdmiEdidVideoCapability {
 
 /* edid extension block: HDR Static Metadata Data Block */
 #define HDMI_EDID_HDR_SMDB_MIN_LEN 3
+#define HDMI_EDID_HDR_SMDB_MIN_LEN_FOR_MAX_LUMINANCE_DATA 4
+#define HDMI_EDID_HDR_SMDB_MIN_LEN_FOR_MAX_FRAME_AVE_LUMINANCE_DATA 5
+#define HDMI_EDID_HDR_SMDB_MIN_LEN_FOR_MIN_LUMINANCE_DATA 6
 
 /* EOTF(Electro-Optical Transfer Functions) */
 struct HdmiEdidHdrSmdbEotf {
