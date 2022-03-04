@@ -6,11 +6,11 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "uart_if.h"
 #include "hdf_io_service_if.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "securec.h"
+#include "uart_if.h"
 
 #define HDF_LOG_TAG uart_if_u_c
 #define UART_HOST_NAME_LEN 32
@@ -18,10 +18,9 @@
 static void *UartGetObjGetByBusNum(uint32_t num)
 {
     int ret;
-    char name[UART_HOST_NAME_LEN + 1] = { 0 };
+    char name[UART_HOST_NAME_LEN + 1] = {0};
 
-    ret = snprintf_s(name, UART_HOST_NAME_LEN + 1, UART_HOST_NAME_LEN,
-        "HDF_PLATFORM_UART_%u", num);
+    ret = snprintf_s(name, UART_HOST_NAME_LEN + 1, UART_HOST_NAME_LEN, "HDF_PLATFORM_UART_%u", num);
     if (ret < 0) {
         HDF_LOGE("%s: snprintf_s failed", __func__);
         return NULL;
@@ -55,9 +54,9 @@ DevHandle UartOpen(uint32_t port)
         UartPutObjByPointer(handle);
         return NULL;
     }
-    ret = service->dispatcher->Dispatch(&service->object, UART_IO_INIT, NULL, NULL);
+    ret = service->dispatcher->Dispatch(&service->object, UART_IO_REQUEST, NULL, NULL);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostInit error, ret %d", __func__, ret);
+        HDF_LOGE("%s: UartHostRequest error, ret %d", __func__, ret);
         UartPutObjByPointer(handle);
         return NULL;
     }
@@ -81,14 +80,14 @@ void UartClose(DevHandle handle)
         return;
     }
 
-    ret = service->dispatcher->Dispatch(&service->object, UART_IO_DEINIT, NULL, NULL);
+    ret = service->dispatcher->Dispatch(&service->object, UART_IO_RELEASE, NULL, NULL);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostDeinit error, ret %d", __func__, ret);
+        HDF_LOGE("%s: UartHostRelease error, ret %d", __func__, ret);
     }
     UartPutObjByPointer(handle);
 }
 
-static int32_t UartDispatch(DevHandle handle,  int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t UartDispatch(DevHandle handle, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
     struct HdfIoService *service = (struct HdfIoService *)handle;
@@ -102,7 +101,7 @@ static int32_t UartDispatch(DevHandle handle,  int cmd, struct HdfSBuf *data, st
         HDF_LOGE("%s: dispatcher is null", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    
+
     ret = service->dispatcher->Dispatch(&service->object, cmd, data, reply);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: Dispatch failed: %d", __func__, ret);
@@ -279,8 +278,7 @@ int32_t UartGetAttribute(DevHandle handle, struct UartAttribute *attribute)
     }
 
     if (tmpLen != sizeof(*attribute)) {
-        HDF_LOGE("%s: reply data len not match, exp:%zu, got:%u",
-            __func__, sizeof(*attribute), tmpLen);
+        HDF_LOGE("%s: reply data len not match, exp:%zu, got:%u", __func__, sizeof(*attribute), tmpLen);
         HdfSbufRecycle(reply);
         return HDF_ERR_IO;
     }
