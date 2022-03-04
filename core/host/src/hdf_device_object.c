@@ -327,3 +327,20 @@ int HdfDeviceObjectUpdate(struct HdfDeviceObject *dev)
     return DevSvcManagerClntUpdateService(
         devNode->servName, devNode->deviceObject.deviceClass, &devNode->deviceObject, devNode->servInfo);
 }
+
+int HdfDeviceObjectSetInterfaceDesc(struct HdfDeviceObject *dev, const char *interfaceDesc)
+{
+    struct HdfDeviceNode *devNode = CONTAINER_OF(dev, struct HdfDeviceNode, deviceObject);
+    if (dev == NULL || interfaceDesc == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+    devNode->interfaceDesc = HdfStringCopy(interfaceDesc);
+    return devNode->interfaceDesc != NULL ? HDF_SUCCESS : HDF_ERR_MALLOC_FAIL;
+}
+
+bool __attribute__((weak)) HdfDeviceObjectCheckInterfaceDesc(struct HdfDeviceObject *dev, struct HdfSBuf *data)
+{
+    (void)dev;
+    (void)data;
+    return true;
+}
