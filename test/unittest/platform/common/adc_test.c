@@ -246,7 +246,7 @@ static int32_t AdcIfPerformanceTest(void)
         endMs = OsalGetSysTimeMs();
         useTime = endMs - startMs;
         HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
-        startMs, endMs, useTime, useTime < 1 ? true : false);
+            startMs, endMs, useTime, useTime < 1 ? true : false);
     }
     return HDF_FAILURE;
 }

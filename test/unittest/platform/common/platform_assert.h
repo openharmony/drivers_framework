@@ -17,7 +17,7 @@ do {                                                                    \
 } while (0)
 
 #define CHECK(expr)                                                     \
-({                                                                      \
+( {                                                                     \
     if (!(expr)) {                                                      \
         ERROR_AND_LOG(expr);                                            \
     }                                                                   \
@@ -40,7 +40,7 @@ do {                                                                    \
 } while (0)
 
 #define CHECK_AND_RETURN(expr, ret)                                     \
-({                                                                      \
+( {                                                                     \
     if (!(expr)) {                                                      \
         ERROR_AND_RETURN(expr, (ret));                                  \
     }                                                                   \

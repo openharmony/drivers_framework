@@ -95,16 +95,16 @@ static inline uintptr_t DmacMsgGetPeriphAddr(struct DmacMsg *msg)
     uintptr_t reserved1;      \
     uintptr_t destAddr;       \
     uintptr_t reserved2;      \
-    unsigned long config;
+    unsigned long config
 
 struct DmacLliHead {
-    DMAC_LLI_HEAD
+    DMAC_LLI_HEAD;
 };
 #define DMAC_LLI_HEAD_SIZE    (sizeof(struct DmacLliHead))
 
 #define DMAC_LLI_SIZE         64 // must be 64 Bytes aligned
 struct DmacLli {
-    DMAC_LLI_HEAD
+    DMAC_LLI_HEAD;
     uint8_t pad[DMAC_LLI_SIZE - DMAC_LLI_HEAD_SIZE];
 };
 
