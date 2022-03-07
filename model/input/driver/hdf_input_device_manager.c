@@ -7,12 +7,12 @@
  */
 
 #include "hdf_input_device_manager.h"
+#include <securec.h>
 #include "event_hub.h"
 #include "hdf_base.h"
 #include "hdf_device_object.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
-#include <securec.h>
 
 #define NODE_MODE            0660
 #define SERVICE_NAME_LEN     24
