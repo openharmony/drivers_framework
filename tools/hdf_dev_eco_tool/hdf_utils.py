@@ -307,8 +307,16 @@ def get_template_file_path(root):
 
 
 def get_hcs_file_path(root, vendor, board):
-    return os.path.join(root, "vendor", vendor, board,
-                        "hdf_config", "device_info", "device_info.hcs")
+    l2_board_list = list(filter(
+        lambda x: x[0].isupper(),
+        HdfToolSettings().get_board_list()))
+    if board in l2_board_list:
+        return os.path.join(root, "vendor", vendor, board,
+                            "hdf_config", "khdf", "device_info",
+                            "device_info.hcs")
+    else:
+        return os.path.join(root, "vendor", vendor, board,
+                            "hdf_config", "device_info", "device_info.hcs")
 
 
 def template_filename_filtrate(dir_path, kernal):

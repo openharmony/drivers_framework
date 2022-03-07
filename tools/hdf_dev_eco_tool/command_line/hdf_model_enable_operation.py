@@ -24,7 +24,7 @@ class EnableOperation(object):
         self.vendor = vendor
         self.board = board
         self.model = model
-        if self.board.endswith("linux") or self.board.endswith("linux_l2"):
+        if self.board.endswith("linux") or self.board.endswith("Hi3516DV300"):
             pass
         else:
             temp_liteos_model_name = HdfLiteScan(
@@ -120,7 +120,7 @@ class EnableOperation(object):
         return True
 
     def operation_enable(self):
-        if self.board.endswith("hispark_taurus_linux_l2"):
+        if self.board.endswith("Hi3516DV300"):
             try:
                 if self.enable_model_linux():
                     return "success(linux) enable %s" % self.model
@@ -148,10 +148,10 @@ class EnableOperation(object):
                 raise "failure(liteos) enable %s" % self.model
 
         else:
-            raise "this board name : (%s) is incorrect" % self.board
+            return "this board name : (%s) is not support" % self.board
 
     def operation_disable(self):
-        if self.board.endswith("hispark_taurus_linux_l2"):
+        if self.board.endswith("Hi3516DV300"):
             try:
                 if self.disable_model_linux():
                     return "success(linux) disable %s" % self.model
@@ -179,7 +179,7 @@ class EnableOperation(object):
                 raise "failure(liteos) disable %s" % self.model
 
         else:
-            raise "this board name : (%s) is incorrect" % self.board
+            return "this board name : (%s) is not support " % self.board
 
     def get_config_config(self, kernel):
         return os.path.join(self.root, "kernel", kernel, "config")

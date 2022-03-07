@@ -46,6 +46,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
         self.parser.add_argument("--driver_name")
         self.parser.add_argument("--board_name")
         self.parser.add_argument("--kernel_name")
+        self.parser.add_argument("--runmode")
         self.args = self.parser.parse_args(args)
 
     @staticmethod
@@ -294,7 +295,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
                 list(set(patch_list + defconfig_list))
             return linux_file_path, linux_level_config_file_path
 
-        elif board.endswith("linux_l2"):
+        elif board.endswith("kernel"):
             # device_info.hcs
             device_info = HdfDeviceInfoHcsFile(
                 root, vendor, module, board, driver, path="")
