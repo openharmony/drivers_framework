@@ -7,12 +7,12 @@
  */
 
 #include "hdf_input_device_manager.h"
+#include <securec.h>
 #include "event_hub.h"
 #include "hdf_base.h"
 #include "hdf_device_object.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
-#include <securec.h>
 
 #define NODE_MODE            0660
 #define SERVICE_NAME_LEN     24
@@ -34,12 +34,11 @@ static bool IsHidDevice(uint32_t devType)
 {
     if ((devType > INDEV_TYPE_HID_BEGIN_POS) && (devType < INDEV_TYPE_UNKNOWN)) {
         return true;
-    }
 #ifdef CONFIG_ARCH_ROCKCHIP
-    else if (devType == INDEV_TYPE_KEY) {
+    } else if (devType == INDEV_TYPE_KEY) {
         return true;
-    }
 #endif
+    }
     return false;
 }
 

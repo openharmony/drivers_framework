@@ -194,7 +194,7 @@ static int32_t UpdateFirmware(ChipDevice *device)
     }
 
     HDF_LOGI("%s: buf[0]=0x%x", __func__, buf[0]);
-    if (buf[0] == firmWareParm[2]) {
+    if (buf[0] == firmWareParm[FIRMWARE_3RD]) {
         HDF_LOGI("%s: needn't update fw version", __func__);
         return HDF_SUCCESS;
     }
@@ -215,7 +215,7 @@ static void SetAbility(ChipDevice *device)
     device->driver->inputDev->abilitySet.absCode[0] = SET_BIT(ABS_X) | SET_BIT(ABS_Y);
     device->driver->inputDev->abilitySet.absCode[1] = SET_BIT(ABS_MT_POSITION_X) |
         SET_BIT(ABS_MT_POSITION_Y) | SET_BIT(ABS_MT_TRACKING_ID);
-    device->driver->inputDev->abilitySet.keyCode[3] = SET_BIT(KEY_UP) | SET_BIT(KEY_DOWN);
+    device->driver->inputDev->abilitySet.keyCode[KEY_CODE_4TH] = SET_BIT(KEY_UP) | SET_BIT(KEY_DOWN);
     device->driver->inputDev->attrSet.axisInfo[ABS_X].min = 0;
     device->driver->inputDev->attrSet.axisInfo[ABS_X].max = device->boardCfg->attr.resolutionX - 1;
     device->driver->inputDev->attrSet.axisInfo[ABS_X].range = 0;
