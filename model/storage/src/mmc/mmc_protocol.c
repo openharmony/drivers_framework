@@ -862,7 +862,7 @@ static void EmmcDecodeExtCsdCardType(struct EmmcExtCsd *extCsd)
             break;
         default:
             HDF_LOGD("EmmcDecodeExtCsdCardType: not support high-speed!");
-        break;
+            break;
     }
 }
 

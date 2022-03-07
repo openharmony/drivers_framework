@@ -878,7 +878,8 @@ void HdmiCecEncodingVendorCommandMsg(struct HdmiCecMsg *msg, uint8_t *data, uint
     length = (len > HDMI_CEC_VENDOR_SPECIFIC_DATA_MAX_LEN) ? HDMI_CEC_VENDOR_SPECIFIC_DATA_MAX_LEN : len;
     msg->len = HDMI_CEC_GET_MSG_LEN(length);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_VENDOR_COMMAND;
-    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - 2), data, length) != EOK) {
+    if (memcpy_s(&(msg->data[HDMI_CEC_MSG_DATA_SECOND_ELEMENT]), (msg->len - HDMI_CEC_MSG_MIN_LEN), data, length)
+        != EOK) {
         HDF_LOGE("encoding vendor cmd, memcpy_s fail.");
     }
 }
