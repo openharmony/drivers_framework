@@ -118,6 +118,8 @@ static void WifiSetKeyParams(const WifiKeyExt *keyExt, struct KeyParams *params,
 
 static int32_t WifiCmdFillKeyInner(struct HdfSBuf *reqData, WifiKeyExt *keyExt)
 {
+    uint32_t len = 0;
+
     if (!HdfSbufReadInt32(reqData, &(keyExt->type)) || keyExt == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "type");
         return HDF_FAILURE;
