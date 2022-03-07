@@ -320,7 +320,7 @@ static int32_t HdfWlanInitInterfaces(struct HdfWlanDevice *device, struct HdfChi
     return ret;
 }
 
-inline static void ReleaseWlanDevice(struct HdfWlanDevice *device)
+static void ReleaseWlanDevice(struct HdfWlanDevice *device)
 {
     if (device->powers != NULL && device->powers->Release != NULL) {
         device->powers->Release(device->powers);

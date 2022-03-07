@@ -264,22 +264,16 @@ static ErrorCode DoRegistService(const NodeId nodeId, const DispatcherId dispatc
 
 static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId dispatcherId, struct ServiceDef *mapper)
 {
-    HDF_STATUS status;
     MessageNode *node = NULL;
     RemoteService *remoteService = NULL;
     MessageDispatcher *dispatcher = NULL;
-    ErrorCode errCode;
-    if (mapper == NULL) {
+    ErrorCode errCode = ME_ERROR_NOT_SUPPORTED;
+    if (mapper == NULL || mapper->serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
         return ME_ERROR_NULL_PTR;
     }
 
-    if (mapper->serviceId >= MESSAGE_ENGINE_MAX_SERVICE) {
-        HDF_LOGE("%s:serviceId exceed max value! ServiceId=%u", __func__, mapper->serviceId);
-        return ME_ERROR_PARA_WRONG;
-    }
-    status = OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER);
-    if (status != HDF_SUCCESS) {
-        HDF_LOGE("Unable to get lock!status=%d", status);
+    if (OsalMutexTimedLock(&g_routerMutex, HDF_WAIT_FOREVER) != HDF_SUCCESS) {
+        HDF_LOGE("Unable to get lock!");
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
 
@@ -292,7 +286,6 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
     do {
         if (node->CreateRemoteService == NULL) {
             HDF_LOGE("%s:Can not reg service to node %d", __func__, nodeId);
-            errCode = ME_ERROR_NOT_SUPPORTED;
             break;
         }
         dispatcher = RefDispatcherInner(dispatcherId, false);
@@ -300,7 +293,6 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
         remoteService = node->CreateRemoteService(node, dispatcher, mapper);
         if (remoteService == NULL) {
             HDF_LOGE("%s:Node create service failed!node=%d", __func__, nodeId);
-            errCode = ME_ERROR_NULL_PTR;
             break;
         }
 
@@ -318,11 +310,7 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
         }
     } while (false);
 
-    status = OsalMutexUnlock(&g_routerMutex);
-    if (status != HDF_SUCCESS) {
-        HDF_LOGE("Unable to unlock!status=%d", status);
-    }
-
+    OsalMutexUnlock(&g_routerMutex);
     if (dispatcher != NULL && dispatcher->Disref != NULL) {
         dispatcher->Disref(dispatcher);
     }
