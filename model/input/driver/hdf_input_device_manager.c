@@ -34,12 +34,11 @@ static bool IsHidDevice(uint32_t devType)
 {
     if ((devType > INDEV_TYPE_HID_BEGIN_POS) && (devType < INDEV_TYPE_UNKNOWN)) {
         return true;
-    }
 #ifdef CONFIG_ARCH_ROCKCHIP
-    else if (devType == INDEV_TYPE_KEY) {
+    } else if (devType == INDEV_TYPE_KEY) {
         return true;
-    }
 #endif
+    }
     return false;
 }
 
