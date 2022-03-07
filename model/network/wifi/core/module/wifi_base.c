@@ -167,7 +167,6 @@ static int32_t WifiCmdNewKey(const RequestContext *context, struct HdfSBuf *reqD
     struct KeyParams params;
     int8_t pairwise;
     WifiKeyExt *keyExt = NULL;
-    uint32_t len = 0;
     const char *ifName = NULL;
     int32_t ret = 0;
 
@@ -177,34 +176,34 @@ static int32_t WifiCmdNewKey(const RequestContext *context, struct HdfSBuf *reqD
         HDF_LOGE("%s: reqData is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    keyExt = (WifiKeyExt *)malloc(sizeof(WifiKeyExt));
+    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
     if (keyExt == NULL) {
-        HDF_LOGE("%s:keyExt malloc failed", __func__);
+        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
         return HDF_FAILURE;
     }
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
     if (WifiCmdFillKeyInner(reqData, keyExt) != HDF_SUCCESS) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "keyExt");
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
     
     netDev = NetDeviceGetInstByName(ifName);
     if (netDev == NULL) {
         HDF_LOGE("%s:netDev not found!ifName=%s", __func__, ifName);
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
 
     (void)memset_s(&params, sizeof(struct KeyParams), 0, sizeof(struct KeyParams));
     WifiSetKeyParams(keyExt, &params, &pairwise);
     ret = AddKey(netDev, keyExt->keyIdx, pairwise, keyExt->addr, &params);
-    free(keyExt);
+    OsalMemFree(keyExt);
     return ret;
 }
 
@@ -213,7 +212,6 @@ static int32_t WifiCmdDelKey(const RequestContext *context, struct HdfSBuf *reqD
     int8_t pairwise;
     struct NetDevice *netDev = NULL;
     WifiKeyExt *keyExt = NULL;
-    uint32_t len = 0;
     const char *ifName = NULL;
     int32_t ret = 0;
 
@@ -223,33 +221,33 @@ static int32_t WifiCmdDelKey(const RequestContext *context, struct HdfSBuf *reqD
         HDF_LOGE("%s: reqData is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    keyExt = (WifiKeyExt *)malloc(sizeof(WifiKeyExt));
+    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
     if (keyExt == NULL) {
-        HDF_LOGE("%s:keyExt malloc failed", __func__);
+        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
         return HDF_FAILURE;
     }
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
     if (WifiCmdFillKeyInner(reqData, keyExt) != HDF_SUCCESS) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "keyExt");
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
 
     netDev = NetDeviceGetInstByName(ifName);
     if (netDev == NULL) {
         HDF_LOGE("%s:netDev not found!ifName=%s", __func__, ifName);
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
 
     pairwise = (keyExt->type == WIFI_KEYTYPE_PAIRWISE);
     ret = DelKey(netDev, keyExt->keyIdx, pairwise, keyExt->addr);
-    free(keyExt);
+    OsalMemFree(keyExt);
     return ret;
 }
 
@@ -276,7 +274,6 @@ static int32_t WifiCmdSetKey(const RequestContext *context, struct HdfSBuf *reqD
     uint8_t multicast;
     struct NetDevice *netDev = NULL;
     WifiKeyExt *keyExt = NULL;
-    uint32_t len = 0;
     const char *ifName = NULL;
     int32_t ret = 0;
 
@@ -286,27 +283,27 @@ static int32_t WifiCmdSetKey(const RequestContext *context, struct HdfSBuf *reqD
         HDF_LOGE("%s: reqData is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    keyExt = (WifiKeyExt *)malloc(sizeof(WifiKeyExt));
+    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
     if (keyExt == NULL) {
-        HDF_LOGE("%s:keyExt malloc failed", __func__);
+        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
         return HDF_FAILURE;
     }
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
     if (WifiCmdFillKeyInner(reqData, keyExt) != HDF_SUCCESS) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "keyExt");
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
 
     netDev = NetDeviceGetInstByName(ifName);
     if (netDev == NULL) {
         HDF_LOGE("%s:netDev not found!ifName=%s", __func__, ifName);
-        free(keyExt);
+        OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
 
@@ -314,7 +311,7 @@ static int32_t WifiCmdSetKey(const RequestContext *context, struct HdfSBuf *reqD
     unicast = TRUE;
     multicast = WifiGetMulticast(keyExt);
     ret = SetDefaultKey(netDev, index, unicast, multicast);
-    free(keyExt);
+    OsalMemFree(keyExt);
     return ret;
 }
 
