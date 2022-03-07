@@ -279,7 +279,6 @@ static ErrorCode RegistServiceInner(const NodeId nodeId, const DispatcherId disp
 
     node = RefMessageNode(nodeId, false);
     if (node == NULL) {
-        HDF_LOGE("%s:Node not found!", __func__);
         OsalMutexUnlock(&g_routerMutex);
         return ME_ERROR_NO_SUCH_NODE;
     }
