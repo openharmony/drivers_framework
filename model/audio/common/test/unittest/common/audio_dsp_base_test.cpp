@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "audio_common_test.h"
 #include <gtest/gtest.h>
+#include "audio_common_test.h"
 #include "hdf_uhdf_test.h"
 
 using namespace testing::ext;

@@ -13,7 +13,7 @@
 
 const int32_t g_testAudioType = 701; // 701 is TEST_AUDIO_TYPE
 
-enum {
+enum HDFAudioTestCommonCmd {
     TESTI2CREADWRITE = 48,
     TESTREGBITSREAD,
     TESTREGBITSUPDATE,
