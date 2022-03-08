@@ -301,7 +301,6 @@ static int32_t HwParamsDataAnalysis(struct HdfSBuf *reqData, struct AudioPcmHwPa
         ADM_LOG_ERR(" input param is NULL.");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint32(reqData, &params->streamType)) {
         ADM_LOG_ERR("read request streamType failed!");
         return HDF_FAILURE;
@@ -334,37 +333,30 @@ static int32_t HwParamsDataAnalysis(struct HdfSBuf *reqData, struct AudioPcmHwPa
         HDF_LOGE("read request perid failed!");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint32(reqData, &params->frameSize)) {
         HDF_LOGE("read request frameSize failed!");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint32(reqData, (uint32_t *)&params->isBigEndian)) {
         HDF_LOGE("read request isBigEndian failed!");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint32(reqData, (uint32_t *)&params->isSignedData)) {
         HDF_LOGE("read request isSignedData failed!");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint32(reqData, &params->startThreshold)) {
         HDF_LOGE("read request startThreshold failed!");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint32(reqData, &params->stopThreshold)) {
         HDF_LOGE("read request stopThreshold failed!");
         return HDF_FAILURE;
     }
-
     if (!HdfSbufReadUint32(reqData, &params->silenceThreshold)) {
         HDF_LOGE("read request silenceThreshold failed!");
         return HDF_FAILURE;
     }
-
     return HDF_SUCCESS;
 }
 
