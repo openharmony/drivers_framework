@@ -91,8 +91,12 @@ static int32_t ControlHostElemInfo(const struct HdfDeviceIoClient *client,
     struct AudioCtrlElemId id;
     ADM_LOG_DEBUG("entry.");
 
-    if ((client == NULL) || (reqData == NULL)) {
-        ADM_LOG_ERR("Input ElemInfo params check error: client=%p, reqData=%p.", client, reqData);
+    if (reqData == NULL) {
+        ADM_LOG_ERR("Input ElemInfo params check error: reqData is NULL.");
+        return HDF_FAILURE;
+    }
+    if (client == NULL) {
+        ADM_LOG_ERR("Input ElemInfo params check error: client is NULL.");
         return HDF_FAILURE;
     }
 
@@ -128,8 +132,16 @@ static int32_t ControlHostElemRead(const struct HdfDeviceIoClient *client, struc
     struct AudioCtrlElemId id;
     int32_t result;
 
-    if ((client == NULL) || (reqData == NULL) || (rspData == NULL)) {
-        ADM_LOG_ERR("Input ElemRead params check error: client=%p, reqData=%p, rspData=%p.", client, reqData, rspData);
+    if (client == NULL) {
+        ADM_LOG_ERR("Input ElemRead params check error: client is NULL.");
+        return HDF_FAILURE;
+    }
+    if (reqData == NULL) {
+        ADM_LOG_ERR("Input ElemRead params check error: reqData is NULL.");
+        return HDF_FAILURE;
+    }
+    if (rspData == NULL) {
+        ADM_LOG_ERR("Input ElemRead params check error: rspData is NULL.");
         return HDF_FAILURE;
     }
 
@@ -181,8 +193,12 @@ static int32_t ControlHostElemWrite(const struct HdfDeviceIoClient *client,
     struct AudioCtrlElemValue elemValue;
     int32_t result;
 
-    if ((client == NULL) || (reqData == NULL)) {
-        ADM_LOG_ERR("Input params check error: client=%p, reqData=%p.", client, reqData);
+    if (client == NULL) {
+        ADM_LOG_ERR("Input params check error: client is NULL.");
+        return HDF_FAILURE;
+    }
+    if (reqData == NULL) {
+        ADM_LOG_ERR("Input params check error: reqData is NULL.");
         return HDF_FAILURE;
     }
     (void)rspData;
@@ -238,8 +254,12 @@ static int32_t ControlDispatch(struct HdfDeviceIoClient *client, int cmdId,
 {
     unsigned int i;
 
-    if ((client == NULL) || (data == NULL)) {
-        ADM_LOG_ERR("Input params check error: client=%p, data=%p.", client, data);
+    if (client == NULL) {
+        ADM_LOG_ERR("Input params check error: client is NULL.");
+        return HDF_FAILURE;
+    }
+    if (data == NULL) {
+        ADM_LOG_ERR("Input params check error: data is NULL.");
         return HDF_FAILURE;
     }
 

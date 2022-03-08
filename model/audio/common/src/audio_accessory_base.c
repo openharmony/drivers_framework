@@ -123,7 +123,7 @@ int32_t AccessoryI2cReadWrite(struct AudioAddrConfig *regAttr, uint16_t rwFlag)
     }
     i2cHandle = I2cOpen(g_i2cBusNumber);
     if (i2cHandle == NULL) {
-        AUDIO_DRIVER_LOG_ERR("open i2cBus:%u failed! i2cHandle:%p", g_i2cBusNumber, i2cHandle);
+        AUDIO_DRIVER_LOG_ERR("open i2cBus:%u failed! i2cHandle is NULL", g_i2cBusNumber);
         return HDF_FAILURE;
     }
     if (rwFlag == I2C_FLAG_READ) {
@@ -308,7 +308,7 @@ int32_t AccessoryDeviceCfgGet(struct AccessoryData *accessoryData,
 {
     int32_t ret;
     int32_t index;
-    int32_t audioCfgCtrlCount;
+    uint32_t audioCfgCtrlCount;
     struct AudioControlConfig *ctlcfgItem;
     ret = (accessoryData == NULL || accessoryData->regConfig == NULL || accessoryTransferData == NULL);
     if (ret) {

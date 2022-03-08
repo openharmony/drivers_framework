@@ -83,7 +83,7 @@ struct CodecData {
     int32_t (*Write)(unsigned long virtualAddress, uint32_t reg, uint32_t value);
 
     struct AudioKcontrol *controls;            /**< Codec control structure array pointer */
-    int numControls;                           /**< Number of array elements of Codec controls */
+    uint32_t numControls;                           /**< Number of array elements of Codec controls */
     struct AudioSapmComponent *sapmComponents; /**< Codec power management component array pointer */
     int numSapmComponent;                      /**< Number of array elements of codec power management component */
     const struct AudioSapmRoute *sapmRoutes;   /**< Codec power management route array pointer */
