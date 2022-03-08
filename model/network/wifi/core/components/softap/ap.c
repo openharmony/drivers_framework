@@ -309,11 +309,6 @@ static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
         return HDF_FAILURE;
     }
-    if (!HdfSbufReadBuffer(reqData, (const void **)&apSettings, &settingLen) || apSettings == NULL ||
-        settingLen != sizeof(WifiApSetting)) {
-        HDF_LOGE("%s: %s!ParamName=%s,readSize=%u", __func__, ERROR_DESC_READ_REQ_FAILED, "apSettings", settingLen);
-        return HDF_FAILURE;
-    }
     if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings->beaconData.head), &(apSettings->beaconData.headLen))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "head");
         return HDF_FAILURE;
