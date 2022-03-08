@@ -7,7 +7,6 @@
  */
 
 #include "codegen/java_client_interface_code_emitter.h"
-#include <cctype>
 #include "util/file.h"
 #include "util/logger.h"
 

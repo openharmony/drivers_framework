@@ -44,6 +44,7 @@ struct HdfDeviceNode {
     uint16_t permission;
     uint8_t devStatus;
     bool servStatus;
+    char *interfaceDesc;
 };
 
 enum DevNodeStaus {

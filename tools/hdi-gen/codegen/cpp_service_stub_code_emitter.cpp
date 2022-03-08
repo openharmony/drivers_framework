@@ -284,6 +284,10 @@ void CppServiceStubCodeEmitter::EmitStubMethodImpl(const AutoPtr<ASTMethod>& met
         dataParcelName_.string(), replyParcelName_.string(), optionName_.string());
     sb.Append(prefix).Append("{\n");
 
+    // read interface token and check it
+    EmitStubReadInterfaceToken(dataParcelName_, sb, prefix + g_tab);
+    sb.Append("\n");
+
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
@@ -329,6 +333,15 @@ void CppServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& met
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s failed, error code is %%d\", __func__, %s);\n", errorCodeName_.string());
     sb.Append(prefix + g_tab).AppendFormat("return %s;\n", errorCodeName_.string());
+    sb.Append(prefix).Append("}\n");
+}
+
+void CppServiceStubCodeEmitter::EmitStubReadInterfaceToken(const String& parcelName, StringBuilder& sb,
+    const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("if (%s.ReadInterfaceToken() != GetDescriptor()) {\n", parcelName.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: interface token check failed!\", __func__);\n");
+    sb.Append(prefix + g_tab).AppendFormat("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 } // namespace HDI

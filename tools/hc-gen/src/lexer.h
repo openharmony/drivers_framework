@@ -28,6 +28,8 @@ public:
 
     bool Lex(Token &token);
 
+    bool SetTokenCharacter(char c, Token &token);
+
     friend std::ostream &operator<<(std::ostream &stream, const Lexer &p);
 
     std::shared_ptr<std::string> GetSourceName() const;
@@ -60,6 +62,8 @@ private:
     bool LexFromString(Token &token);
 
     bool LexFromNumber(Token &token);
+
+    void LexHexAndBinaryNum(std::string &value, char &c, uint64_t &v);
 
     void LexFromLiteral(Token &token);
 

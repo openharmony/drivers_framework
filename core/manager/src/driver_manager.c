@@ -12,7 +12,7 @@
 #include "osal_mem.h"
 #include "osal_sysevent.h"
 
-static struct DListHead *HdfDriverHead()
+static struct DListHead *HdfDriverHead(void)
 {
     static struct DListHead driverHead = {0};
     if (driverHead.next == NULL) {
@@ -135,7 +135,7 @@ struct HdfDriver *HdfDriverManagerGetDriver(const char *driverName)
     return driver;
 }
 
-struct DListHead *HdfDriverManagerGetDriverList()
+struct DListHead *HdfDriverManagerGetDriverList(void)
 {
     return HdfDriverHead();
 }
