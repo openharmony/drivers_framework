@@ -59,13 +59,24 @@ class HdfCommandHandlerBase(object):
 
     def get_args(self):
         args = ['vendor_name', 'module_name',
-                'driver_name', 'board_name', 'kernel_name']
+                'driver_name', 'board_name',
+                'kernel_name', "runmode"]
         ret = [self._get_arg('root_dir')]
         for arg in args:
-            value = self._get_arg(arg)
-            if value:
-                value = hdf_utils.WordsConverter(value).lower_case()
-            ret.append(value)
+            if arg == "runmode":
+                value = self._get_arg(arg)
+                if value:
+                    board_index = args.index('board_name')+1
+                    ret[board_index] = '_'.join([ret[board_index], value])
+            else:
+                if arg == "board_name":
+                    value = self._get_arg(arg)
+                    ret.append(value)
+                else:
+                    value = self._get_arg(arg)
+                    if value:
+                        value = hdf_utils.WordsConverter(value).lower_case()
+                    ret.append(value)
         return tuple(ret)
 
     @staticmethod
