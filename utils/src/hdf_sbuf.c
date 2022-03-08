@@ -12,28 +12,28 @@
 #include "osal_mem.h"
 
 #define HDF_SBUF_DEFAULT_SIZE 256
-#define HDF_SBUF_IMPL_CHECK_RETURN(sbuf, api, retCode)               \
-    do {                                                             \
-        if (sbuf == NULL || sbuf->impl == NULL) {                    \
-            HDF_LOGE("%s: invalid sbuf object", __func__);           \
-            return retCode;                                          \
-        }                                                            \
-        if (sbuf->impl->api == NULL) {                               \
-            HDF_LOGE(#api " is not support on %d sbuf", sbuf->type); \
-            return retCode;                                          \
-        }                                                            \
+#define HDF_SBUF_IMPL_CHECK_RETURN(sbuf, api, retCode)                 \
+    do {                                                               \
+        if ((sbuf) == NULL || (sbuf)->impl == NULL) {                  \
+            HDF_LOGE("%s: invalid sbuf object", __func__);             \
+            return retCode;                                            \
+        }                                                              \
+        if ((sbuf)->impl->api == NULL) {                               \
+            HDF_LOGE(#api " is not support on %d sbuf", (sbuf)->type); \
+            return retCode;                                            \
+        }                                                              \
     } while (0)
 
-#define HDF_SBUF_IMPL_CHECK_RETURN_VOID(sbuf, api)                   \
-    do {                                                             \
-        if (sbuf == NULL || sbuf->impl == NULL) {                    \
-            HDF_LOGE("%s: invalid sbuf object", __func__);           \
-            return;                                                  \
-        }                                                            \
-        if (sbuf->impl->api == NULL) {                               \
-            HDF_LOGE(#api " is not support on %d sbuf", sbuf->type); \
-            return;                                                  \
-        }                                                            \
+#define HDF_SBUF_IMPL_CHECK_RETURN_VOID(sbuf, api)                     \
+    do {                                                               \
+        if ((sbuf) == NULL || (sbuf)->impl == NULL) {                  \
+            HDF_LOGE("%s: invalid sbuf object", __func__);             \
+            return;                                                    \
+        }                                                              \
+        if ((sbuf)->impl->api == NULL) {                               \
+            HDF_LOGE(#api " is not support on %d sbuf", (sbuf)->type); \
+            return;                                                    \
+        }                                                              \
     } while (0)
 
 struct HdfSBuf {
@@ -391,12 +391,12 @@ struct HdfSBuf *HdfSbufObtain(size_t capacity)
     return HdfSbufTypedObtainCapacity(SBUF_RAW, capacity);
 }
 
-struct HdfSBuf *HdfSbufObtainDefaultSize()
+struct HdfSBuf *HdfSbufObtainDefaultSize(void)
 {
     return HdfSbufObtain(HDF_SBUF_DEFAULT_SIZE);
 }
 
-struct HdfSBuf *HdfSBufObtainDefaultSize()
+struct HdfSBuf *HdfSBufObtainDefaultSize(void)
 {
     return HdfSbufObtain(HDF_SBUF_DEFAULT_SIZE);
 }

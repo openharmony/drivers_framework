@@ -46,6 +46,37 @@ bool Lexer::Initialize(const std::string &sourceName)
     return true;
 }
 
+bool Lexer::SetTokenCharacter(char c, Token &token)
+{
+    switch (c) {
+        case ';': /* fall-through */
+        case ',': /* fall-through */
+        case '[': /* fall-through */
+        case ']': /* fall-through */
+        case '{': /* fall-through */
+        case '}': /* fall-through */
+        case '=': /* fall-through */
+        case '&': /* fall-through */
+        case ':':
+            ConsumeChar();
+            token.type = c;
+            token.lineNo = lineno_;
+            break;
+        case '"':
+            return LexFromString(token);
+        case '+': /* fall-through */
+        case '-':
+            return LexFromNumber(token);
+        case EOF:
+            token.type = EOF;
+            break;
+        default:
+            Logger().Error() << *this << "can not recognized character '" << c << "'";
+            return false;
+    }
+    return true;
+}
+
 bool Lexer::Lex(Token &token)
 {
     char c;
@@ -67,38 +98,14 @@ bool Lexer::Lex(Token &token)
             return LexFromNumber(token);
         }
 
-        switch (c) {
-            case '/':
-                if (!ProcessComment()) {
-                    return false;
-                }
-                continue;
-            case ';': /* fall-through */
-            case ',': /* fall-through */
-            case '[': /* fall-through */
-            case ']': /* fall-through */
-            case '{': /* fall-through */
-            case '}': /* fall-through */
-            case '=': /* fall-through */
-            case '&': /* fall-through */
-            case ':':
-                ConsumeChar();
-                token.type = c;
-                token.lineNo = lineno_;
-                break;
-            case '"':
-                return LexFromString(token);
-            case '+': /* fall-through */
-            case '-':
-                return LexFromNumber(token);
-            case EOF:
-                token.type = EOF;
-                break;
-            default:
-                Logger().Error() << *this << "can not recognized character '" << c << "'";
+        if (c == '/') {
+            if (!ProcessComment()) {
                 return false;
+            }
+            continue;
         }
-        break;
+
+        return SetTokenCharacter(c, token);
     } while (true);
 
     return true;
@@ -254,6 +261,31 @@ bool Lexer::LexFromString(Token &token)
     return true;
 }
 
+void Lexer::LexHexAndBinaryNum(std::string &value, char &c, uint64_t &v)
+{
+    switch (c) {
+        case 'x': // fall-through
+        case 'X': // hex number
+            ConsumeChar();
+            while (PeekChar(c, false) && (IsNum(c) || (c >= 'a' && c <= 'f')
+                                            || (c >= 'A' && c <= 'F'))) {
+                value.push_back(c);
+                ConsumeChar();
+            }
+            v = strtoll(value.data(), nullptr, HEX_NUM);
+            break;
+        case 'b': // binary number
+            ConsumeChar();
+            while (PeekChar(c, false) && (c == '0' || c == '1')) {
+                value.push_back(c);
+                ConsumeChar();
+            }
+            v = strtoll(value.data(), nullptr, BINARY_NUM);
+            break;
+        default:; // fall-through
+    }
+}
+
 bool Lexer::LexFromNumber(Token &token)
 {
     std::string value;
@@ -276,26 +308,7 @@ bool Lexer::LexFromNumber(Token &token)
                 v = static_cast<uint64_t>(strtoll(value.data(), nullptr, OCTAL_NUM));
                 break;
             }
-            switch (c) {
-                case 'x': // fall-through
-                case 'X': // hex number
-                    ConsumeChar();
-                    while (PeekChar(c, false) && (IsNum(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
-                        value.push_back(c);
-                        ConsumeChar();
-                    }
-                    v = strtoll(value.data(), nullptr, HEX_NUM);
-                    break;
-                case 'b': // binary number
-                    ConsumeChar();
-                    while (PeekChar(c, false) && (c == '0' || c == '1')) {
-                        value.push_back(c);
-                        ConsumeChar();
-                    }
-                    v = strtoll(value.data(), nullptr, BINARY_NUM);
-                    break;
-                default:; // fall-through
-            }
+            LexHexAndBinaryNum(value, c, v);
             break;
         case '+': // fall-through
         case '-': // fall-through, signed decimal number

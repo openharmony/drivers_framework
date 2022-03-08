@@ -256,7 +256,7 @@ void ASTUnionType::EmitCppReadVar(const String& parcelName, const String& name, 
         EmitCppType().string(), name.string(), EmitCppType().string(), parcelName.string(),
         EmitCppType().string());
     sb.Append(prefix).AppendFormat("if (%sCp == nullptr) {\n", name.string());
-    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
     sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
     sb.Append(prefix).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %sCp, sizeof(%s));\n",

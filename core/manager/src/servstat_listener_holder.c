@@ -25,7 +25,7 @@ struct SvcStatListenerHolderList {
 
 static struct SvcStatListenerHolderList g_holoderList;
 
-static void KServStatListenerHolderListInit()
+static void KServStatListenerHolderListInit(void)
 {
     OsalMutexInit(&g_holoderList.mutex);
     DListHeadInit(&g_holoderList.list);

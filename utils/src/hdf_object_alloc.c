@@ -40,7 +40,7 @@ void HdfObjectAllocConstruct(struct HdfObjectAlloc *alloc)
     OsalMutexInit(&alloc->mutex);
     alloc->isConstructed = true;
 }
-struct HdfObjectAlloc *HdfObjectAllocGetInstance()
+struct HdfObjectAlloc *HdfObjectAllocGetInstance(void)
 {
     static struct HdfObjectAlloc instance = { 0 };
 

@@ -53,7 +53,7 @@ struct HdfDeviceNodeType {
         deviceNode->moduleName = HCS_PROP(node, moduleName); \
         deviceNode->svcName = HCS_PROP(node, serviceName); \
         deviceNode->deviceMatchAttr = HCS_PROP(node, deviceMatchAttr); \
-        DListInsertTail(&deviceNode->deviceNodeEntry, &deviceNodes); \
+        DListInsertTail(&deviceNode->deviceNodeEntry, &(deviceNodes)); \
     } while (0)
 
 #define HDF_DEAL_DEVICE(node, devices) \
@@ -65,14 +65,14 @@ struct HdfDeviceNodeType {
         } \
         DListHeadInit(&device->deviceNodes); \
         node##_foreach_child_vargs(HDF_DEAL_DEVICE_NODE, device->deviceNodes); \
-        DListInsertTail(&device->deviceEntry, &devices); \
+        DListInsertTail(&device->deviceEntry, &(devices)); \
     } while (0)
 
 #define HDF_FIND_HOST(node, name, host) \
     do { \
         if (strcmp(HCS_PROP(node, hostName), name) == 0) { \
-            host->devHostName = HCS_PROP(node, hostName); \
-            host->priority = HCS_PROP(node, priority); \
+            (host)->devHostName = HCS_PROP(node, hostName); \
+            (host)->priority = HCS_PROP(node, priority); \
             node##_foreach_child_vargs(HDF_DEAL_DEVICE, host->devices); \
             break; \
         } \
@@ -87,7 +87,7 @@ struct HdfDeviceNodeType {
         } \
         host->devHostName = HCS_PROP(node, hostName); \
         host->priority = HCS_PROP(node, priority); \
-        DListInsertTail(&host->hostEntry, &hosts); \
+        DListInsertTail(&(host)->hostEntry, &(hosts)); \
     } while (0)
 
 #define HDF_DEVICE_INFO HCS_NODE(HCS_ROOT, device_info)

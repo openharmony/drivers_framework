@@ -18,7 +18,7 @@ struct PmTaskQueue {
     struct HdfTaskQueue *taskQueue;
 };
 
-static struct PmTaskQueue *HdfPmTaskQueueInstance()
+static struct PmTaskQueue *HdfPmTaskQueueInstance(void)
 {
     static struct PmTaskQueue pmTaskQueue = {NULL};
     return &pmTaskQueue;

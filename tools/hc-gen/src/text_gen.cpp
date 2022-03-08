@@ -303,7 +303,8 @@ bool TextGen::GenTermDefinition(const std::shared_ptr<AstObject> &term)
         case PARSEROP_NODEREF: {
             auto structName = GenConfigStructName(ConfigTerm::CastFrom(term)->RefNode().lock());
             ofs_ << TAB << "const struct " << structName << "* " << term->Name() << ";\n";
-        } break;
+            break;
+        }
         default:
             break;
     }
