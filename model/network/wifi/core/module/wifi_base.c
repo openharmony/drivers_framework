@@ -178,15 +178,14 @@ static int32_t WifiCmdNewKey(const RequestContext *context, struct HdfSBuf *reqD
         HDF_LOGE("%s: reqData is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
-    if (keyExt == NULL) {
-        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
-        return HDF_FAILURE;
-    }
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        OsalMemFree(keyExt);
+        return HDF_FAILURE;
+    }
+    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
+    if (keyExt == NULL) {
+        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
         return HDF_FAILURE;
     }
     if (WifiCmdFillKeyInner(reqData, keyExt) != HDF_SUCCESS) {
@@ -223,15 +222,14 @@ static int32_t WifiCmdDelKey(const RequestContext *context, struct HdfSBuf *reqD
         HDF_LOGE("%s: reqData is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
-    if (keyExt == NULL) {
-        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
-        return HDF_FAILURE;
-    }
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        OsalMemFree(keyExt);
+        return HDF_FAILURE;
+    }
+    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
+    if (keyExt == NULL) {
+        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
         return HDF_FAILURE;
     }
     if (WifiCmdFillKeyInner(reqData, keyExt) != HDF_SUCCESS) {
@@ -285,15 +283,14 @@ static int32_t WifiCmdSetKey(const RequestContext *context, struct HdfSBuf *reqD
         HDF_LOGE("%s: reqData is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
-    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
-    if (keyExt == NULL) {
-        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
-        return HDF_FAILURE;
-    }
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        OsalMemFree(keyExt);
+        return HDF_FAILURE;
+    }
+    keyExt = (WifiKeyExt *)OsalMemCalloc(sizeof(WifiKeyExt));
+    if (keyExt == NULL) {
+        HDF_LOGE("%s:keyExt OsalMemCalloc failed", __func__);
         return HDF_FAILURE;
     }
     if (WifiCmdFillKeyInner(reqData, keyExt) != HDF_SUCCESS) {
