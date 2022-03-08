@@ -194,7 +194,7 @@ static int32_t WifiFillApSettingsParams(struct HdfSBuf *reqData,  WifiApSetting 
 }
 
 static int32_t WifiCmdSetApInner(struct HdfSBuf *reqData,  WifiApSetting *apSettings)
-{    
+{
     if (WifiFillApSettingsParams(reqData, apSettings) != HDF_SUCCESS) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "apSettings");
         return HDF_FAILURE;
