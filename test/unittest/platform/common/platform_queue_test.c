@@ -33,7 +33,7 @@ static int32_t PlatformQueueTestHandle(struct PlatformQueue *queue, struct Platf
         tmsg->status = HDF_ERR_INVALID_OBJECT;
         PLAT_LOGE("%s: queue object is NULL", __func__);
         return HDF_ERR_INVALID_OBJECT;
-    } 
+    }
 
     if (msg->data != queue) {
         tmsg->status = HDF_ERR_INVALID_OBJECT;
@@ -123,7 +123,8 @@ int PlatformQueueTestExecute(int cmd)
     if (cmd > PLAT_QUEUE_TEST_CMD_MAX) {
         PLAT_LOGE("PlatformQueueTestExecute: invalid cmd:%d", cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        PLAT_LOGE("[PlatformQueueTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -155,7 +156,6 @@ int PlatformQueueTestExecute(int cmd)
     ret = entry->func(pq);
     PlatformQueueDestroy(pq);
 
-__EXIT__:
     PLAT_LOGE("[PlatformQueueTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
     return ret;
 }

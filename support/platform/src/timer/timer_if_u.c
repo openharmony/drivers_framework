@@ -206,7 +206,7 @@ int32_t HwTimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
     }
 
     service = (struct HdfIoService *)TimerManagerGetService();
-    if (service == NULL || service->dispatcher == NULL 
+    if (service == NULL || service->dispatcher == NULL
         || service->dispatcher->Dispatch == NULL || cb == NULL) {
         HDF_LOGE("%s:param is invalid", __func__);
         return HDF_ERR_INVALID_PARAM;
@@ -257,7 +257,7 @@ int32_t HwTimerSetOnce(DevHandle handle, uint32_t useconds, TimerHandleCb cb)
     }
 
     service = (struct HdfIoService *)TimerManagerGetService();
-    if (service == NULL || service->dispatcher == NULL 
+    if (service == NULL || service->dispatcher == NULL
         || service->dispatcher->Dispatch == NULL || cb == NULL) {
         HDF_LOGE("%s: service is invalid", __func__);
         return HDF_ERR_INVALID_PARAM;

@@ -132,7 +132,7 @@ void *PwmGetPriv(struct PwmDev *pwm)
 static int32_t PwmUserSetConfig(struct PwmDev *pwm, struct HdfSBuf *data)
 {
     size_t size;
-    struct PwmConfig *config = NULL;;
+    struct PwmConfig *config = NULL;
 
     if (data == NULL) {
         HDF_LOGE("%s: data null", __func__);

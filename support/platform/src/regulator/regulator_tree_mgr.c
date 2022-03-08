@@ -65,7 +65,7 @@ struct RegulatorNode *RegulatorTreeGetParent(const char *name)
                 return NULL;
             }
             (void)OsalMutexUnlock(&manager->lock);
-            HDF_LOGI("RegulatorTreeGetParent: get %s parent %s success!", 
+            HDF_LOGI("RegulatorTreeGetParent: get %s parent %s success!",
                 name, pos->parent->regulatorInfo.name);
             return pos->parent;
         }
@@ -352,7 +352,7 @@ static void RegulatorTreePrintChild(const char *name, struct DListHead *childHea
     struct RegulatorChildNode *tmp = NULL;
 
     DLIST_FOR_EACH_ENTRY_SAFE(nodeInfo, tmp, childHead, struct RegulatorChildNode, node) {
-        HDF_LOGI("RegulatorTreePrintChild: %s's child %s !", 
+        HDF_LOGI("RegulatorTreePrintChild: %s's child %s !",
             name, nodeInfo->child->regulatorInfo.name);
     }
 }
@@ -372,7 +372,7 @@ void RegulatorTreePrint(void)
     DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->treeMgrHead, struct RegulatorTreeInfo, node) {
         HDF_LOGI("RegulatorTreePrint %s info IN ---->", pos->name);
         if (pos->parent != NULL) {
-            HDF_LOGI("RegulatorTreePrint %s info, parent name[%s]", 
+            HDF_LOGI("RegulatorTreePrint %s info, parent name[%s]",
             pos->name, pos->parent->regulatorInfo.name);
         }
 

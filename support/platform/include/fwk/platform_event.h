@@ -54,7 +54,7 @@ struct PlatformEventListener {
 /**
  * @brief Initialize a platform event instace.
  *
- * @param pe Indicates the pointer to the the platform event instance 
+ * @param pe Indicates the pointer to the the platform event instance
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
  *
@@ -65,7 +65,7 @@ int32_t PlatformEventInit(struct PlatformEvent *pe);
 /**
  * @brief Uninitialize a platform event instace.
  *
- * @param pe Indicates the pointer to the the platform event instance 
+ * @param pe Indicates the pointer to the the platform event instance
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
  *
@@ -76,7 +76,7 @@ int32_t PlatformEventUninit(struct PlatformEvent *pe);
 /**
  * @brief Write the events to a platform event instace.
  *
- * @param pe Indicates the pointer to the the platform event instance 
+ * @param pe Indicates the pointer to the the platform event instance
  * @param events The events to write.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
@@ -88,7 +88,7 @@ int32_t PlatformEventPost(struct PlatformEvent *pe, uint32_t events);
 /**
  * @brief Listen for CAN bus events.
  *
- * @param pe Indicates the pointer to the the platform event instance 
+ * @param pe Indicates the pointer to the the platform event instance
  * @param mask Mask bits of the interested events.
  * @param mode Platorm event mode for this listening.
  * @param events Pointer for receiving the events.
@@ -102,7 +102,7 @@ int32_t PlatformEventWait(struct PlatformEvent *pe, uint32_t mask, int32_t mode,
 /**
  * @brief Listen to a platform event instance.
  *
- * @param pe Indicates the pointer to the the platform event instance 
+ * @param pe Indicates the pointer to the the platform event instance
  * @param listener The pointer to the listener.
  *
  * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
@@ -114,7 +114,7 @@ int32_t PlatformEventListen(struct PlatformEvent *pe, const struct PlatformEvent
 /**
  * @brief Unlisten to a platform event instance.
  *
- * @param pe Indicates the pointer to the the platform event instance 
+ * @param pe Indicates the pointer to the the platform event instance
  * @param listener The pointer to the listener.
  *
  * @since 1.0

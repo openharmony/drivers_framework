@@ -322,12 +322,12 @@ int32_t I2cTestReliability(void)
 int32_t I2cTestPeformance(void)
 {
 #ifdef __LITEOS__
-    // liteos the accuracy of the obtained time is too large and inaccurate. 
+    // liteos the accuracy of the obtained time is too large and inaccurate.
     return HDF_SUCCESS;
 #endif
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
     struct I2cTester *tester = NULL;
     DevHandle handle = NULL;
 
@@ -343,8 +343,8 @@ int32_t I2cTestPeformance(void)
 
     if (handle != NULL) {
         useTime = endMs - startMs;
-        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+            startMs, endMs, useTime, useTime < 1 ? true : false);
         I2cClose(handle);
         return HDF_SUCCESS;
     }
@@ -378,7 +378,8 @@ int32_t I2cTestExecute(int cmd)
     if (cmd > I2C_TEST_CMD_MAX) {
         HDF_LOGE("I2cTestExecute: invalid cmd:%d", cmd);
         ret = HDF_ERR_NOT_SUPPORT;
-        goto __EXIT__;
+        HDF_LOGE("[I2cTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
+        return ret;
     }
 
     for (i = 0; i < sizeof(g_entry) / sizeof(g_entry[0]); i++) {
@@ -389,7 +390,6 @@ int32_t I2cTestExecute(int cmd)
         break;
     }
 
-__EXIT__:
     HDF_LOGE("[I2cTestExecute][======cmd:%d====ret:%d======]", cmd, ret);
     return ret;
 }

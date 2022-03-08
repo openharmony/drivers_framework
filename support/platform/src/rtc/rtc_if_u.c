@@ -28,7 +28,6 @@ DevHandle RtcOpen()
     void *host = NULL;
 
     host = HdfIoServiceBind("HDF_PLATFORM_RTC");
-
     if (host == NULL) {
         HDF_LOGE("%s: rtc service bind fail", __func__);
         return NULL;
@@ -59,7 +58,7 @@ int32_t RtcReadTime(DevHandle handle, struct RtcTime *time)
     struct HdfIoService *service = NULL;
     struct RtcTime *temp = NULL;
 
-    if(handle == NULL || time == NULL) {
+    if (handle == NULL || time == NULL) {
         HDF_LOGE("%s: handle or time is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -115,7 +114,7 @@ int32_t RtcWriteTime(DevHandle handle, const struct RtcTime *time)
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL || time == NULL) {
+    if (handle == NULL || time == NULL) {
         HDF_LOGE("%s: handle or time is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -162,7 +161,7 @@ int32_t RtcReadAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, struct Rtc
     struct RtcTime *temp = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL || time == NULL) {
+    if (handle == NULL || time == NULL) {
         HDF_LOGE("%s: handle or time is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -232,7 +231,7 @@ int32_t RtcWriteAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, const str
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL || time == NULL) {
+    if (handle == NULL || time == NULL) {
         HDF_LOGE("%s: handle or time is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -278,7 +277,7 @@ int32_t RtcWriteAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, const str
 int32_t RtcRegisterAlarmCallback(DevHandle handle, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb)
 {
     (void)alarmIndex;
-    if(handle == NULL || cb == NULL) {
+    if (handle == NULL || cb == NULL) {
         HDF_LOGE("%s: handle or cb is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -293,7 +292,7 @@ int32_t RtcAlarmInterruptEnable(DevHandle handle, enum RtcAlarmIndex alarmIndex,
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -343,7 +342,7 @@ int32_t RtcGetFreq(DevHandle handle, uint32_t *freq)
     struct HdfSBuf *reply = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL || freq == NULL) {
+    if (handle == NULL || freq == NULL) {
         HDF_LOGE("%s: handle or freq is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -386,7 +385,7 @@ int32_t RtcSetFreq(DevHandle handle, uint32_t freq)
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -459,7 +458,7 @@ int32_t RtcReadReg(DevHandle handle, uint8_t usrDefIndex, uint8_t *value)
     struct HdfSBuf *reply = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL || value == NULL) {
+    if (handle == NULL || value == NULL) {
         HDF_LOGE("%s: handle or value is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -517,7 +516,7 @@ int32_t RtcWriteReg(DevHandle handle, uint8_t usrDefIndex, uint8_t value)
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
-    if(handle == NULL) {
+    if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }

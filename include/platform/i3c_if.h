@@ -37,7 +37,7 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-/** CCC(Common Command Code) structure */ 
+/** CCC(Common Command Code) structure */
 struct I3cCccCmd;
 
 /** Broatcast commands */
@@ -127,7 +127,7 @@ struct I3cConfig {
     /** I3C bus mode */
     enum I3cBusMode busMode;
     /** Current master object, its <b>NULL</b> when the controller is the master  */
-    struct I3cDevice *curMaster;  
+    struct I3cDevice *curMaster;
 };
 
 /**

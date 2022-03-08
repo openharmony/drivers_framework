@@ -37,7 +37,8 @@ static void *MmcCntlrObjGetByNumber(int16_t id)
     if (snprintf_s(serviceName, MMC_SVC_NAME_LEN + 1, MMC_SVC_NAME_LEN,
         "HDF_PLATFORM_MMC_%d", id) < 0) {
         HDF_LOGE("MmcCntlrObjGetByNumber: format service name fail!");
-        goto __ERR;
+        OsalMemFree(serviceName);
+        return object;
     }
 
 #ifdef __USER__
@@ -51,7 +52,6 @@ static void *MmcCntlrObjGetByNumber(int16_t id)
         HDF_LOGD("MmcCntlrObjGetByNumber: success");
     }
 
-__ERR:
     OsalMemFree(serviceName);
     return object;
 }

@@ -13,7 +13,6 @@
 
 int32_t HdfSpiUnitTestEntry(HdfTestMsg *msg)
 {
-
     if (msg == NULL) {
         return HDF_FAILURE;
     }

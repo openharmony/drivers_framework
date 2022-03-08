@@ -22,7 +22,7 @@
  * @brief Declares the standard DAC interface functions.
  *
  * @since 1.0
- */	
+ */
 
 #ifndef DAC_IF_H
 #define DAC_IF_H
@@ -59,9 +59,9 @@ DevHandle DacOpen(uint32_t number);
  * If you no longer need to access the DAC controller, you should call this function to close its handle so as
  * to release unused memory resources.
  *
- * @param handle Indicates the pointer to the device handle of the DAC controller. 
+ * @param handle Indicates the pointer to the device handle of the DAC controller.
  *
- * @since 1.0 
+ * @since 1.0
  */
 void DacClose(DevHandle handle);
 

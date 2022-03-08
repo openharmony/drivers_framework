@@ -177,7 +177,7 @@ HWTEST_F(HdfLiteUartTest, UartReliabilityTest001, TestSize.Level1)
   * @tc.name: UartIfPerformanceTest001
   * @tc.desc: uart user if performance test
   * @tc.type: FUNC
-  * @tc.require: 
+  * @tc.require:
   */
 HWTEST_F(HdfLiteUartTest, UartIfPerformanceTest001, TestSize.Level1)
 {

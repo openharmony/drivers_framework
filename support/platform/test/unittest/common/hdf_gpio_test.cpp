@@ -145,7 +145,7 @@ HWTEST_F(HdfLiteGpioTest, GpioTestReliability001, TestSize.Level1)
   * @tc.name: GpioIfPerformanceTest001
   * @tc.desc: gpio user if performance test
   * @tc.type: FUNC
-  * @tc.require: 
+  * @tc.require:
   */
 HWTEST_F(HdfLiteGpioTest, GpioIfPerformanceTest001, TestSize.Level1)
 {

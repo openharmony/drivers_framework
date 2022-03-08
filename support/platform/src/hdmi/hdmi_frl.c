@@ -12,6 +12,10 @@
 #include "hdmi_dfm.h"
 #include "hdmi_ncts.h"
 
+#define HDMI_FRL_TRAIN_STEP_RESULT_HANDLE_MAX_TRIES 3
+#define HDMI_FRL_TRAIN_STEP_READR_CHECK_MAX_TRIES 10
+#define HDMI_FRL_CHECK_SINK_STATUS_DELAY_TIME 2000
+
 #define HDF_LOG_TAG hdmi_frl_c
 
 static uint8_t HdmiFrlGetSinkVersion(struct HdmiScdc *scdc)
@@ -633,7 +637,7 @@ static void HdmiFrlTrainingReadyCheckTimeout(struct HdmiFrl *frl)
         }
     } else {
         /* wait for a maximum of 10 times, (wait_ready_ms * 10) ms */
-        if (frl->info.machineInfo.timeoutCnt < 10) {
+        if (frl->info.machineInfo.timeoutCnt < HDMI_FRL_TRAIN_STEP_READR_CHECK_MAX_TRIES) {
             return;
         }
         HDF_LOGD("FRL training READY_CHECK exception.");
@@ -707,10 +711,10 @@ static void HdmiFrlTrainingResultHandleTimeout(struct HdmiFrl *frl)
             break;
         }
         /* check the sink's status every 2ms required by protocol */
-        OsalUDelay(2000);
+        OsalUDelay(HDMI_FRL_CHECK_SINK_STATUS_DELAY_TIME);
     } while (true);
 
-    if (frl->info.machineInfo.timeoutCnt >= 3) {
+    if (frl->info.machineInfo.timeoutCnt >= HDMI_FRL_TRAIN_STEP_RESULT_HANDLE_MAX_TRIES) {
         HDF_LOGE("FRL training timeout.");
         frl->info.machineInfo.timeoutCnt = 0;
         HdmiFrlTrainingException(frl);
