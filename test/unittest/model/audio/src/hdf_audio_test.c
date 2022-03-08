@@ -7,7 +7,6 @@
  */
 
 #include "hdf_log.h"
-#include "hdf_audio_test.h"
 #include "audio_host_test.h"
 #include "audio_core_test.h"
 #include "audio_parse_test.h"
@@ -18,6 +17,7 @@
 #include "audio_codec_base_test.h"
 #include "audio_platform_base_test.h"
 #include "audio_accessory_base_test.h"
+#include "hdf_audio_test.h"
 
 #define HDF_LOG_TAG hdf_audio_test
 
