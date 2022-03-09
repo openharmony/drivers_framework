@@ -171,7 +171,7 @@ static int32_t InputPinMuxCfg(uint32_t regAddr, int32_t regSize, uint32_t regVal
 static int32_t SetResetStatus(TouchDriver *driver)
 {
     int32_t ret;
-    uint8_t writeBuf[5]; //5: buffer size
+    uint8_t writeBuf[5]; // 5: buffer size
 
     writeBuf[0] = (GTP_REG_CMD_1 >> 8) & 0xFF; // 8:high byte 0xffmask
     writeBuf[1] = GTP_REG_CMD_1 & 0xFF;
@@ -356,7 +356,7 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
         HDF_LOGE("%s: set intGpio to output failed, ret %d", __func__, ret);
         return HDF_FAILURE;
     }
-    OsalMSleep(100); //100: delay time
+    OsalMSleep(100); // 100: delay time
     ret = SetGpio(chipDev->boardCfg->pins.rstGpio, 1, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: set intGpio to output failed, ret %d", __func__, ret);
