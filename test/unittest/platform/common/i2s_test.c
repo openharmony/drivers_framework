@@ -173,7 +173,7 @@ static int32_t I2sRecordTest(struct I2sTest *test)
     uint32_t totalLen = 0;
     while ((i <= READ_TEST_TIMES) && (totalLen <= READ_TEST_FILE_SIZE)) {
         test->len = I2S_DATA_BUF_SIZE;
-        memset_s(test->rbuf, I2S_DATA_BUF_SIZE, 0xee, I2S_DATA_BUF_SIZE);
+        (void)memset_s(test->rbuf, I2S_DATA_BUF_SIZE, 0xee, I2S_DATA_BUF_SIZE);
         if (I2sRead(test->handle, test->rbuf, test->len, &test->len) != HDF_SUCCESS) {
             HDF_LOGE("%s: I2sRecordTest error \n", __func__);
             return HDF_FAILURE;
