@@ -194,7 +194,7 @@ struct KeyParams {
     uint32_t cipher; /**< Cipher suite */
 };
 
-#define UINT32_BIT(BIT) ((uint32_t)1) << (BIT)
+#define UINT32_BIT(BIT) (((uint32_t)1) << (BIT))
 
 #define WLAN_CHANNEL_FLAG_DFS_UNKNOWN 0x00000000
 #define WLAN_CHANNEL_FLAG_DFS_MASK 0x00000300
