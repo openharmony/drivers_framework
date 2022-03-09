@@ -884,11 +884,11 @@ std::shared_ptr<AstObject> AstObjectFactory::Build(std::shared_ptr<AstObject> ob
 {
     switch (object->Type()) {
         case PARSEROP_CONFNODE:
-            return std::shared_ptr<AstObject>(new ConfigNode(*ConfigNode::CastFrom(object)));
+            return std::make_shared<ConfigNode>(*ConfigNode::CastFrom(object));
         case PARSEROP_CONFTERM:
-            return std::shared_ptr<AstObject>(new ConfigTerm(*ConfigTerm::CastFrom(object)));
+            return std::make_shared<ConfigTerm>(*ConfigTerm::CastFrom(object));
         case PARSEROP_ARRAY:
-            return std::shared_ptr<AstObject>(new ConfigArray(*static_cast<ConfigArray *>(object.get())));
+            return std::make_shared<ConfigArray>(*ConfigArray::CastFrom(object));
         default:
             return std::make_shared<AstObject>(*object);
     }
