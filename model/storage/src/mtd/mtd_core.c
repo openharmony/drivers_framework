@@ -273,7 +273,7 @@ static int32_t MtdDeviceMarkBadBlockUnlocked(struct MtdDevice *mtdDevice, off_t 
     if (mtdDevice == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-    if (mtdDevice->ops == NULL && mtdDevice->ops->markBadBlock == NULL) {
+    if (mtdDevice->ops == NULL || mtdDevice->ops->markBadBlock == NULL) {
         return HDF_ERR_NOT_SUPPORT;
     }
     ret = mtdDevice->ops->markBadBlock(mtdDevice, addr);
