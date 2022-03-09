@@ -52,7 +52,12 @@ static int32_t ChipDetect(ChipDevice *device)
     version = (buf[GT_FW_VER_HIGH] << ONE_BYTE_OFFSET) | buf[GT_FW_VER_LOW];
     xSolution = (buf[GT_SOLU_X_HIGH] << ONE_BYTE_OFFSET) | buf[GT_SOLU_X_LOW];
     ySolution = (buf[GT_SOLU_Y_HIGH] << ONE_BYTE_OFFSET) | buf[GT_SOLU_Y_LOW];
-
+#if defined(CONFIG_ARCH_ROCKCHIP)
+    if (version != 0x100 || buf[GT_PROD_ID_1ST] != '5' || buf[GT_PROD_ID_2ND] != '6') {
+        HDF_LOGE("%s: version or ID wrong", __func__);
+        return HDF_FAILURE;
+    }
+#endif
     HDF_LOGI("%s: IC FW version is 0x%x", __func__, version);
     if (buf[GT_FW_VER_HIGH] == 0x0) {
         HDF_LOGI("Product ID : %c%c%c_%02x%02x, xSol = %d, ySol = %d", buf[GT_PROD_ID_1ST], buf[GT_PROD_ID_2ND],
