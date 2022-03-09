@@ -171,9 +171,9 @@ static int32_t InputPinMuxCfg(uint32_t regAddr, int32_t regSize, uint32_t regVal
 static int32_t SetResetStatus(TouchDriver *driver)
 {
     int32_t ret;
-    uint8_t writeBuf[5]; // 5: buffer size
+    uint8_t writeBuf[5]; //5: buffer size
 
-    writeBuf[0] = (GTP_REG_CMD_1 >> 8) & 0xFF; // 8:high byte 0xff£ºmask
+    writeBuf[0] = (GTP_REG_CMD_1 >> 8) & 0xFF; // 8:high byte 0xffmask
     writeBuf[1] = GTP_REG_CMD_1 & 0xFF;
     writeBuf[2] = 0x00; // 2:index  0x00: reg value
     writeBuf[3] = 0x56; // 3:index  0x56: reg value
@@ -184,7 +184,7 @@ static int32_t SetResetStatus(TouchDriver *driver)
         return ret;
     }
 
-    writeBuf[0] = (GTP_REG_CMD >> 8) & 0xFF; // 8:high byte 0xff£ºmask
+    writeBuf[0] = (GTP_REG_CMD >> 8) & 0xFF; // 8:high byte 0xffmask
     writeBuf[1] = GTP_REG_CMD & 0xFF;
     writeBuf[2] = 0xAA; // 2:index 0xAA: reg value
 
@@ -343,7 +343,7 @@ static void ChipReset(ChipDevice *chipDev)
 
 static int32_t ChipDriverInit(ChipDevice *chipDev)
 {
-    int32_t count = 20;   // 20 : reset time
+    int32_t count = 20;  // 20: reset time
     int32_t ret;
 #if defined(CONFIG_ARCH_ROCKCHIP)
     ret = SetGpio(chipDev->boardCfg->pins.rstGpio, 1, 0);
@@ -356,13 +356,13 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
         HDF_LOGE("%s: set intGpio to output failed, ret %d", __func__, ret);
         return HDF_FAILURE;
     }
-    OsalMSleep(100); // 100 : delay time
+    OsalMSleep(100); //100: delay time
     ret = SetGpio(chipDev->boardCfg->pins.rstGpio, 1, 1);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: set intGpio to output failed, ret %d", __func__, ret);
         return HDF_FAILURE;
     }
-    OsalMSleep(20); // 20 : delay time
+    OsalMSleep(20); // 20: delay time
 #endif
     ret = SetPowerOnTiming(chipDev, false);
     CHECK_RETURN_VALUE(ret);
