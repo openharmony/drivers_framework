@@ -88,7 +88,7 @@ std::shared_ptr<Ast> Parser::ParseOne(const std::string &src, std::list<std::str
         return nullptr;
     }
 
-    std::shared_ptr<Ast> oneAst = std::make_shared<Ast>(rootNode);
+    auto oneAst = std::make_shared<Ast>(rootNode);
     oneAst->Dump(*lexer_.GetSourceName());
 
     return oneAst;
@@ -145,7 +145,7 @@ std::shared_ptr<AstObject> Parser::ParseNode(Token &name, bool bracesStart)
         }
     }
 
-    auto node = std::shared_ptr<AstObject>(new ConfigNode(name, NODE_NOREF, ""));
+    auto node = std::make_shared<ConfigNode>(name, NODE_NOREF, "");
     std::shared_ptr<AstObject> child;
     while (lexer_.Lex(current_) && current_ != '}') {
         switch (current_.type) {
@@ -171,7 +171,7 @@ std::shared_ptr<AstObject> Parser::ParseNode(Token &name, bool bracesStart)
         Logger().Error() << lexer_ << "syntax error, node miss '}'";
         return nullptr;
     }
-    return std::shared_ptr<AstObject>(node);
+    return node;
 }
 
 std::shared_ptr<AstObject> Parser::ParseTerm(Token &name)
@@ -180,10 +180,7 @@ std::shared_ptr<AstObject> Parser::ParseTerm(Token &name)
         Logger().Error() << lexer_ << "syntax error, miss value of config term";
         return nullptr;
     }
-    auto term = std::shared_ptr<AstObject>(new (std::nothrow) ConfigTerm(name, nullptr));
-    if (term == nullptr) {
-        return nullptr;
-    }
+    auto term = std::make_shared<ConfigTerm>(name, nullptr);
     switch (current_.type) {
         case STRING:
             term->AddChild(std::make_shared<AstObject>("", PARSEROP_STRING, current_.strval, current_));
@@ -220,7 +217,7 @@ std::shared_ptr<AstObject> Parser::ParseTerm(Token &name)
         return nullptr;
     }
 
-    return std::shared_ptr<AstObject>(term);
+    return term;
 }
 
 std::shared_ptr<AstObject> Parser::ParseTemplate()
@@ -362,7 +359,7 @@ std::shared_ptr<AstObject> Parser::ParseNodeInherit(Token &name)
 
 std::shared_ptr<AstObject> Parser::ParseArray()
 {
-    auto array = std::shared_ptr<AstObject>(new ConfigArray(current_));
+    auto array = std::make_shared<ConfigArray>(current_);
     int32_t arrayType = 0;
 
     while (lexer_.Lex(current_) && current_ != ']') {
@@ -400,7 +397,7 @@ std::shared_ptr<AstObject> Parser::ParseArray()
         return nullptr;
     }
 
-    return std::shared_ptr<AstObject>(array);
+    return array;
 }
 
 std::shared_ptr<Ast> Parser::GetAst()
