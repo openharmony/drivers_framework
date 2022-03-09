@@ -153,7 +153,7 @@ static int32_t WifiFillApSettingsParams(struct HdfSBuf *reqData,  WifiApSetting 
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "mode");
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s:apSettings->freqParams.mode=%d", __func__, apSettings->freqParams.mode);
+    HDF_LOGI("%s:apSettings->freqParams.mode=%d", __func__, apSettings->freqParams.mode);
     if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.freq))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "freq");
         return HDF_FAILURE;
