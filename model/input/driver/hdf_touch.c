@@ -13,13 +13,17 @@
 #include "osal_mem.h"
 #include "osal_io.h"
 #include "event_hub.h"
+#include "input_i2c_ops.h"
 
 #define I2C_TYPE 0
 #define SPI_TYPE 1
 #define MAX_TOUCH_DEVICE 5
 #define REGISTER_BYTE_SIZE 4
 #define TOUCH_CHIP_NAME_LEN 10
-
+#if defined(CONFIG_ARCH_ROCKCHIP)
+#define GTP_REG_CMD   0x8040
+#define GTP_REG_CMD_1 0x8041
+#endif
 
 static TouchDriver *g_touchDriverList[MAX_TOUCH_DEVICE];
 static void InputFrameReport(TouchDriver *driver);
@@ -62,6 +66,43 @@ static int32_t SetGpio(uint16_t gpio, uint32_t dir, uint32_t status)
     int32_t ret = SetGpioDirAndLevel(gpio, dir, status);
     CHECK_RETURN_VALUE(ret);
     return HDF_SUCCESS;
+}
+
+static int32_t HandleResetEvent(ChipDevice *chipDev, uint32_t *timing, uint32_t length)
+{
+    int32_t ret = 0;
+    uint16_t gpio;
+
+    if (length <= PWR_DELAY_INDEX) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return HDF_FAILURE;
+    }
+    uint32_t type = timing[PWR_TYPE_INDEX];
+    uint32_t status = timing[PWR_STATUS_INDEX];
+    uint32_t dir = timing[PWR_DIR_INDEX];
+    uint32_t delay = timing[PWR_DELAY_INDEX];
+    HDF_LOGD("%s: type = %u, status = %u, dir = %u, delay = %u", __func__, type, status, dir, delay);
+
+    switch (type) {
+        case TYPE_VCC:
+        case TYPE_VCI:
+            break;
+        case TYPE_INT:
+            gpio = chipDev->boardCfg->pins.intGpio;
+            ret = SetGpio(gpio, dir, status);
+            break;
+        case TYPE_RESET:
+            gpio = chipDev->boardCfg->pins.rstGpio;
+            ret = SetGpio(gpio, dir, status);
+            break;
+        default:
+            HDF_LOGE("%s: unknown power type", __func__);
+            break;
+    }
+    if (delay > 0) {
+        OsalMSleep(delay);
+    }
+    return ret;
 }
 
 static int32_t HandlePowerEvent(ChipDevice *chipDev, uint32_t *timing, uint32_t length)
@@ -126,7 +167,38 @@ static int32_t InputPinMuxCfg(uint32_t regAddr, int32_t regSize, uint32_t regVal
     return HDF_SUCCESS;
 }
 
-static int32_t SetPowerOnTiming(ChipDevice *chipDev)
+#if defined(CONFIG_ARCH_ROCKCHIP)
+static int32_t SetResetStatus(TouchDriver *driver)
+{
+    int32_t ret;
+    uint8_t writeBuf[5]; // 5: buffer size
+
+    writeBuf[0] = (GTP_REG_CMD_1 >> 8) & 0xFF; // 8:high byte 0xffmask
+    writeBuf[1] = GTP_REG_CMD_1 & 0xFF;
+    writeBuf[2] = 0x00; // 2:index  0x00: reg value
+    writeBuf[3] = 0x56; // 3:index  0x56: reg value
+    writeBuf[4] = 0xAA; // 4:index  0xAA: reg value
+    ret = InputI2cWrite(&driver->i2cClient, writeBuf, 5); // 5: buffer size
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: InputI2cWrite failed, ret = %d", __func__, ret);
+        return ret;
+    }
+
+    writeBuf[0] = (GTP_REG_CMD >> 8) & 0xFF; // 8:high byte 0xffmask
+    writeBuf[1] = GTP_REG_CMD & 0xFF;
+    writeBuf[2] = 0xAA; // 2:index 0xAA: reg value
+
+    ret = InputI2cWrite(&driver->i2cClient, writeBuf, 3); // 3: buffer size
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: InputI2cWrite failed, ret = %d", __func__, ret);
+        return ret;
+    }
+
+    return HDF_SUCCESS;
+}
+#endif
+
+static int32_t SetPowerOnTiming(ChipDevice *chipDev, bool enableRst)
 {
     int32_t i;
     int32_t ret;
@@ -164,10 +236,20 @@ static int32_t SetPowerOnTiming(ChipDevice *chipDev)
     }
 
     for (i = 0; i < pwrOnTiming.count / PWR_CELL_LEN; i++) {
-        ret = HandlePowerEvent(chipDev, pwrOnTiming.buf, PWR_CELL_LEN);
+        if (enableRst) {
+            ret = HandleResetEvent(chipDev, pwrOnTiming.buf, PWR_CELL_LEN);
+        } else {
+            ret = HandlePowerEvent(chipDev, pwrOnTiming.buf, PWR_CELL_LEN);
+        }
         CHECK_RETURN_VALUE(ret);
         pwrOnTiming.buf = pwrOnTiming.buf + PWR_CELL_LEN;
     }
+#if defined(CONFIG_ARCH_ROCKCHIP)
+    ret = SetResetStatus(driver);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: SetResetStatus failed", __func__);
+    }
+#endif
     return HDF_SUCCESS;
 }
 
@@ -254,16 +336,50 @@ static int32_t SetupChipIrq(ChipDevice *chipDev)
     return HDF_SUCCESS;
 }
 
+static void ChipReset(ChipDevice *chipDev)
+{
+    (void)SetPowerOnTiming(chipDev, true);
+}
+
 static int32_t ChipDriverInit(ChipDevice *chipDev)
 {
-    int32_t ret = SetPowerOnTiming(chipDev);
+    int32_t count = 20;  // 20: reset time
+    int32_t ret;
+#if defined(CONFIG_ARCH_ROCKCHIP)
+    ret = SetGpio(chipDev->boardCfg->pins.rstGpio, 1, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: set rstGpio to output failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
+    }
+    ret = SetGpio(chipDev->boardCfg->pins.intGpio, 1, 0);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: set intGpio to output failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
+    }
+    OsalMSleep(100); // 100: delay time
+    ret = SetGpio(chipDev->boardCfg->pins.rstGpio, 1, 1);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: set intGpio to output failed, ret %d", __func__, ret);
+        return HDF_FAILURE;
+    }
+    OsalMSleep(20); // 20: delay time
+#endif
+    ret = SetPowerOnTiming(chipDev, false);
     CHECK_RETURN_VALUE(ret);
 
     if ((chipDev->ops == NULL) || (chipDev->ops->Detect == NULL)) {
         return HDF_FAILURE;
     }
 
-    ret = chipDev->ops->Detect(chipDev);
+    while (count --) {
+        ret = chipDev->ops->Detect(chipDev);
+        if (ret == HDF_SUCCESS) {
+            break;
+        }
+        HDF_LOGI("%s: reset chip %d time", __func__, count);
+        ChipReset(chipDev);
+        OsalMSleep(100); // 100 : wait 100msthen try one time
+    }
     CHECK_RETURN_VALUE(ret);
     HDF_LOGI("%s: chipDetect succ, ret = %d ", __func__, ret);
 
