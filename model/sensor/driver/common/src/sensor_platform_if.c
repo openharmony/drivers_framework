@@ -110,9 +110,11 @@ int32_t SetSensorPinMux(uint32_t regAddr, int32_t regSize, uint32_t regValue)
     uint8_t *base = NULL;
     if (regAddr == 0) {
         HDF_LOGE("%s: regAddr invalid", __func__);
+        HDF_LOGE("%s: regSize = %d, regValue = %u", __func__, regSize, regValue);
         return HDF_FAILURE;
     }
 
+#if !defined(CONFIG_ARCH_ROCKCHIP)
     base = OsalIoRemap(regAddr, regSize);
     if (base == NULL) {
         HDF_LOGE("%s: ioremap fail", __func__);
@@ -121,6 +123,7 @@ int32_t SetSensorPinMux(uint32_t regAddr, int32_t regSize, uint32_t regValue)
 
     OSAL_WRITEL(regValue, base);
     OsalIoUnmap((void *)base);
+#endif
 
     return HDF_SUCCESS;
 }
