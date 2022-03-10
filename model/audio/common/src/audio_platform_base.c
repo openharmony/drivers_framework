@@ -58,7 +58,6 @@ uint32_t AudioBytesToFrames(uint32_t frameBits, uint32_t size)
 
 int32_t AudioDataBigEndianChange(char *srcData, uint32_t audioLen, enum DataBitWidth bitWidth)
 {
-
     uint64_t i;
     uint16_t framesize;
     char *changeData;
@@ -477,14 +476,9 @@ static int32_t MmapWriteData(struct PlatformData *data, char *tmpBuf)
     return HDF_SUCCESS;
 }
 
-static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
+static int32_t AudioPlatformDataInit(struct PlatformData *data, uint32_t *totalSize, uint32_t *lastBuffSize,
+    uint32_t *loopTimes)
 {
-    uint32_t timeout = 0;
-    uint32_t totalSize;
-    uint32_t lastBuffSize;
-    uint32_t loopTimes;
-    char *tmpBuf;
-    struct PlatformData *data = PlatformDataFromCard(card);
     if (data == NULL) {
         AUDIO_DRIVER_LOG_ERR("PlatformDataFromCard failed.");
         return HDF_FAILURE;
@@ -494,11 +488,26 @@ static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
         return HDF_FAILURE;
     }
 
-    totalSize = (uint32_t)data->mmapData.totalBufferFrames * data->renderPcmInfo.frameSize;
-    lastBuffSize = ((totalSize % MIN_PERIOD_SIZE) == 0) ? MIN_PERIOD_SIZE : (totalSize % MIN_PERIOD_SIZE);
-    loopTimes = (lastBuffSize == MIN_PERIOD_SIZE) ?
-        (totalSize / MIN_PERIOD_SIZE) : (totalSize / MIN_PERIOD_SIZE + 1);
+    *totalSize = (uint32_t)data->mmapData.totalBufferFrames * data->renderPcmInfo.frameSize;
+    *lastBuffSize = ((*totalSize % MIN_PERIOD_SIZE) == 0) ? MIN_PERIOD_SIZE : (*totalSize % MIN_PERIOD_SIZE);
+    *loopTimes = (*lastBuffSize == MIN_PERIOD_SIZE) ?
+        (*totalSize / MIN_PERIOD_SIZE) : (*totalSize / MIN_PERIOD_SIZE + 1);
     data->mmapLoopCount = 0;
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
+{
+    uint32_t timeout = 0;
+    uint32_t totalSize;
+    uint32_t lastBuffSize;
+    uint32_t loopTimes;
+    char *tmpBuf;
+
+    struct PlatformData *data = PlatformDataFromCard(card);
+    if (AudioPlatformDataInit(data, &totalSize, &lastBuffSize, &loopTimes) == HDF_FAILURE) {
+        return HDF_FAILURE;
+    }
     tmpBuf = OsalMemCalloc(MIN_PERIOD_SIZE);
     if (tmpBuf == NULL) {
         AUDIO_DRIVER_LOG_ERR("tmpBuf is null.");
@@ -515,8 +524,8 @@ static int32_t AudioMmapWriteTransfer(const struct AudioCard *card)
             AUDIO_DRIVER_LOG_DEBUG("dma buff status ENUM_CIR_BUFF_FULL.");
             timeout++;
             if (timeout >= TIME_OUT_CONST) {
-                AUDIO_DRIVER_LOG_ERR("timeout failed.");
                 OsalMemFree(tmpBuf);
+                AUDIO_DRIVER_LOG_ERR("timeout failed.");
                 return HDF_FAILURE;
             }
             continue;
