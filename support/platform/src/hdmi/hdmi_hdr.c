@@ -203,7 +203,6 @@ int32_t HdmiHdrAttrHandle(struct HdmiHdr *hdr, struct HdmiHdrAttr *curAttr)
         HDF_LOGD("hdr attr not change");
         return HDF_SUCCESS;
     }
-
     if (oldAttr->colorimetry != curAttr->colorimetry) {
         HdmiHdrColorimetryUpdate(&(cntlr->attr.videoAttr), curAttr->colorimetry);
     }
@@ -213,7 +212,10 @@ int32_t HdmiHdrAttrHandle(struct HdmiHdr *hdr, struct HdmiHdrAttr *curAttr)
         if (HdmiDisableHdr(cntlr, curAttr) == HDF_SUCCESS) {
             commAttr->vsifDolby = false;
             cntlr->attr.hdrAttr = *curAttr;
-            goto _SEND_INFOFRAME;
+            (void)HdmiAviInfoFrameSend(&(cntlr->infoFrame), (commAttr->enableHdmi && commAttr->avi));
+            (void)HdmiVsInfoFrameSend(&(cntlr->infoFrame), commAttr->enableHdmi, commAttr->vsifDolby);
+            HdmiCntlrVideoPathSet(cntlr, &(cntlr->attr.videoAttr));
+            return ret;
         } else {
             return HDF_FAILURE;
         }
@@ -226,8 +228,6 @@ int32_t HdmiHdrAttrHandle(struct HdmiHdr *hdr, struct HdmiHdrAttr *curAttr)
         return ret;
     }
     (void)HdmiDrmInfoFrameSend(&(cntlr->infoFrame), (commAttr->enableHdmi && commAttr->drm));
-
-_SEND_INFOFRAME:
     (void)HdmiAviInfoFrameSend(&(cntlr->infoFrame), (commAttr->enableHdmi && commAttr->avi));
     (void)HdmiVsInfoFrameSend(&(cntlr->infoFrame), commAttr->enableHdmi, commAttr->vsifDolby);
     HdmiCntlrVideoPathSet(cntlr, &(cntlr->attr.videoAttr));

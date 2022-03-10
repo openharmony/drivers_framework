@@ -100,7 +100,9 @@ static int32_t HdmiEventHotPlugHandleComm(struct HdmiCntlr *cntlr)
     if (cntlr->hdmi == NULL) {
         ret = HdmiCntlrAllocDev(cntlr);
         if (ret != HDF_SUCCESS) {
-            goto __END;
+            cntlr->event.plugged = false;
+            cntlr->event.hpdDetected = false;
+            return ret;
         }
         HDF_LOGE("HdmiEventHotPlugHandleComm HdmiCntlrAllocDev success.");
     }
@@ -109,23 +111,23 @@ static int32_t HdmiEventHotPlugHandleComm(struct HdmiCntlr *cntlr)
     if (HdmiEdidReset(&(cntlr->hdmi->edid)) != HDF_SUCCESS) {
         HDF_LOGE("edid reset fail.");
         ret = HDF_ERR_IO;
-        goto __END;
+        cntlr->event.plugged = false;
+        cntlr->event.hpdDetected = false;
+        return ret;
     }
     ret = HdmiEdidRawDataRead(&(cntlr->hdmi->edid), &(cntlr->ddc));
-    if (ret != HDF_SUCCESS) {
-        goto __END;
-    }
-    ret = HdmiEdidPhase(&(cntlr->hdmi->edid));
-    if (ret != HDF_SUCCESS) {
-        goto __END;
-    }
-
-__END:
     if (ret != HDF_SUCCESS) {
         cntlr->event.plugged = false;
         cntlr->event.hpdDetected = false;
         return ret;
     }
+    ret = HdmiEdidPhase(&(cntlr->hdmi->edid));
+    if (ret != HDF_SUCCESS) {
+        cntlr->event.plugged = false;
+        cntlr->event.hpdDetected = false;
+        return ret;
+    }
+
     cntlr->event.hpdDetected = true;
     if (cntlr->event.callback.callbackFunc != NULL) {
         cntlr->event.callback.callbackFunc(cntlr->event.callback.data, true);

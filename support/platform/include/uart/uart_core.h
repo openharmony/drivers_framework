@@ -73,9 +73,9 @@ static inline struct UartHost *UartHostFromDevice(struct HdfDeviceObject *device
     return (device == NULL) ? NULL : (struct UartHost *)device->service;
 }
 
-int32_t UartHostInit(struct UartHost *host);
+int32_t UartHostRequest(struct UartHost *host);
 
-int32_t UartHostDeinit(struct UartHost *host);
+int32_t UartHostRelease(struct UartHost *host);
 
 static inline int32_t UartHostRead(struct UartHost *host, uint8_t *data, uint32_t size)
 {
@@ -141,8 +141,7 @@ static inline int32_t UartHostPollEvent(struct UartHost *host, void *filep, void
     return host->method->pollEvent(host, filep, table);
 }
 
-int32_t UartIoDispatch(struct HdfDeviceIoClient *client, int cmd,
-    struct HdfSBuf *data, struct HdfSBuf *reply);
+int32_t UartIoDispatch(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply);
 
 #ifdef __cplusplus
 }

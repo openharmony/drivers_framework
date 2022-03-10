@@ -13,7 +13,7 @@
 #include "hdf_dlist.h"
 #include "pin_if.h"
 #include "osal_spinlock.h"
-#include "osal_atomic.h"    
+#include "osal_atomic.h"
 
 #ifdef __cplusplus
 #if __cplusplus

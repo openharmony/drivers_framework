@@ -74,10 +74,10 @@ void RegulatorNodeListPrint(void)
     }
 
     DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
-        HDF_LOGI("RegulatorNodeListPrint: name[%s], [%d][%d][%d], [%d][%d]--[%d][%d]", 
+        HDF_LOGI("RegulatorNodeListPrint: name[%s], [%d][%d][%d], [%d][%d]--[%d][%d]",
             pos->regulatorInfo.name, pos->regulatorInfo.status,
-            pos->regulatorInfo.constraints.alwaysOn, pos->regulatorInfo.constraints.mode, 
-            pos->regulatorInfo.constraints.minUv, pos->regulatorInfo.constraints.maxUv, 
+            pos->regulatorInfo.constraints.alwaysOn, pos->regulatorInfo.constraints.mode,
+            pos->regulatorInfo.constraints.minUv, pos->regulatorInfo.constraints.maxUv,
             pos->regulatorInfo.constraints.minUa, pos->regulatorInfo.constraints.maxUa);
         if ((pos->regulatorInfo.parentName != NULL) && (strlen(pos->regulatorInfo.parentName) > 0)) {
             HDF_LOGI("RegulatorNodeListPrint:parentName[%s]", pos->regulatorInfo.parentName);
@@ -101,7 +101,7 @@ int32_t RegulatorNodeSetParent(struct RegulatorNode *node)
         return HDF_ERR_DEVICE_BUSY;
     }
     // parent set
-    if ((node->regulatorInfo.parentName != NULL) 
+    if ((node->regulatorInfo.parentName != NULL)
         && (strlen(node->regulatorInfo.parentName) > 0)) {
         DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
             if (strcmp(node->regulatorInfo.parentName, pos->regulatorInfo.name) == 0) {
@@ -117,7 +117,7 @@ int32_t RegulatorNodeSetParent(struct RegulatorNode *node)
             }
         }
 
-        HDF_LOGE("%s: RegulatorTreeSet find %s parent %s error", 
+        HDF_LOGE("%s: RegulatorTreeSet find %s parent %s error",
             __func__, node->regulatorInfo.name, node->regulatorInfo.parentName);
         (void)OsalMutexUnlock(&manager->lock);
         return HDF_FAILURE;
@@ -142,9 +142,9 @@ int32_t RegulatorNodeSetChild(struct RegulatorNode *parent)
     }
 
     DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
-        if ((pos->regulatorInfo.parentName != NULL) && 
+        if ((pos->regulatorInfo.parentName != NULL) &&
             (strcmp(parent->regulatorInfo.name, pos->regulatorInfo.parentName) == 0)) {
-            HDF_LOGD("%s: node[%s] parent is %s, tree info process", __func__, 
+            HDF_LOGD("%s: node[%s] parent is %s, tree info process", __func__,
                 pos->regulatorInfo.parentName, parent->regulatorInfo.name);
             if (RegulatorTreeSet(pos->regulatorInfo.name, pos, parent) != HDF_SUCCESS) {
                 HDF_LOGE("%s: RegulatorTreeSet failed", __func__);
@@ -394,7 +394,7 @@ int32_t RegulatorNodeDisable(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     if ((node->regulatorInfo.status == REGULATOR_STATUS_OFF) || (node->regulatorInfo.constraints.alwaysOn)) {
-        HDF_LOGI("RegulatorNodeDisable: %s [%d][%d], unsatisfied closing adjusment", 
+        HDF_LOGI("RegulatorNodeDisable: %s [%d][%d], unsatisfied closing adjusment",
             node->regulatorInfo.name, node->regulatorInfo.status, node->regulatorInfo.constraints.alwaysOn);
         return HDF_SUCCESS;
     }
@@ -431,7 +431,7 @@ int32_t RegulatorNodeDisable(struct RegulatorNode *node)
         }
         if (RegulatorNodeDisable(parent) != HDF_SUCCESS) {
             (void)OsalMutexUnlock(&node->lock);
-            HDF_LOGD("RegulatorNodeDisable: disable %s's parent %s failed", 
+            HDF_LOGD("RegulatorNodeDisable: disable %s's parent %s failed",
                 node->regulatorInfo.name, parent->regulatorInfo.name);
             return HDF_SUCCESS;
         }
@@ -486,7 +486,7 @@ int32_t RegulatorNodeForceDisable(struct RegulatorNode *node)
         }
         if (RegulatorNodeDisable(parent) != HDF_SUCCESS) {
             (void)OsalMutexUnlock(&node->lock);
-            HDF_LOGD("RegulatorNodeDisable: disable %s's parent %s failed", 
+            HDF_LOGD("RegulatorNodeDisable: disable %s's parent %s failed",
                 node->regulatorInfo.name, parent->regulatorInfo.name);
             return HDF_SUCCESS;
         }
@@ -500,7 +500,7 @@ int32_t RegulatorNodeSetVoltage(struct RegulatorNode *node, uint32_t minUv, uint
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_VOLTAGE) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!", 
+        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!",
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }
@@ -509,10 +509,10 @@ int32_t RegulatorNodeSetVoltage(struct RegulatorNode *node, uint32_t minUv, uint
         return HDF_SUCCESS;
     }
 
-    if ((minUv > maxUv) || 
-        (minUv < node->regulatorInfo.constraints.minUv || 
+    if ((minUv > maxUv) ||
+        (minUv < node->regulatorInfo.constraints.minUv ||
         maxUv > node->regulatorInfo.constraints.maxUv)) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s Uv [%d, %d] invalid!", 
+        HDF_LOGE("RegulatorNodeSetVoltage: %s Uv [%d, %d] invalid!",
             node->regulatorInfo.name, minUv, maxUv);
         return HDF_FAILURE;
     }
@@ -542,7 +542,7 @@ int32_t RegulatorNodeGetVoltage(struct RegulatorNode *node, uint32_t *voltage)
     CHECK_NULL_PTR_RETURN_VALUE(voltage, HDF_ERR_INVALID_PARAM);
 
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_VOLTAGE) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!", 
+        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!",
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }
@@ -560,7 +560,7 @@ int32_t RegulatorNodeSetCurrent(struct RegulatorNode *node, uint32_t minUA, uint
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_CURRENT) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!", 
+        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!",
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }
@@ -569,10 +569,10 @@ int32_t RegulatorNodeSetCurrent(struct RegulatorNode *node, uint32_t minUA, uint
         return HDF_SUCCESS;
     }
 
-    if ((minUA > maxUA) || 
-        (minUA < node->regulatorInfo.constraints.minUa || 
+    if ((minUA > maxUA) ||
+        (minUA < node->regulatorInfo.constraints.minUa ||
         maxUA > node->regulatorInfo.constraints.maxUa)) {
-        HDF_LOGE("RegulatorNodeSetCurrent: %s UA [%d, %d] invalid!", 
+        HDF_LOGE("RegulatorNodeSetCurrent: %s UA [%d, %d] invalid!",
             node->regulatorInfo.name, minUA, maxUA);
         return HDF_FAILURE;
     }
@@ -600,7 +600,7 @@ int32_t RegulatorNodeGetCurrent(struct RegulatorNode *node, uint32_t *regCurrent
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_OBJECT);
     CHECK_NULL_PTR_RETURN_VALUE(regCurrent, HDF_ERR_INVALID_OBJECT);
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_CURRENT) {
-        HDF_LOGE("RegulatorNodeGetCurrent: %s mode %d invalid!", 
+        HDF_LOGE("RegulatorNodeGetCurrent: %s mode %d invalid!",
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }
@@ -642,7 +642,7 @@ int32_t RegulatorTreeInfoInit(struct RegulatorNode *node)
     struct RegulatorManager *manager = g_regulatorManager;
     CHECK_NULL_PTR_RETURN_VALUE(manager, HDF_ERR_INVALID_OBJECT);
 
-    if ((node->regulatorInfo.parentName != NULL) 
+    if ((node->regulatorInfo.parentName != NULL)
         && (strlen(node->regulatorInfo.parentName) > 0)) {
         DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
             if (strcmp(node->regulatorInfo.parentName, pos->regulatorInfo.name) == 0) {
@@ -656,7 +656,7 @@ int32_t RegulatorTreeInfoInit(struct RegulatorNode *node)
             }
         }
 
-        HDF_LOGE("%s: RegulatorTreeSet find %s parent %s error", 
+        HDF_LOGE("%s: RegulatorTreeSet find %s parent %s error",
             __func__, node->regulatorInfo.name, node->regulatorInfo.parentName);
         return HDF_FAILURE;
     }

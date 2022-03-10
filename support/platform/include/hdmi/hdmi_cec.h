@@ -437,7 +437,9 @@ enum HdmiCecTimerClearedStatus {
  */
 #define HDMI_CEC_TIMER_OVERLAP_WARNING_NO_OVERLAP 0
 #define HDMI_CEC_TIMER_OVERLAP_WARNING_TIMER_BLOCK_OVERLAP 1
+#define HDMI_CEC_TIMER_OVERLAP_WARNING_SHIFT 7
 
+#define HDMI_CEC_MEDIA_INFO_SHIFT 5
 enum HdmiCecMediaInfo {
     HDMI_CEC_MEDIA_PRESENT_NOT_POTECTED = 0,
     HDMI_CEC_MEDIA_PRESENT_POTECTED = 1,
@@ -454,6 +456,7 @@ enum HdmiCecMediaInfo {
 /* Progremmed Indicator, 1 bit */
 #define HDMI_CEC_PROG_IND_NOT_PROGRAMMED 0
 #define HDMI_CEC_PROG_IND_PROGRAMMED 1
+#define HDMI_CEC_PROG_IND_SHIFT 4
 
 /* Progremmed Info, 4 bits */
 enum HdmiCecProgremmedInfo {
@@ -771,6 +774,7 @@ enum HdmiCecPlayMode {
  */
 #define HDMI_CEC_RECORDING_FALG_NOT_USED 0
 #define HDMI_CEC_RECORDING_FALG_USED 1
+#define HDMI_CEC_RECORDING_FALG_SHIFT 7
 
 enum HdmiCecTunerDisplayInfo {
     HDMI_CEC_TUNER_DISP_DIGITAL = 0,

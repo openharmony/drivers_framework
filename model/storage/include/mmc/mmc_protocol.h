@@ -252,7 +252,7 @@ enum MmcRspCardStatus {
  * state change, it will be visible to the host in the response to the next command.
  * The four bits([12:9]) are interpreted as a binary coded number between 0 and 15.
  */
-#define MMC_CARD_CURRENT_STATE(x) ((x & 0x00001E00) >> 9) /* sx, b (4 bits) */
+#define MMC_CARD_CURRENT_STATE(x) (((x) & 0x00001E00) >> 9) /* sx, b (4 bits) */
 enum MmcCardCurrentState {
     STATE_IDLE = 0,
     STATE_READY = 1,

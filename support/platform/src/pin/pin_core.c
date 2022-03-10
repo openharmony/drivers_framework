@@ -25,7 +25,7 @@ static struct DListHead *PinCntlrListGet(void)
         head = &g_cntlrListHead;
         DListHeadInit(head);
         OsalSpinInit(&g_listLock);
-    } 
+    }
     while (OsalSpinLockIrqSave(&g_listLock, &irqSave) != HDF_SUCCESS);
     g_irqSave = irqSave;
     return head;

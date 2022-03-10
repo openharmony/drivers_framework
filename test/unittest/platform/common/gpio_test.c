@@ -164,7 +164,6 @@ static int32_t GpioTestSetGetDir(void)
     dirSet = GPIO_DIR_OUT;
     dirGet = GPIO_DIR_IN;
 
-SET_GET_DIR:
     ret = GpioSetDir(tester->cfg.gpio, dirSet);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: set dir fail! ret:%d", __func__, ret);
@@ -180,10 +179,21 @@ SET_GET_DIR:
         return HDF_FAILURE;
     }
     /* change the value and test one more time */
-    if (dirSet == GPIO_DIR_OUT) {
-        dirSet = GPIO_DIR_IN;
-        dirGet = GPIO_DIR_OUT;
-        goto SET_GET_DIR;
+    dirSet = GPIO_DIR_IN;
+    dirGet = GPIO_DIR_OUT;
+    ret = GpioSetDir(tester->cfg.gpio, dirSet);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: set dir fail! ret:%d", __func__, ret);
+        return ret;
+    }
+    ret = GpioGetDir(tester->cfg.gpio, &dirGet);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: get dir fail! ret:%d", __func__, ret);
+        return ret;
+    }
+    if (dirSet != dirGet) {
+        HDF_LOGE("%s: set dir:%u, but get:%u", __func__, dirSet, dirGet);
+        return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
@@ -209,7 +219,6 @@ static int32_t GpioTestWriteRead(void)
     valWrite = GPIO_VAL_LOW;
     valRead = GPIO_VAL_HIGH;
 
-WRITE_READ_VAL:
     ret = GpioWrite(tester->cfg.gpio, valWrite);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: write val:%u fail! ret:%d", __func__, valWrite, ret);
@@ -225,10 +234,21 @@ WRITE_READ_VAL:
         return HDF_FAILURE;
     }
     /* change the value and test one more time */
-    if (valWrite == GPIO_VAL_HIGH) {
-        valWrite = GPIO_VAL_HIGH;
-        valRead = GPIO_VAL_LOW;
-        goto WRITE_READ_VAL;
+    valWrite = GPIO_VAL_HIGH;
+    valRead = GPIO_VAL_LOW;
+    ret = GpioWrite(tester->cfg.gpio, valWrite);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: write val:%u fail! ret:%d", __func__, valWrite, ret);
+        return ret;
+    }
+    ret = GpioRead(tester->cfg.gpio, &valRead);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: read fail! ret:%d", __func__, ret);
+        return ret;
+    }
+    if (valWrite != valRead) {
+        HDF_LOGE("%s: write:%u, but get:%u", __func__, valWrite, valRead);
+        return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
@@ -401,7 +421,7 @@ static int32_t GpioIfPerformanceTest(void)
     uint16_t val;
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime; /*ms*/
+    uint64_t useTime;    // ms
     struct GpioTester *tester = NULL;
 
     tester = GpioTesterGet();
@@ -415,8 +435,8 @@ static int32_t GpioIfPerformanceTest(void)
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n", 
-        startMs, endMs, useTime, useTime < 1 ? true : false );
+    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }
 
@@ -438,7 +458,7 @@ static struct GpioTestEntry g_entry[] = {
 
 int32_t GpioTestExecute(int cmd)
 {
-    uint32_t i; 
+    uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
 
 #if defined(_LINUX_USER_) || defined(__USER__)

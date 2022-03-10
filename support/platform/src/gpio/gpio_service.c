@@ -255,7 +255,7 @@ static int32_t GpioServiceDispatch(struct HdfDeviceIoClient *client, int cmd,
 }
 
 static int32_t GpioServiceBind(struct HdfDeviceObject *device)
-{   
+{
     int32_t ret;
     struct PlatformManager *gpioMgr = NULL;
 

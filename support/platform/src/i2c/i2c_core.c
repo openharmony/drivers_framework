@@ -317,12 +317,14 @@ static int32_t I2cManagerIoTransfer(struct HdfSBuf *data, struct HdfSBuf *reply)
 
     ret = I2cCntlrTransfer(I2cManagerFindCntlr(number), msgs, count);
     if (ret != count) {
-        goto __EXIT__;
+        if (bufReply != NULL) {
+            OsalMemFree(bufReply);
+        }
+        return ret;
     }
 
     ret = I2cTransferWriteBackMsgs(reply, msgs, count);
 
-__EXIT__:
     if (bufReply != NULL) {
         OsalMemFree(bufReply);
     }

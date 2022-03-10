@@ -19,10 +19,9 @@
 static void *UartGetObjGetByBusNum(uint32_t num)
 {
     int ret;
-    char name[UART_HOST_NAME_LEN + 1] = { 0 };
+    char name[UART_HOST_NAME_LEN + 1] = {0};
 
-    ret = snprintf_s(name, UART_HOST_NAME_LEN + 1, UART_HOST_NAME_LEN,
-        "HDF_PLATFORM_UART_%u", num);
+    ret = snprintf_s(name, UART_HOST_NAME_LEN + 1, UART_HOST_NAME_LEN, "HDF_PLATFORM_UART_%u", num);
     if (ret < 0) {
         HDF_LOGE("%s: snprintf_s failed", __func__);
         return NULL;
@@ -48,9 +47,9 @@ DevHandle UartOpen(uint32_t port)
         HDF_LOGE("%s: get handle error", __func__);
         return NULL;
     }
-    ret = UartHostInit((struct UartHost *)handle);
+    ret = UartHostRequest((struct UartHost *)handle);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostInit error, ret %d", __func__, ret);
+        HDF_LOGE("%s: UartHostRequest error, ret %d", __func__, ret);
         UartPutObjByPointer(handle);
         return NULL;
     }
@@ -64,9 +63,9 @@ void UartClose(DevHandle handle)
         HDF_LOGE("%s: handle is NULL", __func__);
         return;
     }
-    ret = UartHostDeinit((struct UartHost *)handle);
+    ret = UartHostRelease((struct UartHost *)handle);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: UartHostDeinit error, ret %d", __func__, ret);
+        HDF_LOGE("%s: UartHostRelease error, ret %d", __func__, ret);
     }
     UartPutObjByPointer(handle);
 }

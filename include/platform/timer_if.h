@@ -62,7 +62,7 @@ int32_t HwTimerStop(DevHandle handle);
  * @brief Set a period timer.
  * If you need the timer run, call this function to set timer info
  * @param handle Represents a pointer to the timer device handle.
- * @param useconds Represents the timer interval. 
+ * @param useconds Represents the timer interval.
  * @param cb Represents the timer callback function.
  * @return success or fail
  * @since 1.0
@@ -71,8 +71,8 @@ int32_t HwTimerSet(DevHandle handle, uint32_t useconds, TimerHandleCb cb);
 
 /**
  * @brief Set a oneshot timer.
- * If you need the timer run, call this function to set timer info 
- * @param useconds Represents the timer interval. 
+ * If you need the timer run, call this function to set timer info
+ * @param useconds Represents the timer interval.
  * @param cb Represents the timer callback function.
  * @return success or fail
  * @since 1.0

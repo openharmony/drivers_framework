@@ -52,17 +52,6 @@ extern "C" {
 #define I3C_HOT_JOIN_ADDR   I3C_RESERVED_ADDR_7H02
 #define I3C_BROADCAST_ADDR  I3C_RESERVED_ADDR_7H7E
 
-#define CHECK_RESERVED_ADDR(addr)                                                   \
-        ({((addr == I3C_RESERVED_ADDR_7H00) || (addr == I3C_RESERVED_ADDR_7H01) ||  \
-           (addr == I3C_RESERVED_ADDR_7H02) || (addr == I3C_RESERVED_ADDR_7H3E) ||  \
-           (addr == I3C_RESERVED_ADDR_7H5E) || (addr == I3C_RESERVED_ADDR_7H6E) ||  \
-           (addr == I3C_RESERVED_ADDR_7H76) || (addr == I3C_RESERVED_ADDR_7H78) ||  \
-           (addr == I3C_RESERVED_ADDR_7H79) || (addr == I3C_RESERVED_ADDR_7H7A) ||  \
-           (addr == I3C_RESERVED_ADDR_7H7B) || (addr == I3C_RESERVED_ADDR_7H7C) ||  \
-           (addr == I3C_RESERVED_ADDR_7H7D) || (addr == I3C_RESERVED_ADDR_7H7E) ||  \
-           (addr == I3C_RESERVED_ADDR_7H7F)) ? I3C_ADDR_RESERVED : I3C_ADDR_FREE;   \
-        })
-
 struct I3cCntlr;
 struct I3cMethod;
 struct I3cLockMethod;
@@ -425,6 +414,8 @@ enum I3cIoCmd {
     I3C_IO_REQUEST_IBI,
     I3C_IO_FREE_IBI,
 };
+
+int I3cCheckReservedAddr(uint16_t addr);
 
 #ifdef __cplusplus
 #if __cplusplus

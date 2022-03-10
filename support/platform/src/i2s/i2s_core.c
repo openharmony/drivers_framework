@@ -24,7 +24,7 @@ int32_t I2sCntlrOpen(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->Open(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;
@@ -42,7 +42,7 @@ int32_t I2sCntlrClose(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->Close(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;
@@ -60,7 +60,7 @@ int32_t I2sCntlrEnable(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->Enable(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;
@@ -78,7 +78,7 @@ int32_t I2sCntlrDisable(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->Disable(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;
@@ -96,7 +96,7 @@ int32_t I2sCntlrStartRead(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->StartRead(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;
@@ -115,7 +115,7 @@ int32_t I2sCntlrStopRead(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->StopRead(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;
@@ -133,7 +133,7 @@ int32_t I2sCntlrStartWrite(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->StartWrite(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;
@@ -151,7 +151,7 @@ int32_t I2sCntlrStopWrite(struct I2sCntlr *cntlr)
         HDF_LOGE("%s: Open not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    (void)OsalMutexLock(&(cntlr->lock)); 
+    (void)OsalMutexLock(&(cntlr->lock));
     ret = cntlr->method->StopWrite(cntlr);
     (void)OsalMutexUnlock(&(cntlr->lock));
     return ret;

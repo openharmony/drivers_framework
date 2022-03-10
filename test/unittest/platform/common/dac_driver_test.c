@@ -10,7 +10,7 @@
 #include "device_resource_if.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
-#include "hdf_log.h"   
+#include "hdf_log.h"
 
 #define HDF_LOG_TAG dac_test_driver_c
 
