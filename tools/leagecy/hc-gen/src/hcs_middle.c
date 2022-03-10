@@ -25,7 +25,8 @@ static ParserObject *HcsLookupAstObject(const ParserObject *current, const char 
         HCS_ERROR("oom");
         return NULL;
     }
-    char *nodeName = strtok(splitPath, ".");
+    char *buf = NULL;
+    char *nodeName = strtok_s(splitPath, ".", &buf);
 
     /* path must start with "root" */
     if (nodeName == NULL || strcmp(nodeName, "root") != 0) {
@@ -34,14 +35,14 @@ static ParserObject *HcsLookupAstObject(const ParserObject *current, const char 
     }
 
     /* skip root in path */
-    nodeName = strtok(NULL, ".");
+    nodeName = strtok_s(NULL, ".", &buf);
     ParserObject *object = HcsGetParserRoot();
     while (nodeName != NULL) {
         object = HcsAstLookupObjectInChildren(object, nodeName);
         if (object == NULL) {
             break;
         }
-        nodeName = strtok(NULL, ".");
+        nodeName = strtok_s(NULL, ".", &buf);
     }
     HcsMemFree(splitPath);
 
