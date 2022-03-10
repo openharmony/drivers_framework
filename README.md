@@ -154,7 +154,7 @@ For details, see  [WLAN Overview](https://gitee.com/openharmony/docs/blob/master
 
 [Driver subsystem](https://gitee.com/openharmony/docs/blob/master/en/readme/driver-subsystem.md)
 
-drivers\_framework
+[drivers\_framework](https://gitee.com/openharmony/drivers_framework/blob/master/README.md)
 
 [drivers\_adapter](https://gitee.com/openharmony/drivers_adapter/blob/master/README.md)
 

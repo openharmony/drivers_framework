@@ -154,7 +154,7 @@ HDF驱动框架详细开发请参考[驱动开发指南](https://gitee.com/openh
 
 [驱动子系统](https://gitee.com/openharmony/docs/blob/master/zh-cn/readme/%E9%A9%B1%E5%8A%A8%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
 
-drivers\_framework
+[drivers\_framework](https://gitee.com/openharmony/drivers_framework/blob/master/README.md)
 
 [drivers\_adapter](https://gitee.com/openharmony/drivers_adapter/blob/master/README_zh.md)
 
