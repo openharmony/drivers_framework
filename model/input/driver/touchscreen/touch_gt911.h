@@ -44,6 +44,8 @@
 #define GT_SOLU_X_HIGH        7
 #define GT_SOLU_Y_LOW         8
 #define GT_SOLU_Y_HIGH        9
+#define FIRMWARE_3RD          2
+#define KEY_CODE_4TH          3
 #if defined(CONFIG_ARCH_ROCKCHIP)
 #define FIRMWARE_LEN          241
 #define GTP_REG_CONFIG_DATA         0x8050

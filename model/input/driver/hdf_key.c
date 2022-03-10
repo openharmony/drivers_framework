@@ -34,7 +34,6 @@ int32_t KeyIrqHandle(uint16_t intGpioNum, void *data)
         return HDF_FAILURE;
     }
     ret = GpioDisableIrq(intGpioNum);
-
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: disable irq failed, ret %d", __func__, ret);
     }
@@ -66,7 +65,6 @@ static int32_t SetupKeyIrq(KeyDriver *keyDrv)
     uint16_t intGpioNum = keyDrv->keyCfg->gpioNum;
     uint16_t irqFlag = keyDrv->keyCfg->irqFlag;
     int32_t ret = GpioSetDir(intGpioNum, GPIO_DIR_IN);
-
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: gpio set dir failed, ret %d", __func__, ret);
         return ret;
