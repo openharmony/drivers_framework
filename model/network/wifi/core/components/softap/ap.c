@@ -295,7 +295,7 @@ static int32_t WifiCmdStopAp(const RequestContext *context, struct HdfSBuf *reqD
 static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     struct NetDevice *netdev = NULL;
-    WifiApSetting *apSettings = NULL;
+    WifiApSetting apSettings;
     const char *ifName = NULL;
     (void)context;
     (void)rspData;
@@ -308,19 +308,19 @@ static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
         return HDF_FAILURE;
     }
-    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings->beaconData.head), &(apSettings->beaconData.headLen))) {
+    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings.beaconData.head), &(apSettings.beaconData.headLen))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "head");
         return HDF_FAILURE;
     }
-    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings->beaconData.tail), &(apSettings->beaconData.tailLen))) {
+    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings.beaconData.tail), &(apSettings.beaconData.tailLen))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "tail");
         return HDF_FAILURE;
     }
-    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings->ssid), &(apSettings->ssidLen))) {
+    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings.ssid), &(apSettings.ssidLen))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ssid");
         return HDF_FAILURE;
     }
-    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings->meshSsid), &(apSettings->meshSsidLen))) {
+    if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings.meshSsid), &(apSettings.meshSsidLen))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "meshSsid");
         return HDF_FAILURE;
     }
@@ -329,7 +329,7 @@ static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-    return ChangeBeacon(netdev, apSettings);
+    return ChangeBeacon(netdev, &apSettings);
 }
 
 static int32_t WifiCmdStaRemove(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
