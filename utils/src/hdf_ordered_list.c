@@ -37,7 +37,7 @@ void HdfOrderedListOffer(struct HdfOrderedList *list, struct HdfOrderedListEntit
     OsalMutexLock(&list->mutex);
     if (HdfSListIsEmpty(&list->head)) {
         HdfSListAdd(&list->head, &newEntity->node);
-        goto finished;
+        goto FINISHED;
     }
     HdfSListIteratorInit(&it, &list->head);
     while (HdfSListIteratorHasNext(&it)) {
@@ -47,7 +47,7 @@ void HdfOrderedListOffer(struct HdfOrderedList *list, struct HdfOrderedListEntit
             break;
         }
     }
-finished:
+FINISHED:
     OsalMutexUnlock(&list->mutex);
     OsalSemPost(&list->sem);
 }
