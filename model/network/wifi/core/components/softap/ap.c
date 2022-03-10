@@ -147,26 +147,72 @@ static uint32_t GetAssociatedStasInfo(struct NetDevice *netDev, WifiStaInfo *sta
     return chipDriver->apOps->GetAssociatedStasInfo(netDev, staInfo, num);
 }
 
-static int32_t WifiCmdSetAp(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+static int32_t WifiFillApSettingsParams(struct HdfSBuf *reqData,  WifiApSetting *apSettings)
 {
-    WifiApSetting *apSettings = NULL;
-    uint32_t settingLen = 0;
-    const char *ifName = NULL;
-    struct NetDevice *netdev = NULL;
-    (void)context;
-    (void)rspData;
-    if (reqData == NULL) {
-        HDF_LOGE("%s: reqData is NULL", __func__);
-        return HDF_ERR_INVALID_PARAM;
-    }
-    ifName = HdfSbufReadString(reqData);
-    if (ifName == NULL) {
-        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.mode))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "mode");
         return HDF_FAILURE;
     }
-    if (!HdfSbufReadBuffer(reqData, (const void **)&apSettings, &settingLen) || apSettings == NULL ||
-        settingLen != sizeof(WifiApSetting)) {
+    HDF_LOGI("%s:apSettings->freqParams.mode=%d", __func__, apSettings->freqParams.mode);
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.freq))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "freq");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.channel))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "channel");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.htEnabled))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "htEnabled");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.secChannelOffset))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "secChannelOffset");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.vhtEnabled))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "vhtEnabled");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.centerFreq1))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "centerFreq1");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.centerFreq2))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "centerFreq2");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->freqParams.bandwidth))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "bandwidth");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadUint8(reqData, &(apSettings->freqParams.band))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "band");
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t WifiCmdSetApInner(struct HdfSBuf *reqData,  WifiApSetting *apSettings)
+{
+    if (WifiFillApSettingsParams(reqData, apSettings) != HDF_SUCCESS) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "apSettings");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->beaconInterval))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "beaconInterval");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &(apSettings->dtimPeriod))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "dtimPeriod");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadUint8(reqData, &(apSettings->hiddenSsid))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "hiddenSsid");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadUint8(reqData, &(apSettings->authType))) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "authType");
         return HDF_FAILURE;
     }
     if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings->beaconData.head), &(apSettings->beaconData.headLen))) {
@@ -185,13 +231,41 @@ static int32_t WifiCmdSetAp(const RequestContext *context, struct HdfSBuf *reqDa
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "meshSsid");
         return HDF_FAILURE;
     }
+    return HDF_SUCCESS;
+}
+
+static int32_t WifiCmdSetAp(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+{
+    WifiApSetting apSettings;
+    const char *ifName = NULL;
+    struct NetDevice *netdev = NULL;
+    int32_t ret = 0;
+    (void)context;
+    (void)rspData;
+    if (reqData == NULL) {
+        HDF_LOGE("%s: reqData is NULL", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+
+    ifName = HdfSbufReadString(reqData);
+    if (ifName == NULL) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
+        return HDF_FAILURE;
+    }
+
+    if (WifiCmdSetApInner(reqData, &apSettings) != HDF_SUCCESS) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "apSettings");
+        return HDF_FAILURE;
+    }
+
     netdev = NetDeviceGetInstByName(ifName);
     if (netdev == NULL) {
         HDF_LOGE("%s:netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
     HDF_LOGI("%s:%s starting AP ...", __func__, ifName);
-    return StartAp(netdev, apSettings);
+    ret = StartAp(netdev, &apSettings);
+    return ret;
 }
 
 static int32_t WifiCmdStopAp(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
@@ -222,7 +296,6 @@ static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf
 {
     struct NetDevice *netdev = NULL;
     WifiApSetting *apSettings = NULL;
-    uint32_t settingLen = 0;
     const char *ifName = NULL;
     (void)context;
     (void)rspData;
@@ -233,11 +306,6 @@ static int32_t WifiCmdChangeBeacon(const RequestContext *context, struct HdfSBuf
     ifName = HdfSbufReadString(reqData);
     if (ifName == NULL) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
-        return HDF_FAILURE;
-    }
-    if (!HdfSbufReadBuffer(reqData, (const void **)&apSettings, &settingLen) || apSettings == NULL ||
-        settingLen != sizeof(WifiApSetting)) {
-        HDF_LOGE("%s: %s!ParamName=%s,readSize=%u", __func__, ERROR_DESC_READ_REQ_FAILED, "apSettings", settingLen);
         return HDF_FAILURE;
     }
     if (!HdfSbufReadBuffer(reqData, (const void **)&(apSettings->beaconData.head), &(apSettings->beaconData.headLen))) {
