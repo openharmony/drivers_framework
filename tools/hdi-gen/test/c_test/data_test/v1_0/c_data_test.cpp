@@ -208,13 +208,13 @@ HWTEST_F(CDataTest, CDataTest_014, TestSize.Level1)
     ssize_t readSize = read(fd, recvMsg, sizeof(recvMsg));
     if (readSize < 0) {
         printf("read failed\n");
-        goto finished;
+        goto FINISHED;
     } else {
         printf("read size:%d\n", readSize);
     }
     printf("recvMsg:%s", recvMsg);
 
-finished:
+FINISHED:
     close(fd);
 }
 

@@ -84,7 +84,7 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
     driver = driverLoader->GetDriver(deviceInfo->moduleName);
     if (driver == NULL) {
         ret = HDF_DEV_ERR_NODATA;
-        goto error;
+        goto ERROR;
     }
 
     devNode = HdfDeviceNodeNewInstance(deviceInfo, driver);
@@ -99,11 +99,11 @@ int DevHostServiceAddDevice(struct IDevHostService *inst, const struct HdfDevice
     ret = device->super.Attach(&device->super, devNode);
     if (ret != HDF_SUCCESS) {
         HdfDeviceNodeFreeInstance(devNode);
-        goto error;
+        goto ERROR;
     }
     return HDF_SUCCESS;
 
-error:
+ERROR:
     if (DListIsEmpty(&device->devNodes)) {
         DevHostServiceFreeDevice(hostService, device);
     }
