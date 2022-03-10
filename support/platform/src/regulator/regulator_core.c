@@ -342,7 +342,7 @@ int32_t RegulatorNodeStatusCb(struct RegulatorNode *node)
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(node->regulatorInfo.cb, HDF_SUCCESS);
     struct RegulatorStatusChangeInfo info;
-    memset_s(&info, sizeof(struct RegulatorStatusChangeInfo), 0, sizeof(struct RegulatorStatusChangeInfo));
+    (void)memset_s(&info, sizeof(struct RegulatorStatusChangeInfo), 0, sizeof(struct RegulatorStatusChangeInfo));
 
     info.status = node->regulatorInfo.status;
     info.name = node->regulatorInfo.name;
