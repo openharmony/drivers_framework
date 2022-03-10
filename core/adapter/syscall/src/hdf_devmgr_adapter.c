@@ -27,18 +27,18 @@ int32_t HdfLoadDriverByServiceName(const char *serviceName)
     if (data == NULL) {
         HDF_LOGE("failed to obtain sbuf data");
         ret = HDF_DEV_ERR_NO_MEMORY;
-        goto out;
+        goto OUT;
     }
     if (!HdfSbufWriteString(data, serviceName)) {
         HDF_LOGE("failed to write sbuf");
         ret = HDF_FAILURE;
-        goto out;
+        goto OUT;
     }
     ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_LOAD_SERVICE, data, NULL);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("failed to load khdf driver %s", serviceName);
     }
-out:
+OUT:
     HdfIoServiceRecycle(ioService);
     HdfSbufRecycle(data);
     return ret;
@@ -61,18 +61,18 @@ int32_t HdfGetServiceNameByDeviceClass(DeviceClass deviceClass, struct HdfSBuf *
     if (data == NULL) {
         HDF_LOGE("failed to obtain sbuf data");
         ret = HDF_DEV_ERR_NO_MEMORY;
-        goto out;
+        goto OUT;
     }
     if (!HdfSbufWriteInt32(data, deviceClass)) {
         HDF_LOGE("failed to write sbuf");
         ret = HDF_FAILURE;
-        goto out;
+        goto OUT;
     }
     ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_GET_SERVICE, data, reply);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("failed to query service by class");
     }
-out:
+OUT:
     HdfIoServiceRecycle(ioService);
     HdfSbufRecycle(data);
     return ret;

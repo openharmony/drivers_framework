@@ -711,22 +711,22 @@ String& String::operator+=(const char* other)
     String newString(newSize);
     if (newString.string_ == nullptr) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed.", string_);
-        goto finished;
+        goto FINISHED;
     }
 
     if (string_ != nullptr && thisSize > 0) {
         if (memcpy_s(newString.string_, newSize + 1, string_, thisSize) != EOK) {
             Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 2", string_);
-            goto finished;
+            goto FINISHED;
         }
     }
 
     if (strcpy_s(newString.string_ + thisSize, newSize + 1 - thisSize, other) != EOK) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed.", string_);
-        goto finished;
+        goto FINISHED;
     }
 
-finished:
+FINISHED:
     SharedData::Release(string_);
     SharedData::AddRef(newString.string_);
     string_ = newString.string_;
@@ -744,22 +744,22 @@ String& String::operator+=(const String& other)
     String newString(newSize);
     if (newString.string_ == nullptr) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 1", string_);
-        goto finished;
+        goto FINISHED;
     }
 
     if (string_ != nullptr && thisSize > 0) {
         if (memcpy_s(newString.string_, newSize + 1, string_, thisSize) != EOK) {
             Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 2", string_);
-            goto finished;
+            goto FINISHED;
         }
     }
 
     if (strcpy_s(newString.string_ + thisSize, newSize + 1 - thisSize, other.string_) != EOK) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 3", string_);
-        goto finished;
+        goto FINISHED;
     }
 
-finished:
+FINISHED:
     SharedData::Release(string_);
     SharedData::AddRef(newString.string_);
     string_ = newString.string_;

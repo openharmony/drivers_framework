@@ -148,7 +148,7 @@ static int32_t HdfDevEventReadAndDispatch(struct HdfDevListenerThread *thread, i
     if (adapter == NULL) {
         HDF_LOGI("%s: invalid adapter", __func__);
         OsalMSleep(1); // yield to sync adapter list
-        goto finish;
+        goto FINISH;
     }
 
     while (true) {
@@ -170,12 +170,12 @@ static int32_t HdfDevEventReadAndDispatch(struct HdfDevListenerThread *thread, i
             HDF_LOGE("%s:ioctl failed, errno=%d", __func__, ret);
         }
 
-        goto finish;
+        goto FINISH;
     }
 
     ret = HdfDevEventDispatchLocked(thread, adapter, &bwr);
 
-finish:
+FINISH:
     OsalMemFree((void *)(uintptr_t)bwr.readBuffer);
     OsalMutexUnlock(&thread->mutex);
     return ret;
@@ -228,7 +228,7 @@ static int32_t HdfDevEventListenTask(void *para)
             pollCount = AssignPfds(thread, &pfds, &pfdSize);
         }
         if (pollCount <= 0) {
-            goto exit;
+            goto EXIT;
         }
         int32_t pollSize = poll(pfds, pollCount, -1);
         if (pollSize <= 0) {
@@ -242,17 +242,17 @@ static int32_t HdfDevEventListenTask(void *para)
             }
             if ((((uint32_t)pfds[i].revents) & POLLIN) &&
                 HdfDevEventReadAndDispatch(thread, pfds[i].fd) != HDF_SUCCESS) {
-                goto exit;
+                goto EXIT;
             } else if (((uint32_t)pfds[i].revents) & POLLHUP) {
                 HDF_LOGI("event listener task received exit event");
-                goto exit;
+                goto EXIT;
             } else if (((uint32_t)pfds[i].revents) & POLLNVAL) {
                 OsalMSleep(1); // polled closed fd, yield to sync
             }
         }
     }
 
-exit:
+EXIT:
     HDF_LOGI("event listener task exit");
 
     thread->status = LISTENER_EXITED;
@@ -713,30 +713,30 @@ struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName)
     realPath = OsalMemCalloc(PATH_MAX);
     if (devNodePath == NULL || realPath == NULL) {
         HDF_LOGE("%s: out of memory", __func__);
-        goto out;
+        goto OUT;
     }
 
     if (sprintf_s(devNodePath, PATH_MAX - 1, "%s%s", devPath, serviceName) < 0) {
         HDF_LOGE("Failed to get the node path");
-        goto out;
+        goto OUT;
     }
 
     if (realpath(devNodePath, realPath) == NULL &&
         TrytoLoadIoService(serviceName, devNodePath, realPath) != HDF_SUCCESS) {
-        goto out;
+        goto OUT;
     }
 
     adapter = (struct HdfSyscallAdapter *)OsalMemCalloc(sizeof(struct HdfSyscallAdapter));
     if (adapter == NULL) {
         HDF_LOGE("Failed to allocate SyscallAdapter");
-        goto out;
+        goto OUT;
     }
 
     DListHeadInit(&adapter->listenerList);
     if (OsalMutexInit(&adapter->mutex)) {
         HDF_LOGE("%s: Failed to create mutex", __func__);
         OsalMemFree(adapter);
-        goto out;
+        goto OUT;
     }
 
     adapter->fd = open(realPath, O_RDWR);
@@ -744,14 +744,14 @@ struct HdfIoService *HdfIoServiceAdapterObtain(const char *serviceName)
         HDF_LOGE("Open file node %{public}s failed, (%d)%{public}s", realPath, errno, strerror(errno));
         OsalMutexDestroy(&adapter->mutex);
         OsalMemFree(adapter);
-        goto out;
+        goto OUT;
     }
     ioService = &adapter->super;
     static struct HdfIoDispatcher dispatch = {
         .Dispatch = HdfSyscallAdapterDispatch,
     };
     ioService->dispatcher = &dispatch;
-out:
+OUT:
     OsalMemFree(devNodePath);
     OsalMemFree(realPath);
     return ioService;
@@ -938,7 +938,7 @@ int32_t HdfIoServiceGroupRegisterListener(struct HdfIoServiceGroup *group, struc
         if (it == listener) {
             HDF_LOGE("Failed to add group listener, repeated registration");
             ret = HDF_ERR_INVALID_PARAM;
-            goto finish;
+            goto FINISH;
         }
     }
     DListInsertTail(&listener->listNode, &adapterGroup->listenerList);
@@ -949,7 +949,7 @@ int32_t HdfIoServiceGroupRegisterListener(struct HdfIoServiceGroup *group, struc
         }
     }
 
-finish:
+FINISH:
     OsalMutexUnlock(&listenerThread->mutex);
     OsalMutexUnlock(&adapterGroup->mutex);
     return ret;
