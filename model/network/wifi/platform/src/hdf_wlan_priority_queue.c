@@ -64,7 +64,7 @@ PriorityQueue *CreatePriorityQueue(uint16_t queueSize, uint8_t priorityLevelCoun
 void DestroyPriorityQueue(PriorityQueue *queue)
 {
     uint8_t i;
-    HDF_STATUS status;	
+    HDF_STATUS status;
     PriorityQueueImpl *queueImpl = (PriorityQueueImpl *)queue;
     if (queue == NULL) {
         return;

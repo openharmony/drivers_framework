@@ -99,7 +99,6 @@ static void DeInitNetDeviceImpl(struct NetDeviceImpl *netDeviceImpl)
 
     /* last release netDeviceImpl */
     OsalMemFree(netDeviceImpl);
-    netDeviceImpl = NULL;
     HDF_LOGI("%s success!", __func__);
     return;
 }
@@ -122,7 +121,7 @@ static struct NetDeviceImpl *GetImplByNetDevice(const struct NetDevice *netDevic
 }
 
 #ifdef CONFIG_DRIVERS_HDF_NETDEV_EXT
-struct net_device * GetLinuxInfByNetDevice(const struct NetDevice *netDevice)
+struct net_device *GetLinuxInfByNetDevice(const struct NetDevice *netDevice)
 {
     struct NetDeviceImpl *impl = NULL;
     struct FullNetDevicePriv *priv = NULL;
@@ -136,7 +135,7 @@ struct net_device * GetLinuxInfByNetDevice(const struct NetDevice *netDevice)
     return priv->dev;
 }
 
-struct NetDevice * GetHdfNetDeviceByLinuxInf(struct net_device *dev)
+struct NetDevice *GetHdfNetDeviceByLinuxInf(struct net_device *dev)
 {
     struct NetDevice *netDev = NULL;
     struct FullNetDevicePriv *priv = (struct FullNetDevicePriv *)netdev_priv(dev);
@@ -191,7 +190,7 @@ struct NetDevice *NetDeviceInit(const char *ifName, uint32_t len, NetLinkType ty
         DeInitNetDeviceImpl(ndImpl);
         return NULL;
     }
-	netDevice->LinkLayerType = type;
+    netDevice->LinkLayerType = type;
     HDF_LOGI("Init Net Device success!");
     return netDevice;
 }
