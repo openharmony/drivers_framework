@@ -146,7 +146,6 @@ int32_t AudioSetPcmInfo(struct PlatformData *platformData, const struct AudioPcm
         platformData->renderPcmInfo.interleaved = 1;
         platformData->renderPcmInfo.channels = param->channels;
         platformData->renderPcmInfo.streamType = param->streamType;
-
     } else if (param->streamType == AUDIO_CAPTURE_STREAM) {
         if (AudioFramatToBitWidth(param->format, &platformData->capturePcmInfo.bitWidth) != HDF_SUCCESS) {
             return HDF_FAILURE;
@@ -165,7 +164,6 @@ int32_t AudioSetPcmInfo(struct PlatformData *platformData, const struct AudioPcm
         platformData->capturePcmInfo.interleaved = 1;
         platformData->capturePcmInfo.channels = param->channels;
         platformData->capturePcmInfo.streamType = param->streamType;
-
     } else {
         AUDIO_DRIVER_LOG_ERR("param streamType is invalid.");
         return HDF_FAILURE;
