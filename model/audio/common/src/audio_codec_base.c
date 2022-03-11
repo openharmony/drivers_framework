@@ -110,6 +110,8 @@ int32_t CodecGetConfigInfo(const struct HdfDeviceObject *device, struct CodecDat
 
     if (CodecGetRegConfig(device, codecData->regConfig) != HDF_SUCCESS) {
         ADM_LOG_ERR("CodecGetRegConfig fail!");
+        OsalMemFree(codecData->regConfig);
+        codecData->regConfig = NULL;
         return HDF_FAILURE;
     }
 
@@ -246,6 +248,8 @@ int32_t CodecSetConfigInfo(struct CodecData *codeData,  struct DaiData *daiData)
     codeData->virtualAddress = (uintptr_t)OsalIoRemap(audioIdInfo->chipIdRegister, audioIdInfo->chipIdSize);
 
     if (CodecSetSapmConfigInfo(codeData, regCfgGroup) != HDF_SUCCESS) {
+        OsalMemFree(codeData->controls);
+        codeData->controls = NULL;
         return HDF_FAILURE;
     }
 
