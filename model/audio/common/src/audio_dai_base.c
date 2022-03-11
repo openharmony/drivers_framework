@@ -107,6 +107,8 @@ int32_t DaiSetConfigInfo(struct DaiData *data)
         data->controls[index].iface    = item[index].iface;
         if (item[index].arrayIndex >= AUDIO_CTRL_LIST_MAX) {
             AUDIO_DRIVER_LOG_ERR("Array super index.");
+            OsalMemFree(data->controls);
+            data->controls = NULL;
             return HDF_FAILURE;
         }
         data->controls[index].name     = g_audioDaiControlsList[item[index].arrayIndex];
