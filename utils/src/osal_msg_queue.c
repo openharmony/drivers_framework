@@ -44,12 +44,12 @@ void HdfMessageQueueEnqueue(
         struct HdfMessage *next = (struct HdfMessage *)HdfSListIteratorNext(&it);
         if (next->timeStamp > message->timeStamp) {
             HdfSListIteratorInsert(&it, &message->entry);
-            goto complete;
+            goto COMPLETE;
         }
     }
 
     HdfSListAddTail(&queue->list, &message->entry);
-complete:
+COMPLETE:
     OsalMutexUnlock(&queue->mutex);
     OsalSemPost(&queue->semaphore);
 }
