@@ -560,7 +560,7 @@ int32_t HdfParseWlanConfig(const struct DeviceResourceNode *node)
     return ParseWlanConfig(node, &g_configWlanModuleRoot.wlanConfig);
 }
 
-struct HdfConfigWlanRoot *HdfWlanGetModuleConfigRoot()
+struct HdfConfigWlanRoot *HdfWlanGetModuleConfigRoot(void)
 {
     return &g_configWlanModuleRoot;
 }
