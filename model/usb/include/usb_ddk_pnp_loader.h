@@ -63,7 +63,7 @@ struct UsbPnpDeviceListTable {
     const char *serviceName;
     const char *deviceMatchAttr;
     UsbPnpDriverStatus status;
-    uintptr_t usbDevAddr;
+    uint64_t usbDevAddr;
     int32_t devNum;
     int32_t busNum;
     int32_t interfaceLength;
@@ -72,7 +72,7 @@ struct UsbPnpDeviceListTable {
 
 struct UsbPnpRemoveInfo {
     uint8_t removeType;
-    uintptr_t usbDevAddr;
+    uint64_t usbDevAddr;
     int32_t devNum;
     int32_t busNum;
     uint8_t interfaceNum;
