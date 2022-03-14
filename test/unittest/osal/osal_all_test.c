@@ -55,7 +55,7 @@ static int32_t g_test2Para = 123;
 static bool OsalCheckTime(OsalTimespec *time, uint32_t ms)
 {
     uint64_t t1 = time->sec * HDF_KILO_UNIT * HDF_KILO_UNIT + time->usec;
-    uint64_t t2 = ms * HDF_KILO_UNIT;
+    uint64_t t2 = (uint64_t)ms * HDF_KILO_UNIT;
     uint64_t diff = (t1 < t2) ? (t2 - t1) : (t1 - t2);
 
     return diff < TIME_RANGE;
