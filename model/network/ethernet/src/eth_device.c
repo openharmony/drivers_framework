@@ -248,6 +248,7 @@ struct EthConfig *GetEthConfig(const struct DeviceResourceNode *node)
 
     if (ParseConfigFromProperty(node, config) != HDF_SUCCESS) {
         HDF_LOGE("%s failed to parse config from property", __func__);
+        OsalMemFree(config);
         return NULL;
     }
     return config;
