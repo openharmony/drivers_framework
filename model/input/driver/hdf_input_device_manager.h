@@ -32,7 +32,9 @@
 #define BYTE_HAS_BITS 8
 #define BITS_TO_UINT64(count)    DIV_ROUND_UP(count, BYTE_HAS_BITS * sizeof(unsigned long))
 
-#define BITS_PER_LONG  32
+#ifndef BITS_PER_LONG
+#define BITS_PER_LONG 32
+#endif
 #define SET_BIT(nr)    (1UL << ((nr) % BITS_PER_LONG))
 
 #define FF_MAX    0x7f
