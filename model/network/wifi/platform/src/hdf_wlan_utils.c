@@ -81,7 +81,7 @@ int32_t RenewNetDevice(NetDevice **netDev)
         HDF_LOGE("%s:bad net device!", __func__);
         return HDF_FAILURE;
     }
-    if (strcpy_s(ifName, IFNAMSIZ, (*netDev)->name) < 0) {
+    if (strcpy_s(ifName, IFNAMSIZ, (*netDev)->name) != EOK) {
         HDF_LOGE("%s:Copy ifName failed!", __func__);
         return HDF_FAILURE;
     }
