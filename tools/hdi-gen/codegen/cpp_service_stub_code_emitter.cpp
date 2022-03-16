@@ -193,7 +193,7 @@ void CppServiceStubCodeEmitter::EmitStubSourceInclusions(StringBuilder& sb)
 
 void CppServiceStubCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    if (!isCallbackInterface()) {
+    if (!interface_->IsSerializable()) {
         headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
     } else {
         const AST::TypeStringMap& types = ast_->GetTypes();

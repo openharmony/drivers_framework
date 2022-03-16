@@ -35,11 +35,15 @@ private:
 
     void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
 
+    void EmitServiceImplDef(StringBuilder& sb);
+
     void EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix);
 
     void EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
 
-    void EmitServiceImplConstruct(StringBuilder& sb);
+    void EmitServiceImplGetMethod(StringBuilder& sb);
+
+    void EmitServiceImplReleaseMethod(StringBuilder& sb);
 
     void EmitServiceImplInstance(StringBuilder& sb);
 

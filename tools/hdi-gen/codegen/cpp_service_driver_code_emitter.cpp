@@ -31,7 +31,7 @@ bool CppServiceDriverCodeEmitter::ResolveDirectory(const String& targetDirectory
 void CppServiceDriverCodeEmitter::EmitCode()
 {
     // the callback interface have no driver file.
-    if (!isCallbackInterface()) {
+    if (!interface_->IsSerializable()) {
         EmitDriverSourceFile();
     }
 }

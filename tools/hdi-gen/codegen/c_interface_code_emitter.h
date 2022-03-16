@@ -31,6 +31,8 @@ private:
 
     void EmitPreDeclaration(StringBuilder& sb);
 
+    void EmitInterfaceDesc(StringBuilder& sb);
+
     void EmitInterfaceVersionMacro(StringBuilder& sb);
 
     void EmitInterfaceDefinition(StringBuilder& sb);

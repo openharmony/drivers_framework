@@ -47,6 +47,10 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
     EmitServiceImplHeaderInclusions(sb);
     sb.Append("\n");
     EmitHeadExternC(sb);
+    if (!interface_->IsSerializable()) {
+        sb.Append("\n");
+        EmitServiceImplDef(sb);
+    }
     sb.Append("\n");
     EmitServiceImplConstructDecl(sb);
     sb.Append("\n");
@@ -64,7 +68,7 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderInclusions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
+    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(stubName_)));
 
     for (const auto& file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -73,7 +77,9 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderInclusions(StringBuilder& sb)
 
 void CServiceImplCodeEmitter::EmitServiceImplConstructDecl(StringBuilder& sb)
 {
-    sb.AppendFormat("void %sServiceConstruct(struct %s* service);\n", baseName_.string(), interfaceName_.string());
+    String instTypeName = interface_->IsSerializable() ? interfaceName_ : implName_;
+    sb.AppendFormat("struct %s *%sServiceGet(void);\n\n", instTypeName.string(), baseName_.string());
+    sb.AppendFormat("void %sServiceRelease(struct %s *instance);\n", baseName_.string(), instTypeName.string());
 }
 
 void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
@@ -84,10 +90,17 @@ void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
 
     EmitLicense(sb);
     EmitServiceImplSourceInclusions(sb);
+    if (interface_->IsSerializable()) {
+        sb.Append("\n");
+        EmitServiceImplDef(sb);
+    }
+
     sb.Append("\n");
     EmitServiceImplMethodImpls(sb, "");
     sb.Append("\n");
-    EmitServiceImplConstruct(sb);
+    EmitServiceImplGetMethod(sb);
+    sb.Append("\n");
+    EmitServiceImplReleaseMethod(sb);
 
     String data = sb.ToString();
     file.WriteData(data.string(), data.GetLength());
@@ -113,6 +126,15 @@ void CServiceImplCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFile
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
+}
+
+void CServiceImplCodeEmitter::EmitServiceImplDef(StringBuilder& sb)
+{
+    sb.AppendFormat("struct %sService\n", baseName_.string());
+    sb.Append("{\n");
+    sb.Append(g_tab).AppendFormat("struct %sStub stub;\n\n", baseName_.string());
+    sb.Append(g_tab).Append("// please add private data here\n");
+    sb.Append("};\n");
 }
 
 void CServiceImplCodeEmitter::EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix)
@@ -154,18 +176,74 @@ void CServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>
     sb.Append(prefix).Append("}\n");
 }
 
-void CServiceImplCodeEmitter::EmitServiceImplConstruct(StringBuilder& sb)
+void CServiceImplCodeEmitter::EmitServiceImplGetMethod(StringBuilder& sb)
 {
-    String objName("instance");
-    sb.AppendFormat("void %sServiceConstruct(struct %s *%s)\n",
-        baseName_.string(), interfaceName_.string(), objName.string());
+    String implTypeName = String::Format("%sService", baseName_.string());
+    String objName = "service";
+
+    if (!interface_->IsSerializable()) {
+        sb.AppendFormat("struct %s *%sGet(void)\n", implName_.string(), implTypeName.string());
+    } else {
+        sb.AppendFormat("struct %s *%sGet(void)\n", interfaceName_.string(), implTypeName.string());
+    }
     sb.Append("{\n");
+
+    sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s *)OsalMemCalloc(sizeof(struct %s));\n",
+        implTypeName.string(), objName.string(), implTypeName.string(), implTypeName.string());
+    sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: malloc %s obj failed!\", __func__);\n",
+        implTypeName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n\n");
+
+    sb.Append(g_tab).AppendFormat("if (!%sStubConstruct(&%s->stub)) {\n", baseName_.string(), objName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: construct %sStub obj failed!\", __func__);\n",
+        baseName_.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("OsalMemFree(%s);\n", objName.string());
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n\n");
+
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(g_tab).AppendFormat("%s->%s = %s%s;\n",
-            objName.string(), method->GetName().string(), baseName_.string(), method->GetName().string());
+        sb.Append(g_tab).AppendFormat("%s->stub.interface.%s = %s%s;\n", objName.string(), method->GetName().string(),
+            baseName_.string(), method->GetName().string());
     }
-    sb.Append("}");
+
+    if (interface_->IsSerializable()) {
+        sb.Append(g_tab).AppendFormat("return &%s->stub.interface;\n", objName.string());
+    } else {
+        sb.Append(g_tab).AppendFormat("return service;\n", objName.string());
+    }
+    sb.Append("}\n");
+}
+
+void CServiceImplCodeEmitter::EmitServiceImplReleaseMethod(StringBuilder& sb)
+{
+    String implTypeName = String::Format("%sService", baseName_.string());
+    String instName = "instance";
+    String objName = "service";
+
+    if (interface_->IsSerializable()) {
+        sb.AppendFormat("void %sRelease(struct %s *%s)\n", implTypeName.string(), interfaceName_.string(),
+            instName.string());
+        sb.Append("{\n");
+        sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s *)%s;\n", implTypeName.string(), objName.string(),
+            implTypeName.string(), instName.string());
+        sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
+        sb.Append(g_tab).Append(g_tab).Append("return;\n");
+        sb.Append(g_tab).Append("}\n\n");
+        sb.Append(g_tab).AppendFormat("%sStubRelease(&%s->stub);\n", baseName_.string(), objName.string());
+        sb.Append(g_tab).AppendFormat("OsalMemFree(%s);\n", objName.string());
+    } else {
+        sb.AppendFormat("void %sRelease(struct %s *%s)\n", implTypeName.string(), implTypeName.string(),
+            instName.string());
+        sb.Append("{\n");
+        sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", instName.string());
+        sb.Append(g_tab).Append(g_tab).Append("return;\n");
+        sb.Append(g_tab).Append("}\n\n");
+        sb.Append(g_tab).AppendFormat("OsalMemFree(%s);\n", instName.string());
+    }
+    sb.Append("}\n");
 }
 } // namespace HDI
 } // namespace OHOS

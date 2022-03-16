@@ -155,7 +155,7 @@ void CppClientProxyCodeEmitter::EmitProxySourceFile()
     sb.Append("\n");
     EmitBeginNamespace(sb);
     sb.Append("\n");
-    if (!isCallbackInterface()) {
+    if (!interface_->IsSerializable()) {
         EmitGetMethodImpl(sb, "");
         sb.Append("\n");
         EmitGetInstanceMethodImpl(sb, "");
@@ -184,7 +184,7 @@ void CppClientProxyCodeEmitter::EmitProxySourceInclusions(StringBuilder& sb)
 
 void CppClientProxyCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
 {
-    if (!isCallbackInterface()) {
+    if (!interface_->IsSerializable()) {
         headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "iservmgr_hdi"));
     }
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
