@@ -38,8 +38,7 @@ void AST::SetIdlFile(const String& idlFile)
 #else
     int index = idlFilePath_.LastIndexOf('/');
 #endif
-    int end = (idlFilePath_.LastIndexOf(".idl") == -1) ?
-            (idlFilePath_.LastIndexOf(".idl")) : (idlFilePath_.LastIndexOf(".idl"));
+    int end = idlFilePath_.LastIndexOf(".idl");
     name_ = idlFilePath_.Substring((index == -1) ? 0 : (index + 1), end);
 }
 

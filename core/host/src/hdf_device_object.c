@@ -157,7 +157,7 @@ void HdfPmSetMode(struct HdfDeviceObject *deviceObject, uint32_t mode)
 
 bool HdfDeviceSetClass(struct HdfDeviceObject *deviceObject, DeviceClass deviceClass)
 {
-    if ((deviceObject == NULL) || (deviceClass >= DEVICE_CLASS_MAX) || (deviceClass >= DEVICE_CLASS_MAX)) {
+    if ((deviceObject == NULL) || (deviceClass >= DEVICE_CLASS_MAX)) {
         return false;
     }
     deviceObject->deviceClass = deviceClass;
