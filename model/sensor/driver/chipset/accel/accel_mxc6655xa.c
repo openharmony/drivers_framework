@@ -120,9 +120,13 @@ int32_t ReadMxc6655xaData(struct SensorCfgData *cfg, struct SensorReportEvent *e
     event->option = 0;
     event->mode = SENSOR_WORK_MODE_REALTIME;
 
-    tmp[ACCEL_X_AXIS] = (rawData.x * SENSOR_1K_UNIT) / SENSOR_CONVERT_UNIT;
-    tmp[ACCEL_Y_AXIS] = (rawData.y * SENSOR_1K_UNIT) / SENSOR_CONVERT_UNIT;
-    tmp[ACCEL_Z_AXIS] = (rawData.z * SENSOR_1K_UNIT) / SENSOR_CONVERT_UNIT;
+    rawData.x = rawData.x * MXC6655XA_ACC_SENSITIVITY_2G;
+    rawData.y = rawData.y * MXC6655XA_ACC_SENSITIVITY_2G;
+    rawData.z = rawData.z * MXC6655XA_ACC_SENSITIVITY_2G;
+
+    tmp[ACCEL_X_AXIS] = (rawData.x * SENSOR_CONVERT_UNIT) / SENSOR_CONVERT_UNIT;
+    tmp[ACCEL_Y_AXIS] = (rawData.y * SENSOR_CONVERT_UNIT) / SENSOR_CONVERT_UNIT;
+    tmp[ACCEL_Z_AXIS] = (rawData.z * SENSOR_CONVERT_UNIT) / SENSOR_CONVERT_UNIT;
 
     ret = SensorRawDataToRemapData(cfg->direction, tmp, sizeof(tmp) / sizeof(tmp[0]));
     if (ret != HDF_SUCCESS) {
