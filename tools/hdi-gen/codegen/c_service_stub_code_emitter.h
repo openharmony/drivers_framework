@@ -27,6 +27,8 @@ private:
 
     void EmitStubHeaderInclusions(StringBuilder& sb);
 
+    void EmitCbServiceStubDef(StringBuilder& sb);
+
     void EmitCbServiceStubMethodsDcl(StringBuilder& sb);
 
     void EmitServiceStubSourceFile();
@@ -34,8 +36,6 @@ private:
     void EmitStubSourceInclusions(StringBuilder& sb);
 
     void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
-
-    void EmitStubDefinitions(StringBuilder& sb);
 
     void EmitServiceStubMethodImpls(StringBuilder& sb, const String& prefix);
 
@@ -60,15 +60,9 @@ private:
 
     void EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
 
-    void EmitServiceStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
-
     void EmitStubGetMethodImpl(StringBuilder& sb);
 
-    void EmitKernelStubGetMethodImpl(StringBuilder& sb);
-
     void EmitStubReleaseImpl(StringBuilder& sb);
-
-    void EmitKernelStubReleaseImpl(StringBuilder& sb);
 };
 } // namespace HDI
 } // namespace OHOS

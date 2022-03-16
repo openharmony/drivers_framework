@@ -40,18 +40,11 @@ protected:
 
     void EmitTailExternC(StringBuilder& sb);
 
+    String EmitDescMacroName();
+
     String MacroName(const String& name);
 
     String ConstantName(const String& name);
-
-    bool isCallbackInterface()
-    {
-        if (interface_ == nullptr) {
-            return false;
-        }
-
-        return interface_->IsCallback();
-    }
 
     String SpecificationParam(StringBuilder& sb, const String& prefix);
 

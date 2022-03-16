@@ -43,6 +43,8 @@ private:
 
     void EmitCreateBuf(const String& dataBufName, const String& replyBufName, StringBuilder& sb, const String& prefix);
 
+    void EmitWriteInterfaceToken(const String& dataBufName, StringBuilder& sb, const String& prefix);
+
     void EmitReleaseBuf(const String& dataBufName, const String& replyBufName, StringBuilder& sb,
         const String& prefix);
 
@@ -55,17 +57,32 @@ private:
 
     void EmitProxyConstruction(StringBuilder&);
 
+    void EmitProxyExternalMethodImpl(StringBuilder& sb);
+
     void EmitProxyGetMethodImpl(StringBuilder& sb);
 
-    void EmitProxyGetInstanceMethodImpl(StringBuilder& sb);
+    void EmitProxyGetInstanceMethodImpl(const String& objName, const String& serMajorName, const String& serMinorName,
+        const String& remoteName, const String& serviceName, StringBuilder& sb);
 
-    void EmitKernelProxyGetInstanceMethodImpl(StringBuilder& sb);
+    void EmitKernelProxyGetInstanceMethodImpl(const String& objName, const String& serMajorName,
+        const String& serMinorName, const String& remoteName, const String& serviceName, StringBuilder& sb);
 
-    void EmitCbProxyGetMethodImpl(StringBuilder& sb);
+    void EmitCbProxyGetMethodImpl(const String& objName, const String& serMajorName, const String& serMinorName,
+        const String& remoteName, StringBuilder& sb);
 
-    void EmitProxyReleaseMethodImpl(StringBuilder& sb);
+    void EmitProxyGetRemoteService(const String& remoteName, const String& serviceName, StringBuilder& sb,
+        const String& prefix);
 
-    void EmitKernelProxyReleaseMethodImpl(StringBuilder& sb);
+    void EmitProxySetInterfaceDesc(const String& remoteName, const String& recycleFuncName, StringBuilder& sb,
+        const String& prefix);
+
+    void EmitProxyCreateProxyObject(const String& clientObjName, const String& remoteName,
+        const String& recycleFuncName, StringBuilder& sb, const String& prefix);
+
+    void EmitProxyCheckVersion(const String& clientObjName, const String& serMajorName, const String& serMinorName,
+        StringBuilder& sb, const String& prefix);
+
+    void EmitProxyReleaseMethodImpl(const String& remoteName, const String& recycleFuncName, StringBuilder& sb);
 
     std::vector<String> freeObjStatements_;
 };

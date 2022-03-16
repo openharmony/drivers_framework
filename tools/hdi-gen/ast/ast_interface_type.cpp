@@ -141,6 +141,25 @@ void ASTInterfaceType::EmitCWriteVar(const String& parcelName, const String& nam
     sb.Append(prefix).Append("}\n");
 }
 
+void ASTInterfaceType::EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
+    const String& ecName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const
+{
+    String remoteName = String::Format("%sRemote", name.string());
+    String miName = name_.StartsWith("I") ? name_.Substring(1) : name_;
+
+    sb.Append(prefix).AppendFormat("struct HdfRemoteService *%s = HdfSbufReadRemoteService(%s);\n",
+        remoteName.string(), parcelName.string());
+    sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", remoteName.string());
+    sb.Append(prefix + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", remoteName.string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n");
+
+    sb.Append(prefix).AppendFormat("*%s = %sGet(%s);\n",
+        name.string(), miName.string(), remoteName.string());
+}
+
 void ASTInterfaceType::EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
     const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
