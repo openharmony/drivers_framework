@@ -55,25 +55,8 @@ void CClientProxyCodeEmitter::EmitProxySourceFile()
     EmitProxyMethodImpls(sb);
     sb.Append("\n");
     EmitProxyConstruction(sb);
-    if (!isCallbackInterface()) {
-        sb.Append("\n");
-        EmitProxyGetMethodImpl(sb);
-        sb.Append("\n");
-        if (isKernelCode_) {
-            EmitKernelProxyGetInstanceMethodImpl(sb);
-            sb.Append("\n");
-            EmitKernelProxyReleaseMethodImpl(sb);
-        } else {
-            EmitProxyGetInstanceMethodImpl(sb);
-            sb.Append("\n");
-            EmitProxyReleaseMethodImpl(sb);
-        }
-    } else {
-        sb.Append("\n");
-        EmitCbProxyGetMethodImpl(sb);
-        sb.Append("\n");
-        EmitProxyReleaseMethodImpl(sb);
-    }
+    sb.Append("\n");
+    EmitProxyExternalMethodImpl(sb);
 
     String data = sb.ToString();
     file.WriteData(data.string(), data.GetLength());
@@ -233,8 +216,13 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& meth
 
     sb.Append("\n");
     EmitCreateBuf(dataParcelName_, replyParcelName_, sb, prefix + g_tab);
-    sb.Append("\n");
 
+    if (!isKernelCode_) {
+        sb.Append("\n");
+        EmitWriteInterfaceToken(dataParcelName_, sb, prefix + g_tab);
+    }
+
+    sb.Append("\n");
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         if (param->GetAttribute() == ParamAttr::PARAM_IN) {
@@ -281,6 +269,17 @@ void CClientProxyCodeEmitter::EmitCreateBuf(const String& dataBufName, const Str
     sb.Append(prefix).AppendFormat("if (%s == NULL || %s == NULL) {\n", dataBufName.string(), replyBufName.string());
     sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
     sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_MALLOC_FAIL;\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", finishedLabelName_);
+    sb.Append(prefix).Append("}\n");
+}
+
+void CClientProxyCodeEmitter::EmitWriteInterfaceToken(const String& dataBufName, StringBuilder& sb,
+    const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("if (!HdfRemoteServiceWriteInterfaceToken(self->AsObject(self), %s)) {\n",
+        dataBufName.string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: write interface token failed!\", __func__);\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", errorCodeName_.string());
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", finishedLabelName_);
     sb.Append(prefix).Append("}\n");
 }
@@ -379,6 +378,34 @@ void CClientProxyCodeEmitter::EmitProxyConstruction(StringBuilder& sb)
     sb.Append("}\n");
 }
 
+void CClientProxyCodeEmitter::EmitProxyExternalMethodImpl(StringBuilder& sb)
+{
+    String objName = "client";
+    String serMajorName = "serMajorVer";
+    String serMinorName = "serMinorVer";
+    String remoteName = "remote";
+    String serviceName = "serviceName";
+
+    if (isKernelCode_) {
+        remoteName = "serv";
+        EmitProxyGetMethodImpl(sb);
+        sb.Append("\n");
+        EmitKernelProxyGetInstanceMethodImpl(objName, serMajorName, serMinorName, remoteName, serviceName, sb);
+        sb.Append("\n");
+        EmitProxyReleaseMethodImpl(remoteName, "HdfIoServiceRecycle", sb);
+    } else if (interface_->IsSerializable()) {
+        EmitCbProxyGetMethodImpl(objName, serMajorName, serMinorName, remoteName, sb);
+        sb.Append("\n");
+        EmitProxyReleaseMethodImpl(remoteName, "HdfRemoteServiceRecycle", sb);
+    } else {
+        EmitProxyGetMethodImpl(sb);
+        sb.Append("\n");
+        EmitProxyGetInstanceMethodImpl(objName, serMajorName, serMinorName, remoteName, serviceName, sb);
+        sb.Append("\n");
+        EmitProxyReleaseMethodImpl(remoteName, "HdfRemoteServiceRecycle", sb);
+    }
+}
+
 void CClientProxyCodeEmitter::EmitProxyGetMethodImpl(StringBuilder& sb)
 {
     sb.AppendFormat("struct %s *%sGet()\n", interfaceName_.string(), baseName_.string());
@@ -387,136 +414,140 @@ void CClientProxyCodeEmitter::EmitProxyGetMethodImpl(StringBuilder& sb)
     sb.Append("}\n");
 }
 
-void CClientProxyCodeEmitter::EmitProxyGetInstanceMethodImpl(StringBuilder& sb)
+void CClientProxyCodeEmitter::EmitProxyGetInstanceMethodImpl(const String& objName, const String& serMajorName,
+    const String& serMinorName, const String& remoteName, const String& serviceName, StringBuilder& sb)
 {
-    String objName = "client";
-    String SerMajorName = "serMajorVer";
-    String SerMinorName = "serMinorVer";
-    sb.AppendFormat("struct %s *%sGetInstance(const char *instanceName)\n",
-        interfaceName_.string(), baseName_.string());
+    sb.AppendFormat("struct %s *%sGetInstance(const char *%s)\n", interfaceName_.string(), baseName_.string(),
+        serviceName.string());
     sb.Append("{\n");
-    sb.Append(g_tab).Append("struct HDIServiceManager *serviceMgr = HDIServiceManagerGet();\n");
-    sb.Append(g_tab).Append("if (serviceMgr == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: HDIServiceManager not found!\", __func__);\n");
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).Append("struct HdfRemoteService *remote = ");
-    sb.Append("serviceMgr->GetService(serviceMgr, instanceName);\n");
-    sb.Append(g_tab).Append("HDIServiceManagerRelease(serviceMgr);\n");
-    sb.Append(g_tab).Append("if (remote == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: %sService not found!\", __func__);\n",
-        baseName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).AppendFormat("struct %sProxy *proxy = ", baseName_.string());
-    sb.AppendFormat("(struct %sProxy *)OsalMemAlloc(sizeof(struct %sProxy));\n", baseName_.string(),
-        baseName_.string());
-    sb.Append(g_tab).Append("if (proxy == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: malloc %s proxy failed!\", __func__);\n", interfaceName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("HdfRemoteServiceRecycle(remote);\n");
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).Append("proxy->remote = remote;\n");
-    sb.Append(g_tab).AppendFormat("struct %s *%s = &proxy->impl;\n", interfaceName_.string(), objName.string());
-    sb.Append(g_tab).AppendFormat("%sProxyConstruct(%s);\n", baseName_.string(), objName.string());
-    sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMajorName.string());
-    sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMinorName.string());
-    sb.Append(g_tab).AppendFormat("int32_t %s = %s->GetVersion(%s, &%s, &%s);\n",
-        errorCodeName_.string(), objName.string(), objName.string(), SerMajorName.string(), SerMinorName.string());
-    sb.Append(g_tab).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: get version failed!\", __func__);\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat("%sRelease(%s);\n", baseName_.string(), objName.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).AppendFormat("if (%s != %s) {\n", SerMajorName.string(), majorVerName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s:check version failed! ");
-    sb.Append("version of service:%u.%u, version of client:%u.%u\", __func__,\n");
-    sb.Append(g_tab).Append(g_tab).Append(g_tab).AppendFormat("%s, %s, %s, %s);\n", SerMajorName.string(),
-        SerMinorName.string(), majorVerName_.string(), minorVerName_.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("%sRelease(%s);\n", baseName_.string(), objName.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
+    EmitProxyGetRemoteService(remoteName, serviceName, sb, g_tab);
+    sb.Append("\n");
+    EmitProxySetInterfaceDesc(remoteName, "HdfRemoteServiceRecycle", sb, g_tab);
+    sb.Append("\n");
+    EmitProxyCreateProxyObject(objName, remoteName, "HdfRemoteServiceRecycle", sb, g_tab);
+    sb.Append("\n");
+    EmitProxyCheckVersion(objName, serMajorName, serMinorName, sb, g_tab);
+    sb.Append("\n");
     sb.Append(g_tab).AppendFormat("return %s;\n", objName.string());
     sb.Append("}\n");
 }
 
-void CClientProxyCodeEmitter::EmitKernelProxyGetInstanceMethodImpl(StringBuilder& sb)
+void CClientProxyCodeEmitter::EmitKernelProxyGetInstanceMethodImpl(const String& objName, const String& serMajorName,
+    const String& serMinorName, const String& remoteName, const String& serviceName, StringBuilder& sb)
 {
-    sb.AppendFormat("struct %s *%sGetInstance(const char* serviceName)\n", interfaceName_.string(), baseName_.string());
+    sb.AppendFormat("struct %s *%sGetInstance(const char* %s)\n", interfaceName_.string(), baseName_.string(),
+        serviceName.string());
     sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("struct HdfIoService *serv = ");
-    sb.Append("HdfIoServiceBind(serviceName);\n");
-    sb.Append(g_tab).Append("if (serv == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: %sService not found!\", __func__);\n", baseName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n");
+    EmitProxyGetRemoteService(remoteName, serviceName, sb, g_tab);
     sb.Append("\n");
+    EmitProxyCreateProxyObject(objName, remoteName, "HdfIoServiceRecycle", sb, g_tab);
+    sb.Append("\n");
+    EmitProxyCheckVersion(objName, serMajorName, serMinorName, sb, g_tab);
+    sb.Append("\n");
+    sb.Append(g_tab).AppendFormat("return %s;\n", objName.string());
+    sb.Append("}\n");
+}
 
-    sb.Append(g_tab).AppendFormat("struct %sProxy *proxy = (struct %sProxy *)OsalMemAlloc(sizeof(struct %sProxy));\n",
+void CClientProxyCodeEmitter::EmitCbProxyGetMethodImpl(const String& objName, const String& serMajorName,
+    const String& serMinorName, const String& remoteName, StringBuilder& sb)
+{
+    sb.AppendFormat("struct %s *%sGet(struct HdfRemoteService *%s)\n", interfaceName_.string(), baseName_.string(),
+        remoteName.string());
+    sb.Append("{\n");
+    sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", remoteName.string());
+    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: remote is null\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append("}\n\n");
+    EmitProxySetInterfaceDesc(remoteName, "HdfRemoteServiceRecycle", sb, g_tab);
+    sb.Append("\n");
+    EmitProxyCreateProxyObject(objName, remoteName, "HdfRemoteServiceRecycle", sb, g_tab);
+    sb.Append("\n");
+    EmitProxyCheckVersion(objName, serMajorName, serMinorName, sb, g_tab);
+    sb.Append("\n");
+    sb.Append(g_tab).AppendFormat("return %s;\n", objName.string());
+    sb.Append("}\n");
+}
+
+void CClientProxyCodeEmitter::EmitProxyGetRemoteService(const String& remoteName, const String& serviceName,
+    StringBuilder& sb, const String& prefix)
+{
+    if (!isKernelCode_) {
+        sb.Append(prefix).Append("struct HDIServiceManager *serviceMgr = HDIServiceManagerGet();\n");
+        sb.Append(prefix).Append("if (serviceMgr == NULL) {\n");
+        sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: HDIServiceManager not found!\", __func__);\n");
+        sb.Append(prefix + g_tab).Append("return NULL;\n");
+        sb.Append(prefix).Append("}\n\n");
+        sb.Append(prefix).AppendFormat("struct HdfRemoteService *%s = ", remoteName.string());
+        sb.AppendFormat("serviceMgr->GetService(serviceMgr, %s);\n", serviceName.string());
+        sb.Append(prefix).Append("HDIServiceManagerRelease(serviceMgr);\n");
+        sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", remoteName.string());
+        sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: failed to get remote!\", __func__);\n");
+        sb.Append(prefix + g_tab).Append("return NULL;\n");
+        sb.Append(prefix).Append("}\n");
+    } else {
+        sb.Append(prefix).AppendFormat("struct HdfIoService *%s = ", remoteName.string());
+        sb.AppendFormat("HdfIoServiceBind(%s);\n", serviceName.string());
+        sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", remoteName.string());
+        sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: failed to get io service!\", __func__);\n");
+        sb.Append(prefix + g_tab).Append("return NULL;\n");
+        sb.Append(prefix).Append("}\n");
+    }
+}
+
+void CClientProxyCodeEmitter::EmitProxySetInterfaceDesc(const String& remoteName, const String& recycleFuncName,
+    StringBuilder& sb, const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("if (!HdfRemoteServiceSetInterfaceDesc(%s, %s)) {\n",
+        remoteName.string(), EmitDescMacroName().string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: set interface token failed!\", __func__);\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s(%s);\n", recycleFuncName.string(), remoteName.string());
+    sb.Append(prefix + g_tab).Append("return NULL;\n");
+    sb.Append(prefix).Append("}\n");
+}
+
+void CClientProxyCodeEmitter::EmitProxyCreateProxyObject(const String& clientObjName, const String& remoteName,
+    const String& recycleFuncName, StringBuilder& sb, const String& prefix)
+{
+    sb.Append(prefix).AppendFormat("struct %sProxy *proxy = (struct %sProxy *)OsalMemAlloc(sizeof(struct %sProxy));\n",
         baseName_.string(), baseName_.string(), baseName_.string());
-    sb.Append(g_tab).Append("if (proxy == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat(
+    sb.Append(prefix).Append("if (proxy == NULL) {\n");
+    sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: malloc %s proxy failed!\", __func__);\n", interfaceName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("HdfIoServiceRecycle(serv);\n");
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n");
+    if (!interface_->IsSerializable()) {
+        sb.Append(prefix + g_tab).AppendFormat("%s(%s);\n", recycleFuncName.string(), remoteName.string());
+    }
+    sb.Append(prefix + g_tab).Append("return NULL;\n");
+    sb.Append(prefix).Append("}\n");
     sb.Append("\n");
-
-    sb.Append(g_tab).Append("proxy->serv = serv;\n");
-    sb.Append(g_tab).AppendFormat("%sProxyConstruct(&proxy->impl);\n", baseName_.string());
-    sb.Append(g_tab).Append("return &proxy->impl;\n");
-    sb.Append("}\n");
+    sb.Append(prefix).AppendFormat("proxy->%s = %s;\n", remoteName.string(), remoteName.string());
+    sb.Append(prefix).AppendFormat("%sProxyConstruct(&proxy->impl);\n", baseName_.string());
+    sb.Append(prefix).AppendFormat("struct %s *%s = &proxy->impl;\n", interfaceName_.string(), clientObjName.string());
 }
 
-void CClientProxyCodeEmitter::EmitCbProxyGetMethodImpl(StringBuilder& sb)
+void CClientProxyCodeEmitter::EmitProxyCheckVersion(const String& clientObjName, const String& serMajorName,
+    const String& serMinorName, StringBuilder& sb, const String& prefix)
 {
-    String objName = "client";
-    String SerMajorName = "serMajorVer";
-    String SerMinorName = "serMinorVer";
-    sb.AppendFormat("struct %s *%sGet(struct HdfRemoteService *remote)\n",
-        interfaceName_.string(), baseName_.string());
-    sb.Append("{\n");
-    sb.Append(g_tab).Append("if (remote == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: %sService not found!\", __func__);\n",
-        baseName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).AppendFormat("struct %sProxy *proxy = ", baseName_.string());
-    sb.AppendFormat("(struct %sProxy *)OsalMemAlloc(sizeof(struct %sProxy));\n", baseName_.string(),
-        baseName_.string());
-    sb.Append(g_tab).Append("if (proxy == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: malloc %s proxy failed!\", __func__);\n", interfaceName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("HdfRemoteServiceRecycle(remote);\n");
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).Append("proxy->remote = remote;\n");
-    sb.Append(g_tab).AppendFormat("struct %s *%s = &proxy->impl;\n", interfaceName_.string(), objName.string());
-    sb.Append(g_tab).AppendFormat("%sProxyConstruct(%s);\n", baseName_.string(), objName.string());
-    sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMajorName.string());
-    sb.Append(g_tab).AppendFormat("uint32_t %s = 0;\n", SerMinorName.string());
-    sb.Append(g_tab).AppendFormat("int32_t %s = %s->GetVersion(%s, &%s, &%s);\n",
-        errorCodeName_.string(), objName.string(), objName.string(), SerMajorName.string(), SerMinorName.string());
-    sb.Append(g_tab).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: get version failed!\", __func__);\n");
-    sb.Append(g_tab).Append(g_tab).AppendFormat("%sRelease(%s);\n", baseName_.string(), objName.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).AppendFormat("if (%s != %s) {\n", SerMajorName.string(), majorVerName_.string());
-    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s:check version failed! ");
+    sb.Append(prefix).AppendFormat("uint32_t %s = 0;\n", serMajorName.string());
+    sb.Append(prefix).AppendFormat("uint32_t %s = 0;\n", serMinorName.string());
+    sb.Append(prefix).AppendFormat("int32_t %s = %s->GetVersion(%s, &%s, &%s);\n", errorCodeName_.string(),
+        clientObjName.string(), clientObjName.string(), serMajorName.string(), serMinorName.string());
+    sb.Append(prefix).AppendFormat("if (%s != HDF_SUCCESS) {\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: get version failed!\", __func__);\n");
+    sb.Append(prefix + g_tab).AppendFormat("%sRelease(%s);\n", baseName_.string(), clientObjName.string());
+    sb.Append(prefix + g_tab).Append("return NULL;\n");
+    sb.Append(prefix).Append("}\n\n");
+    sb.Append(prefix).AppendFormat("if (%s != %s) {\n", serMajorName.string(), majorVerName_.string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s:check version failed! ");
     sb.Append("version of service:%u.%u, version of client:%u.%u\", __func__,\n");
-    sb.Append(g_tab).Append(g_tab).Append(g_tab).AppendFormat("%s, %s, %s, %s);\n", SerMajorName.string(),
-        SerMinorName.string(), majorVerName_.string(), minorVerName_.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("%sRelease(%s);\n", baseName_.string(), objName.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).AppendFormat("return %s;\n", objName.string());
-    sb.Append("}\n");
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("%s, %s, %s, %s);\n", serMajorName.string(),
+        serMinorName.string(), majorVerName_.string(), minorVerName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("%sRelease(%s);\n", baseName_.string(), clientObjName.string());
+    sb.Append(prefix + g_tab).Append("return NULL;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
-void CClientProxyCodeEmitter::EmitProxyReleaseMethodImpl(StringBuilder& sb)
+void CClientProxyCodeEmitter::EmitProxyReleaseMethodImpl(const String& remoteName, const String& recycleFuncName,
+    StringBuilder& sb)
 {
     sb.AppendFormat("void %sRelease(struct %s *instance)\n", baseName_.string(), interfaceName_.string());
     sb.Append("{\n");
@@ -525,21 +556,7 @@ void CClientProxyCodeEmitter::EmitProxyReleaseMethodImpl(StringBuilder& sb)
     sb.Append(g_tab).Append("}\n");
     sb.Append(g_tab).AppendFormat("struct %sProxy *proxy = CONTAINER_OF(instance, struct %sProxy, impl);\n",
         baseName_.string(), baseName_.string());
-    sb.Append(g_tab).Append("HdfRemoteServiceRecycle(proxy->remote);\n");
-    sb.Append(g_tab).Append("OsalMemFree(proxy);\n");
-    sb.Append("}\n");
-}
-
-void CClientProxyCodeEmitter::EmitKernelProxyReleaseMethodImpl(StringBuilder& sb)
-{
-    sb.AppendFormat("void %sRelease(struct %s *instance)\n", baseName_.string(), interfaceName_.string());
-    sb.Append("{\n");
-    sb.Append(g_tab).Append("if (instance == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).Append("return;\n");
-    sb.Append(g_tab).Append("}\n");
-    sb.Append(g_tab).AppendFormat("struct %sProxy *proxy = CONTAINER_OF(instance, struct %sProxy, impl);\n",
-        baseName_.string(), baseName_.string());
-    sb.Append(g_tab).Append("HdfIoServiceRecycle(proxy->serv);\n");
+    sb.Append(g_tab).AppendFormat("%s(proxy->%s);\n", recycleFuncName.string(), remoteName.string());
     sb.Append(g_tab).Append("OsalMemFree(proxy);\n");
     sb.Append("}\n");
 }

@@ -90,7 +90,7 @@ void CppInterfaceCodeEmitter::EmitInterfaceVersionMacro(StringBuilder& sb)
 
 void CppInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
 {
-    if (!isCallbackInterface()) {
+    if (!interface_->IsSerializable()) {
         sb.AppendFormat("class %s : public IRemoteBroker {\n", interfaceName_.string());
         sb.Append("public:\n");
         EmitInterfaceDescriptor(sb, g_tab);

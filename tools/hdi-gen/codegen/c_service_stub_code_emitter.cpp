@@ -49,6 +49,8 @@ void CServiceStubCodeEmitter::EmitServiceStubHeaderFile()
     sb.Append("\n");
     EmitHeadExternC(sb);
     sb.Append("\n");
+    EmitCbServiceStubDef(sb);
+    sb.Append("\n");
     EmitCbServiceStubMethodsDcl(sb);
     sb.Append("\n");
     EmitTailExternC(sb);
@@ -67,23 +69,41 @@ void CServiceStubCodeEmitter::EmitStubHeaderInclusions(StringBuilder& sb)
 
     headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
+    
+    if (interface_->IsSerializable()) {
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_remote_service"));
+    }
 
     for (const auto& file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
+void CServiceStubCodeEmitter::EmitCbServiceStubDef(StringBuilder& sb)
+{
+    sb.AppendFormat("struct %sStub\n", baseName_.string());
+    sb.Append("{\n");
+    sb.Append(g_tab).AppendFormat("struct %s interface;\n", interfaceName_.string());
+
+    if (interface_->IsSerializable()) {
+        sb.Append(g_tab).Append("struct HdfRemoteService *remote;\n");
+        sb.Append(g_tab).Append("struct HdfRemoteDispatcher dispatcher;\n");
+    } else {
+        sb.Append(g_tab).AppendFormat("int32_t (*OnRemoteRequest)(struct %s *serviceImpl, ",
+            interfaceName_.string());
+        sb.Append("int code, struct HdfSBuf *data, struct HdfSBuf *reply);\n");
+    }
+
+    sb.Append("};\n");
+}
+
 void CServiceStubCodeEmitter::EmitCbServiceStubMethodsDcl(StringBuilder& sb)
 {
-    if (!isCallbackInterface()) {
-        sb.AppendFormat("int32_t %sServiceOnRemoteRequest(struct %s *serviceImpl, ", baseName_.string(),
-            interfaceName_.string());
-        sb.Append("int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply);\n");
-        sb.Append("\n");
+    sb.AppendFormat("bool %sStubConstruct(struct %sStub *stub);\n", baseName_.string(), baseName_.string());
+
+    if (interface_->IsSerializable()) {
+        sb.AppendFormat("void %sStubRelease(struct %sStub *stub);\n", baseName_.string(), baseName_.string());
     }
-    sb.AppendFormat("struct %s* %sStubGetInstance(void);\n", interfaceName_.string(), baseName_.string());
-    sb.Append("\n");
-    sb.AppendFormat("void %sStubRelease(struct %s *instance);\n", baseName_.string(), interfaceName_.string());
 }
 
 void CServiceStubCodeEmitter::EmitServiceStubSourceFile()
@@ -95,32 +115,14 @@ void CServiceStubCodeEmitter::EmitServiceStubSourceFile()
     EmitLicense(sb);
     EmitStubSourceInclusions(sb);
     sb.Append("\n");
-
-    if (!isKernelCode_) {
-        EmitStubDefinitions(sb);
-        sb.Append("\n");
-    }
-
     EmitServiceStubMethodImpls(sb, "");
     sb.Append("\n");
-    if (isKernelCode_) {
-        EmitServiceStubOnRequestMethodImpl(sb, "");
-        sb.Append("\n");
-        EmitKernelStubGetMethodImpl(sb);
-    } else {
-        EmitStubOnRequestMethodImpl(sb, "");
-        sb.Append("\n");
-        if (!isCallbackInterface()) {
-            EmitServiceStubOnRequestMethodImpl(sb, "");
-            sb.Append("\n");
-        }
-        EmitStubGetMethodImpl(sb);
-    }
-
+    EmitStubOnRequestMethodImpl(sb, "");
     sb.Append("\n");
-    if (isKernelCode_) {
-        EmitKernelStubReleaseImpl(sb);
-    } else {
+    EmitStubGetMethodImpl(sb);
+
+    if (!isKernelCode_ && interface_->IsSerializable()) {
+        sb.Append("\n");
         EmitStubReleaseImpl(sb);
     }
 
@@ -146,7 +148,6 @@ void CServiceStubCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFile
 {
     if (!isKernelCode_) {
         headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
-        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_remote_service"));
     } else {
         const AST::TypeStringMap& types = ast_->GetTypes();
         for (const auto& pair : types) {
@@ -158,19 +159,13 @@ void CServiceStubCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFile
         }
     }
 
+    if (interface_->IsSerializable()) {
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_dlist"));
+    }
+
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_device_desc"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
-}
-
-void CServiceStubCodeEmitter::EmitStubDefinitions(StringBuilder& sb)
-{
-    sb.AppendFormat("struct %sStub {\n", baseName_.string());
-    sb.Append(g_tab).AppendFormat("struct %s impl;\n", interfaceName_.string());
-    sb.Append(g_tab).Append("struct HdfRemoteService *remote;\n");
-    sb.Append(g_tab).Append("struct HdfRemoteDispatcher dispatcher;\n");
-    sb.Append("};\n");
 }
 
 void CServiceStubCodeEmitter::EmitServiceStubMethodImpls(StringBuilder& sb, const String& prefix)
@@ -377,7 +372,7 @@ void CServiceStubCodeEmitter::EmitStubGetVerMethodImpl(const AutoPtr<ASTMethod>&
         "static int32_t SerStub%s(struct %s *serviceImpl, struct HdfSBuf *%s, struct HdfSBuf *%s)\n",
         method->GetName().string(), interfaceName_.string(), dataParcelName_.string(), replyParcelName_.string());
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).AppendFormat("int32_t %s = HDF_FAILURE;\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("int32_t %s = HDF_SUCCESS;\n", errorCodeName_.string());
 
     AutoPtr<ASTType> type = new ASTUintType();
     type->EmitCWriteVar(replyParcelName_, majorVerName_, errorCodeName_, finishedLabelName_, sb, prefix + g_tab);
@@ -397,59 +392,51 @@ void CServiceStubCodeEmitter::EmitStubAsObjectMethodImpl(StringBuilder& sb, cons
         baseName_.string(), interfaceName_.string(), objName.string());
     sb.Append(prefix).Append("{\n");
 
-    sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
-    sb.Append(prefix + g_tab + g_tab).Append("return NULL;\n");
-    sb.Append(prefix + g_tab).Append("}\n");
+    if (interface_->IsSerializable()) {
+        sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
+        sb.Append(prefix + g_tab + g_tab).Append("return NULL;\n");
+        sb.Append(prefix + g_tab).Append("}\n");
 
-    sb.Append(prefix + g_tab).AppendFormat("struct %sStub *stub = CONTAINER_OF(%s, struct %sStub, impl);\n",
-        baseName_.string(), objName.string(), baseName_.string());
-    sb.Append(prefix + g_tab).Append("return stub->remote;\n");
+        sb.Append(prefix + g_tab).AppendFormat("struct %sStub *stub = CONTAINER_OF(%s, struct %sStub, interface);\n",
+            baseName_.string(), objName.string(), baseName_.string());
+        sb.Append(prefix + g_tab).Append("return stub->remote;\n");
+    } else {
+        sb.Append(prefix + g_tab).Append("return NULL;\n");
+    }
+
     sb.Append(prefix).Append("}\n");
 }
 
 void CServiceStubCodeEmitter::EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix)
 {
-    String implName = "remote";
+    String remoteName = "remote";
+    String implName = "serviceImpl";
     String codeName = "code";
-    sb.Append(prefix).AppendFormat("static int32_t OnRemoteRequest(struct HdfRemoteService *%s, int %s, ",
-        implName.string(), codeName.string());
-    sb.Append("struct HdfSBuf *data, struct HdfSBuf *reply)\n");
+    String funcName = String::Format("%sOnRemoteRquest", baseName_.string());
+    if (interface_->IsSerializable()) {
+        sb.Append(prefix).AppendFormat("static int32_t %s(struct HdfRemoteService *%s, ",
+            funcName.string(), remoteName.string());
+    } else {
+        sb.Append(prefix).AppendFormat("static int32_t %s(struct %s *%s, ",
+            funcName.string(), interfaceName_.string(), implName.string());
+    }
+    sb.AppendFormat("int %s, struct HdfSBuf *data, struct HdfSBuf *reply)\n", codeName.string());
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).AppendFormat("struct %s *serviceImpl = (struct %s*)%s;\n",
-        interfaceName_.string(), interfaceName_.string(), implName.string());
-    sb.Append(prefix + g_tab).AppendFormat("switch (%s) {\n", codeName.string());
 
-    for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
-        AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(method).string());
-        sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return SerStub%s(serviceImpl, data, reply);\n",
-            method->GetName().string());
+    if (interface_->IsSerializable()) {
+        sb.Append(prefix + g_tab).AppendFormat("struct %s *%s = (struct %s*)%s;\n",
+            interfaceName_.string(), implName.string(), interfaceName_.string(), remoteName.string());
+
+        sb.Append(prefix + g_tab).AppendFormat(
+            "if (!HdfRemoteServiceCheckInterfaceToken(%s->AsObject(%s), data)) {\n",
+            implName.string(), implName.string());
+        sb.Append(prefix + g_tab + g_tab).Append(
+            "HDF_LOGE(\"%{public}s: interface token check failed\", __func__);\n");
+        sb.Append(prefix + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+        sb.Append(prefix + g_tab).Append("}\n\n");
     }
 
-    AutoPtr<ASTMethod> getVerMethod = interface_->GetVersionMethod();
-    sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(getVerMethod).string());
-    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return SerStub%s(serviceImpl, data, reply);\n",
-        getVerMethod->GetName().string());
-
-    sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
-    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: not support cmd %%{public}d\", __func__, %s);\n", codeName.string());
-    sb.Append(prefix + g_tab + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
-    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-    sb.Append(prefix + g_tab).Append("}\n");
-    sb.Append("}\n");
-}
-
-void CServiceStubCodeEmitter::EmitServiceStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix)
-{
-    String implName = "serviceImpl";
-    String codeName = "cmdId";
-    sb.Append(prefix).AppendFormat("int32_t %sServiceOnRemoteRequest(struct %s *%s, int %s, ",
-        baseName_.string(), interfaceName_.string(), implName.string(), codeName.string());
-    sb.Append("struct HdfSBuf *data, struct HdfSBuf *reply)\n");
-    sb.Append(prefix).Append("{\n");
     sb.Append(prefix + g_tab).AppendFormat("switch (%s) {\n", codeName.string());
-
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
         sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(method).string());
@@ -459,8 +446,8 @@ void CServiceStubCodeEmitter::EmitServiceStubOnRequestMethodImpl(StringBuilder& 
 
     AutoPtr<ASTMethod> getVerMethod = interface_->GetVersionMethod();
     sb.Append(prefix + g_tab + g_tab).AppendFormat("case %s:\n", EmitMethodCmdID(getVerMethod).string());
-    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return SerStub%s(serviceImpl, data, reply);\n",
-        getVerMethod->GetName().string());
+    sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat("return SerStub%s(%s, data, reply);\n",
+        getVerMethod->GetName().string(), implName.string());
 
     sb.Append(prefix + g_tab + g_tab).Append("default: {\n");
     sb.Append(prefix + g_tab + g_tab + g_tab).AppendFormat(
@@ -475,72 +462,58 @@ void CServiceStubCodeEmitter::EmitStubGetMethodImpl(StringBuilder& sb)
 {
     String stubTypeName = String::Format("%sStub", baseName_.string());
     String objName = "stub";
+    String funcName = String::Format("%sOnRemoteRquest", baseName_.string());
 
-    sb.AppendFormat("struct %s *%sStubGetInstance(void)\n", interfaceName_.string(), baseName_.string());
+    sb.AppendFormat("bool %sConstruct(struct %s *%s)\n", stubTypeName.string(), stubTypeName.string(),
+        objName.string());
     sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s *)OsalMemAlloc(sizeof(struct %s));\n",
-        stubTypeName.string(), objName.string(), stubTypeName.string(), stubTypeName.string());
     sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: OsalMemAlloc obj failed!\", __func__);\n",
-        stubTypeName.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).AppendFormat("%s->dispatcher.Dispatch = OnRemoteRequest;\n", objName.string());
-    sb.Append(g_tab).AppendFormat(
-        "%s->remote = HdfRemoteServiceObtain((struct HdfObject*)%s, &(%s->dispatcher));\n",
-        objName.string(), objName.string(), objName.string());
-    sb.Append(g_tab).AppendFormat("if (%s->remote == NULL) {\n", objName.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: %s->remote is null\", __func__);\n", objName.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("OsalMemFree(%s);\n", objName.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: stub is null!\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return false;\n");
     sb.Append(g_tab).Append("}\n\n");
 
-    sb.Append(g_tab).AppendFormat("%s->impl.AsObject = %sStubAsObject;\n", objName.string(), baseName_.string());
-    sb.Append(g_tab).AppendFormat("return &%s->impl;\n", objName.string());
-    sb.Append("}\n");
-}
+    if (interface_->IsSerializable()) {
+        sb.Append(g_tab).AppendFormat("%s->dispatcher.Dispatch = %s;\n", objName.string(), funcName.string());
+        sb.Append(g_tab).AppendFormat(
+            "%s->remote = HdfRemoteServiceObtain((struct HdfObject*)%s, &(%s->dispatcher));\n",
+            objName.string(), objName.string(), objName.string());
+        sb.Append(g_tab).AppendFormat("if (%s->remote == NULL) {\n", objName.string());
+        sb.Append(g_tab).Append(g_tab).AppendFormat(
+            "HDF_LOGE(\"%%{public}s: %s->remote is null\", __func__);\n", objName.string());
+        sb.Append(g_tab).Append(g_tab).Append("return false;\n");
+        sb.Append(g_tab).Append("}\n\n");
 
-void CServiceStubCodeEmitter::EmitKernelStubGetMethodImpl(StringBuilder& sb)
-{
-    String objName("instance");
-    sb.AppendFormat("struct %s *%sStubGetInstance(void)\n", interfaceName_.string(), baseName_.string());
-    sb.Append("{\n");
-    sb.Append(g_tab).AppendFormat("struct %s *%s = (struct %s*)OsalMemAlloc(sizeof(struct %s));\n",
-        interfaceName_.string(), objName.string(), interfaceName_.string(), interfaceName_.string());
-    sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: OsalMemAlloc struct %s %s failed!\", __func__);\n",
-        interfaceName_.string(), objName.string());
-    sb.Append(g_tab).Append(g_tab).Append("return NULL;\n");
-    sb.Append(g_tab).Append("}\n");
-    sb.Append(g_tab).AppendFormat("return %s;\n", objName.string());
+        sb.Append(g_tab).AppendFormat("if (!HdfRemoteServiceSetInterfaceDesc(%s->remote, %s)) {\n", objName.string(),
+            EmitDescMacroName().string());
+        sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: ");
+        sb.Append("failed to set remote service interface descriptor\", __func__);\n");
+        sb.Append(g_tab).Append(g_tab).AppendFormat("%sRelease(%s);\n", stubTypeName.string(), objName.string());
+        sb.Append(g_tab).Append(g_tab).Append("return false;\n");
+        sb.Append(g_tab).Append("}\n\n");
+    } else {
+        sb.Append(g_tab).AppendFormat("%s->OnRemoteRequest = %s;\n", objName.string(), funcName.string());
+    }
+
+    if (!isKernelCode_) {
+        sb.Append(g_tab).AppendFormat("%s->interface.AsObject = %sAsObject;\n", objName.string(),
+            stubTypeName.string());
+    }
+    sb.Append(g_tab).Append("return true;\n");
     sb.Append("}\n");
 }
 
 void CServiceStubCodeEmitter::EmitStubReleaseImpl(StringBuilder& sb)
 {
-    String objName = "instance";
-    sb.AppendFormat("void %sStubRelease(struct %s *%s)\n", baseName_.string(), interfaceName_.string(),
-        objName.string());
+    String objName = "stub";
+    String stubTypeName = String::Format("%sStub", baseName_.string());
+    sb.AppendFormat("void %sRelease(struct %s *%s)\n", stubTypeName.string(), stubTypeName.string(), objName.string());
     sb.Append("{\n");
     sb.Append(g_tab).AppendFormat("if (%s == NULL) {\n", objName.string());
     sb.Append(g_tab).Append(g_tab).Append("return;\n");
     sb.Append(g_tab).Append("}\n\n");
-    sb.Append(g_tab).AppendFormat("struct %s *stub = CONTAINER_OF(%s, struct %s, impl);\n", stubName_.string(),
-        objName.string(), stubName_.string());
-    sb.Append(g_tab).Append("OsalMemFree(stub);\n");
-    sb.Append("}");
-}
-
-void CServiceStubCodeEmitter::EmitKernelStubReleaseImpl(StringBuilder& sb)
-{
-    sb.AppendFormat("void %sStubRelease(struct %s *instance)\n", baseName_.string(), interfaceName_.string());
-    sb.Append("{\n");
-    sb.Append(g_tab).Append("if (instance == NULL) {\n");
-    sb.Append(g_tab).Append(g_tab).Append("return;\n");
-    sb.Append(g_tab).Append("}\n");
-    sb.Append(g_tab).Append("OsalMemFree(instance);\n");
+    
+    sb.Append(g_tab).AppendFormat("HdfRemoteServiceRecycle(%s->remote);\n", objName.string());
+    sb.Append(g_tab).AppendFormat("%s->remote = NULL;\n", objName.string());
     sb.Append("}");
 }
 } // namespace HDI

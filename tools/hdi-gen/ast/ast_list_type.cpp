@@ -320,13 +320,13 @@ void ASTListType::EmitCStringElementUnMarshalling(const String& name, const Stri
         sb.Append(newPrefix).AppendFormat("%s[i] = (char*)OsalMemCalloc(strlen(%s) + 1);\n",
             name.string(), element.string());
         sb.Append(newPrefix).AppendFormat("if (%s[i] == NULL) {\n", name.string());
-        sb.Append(newPrefix + g_tab).AppendFormat("goto errors;\n");
+        sb.Append(newPrefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(newPrefix).Append("}\n\n");
         sb.Append(newPrefix).AppendFormat("if (strcpy_s((%s)[i], (strlen(%s) + 1), %s) != HDF_SUCCESS) {\n",
             name.string(), element.string(), element.string());
         sb.Append(newPrefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
             element.string());
-        sb.Append(newPrefix + g_tab).Append("goto errors;\n");
+        sb.Append(newPrefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(newPrefix).Append("}\n");
     } else {
         sb.Append(newPrefix).Append(g_tab).AppendFormat("%s[i] = strdup(%s);\n",

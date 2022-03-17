@@ -328,9 +328,7 @@ bool Parser::ParserPackageInfo(const String& packageName)
 bool Parser::ParseImport()
 {
     lexer_->GetToken();
-
     String packageFullName;
-
     Token token = lexer_->PeekToken();
     if (token != Token::IDENTIFIER) {
         if (token == Token::SEMICOLON) {
@@ -367,11 +365,15 @@ bool Parser::ParseImport()
         return false;
     }
 
+    AutoPtr<ASTInterfaceType> interfaceType = importAst->GetInterfaceDef();
+    if (interfaceType != nullptr) {
+        interfaceType->SetSerializable(true);
+    }
+
     if (!ast_->AddImport(importAst)) {
         LogError(String::Format("the package '%s' has been import", packageFullName.string()));
         return false;
     }
-
     return true;
 }
 
@@ -726,6 +728,21 @@ bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
         return false;
     }
     lexer_->GetToken();
+
+    if (type->IsInterfaceType()) {
+        AutoPtr<ASTInterfaceType> interfaceType = dynamic_cast<ASTInterfaceType*>(type.Get());
+        if (interfaceType->IsCallback() && parameter->GetAttribute() != ParamAttr::PARAM_IN) {
+            LogError(String::Format("The attribute of callback interface parameter '%s' does not be 'in'",
+                lexer_->GetIdentifier().string()));
+            return false;
+        }
+
+        if (!interfaceType->IsCallback() && parameter->GetAttribute() != ParamAttr::PARAM_OUT) {
+            LogError(String::Format("The attribute of interface parameter '%s' does not be 'in'",
+                lexer_->GetIdentifier().string()));
+            return false;
+        }
+    }
 
     parameter->SetName(lexer_->GetIdentifier());
     parameter->SetType(type);

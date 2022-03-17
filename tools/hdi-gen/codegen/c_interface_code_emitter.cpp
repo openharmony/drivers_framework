@@ -49,6 +49,8 @@ void CInterfaceCodeEmitter::EmitInterfaceHeaderFile()
     sb.Append("\n");
     EmitPreDeclaration(sb);
     sb.Append("\n");
+    EmitInterfaceDesc(sb);
+    sb.Append("\n");
     EmitInterfaceVersionMacro(sb);
     sb.Append("\n");
     EmitInterfaceMethodCommands(sb, "");
@@ -89,6 +91,11 @@ void CInterfaceCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSe
 void CInterfaceCodeEmitter::EmitPreDeclaration(StringBuilder& sb)
 {
     sb.Append("struct HdfRemoteService;\n");
+}
+
+void CInterfaceCodeEmitter::EmitInterfaceDesc(StringBuilder& sb)
+{
+    sb.AppendFormat("#define %s \"%s\"\n", EmitDescMacroName().string(), interfaceFullName_.string());
 }
 
 void CInterfaceCodeEmitter::EmitInterfaceVersionMacro(StringBuilder& sb)
@@ -152,9 +159,11 @@ void CInterfaceCodeEmitter::EmitAsObjectMethod(StringBuilder& sb, const String& 
 
 void CInterfaceCodeEmitter::EmitInterfaceGetMethodDecl(StringBuilder& sb)
 {
-    String methodParamStr = isCallbackInterface() ? "struct HdfRemoteService *remote" : "void";
-    sb.AppendFormat("struct %s *%sGet(%s);\n", interfaceName_.string(), baseName_.string(), methodParamStr.string());
-    if (!isCallbackInterface()) {
+    if (interface_->IsSerializable()) {
+        sb.AppendFormat("struct %s *%sGet(struct HdfRemoteService *remote);\n",
+            interfaceName_.string(), baseName_.string());
+    } else {
+        sb.AppendFormat("struct %s *%sGet(void);\n", interfaceName_.string(), baseName_.string());
         sb.Append("\n");
         sb.AppendFormat("struct %s *%sGetInstance(const char *instanceName);\n",
             interfaceName_.string(), baseName_.string());

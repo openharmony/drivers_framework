@@ -67,15 +67,6 @@ protected:
 
     String ConstantName(const String& name);
 
-    bool isCallbackInterface()
-    {
-        if (interface_ == nullptr) {
-            return false;
-        }
-
-        return interface_->IsCallback();
-    }
-
     String SpecificationParam(StringBuilder& sb, const String& prefix);
 };
 } // namespace HDI
