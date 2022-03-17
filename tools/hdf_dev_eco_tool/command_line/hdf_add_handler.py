@@ -6,8 +6,7 @@
 # HDF is dual licensed: you can use it either under the terms of
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
-
-
+import copy
 import os
 import json
 import platform
@@ -202,7 +201,8 @@ class HdfAddHandler(HdfCommandHandlerBase):
                                  ["tools", "hdf_dev_eco_tool",
                                   "resources", "templates", "lite"])
         for file_name in liteos_file_name:
-            for i in os.listdir(template_path):
+            for i in hdf_utils.template_filename_filtrate(
+                        template_path, kernel):
                 if i.find(file_name.split(".")[0]) > 0:
                     out_path = os.path.join(adapter_model_path, file_name)
                     self._render(os.path.join(template_path, i),
@@ -333,9 +333,9 @@ class HdfAddHandler(HdfCommandHandlerBase):
         template_path = "/".join([framework_hdf]
                                  + ["tools", "hdf_dev_eco_tool",
                                     "resources", "templates", "lite"])
-        if (platform.system() == "Windows"):
+        if platform.system() == "Windows":
             driver_file_name = "//" + driver_file_path.strip(root).replace("\\", "/"),
-        elif (platform.system() == "Linux"):
+        elif platform.system() == "Linux":
             driver_file_name = "//" + driver_file_path.strip(root).replace("\\", "/") + "c",
         else:
             driver_file_name = "//" + driver_file_path.strip(root).replace("\\", "/"),
@@ -351,6 +351,21 @@ class HdfAddHandler(HdfCommandHandlerBase):
                     self._render(user_template_build,
                                  user_model_file_path, data_model)
                     linux_file_path["BUILD.gn"] = user_model_file_path
+        # hdf_devhost.cfg file 
+
+        hdf_devhost_file_path = os.path.join(root, relative_path, 'host', 'hdf_devhost.cfg')
+        if not os.path.exists(hdf_devhost_file_path):
+            raise HdfToolException(
+                ' devhost file path  "%s" not exist' %
+                hdf_devhost_file_path, CommandErrorCode.TARGET_NOT_EXIST)
+        devhost_info = hdf_utils.read_file(hdf_devhost_file_path)
+        info_to_json = json.loads(devhost_info)
+        temp = copy.deepcopy(info_to_json["services"][-1])
+        temp["name"] = "{}_user_host".format(module)
+        info_to_json["services"].append(temp)
+        hdf_utils.write_file(file_path=hdf_devhost_file_path,
+                             content=json.dumps(info_to_json, indent=4))
+        linux_file_path["hdf_devhost.cfg"] = hdf_devhost_file_path
 
         # build.gn file add path
         ohos_path = os.path.join(root, '/'.join(relative_path.split("/")[:-1]), 'BUILD.gn')
