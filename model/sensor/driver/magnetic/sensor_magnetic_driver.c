@@ -175,7 +175,12 @@ static int32_t SetMagneticBatch(int64_t samplingInterval, int64_t interval)
 
 static int32_t SetMagneticMode(int32_t mode)
 {
-    return (mode == SENSOR_WORK_MODE_REALTIME) ? HDF_SUCCESS : HDF_FAILURE;
+    if (mode <= SENSOR_WORK_MODE_DEFAULT || mode >= SENSOR_WORK_MODE_MAX) {
+        HDF_LOGE("%s: The current mode is not supported", __func__);
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
 }
 
 static int32_t SetMagneticOption(uint32_t option)
