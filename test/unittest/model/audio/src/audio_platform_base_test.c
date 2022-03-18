@@ -69,11 +69,11 @@ int32_t AudioFramatToBitWidthTest(void)
 {
     unsigned int bitWidth = 0;
 
-    if (AudioFramatToBitWidth(1, NULL) == HDF_SUCCESS) {
+    if (AudioFormatToBitWidth(1, NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
-    if (AudioFramatToBitWidth(AUDIO_FORMAT_PCM_16_BIT, &bitWidth) != HDF_SUCCESS) {
+    if (AudioFormatToBitWidth(AUDIO_FORMAT_PCM_16_BIT, &bitWidth) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
@@ -82,7 +82,7 @@ int32_t AudioFramatToBitWidthTest(void)
     }
 
     bitWidth = 0;
-    if (AudioFramatToBitWidth(AUDIO_FORMAT_PCM_24_BIT, &bitWidth) != HDF_SUCCESS) {
+    if (AudioFormatToBitWidth(AUDIO_FORMAT_PCM_24_BIT, &bitWidth) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
@@ -90,7 +90,7 @@ int32_t AudioFramatToBitWidthTest(void)
         return HDF_FAILURE;
     }
 
-    if (AudioFramatToBitWidth(AUDIO_FORMAT_AAC_HE_V1, &bitWidth) == HDF_SUCCESS) {
+    if (AudioFormatToBitWidth(AUDIO_FORMAT_AAC_HE_V1, &bitWidth) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 

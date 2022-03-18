@@ -23,6 +23,7 @@ const int MIN_BUFF_SIZE = 16 * 1024;
 const int TIME_OUT_CONST = 50;
 const int SLEEP_TIME = 5;
 #define PNP_REPORT_MSG_LEN      32
+#define INTERLEAVED 1
 const int MIN_PERIOD_SILENCE_THRESHOLD = (4 * 1024);
 const int MAX_PERIOD_SILENCE_THRESHOLD = (16 * 1024);
 
@@ -97,7 +98,7 @@ int32_t AudioDataBigEndianChange(char *srcData, uint32_t audioLen, enum DataBitW
     return HDF_SUCCESS;
 }
 
-int32_t AudioFramatToBitWidth(enum AudioFormat format, unsigned int *bitWidth)
+int32_t AudioFormatToBitWidth(enum AudioFormat format, unsigned int *bitWidth)
 {
     if (bitWidth == NULL) {
         AUDIO_DRIVER_LOG_ERR("bitWidth is null.");
@@ -129,7 +130,8 @@ int32_t AudioSetPcmInfo(struct PlatformData *platformData, const struct AudioPcm
     platformData->captureBufInfo.chnId = 0;
 
     if (param->streamType == AUDIO_RENDER_STREAM) {
-        if (AudioFramatToBitWidth(param->format, &platformData->renderPcmInfo.bitWidth) != HDF_SUCCESS) {
+        if (AudioFormatToBitWidth(param->format, &platformData->renderPcmInfo.bitWidth) != HDF_SUCCESS) {
+            AUDIO_DRIVER_LOG_ERR("renderPcmInfo is failure");
             return HDF_FAILURE;
         }
         platformData->renderPcmInfo.rate = param->rate;
@@ -143,11 +145,11 @@ int32_t AudioSetPcmInfo(struct PlatformData *platformData, const struct AudioPcm
         platformData->renderPcmInfo.stopThreshold = param->stopThreshold;
         platformData->renderPcmInfo.silenceThreshold = param->silenceThreshold;
 
-        platformData->renderPcmInfo.interleaved = 1;
-        platformData->renderPcmInfo.channels = param->channels;
+        platformData->renderPcmInfo.interleaved = INTERLEAVED;
         platformData->renderPcmInfo.streamType = param->streamType;
     } else if (param->streamType == AUDIO_CAPTURE_STREAM) {
-        if (AudioFramatToBitWidth(param->format, &platformData->capturePcmInfo.bitWidth) != HDF_SUCCESS) {
+        if (AudioFormatToBitWidth(param->format, &platformData->capturePcmInfo.bitWidth) != HDF_SUCCESS) {
+            AUDIO_DRIVER_LOG_ERR("capturePcmInfo is failure");
             return HDF_FAILURE;
         }
         platformData->capturePcmInfo.rate = param->rate;
@@ -161,8 +163,7 @@ int32_t AudioSetPcmInfo(struct PlatformData *platformData, const struct AudioPcm
         platformData->capturePcmInfo.stopThreshold = param->stopThreshold;
         platformData->capturePcmInfo.silenceThreshold = param->silenceThreshold;
 
-        platformData->capturePcmInfo.interleaved = 1;
-        platformData->capturePcmInfo.channels = param->channels;
+        platformData->capturePcmInfo.interleaved = INTERLEAVED;
         platformData->capturePcmInfo.streamType = param->streamType;
     } else {
         AUDIO_DRIVER_LOG_ERR("param streamType is invalid.");
