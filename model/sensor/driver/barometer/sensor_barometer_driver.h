@@ -114,6 +114,6 @@ struct BarometerDrvData {
 
 int32_t BarometerRegisterChipOps(const struct BarometerOpsCall *ops);
 struct SensorCfgData *BarometerCreateCfgData(const struct DeviceResourceNode *node);
-void BarometerReleaseCfgData(struct SensorCfgData *sensorCfgData);
+void BarometerReleaseCfgData(struct SensorCfgData *barometerCfg);
 
 #endif /* SENSOR_BAROMETER_DRIVER_H */
