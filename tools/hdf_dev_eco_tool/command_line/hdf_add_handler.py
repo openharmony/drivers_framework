@@ -25,6 +25,10 @@ from .hdf_driver_config_file import HdfDriverConfigFile
 from .hdf_vendor_makefile import HdfVendorMakeFile
 from .hdf_defconfig_patch import HdfDefconfigAndPatch
 
+from .driver_add.linux.mk_file_add_config import linux_makefile_operation
+from .driver_add.liteos.gn_file_add_config import build_file_operation
+from .driver_add.liteos.mk_file_add_config import makefile_operation
+
 
 class HdfAddHandler(HdfCommandHandlerBase):
     def __init__(self, args):
@@ -111,7 +115,8 @@ class HdfAddHandler(HdfCommandHandlerBase):
             os.makedirs(framework_drv_root_dir)
 
             # create .c template driver file
-            state, driver_file_path = self._add_driver_handler(*args_tuple)
+            
+            state, driver_file_path = self._add_driver(*args_tuple)
             if not state:
                 raise HdfToolException(
                     'create drivers file fail  "%s" ' %
@@ -351,8 +356,8 @@ class HdfAddHandler(HdfCommandHandlerBase):
                     self._render(user_template_build,
                                  user_model_file_path, data_model)
                     linux_file_path["BUILD.gn"] = user_model_file_path
-        # hdf_devhost.cfg file 
 
+        # hdf_devhost.cfg file
         hdf_devhost_file_path = os.path.join(root, relative_path, 'host', 'hdf_devhost.cfg')
         if not os.path.exists(hdf_devhost_file_path):
             raise HdfToolException(
@@ -389,11 +394,33 @@ class HdfAddHandler(HdfCommandHandlerBase):
 
         return linux_file_path, linux_level_config_file_path
 
-    def _add_driver_handler(self, *args_tuple):
+    def _add_driver(self, *args_tuple):
         root, vendor, module, driver, board, kernel = args_tuple
         drv_converter = hdf_utils.WordsConverter(self.args.driver_name)
         drv_src_dir = hdf_utils.get_drv_src_dir(root, module)
-        if os.path.exists(os.path.join(drv_src_dir, '%s_driver.c' % driver)):
+
+        parent_depth = len(drv_src_dir.split(os.path.sep))
+        dir_dict = {}
+        for root, dirs, _ in os.walk(drv_src_dir, topdown=True):
+            for dir_name in dirs:
+                dir_path = os.path.join(root, dir_name)
+                if len(dir_path.split(os.path.sep)) == parent_depth + 1:
+                    dir_dict[dir_name] = []
+                if len(dir_path.split(os.path.sep)) == parent_depth + 2:
+                    dir_dict.get(dir_path.split(os.path.sep)[-2]).append(dir_name)
+
+        common_dir_list = dir_dict.get("common")
+        if common_dir_list is not None:
+            if "src" in common_dir_list:
+                driver_file_path = os.path.join(drv_src_dir, "common",
+                                                "src", '%s_driver.c' % driver)
+            else:
+                driver_file_path = os.path.join(drv_src_dir, "common",
+                                                '%s_driver.c' % driver)
+        else:
+            driver_file_path = os.path.join(drv_src_dir, '%s_driver.c' % driver)
+
+        if os.path.exists(driver_file_path):
             raise HdfToolException(
                 'driver "%s" already exist' %
                 driver, CommandErrorCode.TARGET_ALREADY_EXIST)
@@ -405,9 +432,119 @@ class HdfAddHandler(HdfCommandHandlerBase):
         }
         self._file_gen_lite('hdf_driver.c.template', drv_src_dir,
                             '%s_driver.c' % driver, data_model)
-        driver_file_path = os.path.join(
-            drv_src_dir, '%s_driver.c' % driver)
+
         return True, driver_file_path
+
+    def _add_driver_handler(self):
+        self.check_arg_raise_if_not_exist("vendor_name")
+        self.check_arg_raise_if_not_exist("module_name")
+        self.check_arg_raise_if_not_exist("kernel_name")
+        self.check_arg_raise_if_not_exist("board_name")
+        self.check_arg_raise_if_not_exist("driver_name")
+
+        args_tuple = self.get_args()
+        root, vendor, module, driver, board, kernel = args_tuple
+
+        board_list = HdfToolSettings().get_board_list()
+        if board in board_list:
+            framework_hdf = hdf_utils.get_vendor_hdf_dir_framework(root)
+            hdf_utils.judge_file_path_exists(framework_hdf)
+
+            framework_drv_root_dir = hdf_utils.get_module_dir(
+                root, module)
+            hdf_utils.judge_file_path_exists(framework_drv_root_dir)
+
+            state, driver_file_path = self._add_driver(*args_tuple)
+            if board == "hispark_taurus":
+                adapter_hdf = hdf_utils.get_vendor_hdf_dir_adapter(root, kernel)
+                hdf_utils.judge_file_path_exists(adapter_hdf)
+
+                adapter_model_path = os.path.join(adapter_hdf, 'model', module)
+                hdf_utils.judge_file_path_exists(adapter_model_path)
+
+                liteos_file_name = ['BUILD.gn', 'Makefile']
+                file_path = {}
+                for file_name in liteos_file_name:
+                    if file_name == "BUILD.gn":
+                        build_file_path = os.path.join(adapter_model_path, file_name)
+                        build_file_operation(build_file_path, driver_file_path)
+                        file_path['BUILD.gn'] = build_file_path
+
+                    elif file_name == "Makefile":
+                        makefile_path = os.path.join(adapter_model_path, file_name)
+                        makefile_operation(makefile_path, driver_file_path)
+                        file_path['Makefile'] = makefile_path
+
+            elif board.endswith("linux"):
+                adapter_hdf = hdf_utils.get_vendor_hdf_dir_adapter(root, kernel)
+                hdf_utils.judge_file_path_exists(adapter_hdf)
+
+                adapter_model_path = os.path.join(adapter_hdf, 'model', module)
+                hdf_utils.judge_file_path_exists(adapter_model_path)
+
+                liteos_file_name = ['Makefile']
+                file_path = {}
+                for file_name in liteos_file_name:
+                    if file_name == "Makefile":
+                        build_file_path = os.path.join(adapter_model_path, file_name)
+                        linux_makefile_operation(build_file_path, driver_file_path)
+                        file_path['Makefile'] = build_file_path
+            else:
+                file_path = []
+
+            config_item = {
+                'module_name': module,
+                'module_path': file_path,
+                'driver_name': "%s_driver.c" % driver,
+                'driver_file_path': driver_file_path,
+                'enabled': True
+            }
+
+            config_file = hdf_utils.read_file(
+                os.path.join("resources", "create_driver.config"))
+            config_file_json = json.loads(config_file)
+
+            kernel_type = config_file_json.get(kernel)
+            if kernel_type is None:
+                config_file_json[kernel] = {
+                    config_item.get("module_name"): {
+                        'module_leve_config': {},
+                        "driver_file_list": {
+                            config_item.get("driver_name"): config_item.get("driver_file_path")
+                        }
+                    }
+                }
+                config_file_json[kernel][module]["module_leve_config"].update(file_path)
+            else:
+                model_type = kernel_type.get(config_item.get("module_name"))
+                if model_type is None:
+                    temp = config_file_json.get(kernel)
+                    temp_module = config_item.get("module_name")
+                    temp[temp_module] = {
+                        'module_leve_config': {},
+                        "driver_file_list": {
+                            config_item.get("driver_name"): config_item.get("driver_file_path")
+                        }
+                    }
+                    config_file_json.get(kernel).get(module).get("module_leve_config").update(file_path)
+                else:
+                    temp = config_file_json.get(kernel).\
+                        get(config_item.get("module_name")).get("driver_file_list")
+                    temp[config_item.get("driver_name")] = config_item.get("driver_file_path")
+
+            if platform.system() == "Windows":
+                config_file_replace = json.dumps(config_file_json, indent=4). \
+                    replace(root.replace('\\', '\\\\') + '\\\\', "")
+                hdf_utils.write_file(
+                    os.path.join('resources', 'create_driver.config'),
+                    config_file_replace.replace('\\\\', '/'))
+            if platform.system() == "Linux":
+                config_file_replace = json.dumps(config_file_json, indent=4). \
+                    replace(root + '/', "")
+                hdf_utils.write_file(
+                    os.path.join('resources', 'create_driver.config'),
+                    config_file_replace)
+            return config_item
 
     def _add_config_handler(self):
         self.check_arg_raise_if_not_exist("module_name")

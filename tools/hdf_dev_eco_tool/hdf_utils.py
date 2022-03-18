@@ -12,8 +12,10 @@ import json
 import os
 import hashlib
 
+
 from hdf_tool_exception import HdfToolException
 from hdf_tool_settings import HdfToolSettings
+from command_line.hdf_command_error_code import CommandErrorCode
 
 
 class WordsConverter(object):
@@ -356,3 +358,9 @@ def get_create_model_info(root, create_data):
 
 def get_config_config_path(root, kernel):
     return os.path.join(root, "kernel", kernel, "config", "linux-5.10")
+
+
+def judge_file_path_exists(temp_path):
+    if not os.path.exists(temp_path):
+        raise HdfToolException('path  "%s" not exist' %
+                               temp_path, CommandErrorCode.TARGET_NOT_EXIST)
