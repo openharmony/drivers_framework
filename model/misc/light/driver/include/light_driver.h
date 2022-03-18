@@ -23,6 +23,9 @@
 #define LIGHT_MAKE_B_BIT    0X00000080
 #define LIGHT_WAIT_TIME     50
 
+#define LIGHT_MAX_TYPE      4
+#define LIGHT_MIN_TYPE      0
+
 #define CHECK_LIGHT_NULL_PTR_RETURN_VALUE(ptr, ret) do { \
     if ((ptr) == NULL) { \
         HDF_LOGE("%s:line %d pointer is null and return ret", __func__, __LINE__); \
