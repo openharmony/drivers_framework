@@ -254,10 +254,11 @@ void SendMessageTestCallBack(const RequestContext *context, struct HdfSBuf *reqD
 {
     if (context == NULL) {
         HDF_LOGE("%s:SendMessageTestCallBack context NULL!", __func__);
-        return HDF_FAILURE;
+        return;
     }
     (void)reqData;
     (void)rspData;
+    (void)rspCode;
     OsalSemPost(&g_callBackSem);
     HDF_LOGI("Receive response for CMD %d.\n", context->commandId);
 }
