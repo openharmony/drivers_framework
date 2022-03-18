@@ -60,6 +60,10 @@ static ErrorCode FuncNoLoad(const RequestContext *context, struct HdfSBuf *reqDa
 
 static ErrorCode FuncSmallLoad(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
+    if (context == NULL) {
+        HDF_LOGE("%s:FuncSmallLoad context NULL!", __func__);
+        return HDF_FAILURE;
+    }
     (void)reqData;
     (void)rspData;
     HDF_LOGI("Handle message %d\n", context->commandId);
@@ -248,6 +252,12 @@ OSAL_DECLARE_SEMAPHORE(g_callBackSem);
 void SendMessageTestCallBack(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData,
     ErrorCode rspCode)
 {
+    if (context == NULL) {
+        HDF_LOGE("%s:SendMessageTestCallBack context NULL!", __func__);
+        return HDF_FAILURE;
+    }
+    (void)reqData;
+    (void)rspData;
     OsalSemPost(&g_callBackSem);
     HDF_LOGI("Receive response for CMD %d.\n", context->commandId);
 }
