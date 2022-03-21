@@ -36,18 +36,20 @@ def translate_file_name(file_name):
 
 def get_idl_file_type(file_path):
     idl_type = IdlType.TYPES
-    file_option = open(file_path, "r")
-    for file_line in file_option.readlines():
-        interface_index = file_line.find("interface")
-        if interface_index != -1:
-            if file_line.find("[callback]", 0, interface_index) != -1:
-                idl_type = IdlType.CALLBACK
-            else:
-                idl_type = IdlType.INTERFACE
-            break
+    idl_file = open(file_path, "r")
+    file_str = idl_file.read()
+    idl_file.close()
+
+    # delete comment information
+    file_str = re.sub(r'//[^\r\n]*', "\n", file_str)
+    file_str = re.sub(r'(/\*[\s|\S]*?\*/)', "\n", file_str)
+
+    interface_index = file_str.find("interface")
+    if interface_index != -1:
+        if file_str.find("[callback]", 0, interface_index) != -1:
+            idl_type = IdlType.CALLBACK
         else:
-            continue
-    file_option.close()
+            idl_type = IdlType.INTERFACE
     return idl_type
 
 
