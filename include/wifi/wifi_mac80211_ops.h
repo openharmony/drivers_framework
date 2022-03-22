@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -35,8 +35,8 @@
 #ifndef WIFI_MAC80211_OPS_H
 #define WIFI_MAC80211_OPS_H
 
-#include "net_device.h"
 #include "hdf_wifi_cmd.h"
+#include "net_device.h"
 
 /**
  * @brief Indicates the length of the MAC address of the device.
@@ -148,16 +148,16 @@ enum Ieee80211Band {
  * @version 1.0
  */
 enum Ieee80211ChannelWidth {
-    WLAN_CHANNEL_WIDTH_10   = BIT(0),   /**< 10 MHz */
-    WLAN_CHANNEL_WIDTH_20   = BIT(1),   /**< 20 MHz */
-    WLAN_CHANNEL_WIDTH_40P  = BIT(2),   /**< 40 MHz (two 20 MHz channels, with the primary channel
-                                         * having a higher frequency
-                                         */
-    WLAN_CHANNEL_WIDTH_40M  = BIT(3),   /**< 40 MHz (two 20 MHz channels, with the primary channel
-                                         * having a lower frequency
-                                         */
-    WLAN_CHANNEL_WIDTH_80   = BIT(4),   /**< 80 MHz */
-    WLAN_CHANNEL_WIDTH_160  = BIT(5),   /**< 160 MHz */
+    WLAN_CHANNEL_WIDTH_10 = BIT(0),  /**< 10 MHz */
+    WLAN_CHANNEL_WIDTH_20 = BIT(1),  /**< 20 MHz */
+    WLAN_CHANNEL_WIDTH_40P = BIT(2), /**< 40 MHz (two 20 MHz channels, with the primary channel
+                                      * having a higher frequency
+                                      */
+    WLAN_CHANNEL_WIDTH_40M = BIT(3), /**< 40 MHz (two 20 MHz channels, with the primary channel
+                                      * having a lower frequency
+                                      */
+    WLAN_CHANNEL_WIDTH_80 = BIT(4),  /**< 80 MHz */
+    WLAN_CHANNEL_WIDTH_160 = BIT(5), /**< 160 MHz */
 };
 
 /**
@@ -167,8 +167,8 @@ enum Ieee80211ChannelWidth {
  * @version 1.0
  */
 enum WlanWorkMode {
-    WLAN_WORKMODE_STA = 2,  /**< STA mode */
-    WLAN_WORKMODE_AP = 3,    /**< AP mode */
+    WLAN_WORKMODE_STA = 2, /**< STA mode */
+    WLAN_WORKMODE_AP = 3,  /**< AP mode */
     WLAN_WORKMODE_AP_VLAN,
     WLAN_WORKMODE_WDS,
     WLAN_WORKMODE_MONITOR,
@@ -197,7 +197,7 @@ struct KeyParams {
 #define UINT32_BIT(BIT) (((uint32_t)1) << (BIT))
 
 #define WLAN_CHANNEL_FLAG_DFS_UNKNOWN 0x00000000
-#define WLAN_CHANNEL_FLAG_DFS_MASK 0x00000300
+#define WLAN_CHANNEL_FLAG_DFS_MASK    0x00000300
 
 /**
  * @brief Enumerates WLAN channel capability flags.
@@ -206,19 +206,19 @@ struct KeyParams {
  * @version 1.0
  */
 enum WlanChannelCapabilityFlags {
-    WLAN_CHANNEL_FLAG_DISABLED = UINT32_BIT(0), /**< Channel disabled */
-    WLAN_CHANNEL_FLAG_NO_IR = UINT32_BIT(1),    /**< Infrared light (IR) not supported */
-    WLAN_CHANNEL_FLAG_RADAR = UINT32_BIT(3),    /**< Radar supported */
-    WLAN_CHANNEL_FLAG_HT40PLUS = UINT32_BIT(4), /**< A 40 MHz channel that consists of two 20 MHz channels,
-                                                 * with the primary channel having a higher frequency
-                                                 */
+    WLAN_CHANNEL_FLAG_DISABLED = UINT32_BIT(0),  /**< Channel disabled */
+    WLAN_CHANNEL_FLAG_NO_IR = UINT32_BIT(1),     /**< Infrared light (IR) not supported */
+    WLAN_CHANNEL_FLAG_RADAR = UINT32_BIT(3),     /**< Radar supported */
+    WLAN_CHANNEL_FLAG_HT40PLUS = UINT32_BIT(4),  /**< A 40 MHz channel that consists of two 20 MHz channels,
+                                                  * with the primary channel having a higher frequency
+                                                  */
     WLAN_CHANNEL_FLAG_HT40MINUS = UINT32_BIT(5), /**< A 40 MHz channel that consists of two 20 MHz channels,
                                                   * with the primary channel having a lower frequency
                                                   */
     WLAN_CHANNEL_FLAG_HT40 = UINT32_BIT(6),      /**< 40 MHz channel */
     WLAN_CHANNEL_FLAG_SURVEY_LIST_INITIALIZED = UINT32_BIT(7), /**< Survey list initialized */
-    WLAN_CHANNEL_FLAG_DFS_USABLE = UINT32_BIT(8),       /**< Dynamic frequency selection (DFS) supported */
-    WLAN_CHANNEL_FLAG_DFS_UNAVAILABLE = UINT32_BIT(9),  /**< DFS disabled */
+    WLAN_CHANNEL_FLAG_DFS_USABLE = UINT32_BIT(8),              /**< Dynamic frequency selection (DFS) supported */
+    WLAN_CHANNEL_FLAG_DFS_UNAVAILABLE = UINT32_BIT(9),         /**< DFS disabled */
     WLAN_CHANNEL_FLAG_DFS_AVAILABLE = WLAN_CHANNEL_FLAG_DFS_USABLE | WLAN_CHANNEL_FLAG_DFS_UNAVAILABLE,
     WLAN_CHANNEL_FLAG_VHT_10_70 =
         UINT32_BIT(11), /**< A 80 MHz channel: Frequency
@@ -238,31 +238,42 @@ enum WlanChannelCapabilityFlags {
                          */
     WLAN_CHANNEL_FLAG_INDOOR_ONLY = UINT32_BIT(16),   /**< Used only indoors */
     WLAN_CHANNEL_FLAG_GO_CONCURRENT = UINT32_BIT(17), /**< Go Concurrent supported */
-    WLAN_CHANNEL_FLAG_VHT_10_150 = UINT32_BIT(20),  /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     * frequency - 10 MHz to the channel's center frequency + 150 MHz
-                                                     */
-    WLAN_CHANNEL_FLAG_VHT_30_130 = UINT32_BIT(21),  /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     * frequency - 30 MHz to the channel's center frequency + 130 MHz
-                                                     */
-    WLAN_CHANNEL_FLAG_VHT_50_110 = UINT32_BIT(22),  /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     * frequency - 50 MHz to the channel's center frequency + 110 MHz
-                                                     */
-    WLAN_CHANNEL_FLAG_VHT_70_90 = UINT32_BIT(23),   /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     frequency - 70 MHz to the channel's center frequency + 90 MHz
-                                                     */
-    WLAN_CHANNEL_FLAG_VHT_90_70 = UINT32_BIT(24),   /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     * frequency - 90 MHz to the channel's center frequency + 70 MHz
-                                                     */
-    WLAN_CHANNEL_FLAG_VHT_110_50 = UINT32_BIT(25),  /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     * frequency - 110 MHz to the channel's center frequency + 50 MHz
-                                                     */
-    WLAN_CHANNEL_FLAG_VHT_130_30 = UINT32_BIT(26),  /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     * frequency - 130 MHz to the channel's center frequency + 30 MHz
-                                                     */
-    WLAN_CHANNEL_FLAG_VHT_150_10 = UINT32_BIT(27),  /**< A 160 MHz channel: Frequency band = Channel's center
-                                                     * frequency - 150 MHz to the channel's center frequency + 10 MHz
-                                                     */
+    WLAN_CHANNEL_FLAG_VHT_10_150 = UINT32_BIT(20),    /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       * frequency - 10 MHz to the channel's center frequency + 150 MHz
+                                                       */
+    WLAN_CHANNEL_FLAG_VHT_30_130 = UINT32_BIT(21),    /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       * frequency - 30 MHz to the channel's center frequency + 130 MHz
+                                                       */
+    WLAN_CHANNEL_FLAG_VHT_50_110 = UINT32_BIT(22),    /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       * frequency - 50 MHz to the channel's center frequency + 110 MHz
+                                                       */
+    WLAN_CHANNEL_FLAG_VHT_70_90 = UINT32_BIT(23),     /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       frequency - 70 MHz to the channel's center frequency + 90 MHz
+                                                       */
+    WLAN_CHANNEL_FLAG_VHT_90_70 = UINT32_BIT(24),     /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       * frequency - 90 MHz to the channel's center frequency + 70 MHz
+                                                       */
+    WLAN_CHANNEL_FLAG_VHT_110_50 = UINT32_BIT(25),    /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       * frequency - 110 MHz to the channel's center frequency + 50 MHz
+                                                       */
+    WLAN_CHANNEL_FLAG_VHT_130_30 = UINT32_BIT(26),    /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       * frequency - 130 MHz to the channel's center frequency + 30 MHz
+                                                       */
+    WLAN_CHANNEL_FLAG_VHT_150_10 = UINT32_BIT(27),    /**< A 160 MHz channel: Frequency band = Channel's center
+                                                       * frequency - 150 MHz to the channel's center frequency + 10 MHz
+                                                       */
 };
+
+/**
+ * @brief Define wifi power mode.
+ *
+ * @since 1.0
+ * @version 1.0
+ */
+#define WIFI_POWER_MODE_SLEEPING 0
+#define WIFI_POWER_MODE_GENERAL 1
+#define WIFI_POWER_MODE_THROUGH_WALL 2
+#define WIFI_POWER_MODE_NUM 3
 
 /**
  * @brief Describes a communication channel.
@@ -294,8 +305,8 @@ struct WlanBand {
  * @version 1.0
  */
 struct WlanSSID {
-    uint8_t ssid[IEEE80211_MAX_SSID_LEN];   /**< SSID array */
-    uint8_t ssidLen;                        /**< SSID length */
+    uint8_t ssid[IEEE80211_MAX_SSID_LEN]; /**< SSID array */
+    uint8_t ssidLen;                      /**< SSID length */
 };
 
 /**
@@ -321,24 +332,24 @@ struct WlanScanRequest {
  * @version 1.0
  */
 struct CryptoSettings {
-    uint32_t wpaVersions;      /**< WPA version */
-    uint32_t cipherGroup;      /**< Cipher group */
-    int32_t n_ciphersPairwise; /**< Number of unicast ciphers supported by the AP */
+    uint32_t wpaVersions;                                   /**< WPA version */
+    uint32_t cipherGroup;                                   /**< Cipher group */
+    int32_t n_ciphersPairwise;                              /**< Number of unicast ciphers supported by the AP */
     uint32_t ciphersPairwise[NL80211_MAX_NR_CIPHER_SUITES]; /**< Unicast cipher suites. The maximum number of
                                                              * unicast cipher suites is specified by
                                                              * {@link NL80211_MAX_NR_CIPHER_SUITES}.
                                                              */
-    int32_t n_akmSuites;        /**< Number of authentication and key management (AKM) suites */
-    uint32_t akmSuites[NL80211_MAX_NR_AKM_SUITES];  /**< AKM suites. The maximum number of AKM suites is specified
-                                                     * by {@link NL80211_MAX_NR_AKM_SUITES}.
-                                                     */
-    uint16_t controlPortEthertype;  /**< Data can be transmitted over an unauthenticated port. */
-    int8_t controlPort;             /**< Whether the user space control port is authorized. The value <b>true</b>
-                                     * indicates that the user space control port is unauthorized.
-                                     */
-    int8_t controlPortNoEncrypt;   /**< Whether to encrypt frames transmitted over the control port.
-                                    * The value <b>1</b> indicates that the frames are not encrypted.
-                                    */
+    int32_t n_akmSuites;                           /**< Number of authentication and key management (AKM) suites */
+    uint32_t akmSuites[NL80211_MAX_NR_AKM_SUITES]; /**< AKM suites. The maximum number of AKM suites is specified
+                                                    * by {@link NL80211_MAX_NR_AKM_SUITES}.
+                                                    */
+    uint16_t controlPortEthertype;                 /**< Data can be transmitted over an unauthenticated port. */
+    int8_t controlPort;          /**< Whether the user space control port is authorized. The value <b>true</b>
+                                  * indicates that the user space control port is unauthorized.
+                                  */
+    int8_t controlPortNoEncrypt; /**< Whether to encrypt frames transmitted over the control port.
+                                  * The value <b>1</b> indicates that the frames are not encrypted.
+                                  */
 };
 
 /**
@@ -348,16 +359,16 @@ struct CryptoSettings {
  * @version 1.0
  */
 typedef struct WlanConnectParams {
-    uint32_t centerFreq;    /**< Connection channel. If this parameter is not specified, the connection channel
-                             * is automatically obtained from the scan result.
-                             */
-    uint8_t *bssid;         /**< AP BSSID. If this parameter is not specified, the AP BSSID is automatically
-                             * obtained from the scan result.
-                             */
-    uint8_t *ssid;          /**< SSID */
-    uint8_t *ie;            /**< IE information required for the connection */
-    uint32_t ssidLen;       /**< SSID length */
-    uint32_t ieLen;         /**< IE length */
+    uint32_t centerFreq;          /**< Connection channel. If this parameter is not specified, the connection channel
+                                   * is automatically obtained from the scan result.
+                                   */
+    uint8_t *bssid;               /**< AP BSSID. If this parameter is not specified, the AP BSSID is automatically
+                                   * obtained from the scan result.
+                                   */
+    uint8_t *ssid;                /**< SSID */
+    uint8_t *ie;                  /**< IE information required for the connection */
+    uint32_t ssidLen;             /**< SSID length */
+    uint32_t ieLen;               /**< IE length */
     struct CryptoSettings crypto; /**< Cryptography information */
     const uint8_t *key;           /**< Wired Equivalent Privacy (WEP) key used for Shared Key
                                    * Authentication (SKA)
@@ -367,7 +378,7 @@ typedef struct WlanConnectParams {
     uint8_t keyLen;               /**< Key length */
     uint8_t keyIdx;               /**< Index of the WEP key used for SKA */
     uint8_t mfp;                  /**< Whether to enable Management Frame Protection (MFP) */
-    uint8_t aucResv[WIFI_CONNECT_PARM_RESV_SIZE];  /**< Reserved field */
+    uint8_t aucResv[WIFI_CONNECT_PARM_RESV_SIZE]; /**< Reserved field */
 } WlanConnectParams;
 
 /**
@@ -414,13 +425,13 @@ typedef struct {
  * @version 1.0
  */
 struct WlanBeaconConf {
-    uint32_t interval;      /**< Beacon interval */
-    uint32_t DTIMPeriod;    /**< Delivery Traffic Indication Message (DTIM) interval for sending beacons */
-    uint8_t *headIEs;       /**< One or more IEs before the TIM IE */
-    size_t headIEsLength;   /**< Length of the IEs before the TIM IE */
-    uint8_t *tailIEs;       /**< One or more IEs after the TIM IE */
-    size_t tailIEsLength;   /**< Length of the IEs after the TIM IE */
-    bool hiddenSSID;        /**< Whether to hide the SSID */
+    uint32_t interval;    /**< Beacon interval */
+    uint32_t DTIMPeriod;  /**< Delivery Traffic Indication Message (DTIM) interval for sending beacons */
+    uint8_t *headIEs;     /**< One or more IEs before the TIM IE */
+    size_t headIEsLength; /**< Length of the IEs before the TIM IE */
+    uint8_t *tailIEs;     /**< One or more IEs after the TIM IE */
+    size_t tailIEsLength; /**< Length of the IEs after the TIM IE */
+    bool hiddenSSID;      /**< Whether to hide the SSID */
 };
 
 /**
@@ -430,12 +441,12 @@ struct WlanBeaconConf {
  * @version 1.0
  */
 struct WlanAPConf {
-    struct WlanSSID ssidConf;   /**< SSID configuration */
-    uint16_t channel;           /**< Channel */
-    uint16_t centerFreq1;       /**< Center frequency 1 */
-    uint16_t centerFreq2;       /**< Center frequency 2 */
-    uint8_t band;               /**< Band, as enumerated in <b>Ieee80211Band</b> */
-    uint8_t width;              /**< Channel width, as enumerated in <b>Ieee80211ChannelWidth</b> */
+    struct WlanSSID ssidConf; /**< SSID configuration */
+    uint16_t channel;         /**< Channel */
+    uint16_t centerFreq1;     /**< Center frequency 1 */
+    uint16_t centerFreq2;     /**< Center frequency 2 */
+    uint8_t band;             /**< Band, as enumerated in <b>Ieee80211Band</b> */
+    uint8_t width;            /**< Channel width, as enumerated in <b>Ieee80211ChannelWidth</b> */
 };
 
 /**
@@ -447,9 +458,9 @@ struct WlanAPConf {
 struct WlanHwCapability {
     void (*Release)(struct WlanHwCapability *self); /**< Function for releasing the hardware capability */
     struct WlanBand *bands[IEEE80211_NUM_BANDS];    /**< Frequency bands */
-    uint16_t htCapability;       /**< High-throughput (HT) capability */
-    uint16_t supportedRateCount; /**< Number of supported rates */
-    uint16_t *supportedRates;    /**< An array of supported rates in 100 kbit/s */
+    uint16_t htCapability;                          /**< High-throughput (HT) capability */
+    uint16_t supportedRateCount;                    /**< Number of supported rates */
+    uint16_t *supportedRates;                       /**< An array of supported rates in 100 kbit/s */
 };
 
 /**
@@ -486,8 +497,8 @@ struct HdfMac80211BaseOps {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*AddKey)(struct NetDevice *netDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr,
-        struct KeyParams *params);
+    int32_t (*AddKey)(
+        struct NetDevice *netDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr, struct KeyParams *params);
 
     /**
      * @brief Deletes a key with a specified MAC address.
@@ -592,6 +603,32 @@ struct HdfMac80211BaseOps {
     int32_t (*SendAction)(struct NetDevice *netDev, WifiActionData *actionData);
 
     int32_t (*GetIftype)(struct NetDevice *netDev, uint8_t *iftype);
+
+    /**
+     * @brief Obtains the power mode which is being used.
+     *
+     * @param ifName Indicates the pointer to the network interface name.
+     * @param mode Indicates the pointer to the power mode.
+     *
+     * @return Returns <b>0</b> if get infos successful; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*GetPowerMode)(const char *ifName, uint8_t *mode);
+
+    /**
+     * @brief Set the power mode.
+     *
+     * @param ifName Indicates the pointer to the network interface name.
+     * @param mode The value set to power mode.
+     *
+     * @return Returns <b>0</b> if get infos successful; returns a negative value otherwise.
+     *
+     * @since 1.0
+     * @version 1.0
+     */
+    int32_t (*SetPowerMode)(const char *ifName, uint8_t mode);
 };
 
 /**

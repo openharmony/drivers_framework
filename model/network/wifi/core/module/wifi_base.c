@@ -1,23 +1,23 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
 #include "wifi_base.h"
+#include "../hdf_wifi_core.h"
 #include "eapol.h"
-#include "hdf_wlan_services.h"
-#include "hdf_wlan_utils.h"
 #include "hdf_wifi_event.h"
 #include "hdf_wlan_chipdriver_manager.h"
 #include "hdf_wlan_config.h"
+#include "hdf_wlan_services.h"
+#include "hdf_wlan_utils.h"
 #include "message/message_router.h"
 #include "message/sidecar.h"
 #include "securec.h"
 #include "wifi_mac80211_ops.h"
 #include "wifi_module.h"
-#include "../hdf_wifi_core.h"
 
 #define HDF_LOG_TAG HDF_WIFI_CORE
 
@@ -28,8 +28,8 @@
 #define FALSE 0
 #endif
 
-#define WIFI_24G_CHANNEL_NUM 14
-#define WIFI_MAX_CHANNEL_NUM 24
+#define WIFI_24G_CHANNEL_NUM       14
+#define WIFI_MAX_CHANNEL_NUM       24
 #define DEFAULT_EAPOL_PACKAGE_SIZE 800
 
 Service *g_baseService = NULL;
@@ -72,8 +72,8 @@ static uint32_t SetMode(struct NetDevice *netDev, uint8_t iftype)
     return chipDriver->ops->SetMode(netDev, iftype);
 }
 
-static uint32_t AddKey(struct NetDevice *netDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr,
-    struct KeyParams *params)
+static uint32_t AddKey(
+    struct NetDevice *netDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr, struct KeyParams *params)
 {
     struct HdfChipDriver *chipDriver = GetChipDriver(netDev);
     if (chipDriver == NULL) {
@@ -193,7 +193,7 @@ static int32_t WifiCmdNewKey(const RequestContext *context, struct HdfSBuf *reqD
         OsalMemFree(keyExt);
         return HDF_FAILURE;
     }
-    
+
     netDev = NetDeviceGetInstByName(ifName);
     if (netDev == NULL) {
         HDF_LOGE("%s:netDev not found!ifName=%s", __func__, ifName);
@@ -316,7 +316,7 @@ static int32_t WifiCmdSetKey(const RequestContext *context, struct HdfSBuf *reqD
 
 static int32_t WifiCmdSendEapol(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
-    WifiTxEapol eapol = { 0 };
+    WifiTxEapol eapol = {0};
     struct NetDevice *netdev = NULL;
     const char *ifName = NULL;
 
@@ -349,7 +349,7 @@ static int32_t WifiCmdSendEapol(const RequestContext *context, struct HdfSBuf *r
 static int32_t WifiCmdReceiveEapol(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     struct NetDevice *netdev = NULL;
-    WifiRxEapol eapol = { 0 };
+    WifiRxEapol eapol = {0};
     const char *ifName = NULL;
     int32_t ret;
 
@@ -505,8 +505,8 @@ static int32_t WifiCmdSetMode(const RequestContext *context, struct HdfSBuf *req
     return ret;
 }
 
-static void WifiGetChannelData(struct WlanBand *band, WifiHwFeatureData **featureData,
-    struct WlanHwCapability *capability, uint32_t iee80211band)
+static void WifiGetChannelData(
+    struct WlanBand *band, WifiHwFeatureData **featureData, struct WlanHwCapability *capability, uint32_t iee80211band)
 {
     uint32_t loop;
     if (band == NULL || featureData == NULL || *featureData == NULL) {
@@ -621,7 +621,7 @@ static uint32_t GetValidFreqsWithBand(struct NetDevice *netdev, int32_t band, in
 static int32_t WifiCmdGetHwFeature(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     struct NetDevice *netdev = NULL;
-    WifiHwFeatureData featureData = { 0 };
+    WifiHwFeatureData featureData = {0};
     const char *ifName = NULL;
     int32_t ret;
 
@@ -697,9 +697,9 @@ static void SetNetworkAddr(struct NetDevice *netdev, uint32_t type)
 
 static void UnsetNetworkAddr(struct NetDevice *netdev)
 {
-    IpV4Addr ip = { 0x00000000UL };
-    IpV4Addr netmask = { 0x00000000UL };
-    IpV4Addr gw = { 0x00000000UL };
+    IpV4Addr ip = {0x00000000UL};
+    IpV4Addr netmask = {0x00000000UL};
+    IpV4Addr gw = {0x00000000UL};
     if (netdev != NULL) {
         NetIfSetAddr(netdev, &ip, &netmask, &gw);
     }
@@ -786,20 +786,17 @@ static int32_t WifiCmdSendAction(const RequestContext *context, struct HdfSBuf *
         return HDF_FAILURE;
     }
 
-    if (!HdfSbufReadBuffer(reqData, (const void **)&(actionData.bssid), &dataSize) ||
-        dataSize != ETH_ADDR_LEN) {
+    if (!HdfSbufReadBuffer(reqData, (const void **)&(actionData.bssid), &dataSize) || dataSize != ETH_ADDR_LEN) {
         HDF_LOGE("%s: %s!ParamName=%s,readSize=%u", __func__, ERROR_DESC_READ_REQ_FAILED, "bssid", dataSize);
         return HDF_FAILURE;
     }
 
-    if (!HdfSbufReadBuffer(reqData, (const void **)&(actionData.dst), &dataSize) ||
-        dataSize != ETH_ADDR_LEN) {
+    if (!HdfSbufReadBuffer(reqData, (const void **)&(actionData.dst), &dataSize) || dataSize != ETH_ADDR_LEN) {
         HDF_LOGE("%s: %s!ParamName=%s,readSize=%u", __func__, ERROR_DESC_READ_REQ_FAILED, "dst", dataSize);
         return HDF_FAILURE;
     }
 
-    if (!HdfSbufReadBuffer(reqData, (const void **)&(actionData.src), &dataSize) ||
-        dataSize != ETH_ADDR_LEN) {
+    if (!HdfSbufReadBuffer(reqData, (const void **)&(actionData.src), &dataSize) || dataSize != ETH_ADDR_LEN) {
         HDF_LOGE("%s: %s!ParamName=%s,readSize=%u", __func__, ERROR_DESC_READ_REQ_FAILED, "src", dataSize);
         return HDF_FAILURE;
     }
@@ -955,8 +952,8 @@ static int32_t WifiCmdSetMacAddr(const RequestContext *context, struct HdfSBuf *
     return ret;
 }
 
-static int32_t WifiCmdGetValidFreqsWithBand(const RequestContext *context, struct HdfSBuf *reqData,
-    struct HdfSBuf *rspData)
+static int32_t WifiCmdGetValidFreqsWithBand(
+    const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     int32_t ret;
     struct NetDevice *netdev = NULL;
@@ -1112,8 +1109,8 @@ static int32_t WifiCmdGetChipId(const RequestContext *context, struct HdfSBuf *r
     return ret;
 }
 
-static int32_t WifiCmdGetIfNamesByChipId(const RequestContext *context, struct HdfSBuf *reqData,
-    struct HdfSBuf *rspData)
+static int32_t WifiCmdGetIfNamesByChipId(
+    const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
 {
     uint8_t chipId;
     uint8_t ifNameCount = 0;
@@ -1253,8 +1250,8 @@ static int32_t WifiCmdDoResetChip(const RequestContext *context, struct HdfSBuf 
     return ret;
 }
 
-void SendMessageResetDriverCallBack(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData,
-    ErrorCode rspCode)
+void SendMessageResetDriverCallBack(
+    const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData, ErrorCode rspCode)
 {
     uint8_t chipId;
     int32_t ret;
@@ -1298,8 +1295,8 @@ static int32_t WifiCmdResetDriver(const RequestContext *context, struct HdfSBuf 
         return HDF_FAILURE;
     }
 
-    ret = g_baseService->SendAsyncMessage(g_baseService, BASE_SERVICE_ID, CMD_BASE_DO_RESET_PRIVATE, data,
-        SendMessageResetDriverCallBack);
+    ret = g_baseService->SendAsyncMessage(
+        g_baseService, BASE_SERVICE_ID, CMD_BASE_DO_RESET_PRIVATE, data, SendMessageResetDriverCallBack);
     if (ret != HDF_SUCCESS) {
         HdfSbufRecycle(data);
         HDF_LOGE("%s: fail to reset the driver,%d", __func__, ret);
@@ -1327,7 +1324,7 @@ static int32_t WifiCmdGetNetDevInfo(const RequestContext *context, struct HdfSBu
     struct NetDevice *netDev = NULL;
     (void)context;
     (void)reqData;
-	
+
     netdevNum = NetDevGetRegisterCount();
     if (!HdfSbufWriteUint32(rspData, netdevNum)) {
         HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
@@ -1349,6 +1346,120 @@ static int32_t WifiCmdGetNetDevInfo(const RequestContext *context, struct HdfSBu
         }
     }
     return HDF_SUCCESS;
+}
+
+static uint32_t HdfdWlanGetPowerMode(const char *ifName, uint8_t *mode)
+{
+    struct NetDevice *netdev = NULL;
+
+    if (ifName == NULL || mode == NULL) {
+        HDF_LOGE("%s: Invalid parameter", __func__);
+        return HDF_FAILURE;
+    }
+    netdev = NetDeviceGetInstByName(ifName);
+    if (netdev == NULL) {
+        HDF_LOGE("%s:netdev not found!ifName=%s.", __func__, ifName);
+        return HDF_FAILURE;
+    }
+    struct HdfChipDriver *chipDriver = GetChipDriver(netdev);
+    if (chipDriver == NULL) {
+        HDF_LOGE("%s:bad net device found!", __func__);
+        return HDF_FAILURE;
+    }
+    if (chipDriver->ops == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (chipDriver->ops->GetPowerMode == NULL) {
+        *mode = WIFI_POWER_MODE_GENERAL;
+        HDF_LOGE("%s: chipDriver->ops->GetPowerMode is null\r\n", __func__);
+        return HDF_SUCCESS;
+    }
+    return chipDriver->ops->GetPowerMode(ifName, mode);
+}
+
+static int32_t WifiCmdGetPowerMode(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+{
+    int32_t ret;
+    const char *ifName = NULL;
+    uint8_t mode;
+    (void)context;
+
+    if (reqData == NULL || rspData == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+    ifName = HdfSbufReadString(reqData);
+    if (ifName == NULL) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
+        return HDF_FAILURE;
+    }
+    ret = HdfdWlanGetPowerMode(ifName, &mode);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail to get power mode, %d", __func__, ret);
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufWriteUint8(rspData, mode)) {
+        HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static uint32_t HdfdWlanSetPowerMode(const char *ifName, uint8_t mode)
+{
+    struct NetDevice *netdev = NULL;
+
+    if (ifName == NULL || mode >= WIFI_POWER_MODE_NUM) {
+        HDF_LOGE("%s: Invalid parameter", __func__);
+        return HDF_FAILURE;
+    }
+    netdev = NetDeviceGetInstByName(ifName);
+    if (netdev == NULL) {
+        HDF_LOGE("%s:netdev not found!ifName=%s.", __func__, ifName);
+        return HDF_FAILURE;
+    }
+    struct HdfChipDriver *chipDriver = GetChipDriver(netdev);
+    if (chipDriver == NULL) {
+        HDF_LOGE("%s:bad net device found!", __func__);
+        return HDF_FAILURE;
+    }
+    if (chipDriver->ops == NULL) {
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (chipDriver->ops->SetPowerMode == NULL) {
+        HDF_LOGE("%s: chipDriver->ops->SetPowerMode is null\r\n", __func__);
+        return HDF_SUCCESS;
+    }
+    return chipDriver->ops->SetPowerMode(ifName, mode);
+}
+
+static int32_t WifiCmdSetPowerMode(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+{
+    int32_t ret;
+    const char *ifName = NULL;
+    uint8_t mode;
+    (void)context;
+
+    if (reqData == NULL || rspData == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+    ifName = HdfSbufReadString(reqData);
+    if (ifName == NULL) {
+        HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ifName");
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadUint8(reqData, &mode)) {
+        HDF_LOGE("%s: read data failed! ParamName=%s", __func__, "power mode");
+        return HDF_FAILURE;
+    }
+    ret = HdfdWlanSetPowerMode(ifName, mode);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail to set power mode, %d", __func__, ret);
+        return HDF_FAILURE;
+    }
+
+    return ret;
 }
 
 static struct MessageDef g_wifiBaseFeatureCmds[] = {
@@ -1378,15 +1489,15 @@ static struct MessageDef g_wifiBaseFeatureCmds[] = {
     DUEMessage(CMD_BASE_RESET_DRIVER, WifiCmdResetDriver, 0),
     DUEMessage(CMD_BASE_GET_NETDEV_INFO, WifiCmdGetNetDevInfo, 0),
     DUEMessage(CMD_BASE_DO_RESET_PRIVATE, WifiCmdDoResetChip, 0),
+    DUEMessage(CMD_BASE_GET_POWER_MODE, WifiCmdGetPowerMode, 0),
+    DUEMessage(CMD_BASE_SET_POWER_MODE, WifiCmdSetPowerMode, 0),
 };
 ServiceDefine(BaseService, BASE_SERVICE_ID, g_wifiBaseFeatureCmds);
 
 int32_t BaseInit()
 {
     if (g_baseService == NULL) {
-        ServiceCfg cfg = {
-            .dispatcherId = DEFAULT_DISPATCHER_ID
-        };
+        ServiceCfg cfg = {.dispatcherId = DEFAULT_DISPATCHER_ID};
         g_baseService = CreateService(BaseService, &cfg);
         if (g_baseService == NULL) {
             return HDF_FAILURE;
