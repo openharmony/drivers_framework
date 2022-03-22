@@ -426,10 +426,10 @@ void Gt1xInitEsdProtect(void)
 void Gt1xEsdSwitch(int32_t on)
 {
     if (on) { // switch on esd check
-	    HDF_LOGI("Esd protector started!");
-	    queue_delayed_work(gt1x_workqueue, &esd_check_work, 1);
+        HDF_LOGI("Esd protector started!");
+        queue_delayed_work(gt1x_workqueue, &esd_check_work, 1);
     } else { // switch off esd check
-	    HDF_LOGI("Esd protector stoped!");
+        HDF_LOGI("Esd protector stoped!");
         cancel_delayed_work(&esd_check_work);
     }
 }
@@ -480,16 +480,16 @@ static void Gt1xEsdCheckFunc(struct work_struct *work)
         if (ret) {
             break;
         }
-	    OsalMSleep(50); // 50: sleep time
+        OsalMSleep(50); // 50: sleep time
     }
 
     if (likely(i < 3)) { // 3:nu
         Gt1xSedFeedWatchdog(g_touchDriver, 0xaa, 0); // 0xaa: reg value
         queue_delayed_work(gt1x_workqueue, &esd_check_work, esd_work_cycle);
     } else {
-	    HDF_LOGI("IC works abnormally! Process reset guitar");
+        HDF_LOGI("IC works abnormally! Process reset guitar");
         Gt1xSedResetStatus(g_touchDriver);
-	    OsalMSleep(50); // 50: sleep time
+        OsalMSleep(50); // 50: sleep time
         ret = ChipEsdResetRetry(g_touchDriver);
         if (ret == HDF_SUCCESS) {
             queue_delayed_work(gt1x_workqueue, &esd_check_work, esd_work_cycle);
@@ -563,7 +563,7 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
 #if GTP_ESD_PROTECT
     gt1x_workqueue = create_singlethread_workqueue("gt1x_workthread");
     if (gt1x_workqueue == NULL) {
-	    HDF_LOGE("Create workqueue failed!");
+        HDF_LOGE("Create workqueue failed!");
     }
     Gt1xInitEsdProtect();
     Gt1xEsdSwitch(1);
