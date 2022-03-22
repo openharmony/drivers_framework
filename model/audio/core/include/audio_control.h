@@ -38,8 +38,8 @@ struct AudioCtrlElemValue {
 
 /* mixer control */
 struct AudioMixerControl {
-    int32_t min;
-    int32_t max;
+    uint32_t min;
+    uint32_t max;
     int32_t platformMax;
     uint32_t mask;
     uint32_t reg;

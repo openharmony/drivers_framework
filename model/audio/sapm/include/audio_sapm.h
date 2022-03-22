@@ -116,7 +116,7 @@ struct AudioSapmComponent {
     struct PlatformDevice *platform; /* parent platform */
 
     /* sapm control */
-    int16_t reg; /* negative reg = no direct sapm */
+    uint16_t reg; /* negative reg = no direct sapm */
     uint8_t shift; /* bits to shift */
     uint8_t invert; /* invert the power bit */
     uint8_t mask;

@@ -320,8 +320,12 @@ int32_t AudioSapmNewComponent(struct AudioCard *audioCard, const struct AudioSap
 {
     struct AudioSapmComponent *sapmComponent = NULL;
 
-    if ((audioCard == NULL || audioCard->rtd == NULL) || (component == NULL)) {
-        ADM_LOG_ERR("input params check error: audioCard=%p, component=%p.", audioCard, component);
+    if ((audioCard == NULL || audioCard->rtd == NULL)) {
+        ADM_LOG_ERR("input params check error: audioCard is NULL.");
+        return HDF_FAILURE;
+    }
+    if (component == NULL) {
+        ADM_LOG_ERR("input params check error: component is NULL.");
         return HDF_FAILURE;
     }
 
@@ -335,7 +339,6 @@ int32_t AudioSapmNewComponent(struct AudioCard *audioCard, const struct AudioSap
         ADM_LOG_ERR("malloc cpt fail!");
         return HDF_FAILURE;
     }
-
     if (memcpy_s(sapmComponent, sizeof(struct AudioSapmComponent),
         component, sizeof(struct AudioSapmComponent)) != EOK) {
         ADM_LOG_ERR("memcpy cpt fail!");
@@ -381,8 +384,12 @@ int32_t AudioSapmNewComponents(struct AudioCard *audioCard,
     int32_t i;
     int32_t ret;
 
-    if ((audioCard == NULL) || (component == NULL)) {
-        ADM_LOG_ERR("input params check error: audioCard=%p, component=%p.", audioCard, component);
+    if (audioCard == NULL) {
+        ADM_LOG_ERR("input params check error: audioCard is NULL.");
+        return HDF_FAILURE;
+    }
+    if (component == NULL) {
+        ADM_LOG_ERR("input params check error: component is NULL.");
         return HDF_FAILURE;
     }
 
@@ -407,10 +414,16 @@ static void MuxSetPathStatus(const struct AudioSapmComponent *sapmComponent, str
     const uint32_t reg = 0;
     uint32_t shift;
 
-    if ((sapmComponent == NULL || sapmComponent->codec == NULL) || (path == NULL || path->name == NULL) ||
-        (enumKtl == NULL || enumKtl->texts == NULL)) {
-        ADM_LOG_ERR("input MuxSet params check error: sapmComponent=%p, path=%p, enumKtl=%p.",
-            sapmComponent, path, enumKtl);
+    if ((sapmComponent == NULL || sapmComponent->codec == NULL)) {
+        ADM_LOG_ERR("input MuxSet params check error: sapmComponent is NULL.");
+        return;
+    }
+    if ((path == NULL || path->name == NULL)) {
+        ADM_LOG_ERR("input MuxSet params check error: path is NULL.");
+        return;
+    }
+    if ((enumKtl == NULL || enumKtl->texts == NULL)) {
+        ADM_LOG_ERR("input MuxSet params check error: enumKtl is NULL.");
         return;
     }
 
@@ -442,13 +455,19 @@ static void MuxValueSetPathStatus(const struct AudioSapmComponent *sapmComponent
 {
     int32_t ret;
     uint32_t val = 0;
-    uint32_t item;
+    int32_t item;
     const uint32_t reg = 0;
     uint32_t shift;
-    if ((sapmComponent == NULL || sapmComponent->codec == NULL) || (path == NULL || path->name == NULL) ||
-        (enumKtl == NULL || enumKtl->texts == NULL)) {
-        ADM_LOG_ERR("input muxValueSet params check error: cpt=%p, path=%p, enumKtl=%p.",
-            sapmComponent, path, enumKtl);
+    if ((sapmComponent == NULL || sapmComponent->codec == NULL)) {
+        ADM_LOG_ERR("input muxValueSet params check error: cpt is NULL.");
+        return;
+    }
+    if ((path == NULL || path->name == NULL)) {
+        ADM_LOG_ERR("input muxValueSet params check error: path is NULL.");
+        return;
+    }
+    if ((enumKtl == NULL || enumKtl->texts == NULL)) {
+        ADM_LOG_ERR("input muxValueSet params check error: enumKtl is NULL.");
         return;
     }
 
@@ -490,9 +509,16 @@ static void MixerSetPathStatus(const struct AudioSapmComponent *sapmComponent, s
     uint32_t invert;
     uint32_t curValue = 0;
 
-    if ((sapmComponent == NULL) || (path == NULL) || (mixerCtrl == NULL)) {
-        ADM_LOG_ERR("input params check error: sapmComponent=%p, path=%p, mixerCtrl=%p.",
-            sapmComponent, path, mixerCtrl);
+    if (sapmComponent == NULL) {
+        ADM_LOG_ERR("input params check error: sapmComponent is NULL.");
+        return;
+    }
+    if (path == NULL) {
+        ADM_LOG_ERR("input params check error: path is NULL.");
+        return;
+    }
+    if (mixerCtrl == NULL) {
+        ADM_LOG_ERR("input params check error: mixerCtrl is NULL.");
         return;
     }
 
@@ -687,8 +713,12 @@ static int32_t AudioSapmAddRoute(struct AudioCard *audioCard, const struct Audio
     struct AudioSapmComponent *sapmComponent = NULL;
     int32_t ret;
 
-    if (audioCard == NULL || route == NULL || route->source == NULL || route->sink == NULL) {
-        ADM_LOG_ERR("input params check error: audioCard=%p, route=%p.", audioCard, route);
+    if (audioCard == NULL) {
+        ADM_LOG_ERR("input params check error: audioCard is NULL.");
+        return HDF_FAILURE;
+    }
+    if (route == NULL || route->source == NULL || route->sink == NULL) {
+        ADM_LOG_ERR("input params check error: route is NULL.");
         return HDF_FAILURE;
     }
 
@@ -740,8 +770,12 @@ int32_t AudioSapmAddRoutes(struct AudioCard *audioCard, const struct AudioSapmRo
     int32_t i;
     int32_t ret;
 
-    if ((audioCard == NULL) || (route == NULL)) {
-        ADM_LOG_ERR("input params check error: audioCard=%p, route=%p.", audioCard, route);
+    if (audioCard == NULL) {
+        ADM_LOG_ERR("input params check error: audioCard is NULL.");
+        return HDF_FAILURE;
+    }
+    if (route == NULL) {
+        ADM_LOG_ERR("input params check error: route is NULL.");
         return HDF_FAILURE;
     }
 
@@ -761,8 +795,12 @@ int32_t AudioSapmNewMixerControls(const struct AudioSapmComponent *sapmComponent
     struct AudioSapmpath *path = NULL;
     int32_t i;
 
-    if (sapmComponent == NULL || sapmComponent->kcontrols == NULL || audioCard == NULL) {
-        ADM_LOG_ERR("input params check error: sapmComponent=%p, audioCard=%p.", sapmComponent, audioCard);
+    if (sapmComponent == NULL || sapmComponent->kcontrols == NULL) {
+        ADM_LOG_ERR("input params check error: sapmComponent is NULL.");
+        return HDF_FAILURE;
+    }
+    if (audioCard == NULL) {
+        ADM_LOG_ERR("input params check error: audioCard is NULL.");
         return HDF_FAILURE;
     }
 
@@ -1212,8 +1250,12 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
     uint32_t pathStatus = 0;
     struct CodecDevice *codec = NULL;
     struct AudioMixerControl *mixerCtrl = NULL;
-    if ((kcontrol == NULL) || (kcontrol->privateValue <= 0) || (elemValue == NULL)) {
-        ADM_LOG_ERR("input params: kcontrol is NULL or elemValue=%p.", elemValue);
+    if ((kcontrol == NULL) || (kcontrol->privateValue <= 0)) {
+        ADM_LOG_ERR("input params: kcontrol is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (elemValue == NULL) {
+        ADM_LOG_ERR("input params: elemValue is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -1250,8 +1292,12 @@ int32_t AudioAccessorySapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const
     uint32_t pathStatus = 0;
     struct AccessoryDevice *accessory = NULL;
     struct AudioMixerControl *mixerCtrl = NULL;
-    if ((kcontrol == NULL) || (kcontrol->privateValue <= 0) || (elemValue == NULL)) {
-        ADM_LOG_ERR("input params: kcontrol is NULL or elemValue=%p.", elemValue);
+    if ((kcontrol == NULL) || (kcontrol->privateValue <= 0)) {
+        ADM_LOG_ERR("input params: kcontrol is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (elemValue == NULL) {
+        ADM_LOG_ERR("input params: elemValue is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
