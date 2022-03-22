@@ -477,7 +477,7 @@ void ReleaseLightDriver(struct HdfDeviceObject *device)
     HdfWorkDestroy(&drvData->work);
     HdfWorkQueueDestroy(&drvData->workQueue);
     (void)OsalMutexDestroy(&drvData->mutex);
-    (void)OsalMemFree(drvData);
+    OsalMemFree(drvData);
     g_lightDrvData = NULL;
 }
 
