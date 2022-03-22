@@ -306,7 +306,7 @@ void ReleaseVibratorDriver(struct HdfDeviceObject *device)
 
     (void)DestroyVibratorHaptic();
     (void)OsalMutexDestroy(&drvData->mutex);
-    (void)OsalMemFree(drvData);
+    OsalMemFree(drvData);
     g_vibratorDrvData = NULL;
 }
 
