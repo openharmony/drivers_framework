@@ -109,7 +109,7 @@ static bool UsbDdkPnpLoaderMatchDevice(const struct UsbPnpNotifyMatchInfoTable *
     return true;
 }
 
-// Need optimize this device object array later, should bind device object to usb deivce
+// Need optimize this device object array later, should bind device object to usb device
 #define REGISTER_DEV_MAX 16
 static struct HdfDeviceObject *g_resistedDevice[REGISTER_DEV_MAX] = {0};
 static int32_t SaveRegistedDevice(struct HdfDeviceObject *dev)

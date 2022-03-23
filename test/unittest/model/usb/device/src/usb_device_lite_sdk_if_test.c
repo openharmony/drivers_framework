@@ -636,7 +636,7 @@ int32_t UsbFnDviceTestGetProp002(void)
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
     }
-    ret = UsbFnGetInterfaceProp(g_acmDevice->ctrlIface.fn, "unkown", buff);
+    ret = UsbFnGetInterfaceProp(g_acmDevice->ctrlIface.fn, "unknown", buff);
     if (HDF_SUCCESS == ret) {
         HDF_LOGE("%s: Get Prop success!!", __func__);
         return HDF_FAILURE;
@@ -768,7 +768,7 @@ int32_t UsbFnDviceTestSetProp002(void)
         HDF_LOGE("%s: ctrlIface.fn is invail", __func__);
         return HDF_FAILURE;
     }
-    ret = UsbFnSetInterfaceProp(g_acmDevice->ctrlIface.fn, "unkown", "hello");
+    ret = UsbFnSetInterfaceProp(g_acmDevice->ctrlIface.fn, "unknown", "hello");
     if (HDF_SUCCESS == ret) {
         HDF_LOGE("%s: Set Prop success!!", __func__);
         return HDF_FAILURE;

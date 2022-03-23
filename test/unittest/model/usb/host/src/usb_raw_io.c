@@ -85,7 +85,7 @@ int32_t UsbStartIo(void)
     printf("%s start\n", __func__);
     g_stopIoThreadFlag = false;
 
-    /* creat Io thread */
+    /* create Io thread */
     (void)memset_s(&threadCfg, sizeof(threadCfg), 0, sizeof(threadCfg));
     threadCfg.name      = (char *)("usb io thread");
     threadCfg.priority  = OSAL_THREAD_PRI_LOW;
