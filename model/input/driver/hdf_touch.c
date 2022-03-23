@@ -500,6 +500,7 @@ static void Gt1xEsdCheckFunc(struct work_struct *work)
 }
 #endif
 
+#if defined(CONFIG_ARCH_ROCKCHIP)
 static int32_t Gt1xRequestIo(ChipDevice *chipDev)
 {
     int32_t ret;
@@ -522,6 +523,7 @@ static int32_t Gt1xRequestIo(ChipDevice *chipDev)
     OsalMSleep(20); // 20 : delay time
     return HDF_SUCCESS;
 }
+#endif
 
 static int32_t ChipCheckResetRetry(ChipDevice *chipDev)
 {
@@ -546,7 +548,6 @@ static int32_t ChipCheckResetRetry(ChipDevice *chipDev)
 
 static int32_t ChipDriverInit(ChipDevice *chipDev)
 {
-    int32_t count = 20;   // 20 : reset time
     int32_t ret;
 #if defined(CONFIG_ARCH_ROCKCHIP)
     g_touchDriver = chipDev->driver;
