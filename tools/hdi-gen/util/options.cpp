@@ -119,7 +119,8 @@ void Options::AddPackagePath(const String& packagePath)
 
     auto it = packagePath_.find(package);
     if (it != packagePath_.end()) {
-        errors_.push_back(String::Format("%s: The '%s:%s' has been set.", program_.string()));
+        errors_.push_back(String::Format("%s: The '%s:%s' has been set.", program_.string(),
+            package.string(), path.string()));
     }
 
     packagePath_[package] = path;
