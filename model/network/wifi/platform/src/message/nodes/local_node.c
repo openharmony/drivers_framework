@@ -34,7 +34,7 @@ static void HandleRequestMessage(const RemoteService *service, MessageContext *c
     LocalNodeService *localNodeService = NULL;
     localNodeService = (LocalNodeService *)service;
     struct MessageDef messageDef = { NULL, 0 };
-	
+
     if (context == NULL || service == NULL) {
         HDF_LOGE("%s:input is NULL", __func__);
         return;
