@@ -1150,7 +1150,6 @@ static int32_t MixerUpdatePowerStatus(const struct AudioKcontrol *kcontrol, uint
 {
     struct AudioCard *audioCard = NULL;
     struct AudioSapmpath *path = NULL;
-    int ret = HDF_SUCCESS;
 
     if (kcontrol == NULL || kcontrol->pri == NULL) {
         ADM_LOG_ERR("input param kcontrol is NULL.");
