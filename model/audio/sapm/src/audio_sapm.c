@@ -849,7 +849,7 @@ int AudioSapmNewMuxControls(struct AudioSapmComponent *sapmComponent, struct Aud
     }
 
     if (sapmComponent->kcontrols == NULL) {
-	OsalMemFree(kctrl);
+        OsalMemFree(kctrl);
         ADM_LOG_ERR("sapmComponent->kcontrols is NULL!");
         return HDF_FAILURE;
     }
@@ -1144,7 +1144,7 @@ int32_t AudioSapmNewControls(struct AudioCard *audioCard)
 
     ret = AudioSapmPowerComponents(audioCard);
     if (ret != HDF_SUCCESS) {
-	OsalMemFree(sapmComponent->kcontrols);
+        OsalMemFree(sapmComponent->kcontrols);
         ADM_LOG_ERR("sapm power component fail!");
         return HDF_FAILURE;
     }
