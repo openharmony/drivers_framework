@@ -278,7 +278,7 @@ static int32_t WifiCmdSetApWpsP2pIe(const RequestContext *context, struct HdfSBu
         HDF_LOGE("%s: netdev not found!ifName=%s", __func__, ifName);
         return HDF_FAILURE;
     }
-        
+
     if (!HdfSbufReadUint32(reqData, &(appIe.ieLen))) {
         HDF_LOGE("%s: %s!ParamName=%s", __func__, ERROR_DESC_READ_REQ_FAILED, "ieLen");
         return HDF_FAILURE;
