@@ -192,7 +192,7 @@ bool HdfAddWork(HdfWorkQueue *queue, HdfWork *work);
  * @since 1.0
  * @version 1.0
  */
-bool HdfAddDelayedWork(HdfWorkQueue *queue, HdfWork *work, unsigned long ms);
+bool HdfAddDelayedWork(HdfWorkQueue *queue, HdfWork *work, uint32_t ms);
 
 /**
  * @brief Obtains the status of a work item or delayed work item.
