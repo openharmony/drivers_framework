@@ -1144,7 +1144,6 @@ int32_t AudioSapmNewControls(struct AudioCard *audioCard)
 
     ret = AudioSapmPowerComponents(audioCard);
     if (ret != HDF_SUCCESS) {
-        OsalMemFree(sapmComponent->kcontrols);
         ADM_LOG_ERR("sapm power component fail!");
         return HDF_FAILURE;
     }
