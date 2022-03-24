@@ -145,7 +145,7 @@ static struct DacDevice *DacManagerFindDevice(uint32_t number)
     struct DacDevice *device = NULL;
     struct DacManager *manager = g_dacManager;
 
-    if (number < 0 || number >= DAC_DEVICES_MAX) {
+    if (number >= DAC_DEVICES_MAX) {
         HDF_LOGE("%s: invalid devNum:%u", __func__, number);
         return NULL;
     }
@@ -334,7 +334,7 @@ static int32_t DacManagerIoOpen(struct HdfSBuf *data, struct HdfSBuf *reply)
         return HDF_ERR_IO;
     }
 
-    if (number < 0 || number >= DAC_DEVICES_MAX || reply == NULL) {
+    if (number >= DAC_DEVICES_MAX || reply == NULL) {
         HDF_LOGE("%s: invalid number %u", __func__, number);
         return HDF_ERR_INVALID_PARAM;
     }
@@ -367,7 +367,7 @@ static int32_t DacManagerIoClose(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
 
     number  = (uint32_t)(number - DAC_HANDLE_SHIFT);
-    if (number < 0 || number >= DAC_DEVICES_MAX) {
+    if (number >= DAC_DEVICES_MAX) {
         HDF_LOGE("%s: invalid number %u", __func__, number);
         return HDF_ERR_INVALID_PARAM;
     }
@@ -394,7 +394,7 @@ static int32_t DacManagerIoWrite(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
 
     number  = (uint32_t)(number - DAC_HANDLE_SHIFT);
-    if (number < 0 || number >= DAC_DEVICES_MAX) {
+    if (number >= DAC_DEVICES_MAX) {
         HDF_LOGE("%s: invalid number %u", __func__, number);
         return HDF_ERR_INVALID_PARAM;
     }
