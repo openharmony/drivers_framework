@@ -849,6 +849,7 @@ int AudioSapmNewMuxControls(struct AudioSapmComponent *sapmComponent, struct Aud
     }
 
     if (sapmComponent->kcontrols == NULL) {
+	OsalMemFree(kctrl);
         ADM_LOG_ERR("sapmComponent->kcontrols is NULL!");
         return HDF_FAILURE;
     }
@@ -1143,6 +1144,7 @@ int32_t AudioSapmNewControls(struct AudioCard *audioCard)
 
     ret = AudioSapmPowerComponents(audioCard);
     if (ret != HDF_SUCCESS) {
+	OsalMemFree(sapmComponent->kcontrols);
         ADM_LOG_ERR("sapm power component fail!");
         return HDF_FAILURE;
     }
@@ -1344,8 +1346,6 @@ static bool AudioSapmCheckTime(void)
     uint64_t diffTime = OsalGetSysTimeMs() - AudioSapmRefreshTime(false);
     if (diffTime > SAPM_SLEEP_TIME) {
         return true;
-    } else if (diffTime < 0) {
-        AudioSapmRefreshTime(true);
     }
     return false;
 }

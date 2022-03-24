@@ -117,7 +117,7 @@ int32_t AccessoryI2cReadWrite(struct AudioAddrConfig *regAttr, uint16_t rwFlag)
     (void)memset_s(msgs, sizeof(struct I2cMsg) * I2C_MSG_NUM, 0, sizeof(struct I2cMsg) * I2C_MSG_NUM);
 
     AUDIO_DRIVER_LOG_DEBUG("entry.\n");
-    if (regAttr == NULL || rwFlag < 0 || rwFlag > 1) {
+    if (regAttr == NULL || rwFlag > 1) {
         AUDIO_DRIVER_LOG_ERR("invalid parameter.");
         return HDF_ERR_INVALID_PARAM;
     }
@@ -187,10 +187,6 @@ int32_t AccessoryRegBitsUpdate(struct AudioMixerControl regAttr)
     int32_t ret;
     struct AudioAddrConfig regVal;
     uint32_t newValue, newMask, value;
-    if (regAttr.reg < 0) {
-        AUDIO_DRIVER_LOG_ERR("input invalid parameter.");
-        return HDF_ERR_INVALID_PARAM;
-    }
     if (regAttr.invert) {
         regAttr.value = regAttr.max - regAttr.value;
     }
