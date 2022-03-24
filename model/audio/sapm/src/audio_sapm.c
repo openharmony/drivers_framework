@@ -850,6 +850,7 @@ int AudioSapmNewMuxControls(struct AudioSapmComponent *sapmComponent, struct Aud
 
     if (sapmComponent->kcontrols == NULL) {
         OsalMemFree(kctrl);
+        kctrl = NULL;
         ADM_LOG_ERR("sapmComponent->kcontrols is NULL!");
         return HDF_FAILURE;
     }
