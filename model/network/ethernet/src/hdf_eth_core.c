@@ -180,6 +180,7 @@ static int32_t HdfEthDriverInit(struct HdfDeviceObject *deviceObject)
         struct HdfEthChipDriverFactory *ethChipDriverFact = HdfEthGetDriverFactory(ethDevice->name);
         if (ethChipDriverFact == NULL) {
             HDF_LOGE("%s: get ethChipDriverFact failed! driverName = %s", __func__, ethDevice->name);
+            ReleaseEthDevice(ethDevice);
             return HDF_FAILURE;
         }
         ret = InitEth(ethDevice, g_ethConfig->deviceInst[i].isSetDefault, ethChipDriverFact);
