@@ -85,8 +85,24 @@ static int32_t ParserHapticEffect(struct DeviceResourceIface *parser, const stru
         }
         effectNode->num = count;
         ret = parser->GetString(childNode, "effectName", &effectNode->effect, NULL);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: parser %s effectName failed", __func__, "effectName");
+            OsalMemFree(effectNode);
+            return HDF_FAILURE;
+        }
         ret = parser->GetUint32(childNode, "type", &effectNode->type, 0);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: parser %s type failed", __func__, "type");
+            OsalMemFree(effectNode);
+            return HDF_FAILURE;
+        }
+
         ret = parser->GetUint32Array(childNode, "seq", effectNode->seq, count, 0);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: parser %s seq failed", __func__, "seq");
+            OsalMemFree(effectNode);
+            return HDF_FAILURE;
+        }
 
         DListInsertTail(&effectNode->node, &hapticData->effectSeqHead);
     }
