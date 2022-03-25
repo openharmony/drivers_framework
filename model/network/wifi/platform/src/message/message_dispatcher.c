@@ -290,7 +290,7 @@ static ErrorCode StartDispatcher(MessageDispatcher *dispatcher)
     if (status != HDF_SUCCESS) {
         return ME_ERROR_OPER_MUTEX_FAILED;
     }
-    
+
     errCode = ME_SUCCESS;
     do {
         if (dispatcher->status != ME_STATUS_STOPPED) {

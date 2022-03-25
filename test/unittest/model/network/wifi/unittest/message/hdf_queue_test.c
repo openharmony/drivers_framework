@@ -143,7 +143,7 @@ int32_t MessageQueueTest003(void)
         HDF_LOGE("%s:Create queue failed!", __func__);
         return -1;
     }
-    
+
     do {
         config.name = "PushQueueWithDelay";
         config.priority = OSAL_THREAD_PRI_DEFAULT;

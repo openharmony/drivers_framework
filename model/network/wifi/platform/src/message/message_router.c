@@ -83,7 +83,7 @@ static MessageDispatcher *RefDispatcherInner(const DispatcherId dispatcherId, bo
             return NULL;
         }
     }
-    
+
     do {
         if (g_dispatchers[dispatcherId] == NULL) {
             break;
