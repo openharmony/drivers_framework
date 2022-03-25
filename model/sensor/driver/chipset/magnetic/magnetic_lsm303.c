@@ -38,7 +38,7 @@ static int32_t ReadLsm303RawData(struct SensorCfgData *data, struct MagneticData
     (void)memset_s(reg, sizeof(reg), 0, sizeof(reg));
 
     CHECK_NULL_PTR_RETURN_VALUE(data, HDF_ERR_INVALID_PARAM);
-   
+
     if (OsalGetTime(&time) != HDF_SUCCESS) {
         HDF_LOGE("%s: Get time failed", __func__);
         return HDF_FAILURE;
@@ -48,7 +48,6 @@ static int32_t ReadLsm303RawData(struct SensorCfgData *data, struct MagneticData
     int32_t ret = ReadSensor(&data->busCfg, LSM303_STATUS_ADDR, &status, sizeof(uint8_t));
     if (!(status & LSM303_DATA_READY_MASK) || (ret != HDF_SUCCESS)) {
         HDF_LOGE("%s: data status [%u] ret [%d]", __func__, status, ret);
-        
         return HDF_FAILURE;
     }
 
@@ -94,7 +93,6 @@ int32_t ReadLsm303Data(struct SensorCfgData *data)
     int32_t ret = ReadLsm303RawData(data, &rawData, &event.timestamp);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: LSM303 read raw data failed", __func__);
-
         return HDF_FAILURE;
     }
 
@@ -111,7 +109,7 @@ int32_t ReadLsm303Data(struct SensorCfgData *data)
         HDF_LOGE("%s: LSM303 convert raw data failed", __func__);
         return HDF_FAILURE;
     }
-    
+
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);

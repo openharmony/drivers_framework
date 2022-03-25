@@ -185,7 +185,7 @@ int32_t Bmi160InitDriver(struct HdfDeviceObject *device)
 
     ret = InitAccelPreConfig();
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: Init  BMI160 bus mux config", __func__);
+        HDF_LOGE("%s: Init BMI160 bus mux config", __func__);
         return HDF_FAILURE;
     }
 
