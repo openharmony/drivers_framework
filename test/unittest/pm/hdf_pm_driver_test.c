@@ -114,18 +114,21 @@ static bool loopTest = false;
 
 int HdfPmHdfTestDozeResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfPmHdfTestDozeSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfPmHdfTestResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     if (loopTest == false) {
         HDF_LOGI("%s called", __func__);
     }
@@ -136,6 +139,7 @@ int HdfPmHdfTestResume(struct HdfDeviceObject *deviceObject)
 
 int HdfPmHdfTestSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     if (loopTest == false) {
         HDF_LOGI("%s called", __func__);
     }
@@ -145,18 +149,21 @@ int HdfPmHdfTestSuspend(struct HdfDeviceObject *deviceObject)
 
 int HdfPmSampleDozeResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfPmSampleDozeSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfPmSampleResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     if (loopTest == false) {
         HDF_LOGI("%s called", __func__);
     }
@@ -166,6 +173,7 @@ int HdfPmSampleResume(struct HdfDeviceObject *deviceObject)
 
 int HdfPmSampleSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     if (loopTest == false) {
         HDF_LOGI("%s called", __func__);
     }
@@ -175,18 +183,21 @@ int HdfPmSampleSuspend(struct HdfDeviceObject *deviceObject)
 
 int HdfPmTestDozeResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfPmTestDozeSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfPmTestResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     if (loopTest == false) {
         HDF_LOGI("%s called", __func__);
     }
@@ -196,6 +207,7 @@ int HdfPmTestResume(struct HdfDeviceObject *deviceObject)
 
 int HdfPmTestSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     if (loopTest == false) {
         HDF_LOGI("%s called", __func__);
     }
@@ -336,7 +348,7 @@ int32_t HdfPmTestOneDriver(const int32_t times)
     HDF_LOGI("%s %d %d", __func__, pmTestType[PM_TEST_DRIVER].resumeCnt, pmTestType[PM_TEST_DRIVER].suspendCnt);
 
     expendTimes = OsalGetSysTimeMs() - beginTimes;
-    HDF_LOGI("%s test expend times:%d ms", __func__, expendTimes);
+    HDF_LOGI("%s test expend times:%u ms", __func__, expendTimes);
 
     return CHECK_VALUE(PM_TEST_DRIVER, times) ? HDF_SUCCESS : HDF_FAILURE;
 }
@@ -448,7 +460,7 @@ int32_t HdfPmTestThreeDriverSeqHundred(void)
         pmTestType[SAMPLE_TEST_DRIVER].resumeCnt, pmTestType[SAMPLE_TEST_DRIVER].suspendCnt);
 
     expendTimes = OsalGetSysTimeMs() - beginTimes;
-    HDF_LOGI("%s test expend times:%d ms", __func__, expendTimes);
+    HDF_LOGI("%s test expend times:%u ms", __func__, expendTimes);
 
     return (CHECK_VALUE(PM_TEST_DRIVER, PM_TEST_COUNT_ONE) && CHECK_VALUE(HDF_TEST_DRIVER, PM_TEST_COUNT_ONE) &&
         CHECK_VALUE(SAMPLE_TEST_DRIVER, PM_TEST_COUNT_ONE)) ? HDF_SUCCESS : HDF_FAILURE;

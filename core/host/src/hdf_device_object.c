@@ -241,7 +241,7 @@ int HdfDeviceObjectRegister(struct HdfDeviceObject *dev)
 
     ret = devNode->device->super.Attach(&devNode->device->super, devNode);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("faild to attach device %s", devNode->driverName);
+        HDF_LOGE("failed to attach device %s", devNode->driverName);
         return HDF_DEV_ERR_ATTACHDEV_FAIL;
     }
 

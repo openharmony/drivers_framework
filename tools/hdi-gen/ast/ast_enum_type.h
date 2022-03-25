@@ -18,7 +18,7 @@ namespace OHOS {
 namespace HDI {
 class ASTEnumValue : public LightRefCountBase {
 public:
-    ASTEnumValue(const String& name)
+    explicit ASTEnumValue(const String& name)
         :mName_(name), isDefault_(true), mValue_(0)
     {}
 

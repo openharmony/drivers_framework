@@ -19,7 +19,7 @@
             return retCode;                                          \
         }                                                            \
         if ((sbuf)->impl->api == NULL) {                               \
-            HDF_LOGE(#api " is not support on %d sbuf", (sbuf)->type); \
+            HDF_LOGE(#api " is not supported on %u sbuf", (sbuf)->type); \
             return retCode;                                          \
         }                                                            \
     } while (0)
@@ -31,7 +31,7 @@
             return;                                                  \
         }                                                            \
         if ((sbuf)->impl->api == NULL) {                               \
-            HDF_LOGE(#api " is not support on %d sbuf", (sbuf)->type); \
+            HDF_LOGE(#api " is not supported on %u sbuf", (sbuf)->type); \
             return;                                                  \
         }                                                            \
     } while (0)
@@ -309,11 +309,11 @@ struct HdfSBuf *HdfSbufTypedObtainCapacity(uint32_t type, size_t capacity)
     struct HdfSBuf *sbuf = NULL;
     const struct HdfSbufConstructor *constructor = HdfSbufConstructorGet(type);
     if (constructor == NULL) {
-        HDF_LOGE("sbuf constructor %d not implement", type);
+        HDF_LOGE("sbuf constructor %u not implement", type);
         return NULL;
     }
     if (constructor->obtain == NULL) {
-        HDF_LOGE("sbuf constructor %d obtain method not implement", type);
+        HDF_LOGE("sbuf constructor %u obtain method not implement", type);
         return NULL;
     }
 
@@ -361,12 +361,12 @@ struct HdfSBuf *HdfSbufTypedBind(uint32_t type, uintptr_t base, size_t size)
     struct HdfSBuf *sbuf = NULL;
     const struct HdfSbufConstructor *constructor = HdfSbufConstructorGet(type);
     if (constructor == NULL) {
-        HDF_LOGE("sbuf constructor %d not implement", type);
+        HDF_LOGE("sbuf constructor %u not implement", type);
         return NULL;
     }
 
     if (constructor->bind == NULL) {
-        HDF_LOGE("sbuf constructor %d bind method not implement", type);
+        HDF_LOGE("sbuf constructor %u bind method not implement", type);
         return NULL;
     }
 

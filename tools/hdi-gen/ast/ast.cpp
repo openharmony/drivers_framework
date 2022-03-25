@@ -196,7 +196,7 @@ String AST::Dump(const String& prefix)
     sb.Append("file: ").Append(idlFilePath_);
     sb.Append("]\n");
 
-    sb.Append("pakage ").Append(packageName_).Append(";");
+    sb.Append("package ").Append(packageName_).Append(";");
     sb.Append('\n');
     sb.Append('\n');
 

@@ -168,7 +168,7 @@ static int ApplyDevicesPowerState(struct HdfDevice *device, uint32_t state)
             if (deviceNode->powerToken != NULL) {
                 ret = PowerStateChange(deviceNode->powerToken, state);
                 if (ret != HDF_SUCCESS) {
-                    HDF_LOGE("device %s failed to resume(%d)", deviceNode->driver->entry->moduleName, state);
+                    HDF_LOGE("device %s failed to resume(%u)", deviceNode->driver->entry->moduleName, state);
                 }
             }
         }
@@ -177,7 +177,7 @@ static int ApplyDevicesPowerState(struct HdfDevice *device, uint32_t state)
             if (deviceNode->powerToken != NULL) {
                 ret = PowerStateChange(deviceNode->powerToken, state);
                 if (ret != HDF_SUCCESS) {
-                    HDF_LOGE("device %s failed to suspend(%d)", deviceNode->driver->entry->moduleName, state);
+                    HDF_LOGE("device %s failed to suspend(%u)", deviceNode->driver->entry->moduleName, state);
                 }
             }
         }

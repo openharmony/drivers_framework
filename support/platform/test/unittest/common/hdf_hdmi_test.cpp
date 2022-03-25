@@ -105,17 +105,17 @@ static void HdmiUserSetAttrCaseTest(DevHandle handle)
 
 static void HdmiUserTest(void)
 {
-    DevHandle handle = NULL;
+    DevHandle handle = nullptr;
     int32_t ret;
     enum HdmiDeepColor color = HDMI_DEEP_COLOR_24BITS;
     uint8_t data[128] = {0};
     struct HdmiHpdCallbackInfo callback;
 
     handle = HdmiOpen(0);
-    if (handle == NULL) {
+    if (handle == nullptr) {
         printf("HdmiOpen fail.");
     }
-    callback.data = NULL;
+    callback.data = nullptr;
     callback.callbackFunc = HdmiUserHpdHandle;
     ret = HdmiRegisterHpdCallbackFunc(handle, &callback);
     if (ret != HDF_SUCCESS) {
