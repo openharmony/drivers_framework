@@ -300,7 +300,7 @@ bool Parser::ParsePackageName()
     }
 
     if (!ParserPackageInfo(packageFullName)) {
-        LogError(String::Format("Parse package '%s' infomation failed.", packageFullName.string()));
+        LogError(String::Format("Parse package '%s' information failed.", packageFullName.string()));
         return false;
     }
 
@@ -1119,7 +1119,7 @@ bool Parser::ParseEnumBaseType(const AutoPtr<ASTEnumType>& type)
             type->SetBaseType(baseType);
             type->SetDisplayBase(true);
         } else {
-            LogError("invaild base type of enum type");
+            LogError("invalid base type of enum type");
             lexer_->SkipCurrentLine(';');
             return false;
         }

@@ -20,7 +20,7 @@ class ASTSequenceableType;
 
 class ASTNamespace : public ASTNode {
 public:
-    ASTNamespace(const String& nspaceStr);
+    explicit ASTNamespace(const String& nspaceStr);
 
     virtual ~ASTNamespace() = default;
 

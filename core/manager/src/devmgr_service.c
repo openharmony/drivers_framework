@@ -279,7 +279,7 @@ static int DevmgrServiceStartDeviceHost(struct DevmgrService *devmgr, struct Hdf
 
     DListInsertTail(&hostClnt->node, &devmgr->hosts);
 
-    // not start the host which only have dynamic deivces
+    // not start the host which only have dynamic devices
     if (HdfSListIsEmpty(&hostClnt->unloadDevInfos)) {
         return HDF_SUCCESS;
     }

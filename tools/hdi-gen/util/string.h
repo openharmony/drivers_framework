@@ -118,7 +118,7 @@ public:
     static constexpr int MAX_SIZE = 262144; // 2^18
 
 private:
-    String(int size);
+    explicit String(int size);
 
     int LastIndexOfInternal(const char* string, int fromIndex) const;
 

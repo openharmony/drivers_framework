@@ -87,13 +87,13 @@ int32_t SampleDriverRegisterDevice(struct HdfDeviceObject *dev, struct HdfSBuf *
 
     devObj = HdfDeviceObjectAlloc(dev, moduleName);
     if (devObj == NULL) {
-        HDF_LOGE("faild to alloc new device for %s", moduleName);
+        HDF_LOGE("failed to alloc new device for %s", moduleName);
         return HDF_FAILURE;
     }
 
     ret = HdfDeviceObjectRegister(devObj);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("faild to register device for %s", moduleName);
+        HDF_LOGE("failed to register device for %s", moduleName);
         HdfDeviceObjectRelease(devObj);
         return HDF_FAILURE;
     }
@@ -101,7 +101,7 @@ int32_t SampleDriverRegisterDevice(struct HdfDeviceObject *dev, struct HdfSBuf *
     ret = HdfDeviceObjectPublishService(devObj, serviceName, SERVICE_POLICY_CAPACITY,
         OSAL_S_IREAD | OSAL_S_IWRITE | OSAL_S_IRGRP | OSAL_S_IWGRP | OSAL_S_IROTH);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("faild to publish service for %s", serviceName);
+        HDF_LOGE("failed to publish service for %s", serviceName);
         HdfDeviceObjectRelease(devObj);
         return ret;
     }
@@ -160,7 +160,7 @@ int32_t SampleDriverPowerStateInject(uint32_t powerState)
     }
     ret = devmgrService->PowerStateChange(devmgrService, powerState);
 
-    HDF_LOGI("%s: inject power state(%d) done, ret = %d", __func__, powerState, ret);
+    HDF_LOGI("%s: inject power state(%u) done, ret = %d", __func__, powerState, ret);
     return ret;
 }
 
@@ -238,24 +238,28 @@ int HdfSampleDriverBind(struct HdfDeviceObject *deviceObject)
 
 int HdfSampleDozeResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfSampleDozeSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfSampleResume(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }
 
 int HdfSampleSuspend(struct HdfDeviceObject *deviceObject)
 {
+    (void)deviceObject;
     HDF_LOGI("%s:called", __func__);
     return HDF_SUCCESS;
 }

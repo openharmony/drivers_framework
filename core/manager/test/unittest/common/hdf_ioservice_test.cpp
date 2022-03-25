@@ -93,7 +93,7 @@ int IoServiceTest::OnDevEventReceived(
     }
     struct Eventlistener *l = CONTAINER_OF(listener, struct Eventlistener, listener);
     l->eventCount++;
-    HDF_LOGE("%s: dev event received: %d %s", (char *)service->priv, id, string);
+    HDF_LOGE("%s: dev event received: %u %s", (char *)service->priv, id, string);
     return 0;
 }
 
@@ -621,22 +621,22 @@ HWTEST_F(IoServiceTest, HdfIoService013, TestSize.Level0)
     ASSERT_NE(serv, nullptr);
 
     HdfSbufWriteUint32(data, POWER_STATE_SUSPEND);
-    int ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    int ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, nullptr);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     HdfSbufFlush(data);
     HdfSbufWriteUint32(data, POWER_STATE_RESUME);
-    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, nullptr);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     HdfSbufFlush(data);
     HdfSbufWriteUint32(data, POWER_STATE_DOZE_SUSPEND);
-    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, nullptr);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     HdfSbufFlush(data);
     HdfSbufWriteUint32(data, POWER_STATE_DOZE_RESUME);
-    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, NULL);
+    ret = serv->dispatcher->Dispatch(&serv->object, SAMPLE_DRIVER_PM_STATE_INJECT, data, nullptr);
     ASSERT_EQ(ret, HDF_SUCCESS);
     HdfIoServiceRecycle(serv);
     HdfSbufRecycle(data);
@@ -706,7 +706,7 @@ static void TestOnServiceStatusReceived(struct ServiceStatusListener *listener, 
         return;
     }
     issd->servName = servstat->serviceName;
-    issd->servInfo = ((servstat->info != NULL) ? (servstat->info) : (""));
+    issd->servInfo = ((servstat->info != nullptr) ? (servstat->info) : (""));
     issd->devClass = servstat->deviceClass;
     issd->servStatus = servstat->status;
     issd->callbacked = true;
@@ -724,14 +724,14 @@ static void TestOnServiceStatusReceived(struct ServiceStatusListener *listener, 
 void IoServiceTest::TestServiceStop(struct IoServiceStatusData* issd)
 {
     struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
-    ASSERT_TRUE(testService != NULL);
+    ASSERT_TRUE(testService != nullptr);
     struct HdfSBuf *data = HdfSbufObtainDefaultSize();
-    ASSERT_TRUE(data != NULL);
+    ASSERT_TRUE(data != nullptr);
     const char *newServName = "sample_service1";
     ASSERT_TRUE(HdfSbufWriteString(data, "sample_driver"));
     ASSERT_TRUE(HdfSbufWriteString(data, newServName));
 
-    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_REGISTER_DEVICE, data, NULL);
+    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_REGISTER_DEVICE, data, nullptr);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     int count = servstatWaitTime;
@@ -746,7 +746,7 @@ void IoServiceTest::TestServiceStop(struct IoServiceStatusData* issd)
     ASSERT_EQ(issd->servStatus, SERVIE_STATUS_START);
 
     issd->callbacked = false;
-    ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, NULL);
+    ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, nullptr);
     ASSERT_TRUE(ret == HDF_SUCCESS);
 
     count = servstatWaitTime;
@@ -814,13 +814,13 @@ HWTEST_F(IoServiceTest, HdfIoService016, TestSize.Level0)
     ASSERT_EQ(status, HDF_SUCCESS);
 
     struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
-    ASSERT_TRUE(testService != NULL);
+    ASSERT_TRUE(testService != nullptr);
     HdfSBuf *data = HdfSbufObtainDefaultSize();
-    ASSERT_TRUE(data != NULL);
+    ASSERT_TRUE(data != nullptr);
 
     std::string servinfo = "foo";
     ASSERT_TRUE(HdfSbufWriteString(data, servinfo.data()));
-    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UPDATE_SERVICE_INFO, data, NULL);
+    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UPDATE_SERVICE_INFO, data, nullptr);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     int count = servstatWaitTime;
@@ -868,13 +868,13 @@ HWTEST_F(IoServiceTest, HdfIoService017, TestSize.Level0)
     ASSERT_EQ(status, HDF_SUCCESS);
 
     struct HdfIoService *testService = HdfIoServiceBind(SAMPLE_SERVICE);
-    ASSERT_TRUE(testService != NULL);
+    ASSERT_TRUE(testService != nullptr);
     HdfSBuf *data = HdfSbufObtainDefaultSize();
-    ASSERT_TRUE(data != NULL);
+    ASSERT_TRUE(data != nullptr);
     const char *newServName = "sample_service1";
     ASSERT_TRUE(HdfSbufWriteString(data, "sample_driver"));
     ASSERT_TRUE(HdfSbufWriteString(data, newServName));
-    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_REGISTER_DEVICE, data, NULL);
+    int ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_REGISTER_DEVICE, data, nullptr);
     ASSERT_EQ(ret, HDF_SUCCESS);
 
     int count = 10;
@@ -892,7 +892,7 @@ HWTEST_F(IoServiceTest, HdfIoService017, TestSize.Level0)
     ASSERT_EQ(status, HDF_SUCCESS);
 
     issd.callbacked = false;
-    ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, NULL);
+    ret = testService->dispatcher->Dispatch(&testService->object, SAMPLE_DRIVER_UNREGISTER_DEVICE, data, nullptr);
     ASSERT_EQ(status, HDF_SUCCESS);
 
     OsalMSleep(10);

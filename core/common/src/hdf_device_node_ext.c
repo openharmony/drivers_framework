@@ -117,7 +117,7 @@ static void DeviceNodeExtConstruct(struct DeviceNodeExt *inst)
 static void DeviceNodeExtDestruct(struct DeviceNodeExt *devnode)
 {
     if (DeviceNodeExtRemoveService(&devnode->super) != HDF_SUCCESS) {
-        HDF_LOGE("failed to remove serivce");
+        HDF_LOGE("failed to remove service");
     }
     HdfDeviceNodeDestruct(&devnode->super);
 }

@@ -167,7 +167,7 @@ static int HdfSbufCopyToUser(const struct HdfSBuf *sbuf, void *dstUser, size_t d
         return HDF_SUCCESS;
     }
     if (dstUserSize < sbufSize) {
-        HDF_LOGE("%s: readBuffer too small %u", __func__, sbufSize);
+        HDF_LOGE("%s: readBuffer too small %zu", __func__, sbufSize);
         return HDF_DEV_ERR_NORANGE;
     }
 

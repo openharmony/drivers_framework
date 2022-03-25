@@ -259,7 +259,7 @@ void ASTType::EmitMemoryRecycle(const String& name, bool isClient, bool ownershi
 void ASTType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
     const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("//Writeing \"%s\" type of data is not supported\n", name_.string());
+    sb.Append(prefix).AppendFormat("//Writing \"%s\" type of data is not supported\n", name_.string());
 }
 
 void ASTType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,

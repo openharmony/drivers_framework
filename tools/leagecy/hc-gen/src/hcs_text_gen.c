@@ -692,7 +692,7 @@ static int32_t HcsGenTemplateVariableName(ParserObject *object, char *nameBuff, 
 
     int32_t res;
     if (object->configNode.templateSignNum) {
-        res = sprintf_s(nameBuff, nameBufferSize, "g_%s%s%d", g_littleHumpNamePrefix, tempName,
+        res = sprintf_s(nameBuff, nameBufferSize, "g_%s%s%u", g_littleHumpNamePrefix, tempName,
             object->configNode.templateSignNum);
     } else {
         res = sprintf_s(nameBuff, nameBufferSize, "g_%s%s", g_littleHumpNamePrefix, tempName);
@@ -717,7 +717,7 @@ static int32_t HcsTemplateNodeImplGen(ParserObject *current, int32_t tabSize)
     OUTPUT_CHECK_AND_RETURN(HcsFormatOutputWrite("%*c.%s = %s,\n", tabSize, ' ', nodeName,
         current->configNode.inheritCount ? templateVariableName : "0"));
 
-    return HcsFormatOutputWrite("%*c.%sSize = %d,\n",
+    return HcsFormatOutputWrite("%*c.%sSize = %u,\n",
         tabSize, ' ', nodeName, current->configNode.inheritCount);
 }
 
