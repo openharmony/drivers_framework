@@ -680,6 +680,7 @@ int32_t I3cCntlrIbiCallback(struct I3cDevice *device)
 
     if (device->ibi->ibiFunc == NULL) {
         HDF_LOGW("%s: device->ibi or ibiFunc is NULL!", __func__);
+        OsalMemFree(ibiData);
         return HDF_ERR_NOT_SUPPORT;
     }
 

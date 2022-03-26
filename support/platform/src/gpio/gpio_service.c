@@ -50,8 +50,9 @@ static int32_t GpioServiceIoWrite(struct HdfSBuf *data, struct HdfSBuf *reply)
     uint16_t gpio;
     uint16_t value;
 
-    if (data == NULL || reply == NULL) {
-        HDF_LOGE("%s: data or reply is NULL", __func__);
+    (void)reply;
+    if (data == NULL) {
+        HDF_LOGE("%s: data is NULL", __func__);
     }
 
     if (!HdfSbufReadUint16(data, &gpio)) {
@@ -109,8 +110,9 @@ static int32_t GpioServiceIoSetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
     uint16_t gpio;
     uint16_t dir;
 
-    if (data == NULL || reply == NULL) {
-        HDF_LOGE("%s: data or reply is NULL", __func__);
+    (void)reply;
+    if (data == NULL) {
+        HDF_LOGE("%s: data is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -138,8 +140,9 @@ static int32_t GpioServiceIoSetIrq(struct HdfSBuf *data, struct HdfSBuf *reply)
     uint16_t gpio;
     uint16_t mode;
 
-    if (data == NULL || reply == NULL) {
-        HDF_LOGE("%s: data or reply is NULL", __func__);
+    (void)reply;
+    if (data == NULL) {
+        HDF_LOGE("%s: data is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -159,8 +162,8 @@ static int32_t GpioServiceIoSetIrq(struct HdfSBuf *data, struct HdfSBuf *reply)
 static int32_t GpioServiceIoUnsetIrq(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     uint16_t gpio;
-    (void)reply;
 
+    (void)reply;
     if (data == NULL) {
         HDF_LOGE("%s: data is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
@@ -178,8 +181,8 @@ static int32_t GpioServiceIoEnableIrq(struct HdfSBuf *data, struct HdfSBuf *repl
 {
     int32_t ret;
     uint16_t gpio;
-    (void)reply;
 
+    (void)reply;
     if (data == NULL) {
         HDF_LOGE("%s: data is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;
@@ -203,8 +206,8 @@ static int32_t GpioServiceIoDisableIrq(struct HdfSBuf *data, struct HdfSBuf *rep
 {
     int32_t ret;
     uint16_t gpio;
-    (void)reply;
 
+    (void)reply;
     if (data == NULL) {
         HDF_LOGE("%s: data is NULL", __func__);
         return HDF_ERR_INVALID_PARAM;

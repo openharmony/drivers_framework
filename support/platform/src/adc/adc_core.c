@@ -178,7 +178,7 @@ static struct AdcDevice *AdcManagerFindDevice(uint32_t number)
     struct AdcDevice *device = NULL;
     struct AdcManager *manager = g_adcManager;
 
-    if (number < 0 || number >= ADC_DEVICES_MAX) {
+    if (number >= ADC_DEVICES_MAX) {
         HDF_LOGE("%s: invalid devNum:%u", __func__, number);
         return NULL;
     }
@@ -320,7 +320,7 @@ static int32_t AdcManagerIoOpen(struct HdfSBuf *data, struct HdfSBuf *reply)
         return HDF_ERR_IO;
     }
 
-    if (number < 0 || number >= ADC_DEVICES_MAX || reply == NULL) {
+    if (number >= ADC_DEVICES_MAX || reply == NULL) {
         HDF_LOGE("%s: invalid number!", __func__);
         return HDF_ERR_INVALID_PARAM;
     }
@@ -354,7 +354,7 @@ static int32_t AdcManagerIoClose(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
 
     number = (uint32_t)(number - ADC_HANDLE_SHIFT);
-    if (number < 0 || number >= ADC_DEVICES_MAX) {
+    if (number >= ADC_DEVICES_MAX) {
         HDF_LOGE("%s: get device %u failed", __func__, number);
         return HDF_ERR_INVALID_PARAM;
     }
