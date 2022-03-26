@@ -276,19 +276,16 @@ struct SensorCfgData *MagneticCreateCfgData(const struct DeviceResourceNode *nod
 
     if (drvData == NULL || node == NULL) {
         HDF_LOGE("%s: Magnetic node pointer NULL", __func__);
-
         return NULL;
     }
 
     if (drvData->detectFlag) {
         HDF_LOGE("%s: Magnetic sensor have detected", __func__);
-        
         return NULL;
     }
-    
+
     if (drvData->magneticCfg == NULL) {
         HDF_LOGE("%s: Magnetic magneticCfg pointer NULL", __func__);
-
         return NULL;
     }
 
@@ -306,7 +303,6 @@ struct SensorCfgData *MagneticCreateCfgData(const struct DeviceResourceNode *nod
     drvData->detectFlag = true;
     if (InitMagneticAfterDetected(drvData->magneticCfg) != HDF_SUCCESS) {
         HDF_LOGI("%s: Magnetic sensor detect device no exist", __func__);
-
         goto INIT_EXIT;
     }
     return drvData->magneticCfg;
@@ -319,7 +315,7 @@ BASE_CONFIG_EXIT:
         sizeof(struct SensorBasicInfo), 0, sizeof(struct SensorBasicInfo));
     (void)memset_s(&drvData->magneticCfg->busCfg, sizeof(struct SensorBusCfg), 0, sizeof(struct SensorBusCfg));
     (void)memset_s(&drvData->magneticCfg->sensorAttr, sizeof(struct SensorAttr), 0, sizeof(struct SensorAttr));
-    
+
     return drvData->magneticCfg;
 }
 

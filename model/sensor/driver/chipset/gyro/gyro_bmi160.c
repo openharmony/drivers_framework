@@ -105,7 +105,7 @@ int32_t ReadBmi160GyroData(struct SensorCfgData *data)
         HDF_LOGE("%s: BMI160 convert raw data failed", __func__);
         return HDF_FAILURE;
     }
-    
+
     event.dataLen = sizeof(tmp);
     event.data = (uint8_t *)&tmp;
     ret = ReportSensorEvent(&event);
@@ -187,7 +187,7 @@ int32_t GyroBmi160InitDriver(struct HdfDeviceObject *device)
         HDF_LOGD("%s: Creating gyrocfg failed because detection failed", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    
+
     ops.Init = NULL;
     ops.ReadData = ReadBmi160GyroData;
     ret = GyroRegisterChipOps(&ops);
@@ -216,7 +216,7 @@ void GyroBmi160ReleaseDriver(struct HdfDeviceObject *device)
         GyroReleaseCfgData(drvData->sensorCfg);
         drvData->sensorCfg = NULL;
     }
-    
+
     OsalMemFree(drvData);
 }
 

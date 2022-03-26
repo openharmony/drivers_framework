@@ -414,7 +414,7 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
 
     directionNode = parser->GetChildNode(config->root, "sensorDirection");
     CHECK_NULL_PTR_RETURN_VALUE(directionNode, HDF_ERR_INVALID_PARAM);
-    
+
     num = parser->GetElemNum(directionNode, "convert");
     ret = parser->GetUint32(directionNode, "direction", &index, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "direction");
@@ -474,7 +474,7 @@ int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *rem
     remapData[AXIS_X] = newData[direction->map[AXIS_X]];
     remapData[AXIS_Y] = newData[direction->map[AXIS_Y]];
     remapData[AXIS_Z] = newData[direction->map[AXIS_Z]];
-    
+
     return HDF_SUCCESS;
 }
 
