@@ -770,7 +770,7 @@ int32_t UsbFnDviceTestSetProp002(void)
     }
     ret = UsbFnSetInterfaceProp(g_acmDevice->ctrlIface.fn, "unknown", "hello");
     if (HDF_SUCCESS == ret) {
-        HDF_LOGE("%s: Set Prop success!!", __func__);
+        HDF_LOGE("%s: Set Prop success!", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -783,7 +783,7 @@ int32_t UsbFnDviceTestSetProp003(void)
 
     ret = UsbFnSetInterfaceProp(fn, "name_test", "hellotest");
     if (HDF_SUCCESS == ret) {
-        HDF_LOGE("%s: Set Prop success!!", __func__);
+        HDF_LOGE("%s: Set Prop success!", __func__);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;

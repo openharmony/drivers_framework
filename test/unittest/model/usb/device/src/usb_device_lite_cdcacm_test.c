@@ -794,7 +794,7 @@ int32_t remove_usb_device(void)
 
     device = (struct UsbFnDevice *)UsbFnGetDevice(udcName);
     if (device == NULL) {
-        HDF_LOGE("%s: get device fail", __func__);
+        HDF_LOGE("%s: get device failed", __func__);
         return HDF_FAILURE;
     }
     devMgr = (struct UsbFnDeviceMgr *)device;
@@ -807,7 +807,7 @@ int32_t remove_usb_device(void)
             break;
         }
     }
-    dprintf("%s, i = %d, running = %d\n", __func__, i, devMgr->running ? 1 : 0);
+    dprintf("%s, i = %hhu, running = %d\n", __func__, i, (devMgr->running ? 1 : 0));
     for (i = 0; i < device->numInterfaces; i++) {
         intfMgr = devMgr->interfaceMgr + i;
         if (intfMgr) {
@@ -823,8 +823,7 @@ int32_t remove_usb_device(void)
     struct UsbFnAdapterOps *fnOps = UsbFnAdapterGetOps();
     ret = OsalThreadDestroy(&devMgr->thread);
     if (HDF_SUCCESS != ret) {
-        HDF_LOGE("%s:%d OsalThreadDestroy failed, ret=%d",
-            __func__, __LINE__, ret);
+        HDF_LOGE("%s:%d OsalThreadDestroy failed, ret = %d", __func__, __LINE__, ret);
         return ret;
     }
     ret = fnOps->delDevice(devMgr->name, devMgr->udcName, devMgr->des);

@@ -794,7 +794,7 @@ static int32_t UsbDdkPnpLoaderrAddPnpDevice(struct HdfDeviceObject *usbPnpManage
         idTable->deviceMatchAttr, serviceInfo);
     if (pnpData == NULL) {
         ret = HDF_FAILURE;
-        HDF_LOGE("%s: UsbDdkPnpLoaderBufCreate faile", __func__);
+        HDF_LOGE("%s: UsbDdkPnpLoaderBufCreate failed", __func__);
         goto ERROR;
     }
 
@@ -806,14 +806,14 @@ static int32_t UsbDdkPnpLoaderrAddPnpDevice(struct HdfDeviceObject *usbPnpManage
         if (cmdId == USB_PNP_NOTIFY_ADD_INTERFACE) {
             if (deviceListTable == NULL) {
                 ret = HDF_ERR_INVALID_OBJECT;
-                HDF_LOGE("%s:%d UsbDdkPnpLoaderAddInterface faile", __func__, __LINE__);
+                HDF_LOGE("%s:%d UsbDdkPnpLoaderAddInterface failed", __func__, __LINE__);
                 goto ERROR;
             }
             deviceListTable->status = USB_PNP_ADD_STATUS;
         } else {
             ret = UsbDdkPnpLoaderDeviceListAdd(infoTable, idTable);
             if (ret != HDF_SUCCESS) {
-                HDF_LOGE("%s:%d UsbDdkPnpLoaderDeviceListAdd faile", __func__, __LINE__);
+                HDF_LOGE("%s:%d UsbDdkPnpLoaderDeviceListAdd failed", __func__, __LINE__);
                 goto ERROR;
             }
         }
@@ -1039,13 +1039,13 @@ int32_t UsbDdkPnpLoaderEventReceived(void *usbPnpManagerPtr, uint32_t id, struct
     struct HdfDeviceObject *usbPnpManagerDevice = (struct HdfDeviceObject *)usbPnpManagerPtr;
 
     flag = HdfSbufReadBuffer(data, (const void **)(&infoTable), &infoSize);
-    if ((flag == false) || (infoTable == NULL)) {
+    if ((!flag) || (infoTable == NULL)) {
         ret = HDF_ERR_INVALID_PARAM;
-        HDF_LOGE("%s: fail to read infoTable in event data, flag=%d", __func__, flag);
+        HDF_LOGE("%s: fail to read infoTable in event data, flag = %d", __func__, flag);
         return ret;
     }
 
-    HDF_LOGI("%s:%d id=%d infoSize=%d, devNum=%d, busNum=%d, infoTable=0x%x-0x%x success",
+    HDF_LOGI("%s:%d id = %d infoSize = %u, devNum = %d, busNum = %d, infoTable=0x%x-0x%x success",
         __func__, __LINE__, id, infoSize, infoTable->devNum, infoTable->busNum,
         infoTable->deviceInfo.vendorId, infoTable->deviceInfo.productId);
 
