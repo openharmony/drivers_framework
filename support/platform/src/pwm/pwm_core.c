@@ -44,7 +44,7 @@ int32_t PwmDeviceGet(struct PwmDev *pwm)
 int32_t PwmDevicePut(struct PwmDev *pwm)
 {
     int32_t ret;
-    
+
     if (pwm == NULL) {
         HDF_LOGE("%s pwm is null\n", __func__);
         return HDF_ERR_INVALID_PARAM;
@@ -66,7 +66,7 @@ int32_t PwmDevicePut(struct PwmDev *pwm)
 int32_t PwmDeviceSetConfig(struct PwmDev *pwm, struct PwmConfig *config)
 {
     int32_t ret;
-    
+
     if (pwm == NULL || config == NULL) {
         HDF_LOGE("%s param is null\n", __func__);
         return HDF_ERR_INVALID_PARAM;

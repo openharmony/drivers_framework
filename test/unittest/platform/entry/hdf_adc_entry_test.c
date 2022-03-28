@@ -7,15 +7,12 @@
  */
 
 #include "hdf_adc_entry_test.h"
-#include "hdf_log.h"
 #include "adc_test.h"
-#include "hdf_log.h"
 
 #define HDF_LOG_TAG hdf_adc_entry_test
 
 int32_t HdfAdcTestEntry(HdfTestMsg *msg)
 {
-    HDF_LOGE("%s: enter", __func__);
     if (msg == NULL) {
         return HDF_FAILURE;
     }

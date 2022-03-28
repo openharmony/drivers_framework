@@ -35,7 +35,7 @@ static int32_t I2sSetCfgTest(struct I2sTest *test)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u],\
+    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u], \
         channelIfMode[%u], mclk[%u], bclk[%u], writeChannel[%u], i2slFsSel[%u]", __func__,
         test->sampleRate, test->type, test->channelMode, test->samplePrecision,
         test->channelIfMode, test->mclk, test->bclk, test->writeChannel, test->i2slFsSel);
@@ -66,7 +66,7 @@ static int32_t I2sGetCfgTest(struct I2sTest *test)
     struct I2sCfg cfg;
     I2sGetCfg(test->handle, &cfg);
 
-    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u],\
+    HDF_LOGE("%s:sampleRate[%u], type[%u], channelMode[%u], samplePrecision[%u], \
         channelIfMode[%u], mclk[%u], bclk[%u], writeChannel[%u], i2slFsSel[%u]", __func__,
         test->sampleRate, test->type, test->channelMode, test->samplePrecision,
         test->channelIfMode, test->mclk, test->bclk, test->writeChannel, test->i2slFsSel);
@@ -233,7 +233,7 @@ static int32_t I2sWriteTest(struct I2sTest *test)
         HDF_LOGE("%s: I2sWriteTest error \n", __func__);
         return HDF_FAILURE;
     }
-    
+
     return HDF_SUCCESS;
 }
 
@@ -398,7 +398,7 @@ static int32_t I2sTestInitCodecFromHcs(struct I2sTest *test, const struct Device
         HDF_LOGE("%s: face is null", __func__);
         return HDF_FAILURE;
     }
-    
+
     int32_t ret = face->GetUint8(node, "writeChannel", &test->writeChannel, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read writeChannel fail", __func__);

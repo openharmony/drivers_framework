@@ -176,7 +176,7 @@ static int32_t VirtualRegulatorReadHcs(struct RegulatorNode *regNode, const stru
     struct DeviceResourceIface *drsOps = NULL;
 
     HDF_LOGD("VirtualRegulatorReadHcs enter:");
-    
+
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (drsOps == NULL || drsOps->GetString == NULL) {
         HDF_LOGE("%s: invalid drs ops fail!", __func__);
@@ -243,7 +243,7 @@ static int32_t VirtualRegulatorParseAndInit(struct HdfDeviceObject *device, cons
         }
         return ret;
     }
-    
+
     regNode->priv = (void *)node;
     regNode->ops = &g_method;
 

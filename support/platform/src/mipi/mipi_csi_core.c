@@ -169,7 +169,7 @@ int32_t MipiCsiCntlrSetPhyCmvmode(struct MipiCsiCntlr *cntlr, uint8_t devno, Phy
 
     return ret;
 }
-    
+
 int32_t MipiCsiCntlrSetExtDataType(struct MipiCsiCntlr *cntlr, ExtDataType* dataType)
 {
     int32_t ret;

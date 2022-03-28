@@ -107,7 +107,7 @@ struct MtdDeviceMethod {
     void (*dump)(struct MtdDevice *mtdDevice);
     int32_t (*lock)(struct MtdDevice *mtdDevice);
     void (*unlock)(struct MtdDevice *mtdDevice);
-}; 
+};
 
 /**
  * @Defines the structure used to identify a physical mtd chip.

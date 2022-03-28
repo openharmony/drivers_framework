@@ -64,7 +64,7 @@ void RegulatorNodeListPrint(void)
 {
     struct RegulatorNode *pos = NULL;
     struct RegulatorNode *tmp = NULL;
-    
+
     struct RegulatorManager *manager = g_regulatorManager;
     CHECK_NULL_PTR_RETURN(manager);
 

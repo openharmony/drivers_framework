@@ -190,7 +190,7 @@ int32_t I3cTestTransfer(void *param)
 {
     struct I3cTester *tester = NULL;
     int32_t ret;
-    
+
     tester = I3cTesterGet();
     if (tester == NULL) {
         HDF_LOGE("%s: Get tester failed!", __func__);

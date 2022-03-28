@@ -67,7 +67,7 @@ int32_t WatchdogOpen(int16_t wdtId, DevHandle *handle)
         *handle = (DevHandle)service;
         return ret;
     }
-    
+
     return ret;
 }
 

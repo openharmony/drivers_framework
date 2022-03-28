@@ -8,13 +8,11 @@
 
 #include "hdf_dac_entry_test.h"
 #include "dac_test.h"
-#include "hdf_log.h"
 
 #define HDF_LOG_TAG hdf_dac_entry_test
 
 int32_t HdfDacTestEntry(HdfTestMsg *msg)
 {
-    HDF_LOGE("%s: enter", __func__);
     if (msg == NULL) {
         return HDF_FAILURE;
     }

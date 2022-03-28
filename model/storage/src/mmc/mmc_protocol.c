@@ -3494,7 +3494,7 @@ static void SdioDecodeCisTplManfId(struct MmcCntlr *cntlr, struct SdioFunction *
      */
     vendorId = (tuple->tplBody[1] << BITS_PER_BYTE) | tuple->tplBody[0];
     deviceId = (tuple->tplBody[3] << BITS_PER_BYTE) | tuple->tplBody[2];
-    
+
     /* function CISTPL_MANFID. */
     if (function != NULL) {
         function->deviceId = deviceId;
