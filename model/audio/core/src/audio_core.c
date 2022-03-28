@@ -124,6 +124,10 @@ int32_t AudioRegisterAccessory(struct HdfDeviceObject *device,
 
     ret = AudioSocRegisterDai(device, daiData);
     if (ret != HDF_SUCCESS) {
+        ret = OsalMutexDestroy(&accessory->mutex);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s:Release mutex failed!ret=%d", __func__, ret);
+        }
         OsalMemFree(accessory);
         ADM_LOG_ERR("Register accessory device fail ret=%d", ret);
         return HDF_ERR_IO;
@@ -166,6 +170,10 @@ int32_t AudioRegisterCodec(struct HdfDeviceObject *device, struct CodecData *cod
     ret = AudioSocRegisterDai(device, daiData);
     if (ret != HDF_SUCCESS) {
         OsalIoUnmap((void *)((uintptr_t)(codec->devData->virtualAddress)));
+        ret = OsalMutexDestroy(&codec->mutex);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s:Release mutex failed!ret=%d", __func__, ret);
+        }
         OsalMemFree(codec);
         ADM_LOG_ERR("Register dai device fail ret=%d", ret);
         return HDF_ERR_IO;

@@ -849,6 +849,8 @@ int AudioSapmNewMuxControls(struct AudioSapmComponent *sapmComponent, struct Aud
     }
 
     if (sapmComponent->kcontrols == NULL) {
+        OsalMemFree(kctrl);
+        kctrl = NULL;
         ADM_LOG_ERR("sapmComponent->kcontrols is NULL!");
         return HDF_FAILURE;
     }
@@ -999,7 +1001,7 @@ static void AudioSapmPowerDownSeqRun(const struct DListHead *list)
     return;
 }
 
-static int AudioSapmPowerComponents(struct AudioCard *audioCard)
+static void AudioSapmPowerComponents(struct AudioCard *audioCard)
 {
     int32_t ret;
     struct AudioSapmComponent *sapmComponent = NULL;
@@ -1009,7 +1011,7 @@ static int AudioSapmPowerComponents(struct AudioCard *audioCard)
 
     if (audioCard == NULL) {
         ADM_LOG_ERR("input param audioCard is NULL.");
-        return HDF_FAILURE;
+        return;
     }
 
     DListHeadInit(&upList);
@@ -1038,8 +1040,6 @@ static int AudioSapmPowerComponents(struct AudioCard *audioCard)
 
     AudioSapmPowerDownSeqRun(&downList);
     AudioSapmPowerUpSeqRun(&upList);
-
-    return HDF_SUCCESS;
 }
 
 static void ReadInitComponentPowerStatus(struct AudioSapmComponent *sapmComponent)
@@ -1141,11 +1141,7 @@ int32_t AudioSapmNewControls(struct AudioCard *audioCard)
         DListInsertTail(&sapmComponent->dirty, &audioCard->sapmDirty);
     }
 
-    ret = AudioSapmPowerComponents(audioCard);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("sapm power component fail!");
-        return HDF_FAILURE;
-    }
+    AudioSapmPowerComponents(audioCard);
 
     return HDF_SUCCESS;
 }
@@ -1154,7 +1150,6 @@ static int32_t MixerUpdatePowerStatus(const struct AudioKcontrol *kcontrol, uint
 {
     struct AudioCard *audioCard = NULL;
     struct AudioSapmpath *path = NULL;
-    int ret = HDF_SUCCESS;
 
     if (kcontrol == NULL || kcontrol->pri == NULL) {
         ADM_LOG_ERR("input param kcontrol is NULL.");
@@ -1184,11 +1179,7 @@ static int32_t MixerUpdatePowerStatus(const struct AudioKcontrol *kcontrol, uint
         break;
     }
 
-    ret = AudioSapmPowerComponents(audioCard);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("sapm power component fail!");
-        return HDF_FAILURE;
-    }
+    AudioSapmPowerComponents(audioCard);
 
     return HDF_SUCCESS;
 }
@@ -1344,9 +1335,9 @@ static bool AudioSapmCheckTime(void)
     uint64_t diffTime = OsalGetSysTimeMs() - AudioSapmRefreshTime(false);
     if (diffTime > SAPM_SLEEP_TIME) {
         return true;
-    } else if (diffTime < 0) {
-        AudioSapmRefreshTime(true);
     }
+    
+    AudioSapmRefreshTime(true);
     return false;
 }
 
