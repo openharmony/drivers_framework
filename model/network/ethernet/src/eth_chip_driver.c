@@ -40,13 +40,13 @@ int32_t HdfEthRegChipDriver(struct HdfEthChipDriverFactory *obj)
         return HDF_ERR_INVALID_PARAM;
     }
     if (HdfEthGetChipDriverByName(obj->driverName) != NULL) {
-        HDF_LOGW("%s: chipDriver factory is already registed. name = %s", __func__, obj->driverName);
+        HDF_LOGW("%s: chipDriver factory is already registered. name = %s", __func__, obj->driverName);
         return HDF_FAILURE;
     }
     for (index = 0; index < MAX_CHIPDRIVER_COUNT; index++) {
         if (g_ethChipDriverFactory[index] == NULL) {
             g_ethChipDriverFactory[index] = obj;
-            HDF_LOGI("%s:Chip driver %s registed.", __func__, obj->driverName);
+            HDF_LOGI("%s:Chip driver %s registered.", __func__, obj->driverName);
             return HDF_SUCCESS;
         }
     }

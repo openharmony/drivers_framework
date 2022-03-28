@@ -313,7 +313,7 @@ static int32_t HdfWlanInitInterfaces(struct HdfWlanDevice *device, struct HdfChi
     for (i = 0; i < maxIFCount; i++) {
         ret = HdfWlanInitInterface(device, chipDriverFact, i);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s:Init NetInterface failed!driverName=%s,portIndex=%d", __func__, device->driverName, i);
+            HDF_LOGE("%s:Init NetInterface failed!driverName=%s,portIndex=%hhu", __func__, device->driverName, i);
         }
     }
     HDF_LOGI("%s:%s init interfaces finished!", __func__, chipDriverFact->driverName);

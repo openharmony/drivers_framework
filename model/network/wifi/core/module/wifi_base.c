@@ -1104,7 +1104,7 @@ static int32_t WifiCmdGetChipId(const RequestContext *context, struct HdfSBuf *r
         HDF_LOGE("%s: fail to get chipId, %d", __func__, ret);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: chipid = %d.", __func__, chipId);
+    HDF_LOGE("%s: chipid = %hhu.", __func__, chipId);
     if (!HdfSbufWriteUint8(rspData, chipId)) {
         HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
         return HDF_FAILURE;
@@ -1134,7 +1134,7 @@ static int32_t WifiCmdGetIfNamesByChipId(const RequestContext *context, struct H
         HDF_LOGE("%s: fail to get ifnames!", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGI("%s: get ifName num: %d.\n", __func__, ifNameCount);
+    HDF_LOGI("%s: get ifName num: %hhu.\n", __func__, ifNameCount);
     do {
         if (!HdfSbufWriteUint32(rspData, ifNameCount)) {
             HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
