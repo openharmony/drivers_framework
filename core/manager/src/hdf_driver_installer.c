@@ -13,10 +13,11 @@
 
 #define HDF_LOG_TAG driver_installer
 
-static int DriverInstallerStartDeviceHost(uint32_t devHostId, const char *devHostName)
+static int DriverInstallerStartDeviceHost(uint32_t devHostId, const char *devHostName, bool dynamic)
 {
     struct IDevHostService *hostServiceIf = DevHostServiceNewInstance(devHostId, devHostName);
     int ret;
+    (void)dynamic;
     if ((hostServiceIf == NULL) || (hostServiceIf->StartService == NULL)) {
         HDF_LOGE("hostServiceIf or hostServiceIf->StartService is null");
         return HDF_FAILURE;

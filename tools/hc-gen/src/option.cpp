@@ -28,7 +28,7 @@ Option &Option::Instance()
 }
 
 static constexpr int OPTION_END = -1;
-static constexpr const char *HCS_SUPPORT_ARGS = "o:ap:bditmvVh";
+static constexpr const char *HCS_SUPPORT_ARGS = "o:ap:bditmvVhs";
 
 Option &Option::Parse(int argc, char **argv)
 {
@@ -108,6 +108,10 @@ void Option::SetOptionData(char op)
         case 'h': /* fall-through */
             showUsage_ = true;
             break;
+        case 's':
+            genStartCfg_ = true;
+            shouldGenByteCodeConfig_ = false;
+            break;
         case '?':
             SetOptionError();
             break;
@@ -125,6 +129,7 @@ void Option::ShowUsage()
     ShowOption("-b", "output binary output, default enable");
     ShowOption("-t", "output config in C language source file style");
     ShowOption("-m", "output config in macro file style");
+    ShowOption("-s", "output start config of host");
     ShowOption("-i", "output binary hex dump in C language source file style");
     ShowOption("-p <prefix>", "prefix of generated symbol name");
     ShowOption("-d", "decompile hcb to hcs");
@@ -187,6 +192,11 @@ bool Option::ShouldGenHexDump() const
 bool Option::ShouldDecompile() const
 {
     return shouldDecompile_;
+}
+
+bool Option::ShouldGenStartConfig() const
+{
+    return genStartCfg_;
 }
 
 std::string Option::GetSymbolPrefix()

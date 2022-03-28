@@ -43,6 +43,8 @@ public:
 
     bool ShouldGenBinaryConfig() const;
 
+    bool ShouldGenStartConfig() const;
+
     bool ShouldGenHexDump() const;
 
     bool ShouldDecompile() const;
@@ -75,6 +77,7 @@ private:
     bool shouldGenTextConfig_ = false;
     bool shouldGenMacroConfig_ = false;
     bool shouldGenByteCodeConfig_ = true;
+    bool genStartCfg_ = false;
     bool showGenHexDump_ = false;
     bool shouldDecompile_ = false;
     bool verboseLog_ = false;

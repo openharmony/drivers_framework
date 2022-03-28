@@ -263,7 +263,7 @@ struct IDevHostService *DevHostServiceNewInstance(uint16_t hostId, const char *h
 {
     struct DevHostService *hostService =
         (struct DevHostService *)HdfObjectManagerGetObject(HDF_OBJECT_ID_DEVHOST_SERVICE);
-    if (hostService != NULL) {
+    if (hostService != NULL && hostName != NULL) {
         hostService->hostId = hostId;
         hostService->hostName = hostName;
     }

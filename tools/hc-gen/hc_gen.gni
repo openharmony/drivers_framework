@@ -40,6 +40,9 @@ template("hc_gen") {
     } else if (defined(invoker.hc_gen_macro) && invoker.hc_gen_macro) {
       hc_flags = [ "-m" ]
       output_suffix = ".h"
+    } else if (defined(invoker.hc_gen_start_cfg) && invoker.hc_gen_start_cfg) {
+      hc_flags = [ "-s" ]
+      output_suffix = ".cfg"
     } else {
       hc_flags = []
       output_suffix = ".hcb"
@@ -86,6 +89,13 @@ template("hc_gen_hex") {
 
 template("hc_gen_macro") {
   hc_gen_macro = true
+  hc_gen(target_name) {
+    forward_variables_from(invoker, "*")
+  }
+}
+
+template("hc_gen_start_cfg") {
+  hc_gen_start_cfg = true
   hc_gen(target_name) {
     forward_variables_from(invoker, "*")
   }
