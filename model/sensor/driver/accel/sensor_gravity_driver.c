@@ -101,7 +101,7 @@ static int32_t InitGravityData(struct GravityDrvData *drvData)
     }
 
     if (HdfWorkInit(&drvData->gravityWork, GravityDataWorkEntry, drvData) != HDF_SUCCESS) {
-        HDF_LOGE("%s: Gravity create thread failed", __func__);
+        HDF_LOGE("%s: Gravity init work failed!", __func__);
         return HDF_FAILURE;
     }
 
