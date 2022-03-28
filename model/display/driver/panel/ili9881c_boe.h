@@ -24,7 +24,7 @@ struct GpioTiming {
     uint16_t level;
     uint32_t delay;
 };
-  
+
 struct ResetSeq {
     uint32_t items;
     struct GpioTiming *timing;
@@ -238,7 +238,7 @@ static uint8_t g_payLoad190[] = { 0x29, 0x00 };
 static uint8_t g_payLoad191[] = { 0x35, 0x00 };
 
 static struct DsiCmdDesc g_panelOnCode[] = {
-    { 0x39, 0x00, sizeof(g_payLoad0), g_payLoad0 }, 
+    { 0x39, 0x00, sizeof(g_payLoad0), g_payLoad0 },
     { 0x23, 0x00, sizeof(g_payLoad1), g_payLoad1 },
     { 0x23, 0x00, sizeof(g_payLoad2), g_payLoad2 },
     { 0x23, 0x00, sizeof(g_payLoad3), g_payLoad3 },
@@ -248,7 +248,7 @@ static struct DsiCmdDesc g_panelOnCode[] = {
     { 0x23, 0x00, sizeof(g_payLoad7), g_payLoad7 },
     { 0x23, 0x00, sizeof(g_payLoad8), g_payLoad8 },
     { 0x23, 0x00, sizeof(g_payLoad9), g_payLoad9 },
-    { 0x23, 0x00, sizeof(g_payLoad10), g_payLoad10 },  
+    { 0x23, 0x00, sizeof(g_payLoad10), g_payLoad10 },
     { 0x23, 0x00, sizeof(g_payLoad11), g_payLoad11 },
     { 0x23, 0x00, sizeof(g_payLoad12), g_payLoad12 },
     { 0x23, 0x00, sizeof(g_payLoad13), g_payLoad13 },

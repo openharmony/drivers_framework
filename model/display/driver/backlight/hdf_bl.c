@@ -242,7 +242,7 @@ int32_t GetCurrBrightness(struct BacklightDev *blDev, uint32_t *brightness)
         return HDF_FAILURE;
     }
     *brightness = GetBlDevBrightness(blDev, CURRENT_BRIGHTNESS);
-    return HDF_SUCCESS; 
+    return HDF_SUCCESS;
 }
 
 int32_t GetDefBrightness(struct BacklightDev *blDev, uint32_t *brightness)

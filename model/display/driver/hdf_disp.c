@@ -626,6 +626,7 @@ static int32_t EsdCheckInit(struct DispManager *disp)
     ret = EsdResInit(esd, panel);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s EsdResInit fail", __func__);
+        esd = NULL;
         return HDF_FAILURE;
     }
     disp->esd = esd;
