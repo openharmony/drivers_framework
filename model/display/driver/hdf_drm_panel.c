@@ -29,12 +29,12 @@ static int HdfDrmPanelUnprepare(struct drm_panel *panel)
 {
     return 0;
 }
- 
+
 static int HdfDrmPanelPrepare(struct drm_panel *panel)
 {
     return 0;
 }
- 
+
 static int HdfDrmPanelDisable(struct drm_panel *panel)
 {
     struct HdfDrmPanel *hdfDrmPanel = ToHdfDrmPanel(panel);
@@ -47,7 +47,7 @@ static int HdfDrmPanelDisable(struct drm_panel *panel)
     OsalMutexUnlock(&hdfDrmPanel->manager->dispMutex);
     return HDF_SUCCESS;
 }
- 
+
 static int HdfDrmPanelEnable(struct drm_panel *panel)
 {
     struct HdfDrmPanel *hdfDrmPanel = ToHdfDrmPanel(panel);
@@ -84,7 +84,7 @@ static int HdfDrmPanelGetModes(struct drm_panel *panel)
     connector->display_info.height_mm = panelInfo->pHeight;
     return 1;
 }
- 
+
 static struct drm_panel_funcs g_hdfDrmPanelFuncs = {
     .get_modes = HdfDrmPanelGetModes,
     .enable = HdfDrmPanelEnable,
@@ -227,6 +227,7 @@ int32_t HdfDrmPanelEntryInit(struct HdfDeviceObject *object)
         ret = drm_panel_add(&hdfDrmPanel->panel);
         if (ret) {
             HDF_LOGE("%s drm_panel_add() failed", __func__);
+            hdfDrmPanel = NULL;
             return ret;
         }
         ret = mipi_dsi_attach(dsiDev);

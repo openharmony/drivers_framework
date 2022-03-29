@@ -282,7 +282,7 @@ FAIL:
     OsalMemFree(ili9881cBoeDev);
     return HDF_FAILURE;
 }
- 
+
 struct HdfDriverEntry g_ili9881cBoeDevEntry = {
     .moduleVersion = 1,
     .moduleName = "LCD_ILI9881CBOE",

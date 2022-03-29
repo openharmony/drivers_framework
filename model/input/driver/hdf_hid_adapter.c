@@ -253,6 +253,7 @@ void HidUnregisterHdfInputDev(const void *inputDev)
 {
     if (inputDev == NULL) {
         HDF_LOGE("%s: inputDev is null", __func__);
+        return;
     }
     UnregisterInputDevice((InputDevice *)inputDev);
 }
