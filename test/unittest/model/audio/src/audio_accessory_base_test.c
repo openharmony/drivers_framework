@@ -42,9 +42,9 @@ int32_t AccessoryRegBitsUpdateTest(void)
 }
 
 
-int32_t AcessoryDeviceFrequencyParseTest(void)
+int32_t AccessoryDeviceFrequencyParseTest(void)
 {
-    if (AcessoryDeviceFrequencyParse(0, NULL) == HDF_SUCCESS) {
+    if (AccessoryDeviceFrequencyParse(0, NULL) == HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 

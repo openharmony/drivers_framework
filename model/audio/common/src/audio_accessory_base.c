@@ -248,7 +248,7 @@ int32_t AccessoryDaiParamsUpdate(struct DaiParamsVal daiParamsVal)
     return HDF_SUCCESS;
 }
 
-int32_t AcessoryDeviceFrequencyParse(uint32_t rate, uint16_t *freq)
+int32_t AccessoryDeviceFrequencyParse(uint32_t rate, uint16_t *freq)
 {
     if (freq == NULL) {
         AUDIO_DRIVER_LOG_ERR("input param is NULL");

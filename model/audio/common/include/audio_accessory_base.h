@@ -69,7 +69,7 @@ int32_t AccessoryI2cReadWrite(struct AudioAddrConfig *regAttr, uint16_t rwFlag);
 int32_t AccessoryRegBitsRead(struct AudioMixerControl *regAttr, uint32_t *regValue);
 int32_t AccessoryRegBitsUpdate(struct AudioMixerControl regAttr);
 
-int32_t AcessoryDeviceFrequencyParse(uint32_t rate, uint16_t *freq);
+int32_t AccessoryDeviceFrequencyParse(uint32_t rate, uint16_t *freq);
 int32_t AccessoryDaiParamsUpdate(struct DaiParamsVal daiParamsVal);
 int32_t AccessoryDeviceCfgGet(struct AccessoryData *data, struct AccessoryTransferData *transferData);
 int32_t AccessoryDeviceCtrlRegInit(void);
