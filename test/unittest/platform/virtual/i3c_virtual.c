@@ -330,7 +330,7 @@ static int32_t VirtualI3cReadDrs(struct VirtualI3cCntlr *virtual, const struct D
         HDF_LOGE("%s: Read i2cFmPlusRate fail!", __func__);
         return HDF_ERR_IO;
     }
- 
+
     return HDF_SUCCESS;
 }
 

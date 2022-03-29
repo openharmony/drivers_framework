@@ -332,7 +332,7 @@ int32_t PinTestExecute(int cmd)
 {
     uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
-    
+
     if (cmd > PIN_TEST_CMD_MAX) {
         HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
         ret = HDF_ERR_NOT_SUPPORT;

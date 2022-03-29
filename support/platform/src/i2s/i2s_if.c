@@ -210,7 +210,7 @@ void I2sSetCfg(DevHandle handle, struct I2sCfg *cfg)
         HDF_LOGE("%s: cntlr or cfg is null", __func__);
         return;
     }
-    
+
     struct I2sCntlr *cntlr = (struct I2sCntlr *)handle;
 
     int ret = I2sCntlrSetCfg(cntlr, cfg);

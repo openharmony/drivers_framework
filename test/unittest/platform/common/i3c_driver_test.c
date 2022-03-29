@@ -52,7 +52,7 @@ static int32_t I3cTestReadConfig(struct I3cTestConfig *config, const struct Devi
         HDF_LOGE("%s: read busId failed", __func__);
         return ret;
     }
-    
+
     ret = drsOps->GetUint16(node, "devAddr", &config->devAddr, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read dev addr failed", __func__);

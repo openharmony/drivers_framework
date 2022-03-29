@@ -15,11 +15,11 @@
 #define HDF_LOG_TAG mmc_block_c
 
 int32_t MmcBlockInit(struct MmcDevice *mmcDevice)
-{   
+{
     int32_t ret;
     size_t nameSize;
     struct MmcBlock *mb = NULL;
-    
+
     if (mmcDevice == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }

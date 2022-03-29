@@ -81,7 +81,7 @@ static int32_t RegulatorSetVoltageTest(struct RegulatorTest *test)
         HDF_LOGE("%s:[%d, %d] test fail", __func__, test->maxUv, test->minUv);
         return HDF_FAILURE;
     }
-    
+
     return HDF_SUCCESS;
 }
 static int32_t RegulatorGetVoltageTest(struct RegulatorTest *test)
@@ -117,7 +117,7 @@ static int32_t RegulatorSetCurrentTest(struct RegulatorTest *test)
         HDF_LOGE("%s:[%d, %d] test fail", __func__, test->minUa, test->maxUa);
         return HDF_FAILURE;
     }
-    
+
     return HDF_SUCCESS;
 }
 static int32_t RegulatorGetCurrentTest(struct RegulatorTest *test)
@@ -323,7 +323,7 @@ static int32_t RegulatorTestInitFromHcs(struct RegulatorTest *test, const struct
         HDF_LOGE("%s: GetUint32 or GetUint32Array not support", __func__);
         return HDF_ERR_NOT_SUPPORT;
     }
-    
+
     ret = face->GetString(node, "name", &(test->name), "ERROR");
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read name fail!", __func__);

@@ -50,19 +50,19 @@ static int32_t PinTestReadConfig(struct PinTestConfig *config, const struct Devi
         HDF_LOGE("%s: read pinName failed", __func__);
         return ret;
     }
-    
+
     ret = drsOps->GetUint32(node, "strengthNum", &config->strengthNum, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read StrengthNum failed", __func__);
         return ret;
     }
-    
+
     ret = drsOps->GetUint32(node, "PullTypeNum", &config->PullTypeNum, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read PullTypeNum failed", __func__);
         return ret;
     }
-    
+
     ret = drsOps->GetString(node, "funcName", &funcName, 0);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read funcName failed", __func__);

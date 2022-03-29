@@ -48,7 +48,7 @@ void SpiFlashDel(struct SpiFlash *spi)
 {
     if (spi != NULL) {
         MtdDeviceDel(&spi->mtd);
-    } 
+    }
 }
 
 int32_t SpiFlashWaitReady(struct SpiFlash *spi)

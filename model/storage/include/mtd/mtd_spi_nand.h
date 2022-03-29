@@ -21,10 +21,10 @@ extern "C" {
 
 #define MTD_SPI_NAND_RDID_ADDR           0x00
 #define MTD_SPI_NAND_PROTECT_ADDR        0xa0
-#define SPI_NAND_PROTECT_BP0_MASK  (1 << 3) 
-#define SPI_NAND_PROTECT_BP1_MASK  (1 << 4) 
-#define SPI_NAND_PROTECT_BP2_MASK  (1 << 5) 
-#define SPI_NAND_PROTECT_BP3_MASK  (1 << 6) 
+#define SPI_NAND_PROTECT_BP0_MASK  (1 << 3)
+#define SPI_NAND_PROTECT_BP1_MASK  (1 << 4)
+#define SPI_NAND_PROTECT_BP2_MASK  (1 << 5)
+#define SPI_NAND_PROTECT_BP3_MASK  (1 << 6)
 #define SPI_NAND_ALL_BP_MASK       (SPI_NAND_PROTECT_BP0_MASK | \
                                     SPI_NAND_PROTECT_BP1_MASK | \
                                     SPI_NAND_PROTECT_BP2_MASK | \
