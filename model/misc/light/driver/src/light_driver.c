@@ -313,8 +313,7 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
         ret = parser->GetUint32ArrayElem(node, "lightType", i, &temp, 0);
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "lightType");
 
-        if (temp != LIGHT_TYPE_NONE && temp != LIGHT_TYPE_BATTERY && temp != LIGHT_TYPE_NOTIFICATIONS &&
-            temp != LIGHT_TYPE_ATTENTION) {
+        if (temp >= LIGHT_TYPE_BUTT) {
             HDF_LOGE("%s: light type invalid para", __func__);
             return HDF_FAILURE;
         }
