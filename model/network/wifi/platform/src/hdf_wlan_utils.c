@@ -74,7 +74,7 @@ int32_t RenewNetDevice(NetDevice **netDev)
     struct HdfWifiNetDeviceData *data = NULL;
     int32_t ret;
     if (netDev == NULL || *netDev == NULL) {
-        HDF_LOGE("%s:NULL ptr!", __func__);
+        HDF_LOGE("%s:RenewNetDevice netDev NULL ptr!", __func__);
         return HDF_FAILURE;
     }
     if ((*netDev)->classDriverName != HDF_WIFI_PLATFORM_DRIVER_NAME) {
@@ -125,7 +125,7 @@ int32_t GetPlatformIfName(uint8_t id, char *ifName, uint32_t ifNameSize)
     }
 
     if (snprintf_s(ifName, ifNameSize, ifNameSize - 1, "wlan%d", id) < 0) {
-        HDF_LOGE("%s:format ifName failed!netDevice id=%u", __func__, id);
+        HDF_LOGE("%s:format ifName failed!netDevice id=%hhu", __func__, id);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -144,7 +144,7 @@ struct NetDevice *AllocPlatformNetDevice(struct HdfWlanDevice *device)
     }
     data = (struct HdfWifiNetDeviceData *)OsalMemCalloc(sizeof(struct HdfWifiNetDeviceData));
     if (data == NULL) {
-        HDF_LOGE("%s:oom!", __func__);
+        HDF_LOGE("%s:AllocPlatformNetDevice data NULL ptr!", __func__);
         return NULL;
     }
     do {
@@ -189,7 +189,7 @@ int32_t ReleasePlatformNetDevice(struct NetDevice *netDev)
     int32_t ret;
 
     if (netDev == NULL) {
-        HDF_LOGE("%s:NULL ptr!", __func__);
+        HDF_LOGE("%s:ReleasePlatformNetDevice netDev NULL ptr!", __func__);
         return HDF_FAILURE;
     }
     if (netDev->classDriverName != HDF_WIFI_PLATFORM_DRIVER_NAME) {
@@ -249,7 +249,7 @@ char *HdfWlanGetIfNames(const uint8_t chipId, uint8_t *ifNameCount)
     }
     ifNames = (char *)OsalMemCalloc(bufferSize);
     if (ifNames == NULL) {
-        HDF_LOGE("%s: oom!", __func__);
+        HDF_LOGE("%s:HdfWlanGetIfNames ifNames NULL ptr!", __func__);
         return NULL;
     }
     if (*ifNameCount == 0) {

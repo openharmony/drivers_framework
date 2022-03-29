@@ -158,7 +158,7 @@ static void HandleEapolQueue(struct EapolData *eapol)
             HDF_LOGE("%s discard pre netbuf : intervalTime(%lld) > EAPOL_MAX_ENQUEUE_TIME.", __func__,
                 intervalTime);
         } else {
-            HDF_LOGE("%s discard pre netbuf : eapol->count(%u) = maxCount(%u).", __func__, eapol->count, maxCount);
+            HDF_LOGE("%s discard pre netbuf : eapol->count(%u) = maxCount(%hu).", __func__, eapol->count, maxCount);
         }
         eapol->count--;
         eapol->enqueueTime = currentTime;
