@@ -39,7 +39,7 @@ int32_t HdfWifiGetBusIdx(void)
  * @brief  as for now, we just support one wlan module in one board cause driver binds to wlan featere
  * due to that reason, once we detected one chip, we stop rescan.
  */
-int HdfWlanBusInit(struct HdfWlanDevice *data, const struct HdfConfigWlanBus *busConfig)
+static int HdfWlanBusInit(struct HdfWlanDevice *data, const struct HdfConfigWlanBus *busConfig)
 {
     struct BusDev *bus = NULL;
     bus = HdfWlanCreateBusManager(busConfig);
