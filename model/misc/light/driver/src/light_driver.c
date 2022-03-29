@@ -94,6 +94,7 @@ void LightTimerEntry(uintptr_t para)
 
     drvData = GetLightDrvData();
     if (drvData == NULL) {
+        HDF_LOGE("%s: drvData is null", __func__);
         return;
     }
 
@@ -299,7 +300,7 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
     CHECK_LIGHT_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
 
     drvData->lightNum = (uint32_t)parser->GetElemNum(node, "lightType");
-    if (drvData->lightNum > LIGHT_TYPE_BUTT || drvData->lightNum < LIGHT_TYPE_NONE) {
+    if (drvData->lightNum > LIGHT_TYPE_NUM) {
         HDF_LOGE("%s: lightNum cross the border", __func__);
         return HDF_FAILURE;
     }
@@ -312,7 +313,7 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
         ret = parser->GetUint32ArrayElem(node, "lightType", i, &temp, 0);
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "lightType");
 
-        if (temp < LIGHT_TYPE_NONE || temp >= LIGHT_TYPE_BUTT) {
+        if (temp >= LIGHT_TYPE_BUTT) {
             HDF_LOGE("%s: light type invalid para", __func__);
             return HDF_FAILURE;
         }
@@ -336,12 +337,6 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "onTime");
         ret = parser->GetUint32(node, "offTime", &drvData->info[temp]->offTime, 0);
         CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "offTime");
-
-        if (drvData->info[temp]->offTime < 0 || drvData->info[temp]->onTime < 0 || drvData->info[temp]->busRNum < 0 ||
-            drvData->info[temp]->busGNum < 0 || drvData->info[temp]->busBNum < 0) {
-            HDF_LOGE("%s: offtime Invalid parameter", __func__);
-            return HDF_ERR_INVALID_PARAM;
-        }
 
         drvData->info[temp]->lightState = LIGHT_STATE_STOP;
     }
@@ -439,7 +434,7 @@ int32_t InitLightDriver(struct HdfDeviceObject *device)
     }
 
     if (HdfWorkInit(&drvData->work, LightWorkEntry, (void*)drvData) != HDF_SUCCESS) {
-        HDF_LOGE("%s: init workQueue fail!", __func__);
+        HDF_LOGE("%s: init work fail!", __func__);
         return HDF_FAILURE;
     }
 
@@ -453,7 +448,7 @@ int32_t InitLightDriver(struct HdfDeviceObject *device)
 
 void ReleaseLightDriver(struct HdfDeviceObject *device)
 {
-    int i;
+    int32_t i;
     struct LightDriverData *drvData = NULL;
 
     if (device == NULL) {
