@@ -21,7 +21,7 @@ int32_t AccessoryI2cReadWriteTest(void);
 int32_t AccessoryRegBitsReadTest(void);
 int32_t AccessoryRegBitsUpdateTest(void);
 
-int32_t AcessoryDeviceFrequencyParseTest(void);
+int32_t AccessoryDeviceFrequencyParseTest(void);
 int32_t AccessoryDaiParamsUpdateTest(void);
 int32_t AccessoryDeviceCfgGetTest(void);
 int32_t AccessoryDeviceCtrlRegInitTest(void);

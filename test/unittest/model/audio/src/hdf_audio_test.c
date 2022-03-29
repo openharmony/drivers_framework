@@ -77,7 +77,7 @@ static HdfTestCaseList g_hdfAudioTestCaseList[] = {
     {AUDIO_ADM_TEST_I2CREADWRITE, AccessoryI2cReadWriteTest},
     {AUDIO_ADM_TEST_REGBITSREAD, AccessoryRegBitsReadTest},
     {AUDIO_ADM_TEST_REGBITSUPDATE, AccessoryRegBitsUpdateTest},
-    {AUDIO_ADM_TEST_DEVICEFREQUENCYPARSE, AcessoryDeviceFrequencyParseTest},
+    {AUDIO_ADM_TEST_DEVICEFREQUENCYPARSE, AccessoryDeviceFrequencyParseTest},
     {AUDIO_ADM_TEST_DAIPARAMSUPDATE, AccessoryDaiParamsUpdateTest},
     {AUDIO_ADM_TEST_DEVICECFGGET, AccessoryDeviceCfgGetTest},
     {AUDIO_ADM_TEST_DEVICECTRLREGINIT, AccessoryDeviceCtrlRegInitTest},
