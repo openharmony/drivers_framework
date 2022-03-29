@@ -7,15 +7,15 @@
  */
 
 #include "codegen/code_generator.h"
-#include "codegen/c_interface_code_emitter.h"
 #include "codegen/c_client_proxy_code_emitter.h"
 #include "codegen/c_custom_types_code_emitter.h"
+#include "codegen/c_interface_code_emitter.h"
 #include "codegen/c_service_driver_code_emitter.h"
 #include "codegen/c_service_impl_code_emitter.h"
 #include "codegen/c_service_stub_code_emitter.h"
-#include "codegen/cpp_interface_code_emitter.h"
 #include "codegen/cpp_client_proxy_code_emitter.h"
 #include "codegen/cpp_custom_types_code_emitter.h"
+#include "codegen/cpp_interface_code_emitter.h"
 #include "codegen/cpp_service_driver_code_emitter.h"
 #include "codegen/cpp_service_impl_code_emitter.h"
 #include "codegen/cpp_service_stub_code_emitter.h"
@@ -26,37 +26,37 @@
 namespace OHOS {
 namespace HDI {
 CodeEmitMap CodeGenerator::cCodeEmitters_ = {
-    {"types", new CCustomTypesCodeEmitter()},
-    {"interface", new CInterfaceCodeEmitter()},
-    {"proxy", new CClientProxyCodeEmitter()},
-    {"driver", new CServiceDriverCodeEmitter()},
-    {"stub", new CServiceStubCodeEmitter()},
-    {"impl", new CServiceImplCodeEmitter()},
+    {"types",     new CCustomTypesCodeEmitter()  },
+    {"interface", new CInterfaceCodeEmitter()    },
+    {"proxy",     new CClientProxyCodeEmitter()  },
+    {"driver",    new CServiceDriverCodeEmitter()},
+    {"stub",      new CServiceStubCodeEmitter()  },
+    {"impl",      new CServiceImplCodeEmitter()  },
 };
 
 CodeEmitMap CodeGenerator::cppCodeEmitters_ = {
-    {"types", new CppCustomTypesCodeEmitter()},
-    {"interface", new CppInterfaceCodeEmitter()},
-    {"proxy", new CppClientProxyCodeEmitter()},
-    {"driver", new CppServiceDriverCodeEmitter()},
-    {"stub", new CppServiceStubCodeEmitter()},
-    {"impl", new CppServiceImplCodeEmitter()},
+    {"types",     new CppCustomTypesCodeEmitter()  },
+    {"interface", new CppInterfaceCodeEmitter()    },
+    {"proxy",     new CppClientProxyCodeEmitter()  },
+    {"driver",    new CppServiceDriverCodeEmitter()},
+    {"stub",      new CppServiceStubCodeEmitter()  },
+    {"impl",      new CppServiceImplCodeEmitter()  },
 };
 
 CodeEmitMap CodeGenerator::javaCodeEmitters_ = {
     {"clientIface", new JavaClientInterfaceCodeEmitter()},
-    {"proxy", new JavaClientProxyCodeEmitter()},
+    {"proxy",       new JavaClientProxyCodeEmitter()    },
 };
 
 bool CodeGenerator::Generate()
 {
-    const Options& options = Options::GetInstance();
+    const Options &options = Options::GetInstance();
     String dir = options.GetGenerationDirectory();
     String language = options.GetTargetLanguage();
     bool isModeKernel = options.DoGenerateKernelCode();
     String codePart = options.GetCodePart();
 
-    for (auto& astPair : astModule_->GetAllAsts()) {
+    for (auto &astPair : astModule_->GetAllAsts()) {
         AutoPtr<AST> ast = astPair.second;
         if (language.Equals("c")) {
             GenerateCCode(ast, dir, codePart, isModeKernel);
@@ -70,7 +70,7 @@ bool CodeGenerator::Generate()
     return true;
 }
 
-void CodeGenerator::GenerateCCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart, bool isKernel)
+void CodeGenerator::GenerateCCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart, bool isKernel)
 {
     switch (ast->GetASTFileType()) {
         case ASTFileType::AST_TYPES: {
@@ -110,7 +110,7 @@ void CodeGenerator::GenerateCCode(const AutoPtr<AST>& ast, const String& outDir,
     }
 }
 
-void CodeGenerator::GenerateCppCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart)
+void CodeGenerator::GenerateCppCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart)
 {
     switch (ast->GetASTFileType()) {
         case ASTFileType::AST_TYPES:
@@ -146,7 +146,7 @@ void CodeGenerator::GenerateCppCode(const AutoPtr<AST>& ast, const String& outDi
     }
 }
 
-void CodeGenerator::GenerateJavaCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart)
+void CodeGenerator::GenerateJavaCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart)
 {
     switch (ast->GetASTFileType()) {
         case ASTFileType::AST_IFACE:

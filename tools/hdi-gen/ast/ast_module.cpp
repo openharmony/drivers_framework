@@ -10,12 +10,12 @@
 
 namespace OHOS {
 namespace HDI {
-void ASTModule::AddAST(const String& astName, const AutoPtr<AST> ast)
+void ASTModule::AddAST(const String &astName, const AutoPtr<AST> ast)
 {
     asts_[astName] = ast;
 }
 
-AutoPtr<AST> ASTModule::GetAst(const String& astName)
+AutoPtr<AST> ASTModule::GetAst(const String &astName)
 {
     auto astIter = asts_.find(astName);
     if (astIter == asts_.end()) {

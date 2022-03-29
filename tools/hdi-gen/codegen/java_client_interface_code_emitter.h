@@ -18,28 +18,29 @@ public:
     JavaClientInterfaceCodeEmitter() : JavaCodeEmitter() {}
 
     virtual ~JavaClientInterfaceCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitInterfaceFile();
 
-    void EmitInterfaceImports(StringBuilder& sb);
+    void EmitInterfaceImports(StringBuilder &sb);
 
-    void EmitInterfaceCorelibImports(StringBuilder& sb);
+    void EmitInterfaceCorelibImports(StringBuilder &sb);
 
-    void EmitInterfaceDBinderImports(StringBuilder& sb);
+    void EmitInterfaceDBinderImports(StringBuilder &sb);
 
-    void EmitInterfaceSelfDefinedTypeImports(StringBuilder& sb);
+    void EmitInterfaceSelfDefinedTypeImports(StringBuilder &sb);
 
-    void EmitInterfaceDefinition(StringBuilder& sb);
+    void EmitInterfaceDefinition(StringBuilder &sb);
 
-    void EmitInterfaceMethods(StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethods(StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethod(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix);
 };
 } // namespace HDI
 } // namespace OHOS

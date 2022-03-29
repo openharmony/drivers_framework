@@ -16,7 +16,7 @@ namespace OHOS {
 namespace HDI {
 class ASTMapType : public ASTType {
 public:
-    inline void SetKeyType(const AutoPtr<ASTType>& keyType)
+    inline void SetKeyType(const AutoPtr<ASTType> &keyType)
     {
         keyType_ = keyType;
     }
@@ -26,7 +26,7 @@ public:
         return keyType_;
     }
 
-    inline void SetValueType(const AutoPtr<ASTType>& valueType)
+    inline void SetValueType(const AutoPtr<ASTType> &valueType)
     {
         valueType_ = valueType;
     }
@@ -48,26 +48,27 @@ public:
 
     String EmitJavaType(TypeMode mode, bool isInnerType = false) const override;
 
-    void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool initVariable, unsigned int innerLevel = 0) const override;
+    void EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool initVariable, unsigned int innerLevel = 0) const override;
 
-    void EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppMarshalling(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool emitType, unsigned int innerLevel = 0) const override;
+    void EmitCppUnMarshalling(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool emitType, unsigned int innerLevel = 0) const override;
 
-    void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaWriteVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaReadVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaReadInnerVar(const String &parcelName, const String &name, bool isInner, StringBuilder &sb,
+        const String &prefix) const override;
+
 private:
     AutoPtr<ASTType> keyType_;
     AutoPtr<ASTType> valueType_;

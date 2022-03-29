@@ -20,33 +20,34 @@ namespace HDI {
 class CCodeEmitter : public CodeEmitter {
 public:
     virtual ~CCodeEmitter() = default;
+
 protected:
-    void GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetImportInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& parameter, StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter> &parameter, StringBuilder &sb, const String &prefix);
 
-    void EmitInitLoopVar(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitInitLoopVar(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitErrorHandle(const AutoPtr<ASTMethod>& method, const String& gotoLabel, bool isClient, StringBuilder& sb,
-        const String& prefix);
+    void EmitErrorHandle(const AutoPtr<ASTMethod> &method, const String &gotoLabel, bool isClient, StringBuilder &sb,
+        const String &prefix);
 
-    void EmitLicense(StringBuilder& sb);
+    void EmitLicense(StringBuilder &sb);
 
-    void EmitHeadMacro(StringBuilder& sb, const String& fullName);
+    void EmitHeadMacro(StringBuilder &sb, const String &fullName);
 
-    void EmitTailMacro(StringBuilder& sb, const String& fullName);
+    void EmitTailMacro(StringBuilder &sb, const String &fullName);
 
-    void EmitHeadExternC(StringBuilder& sb);
+    void EmitHeadExternC(StringBuilder &sb);
 
-    void EmitTailExternC(StringBuilder& sb);
+    void EmitTailExternC(StringBuilder &sb);
 
     String EmitDescMacroName();
 
-    String MacroName(const String& name);
+    String MacroName(const String &name);
 
-    String ConstantName(const String& name);
+    String ConstantName(const String &name);
 
-    String SpecificationParam(StringBuilder& sb, const String& prefix);
+    String SpecificationParam(StringBuilder &sb, const String &prefix);
 
     static constexpr const char *errorsLabelName_ = "ERRORS";
     static constexpr const char *finishedLabelName_ = "FINISHED";

@@ -10,6 +10,7 @@
 #define OHOS_HDI_ASTMETHOD_H
 
 #include <vector>
+
 #include "ast/ast_node.h"
 #include "ast/ast_parameter.h"
 #include "util/autoptr.h"
@@ -19,8 +20,7 @@ namespace OHOS {
 namespace HDI {
 class ASTMethod : public ASTNode {
 public:
-
-    inline void SetName(const String& name)
+    inline void SetName(const String &name)
     {
         name_ = name;
     }
@@ -60,7 +60,7 @@ public:
         return isLite_;
     }
 
-    void AddParameter(const AutoPtr<ASTParameter>& parameter);
+    void AddParameter(const AutoPtr<ASTParameter> &parameter);
 
     AutoPtr<ASTParameter> GetParameter(size_t index);
 
@@ -69,7 +69,7 @@ public:
         return parameters_.size();
     }
 
-    String Dump(const String& prefix) override;
+    String Dump(const String &prefix) override;
 
 private:
     String name_;

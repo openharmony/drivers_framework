@@ -41,33 +41,33 @@ String ASTSmqType::EmitCppType(TypeMode mode) const
     }
 }
 
-void ASTSmqType::EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix, unsigned int innerLevel) const
+void ASTSmqType::EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+    unsigned int innerLevel) const
 {
     sb.Append(prefix).AppendFormat("if (!%s->IsGood() || %s->GetMeta() == nullptr || ", name.string(), name.string());
     sb.AppendFormat("!%s->GetMeta()->Marshalling(%s)) {\n", name.string(), parcelName.string());
-    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 
-void ASTSmqType::EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix, bool initVariable, unsigned int innerLevel) const
+void ASTSmqType::EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+    bool initVariable, unsigned int innerLevel) const
 {
     String metaVarName = String::Format("%sMeta_", name.string());
-    sb.Append(prefix).AppendFormat("std::shared_ptr<SharedMemQueueMeta<%s>> %s = ",
-        innerType_->EmitCppType().string(), metaVarName.string());
-    sb.AppendFormat("SharedMemQueueMeta<%s>::UnMarshalling(%s);\n",
-        innerType_->EmitCppType().string(), parcelName.string());
+    sb.Append(prefix).AppendFormat(
+        "std::shared_ptr<SharedMemQueueMeta<%s>> %s = ", innerType_->EmitCppType().string(), metaVarName.string());
+    sb.AppendFormat(
+        "SharedMemQueueMeta<%s>::UnMarshalling(%s);\n", innerType_->EmitCppType().string(), parcelName.string());
     sb.Append(prefix).AppendFormat("if (%s == nullptr) {\n", metaVarName.string());
-    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: SharedMemQueueMeta is nullptr\", __func__);\n");
-    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: SharedMemQueueMeta is nullptr\", __func__);\n");
+    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n\n");
 
-    sb.Append(prefix).AppendFormat("std::shared_ptr<SharedMemQueue<%s>> %s = ",
-        innerType_->EmitCppType().string(), name.string());
-    sb.AppendFormat("std::make_shared<SharedMemQueue<%s>>(*%s);\n",
-        innerType_->EmitCppType().string(), metaVarName.string());
+    sb.Append(prefix).AppendFormat(
+        "std::shared_ptr<SharedMemQueue<%s>> %s = ", innerType_->EmitCppType().string(), name.string());
+    sb.AppendFormat(
+        "std::make_shared<SharedMemQueue<%s>>(*%s);\n", innerType_->EmitCppType().string(), metaVarName.string());
 }
 } // namespace HDI
 } // namespace OHOS

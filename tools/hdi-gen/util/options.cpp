@@ -6,39 +6,41 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "options.h"
+#include "util/options.h"
+
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
 #include <getopt.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include "util/file.h"
 
 namespace OHOS {
 namespace HDI {
-const char* Options::optSupportArgs = "c:d:r:";
+const char *Options::optSupportArgs = "c:d:r:";
 static struct option g_longOpts[] = {
-    {"help", no_argument, nullptr, 'h'},
-    {"version", no_argument, nullptr, 'v'},
-    {"gen-c", no_argument, nullptr, 'C'},
-    {"gen-cpp", no_argument, nullptr, 'P'},
-    {"gen-java", no_argument, nullptr, 'J'},
-    {"gen-hash", no_argument, nullptr, 'H'},
+    {"help",         no_argument,       nullptr, 'h'},
+    {"version",      no_argument,       nullptr, 'v'},
+    {"gen-c",        no_argument,       nullptr, 'C'},
+    {"gen-cpp",      no_argument,       nullptr, 'P'},
+    {"gen-java",     no_argument,       nullptr, 'J'},
+    {"gen-hash",     no_argument,       nullptr, 'H'},
     {"build-target", required_argument, nullptr, 'p'},
-    {"module-name", required_argument, nullptr, 'N'},
-    {"kernel", no_argument, nullptr, 'K'},
-    {"dump-ast", no_argument, nullptr, 'D'},
-    {nullptr, 0, nullptr, 0}
+    {"module-name",  required_argument, nullptr, 'N'},
+    {"kernel",       no_argument,       nullptr, 'K'},
+    {"dump-ast",     no_argument,       nullptr, 'D'},
+    {nullptr,        0,                 nullptr, 0  }
 };
 
-Options& Options::GetInstance()
+Options &Options::GetInstance()
 {
     static Options option;
     return option;
 }
 
-Options& Options::Parse(int argc, char *argv[])
+Options &Options::Parse(int argc, char *argv[])
 {
     program_ = argv[0];
     opterr = 1;
@@ -105,12 +107,12 @@ void Options::SetOptionData(char op)
     }
 }
 
-void Options::AddPackagePath(const String& packagePath)
+void Options::AddPackagePath(const String &packagePath)
 {
     int index = packagePath.IndexOf(":");
     if (index == -1 || index == packagePath.GetLength() - 1) {
-        errors_.push_back(String::Format("%s: invalid option parameters '%s'.", program_.string(),
-            packagePath.string()));
+        errors_.push_back(
+            String::Format("%s: invalid option parameters '%s'.", program_.string(), packagePath.string()));
         return;
     }
 
@@ -126,13 +128,13 @@ void Options::AddPackagePath(const String& packagePath)
     packagePath_[package] = path;
 }
 
-void Options::SetLanguage(const String& language)
+void Options::SetLanguage(const String &language)
 {
     doGenerateCode_ = true;
     targetLanguage_ = language;
 }
 
-void Options::SetCodePart(const String& part)
+void Options::SetCodePart(const String &part)
 {
     // The default parameter is 'all', and the optional parameters is 'client' or 'server'
     doGeneratePart_ = true;
@@ -161,8 +163,7 @@ void Options::CheckOptions()
             return;
         }
 
-        if (doGeneratePart_ && !codePart_.Equals("all") && !codePart_.Equals("client") &&
-            !codePart_.Equals("server")) {
+        if (doGeneratePart_ && !codePart_.Equals("all") && !codePart_.Equals("client") && !codePart_.Equals("server")) {
             String errorLog = "The '--build-target' option parameter must be 'client' 'server' or 'all'.";
             errors_.push_back(String::Format("%s: %s", program_.string(), errorLog.string()));
         }
@@ -185,8 +186,8 @@ void Options::ShowErrors() const
 void Options::ShowVersion() const
 {
     printf("HDI-GEN: %d.%d\n"
-          "Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.\n\n",
-           VERSION_MAJOR, VERSION_MINOR);
+           "Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.\n\n",
+        VERSION_MAJOR, VERSION_MINOR);
 }
 
 void Options::ShowUsage() const
@@ -203,8 +204,8 @@ void Options::ShowUsage() const
            "  --gen-c                         Generate C code\n"
            "  --gen-cpp                       Generate C++ code\n"
            "  --gen-java                      Generate Java code\n"
-           "  --kernel                        Generate kernel-mode ioservice stub code," \
-                                              "default user-mode ioservice stub code\n"
+           "  --kernel                        Generate kernel-mode ioservice stub code,"
+           "default user-mode ioservice stub code\n"
            "  --module-name <module name>     Set driver module name\n"
            "  --build-target <target name>    Generate client code, server code or all code\n"
            "  -d <directory>                  Place generated codes into <directory>\n");
@@ -216,10 +217,10 @@ void Options::ShowUsage() const
  * package:OHOS.Hdi.foo.v1_0
  * rootPackage:OHOS.Hdi
  */
-String Options::GetRootPackage(const String& package)
+String Options::GetRootPackage(const String &package)
 {
-    const auto& packagePaths = GetPackagePath();
-    for (const auto& packageRoot : packagePaths) {
+    const auto &packagePaths = GetPackagePath();
+    for (const auto &packageRoot : packagePaths) {
         if (package.StartsWith(packageRoot.first)) {
             return packageRoot.first;
         }
@@ -234,7 +235,7 @@ String Options::GetRootPackage(const String& package)
  * package:OHOS.Hdi.foo.v1_0
  * subPackage:foo.v1_0
  */
-String Options::GetSubPackage(const String& package)
+String Options::GetSubPackage(const String &package)
 {
     String rootPackage = GetRootPackage(package);
     if (rootPackage.IsEmpty()) {
@@ -250,12 +251,12 @@ String Options::GetSubPackage(const String& package)
  * package:OHOS.Hdi.foo.v1_0
  * packagePath:drivers/interface/foo/v1_0
  */
-String Options::GetPackagePath(const String& package)
+String Options::GetPackagePath(const String &package)
 {
     String rootPackage = "";
     String rootPath = "";
-    const auto& packagePaths = GetPackagePath();
-    for (const auto& packageRoot : packagePaths) {
+    const auto &packagePaths = GetPackagePath();
+    for (const auto &packageRoot : packagePaths) {
         if (package.StartsWith(packageRoot.first)) {
             rootPackage = packageRoot.first;
             rootPath = packageRoot.second;

@@ -12,10 +12,9 @@
 
 namespace OHOS {
 namespace HDI {
-bool JavaClientInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
+bool JavaClientInterfaceCodeEmitter::ResolveDirectory(const String &targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
-        ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
         directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
@@ -53,20 +52,20 @@ void JavaClientInterfaceCodeEmitter::EmitInterfaceFile()
     file.Close();
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceImports(StringBuilder& sb)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceImports(StringBuilder &sb)
 {
     EmitInterfaceCorelibImports(sb);
     EmitInterfaceSelfDefinedTypeImports(sb);
     EmitInterfaceDBinderImports(sb);
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceCorelibImports(StringBuilder& sb)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceCorelibImports(StringBuilder &sb)
 {
     bool includeList = false;
     bool includeMap = false;
 
-    const AST::TypeStringMap& types = ast_->GetTypes();
-    for (const auto& pair : types) {
+    const AST::TypeStringMap &types = ast_->GetTypes();
+    for (const auto &pair : types) {
         AutoPtr<ASTType> type = pair.second;
         switch (type->GetTypeKind()) {
             case TypeKind::TYPE_LIST: {
@@ -90,28 +89,28 @@ void JavaClientInterfaceCodeEmitter::EmitInterfaceCorelibImports(StringBuilder& 
     }
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceDBinderImports(StringBuilder& sb)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceDBinderImports(StringBuilder &sb)
 {
     sb.Append("import ohos.rpc.IRemoteBroker;\n");
     sb.Append("import ohos.rpc.RemoteException;\n");
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceSelfDefinedTypeImports(StringBuilder& sb)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceSelfDefinedTypeImports(StringBuilder &sb)
 {
-    for (const auto& importPair : ast_->GetImports()) {
+    for (const auto &importPair : ast_->GetImports()) {
         AutoPtr<AST> import = importPair.second;
         sb.AppendFormat("import %s;\n", import->GetFullName().string());
     }
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder &sb)
 {
     sb.AppendFormat("public interface %s extends IRemoteBroker {\n", interface_->GetName().string());
-    EmitInterfaceMethods(sb, g_tab);
+    EmitInterfaceMethods(sb, TAB);
     sb.Append("}");
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceMethods(StringBuilder& sb, const String& prefix)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceMethods(StringBuilder &sb, const String &prefix)
 {
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
@@ -122,8 +121,8 @@ void JavaClientInterfaceCodeEmitter::EmitInterfaceMethods(StringBuilder& sb, con
     }
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
-    const String& prefix)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceMethod(
+    const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix)
 {
     if (method->GetParameterNumber() == 0) {
         sb.Append(prefix).AppendFormat("int %s() throws RemoteException;\n", MethodName(method->GetName()).string());
@@ -139,13 +138,13 @@ void JavaClientInterfaceCodeEmitter::EmitInterfaceMethod(const AutoPtr<ASTMethod
         }
 
         paramStr.Append(") throws RemoteException;");
-        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
+        sb.Append(SpecificationParam(paramStr, prefix + TAB));
         sb.Append("\n");
     }
 }
 
-void JavaClientInterfaceCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param,
-    StringBuilder& sb, const String& prefix)
+void JavaClientInterfaceCodeEmitter::EmitInterfaceMethodParameter(
+    const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).Append(param->EmitJavaParameter());
 }

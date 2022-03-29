@@ -13,9 +13,11 @@ namespace OHOS {
 namespace HDI {
 int Logger::level_ = DEBUG;
 
-void Logger::D(const char* tag, const char* format, ...)
+void Logger::D(const char *tag, const char *format, ...)
 {
-    if (level_ > DEBUG) return;
+    if (level_ > DEBUG) {
+        return;
+    }
 
     va_list args;
     va_start(args, format);
@@ -23,9 +25,11 @@ void Logger::D(const char* tag, const char* format, ...)
     va_end(args);
 }
 
-void Logger::E(const char* tag, const char* format, ...)
+void Logger::E(const char *tag, const char *format, ...)
 {
-    if (level_ > ERROR) return;
+    if (level_ > ERROR) {
+        return;
+    }
 
     va_list args;
     va_start(args, format);
@@ -33,9 +37,11 @@ void Logger::E(const char* tag, const char* format, ...)
     va_end(args);
 }
 
-void Logger::V(const char* tag, const char* format, ...)
+void Logger::V(const char *tag, const char *format, ...)
 {
-    if (level_ > VERBOSE) return;
+    if (level_ > VERBOSE) {
+        return;
+    }
 
     va_list args;
     va_start(args, format);
@@ -43,14 +49,14 @@ void Logger::V(const char* tag, const char* format, ...)
     va_end(args);
 }
 
-void Logger::Log(const char* tag, const char* format, va_list args)
+void Logger::Log(const char *tag, const char *format, va_list args)
 {
     (void)printf("[%s]: ", tag);
     (void)vprintf(format, args);
     (void)printf("\n");
 }
 
-void Logger::Err(const char* tag, const char* format, va_list args)
+void Logger::Err(const char *tag, const char *format, va_list args)
 {
     (void)fprintf(stderr, "[%s]: ", tag);
     (void)vfprintf(stderr, format, args);

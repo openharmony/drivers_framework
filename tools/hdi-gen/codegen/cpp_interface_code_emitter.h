@@ -18,34 +18,35 @@ public:
     CppInterfaceCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppInterfaceCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitInterfaceHeaderFile();
 
-    void EmitInterfaceInclusions(StringBuilder& sb);
+    void EmitInterfaceInclusions(StringBuilder &sb);
 
-    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitInterfaceVersionMacro(StringBuilder& sb);
+    void EmitInterfaceVersionMacro(StringBuilder &sb);
 
-    void EmitInterfaceDefinition(StringBuilder& sb);
+    void EmitInterfaceDefinition(StringBuilder &sb);
 
-    void EmitInterfaceDescriptor(StringBuilder& sb, const String& prefix);
+    void EmitInterfaceDescriptor(StringBuilder &sb, const String &prefix);
 
-    void EmitGetMethodDecl(StringBuilder& sb, const String& prefix);
+    void EmitGetMethodDecl(StringBuilder &sb, const String &prefix);
 
-    void EmitGetInstanceMethodDecl(StringBuilder& sb, const String& prefix);
+    void EmitGetInstanceMethodDecl(StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceDestruction(StringBuilder& sb, const String& prefix);
+    void EmitInterfaceDestruction(StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceMethodsDecl(StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethodsDecl(StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethodDecl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix);
 };
 } // namespace HDI
 } // namespace OHOS

@@ -15,13 +15,13 @@ namespace OHOS {
 namespace HDI {
 class ASTSequenceableType : public ASTType {
 public:
-    void SetNamespace(const AutoPtr<ASTNamespace>& nspace) override;
+    void SetNamespace(const AutoPtr<ASTNamespace> &nspace) override;
 
     bool IsSequenceableType() override;
 
     String ToString() override;
 
-    String Dump(const String& prefix) override;
+    String Dump(const String &prefix) override;
 
     TypeKind GetTypeKind() override;
 
@@ -33,26 +33,26 @@ public:
 
     String EmitJavaType(TypeMode mode, bool isInnerType = false) const override;
 
-    void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool initVariable, unsigned int innerLevel = 0) const override;
+    void EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool initVariable, unsigned int innerLevel = 0) const override;
 
-    void EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppMarshalling(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool emitType, unsigned int innerLevel = 0) const override;
+    void EmitCppUnMarshalling(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool emitType, unsigned int innerLevel = 0) const override;
 
-    void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaWriteVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaReadVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
-        StringBuilder& sb, const String& prefix) const override;
+    void EmitJavaReadInnerVar(const String &parcelName, const String &name, bool isInner, StringBuilder &sb,
+        const String &prefix) const override;
 };
 } // namespace HDI
 } // namespace OHOS

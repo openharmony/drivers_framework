@@ -16,8 +16,6 @@
 
 namespace OHOS {
 namespace HDI {
-extern const char* g_tab;
-
 enum class TypeKind {
     TYPE_UNKNOWN = 0,
     TYPE_BOOLEAN,
@@ -46,10 +44,10 @@ enum class TypeKind {
 };
 
 enum class TypeMode {
-    NO_MODE,      // only type
-    PARAM_IN,     // type of the in attribute parameter
-    PARAM_OUT,    // type of the out attribute parameter
-    LOCAL_VAR,    // type of the local variable
+    NO_MODE,   // only type
+    PARAM_IN,  // type of the in attribute parameter
+    PARAM_OUT, // type of the out attribute parameter
+    LOCAL_VAR, // type of the local variable
 };
 
 enum class LanguageType {
@@ -60,11 +58,11 @@ enum class LanguageType {
 
 class ASTType : public ASTNode {
 public:
-    virtual void SetName(const String& name);
+    virtual void SetName(const String &name);
 
     virtual String GetName();
 
-    virtual void SetNamespace(const AutoPtr<ASTNamespace>& nspace);
+    virtual void SetNamespace(const AutoPtr<ASTNamespace> &nspace);
 
     virtual AutoPtr<ASTNamespace> GetNamespace();
 
@@ -126,52 +124,54 @@ public:
 
     virtual String EmitJavaType(TypeMode mode, bool isInnerType = false) const;
 
-    virtual void EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+    virtual void EmitCWriteVar(const String &parcelName, const String &name, const String &ecName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitCProxyWriteOutVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+    virtual void EmitCProxyWriteOutVar(const String &parcelName, const String &name, const String &ecName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
-        const String& ecName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+    virtual void EmitCProxyReadVar(const String &parcelName, const String &name, bool isInnerType, const String &ecName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+    virtual void EmitCStubReadVar(const String &parcelName, const String &name, const String &ecName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitCStubReadOutVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const;
+    virtual void EmitCStubReadOutVar(const String &buffSizeName, const String &memFlagName, const String &parcelName,
+        const String &name, const String &ecName, const String &gotoLabel, StringBuilder &sb,
+        const String &prefix) const;
 
-    virtual void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const;
+    virtual void EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const;
 
-    virtual void EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool initVariable, unsigned int innerLevel = 0) const;
+    virtual void EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool initVariable, unsigned int innerLevel = 0) const;
 
-    virtual void EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const;
+    virtual void EmitCMarshalling(const String &name, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb,
-        const String& prefix, std::vector<String>& freeObjStatements) const;
+    virtual void EmitCUnMarshalling(const String &name, const String &gotoLabel, StringBuilder &sb,
+        const String &prefix, std::vector<String> &freeObjStatements) const;
 
-    void EmitFreeStatements(const std::vector<String>& freeObjStatements, StringBuilder& sb,
-        const String& prefix) const;
+    void EmitFreeStatements(
+        const std::vector<String> &freeObjStatements, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const;
+    virtual void EmitCppMarshalling(const String &parcelName, const String &name, StringBuilder &sb,
+        const String &prefix, unsigned int innerLevel = 0) const;
 
-    virtual void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool emitType, unsigned int innerLevel = 0) const;
+    virtual void EmitCppUnMarshalling(const String &parcelName, const String &name, StringBuilder &sb,
+        const String &prefix, bool emitType, unsigned int innerLevel = 0) const;
 
-    virtual void EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,
-        const String& prefix) const;
+    virtual void EmitMemoryRecycle(
+        const String &name, bool isClient, bool ownership, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const;
+    virtual void EmitJavaWriteVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const;
+    virtual void EmitJavaReadVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const;
 
-    virtual void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner, StringBuilder& sb,
-        const String& prefix) const;
+    virtual void EmitJavaReadInnerVar(
+        const String &parcelName, const String &name, bool isInner, StringBuilder &sb, const String &prefix) const;
+
 protected:
     String name_;
     AutoPtr<ASTNamespace> namespace_;

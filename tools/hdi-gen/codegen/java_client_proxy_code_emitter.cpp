@@ -11,10 +11,9 @@
 
 namespace OHOS {
 namespace HDI {
-bool JavaClientProxyCodeEmitter::ResolveDirectory(const String& targetDirectory)
+bool JavaClientProxyCodeEmitter::ResolveDirectory(const String &targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
-        ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
         directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
@@ -52,19 +51,19 @@ void JavaClientProxyCodeEmitter::EmitProxyFile()
     file.Close();
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyImports(StringBuilder& sb)
+void JavaClientProxyCodeEmitter::EmitProxyImports(StringBuilder &sb)
 {
     EmitProxyCorelibImports(sb);
     EmitProxySelfDefinedTypeImports(sb);
     EmitProxyDBinderImports(sb);
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyCorelibImports(StringBuilder& sb)
+void JavaClientProxyCodeEmitter::EmitProxyCorelibImports(StringBuilder &sb)
 {
     bool includeList = false;
     bool includeMap = false;
-    const AST::TypeStringMap& types = ast_->GetTypes();
-    for (const auto& pair : types) {
+    const AST::TypeStringMap &types = ast_->GetTypes();
+    for (const auto &pair : types) {
         AutoPtr<ASTType> type = pair.second;
         switch (type->GetTypeKind()) {
             case TypeKind::TYPE_LIST: {
@@ -88,15 +87,15 @@ void JavaClientProxyCodeEmitter::EmitProxyCorelibImports(StringBuilder& sb)
     }
 }
 
-void JavaClientProxyCodeEmitter::EmitProxySelfDefinedTypeImports(StringBuilder& sb)
+void JavaClientProxyCodeEmitter::EmitProxySelfDefinedTypeImports(StringBuilder &sb)
 {
-    for (const auto& importPair : ast_->GetImports()) {
+    for (const auto &importPair : ast_->GetImports()) {
         AutoPtr<AST> import = importPair.second;
         sb.AppendFormat("import %s;\n", import->GetFullName().string());
     }
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyDBinderImports(StringBuilder& sb)
+void JavaClientProxyCodeEmitter::EmitProxyDBinderImports(StringBuilder &sb)
 {
     sb.Append("import ohos.hiviewdfx.HiLog;\n");
     sb.Append("import ohos.hiviewdfx.HiLogLabel;\n");
@@ -106,43 +105,42 @@ void JavaClientProxyCodeEmitter::EmitProxyDBinderImports(StringBuilder& sb)
     sb.Append("import ohos.rpc.MessageOption;\n");
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyImpl(StringBuilder& sb)
+void JavaClientProxyCodeEmitter::EmitProxyImpl(StringBuilder &sb)
 {
     sb.AppendFormat("public class %s implements %s {\n", proxyName_.string(), interfaceName_.string());
-    EmitProxyConstants(sb, g_tab);
+    EmitProxyConstants(sb, TAB);
     sb.Append("\n");
-    sb.Append(g_tab).AppendFormat(
+    sb.Append(TAB).AppendFormat(
         "private static final HiLogLabel TAG = new HiLogLabel(HiLog.LOG_CORE, 0xD001510, \"%s\");\n",
         interfaceFullName_.string());
-    sb.Append(g_tab).Append("private final IRemoteObject remote;\n");
-    sb.Append(g_tab).Append("private static final int ERR_OK = 0;\n");
+    sb.Append(TAB).Append("private final IRemoteObject remote;\n");
+    sb.Append(TAB).Append("private static final int ERR_OK = 0;\n");
     sb.Append("\n");
-    EmitProxyConstructor(sb, g_tab);
+    EmitProxyConstructor(sb, TAB);
     sb.Append("\n");
-    EmitProxyMethodImpls(sb, g_tab);
+    EmitProxyMethodImpls(sb, TAB);
     sb.Append("};");
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyConstants(StringBuilder& sb, const String& prefix)
+void JavaClientProxyCodeEmitter::EmitProxyConstants(StringBuilder &sb, const String &prefix)
 {
-    sb.Append(prefix).AppendFormat("private static final String DESCRIPTOR = \"%s\";\n\n",
-        interfaceFullName_.string());
+    sb.Append(prefix).AppendFormat("private static final String DESCRIPTOR = \"%s\";\n\n", interfaceFullName_.string());
     EmitInterfaceMethodCommands(sb, prefix);
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyConstructor(StringBuilder& sb, const String& prefix)
+void JavaClientProxyCodeEmitter::EmitProxyConstructor(StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).AppendFormat("public %s(IRemoteObject remote) {\n", proxyName_.string());
-    sb.Append(prefix + g_tab).Append("this.remote = remote;\n");
+    sb.Append(prefix + TAB).Append("this.remote = remote;\n");
     sb.Append(prefix).Append("}\n");
     sb.Append("\n");
     sb.Append(prefix).AppendFormat("@Override\n");
     sb.Append(prefix).Append("public IRemoteObject asObject() {\n");
-    sb.Append(prefix + g_tab).Append("return remote;\n");
+    sb.Append(prefix + TAB).Append("return remote;\n");
     sb.Append(prefix).Append("}\n");
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyMethodImpls(StringBuilder& sb, const String& prefix)
+void JavaClientProxyCodeEmitter::EmitProxyMethodImpls(StringBuilder &sb, const String &prefix)
 {
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
@@ -153,13 +151,13 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodImpls(StringBuilder& sb, const S
     }
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
-    const String& prefix)
+void JavaClientProxyCodeEmitter::EmitProxyMethodImpl(
+    const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).Append("@Override\n");
     if (method->GetParameterNumber() == 0) {
-        sb.Append(prefix).AppendFormat("public int %s() throws RemoteException ",
-            MethodName(method->GetName()).string());
+        sb.Append(prefix).AppendFormat(
+            "public int %s() throws RemoteException ", MethodName(method->GetName()).string());
     } else {
         StringBuilder paramStr;
         paramStr.Append(prefix).AppendFormat("public int %s(", MethodName(method->GetName()).string());
@@ -172,72 +170,69 @@ void JavaClientProxyCodeEmitter::EmitProxyMethodImpl(const AutoPtr<ASTMethod>& m
         }
         paramStr.Append(") throws RemoteException");
 
-        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
+        sb.Append(SpecificationParam(paramStr, prefix + TAB));
         sb.Append("\n");
     }
     EmitProxyMethodBody(method, sb, prefix);
 }
 
-void JavaClientProxyCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb,
-    const String& prefix)
+void JavaClientProxyCodeEmitter::EmitInterfaceMethodParameter(
+    const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).Append(param->EmitJavaParameter());
 }
 
-void JavaClientProxyCodeEmitter::EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
-    const String& prefix)
+void JavaClientProxyCodeEmitter::EmitProxyMethodBody(
+    const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).Append("MessageParcel data = MessageParcel.obtain();\n");
-    sb.Append(prefix + g_tab).Append("MessageParcel reply = MessageParcel.obtain();\n");
-    sb.Append(prefix + g_tab).AppendFormat("MessageOption option = new MessageOption(MessageOption.TF_SYNC);\n");
+    sb.Append(prefix + TAB).Append("MessageParcel data = MessageParcel.obtain();\n");
+    sb.Append(prefix + TAB).Append("MessageParcel reply = MessageParcel.obtain();\n");
+    sb.Append(prefix + TAB).AppendFormat("MessageOption option = new MessageOption(MessageOption.TF_SYNC);\n");
     sb.Append("\n");
     sb.Append(prefix).AppendFormat("    data.writeInterfaceToken(DESCRIPTOR);\n");
 
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
-        param->EmitJavaWriteVar("data", sb, prefix + g_tab);
+        param->EmitJavaWriteVar("data", sb, prefix + TAB);
     }
     sb.Append("\n");
 
-    sb.Append(prefix + g_tab).Append("try {\n");
-    sb.Append(prefix + g_tab + g_tab).AppendFormat("if (remote.sendRequest(COMMAND_%s, data, reply, option)) {\n",
+    sb.Append(prefix + TAB).Append("try {\n");
+    sb.Append(prefix + TAB + TAB).AppendFormat("if (remote.sendRequest(COMMAND_%s, data, reply, option)) {\n",
         ConstantName(method->GetName()).string());
-    sb.Append(prefix + g_tab + g_tab + g_tab).Append("return 1;\n");
-    sb.Append(prefix + g_tab + g_tab).Append("}\n");
-    sb.Append(prefix + g_tab).Append("    reply.readException();\n");
+    sb.Append(prefix + TAB + TAB + TAB).Append("return 1;\n");
+    sb.Append(prefix + TAB + TAB).Append("}\n");
+    sb.Append(prefix + TAB).Append("    reply.readException();\n");
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
-        param->EmitJavaReadVar("reply", sb, prefix + g_tab + g_tab);
+        param->EmitJavaReadVar("reply", sb, prefix + TAB + TAB);
     }
 
-    sb.Append(prefix + g_tab).Append("} finally {\n");
-    sb.Append(prefix + g_tab + g_tab).Append("data.reclaim();\n");
-    sb.Append(prefix + g_tab + g_tab).Append("reply.reclaim();\n");
-    sb.Append(prefix + g_tab).Append("}\n");
-    sb.Append(prefix + g_tab).Append("return 0;\n");
+    sb.Append(prefix + TAB).Append("} finally {\n");
+    sb.Append(prefix + TAB + TAB).Append("data.reclaim();\n");
+    sb.Append(prefix + TAB + TAB).Append("reply.reclaim();\n");
+    sb.Append(prefix + TAB).Append("}\n");
+    sb.Append(prefix + TAB).Append("return 0;\n");
     sb.Append(prefix).Append("}\n");
 }
 
-void JavaClientProxyCodeEmitter::EmitLocalVariable(const AutoPtr<ASTParameter>& param, StringBuilder& sb,
-    const String& prefix)
+void JavaClientProxyCodeEmitter::EmitLocalVariable(
+    const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix)
 {
     AutoPtr<ASTType> type = param->GetType();
     if (type->GetTypeKind() == TypeKind::TYPE_SEQUENCEABLE) {
-        sb.Append(prefix).AppendFormat("%s %s = new %s();\n",
-            type->EmitJavaType(TypeMode::NO_MODE).string(), param->GetName().string(),
-            type->EmitJavaType(TypeMode::NO_MODE).string());
+        sb.Append(prefix).AppendFormat("%s %s = new %s();\n", type->EmitJavaType(TypeMode::NO_MODE).string(),
+            param->GetName().string(), type->EmitJavaType(TypeMode::NO_MODE).string());
     } else if (type->GetTypeKind() == TypeKind::TYPE_LIST) {
-        sb.Append(prefix).AppendFormat("%s %s = new Array%s();\n",
-            type->EmitJavaType(TypeMode::NO_MODE).string(), param->GetName().string(),
-            type->EmitJavaType(TypeMode::NO_MODE).string());
+        sb.Append(prefix).AppendFormat("%s %s = new Array%s();\n", type->EmitJavaType(TypeMode::NO_MODE).string(),
+            param->GetName().string(), type->EmitJavaType(TypeMode::NO_MODE).string());
     } else if (type->GetTypeKind() == TypeKind::TYPE_MAP) {
-        sb.Append(prefix).AppendFormat("%s %s = new Hash%s();\n",
-            type->EmitJavaType(TypeMode::NO_MODE).string(), param->GetName().string(),
-            type->EmitJavaType(TypeMode::NO_MODE).string());
+        sb.Append(prefix).AppendFormat("%s %s = new Hash%s();\n", type->EmitJavaType(TypeMode::NO_MODE).string(),
+            param->GetName().string(), type->EmitJavaType(TypeMode::NO_MODE).string());
     } else {
-        sb.Append(prefix).AppendFormat("%s %s;\n", type->EmitJavaType(TypeMode::NO_MODE).string(),
-            param->GetName().string());
+        sb.Append(prefix).AppendFormat(
+            "%s %s;\n", type->EmitJavaType(TypeMode::NO_MODE).string(), param->GetName().string());
     }
 }
 } // namespace HDI

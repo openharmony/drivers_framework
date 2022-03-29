@@ -25,10 +25,12 @@ enum class ParamAttr {
 class ASTParameter : public ASTNode {
 public:
     ASTParameter() : ASTNode() {}
-    ASTParameter(const String& name, ParamAttr attribute, const AutoPtr<ASTType>& type)
-        : ASTNode(), name_(name), attribute_(attribute), type_(type) {}
+    ASTParameter(const String &name, ParamAttr attribute, const AutoPtr<ASTType> &type)
+        : ASTNode(), name_(name), attribute_(attribute), type_(type)
+    {
+    }
 
-    inline void SetName(const String& name)
+    inline void SetName(const String &name)
     {
         name_ = name;
     }
@@ -38,7 +40,7 @@ public:
         return name_;
     }
 
-    inline void SetType(const AutoPtr<ASTType>& type)
+    inline void SetType(const AutoPtr<ASTType> &type)
     {
         type_ = type;
     }
@@ -58,7 +60,7 @@ public:
         return attribute_;
     }
 
-    String Dump(const String& prefix) override;
+    String Dump(const String &prefix) override;
 
     String EmitCParameter();
 
@@ -72,18 +74,19 @@ public:
 
     String EmitJavaLocalVar();
 
-    void EmitCWriteVar(const String& parcelName, const String& ecName, const String& gotoLabel, StringBuilder& sb,
-        const String& prefix) const;
+    void EmitCWriteVar(const String &parcelName, const String &ecName, const String &gotoLabel, StringBuilder &sb,
+        const String &prefix) const;
 
-    bool EmitCProxyWriteOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
-        StringBuilder& sb, const String& prefix) const;
+    bool EmitCProxyWriteOutVar(const String &parcelName, const String &ecName, const String &gotoLabel,
+        StringBuilder &sb, const String &prefix) const;
 
-    bool EmitCStubReadOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
-        StringBuilder& sb, const String& prefix) const;
+    void EmitCStubReadOutVar(const String &buffSizeName, const String &memFlagName, const String &parcelName,
+        const String &ecName, const String &gotoLabel, StringBuilder &sb, const String &prefix) const;
 
-    void EmitJavaWriteVar(const String& parcelName, StringBuilder& sb, const String& prefix) const;
+    void EmitJavaWriteVar(const String &parcelName, StringBuilder &sb, const String &prefix) const;
 
-    void EmitJavaReadVar(const String& parcelName, StringBuilder& sb, const String& prefix) const;
+    void EmitJavaReadVar(const String &parcelName, StringBuilder &sb, const String &prefix) const;
+
 private:
     String name_;
     AutoPtr<ASTType> type_ = nullptr;

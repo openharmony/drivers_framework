@@ -10,6 +10,7 @@
 #define OHOS_HDI_ASTNAMESPACE_H
 
 #include <vector>
+
 #include "ast/ast_node.h"
 #include "util/autoptr.h"
 
@@ -20,7 +21,7 @@ class ASTSequenceableType;
 
 class ASTNamespace : public ASTNode {
 public:
-    explicit ASTNamespace(const String& nspaceStr);
+    explicit ASTNamespace(const String &nspaceStr);
 
     virtual ~ASTNamespace() = default;
 
@@ -29,9 +30,9 @@ public:
         return name_;
     }
 
-    void AddNamespace(const AutoPtr<ASTNamespace>& innerNspace);
+    void AddNamespace(const AutoPtr<ASTNamespace> &innerNspace);
 
-    AutoPtr<ASTNamespace> FindNamespace(const String& nspaceStr);
+    AutoPtr<ASTNamespace> FindNamespace(const String &nspaceStr);
 
     AutoPtr<ASTNamespace> GetNamespace(size_t index);
 
@@ -40,7 +41,7 @@ public:
         return innerNamespaces_.size();
     }
 
-    void AddInterface(const AutoPtr<ASTInterfaceType>& interface);
+    void AddInterface(const AutoPtr<ASTInterfaceType> &interface);
 
     AutoPtr<ASTInterfaceType> GetInterface(size_t index);
 
@@ -49,7 +50,7 @@ public:
         return interfaces_.size();
     }
 
-    void AddSequenceable(const AutoPtr<ASTSequenceableType>& sequenceable);
+    void AddSequenceable(const AutoPtr<ASTSequenceableType> &sequenceable);
 
     AutoPtr<ASTSequenceableType> GetSequenceable(size_t index);
 
@@ -67,7 +68,7 @@ public:
 
 private:
     String name_;
-    ASTNamespace* outerNamespace_;
+    ASTNamespace *outerNamespace_;
     std::vector<AutoPtr<ASTNamespace>> innerNamespaces_;
     std::vector<AutoPtr<ASTSequenceableType>> sequenceables_;
     std::vector<AutoPtr<ASTInterfaceType>> interfaces_;

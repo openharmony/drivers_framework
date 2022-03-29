@@ -11,10 +11,96 @@
 
 namespace OHOS {
 namespace HDI {
-Lexer::Lexer()
-{
-    InitializeKeywords();
-}
+std::unordered_map<String, Token, StringHashFunc, StringEqualFunc> Lexer::keywords_ = {
+    {"boolean",        Token::BOOLEAN       },
+    {"byte",           Token::BYTE          },
+    {"callback",       Token::CALLBACK      },
+    {"char",           Token::CHAR          },
+    {"double",         Token::DOUBLE        },
+    {"enum",           Token::ENUM          },
+    {"extends",        Token::EXTENDS       },
+    {"float",          Token::FLOAT         },
+    {"full",           Token::FULL          },
+    {"import",         Token::IMPORT        },
+    {"in",             Token::IN            },
+    {"int",            Token::INTEGER       },
+    {"interface",      Token::INTERFACE     },
+    {"List",           Token::LIST          },
+    {"lite",           Token::LITE          },
+    {"long",           Token::LONG          },
+    {"Map",            Token::MAP           },
+    {"oneway",         Token::ONEWAY        },
+    {"out",            Token::OUT           },
+    {"package",        Token::PACKAGE       },
+    {"sequenceable",   Token::SEQUENCEABLE  },
+    {"short",          Token::SHORT         },
+    {"String",         Token::STRING        },
+    {"struct",         Token::STRUCT        },
+    {"union",          Token::UNION         },
+    {"unsigned",       Token::UNSIGNED      },
+    {"FileDescriptor", Token::FILEDESCRIPTOR},
+    {"SharedMemQueue", Token::SMEMQUEUE     },
+};
+
+std::unordered_map<char, Token> Lexer::delimiters_ = {
+    {'<', Token::ANGLE_BRACKETS_LEFT },
+    {'>', Token::ANGLE_BRACKETS_RIGHT},
+    {'{', Token::BRACES_LEFT         },
+    {'}', Token::BRACES_RIGHT        },
+    {'[', Token::BRACKETS_LEFT       },
+    {']', Token::BRACKETS_RIGHT      },
+    {',', Token::COMMA               },
+    {'(', Token::PARENTHESES_LEFT    },
+    {')', Token::PARENTHESES_RIGHT   },
+    {'.', Token::DOT                 },
+    {':', Token::COLON               },
+    {';', Token::SEMICOLON           },
+    {'=', Token::ASSIGN              }
+};
+
+std::unordered_map<Token, String> Lexer::tokenDumps_ = {
+    {Token::ANGLE_BRACKETS_LEFT,  "<"             },
+    {Token::ANGLE_BRACKETS_RIGHT, ">"             },
+    {Token::BOOLEAN,              "boolean"       },
+    {Token::BRACES_LEFT,          "{"             },
+    {Token::BRACES_RIGHT,         "}"             },
+    {Token::BRACKETS_LEFT,        "["             },
+    {Token::BRACKETS_RIGHT,       "]"             },
+    {Token::BYTE,                 "byte"          },
+    {Token::CALLBACK,             "callback"      },
+    {Token::CHAR,                 "char"          },
+    {Token::COLON,                ":"             },
+    {Token::COMMA,                ","             },
+    {Token::DOT,                  "."             },
+    {Token::DOUBLE,               "double"        },
+    {Token::END_OF_FILE,          "eof"           },
+    {Token::ENUM,                 "enum"          },
+    {Token::EXTENDS,              "extends"       },
+    {Token::FLOAT,                "float"         },
+    {Token::FULL,                 "full"          },
+    {Token::IMPORT,               "import"        },
+    {Token::IN,                   "in"            },
+    {Token::INTEGER,              "int"           },
+    {Token::INTERFACE,            "interface"     },
+    {Token::LITE,                 "lite"          },
+    {Token::LIST,                 "List"          },
+    {Token::LONG,                 "long"          },
+    {Token::MAP,                  "Map"           },
+    {Token::ONEWAY,               "oneway"        },
+    {Token::OUT,                  "out"           },
+    {Token::PACKAGE,              "package"       },
+    {Token::SEQUENCEABLE,         "sequenceable"  },
+    {Token::STRUCT,               "struct"        },
+    {Token::PARENTHESES_LEFT,     "("             },
+    {Token::PARENTHESES_RIGHT,    ")"             },
+    {Token::SEMICOLON,            ";"             },
+    {Token::SHORT,                "short"         },
+    {Token::STRING,               "String"        },
+    {Token::UNION,                "union"         },
+    {Token::UNSIGNED,             "unsigned"      },
+    {Token::FILEDESCRIPTOR,       "FileDescriptor"},
+    {Token::SMEMQUEUE,            "SharedMemQueue"},
+};
 
 Lexer::~Lexer()
 {
@@ -23,50 +109,7 @@ Lexer::~Lexer()
     }
 }
 
-void Lexer::InitializeKeywords()
-{
-    keywords_ = {
-        { "boolean", Token::BOOLEAN }, { "byte", Token::BYTE }, { "callback", Token::CALLBACK },
-        { "char", Token::CHAR}, { "double", Token::DOUBLE }, { "enum", Token::ENUM },
-        { "extends", Token::EXTENDS }, { "float", Token::FLOAT }, { "full", Token::FULL },
-        { "import", Token::IMPORT }, { "in", Token::IN }, { "int", Token::INTEGER }, { "interface", Token::INTERFACE },
-        { "List", Token::LIST }, { "lite", Token::LITE }, { "long", Token::LONG },
-        { "Map", Token::MAP }, { "oneway", Token::ONEWAY }, { "out", Token::OUT },
-        { "package", Token::PACKAGE}, { "sequenceable", Token::SEQUENCEABLE }, { "short", Token::SHORT },
-        { "String", Token::STRING }, { "struct", Token::STRUCT }, { "union", Token::UNION },
-        { "unsigned", Token::UNSIGNED }, { "FileDescriptor", Token::FILEDESCRIPTOR },
-        {"SharedMemQueue", Token::SMEMQUEUE},
-    };
-
-    delimiters_ = {
-        {'<', Token::ANGLE_BRACKETS_LEFT}, {'>', Token::ANGLE_BRACKETS_RIGHT},
-        {'{', Token::BRACES_LEFT}, {'}', Token::BRACES_RIGHT},
-        {'[', Token::BRACKETS_LEFT}, {']', Token::BRACKETS_RIGHT},
-        {',', Token::COMMA}, {'(', Token::PARENTHESES_LEFT},
-        {')', Token::PARENTHESES_RIGHT}, {'.', Token::DOT},
-        {':', Token::COLON}, {';', Token::SEMICOLON},
-        {'=', Token::ASSIGN}
-    };
-
-    tokenDumps_ = {
-        { Token::ANGLE_BRACKETS_LEFT, "<" }, { Token::ANGLE_BRACKETS_RIGHT, ">"}, { Token::BOOLEAN, "boolean"},
-        { Token::BRACES_LEFT, "{"}, { Token::BRACES_RIGHT, "}"}, { Token::BRACKETS_LEFT, "["},
-        { Token::BRACKETS_RIGHT, "]"}, { Token::BYTE, "byte"}, { Token::CALLBACK, "callback"},
-        { Token::CHAR, "char"}, { Token::COLON, ":"}, { Token::COMMA, ","},
-        { Token::DOT, "."}, { Token::DOUBLE, "double"}, { Token::END_OF_FILE, "eof"},
-        { Token::ENUM, "enum"}, { Token::EXTENDS, "extends"}, { Token::FLOAT, "float"},
-        { Token::FULL, "full"}, { Token::IMPORT, "import"}, { Token::IN, "in"},
-        { Token::INTEGER, "int"}, { Token::INTERFACE, "interface"}, { Token::LITE, "lite"},
-        { Token::LIST, "List"}, { Token::LONG, "long"}, { Token::MAP, "Map"},
-        { Token::ONEWAY, "oneway"}, { Token::OUT, "out"}, { Token::PACKAGE, "package"},
-        { Token::SEQUENCEABLE, "sequenceable"}, { Token::STRUCT, "struct"}, { Token::PARENTHESES_LEFT, "("},
-        { Token::PARENTHESES_RIGHT, ")"}, { Token::SEMICOLON, ";"}, { Token::SHORT, "short"},
-        { Token::STRING, "String"}, { Token::UNION, "union"}, { Token::UNSIGNED, "unsigned"},
-        { Token::FILEDESCRIPTOR, "FileDescriptor"}, {Token::SMEMQUEUE, "SharedMemQueue"},
-    };
-}
-
-bool Lexer::OpenSourceFile(const String& filePath)
+bool Lexer::OpenSourceFile(const String &filePath)
 {
     currentFile_ = std::make_unique<File>(filePath, int(File::READ));
     if (!currentFile_->IsValid()) {

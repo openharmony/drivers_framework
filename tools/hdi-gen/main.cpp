@@ -14,9 +14,9 @@
 
 using namespace OHOS::HDI;
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    Options& options = Options::GetInstance().Parse(argc, argv);
+    Options &options = Options::GetInstance().Parse(argc, argv);
     if (options.HasErrors()) {
         options.ShowErrors();
         return 0;
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     }
 
     if (options.DoGetHashKey()) {
-        for (const auto& sourceFile : options.GetSourceFiles()) {
+        for (const auto &sourceFile : options.GetSourceFiles()) {
             std::unique_ptr<File> idlFile = std::make_unique<File>(sourceFile, int(File::READ));
             if (!idlFile->IsValid()) {
                 Logger::E("hdi-gen", "open idl file failed!");

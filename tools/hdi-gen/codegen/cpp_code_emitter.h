@@ -21,53 +21,52 @@ class CppCodeEmitter : public CodeEmitter {
 public:
     virtual ~CppCodeEmitter() = default;
 
-    bool OutPut(const AutoPtr<AST>& ast, const String& targetDirectory);
+    bool OutPut(const AutoPtr<AST> &ast, const String &targetDirectory);
+
 protected:
-    void GetStdlibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetStdlibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetImportInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix);
 
-    void EmitLicense(StringBuilder& sb);
+    void EmitLicense(StringBuilder &sb);
 
-    void EmitHeadMacro(StringBuilder& sb, const String& fullName);
+    void EmitHeadMacro(StringBuilder &sb, const String &fullName);
 
-    void EmitTailMacro(StringBuilder& sb, const String& fullName);
+    void EmitTailMacro(StringBuilder &sb, const String &fullName);
 
-    void EmitHeadExternC(StringBuilder& sb);
+    void EmitHeadExternC(StringBuilder &sb);
 
-    void EmitTailExternC(StringBuilder& sb);
+    void EmitTailExternC(StringBuilder &sb);
 
-    bool isVersion(const String& name);
+    bool isVersion(const String &name);
 
-    std::vector<String> EmitCppNameSpaceVec(const String& namespaceStr);
+    std::vector<String> EmitCppNameSpaceVec(const String &namespaceStr);
 
-    String EmitPackageToNameSpace(const String& packageName);
+    String EmitPackageToNameSpace(const String &packageName);
 
-    virtual void EmitBeginNamespace(StringBuilder& sb);
+    virtual void EmitBeginNamespace(StringBuilder &sb);
 
-    virtual void EmitEndNamespace(StringBuilder& sb);
+    virtual void EmitEndNamespace(StringBuilder &sb);
 
-    void EmitUsingNamespace(StringBuilder& sb);
+    void EmitUsingNamespace(StringBuilder &sb);
 
-    String EmitNamespace(const String& packageName);
+    String EmitNamespace(const String &packageName);
 
-    void EmitImportUsingNamespace(StringBuilder& sb);
+    void EmitImportUsingNamespace(StringBuilder &sb);
 
-    void EmitWriteMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, StringBuilder& sb,
-        const String& prefix);
+    void EmitWriteMethodParameter(
+        const AutoPtr<ASTParameter> &param, const String &parcelName, StringBuilder &sb, const String &prefix);
 
-    void EmitReadMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName, bool initVariable,
-        StringBuilder& sb, const String& prefix);
+    void EmitReadMethodParameter(const AutoPtr<ASTParameter> &param, const String &parcelName, bool initVariable,
+        StringBuilder &sb, const String &prefix);
 
-    void EmitLocalVariable(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
+    String MacroName(const String &name);
 
-    String MacroName(const String& name);
+    String ConstantName(const String &name);
 
-    String ConstantName(const String& name);
-
-    String SpecificationParam(StringBuilder& sb, const String& prefix);
+    String SpecificationParam(StringBuilder &sb, const String &prefix);
 };
 } // namespace HDI
 } // namespace OHOS

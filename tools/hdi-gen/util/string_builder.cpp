@@ -12,7 +12,7 @@
 
 namespace OHOS {
 namespace HDI {
-const char* StringBuilder::TAG = "StringBuilder";
+const char *StringBuilder::TAG = "StringBuilder";
 constexpr int LINE_MAX_SIZE = 1024;
 
 StringBuilder::~StringBuilder()
@@ -22,7 +22,7 @@ StringBuilder::~StringBuilder()
     }
 }
 
-StringBuilder& StringBuilder::Append(char c)
+StringBuilder &StringBuilder::Append(char c)
 {
     if (position_ + 1 >= capacity_) {
         if (!Grow(1)) {
@@ -35,7 +35,7 @@ StringBuilder& StringBuilder::Append(char c)
     return *this;
 }
 
-StringBuilder& StringBuilder::Append(const char* string)
+StringBuilder &StringBuilder::Append(const char *string)
 {
     if (string == nullptr || string[0] == '\0') {
         return *this;
@@ -53,7 +53,7 @@ StringBuilder& StringBuilder::Append(const char* string)
     return *this;
 }
 
-StringBuilder& StringBuilder::Append(const String& string)
+StringBuilder &StringBuilder::Append(const String &string)
 {
     if (string.IsEmpty()) {
         return *this;
@@ -71,7 +71,7 @@ StringBuilder& StringBuilder::Append(const String& string)
     return *this;
 }
 
-StringBuilder& StringBuilder::AppendFormat(const char* format, ...)
+StringBuilder &StringBuilder::AppendFormat(const char *format, ...)
 {
     va_list args, argsCopy;
 
@@ -125,7 +125,7 @@ bool StringBuilder::Grow(size_t size)
         return false;
     }
 
-    char* newBuffer = reinterpret_cast<char*>(calloc(newSize, 1));
+    char *newBuffer = reinterpret_cast<char *>(calloc(newSize, 1));
     if (newBuffer == nullptr) {
         Logger::E(TAG, "Fail to malloc %lu bytes memory.", newSize);
         return false;

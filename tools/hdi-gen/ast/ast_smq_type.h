@@ -15,7 +15,7 @@ namespace OHOS {
 namespace HDI {
 class ASTSmqType : public ASTType {
 public:
-    inline void SetInnerType(const AutoPtr<ASTType>& innerType)
+    inline void SetInnerType(const AutoPtr<ASTType> &innerType)
     {
         innerType_ = innerType;
     }
@@ -28,11 +28,11 @@ public:
 
     String EmitCppType(TypeMode mode = TypeMode::NO_MODE) const override;
 
-    void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool initVariable, unsigned int innerLevel = 0) const override;
+    void EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool initVariable, unsigned int innerLevel = 0) const override;
 
 private:
     AutoPtr<ASTType> innerType_;

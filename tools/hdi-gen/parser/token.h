@@ -46,19 +46,19 @@ enum class Token {
     LITE,
     IN,
     OUT,
-    DOT,   // '.'
-    COMMA,   // ','
-    COLON,   // ':'
-    ASSIGN,  // '='
-    SEMICOLON,   // ';'
-    BRACES_LEFT,   // '{'
-    BRACES_RIGHT,   // '}'
-    BRACKETS_LEFT,   // '['
-    BRACKETS_RIGHT,   // ']'
-    PARENTHESES_LEFT,   // '('
-    PARENTHESES_RIGHT,   // ')'
-    ANGLE_BRACKETS_LEFT,   // '<'
-    ANGLE_BRACKETS_RIGHT,   // '>'
+    DOT,                  // '.'
+    COMMA,                // ','
+    COLON,                // ':'
+    ASSIGN,               // '='
+    SEMICOLON,            // ';'
+    BRACES_LEFT,          // '{'
+    BRACES_RIGHT,         // '}'
+    BRACKETS_LEFT,        // '['
+    BRACKETS_RIGHT,       // ']'
+    PARENTHESES_LEFT,     // '('
+    PARENTHESES_RIGHT,    // ')'
+    ANGLE_BRACKETS_LEFT,  // '<'
+    ANGLE_BRACKETS_RIGHT, // '>'
     // others
     IDENTIFIER,
     DIGIT,

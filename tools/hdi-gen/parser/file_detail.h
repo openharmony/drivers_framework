@@ -10,6 +10,7 @@
 #define OHOS_HDI_FILE_DETAIL_H
 
 #include <unordered_set>
+
 #include "util/options.h"
 #include "util/string.h"
 
@@ -19,14 +20,14 @@ class FileDetail {
 public:
     using StringSet = std::unordered_set<String, StringHashFunc, StringEqualFunc>;
 
-    void SetFilePath(const String& filePath);
+    void SetFilePath(const String &filePath);
 
     inline String GetFilePath() const
     {
         return idlFilePath_;
     }
 
-    void SetPackageName(const String& packageName)
+    void SetPackageName(const String &packageName)
     {
         packageName_ = packageName;
     }
@@ -46,9 +47,9 @@ public:
         return packageName_ + "." + idlName_;
     }
 
-    bool AddImport(const String& packageName);
+    bool AddImport(const String &packageName);
 
-    void DelImport(const String& packageName)
+    void DelImport(const String &packageName)
     {
         imports_.erase(packageName);
     }
@@ -58,17 +59,18 @@ public:
         return imports_.size();
     }
 
-    inline const StringSet& GetImports() const
+    inline const StringSet &GetImports() const
     {
         return imports_;
     }
 
-    inline static String ImportsToPath(const String& importPkgName)
+    inline static String ImportsToPath(const String &importPkgName)
     {
         return Options::GetInstance().GetPackagePath(importPkgName) + ".idl";
     }
 
     String Dump();
+
 private:
     String idlFilePath_;
     String rootPackageName_;

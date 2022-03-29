@@ -15,9 +15,7 @@ namespace OHOS {
 namespace HDI {
 class LightRefCountBase {
 public:
-    inline LightRefCountBase()
-        : refCount_(0)
-    {}
+    inline LightRefCountBase() : refCount_(0) {}
 
     int AddRef();
 
@@ -29,8 +27,7 @@ public:
     }
 
 protected:
-    inline virtual ~LightRefCountBase()
-    {}
+    virtual ~LightRefCountBase() = default;
 
 private:
     std::atomic<int> refCount_;

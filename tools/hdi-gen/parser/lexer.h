@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <memory>
 #include <unordered_map>
+
 #include "parser/token.h"
 #include "util/file.h"
 #include "util/string.h"
@@ -21,11 +22,11 @@ namespace OHOS {
 namespace HDI {
 class Lexer {
 public:
-    Lexer();
+    Lexer() = default;
 
     ~Lexer();
 
-    bool OpenSourceFile(const String& filePath);
+    bool OpenSourceFile(const String &filePath);
 
     Token GetToken(bool skipComment = true);
 
@@ -78,8 +79,6 @@ public:
     static int TokenToChar(Token token);
 
 private:
-    void InitializeKeywords();
-
     Token ReadToken(bool skipComment);
 
     Token ReadIdentifier(char c);
@@ -105,10 +104,10 @@ private:
         return isspace(c);
     }
 
-    static const char* TAG;
-    std::unordered_map<String, Token, StringHashFunc, StringEqualFunc> keywords_;
-    std::unordered_map<char, Token> delimiters_;
-    std::unordered_map<Token, String> tokenDumps_;
+    static const char *TAG;
+    static std::unordered_map<String, Token, StringHashFunc, StringEqualFunc> keywords_;
+    static std::unordered_map<char, Token> delimiters_;
+    static std::unordered_map<Token, String> tokenDumps_;
     Token currentToken_ = Token::UNKNOWN;
     int tokenLineNo_ = 0;
     int tokenColumnNo_ = 0;

@@ -12,10 +12,9 @@
 
 namespace OHOS {
 namespace HDI {
-bool CppServiceImplCodeEmitter::ResolveDirectory(const String& targetDirectory)
+bool CppServiceImplCodeEmitter::ResolveDirectory(const String &targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
-        ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
         directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
@@ -56,42 +55,42 @@ void CppServiceImplCodeEmitter::EmitImplHeaderFile()
     file.Close();
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder& sb)
+void CppServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
     headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(stubName_)));
 
-    for (const auto& file : headerFiles) {
+    for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder& sb)
+void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder &sb)
 {
     EmitBeginNamespace(sb);
     sb.Append("\n");
     sb.AppendFormat("class %sService : public %s {\n", baseName_.string(), stubName_.string());
     sb.Append("public:\n");
-    EmitServiceImplBody(sb, g_tab);
+    EmitServiceImplBody(sb, TAB);
     sb.Append("};\n");
 
     sb.Append("\n");
     EmitEndNamespace(sb);
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplBody(StringBuilder& sb, const String& prefix)
+void CppServiceImplCodeEmitter::EmitServiceImplBody(StringBuilder &sb, const String &prefix)
 {
-    EmitServiceImplDestruction(sb, g_tab);
+    EmitServiceImplDestruction(sb, TAB);
     sb.Append("\n");
-    EmitServiceImplMethodDecls(sb, g_tab);
+    EmitServiceImplMethodDecls(sb, TAB);
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplDestruction(StringBuilder& sb, const String& prefix)
+void CppServiceImplCodeEmitter::EmitServiceImplDestruction(StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).AppendFormat("virtual ~%sService() {}\n", baseName_.string());
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplMethodDecls(StringBuilder& sb, const String& prefix)
+void CppServiceImplCodeEmitter::EmitServiceImplMethodDecls(StringBuilder &sb, const String &prefix)
 {
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
@@ -102,8 +101,8 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecls(StringBuilder& sb, co
     }
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
-    const String& prefix)
+void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(
+    const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix)
 {
     if (method->GetParameterNumber() == 0) {
         sb.Append(prefix).AppendFormat("int32_t %s() override;\n", method->GetName().string());
@@ -120,7 +119,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(const AutoPtr<ASTMetho
 
         paramStr.Append(") override;");
 
-        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
+        sb.Append(SpecificationParam(paramStr, prefix + TAB));
         sb.Append("\n");
     }
 }
@@ -146,23 +145,23 @@ void CppServiceImplCodeEmitter::EmitImplSourceFile()
     file.Close();
 }
 
-void CppServiceImplCodeEmitter::EmitImplSourceInclusions(StringBuilder& sb)
+void CppServiceImplCodeEmitter::EmitImplSourceInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
     headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(implName_)));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
 
-    for (const auto& file : headerFiles) {
+    for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CppServiceImplCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+void CppServiceImplCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix)
+void CppServiceImplCodeEmitter::EmitServiceImplMethodImpls(StringBuilder &sb, const String &prefix)
 {
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
@@ -173,8 +172,8 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpls(StringBuilder& sb, co
     }
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
-    const String& prefix)
+void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(
+    const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix)
 {
     if (method->GetParameterNumber() == 0) {
         sb.Append(prefix).AppendFormat("int32_t %sService::%s()\n", baseName_.string(), method->GetName().string());
@@ -191,12 +190,12 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(const AutoPtr<ASTMetho
 
         paramStr.AppendFormat(")");
 
-        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
+        sb.Append(SpecificationParam(paramStr, prefix + TAB));
         sb.Append("\n");
     }
 
     sb.Append(prefix).Append("{\n");
-    sb.Append(prefix + g_tab).Append("return HDF_SUCCESS;\n");
+    sb.Append(prefix + TAB).Append("return HDF_SUCCESS;\n");
     sb.Append(prefix).Append("}\n");
 }
 } // namespace HDI

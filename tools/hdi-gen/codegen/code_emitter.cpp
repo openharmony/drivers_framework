@@ -5,15 +5,16 @@
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
-
 #include "codegen/code_emitter.h"
+
 #include <cctype>
+
 #include "util/file.h"
 #include "util/options.h"
 
 namespace OHOS {
 namespace HDI {
-bool CodeEmitter::OutPut(const AutoPtr<AST>& ast, const String& targetDirectory, bool isKernelCode)
+bool CodeEmitter::OutPut(const AutoPtr<AST> &ast, const String &targetDirectory, bool isKernelCode)
 {
     if (!Reset(ast, targetDirectory, isKernelCode)) {
         return false;
@@ -23,7 +24,7 @@ bool CodeEmitter::OutPut(const AutoPtr<AST>& ast, const String& targetDirectory,
     return true;
 }
 
-bool CodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory, bool isKernelCode)
+bool CodeEmitter::Reset(const AutoPtr<AST> &ast, const String &targetDirectory, bool isKernelCode)
 {
     if (ast == nullptr || targetDirectory.Equals("")) {
         return false;
@@ -52,12 +53,14 @@ bool CodeEmitter::Reset(const AutoPtr<AST>& ast, const String& targetDirectory, 
 
     majorVerName_ = String::Format("%s_MAJOR_VERSION", ConstantName(interfaceName_).string());
     minorVerName_ = String::Format("%s_MINOR_VERSION", ConstantName(interfaceName_).string());
+    bufferSizeMacroName_ = String::Format("%s_BUFF_MAX_SIZE", ConstantName(baseName_).string());
 
     String prefix = String::Format("%c%s", tolower(baseName_[0]), baseName_.Substring(1).string());
     dataParcelName_ = prefix + "Data";
     replyParcelName_ = prefix + "Reply";
     optionName_ = prefix + "Option";
     errorCodeName_ = prefix + "Ret";
+    flagOfSetMemName_ = prefix + "MemSet";
 
     if (!ResolveDirectory(targetDirectory)) {
         return false;
@@ -87,10 +90,22 @@ void CodeEmitter::CleanData()
     errorCodeName_ = "";
 }
 
-String CodeEmitter::GetFilePath(const String& outDir)
+bool CodeEmitter::NeedFlag(const AutoPtr<ASTMethod> &method)
 {
-    String outPath = outDir.EndsWith(File::pathSeparator) ?
-        outDir.Substring(0, outDir.GetLength() - 1) : outDir;
+    for (size_t i = 0; i < method->GetParameterNumber(); i++) {
+        AutoPtr<ASTParameter> param = method->GetParameter(i);
+        AutoPtr<ASTType> type = param->GetType();
+        if (param->GetAttribute() == ParamAttr::PARAM_OUT && type->IsStringType() || type->IsArrayType() ||
+            type->IsListType()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+String CodeEmitter::GetFilePath(const String &outDir)
+{
+    String outPath = outDir.EndsWith(File::pathSeparator) ? outDir.Substring(0, outDir.GetLength() - 1) : outDir;
     String packagePath = Options::GetInstance().GetPackagePath(ast_->GetPackageName());
     if (packagePath.EndsWith(File::pathSeparator)) {
         return String::Format("%s/%s", outPath.string(), packagePath.string());
@@ -99,7 +114,7 @@ String CodeEmitter::GetFilePath(const String& outDir)
     }
 }
 
-String CodeEmitter::PackageToFilePath(const String& packageName)
+String CodeEmitter::PackageToFilePath(const String &packageName)
 {
     std::vector<String> packageVec = Options::GetInstance().GetSubPackage(packageName).Split(".");
     StringBuilder filePath;
@@ -113,30 +128,29 @@ String CodeEmitter::PackageToFilePath(const String& packageName)
     return filePath.ToString();
 }
 
-String CodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod>& method)
+String CodeEmitter::EmitMethodCmdID(const AutoPtr<ASTMethod> &method)
 {
-    return String::Format("CMD_%s_%s", ConstantName(baseName_).string(),
-        ConstantName(method->GetName()).string());
+    return String::Format("CMD_%s_%s", ConstantName(baseName_).string(), ConstantName(method->GetName()).string());
 }
 
-void CodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix)
+void CodeEmitter::EmitInterfaceMethodCommands(StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).AppendFormat("enum {\n");
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(prefix + g_tab).Append(EmitMethodCmdID(method)).Append(",\n");
+        sb.Append(prefix + TAB).Append(EmitMethodCmdID(method)).Append(",\n");
     }
 
-    sb.Append(prefix + g_tab).Append(EmitMethodCmdID(interface_->GetVersionMethod())).Append(",\n");
+    sb.Append(prefix + TAB).Append(EmitMethodCmdID(interface_->GetVersionMethod())).Append(",\n");
     sb.Append(prefix).Append("};\n");
 }
 
-String CodeEmitter::EmitVersionHeaderName(const String& name)
+String CodeEmitter::EmitVersionHeaderName(const String &name)
 {
     return String::Format("v%u_%u/%s", ast_->GetMajorVer(), ast_->GetMinorVer(), FileName(name).string());
 }
 
-String CodeEmitter::ConstantName(const String& name)
+String CodeEmitter::ConstantName(const String &name)
 {
     if (name.IsEmpty()) {
         return name;
@@ -159,7 +173,7 @@ String CodeEmitter::ConstantName(const String& name)
     return sb.ToString();
 }
 
-String CodeEmitter::PascalName(const String& name)
+String CodeEmitter::PascalName(const String &name)
 {
     if (name.IsEmpty()) {
         return name;
@@ -188,7 +202,7 @@ String CodeEmitter::PascalName(const String& name)
     return sb.ToString();
 }
 
-String CodeEmitter::FileName(const String& name)
+String CodeEmitter::FileName(const String &name)
 {
     if (name.IsEmpty()) {
         return name;

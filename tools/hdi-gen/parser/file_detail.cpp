@@ -12,7 +12,7 @@
 
 namespace OHOS {
 namespace HDI {
-void FileDetail::SetFilePath(const String& filePath)
+void FileDetail::SetFilePath(const String &filePath)
 {
     idlFilePath_ = filePath;
 #ifdef __MINGW32__
@@ -24,7 +24,7 @@ void FileDetail::SetFilePath(const String& filePath)
     idlName_ = idlFilePath_.Substring((index == -1) ? 0 : (index + 1), end);
 }
 
-bool FileDetail::AddImport(const String& packageName)
+bool FileDetail::AddImport(const String &packageName)
 {
     if (imports_.find(packageName) != imports_.end()) {
         return false;
@@ -40,7 +40,7 @@ String FileDetail::Dump()
     sb.AppendFormat("filePath:%s\n", idlFilePath_.string());
     sb.AppendFormat("package:%s\n", packageName_.string());
     sb.AppendFormat("import number:%d\n", imports_.size());
-    for (const auto& importName : imports_) {
+    for (const auto &importName : imports_) {
         sb.AppendFormat("import %s\n", importName.string());
     }
     return sb.ToString();

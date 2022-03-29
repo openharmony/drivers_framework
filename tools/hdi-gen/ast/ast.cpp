@@ -7,7 +7,9 @@
  */
 
 #include "ast/ast.h"
+
 #include <cstdlib>
+
 #include "util/string_builder.h"
 
 namespace OHOS {
@@ -30,7 +32,7 @@ AST::AST()
     types_["FileDescriptor"] = new ASTFdType();
 }
 
-void AST::SetIdlFile(const String& idlFile)
+void AST::SetIdlFile(const String &idlFile)
 {
     idlFilePath_ = idlFile;
 #ifdef __MINGW32__
@@ -42,7 +44,7 @@ void AST::SetIdlFile(const String& idlFile)
     name_ = idlFilePath_.Substring((index == -1) ? 0 : (index + 1), end);
 }
 
-void AST::SetFullName(const String& fullName)
+void AST::SetFullName(const String &fullName)
 {
     int index = fullName.LastIndexOf('.');
     if (index != -1) {
@@ -54,7 +56,7 @@ void AST::SetFullName(const String& fullName)
     }
 }
 
-void AST::SetPackageName(const String& packageName)
+void AST::SetPackageName(const String &packageName)
 {
     packageName_ = packageName;
 }
@@ -64,7 +66,7 @@ String AST::GetPackageName()
     return packageName_;
 }
 
-AutoPtr<ASTNamespace> AST::ParseNamespace(const String& nspaceStr)
+AutoPtr<ASTNamespace> AST::ParseNamespace(const String &nspaceStr)
 {
     AutoPtr<ASTNamespace> currNspace;
     int begin = 0;
@@ -91,7 +93,7 @@ AutoPtr<ASTNamespace> AST::ParseNamespace(const String& nspaceStr)
     return currNspace;
 }
 
-void AST::AddNamespace(const AutoPtr<ASTNamespace>& nspace)
+void AST::AddNamespace(const AutoPtr<ASTNamespace> &nspace)
 {
     if (nspace == nullptr) {
         return;
@@ -99,7 +101,7 @@ void AST::AddNamespace(const AutoPtr<ASTNamespace>& nspace)
     namespaces_.push_back(nspace);
 }
 
-AutoPtr<ASTNamespace> AST::FindNamespace(const String& nspaceStr)
+AutoPtr<ASTNamespace> AST::FindNamespace(const String &nspaceStr)
 {
     for (auto nspace : namespaces_) {
         if (nspace->ToShortString().Equals(nspaceStr)) {
@@ -118,7 +120,7 @@ AutoPtr<ASTNamespace> AST::GetNamespace(size_t index)
     return namespaces_[index];
 }
 
-void AST::AddInterfaceDef(const AutoPtr<ASTInterfaceType>& interface)
+void AST::AddInterfaceDef(const AutoPtr<ASTInterfaceType> &interface)
 {
     if (interface == nullptr) {
         return;
@@ -128,7 +130,7 @@ void AST::AddInterfaceDef(const AutoPtr<ASTInterfaceType>& interface)
     AddType(interface.Get());
 }
 
-void AST::AddSequenceableDef(const AutoPtr<ASTSequenceableType>& sequenceable)
+void AST::AddSequenceableDef(const AutoPtr<ASTSequenceableType> &sequenceable)
 {
     if (sequenceable == nullptr) {
         return;
@@ -138,7 +140,7 @@ void AST::AddSequenceableDef(const AutoPtr<ASTSequenceableType>& sequenceable)
     AddType(sequenceable.Get());
 }
 
-void AST::AddType(const AutoPtr<ASTType>& type)
+void AST::AddType(const AutoPtr<ASTType> &type)
 {
     if (type == nullptr) {
         return;
@@ -147,7 +149,7 @@ void AST::AddType(const AutoPtr<ASTType>& type)
     types_[type->ToString()] = type;
 }
 
-AutoPtr<ASTType> AST::FindType(const String& typeName)
+AutoPtr<ASTType> AST::FindType(const String &typeName)
 {
     if (typeName.IsEmpty()) {
         return nullptr;
@@ -159,7 +161,7 @@ AutoPtr<ASTType> AST::FindType(const String& typeName)
     }
 
     AutoPtr<ASTType> type = nullptr;
-    for (const auto& importPair : imports_) {
+    for (const auto &importPair : imports_) {
         type = importPair.second->FindType(typeName);
         if (type != nullptr) {
             break;
@@ -168,7 +170,7 @@ AutoPtr<ASTType> AST::FindType(const String& typeName)
     return type;
 }
 
-void AST::AddTypeDefinition(const AutoPtr<ASTType>& type)
+void AST::AddTypeDefinition(const AutoPtr<ASTType> &type)
 {
     if (type == nullptr) {
         return;
@@ -186,7 +188,7 @@ AutoPtr<ASTType> AST::GetTypeDefintion(size_t index)
     return typeDefinitions_[index];
 }
 
-String AST::Dump(const String& prefix)
+String AST::Dump(const String &prefix)
 {
     StringBuilder sb;
 
@@ -201,7 +203,7 @@ String AST::Dump(const String& prefix)
     sb.Append('\n');
 
     if (imports_.size() > 0) {
-        for (const auto& import : imports_) {
+        for (const auto &import : imports_) {
             sb.AppendFormat("import %s;\n", import.first.string());
         }
         sb.Append("\n");
@@ -222,7 +224,7 @@ String AST::Dump(const String& prefix)
     return sb.ToString();
 }
 
-bool AST::AddImport(const AutoPtr<AST>& importAst)
+bool AST::AddImport(const AutoPtr<AST> &importAst)
 {
     if (imports_.find(importAst->GetFullName()) != imports_.end()) {
         return false;
@@ -233,7 +235,7 @@ bool AST::AddImport(const AutoPtr<AST>& importAst)
     return true;
 }
 
-void AST::SetVersion(size_t& majorVer, size_t& minorVer)
+void AST::SetVersion(size_t &majorVer, size_t &minorVer)
 {
     majorVersion_ = majorVer;
     minorVersion_ = minorVer;

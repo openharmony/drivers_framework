@@ -9,18 +9,17 @@
 #ifndef OHOS_HDI_ASTENUMTYPE_H
 #define OHOS_HDI_ASTENUMTYPE_H
 
-#include <vector>
 #include "ast/ast_type.h"
 #include "util/autoptr.h"
 #include "util/string.h"
+
+#include <vector>
 
 namespace OHOS {
 namespace HDI {
 class ASTEnumValue : public LightRefCountBase {
 public:
-    explicit ASTEnumValue(const String& name)
-        :mName_(name), isDefault_(true), mValue_(0)
-    {}
+    explicit ASTEnumValue(const String &name) : mName_(name), isDefault_(true), mValue_(0) {}
 
     inline virtual ~ASTEnumValue() {}
 
@@ -29,7 +28,7 @@ public:
         return mName_;
     }
 
-    inline void SetType(const AutoPtr<ASTType>& type)
+    inline void SetType(const AutoPtr<ASTType> &type)
     {
         mType_ = type;
     }
@@ -64,7 +63,7 @@ private:
 
 class ASTEnumType : public ASTType {
 public:
-    inline void SetName(const String& name)
+    inline void SetName(const String &name)
     {
         name_ = name;
     }
@@ -104,14 +103,14 @@ public:
         return isDisplayBase_;
     }
 
-    void SetBaseType(const AutoPtr<ASTType>& baseType);
+    void SetBaseType(const AutoPtr<ASTType> &baseType);
 
     inline AutoPtr<ASTType> GetBaseType()
     {
         return baseType_;
     }
 
-    void AddMember(const AutoPtr<ASTEnumValue>& member);
+    void AddMember(const AutoPtr<ASTEnumValue> &member);
 
     inline size_t GetMemberNumber()
     {
@@ -130,7 +129,7 @@ public:
 
     String ToString() override;
 
-    String Dump(const String& prefix) override;
+    String Dump(const String &prefix) override;
 
     TypeKind GetTypeKind() override;
 
@@ -146,31 +145,32 @@ public:
 
     String EmitJavaTypeDecl() const;
 
-    void EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+    void EmitCWriteVar(const String &parcelName, const String &name, const String &ecName, const String &gotoLabel,
+        StringBuilder &sb, const String &prefix) const override;
 
-    void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+    void EmitCProxyReadVar(const String &parcelName, const String &name, bool isInnerType, const String &ecName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+    void EmitCStubReadVar(const String &parcelName, const String &name, const String &ecName, const String &gotoLabel,
+        StringBuilder &sb, const String &prefix) const override;
 
-    void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool initVariable, unsigned int innerLevel = 0) const override;
+    void EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool initVariable, unsigned int innerLevel = 0) const override;
 
-    void EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const override;
+    void EmitCMarshalling(const String &name, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb, const String& prefix,
-        std::vector<String>& freeObjStatements) const override;
+    void EmitCUnMarshalling(const String &name, const String &gotoLabel, StringBuilder &sb, const String &prefix,
+        std::vector<String> &freeObjStatements) const override;
 
-    void EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppMarshalling(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool emitType, unsigned int innerLevel = 0) const override;
+    void EmitCppUnMarshalling(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool emitType, unsigned int innerLevel = 0) const override;
+
 private:
     bool isFull_ = false;
     bool isLite_ = false;

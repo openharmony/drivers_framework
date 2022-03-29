@@ -18,38 +18,39 @@ public:
     CppServiceImplCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppServiceImplCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitImplHeaderFile();
 
-    void EmitServiceImplInclusions(StringBuilder& sb);
+    void EmitServiceImplInclusions(StringBuilder &sb);
 
-    void EmitServiceImplDecl(StringBuilder& sb);
+    void EmitServiceImplDecl(StringBuilder &sb);
 
-    void EmitServiceImplBody(StringBuilder& sb, const String& prefix);
+    void EmitServiceImplBody(StringBuilder &sb, const String &prefix);
 
-    void EmitServiceImplDestruction(StringBuilder& sb, const String& prefix);
+    void EmitServiceImplDestruction(StringBuilder &sb, const String &prefix);
 
-    void EmitServiceImplMethodDecls(StringBuilder& sb, const String& prefix);
+    void EmitServiceImplMethodDecls(StringBuilder &sb, const String &prefix);
 
-    void EmitServiceImplMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitServiceImplMethodDecl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
     void EmitImplSourceFile();
 
-    void EmitImplSourceInclusions(StringBuilder& sb);
+    void EmitImplSourceInclusions(StringBuilder &sb);
 
-    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix);
+    void EmitServiceImplMethodImpls(StringBuilder &sb, const String &prefix);
 
-    void EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitServiceImplMethodImpl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitExternalGetMethodImpl(StringBuilder& sb);
+    void EmitExternalGetMethodImpl(StringBuilder &sb);
 
-    void EmitExternalReleaseMethodImpl(StringBuilder& sb);
+    void EmitExternalReleaseMethodImpl(StringBuilder &sb);
 };
 } // namespace HDI
 } // namespace OHOS
