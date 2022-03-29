@@ -72,7 +72,6 @@ bool MacroGen::Output()
 
 bool MacroGen::Initialize()
 {
-    auto opt = Option::Instance();
     std::string outFileName = Option::Instance().GetOutputName();
     if (outFileName.empty()) {
         outFileName = Option::Instance().GetSourceNameBase();
@@ -174,9 +173,8 @@ bool MacroGen::GenNodeForeach(int32_t depth, const std::shared_ptr<AstObject> &n
         std::list<std::string>::iterator iter;
 
         ofs_ << "#define " << GenFullName(depth, node, "_").append("_foreach_child(func)") << " \\\n";
-        for (iter = subList.begin(); iter != subList.end(); iter++) {
-            index--;
-            if (index) {
+        for (iter = subList.begin(); iter != subList.end(); ++iter) {
+            if (--index) {
                 ofs_ << TAB << "func(" << *iter << "); \\\n";
             } else {
                 ofs_ << TAB << "func(" << *iter << ");\n";
@@ -186,9 +184,8 @@ bool MacroGen::GenNodeForeach(int32_t depth, const std::shared_ptr<AstObject> &n
 
         index = count;
         ofs_ << "#define " << GenFullName(depth, node, "_").append("_foreach_child_vargs(func, ...)") << " \\\n";
-        for (iter = subList.begin(); iter != subList.end(); iter++) {
-            index--;
-            if (index) {
+        for (iter = subList.begin(); iter != subList.end(); ++iter) {
+            if (--index) {
                 ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__); \\\n";
             } else {
                 ofs_ << TAB << "func(" << *iter << ", __VA_ARGS__);\n";

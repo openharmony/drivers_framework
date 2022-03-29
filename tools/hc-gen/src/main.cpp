@@ -8,6 +8,7 @@
 
 #include "bytecode_gen.h"
 #include "decompile.h"
+#include "startup_cfg_gen.h"
 #include "macro_gen.h"
 #include "option.h"
 #include "parser.h"
@@ -56,6 +57,12 @@ int main(int argc, char *argv[])
     }
     if (option.ShouldGenMacroConfig()) {
         if (!MacroGen(parser.GetAst()).Output()) {
+            return EFAIL;
+        }
+    }
+
+    if (option.ShouldGenStartConfig()) {
+        if (!StartupCfgGen(parser.GetAst()).Output()) {
             return EFAIL;
         }
     }

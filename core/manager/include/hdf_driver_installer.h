@@ -14,7 +14,7 @@
 
 struct IDriverInstaller {
     struct HdfObject object;
-    int (*StartDeviceHost)(uint32_t, const char *);
+    int (*StartDeviceHost)(uint32_t, const char *, bool);
     int (*StopDeviceHost)(uint32_t, const char *);
 };
 
