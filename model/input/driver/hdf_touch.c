@@ -147,7 +147,7 @@ static int32_t HandlePowerEvent(ChipDevice *chipDev, uint32_t *timing, uint32_t 
 
 static int32_t InputPinMuxCfg(uint32_t regAddr, int32_t regSize, uint32_t regValue)
 {
-#if defined(CONFIG_ARCH_SPRD) || defined(CONFIG_ARCH_ROCKCHIP)
+#if defined(CONFIG_ARCH_SPRD) || defined(CONFIG_ARCH_ROCKCHIP) || defined(LOSCFG_PLATFORM_STM32MP157)
     return HDF_SUCCESS;
 #endif
     uint8_t *base = NULL;
@@ -383,8 +383,8 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
     CHECK_RETURN_VALUE(ret);
     HDF_LOGI("%s: chipDetect succ, ret = %d ", __func__, ret);
 
-#if defined(CONFIG_ARCH_SPRD) || defined(CONFIG_ARCH_ROCKCHIP)
-    HDF_LOGI("%s: DAYU do not update firmware", __func__);
+#if defined(CONFIG_ARCH_SPRD) || defined(CONFIG_ARCH_ROCKCHIP) || defined(LOSCFG_PLATFORM_STM32MP157)
+    HDF_LOGI("%s: do not update firmware", __func__);
 #else
     ret = chipDev->ops->UpdateFirmware(chipDev);
     CHECK_RETURN_VALUE(ret);
