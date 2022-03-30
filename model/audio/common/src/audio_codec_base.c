@@ -11,7 +11,7 @@
 #include "audio_parse.h"
 #include "audio_sapm.h"
 
-#define HDF_LOG_TAG audio_codec_base
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 static char *g_audioSapmCompNameList[AUDIO_SAPM_COMP_NAME_LIST_MAX] = {
     "ADCL", "ADCR", "DACL", "DACR", "LPGA", "RPGA", "SPKL", "SPKR", "MIC"
