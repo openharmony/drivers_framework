@@ -274,7 +274,7 @@ static int32_t DispatchLight(struct HdfDeviceIoClient *client,
         return HDF_ERR_INVALID_PARAM;
     }
 
-    if (lightId < LIGHT_ID_NONE || lightId >= LIGHT_ID_BUTT) {
+    if (lightId >= LIGHT_ID_BUTT) {
         HDF_LOGE("%s: light id invalid para", __func__);
         (void)OsalMutexUnlock(&drvData->mutex);
         return HDF_FAILURE;
