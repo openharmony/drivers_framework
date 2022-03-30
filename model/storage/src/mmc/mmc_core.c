@@ -197,6 +197,7 @@ static int32_t MmcMsgHandleDefault(struct PlatformQueue *queue, struct PlatformM
 static int32_t MmcCntlrInit(struct MmcCntlr *cntlr)
 {
     int32_t ret;
+    const char *threadName = NULL;
 
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
@@ -218,7 +219,14 @@ static int32_t MmcCntlrInit(struct MmcCntlr *cntlr)
         return ret;
     }
 
-    cntlr->msgQueue = PlatformQueueCreate(MmcMsgHandleDefault, NULL, cntlr);
+    if (cntlr->devType == MMC_DEV_SDIO) {
+        threadName = "SdioWorkerThread";
+    } else if (cntlr->devType == MMC_DEV_SD) {
+        threadName = "SdWorkerThread";
+    } else if (cntlr->devType == MMC_DEV_EMMC) {
+        threadName = "EmmcWorkerThread";
+    }
+    cntlr->msgQueue = PlatformQueueCreate(MmcMsgHandleDefault, threadName, cntlr);
     if (cntlr->msgQueue == NULL) {
         HDF_LOGE("MmcCntlrInit: failed to create msg queue!");
         return HDF_PLT_ERR_OS_API;
