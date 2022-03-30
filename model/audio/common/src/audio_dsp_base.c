@@ -24,7 +24,7 @@ int32_t DspGetServiceName(const struct HdfDeviceObject *device, const char **drv
 
     node = device->property;
     if (node == NULL) {
-        AUDIO_DRIVER_LOG_ERR("deivce property is NULL.");
+        AUDIO_DRIVER_LOG_ERR("device property is NULL.");
         return HDF_FAILURE;
     }
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
