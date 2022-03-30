@@ -20,7 +20,9 @@ public:
 
     virtual String ToString();
 
-    virtual String Dump(const String& prefix);
+    virtual String Dump(const String &prefix);
+protected:
+    static constexpr char* TAB = "    ";
 };
 } // namespace HDI
 } // namespace OHOS

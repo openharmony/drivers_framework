@@ -15,12 +15,11 @@ namespace OHOS {
 namespace HDI {
 class Logger {
 public:
+    static void D(const char *tag, const char *format, ...);
 
-    static void D(const char* tag, const char* format, ...);
+    static void E(const char *tag, const char *format, ...);
 
-    static void E(const char* tag, const char* format, ...);
-
-    static void V(const char* tag, const char* format, ...);
+    static void V(const char *tag, const char *format, ...);
 
     inline static void SetLevel(int level)
     {
@@ -37,9 +36,9 @@ private:
 
     ~Logger();
 
-    static void Log(const char* tag, const char* format, va_list args);
+    static void Log(const char *tag, const char *format, va_list args);
 
-    static void Err(const char* tag, const char* format, va_list args);
+    static void Err(const char *tag, const char *format, va_list args);
 
     static int level_;
 };

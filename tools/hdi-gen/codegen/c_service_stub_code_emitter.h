@@ -18,51 +18,57 @@ public:
     CServiceStubCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CServiceStubCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitServiceStubHeaderFile();
 
-    void EmitStubHeaderInclusions(StringBuilder& sb);
+    void EmitStubHeaderInclusions(StringBuilder &sb);
 
-    void EmitCbServiceStubDef(StringBuilder& sb);
+    void EmitCbServiceStubDef(StringBuilder &sb);
 
-    void EmitCbServiceStubMethodsDcl(StringBuilder& sb);
+    void EmitCbServiceStubMethodsDcl(StringBuilder &sb);
 
     void EmitServiceStubSourceFile();
 
-    void EmitStubSourceInclusions(StringBuilder& sb);
+    void EmitStubSourceInclusions(StringBuilder &sb);
 
-    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitServiceStubMethodImpls(StringBuilder& sb, const String& prefix);
+    void EmitServiceStubMethodImpls(StringBuilder &sb, const String &prefix);
 
-    void EmitServiceStubMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitServiceStubMethodImpl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitStubLocalVariable(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
+    void EmitReadFlagVariable(bool readFlag, StringBuilder &sb, const String &prefix);
 
-    void EmitReadStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix);
+    void EmitStubLocalVariable(const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix);
 
-    void EmitReadCStringStubMethodParameter(const AutoPtr<ASTParameter>& param, const String& parcelName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix, AutoPtr<ASTType>& type);
+    void EmitReadStubMethodParameter(const AutoPtr<ASTParameter> &param, const String &parcelName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix);
 
-    void EmitStubCallMethod(const AutoPtr<ASTMethod>& method, const String& gotoLabel, StringBuilder& sb,
-        const String& prefix);
+    void EmitReadCStringStubMethodParameter(const AutoPtr<ASTParameter> &param, const String &parcelName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix, AutoPtr<ASTType> &type);
 
-    void EmitCallParameter(StringBuilder& sb, const AutoPtr<ASTType>& type, ParamAttr attribute, const String& name);
+    void EmitOutVarMemInitialize(const AutoPtr<ASTParameter> &param, const String &parcelName, const String &gotoLabel,
+        StringBuilder &sb, const String &prefix);
 
-    void EmitStubGetVerMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitStubCallMethod(
+        const AutoPtr<ASTMethod> &method, const String &gotoLabel, StringBuilder &sb, const String &prefix);
 
-    void EmitStubAsObjectMethodImpl(StringBuilder& sb, const String& prefix);
+    void EmitCallParameter(StringBuilder &sb, const AutoPtr<ASTType> &type, ParamAttr attribute, const String &name);
 
-    void EmitStubOnRequestMethodImpl(StringBuilder& sb, const String& prefix);
+    void EmitStubGetVerMethodImpl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitStubGetMethodImpl(StringBuilder& sb);
+    void EmitStubAsObjectMethodImpl(StringBuilder &sb, const String &prefix);
 
-    void EmitStubReleaseImpl(StringBuilder& sb);
+    void EmitStubOnRequestMethodImpl(StringBuilder &sb, const String &prefix);
+
+    void EmitStubGetMethodImpl(StringBuilder &sb);
+
+    void EmitStubReleaseImpl(StringBuilder &sb);
 };
 } // namespace HDI
 } // namespace OHOS

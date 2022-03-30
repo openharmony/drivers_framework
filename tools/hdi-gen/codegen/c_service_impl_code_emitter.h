@@ -18,36 +18,37 @@ public:
     CServiceImplCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CServiceImplCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitServiceImplHeaderFile();
 
-    void EmitServiceImplHeaderInclusions(StringBuilder& sb);
+    void EmitServiceImplHeaderInclusions(StringBuilder &sb);
 
-    void EmitServiceImplConstructDecl(StringBuilder& sb);
+    void EmitServiceImplConstructDecl(StringBuilder &sb);
 
     void EmitServiceImplSourceFile();
 
-    void EmitServiceImplSourceInclusions(StringBuilder& sb);
+    void EmitServiceImplSourceInclusions(StringBuilder &sb);
 
-    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitServiceImplDef(StringBuilder& sb);
+    void EmitServiceImplDef(StringBuilder &sb);
 
-    void EmitServiceImplMethodImpls(StringBuilder& sb, const String& prefix);
+    void EmitServiceImplMethodImpls(StringBuilder &sb, const String &prefix);
 
-    void EmitServiceImplMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitServiceImplMethodImpl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitServiceImplGetMethod(StringBuilder& sb);
+    void EmitServiceImplGetMethod(StringBuilder &sb);
 
-    void EmitServiceImplReleaseMethod(StringBuilder& sb);
+    void EmitServiceImplReleaseMethod(StringBuilder &sb);
 
-    void EmitServiceImplInstance(StringBuilder& sb);
+    void EmitServiceImplInstance(StringBuilder &sb);
 
-    void EmitServiceImplRelease(StringBuilder& sb);
+    void EmitServiceImplRelease(StringBuilder &sb);
 };
 } // namespace HDI
 } // namespace OHOS

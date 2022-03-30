@@ -7,13 +7,15 @@
  */
 
 #include "parser/module_parser.h"
+
 #include <queue>
+
 #include "parser/parser.h"
 #include "util/logger.h"
 
 namespace OHOS {
 namespace HDI {
-const char* ModuleParser::TAG = "ModuleParser";
+const char *ModuleParser::TAG = "ModuleParser";
 
 AutoPtr<ASTModule> ModuleParser::Parse()
 {
@@ -54,7 +56,7 @@ bool ModuleParser::CompileFiles()
 {
     std::unique_ptr<Parser> parserPtr = std::make_unique<Parser>(option_, module_);
 
-    for (const auto& filePath : compileFiles_) {
+    for (const auto &filePath : compileFiles_) {
         if (!parserPtr->Parse(filePath)) {
             Logger::E(TAG, "parse %s failed", filePath.string());
             return false;
@@ -64,7 +66,7 @@ bool ModuleParser::CompileFiles()
     return true;
 }
 
-bool ModuleParser::ParserAllImports(const String& rootFilePath)
+bool ModuleParser::ParserAllImports(const String &rootFilePath)
 {
     std::unique_ptr<Parser> parserPtr = std::make_unique<Parser>(option_);
     std::shared_ptr<FileDetail> fileInfo = nullptr;
@@ -81,9 +83,9 @@ bool ModuleParser::ParserAllImports(const String& rootFilePath)
     return ParserAllImportsRecursion(fileInfo);
 }
 
-bool ModuleParser::ParserAllImportsRecursion(const std::shared_ptr<FileDetail>& fileInfo)
+bool ModuleParser::ParserAllImportsRecursion(const std::shared_ptr<FileDetail> &fileInfo)
 {
-    for (const auto& importName : fileInfo->GetImports()) {
+    for (const auto &importName : fileInfo->GetImports()) {
         if (sourceFiles_.find(importName) != sourceFiles_.end()) {
             continue;
         }
@@ -113,11 +115,11 @@ bool ModuleParser::ParserAllImportsRecursion(const std::shared_ptr<FileDetail>& 
     return true;
 }
 
-bool ModuleParser::ParserAllidlFile(const std::vector<String>& idlSourceFile)
+bool ModuleParser::ParserAllidlFile(const std::vector<String> &idlSourceFile)
 {
     std::unique_ptr<Parser> parserPtr = std::make_unique<Parser>(option_);
 
-    for (const auto& idlSourceFile : idlSourceFile) {
+    for (const auto &idlSourceFile : idlSourceFile) {
         std::shared_ptr<FileDetail> fileInfo = nullptr;
         if (!parserPtr->Parse(idlSourceFile, fileInfo)) {
             return false;
@@ -136,7 +138,7 @@ bool ModuleParser::ParserAllidlFile(const std::vector<String>& idlSourceFile)
 bool ModuleParser::CheckCircularReference()
 {
     std::queue<std::shared_ptr<FileDetail>> fileQueue;
-    for (const auto& filePair : sourceFiles_) {
+    for (const auto &filePair : sourceFiles_) {
         std::shared_ptr<FileDetail> fileNode = filePair.second;
         if (fileNode->GetImportSize() == 0) {
             fileQueue.push(fileNode);
@@ -149,7 +151,7 @@ bool ModuleParser::CheckCircularReference()
         fileQueue.pop();
         compileFiles_.push_back(importFile->GetFilePath());
 
-        for (const auto& filePair : sourceFiles_) {
+        for (const auto &filePair : sourceFiles_) {
             std::shared_ptr<FileDetail> fileNode = filePair.second;
             if (fileNode->GetImportSize() > 0) {
                 fileNode->DelImport(importFile->GetFullName());

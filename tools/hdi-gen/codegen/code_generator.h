@@ -18,15 +18,17 @@ using CodeEmitMap = std::unordered_map<String, AutoPtr<CodeEmitter>, StringHashF
 
 class CodeGenerator : public LightRefCountBase {
 public:
-    explicit CodeGenerator(const AutoPtr<ASTModule>& astModule)
-        : LightRefCountBase(), astModule_(astModule), targetDirectory_() {}
+    explicit CodeGenerator(const AutoPtr<ASTModule> &astModule)
+        : LightRefCountBase(), astModule_(astModule), targetDirectory_()
+    {
+    }
 
     bool Generate();
+
 private:
-    void GenerateCCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart,
-        bool isKernel);
-    void GenerateCppCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart);
-    void GenerateJavaCode(const AutoPtr<AST>& ast, const String& outDir, const String& codePart);
+    void GenerateCCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart, bool isKernel);
+    void GenerateCppCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart);
+    void GenerateJavaCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart);
 
     AutoPtr<ASTModule> astModule_;
     String targetDirectory_;

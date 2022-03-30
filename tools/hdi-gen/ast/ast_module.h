@@ -10,6 +10,7 @@
 #define OHOS_HDI_AST_MODULE_H
 
 #include <map>
+
 #include "ast/ast.h"
 
 namespace OHOS {
@@ -18,14 +19,15 @@ class ASTModule : public LightRefCountBase {
 public:
     using ASTMap = std::unordered_map<String, AutoPtr<AST>, StringHashFunc, StringEqualFunc>;
 
-    void AddAST(const String& astName, const AutoPtr<AST> ast);
+    void AddAST(const String &astName, const AutoPtr<AST> ast);
 
-    AutoPtr<AST> GetAst(const String& astName);
+    AutoPtr<AST> GetAst(const String &astName);
 
-    inline const ASTMap& GetAllAsts() const
+    inline const ASTMap &GetAllAsts() const
     {
         return asts_;
     }
+
 private:
     // all ast data
     ASTMap asts_;

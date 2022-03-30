@@ -7,12 +7,14 @@
  */
 
 #include "util/file.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include "securec.h"
 #include "util/string_builder.h"
 
@@ -24,8 +26,7 @@ constexpr unsigned int File::WRITE;
 constexpr unsigned int File::APPEND;
 #endif
 
-File::File(const String& path, unsigned int mode)
-    : mode_(mode)
+File::File(const String &path, unsigned int mode) : mode_(mode)
 {
     if (path.IsEmpty()) {
         return;
@@ -44,7 +45,7 @@ File::File(const String& path, unsigned int mode)
 
     if (fd_ != nullptr) {
 #ifndef __MINGW32__
-        char* absolutePath = realpath(path.string(), nullptr);
+        char *absolutePath = realpath(path.string(), nullptr);
         if (absolutePath != nullptr) {
             path_ = absolutePath;
             free(absolutePath);
@@ -115,7 +116,7 @@ int File::Read()
     return (count != 0) ? count : -1;
 }
 
-bool File::ReadData(void* data, size_t size) const
+bool File::ReadData(void *data, size_t size) const
 {
     if (data == nullptr || size == 0) {
         return true;
@@ -129,7 +130,7 @@ bool File::ReadData(void* data, size_t size) const
     return count == 1;
 }
 
-bool File::WriteData(const void* data, size_t size) const
+bool File::WriteData(const void *data, size_t size) const
 {
     if (data == nullptr || size == 0) {
         return true;
@@ -176,7 +177,7 @@ void File::Close()
     }
 }
 
-bool File::CreateParentDir(const String& path)
+bool File::CreateParentDir(const String &path)
 {
     if (!access(path.string(), F_OK | R_OK | W_OK)) {
         return true;
@@ -213,7 +214,7 @@ bool File::CreateParentDir(const String& path)
     return true;
 }
 
-String File::AdapterPath(const String& path)
+String File::AdapterPath(const String &path)
 {
 #ifndef __MINGW32__
     return path;
@@ -232,7 +233,7 @@ size_t File::GetHashKey()
     return std::hash<std::string>()(fileStr.ToString().string());
 }
 
-bool File::CheckValid(const String& path)
+bool File::CheckValid(const String &path)
 {
     if (access(path.string(), F_OK | R_OK | W_OK)) {
         return false;

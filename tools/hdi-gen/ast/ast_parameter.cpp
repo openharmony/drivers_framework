@@ -13,7 +13,7 @@
 
 namespace OHOS {
 namespace HDI {
-String ASTParameter::Dump(const String& prefix)
+String ASTParameter::Dump(const String &prefix)
 {
     StringBuilder sb;
 
@@ -74,8 +74,8 @@ String ASTParameter::EmitCParameter()
             } else {
                 paramStr.AppendFormat("%s %s", type_->EmitCType(TypeMode::PARAM_OUT).string(), name_.string());
             }
-            paramStr.AppendFormat(", uint32_t%s %sLen", (attribute_ == ParamAttr::PARAM_IN) ? "" : "*",
-                name_.string());
+            paramStr.AppendFormat(
+                ", uint32_t%s %sLen", (attribute_ == ParamAttr::PARAM_IN) ? "" : "*", name_.string());
             return paramStr.ToString();
         }
         default:
@@ -204,8 +204,8 @@ String ASTParameter::EmitJavaLocalVar()
     return "";
 }
 
-void ASTParameter::EmitCWriteVar(const String& parcelName, const String& ecName, const String& gotoLabel,
-    StringBuilder& sb, const String& prefix) const
+void ASTParameter::EmitCWriteVar(const String &parcelName, const String &ecName, const String &gotoLabel,
+    StringBuilder &sb, const String &prefix) const
 {
     if (type_ == nullptr) {
         return;
@@ -214,8 +214,8 @@ void ASTParameter::EmitCWriteVar(const String& parcelName, const String& ecName,
     type_->EmitCWriteVar(parcelName, name_, ecName, gotoLabel, sb, prefix);
 }
 
-bool ASTParameter::EmitCProxyWriteOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
-    StringBuilder& sb, const String& prefix) const
+bool ASTParameter::EmitCProxyWriteOutVar(const String &parcelName, const String &ecName, const String &gotoLabel,
+    StringBuilder &sb, const String &prefix) const
 {
     if (type_ == nullptr) {
         return false;
@@ -229,38 +229,34 @@ bool ASTParameter::EmitCProxyWriteOutVar(const String& parcelName, const String&
     return false;
 }
 
-bool ASTParameter::EmitCStubReadOutVar(const String& parcelName, const String& ecName, const String& gotoLabel,
-    StringBuilder& sb, const String& prefix) const
+void ASTParameter::EmitCStubReadOutVar(const String &buffSizeName, const String &memFlagName, const String &parcelName,
+    const String &ecName, const String &gotoLabel, StringBuilder &sb, const String &prefix) const
 {
     if (type_ == nullptr) {
-        return false;
+        return;
     }
 
-    if (type_->IsStringType() || type_->IsArrayType() || type_->IsListType()
-        || type_->IsStructType() || type_->IsUnionType()) {
-        type_->EmitCStubReadOutVar(parcelName, name_, ecName, gotoLabel, sb, prefix);
-        return true;
+    if (type_->IsStringType() || type_->IsArrayType() || type_->IsListType()) {
+        type_->EmitCStubReadOutVar(buffSizeName, memFlagName, parcelName, name_, ecName, gotoLabel, sb, prefix);
     }
-
-    return false;
 }
 
-void ASTParameter::EmitJavaWriteVar(const String& parcelName, StringBuilder& sb, const String& prefix) const
+void ASTParameter::EmitJavaWriteVar(const String &parcelName, StringBuilder &sb, const String &prefix) const
 {
     if (attribute_ == ParamAttr::PARAM_IN) {
         type_->EmitJavaWriteVar(parcelName, name_, sb, prefix);
     } else {
         if (type_->GetTypeKind() == TypeKind::TYPE_ARRAY) {
             sb.Append(prefix).AppendFormat("if (%s == null) {\n", name_.string());
-            sb.Append(prefix + g_tab).AppendFormat("%s.writeInt(-1);\n", parcelName.string());
+            sb.Append(prefix + TAB).AppendFormat("%s.writeInt(-1);\n", parcelName.string());
             sb.Append(prefix).Append("} else {\n");
-            sb.Append(prefix + g_tab).AppendFormat("%s.writeInt(%s.length);\n", parcelName.string(), name_.string());
+            sb.Append(prefix + TAB).AppendFormat("%s.writeInt(%s.length);\n", parcelName.string(), name_.string());
             sb.Append(prefix).Append("}\n");
         }
     }
 }
 
-void ASTParameter::EmitJavaReadVar(const String& parcelName, StringBuilder& sb, const String& prefix) const
+void ASTParameter::EmitJavaReadVar(const String &parcelName, StringBuilder &sb, const String &prefix) const
 {
     if (attribute_ == ParamAttr::PARAM_OUT) {
         type_->EmitJavaReadVar(parcelName, name_, sb, prefix);

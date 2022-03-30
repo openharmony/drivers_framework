@@ -11,30 +11,31 @@
 
 #include <unordered_map>
 #include <vector>
+
+#include "ast/ast_array_type.h"
 #include "ast/ast_boolean_type.h"
 #include "ast/ast_byte_type.h"
 #include "ast/ast_double_type.h"
+#include "ast/ast_enum_type.h"
 #include "ast/ast_fd_type.h"
 #include "ast/ast_float_type.h"
 #include "ast/ast_integer_type.h"
 #include "ast/ast_interface_type.h"
+#include "ast/ast_list_type.h"
 #include "ast/ast_long_type.h"
+#include "ast/ast_map_type.h"
 #include "ast/ast_namespace.h"
 #include "ast/ast_node.h"
 #include "ast/ast_sequenceable_type.h"
 #include "ast/ast_short_type.h"
 #include "ast/ast_string_type.h"
+#include "ast/ast_struct_type.h"
 #include "ast/ast_uchar_type.h"
-#include "ast/ast_ushort_type.h"
 #include "ast/ast_uint_type.h"
 #include "ast/ast_ulong_type.h"
-#include "ast/ast_void_type.h"
-#include "ast/ast_enum_type.h"
-#include "ast/ast_struct_type.h"
 #include "ast/ast_union_type.h"
-#include "ast/ast_array_type.h"
-#include "ast/ast_list_type.h"
-#include "ast/ast_map_type.h"
+#include "ast/ast_ushort_type.h"
+#include "ast/ast_void_type.h"
 #include "util/autoptr.h"
 
 namespace OHOS {
@@ -64,21 +65,21 @@ public:
         return astFileType_;
     }
 
-    void SetIdlFile(const String& idlFile);
+    void SetIdlFile(const String &idlFile);
 
     inline String GetName()
     {
         return name_;
     }
 
-    void SetFullName(const String& fullName);
+    void SetFullName(const String &fullName);
 
     inline String GetFullName()
     {
         return packageName_ + "." + name_;
     }
 
-    inline void SetLicense(const String& license)
+    inline void SetLicense(const String &license)
     {
         license_ = license;
     }
@@ -88,15 +89,15 @@ public:
         return license_;
     }
 
-    void SetPackageName(const String& packageName);
+    void SetPackageName(const String &packageName);
 
     String GetPackageName();
 
-    AutoPtr<ASTNamespace> ParseNamespace(const String& nspaceStr);
+    AutoPtr<ASTNamespace> ParseNamespace(const String &nspaceStr);
 
-    void AddNamespace(const AutoPtr<ASTNamespace>& nspace);
+    void AddNamespace(const AutoPtr<ASTNamespace> &nspace);
 
-    AutoPtr<ASTNamespace> FindNamespace(const String& nspaceStr);
+    AutoPtr<ASTNamespace> FindNamespace(const String &nspaceStr);
 
     AutoPtr<ASTNamespace> GetNamespace(size_t index);
 
@@ -105,27 +106,27 @@ public:
         return namespaces_.size();
     }
 
-    void AddInterfaceDef(const AutoPtr<ASTInterfaceType>& interface);
+    void AddInterfaceDef(const AutoPtr<ASTInterfaceType> &interface);
 
     inline AutoPtr<ASTInterfaceType> GetInterfaceDef()
     {
         return interfaceDef_;
     }
 
-    void AddSequenceableDef(const AutoPtr<ASTSequenceableType>& sequenceable);
+    void AddSequenceableDef(const AutoPtr<ASTSequenceableType> &sequenceable);
 
     inline AutoPtr<ASTSequenceableType> GetSequenceableDef()
     {
         return sequenceableDef_;
     }
 
-    void AddType(const AutoPtr<ASTType>& type);
+    void AddType(const AutoPtr<ASTType> &type);
 
-    AutoPtr<ASTType> FindType(const String& typeName);
+    AutoPtr<ASTType> FindType(const String &typeName);
 
     using TypeStringMap = std::unordered_map<String, AutoPtr<ASTType>, StringHashFunc, StringEqualFunc>;
 
-    inline const TypeStringMap& GetTypes() const
+    inline const TypeStringMap &GetTypes() const
     {
         return types_;
     }
@@ -135,7 +136,7 @@ public:
         return types_.size();
     }
 
-    void AddTypeDefinition(const AutoPtr<ASTType>& type);
+    void AddTypeDefinition(const AutoPtr<ASTType> &type);
 
     inline size_t GetTypeDefinitionNumber() const
     {
@@ -144,16 +145,16 @@ public:
 
     AutoPtr<ASTType> GetTypeDefintion(size_t index);
 
-    String Dump(const String& prefix) override;
+    String Dump(const String &prefix) override;
 
-    bool AddImport(const AutoPtr<AST>& importAst);
+    bool AddImport(const AutoPtr<AST> &importAst);
 
-    inline const StrASTMap& GetImports() const
+    inline const StrASTMap &GetImports() const
     {
         return imports_;
     }
 
-    void SetVersion(size_t& majorVer, size_t& minorVer);
+    void SetVersion(size_t &majorVer, size_t &minorVer);
 
     inline size_t GetMajorVer()
     {

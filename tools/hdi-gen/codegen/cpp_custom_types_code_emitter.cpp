@@ -12,7 +12,7 @@
 
 namespace OHOS {
 namespace HDI {
-bool CppCustomTypesCodeEmitter::ResolveDirectory(const String& targetDirectory)
+bool CppCustomTypesCodeEmitter::ResolveDirectory(const String &targetDirectory)
 {
     if (ast_->GetASTFileType() != ASTFileType::AST_TYPES) {
         return false;
@@ -63,7 +63,7 @@ void CppCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
     file.Close();
 }
 
-void CppCustomTypesCodeEmitter::EmitHeaderFileInclusions(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::EmitHeaderFileInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
@@ -71,17 +71,17 @@ void CppCustomTypesCodeEmitter::EmitHeaderFileInclusions(StringBuilder& sb)
     GetImportInclusions(headerFiles);
     GetHeaderOtherLibInclusions(headerFiles);
 
-    for (const auto& file : headerFiles) {
+    for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CppCustomTypesCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+void CppCustomTypesCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_parcel"));
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeDecls(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::EmitCustomTypeDecls(StringBuilder &sb)
 {
     for (size_t i = 0; i < ast_->GetTypeDefinitionNumber(); i++) {
         AutoPtr<ASTType> type = ast_->GetTypeDefintion(i);
@@ -92,21 +92,21 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeDecls(StringBuilder& sb)
     }
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeDecl(StringBuilder& sb, const AutoPtr<ASTType>& type)
+void CppCustomTypesCodeEmitter::EmitCustomTypeDecl(StringBuilder &sb, const AutoPtr<ASTType> &type)
 {
     switch (type->GetTypeKind()) {
         case TypeKind::TYPE_ENUM: {
-            AutoPtr<ASTEnumType> enumType = dynamic_cast<ASTEnumType*>(type.Get());
+            AutoPtr<ASTEnumType> enumType = dynamic_cast<ASTEnumType *>(type.Get());
             sb.Append(enumType->EmitCppTypeDecl()).Append("\n");
             break;
         }
         case TypeKind::TYPE_STRUCT: {
-            AutoPtr<ASTStructType> structType = dynamic_cast<ASTStructType*>(type.Get());
+            AutoPtr<ASTStructType> structType = dynamic_cast<ASTStructType *>(type.Get());
             sb.Append(structType->EmitCppTypeDecl()).Append("\n");
             break;
         }
         case TypeKind::TYPE_UNION: {
-            AutoPtr<ASTUnionType> unionType = dynamic_cast<ASTUnionType*>(type.Get());
+            AutoPtr<ASTUnionType> unionType = dynamic_cast<ASTUnionType *>(type.Get());
             sb.Append(unionType->EmitCppTypeDecl()).Append("\n");
             break;
         }
@@ -115,12 +115,12 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeDecl(StringBuilder& sb, const Auto
     }
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeFuncDecl(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::EmitCustomTypeFuncDecl(StringBuilder &sb)
 {
     for (size_t i = 0; i < ast_->GetTypeDefinitionNumber(); i++) {
         AutoPtr<ASTType> type = ast_->GetTypeDefintion(i);
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-            AutoPtr<ASTStructType> structType = dynamic_cast<ASTStructType*>(type.Get());
+            AutoPtr<ASTStructType> structType = dynamic_cast<ASTStructType *>(type.Get());
             EmitCustomTypeMarshallingDecl(sb, structType);
             sb.Append("\n");
             EmitCustomTypeUnmarshallingDecl(sb, structType);
@@ -131,18 +131,18 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeFuncDecl(StringBuilder& sb)
     }
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeMarshallingDecl(StringBuilder& sb, const AutoPtr<ASTStructType>& type)
+void CppCustomTypesCodeEmitter::EmitCustomTypeMarshallingDecl(StringBuilder &sb, const AutoPtr<ASTStructType> &type)
 {
     String objName("dataBlock");
-    sb.AppendFormat("bool %sBlockMarshalling(OHOS::MessageParcel &data, const %s& %s);\n",
-        type->GetName().string(), type->EmitCppType().string(), objName.string());
+    sb.AppendFormat("bool %sBlockMarshalling(OHOS::MessageParcel &data, const %s& %s);\n", type->GetName().string(),
+        type->EmitCppType().string(), objName.string());
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingDecl(StringBuilder& sb, const AutoPtr<ASTStructType>& type)
+void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingDecl(StringBuilder &sb, const AutoPtr<ASTStructType> &type)
 {
     String objName("dataBlock");
-    sb.AppendFormat("bool %sBlockUnmarshalling(OHOS::MessageParcel &data, %s& %s);\n",
-        type->GetName().string(), type->EmitCppType().string(), objName.string());
+    sb.AppendFormat("bool %sBlockUnmarshalling(OHOS::MessageParcel &data, %s& %s);\n", type->GetName().string(),
+        type->EmitCppType().string(), objName.string());
 }
 
 void CppCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
@@ -166,23 +166,23 @@ void CppCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
     file.Close();
 }
 
-void CppCustomTypesCodeEmitter::EmitSourceFileInclusions(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::EmitSourceFileInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
     headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(baseName_)));
     GetSourceOtherLibInclusions(headerFiles);
 
-    for (const auto& file : headerFiles) {
+    for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CppCustomTypesCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+void CppCustomTypesCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
-    const AST::TypeStringMap& types = ast_->GetTypes();
-    for (const auto& pair : types) {
+    const AST::TypeStringMap &types = ast_->GetTypes();
+    for (const auto &pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT || type->GetTypeKind() == TypeKind::TYPE_UNION) {
             headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
@@ -191,12 +191,12 @@ void CppCustomTypesCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFi
     }
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeDataProcess(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::EmitCustomTypeDataProcess(StringBuilder &sb)
 {
     for (size_t i = 0; i < ast_->GetTypeDefinitionNumber(); i++) {
         AutoPtr<ASTType> type = ast_->GetTypeDefintion(i);
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-            AutoPtr<ASTStructType> structType = dynamic_cast<ASTStructType*>(type.Get());
+            AutoPtr<ASTStructType> structType = dynamic_cast<ASTStructType *>(type.Get());
             EmitCustomTypeMarshallingImpl(sb, structType);
             sb.Append("\n");
             EmitCustomTypeUnmarshallingImpl(sb, structType);
@@ -207,34 +207,34 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeDataProcess(StringBuilder& sb)
     }
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeMarshallingImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type)
+void CppCustomTypesCodeEmitter::EmitCustomTypeMarshallingImpl(StringBuilder &sb, const AutoPtr<ASTStructType> &type)
 {
     String objName("dataBlock");
 
-    sb.AppendFormat("bool %sBlockMarshalling(OHOS::MessageParcel& data, const %s& %s)\n",
-        type->EmitCppType().string(), type->EmitCppType().string(), objName.string());
+    sb.AppendFormat("bool %sBlockMarshalling(OHOS::MessageParcel& data, const %s& %s)\n", type->EmitCppType().string(),
+        type->EmitCppType().string(), objName.string());
     sb.Append("{\n");
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
         String memberName = type->GetMemberName(i);
 
         String name = String::Format("%s.%s", objName.string(), memberName.string());
-        memberType->EmitCppMarshalling("data", name, sb, g_tab);
+        memberType->EmitCppMarshalling("data", name, sb, TAB);
         if (i + 1 < type->GetMemberNumber()) {
             sb.Append("\n");
         }
     }
 
-    sb.Append(g_tab).Append("return true;\n");
+    sb.Append(TAB).Append("return true;\n");
     sb.Append("}\n");
 }
 
-void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type)
+void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder &sb, const AutoPtr<ASTStructType> &type)
 {
     String objName("dataBlock");
 
-    sb.AppendFormat("bool %sBlockUnmarshalling(OHOS::MessageParcel& data, %s& %s)\n",
-        type->GetName().string(), type->EmitCppType().string(), objName.string());
+    sb.AppendFormat("bool %sBlockUnmarshalling(OHOS::MessageParcel& data, %s& %s)\n", type->GetName().string(),
+        type->EmitCppType().string(), objName.string());
     sb.Append("{\n");
 
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
@@ -243,36 +243,39 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& s
         String name = String::Format("%s.%s", objName.string(), memberName.string());
 
         if (i > 0 &&
-            (memberType->GetTypeKind() == TypeKind::TYPE_STRUCT
-            || memberType->GetTypeKind() == TypeKind::TYPE_UNION
-            || memberType->GetTypeKind() == TypeKind::TYPE_ARRAY
-            || memberType->GetTypeKind() == TypeKind::TYPE_LIST)) {
+            (memberType->GetTypeKind() == TypeKind::TYPE_STRUCT || memberType->GetTypeKind() == TypeKind::TYPE_UNION ||
+                memberType->GetTypeKind() == TypeKind::TYPE_ARRAY ||
+                memberType->GetTypeKind() == TypeKind::TYPE_LIST)) {
             sb.Append("\n");
         }
 
         if (memberType->GetTypeKind() == TypeKind::TYPE_UNION) {
             String cpName = String::Format("%sCp", memberName.string());
-            memberType->EmitCppUnMarshalling("data", cpName, sb, g_tab, false);
-            sb.Append(g_tab).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n", name.string(),
+            memberType->EmitCppUnMarshalling("data", cpName, sb, TAB, false);
+            sb.Append(TAB).AppendFormat("(void)memcpy_s(&%s, sizeof(%s), %s, sizeof(%s));\n", name.string(),
                 memberType->EmitCppType().string(), cpName.string(), memberType->EmitCppType().string());
+        } else if (memberType->GetTypeKind() == TypeKind::TYPE_STRING) {
+            String cpName = String::Format("%sCp", memberName.string());
+            memberType->EmitCppUnMarshalling("data", cpName, sb, TAB, false);
+            sb.Append(TAB).AppendFormat("%s = %s;\n", name.string(), cpName.string());
         } else {
-            memberType->EmitCppUnMarshalling("data", name, sb, g_tab, false);
+            memberType->EmitCppUnMarshalling("data", name, sb, TAB, false);
         }
     }
 
-    sb.Append(g_tab).AppendFormat("return true;\n", objName.string());
+    sb.Append(TAB).AppendFormat("return true;\n", objName.string());
     sb.Append("}\n");
 }
 
-void CppCustomTypesCodeEmitter::EmitBeginNamespace(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::EmitBeginNamespace(StringBuilder &sb)
 {
     std::vector<String> cppNamespaceVec = EmitCppNameSpaceVec(ast_->GetPackageName());
-    for (const auto& nspace : cppNamespaceVec) {
+    for (const auto &nspace : cppNamespaceVec) {
         sb.AppendFormat("namespace %s {\n", nspace.string());
     }
 }
 
-void CppCustomTypesCodeEmitter::EmitEndNamespace(StringBuilder& sb)
+void CppCustomTypesCodeEmitter::EmitEndNamespace(StringBuilder &sb)
 {
     std::vector<String> cppNamespaceVec = EmitCppNameSpaceVec(ast_->GetPackageName());
     for (auto nspaceIter = cppNamespaceVec.rbegin(); nspaceIter != cppNamespaceVec.rend(); nspaceIter++) {

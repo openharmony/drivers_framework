@@ -9,8 +9,10 @@
 #ifndef OHOS_HDI_ASTINTERFACETYPE_H
 #define OHOS_HDI_ASTINTERFACETYPE_H
 
-#include <vector>
 #include "ast/ast_method.h"
+
+#include <vector>
+
 #include "ast/ast_type.h"
 #include "util/autoptr.h"
 
@@ -18,9 +20,9 @@ namespace OHOS {
 namespace HDI {
 class ASTInterfaceType : public ASTType {
 public:
-    void SetNamespace(const AutoPtr<ASTNamespace>& nspace) override;
+    void SetNamespace(const AutoPtr<ASTNamespace> &nspace) override;
 
-    inline void SetLicense(const String& license)
+    inline void SetLicense(const String &license)
     {
         license_ = license;
     }
@@ -81,7 +83,7 @@ public:
         return isLite_;
     }
 
-    void AddMethod(const AutoPtr<ASTMethod>& method);
+    void AddMethod(const AutoPtr<ASTMethod> &method);
 
     AutoPtr<ASTMethod> GetMethod(size_t index);
 
@@ -90,7 +92,7 @@ public:
         return methods_.size();
     }
 
-    void AddVersionMethod(const AutoPtr<ASTMethod>& method)
+    void AddVersionMethod(const AutoPtr<ASTMethod> &method)
     {
         getVerMethod_ = method;
     }
@@ -104,7 +106,7 @@ public:
 
     String ToString() override;
 
-    String Dump(const String& prefix) override;
+    String Dump(const String &prefix) override;
 
     TypeKind GetTypeKind() override;
 
@@ -116,29 +118,30 @@ public:
 
     String EmitJavaType(TypeMode mode, bool isInnerType = false) const override;
 
-    void EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+    void EmitCWriteVar(const String &parcelName, const String &name, const String &ecName, const String &gotoLabel,
+        StringBuilder &sb, const String &prefix) const override;
 
-    void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+    void EmitCProxyReadVar(const String &parcelName, const String &name, bool isInnerType, const String &ecName,
+        const String &gotoLabel, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
-        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+    void EmitCStubReadVar(const String &parcelName, const String &name, const String &ecName, const String &gotoLabel,
+        StringBuilder &sb, const String &prefix) const override;
 
-    void EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, unsigned int innerLevel = 0) const override;
+    void EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        unsigned int innerLevel = 0) const override;
 
-    void EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix, bool initVariable, unsigned int innerLevel = 0) const override;
+    void EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb, const String &prefix,
+        bool initVariable, unsigned int innerLevel = 0) const override;
 
-    void EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaWriteVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaReadVar(
+        const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const override;
 
-    void EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner, StringBuilder& sb,
-        const String& prefix) const override;
+    void EmitJavaReadInnerVar(const String &parcelName, const String &name, bool isInner, StringBuilder &sb,
+        const String &prefix) const override;
+
 private:
     String license_;
     bool isOneWay_ = false;

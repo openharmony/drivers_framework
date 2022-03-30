@@ -12,12 +12,9 @@
 
 namespace OHOS {
 namespace HDI {
-ASTNamespace::ASTNamespace(const String& nspaceStr)
-    : name_(nspaceStr),
-      outerNamespace_(nullptr)
-{}
+ASTNamespace::ASTNamespace(const String &nspaceStr) : name_(nspaceStr), outerNamespace_(nullptr) {}
 
-void ASTNamespace::AddNamespace(const AutoPtr<ASTNamespace>& innerNspace)
+void ASTNamespace::AddNamespace(const AutoPtr<ASTNamespace> &innerNspace)
 {
     if (innerNspace == nullptr) {
         return;
@@ -27,7 +24,7 @@ void ASTNamespace::AddNamespace(const AutoPtr<ASTNamespace>& innerNspace)
     innerNspace->outerNamespace_ = this;
 }
 
-AutoPtr<ASTNamespace> ASTNamespace::FindNamespace(const String& nspaceStr)
+AutoPtr<ASTNamespace> ASTNamespace::FindNamespace(const String &nspaceStr)
 {
     if (nspaceStr.IsEmpty()) {
         return nullptr;
@@ -50,7 +47,7 @@ AutoPtr<ASTNamespace> ASTNamespace::GetNamespace(size_t index)
     return innerNamespaces_[index];
 }
 
-void ASTNamespace::AddInterface(const AutoPtr<ASTInterfaceType>& interface)
+void ASTNamespace::AddInterface(const AutoPtr<ASTInterfaceType> &interface)
 {
     if (interface == nullptr) {
         return;
@@ -68,7 +65,7 @@ AutoPtr<ASTInterfaceType> ASTNamespace::GetInterface(size_t index)
     return interfaces_[index];
 }
 
-void ASTNamespace::AddSequenceable(const AutoPtr<ASTSequenceableType>& sequenceable)
+void ASTNamespace::AddSequenceable(const AutoPtr<ASTSequenceableType> &sequenceable)
 {
     if (sequenceable == nullptr) {
         return;
@@ -89,7 +86,7 @@ AutoPtr<ASTSequenceableType> ASTNamespace::GetSequenceable(size_t index)
 String ASTNamespace::ToString()
 {
     String nspaceStr;
-    ASTNamespace* nspace = this;
+    ASTNamespace *nspace = this;
     while (nspace != nullptr) {
         nspaceStr = nspace->name_ + "." + nspaceStr;
         nspace = nspace->outerNamespace_;

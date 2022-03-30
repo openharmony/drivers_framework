@@ -11,30 +11,29 @@
 
 namespace OHOS {
 namespace HDI {
-void CCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet& headerFiles)
+void CCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    for (const auto& importPair : ast_->GetImports()) {
+    for (const auto &importPair : ast_->GetImports()) {
         AutoPtr<AST> importAst = importPair.second;
         String fileName = PackageToFilePath(importAst->GetFullName());
         headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName));
     }
 }
 
-void CCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& parameter, StringBuilder& sb,
-    const String& prefix)
+void CCodeEmitter::EmitInterfaceMethodParameter(
+    const AutoPtr<ASTParameter> &parameter, StringBuilder &sb, const String &prefix)
 {
     AutoPtr<ASTType> type = parameter->GetType();
     sb.Append(prefix).Append(parameter->EmitCParameter());
 }
 
-void CCodeEmitter::EmitInitLoopVar(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix)
+void CCodeEmitter::EmitInitLoopVar(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix)
 {
     if (isKernelCode_) {
         for (size_t i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             AutoPtr<ASTType> type = param->GetType();
-            if (type->GetTypeKind() == TypeKind::TYPE_ARRAY ||
-                type->GetTypeKind() == TypeKind::TYPE_LIST) {
+            if (type->GetTypeKind() == TypeKind::TYPE_ARRAY || type->GetTypeKind() == TypeKind::TYPE_LIST) {
                 sb.Append(prefix).Append("uint32_t i = 0;\n");
                 break;
             }
@@ -42,21 +41,21 @@ void CCodeEmitter::EmitInitLoopVar(const AutoPtr<ASTMethod>& method, StringBuild
     }
 }
 
-void CCodeEmitter::EmitErrorHandle(const AutoPtr<ASTMethod>& method, const String& gotoLabel, bool isClient,
-    StringBuilder& sb, const String& prefix)
+void CCodeEmitter::EmitErrorHandle(
+    const AutoPtr<ASTMethod> &method, const String &gotoLabel, bool isClient, StringBuilder &sb, const String &prefix)
 {
     if (!isClient) {
         sb.Append(prefix).AppendFormat("%s:\n", gotoLabel.string());
         for (int i = 0; i < method->GetParameterNumber(); i++) {
             AutoPtr<ASTParameter> param = method->GetParameter(i);
             AutoPtr<ASTType> paramType = param->GetType();
-            paramType->EmitMemoryRecycle(param->GetName(), isClient, true, sb, prefix + g_tab);
+            paramType->EmitMemoryRecycle(param->GetName(), isClient, true, sb, prefix + TAB);
         }
         return;
     }
 }
 
-void CCodeEmitter::EmitLicense(StringBuilder& sb)
+void CCodeEmitter::EmitLicense(StringBuilder &sb)
 {
     if (ast_->GetLicense().IsEmpty()) {
         return;
@@ -64,27 +63,27 @@ void CCodeEmitter::EmitLicense(StringBuilder& sb)
     sb.Append(ast_->GetLicense()).Append("\n\n");
 }
 
-void CCodeEmitter::EmitHeadMacro(StringBuilder& sb, const String& fullName)
+void CCodeEmitter::EmitHeadMacro(StringBuilder &sb, const String &fullName)
 {
     String macroName = MacroName(fullName);
     sb.Append("#ifndef ").Append(macroName).Append("\n");
     sb.Append("#define ").Append(macroName).Append("\n");
 }
 
-void CCodeEmitter::EmitTailMacro(StringBuilder& sb, const String& fullName)
+void CCodeEmitter::EmitTailMacro(StringBuilder &sb, const String &fullName)
 {
     String macroName = MacroName(fullName);
     sb.Append("#endif // ").Append(macroName);
 }
 
-void CCodeEmitter::EmitHeadExternC(StringBuilder& sb)
+void CCodeEmitter::EmitHeadExternC(StringBuilder &sb)
 {
     sb.Append("#ifdef __cplusplus\n");
     sb.Append("extern \"C\" {\n");
     sb.Append("#endif /* __cplusplus */\n");
 }
 
-void CCodeEmitter::EmitTailExternC(StringBuilder& sb)
+void CCodeEmitter::EmitTailExternC(StringBuilder &sb)
 {
     sb.Append("#ifdef __cplusplus\n");
     sb.Append("}\n");
@@ -96,7 +95,7 @@ String CCodeEmitter::EmitDescMacroName()
     return String::Format("%s_INTERFACE_DESC", interfaceName_.ToUpperCase().string());
 }
 
-String CCodeEmitter::MacroName(const String& name)
+String CCodeEmitter::MacroName(const String &name)
 {
     if (name.IsEmpty()) {
         return name;
@@ -106,7 +105,7 @@ String CCodeEmitter::MacroName(const String& name)
     return macro;
 }
 
-String CCodeEmitter::SpecificationParam(StringBuilder& paramSb, const String& prefix)
+String CCodeEmitter::SpecificationParam(StringBuilder &paramSb, const String &prefix)
 {
     int maxLineLen = 120;
     int replaceLen = 2;

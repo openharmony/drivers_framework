@@ -11,7 +11,7 @@
 
 namespace OHOS {
 namespace HDI {
-void ASTMethod::AddParameter(const AutoPtr<ASTParameter>& parameter)
+void ASTMethod::AddParameter(const AutoPtr<ASTParameter> &parameter)
 {
     if (parameter == nullptr) {
         return;
@@ -28,16 +28,22 @@ AutoPtr<ASTParameter> ASTMethod::GetParameter(size_t index)
     return parameters_[index];
 }
 
-String ASTMethod::Dump(const String& prefix)
+String ASTMethod::Dump(const String &prefix)
 {
     StringBuilder sb;
 
     sb.Append(prefix);
 
     std::vector<String> attributes;
-    if (isOneWay_) attributes.push_back("oneway");
-    if (isFull_) attributes.push_back("full");
-    if (isLite_) attributes.push_back("lite");
+    if (isOneWay_) {
+        attributes.push_back("oneway");
+    }
+    if (isFull_) {
+        attributes.push_back("full");
+    }
+    if (isLite_) {
+        attributes.push_back("lite");
+    }
     if (attributes.size() > 0) {
         sb.Append("[");
         for (size_t i = 0; i < attributes.size(); i++) {
@@ -53,7 +59,7 @@ String ASTMethod::Dump(const String& prefix)
     if (parameters_.size() != 0) {
         sb.Append('\n');
         for (auto parameter : parameters_) {
-            String info = parameter->Dump(prefix + "    ");
+            String info = parameter->Dump(prefix + TAB);
             sb.Append(info);
             if (parameter != parameters_[parameters_.size() - 1]) {
                 sb.Append(",\n");

@@ -18,46 +18,50 @@ public:
     CppClientProxyCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppClientProxyCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitProxyHeaderFile();
 
-    void EmitProxyHeaderInclusions(StringBuilder& sb);
+    void EmitProxyHeaderInclusions(StringBuilder &sb);
 
-    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitProxyDecl(StringBuilder& sb, const String& prefix);
+    void EmitProxyDecl(StringBuilder &sb, const String &prefix);
 
-    void EmitProxyConstructor(StringBuilder& sb, const String& prefix);
+    void EmitProxyConstructor(StringBuilder &sb, const String &prefix);
 
-    void EmitProxyMethodDecls(StringBuilder& sb, const String& prefix);
+    void EmitProxyMethodDecls(StringBuilder &sb, const String &prefix);
 
-    void EmitProxyMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitProxyMethodDecl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitProxyConstants(StringBuilder& sb, const String& prefix);
+    void EmitProxyConstants(StringBuilder &sb, const String &prefix);
 
-    void EmitProxyMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb, const String& prefix);
+    void EmitProxyMethodParameter(const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix);
 
     void EmitProxySourceFile();
 
-    void EmitProxySourceInclusions(StringBuilder& sb);
+    void EmitProxySourceInclusions(StringBuilder &sb);
 
-    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitGetMethodImpl(StringBuilder& sb, const String& prefix);
+    void EmitGetMethodImpl(StringBuilder &sb, const String &prefix);
 
-    void EmitGetInstanceMethodImpl(StringBuilder& sb, const String& prefix);
+    void EmitGetInstanceMethodImpl(StringBuilder &sb, const String &prefix);
 
-    void EmitProxyMethodImpls(StringBuilder& sb, const String& prefix);
+    void EmitProxyMethodImpls(StringBuilder &sb, const String &prefix);
 
-    void EmitProxyMethodImpl(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitProxyMethodImpl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitProxyMethodBody(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitProxyMethodBody(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitWriteInterfaceToken(const String& parcelName, StringBuilder& sb, const String& prefix);
+    void EmitWriteInterfaceToken(const String &parcelName, StringBuilder &sb, const String &prefix);
+
+    void EmitWriteFlagOfNeedSetMem(
+        const AutoPtr<ASTMethod> &method, const String &dataBufName, StringBuilder &sb, const String &prefix);
 };
 } // namespace HDI
 } // namespace OHOS

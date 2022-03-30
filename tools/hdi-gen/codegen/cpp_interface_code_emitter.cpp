@@ -12,10 +12,9 @@
 
 namespace OHOS {
 namespace HDI {
-bool CppInterfaceCodeEmitter::ResolveDirectory(const String& targetDirectory)
+bool CppInterfaceCodeEmitter::ResolveDirectory(const String &targetDirectory)
 {
-    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE ||
-        ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
+    if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
         directory_ = GetFilePath(targetDirectory);
     } else {
         return false;
@@ -63,7 +62,7 @@ void CppInterfaceCodeEmitter::EmitInterfaceHeaderFile()
     file.Close();
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceInclusions(StringBuilder& sb)
+void CppInterfaceCodeEmitter::EmitInterfaceInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
@@ -71,72 +70,72 @@ void CppInterfaceCodeEmitter::EmitInterfaceInclusions(StringBuilder& sb)
     GetImportInclusions(headerFiles);
     GetHeaderOtherLibInclusions(headerFiles);
 
-    for (const auto& file : headerFiles) {
+    for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
     }
 }
 
-void CppInterfaceCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles)
+void CppInterfaceCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
     headerFiles.emplace(HeaderFile(HeaderFileType::C_STD_HEADER_FILE, "stdint"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "iremote_broker"));
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceVersionMacro(StringBuilder& sb)
+void CppInterfaceCodeEmitter::EmitInterfaceVersionMacro(StringBuilder &sb)
 {
     sb.AppendFormat("#define %s %u\n", majorVerName_.string(), ast_->GetMajorVer());
     sb.AppendFormat("#define %s %u\n", minorVerName_.string(), ast_->GetMinorVer());
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder& sb)
+void CppInterfaceCodeEmitter::EmitInterfaceDefinition(StringBuilder &sb)
 {
     if (!interface_->IsSerializable()) {
         sb.AppendFormat("class %s : public IRemoteBroker {\n", interfaceName_.string());
         sb.Append("public:\n");
-        EmitInterfaceDescriptor(sb, g_tab);
+        EmitInterfaceDescriptor(sb, TAB);
         sb.Append("\n");
-        EmitInterfaceDestruction(sb, g_tab);
+        EmitInterfaceDestruction(sb, TAB);
         sb.Append("\n");
-        EmitGetMethodDecl(sb, g_tab);
+        EmitGetMethodDecl(sb, TAB);
         sb.Append("\n");
-        EmitGetInstanceMethodDecl(sb, g_tab);
+        EmitGetInstanceMethodDecl(sb, TAB);
         sb.Append("\n");
-        EmitInterfaceMethodsDecl(sb, g_tab);
+        EmitInterfaceMethodsDecl(sb, TAB);
         sb.Append("};\n");
     } else {
         sb.AppendFormat("class %s : public IRemoteBroker {\n", interfaceName_.string());
         sb.Append("public:\n");
-        EmitInterfaceDescriptor(sb, g_tab);
+        EmitInterfaceDescriptor(sb, TAB);
         sb.Append("\n");
-        EmitInterfaceDestruction(sb, g_tab);
+        EmitInterfaceDestruction(sb, TAB);
         sb.Append("\n");
-        EmitInterfaceMethodsDecl(sb, g_tab);
+        EmitInterfaceMethodsDecl(sb, TAB);
         sb.Append("};\n");
     }
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceDescriptor(StringBuilder& sb, const String& prefix)
+void CppInterfaceCodeEmitter::EmitInterfaceDescriptor(StringBuilder &sb, const String &prefix)
 {
-    sb.Append(g_tab).AppendFormat("DECLARE_INTERFACE_DESCRIPTOR(u\"%s\");\n", interfaceFullName_.string());
+    sb.Append(TAB).AppendFormat("DECLARE_INTERFACE_DESCRIPTOR(u\"%s\");\n", interfaceFullName_.string());
 }
 
-void CppInterfaceCodeEmitter::EmitGetMethodDecl(StringBuilder& sb, const String& prefix)
+void CppInterfaceCodeEmitter::EmitGetMethodDecl(StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).AppendFormat("static sptr<%s> Get();\n", interface_->GetName().string());
 }
 
-void CppInterfaceCodeEmitter::EmitGetInstanceMethodDecl(StringBuilder& sb, const String& prefix)
+void CppInterfaceCodeEmitter::EmitGetInstanceMethodDecl(StringBuilder &sb, const String &prefix)
 {
-    sb.Append(prefix).AppendFormat("static sptr<%s> GetInstance(const std::string& serviceName);\n",
-        interface_->GetName().string());
+    sb.Append(prefix).AppendFormat(
+        "static sptr<%s> GetInstance(const std::string& serviceName);\n", interface_->GetName().string());
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceDestruction(StringBuilder& sb, const String& prefix)
+void CppInterfaceCodeEmitter::EmitInterfaceDestruction(StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).AppendFormat("virtual ~%s() = default;\n", interface_->GetName().string());
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceMethodsDecl(StringBuilder& sb, const String& prefix)
+void CppInterfaceCodeEmitter::EmitInterfaceMethodsDecl(StringBuilder &sb, const String &prefix)
 {
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
@@ -147,8 +146,8 @@ void CppInterfaceCodeEmitter::EmitInterfaceMethodsDecl(StringBuilder& sb, const 
     EmitInterfaceMethodDecl(interface_->GetVersionMethod(), sb, prefix);
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceMethodDecl(const AutoPtr<ASTMethod>& method, StringBuilder& sb,
-    const String& prefix)
+void CppInterfaceCodeEmitter::EmitInterfaceMethodDecl(
+    const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix)
 {
     if (method->GetParameterNumber() == 0) {
         sb.Append(prefix).AppendFormat("virtual int32_t %s() = 0;\n", method->GetName().string());
@@ -164,13 +163,13 @@ void CppInterfaceCodeEmitter::EmitInterfaceMethodDecl(const AutoPtr<ASTMethod>& 
         }
 
         paramStr.Append(") = 0;");
-        sb.Append(SpecificationParam(paramStr, prefix + g_tab));
+        sb.Append(SpecificationParam(paramStr, prefix + TAB));
         sb.Append("\n");
     }
 }
 
-void CppInterfaceCodeEmitter::EmitInterfaceMethodParameter(const AutoPtr<ASTParameter>& param, StringBuilder& sb,
-    const String& prefix)
+void CppInterfaceCodeEmitter::EmitInterfaceMethodParameter(
+    const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).Append(param->EmitCppParameter());
 }

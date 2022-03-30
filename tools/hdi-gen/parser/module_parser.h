@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <set>
+
 #include "ast/ast_module.h"
 #include "parser/file_detail.h"
 #include "util/options.h"
@@ -21,17 +22,21 @@ class ModuleParser {
 public:
     using FileDetailMap = std::unordered_map<String, std::shared_ptr<FileDetail>, StringHashFunc, StringEqualFunc>;
 
-    explicit ModuleParser(const Options& option) : option_(option),
+    explicit ModuleParser(const Options &option)
+        : option_(option),
         sourceFiles_(),
         searchedFile_(),
         traceFilePtr_(nullptr),
         allCirclesFile_(),
         compileFiles_(),
-        module_(new ASTModule()) {}
+        module_(new ASTModule())
+    {
+    }
 
-    ~ModuleParser() {}
+    ~ModuleParser() = default;
 
     AutoPtr<ASTModule> Parse();
+
 private:
     // parser file and circular reference
     bool ParserDependencies();
@@ -39,18 +44,18 @@ private:
     bool CompileFiles();
 
     // parse all idl file involved in compilation.
-    bool ParserAllImports(const String& rootFilePath);
+    bool ParserAllImports(const String &rootFilePath);
 
-    bool ParserAllImportsRecursion(const std::shared_ptr<FileDetail>& fileInfo);
+    bool ParserAllImportsRecursion(const std::shared_ptr<FileDetail> &fileInfo);
 
-    bool ParserAllidlFile(const std::vector<String>& idlSourceFile);
+    bool ParserAllidlFile(const std::vector<String> &idlSourceFile);
 
     // check circular reference and reverse topology sorting of all idl file
     bool CheckCircularReference();
 
-    static const char* TAG;
+    static const char *TAG;
 
-    const Options& option_;
+    const Options &option_;
     FileDetailMap sourceFiles_;
 
     std::set<String> searchedFile_;

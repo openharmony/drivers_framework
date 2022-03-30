@@ -7,12 +7,14 @@
  */
 
 #include "util/string.h"
+
 #include <atomic>
 #include <cctype>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <new>
+
 #include "securec.h"
 #include "util/logger.h"
 #include "util/string_builder.h"
@@ -24,27 +26,27 @@ constexpr int LINE_MAX_SIZE = 1024;
 using SharedData = struct SharedData {
     SharedData(int refCount, int size) : refCount_(refCount), size_(size) {}
 
-    static SharedData* Allocate(int size);
+    static SharedData *Allocate(int size);
 
-    static void AddRef(const void* handle);
+    static void AddRef(const void *handle);
 
-    static void Release(const void* handle);
+    static void Release(const void *handle);
 
-    inline static char* ToString(SharedData* header)
+    inline static char *ToString(SharedData *header)
     {
-        return reinterpret_cast<char*>(header + 1);
+        return reinterpret_cast<char *>(header + 1);
     }
 
-    inline static SharedData* GetHeader(const void* handle)
+    inline static SharedData *GetHeader(const void *handle)
     {
-        return reinterpret_cast<SharedData*>(const_cast<void*>(handle)) - 1;
+        return reinterpret_cast<SharedData *>(const_cast<void *>(handle)) - 1;
     }
 
     std::atomic<int> refCount_;
     int size_;
 };
 
-SharedData* SharedData::Allocate(int size)
+SharedData *SharedData::Allocate(int size)
 {
     if (size < 0) {
         Logger::E(String::TAG, "Size %d is illegal.", size);
@@ -55,36 +57,36 @@ SharedData* SharedData::Allocate(int size)
         return nullptr;
     }
 
-    auto handle = reinterpret_cast<SharedData*>(malloc(sizeof(SharedData) + size + 1));
+    auto handle = reinterpret_cast<SharedData *>(malloc(sizeof(SharedData) + size + 1));
     if (handle == nullptr) {
         Logger::E(String::TAG, "Fail to malloc %lu bytes memory", size);
         return handle;
     }
 
-    new (handle)SharedData(1, size);
+    new (handle) SharedData(1, size);
     return handle;
 }
 
-void SharedData::AddRef(const void* handle)
+void SharedData::AddRef(const void *handle)
 {
     if (handle == nullptr) {
         return;
     }
 
-    SharedData* data = GetHeader(handle);
+    SharedData *data = GetHeader(handle);
     int before = data->refCount_.fetch_add(1);
     if (before + 1 <= 1) {
         Logger::E(String::TAG, "The refCount %d of data is error in AddRef.", before);
     };
 }
 
-void SharedData::Release(const void* handle)
+void SharedData::Release(const void *handle)
 {
     if (handle == nullptr) {
         return;
     }
 
-    SharedData* data = GetHeader(handle);
+    SharedData *data = GetHeader(handle);
     int before = data->refCount_.fetch_sub(1);
     if (before - 1 == 0) {
         free(data);
@@ -93,9 +95,9 @@ void SharedData::Release(const void* handle)
     };
 }
 
-const char* String::TAG = "String";
+const char *String::TAG = "String";
 
-String::String(const char* string)
+String::String(const char *string)
 {
     if (string != nullptr) {
         string_ = SharedData::ToString(SharedData::Allocate(strlen(string)));
@@ -111,9 +113,9 @@ String::String(const char* string)
     }
 }
 
-String::String(const char* string, size_t length)
+String::String(const char *string, size_t length)
 {
-    if (string !=  nullptr) {
+    if (string != nullptr) {
         string_ = SharedData::ToString(SharedData::Allocate(length));
         if (string_ != nullptr) {
             (void)memcpy_s(string_, length + 1, string, length);
@@ -122,13 +124,13 @@ String::String(const char* string, size_t length)
     }
 }
 
-String::String(const String& other)
+String::String(const String &other)
 {
     string_ = other.string_;
     SharedData::AddRef(string_);
 }
 
-String::String(String && other)
+String::String(String &&other)
 {
     string_ = other.string_;
     other.string_ = nullptr;
@@ -164,7 +166,7 @@ char String::operator[](int index) const
     return string_[index];
 }
 
-bool String::Equals(const char* string) const
+bool String::Equals(const char *string) const
 {
     if (string_ == nullptr && string == nullptr) {
         return true;
@@ -180,7 +182,7 @@ bool String::Equals(const char* string) const
     return false;
 }
 
-bool String::Equals(const String& other) const
+bool String::Equals(const String &other) const
 {
     if (string_ == nullptr && other.string_ == nullptr) {
         return true;
@@ -195,7 +197,7 @@ bool String::Equals(const String& other) const
     return false;
 }
 
-int String::Compare(const String& other) const
+int String::Compare(const String &other) const
 {
     if (string_ == nullptr) {
         if (other.string_ == nullptr) {
@@ -218,7 +220,7 @@ int String::GetHashCode() const
     unsigned int seed = 31; // 31 131 1313 13131 131313 etc..
     unsigned int hash = 0;
 
-    const char* string = string_;
+    const char *string = string_;
     if (string != nullptr) {
         for (; *string; ++string) {
             hash = hash * seed + (*string);
@@ -239,8 +241,8 @@ int String::IndexOf(char c, int fromIndex) const
         return -1;
     }
 
-    char* p = string_ + fromIndex;
-    char* end = string_ + GetLength();
+    char *p = string_ + fromIndex;
+    char *end = string_ + GetLength();
     while (p != end) {
         if (*p == c) {
             return p - string_;
@@ -250,7 +252,7 @@ int String::IndexOf(char c, int fromIndex) const
     return -1;
 }
 
-int String::IndexOf(const char* string, int fromIndex) const
+int String::IndexOf(const char *string, int fromIndex) const
 {
     if (IsEmpty() || string == nullptr || string[0] == '\0') {
         return -1;
@@ -262,11 +264,11 @@ int String::IndexOf(const char* string, int fromIndex) const
         return -1;
     }
 
-    char* c = strstr(string_ + fromIndex, string);
+    char *c = strstr(string_ + fromIndex, string);
     return (c != nullptr) ? (c - string_) : -1;
 }
 
-int String::IndexOf(const String& other, int fromIndex) const
+int String::IndexOf(const String &other, int fromIndex) const
 {
     if (IsEmpty() || other.IsEmpty()) {
         return -1;
@@ -278,7 +280,7 @@ int String::IndexOf(const String& other, int fromIndex) const
         return -1;
     }
 
-    char* c = strstr(string_ + fromIndex, other.string_);
+    char *c = strstr(string_ + fromIndex, other.string_);
     return (c != nullptr) ? (c - string_) : -1;
 }
 
@@ -293,7 +295,7 @@ int String::LastIndexOf(char c, int fromIndex) const
     } else if (fromIndex == 0 || fromIndex >= GetLength()) {
         fromIndex = GetLength() - 1;
     }
-    char* p = string_ + fromIndex;
+    char *p = string_ + fromIndex;
     while (p != string_) {
         if (*p == c) {
             return p - string_;
@@ -303,7 +305,7 @@ int String::LastIndexOf(char c, int fromIndex) const
     return -1;
 }
 
-int String::LastIndexOf(const char* string, int fromIndex) const
+int String::LastIndexOf(const char *string, int fromIndex) const
 {
     if (IsEmpty() || string == nullptr || string[0] == '\0') {
         return -1;
@@ -318,7 +320,7 @@ int String::LastIndexOf(const char* string, int fromIndex) const
     return LastIndexOfInternal(string, fromIndex);
 }
 
-int String::LastIndexOf(const String& other, int fromIndex) const
+int String::LastIndexOf(const String &other, int fromIndex) const
 {
     if (IsEmpty() || other.IsEmpty()) {
         return -1;
@@ -333,7 +335,7 @@ int String::LastIndexOf(const String& other, int fromIndex) const
     return LastIndexOfInternal(other.string(), fromIndex);
 }
 
-int String::LastIndexOfInternal(const char* string, int fromIndex) const
+int String::LastIndexOfInternal(const char *string, int fromIndex) const
 {
     int sourceLen = GetLength();
     int stringLen = strlen(string);
@@ -372,7 +374,7 @@ int String::LastIndexOfInternal(const char* string, int fromIndex) const
     }
 }
 
-bool String::StartsWith(const char* string) const
+bool String::StartsWith(const char *string) const
 {
     if (string == nullptr || string_ == nullptr) {
         return false;
@@ -390,7 +392,7 @@ bool String::StartsWith(const char* string) const
     return memcmp(string_, string, count) == 0;
 }
 
-bool String::StartsWith(const String& other) const
+bool String::StartsWith(const String &other) const
 {
     if (other.string_ == nullptr || string_ == nullptr) {
         return false;
@@ -422,7 +424,7 @@ bool String::EndsWith(char c) const
     return string_[len - 1] == c;
 }
 
-bool String::EndsWith(const char* string) const
+bool String::EndsWith(const char *string) const
 {
     if (string == nullptr || string_ == nullptr) {
         return false;
@@ -441,7 +443,7 @@ bool String::EndsWith(const char* string) const
     return memcmp(string_ + len - count, string, count) == 0;
 }
 
-bool String::EndsWith(const String& other) const
+bool String::EndsWith(const String &other) const
 {
     if (other.string_ == nullptr || string_ == nullptr) {
         return false;
@@ -539,7 +541,7 @@ String String::Replace(char oldChar, char newChar) const
     return *this;
 }
 
-String String::Replace(const char* target, const char* replacement) const
+String String::Replace(const char *target, const char *replacement) const
 {
     if (target == nullptr || target[0] == '\0' || replacement == nullptr) {
         return *this;
@@ -563,7 +565,7 @@ String String::Replace(const char* target, const char* replacement) const
     return sb.ToString();
 }
 
-String String::Replace(const String& target, const String& replacement) const
+String String::Replace(const String &target, const String &replacement) const
 {
     if (target.IsEmpty() || replacement.IsNull()) {
         return *this;
@@ -587,7 +589,7 @@ String String::Replace(const String& target, const String& replacement) const
     return sb.ToString();
 }
 
-String& String::Replace(int position, int len, const String& other)
+String &String::Replace(int position, int len, const String &other)
 {
     if (position < 0 || position > GetLength()) {
         return *this;
@@ -612,7 +614,7 @@ String& String::Replace(int position, int len, const String& other)
     return *this;
 }
 
-std::vector<String> String::Split(const String& separator) const
+std::vector<String> String::Split(const String &separator) const
 {
     std::vector<String> result;
     if (IsEmpty()) {
@@ -634,7 +636,7 @@ std::vector<String> String::Split(const String& separator) const
     return result;
 }
 
-String& String::insert(int index, const String& other)
+String &String::insert(int index, const String &other)
 {
     if (index < 0 || index > GetLength()) {
         return *this;
@@ -657,7 +659,7 @@ String& String::insert(int index, const String& other)
     return *this;
 }
 
-String& String::operator=(const char* string)
+String &String::operator=(const char *string)
 {
     SharedData::Release(string_);
 
@@ -680,7 +682,7 @@ String& String::operator=(const char* string)
     return *this;
 }
 
-String& String::operator=(const String& other)
+String &String::operator=(const String &other)
 {
     if (string_ == other.string_) {
         return *this;
@@ -692,7 +694,7 @@ String& String::operator=(const String& other)
     return *this;
 }
 
-String& String::operator=(String && other)
+String &String::operator=(String &&other)
 {
     SharedData::Release(string_);
     string_ = other.string_;
@@ -700,7 +702,7 @@ String& String::operator=(String && other)
     return *this;
 }
 
-String& String::operator+=(const char* other)
+String &String::operator+=(const char *other)
 {
     if (other == nullptr || other[0] == '\0') {
         return *this;
@@ -711,29 +713,29 @@ String& String::operator+=(const char* other)
     String newString(newSize);
     if (newString.string_ == nullptr) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed.", string_);
-        goto FINISHED;
+        goto finished;
     }
 
     if (string_ != nullptr && thisSize > 0) {
         if (memcpy_s(newString.string_, newSize + 1, string_, thisSize) != EOK) {
             Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 2", string_);
-            goto FINISHED;
+            goto finished;
         }
     }
 
     if (strcpy_s(newString.string_ + thisSize, newSize + 1 - thisSize, other) != EOK) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed.", string_);
-        goto FINISHED;
+        goto finished;
     }
 
-FINISHED:
+finished:
     SharedData::Release(string_);
     SharedData::AddRef(newString.string_);
     string_ = newString.string_;
     return *this;
 }
 
-String& String::operator+=(const String& other)
+String &String::operator+=(const String &other)
 {
     if (other.IsEmpty()) {
         return *this;
@@ -744,29 +746,29 @@ String& String::operator+=(const String& other)
     String newString(newSize);
     if (newString.string_ == nullptr) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 1", string_);
-        goto FINISHED;
+        goto finished;
     }
 
     if (string_ != nullptr && thisSize > 0) {
         if (memcpy_s(newString.string_, newSize + 1, string_, thisSize) != EOK) {
             Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 2", string_);
-            goto FINISHED;
+            goto finished;
         }
     }
 
     if (strcpy_s(newString.string_ + thisSize, newSize + 1 - thisSize, other.string_) != EOK) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 3", string_);
-        goto FINISHED;
+        goto finished;
     }
 
-FINISHED:
+finished:
     SharedData::Release(string_);
     SharedData::AddRef(newString.string_);
     string_ = newString.string_;
     return *this;
 }
 
-String String::Format(const char* format, ...)
+String String::Format(const char *format, ...)
 {
     va_list args, argsCopy;
 

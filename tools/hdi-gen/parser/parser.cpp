@@ -7,40 +7,44 @@
  */
 
 #include "parser/parser.h"
+
 #include <regex>
+
 #include "ast/ast_array_type.h"
 #include "ast/ast_enum_type.h"
 #include "ast/ast_list_type.h"
 #include "ast/ast_map_type.h"
-#include "ast/ast_smq_type.h"
 #include "ast/ast_parameter.h"
 #include "ast/ast_sequenceable_type.h"
+#include "ast/ast_smq_type.h"
 #include "ast/ast_struct_type.h"
 #include "ast/ast_union_type.h"
 #include "util/logger.h"
 #include "util/string_builder.h"
 
-#define RE_DIGIT        "[0-9]+"
-#define RE_IDENTIFIER   "[a-zA-Z_][a-zA-Z0-9_]*"
+#define RE_DIGIT      "[0-9]+"
+#define RE_IDENTIFIER "[a-zA-Z_][a-zA-Z0-9_]*"
 
-#define RE_PACKAGE_NUM 3
-#define RE_PACKAGE_INDEX 0
+#define RE_PACKAGE_NUM             3
+#define RE_PACKAGE_INDEX           0
 #define RE_PACKAGE_MAJOR_VER_INDEX 1
 #define RE_PACKAGE_MINOR_VER_INDEX 2
 
 namespace OHOS {
 namespace HDI {
-const char* Parser::TAG = "Parser";
+const char *Parser::TAG = "Parser";
 
-static const std::regex rePackage(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" "(" RE_DIGIT ")_(" RE_DIGIT ")");
-static const std::regex reImport(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" \
-                                 RE_DIGIT "_" RE_DIGIT "." RE_IDENTIFIER);
+static const std::regex rePackage(RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]"
+                                                "(" RE_DIGIT ")_(" RE_DIGIT ")");
+static const std::regex reImport(
+    RE_IDENTIFIER "(?:\\." RE_IDENTIFIER ")*\\.[V|v]" RE_DIGIT "_" RE_DIGIT "." RE_IDENTIFIER);
 
-Parser::Parser(const Options& options, const AutoPtr<ASTModule>& module)
-    :options_(options), lexer_(nullptr), errors_(nullptr), ast_(nullptr), astModule_(module)
-{}
+Parser::Parser(const Options &options, const AutoPtr<ASTModule> &module)
+    : options_(options), lexer_(nullptr), errors_(nullptr), ast_(nullptr), astModule_(module)
+{
+}
 
-bool Parser::Parse(const String& sourceFile)
+bool Parser::Parse(const String &sourceFile)
 {
     lexer_ = std::make_shared<Lexer>();
     bool ret = lexer_->OpenSourceFile(sourceFile);
@@ -65,7 +69,7 @@ bool Parser::Parse(const String& sourceFile)
     return ret;
 }
 
-bool Parser::Parse(const String& sourceFile, std::shared_ptr<FileDetail>& fileDetailPtr)
+bool Parser::Parse(const String &sourceFile, std::shared_ptr<FileDetail> &fileDetailPtr)
 {
     lexer_ = std::make_shared<Lexer>();
     bool ret = lexer_->OpenSourceFile(sourceFile);
@@ -83,7 +87,7 @@ bool Parser::Parse(const String& sourceFile, std::shared_ptr<FileDetail>& fileDe
     return ret;
 }
 
-bool Parser::ParseIdlDetail(std::shared_ptr<FileDetail>& fileDetailPtr)
+bool Parser::ParseIdlDetail(std::shared_ptr<FileDetail> &fileDetailPtr)
 {
     bool ret = true;
     fileDetailPtr = std::make_shared<FileDetail>();
@@ -107,7 +111,7 @@ bool Parser::ParseIdlDetail(std::shared_ptr<FileDetail>& fileDetailPtr)
     return ret;
 }
 
-bool Parser::ParseIdlPackage(std::shared_ptr<FileDetail>& fileDetailPtr)
+bool Parser::ParseIdlPackage(std::shared_ptr<FileDetail> &fileDetailPtr)
 {
     lexer_->GetToken();
     String packageName;
@@ -143,8 +147,8 @@ bool Parser::ParseIdlPackage(std::shared_ptr<FileDetail>& fileDetailPtr)
         LogError(String::Format("Package name '%s' is illegal.", packageName.string()));
         return false;
     } else if (!CheckPackageName(lexer_->GetFilePath(), packageName)) {
-        LogError(String::Format("Package name '%s' does not match file apth '%s'.",
-            packageName.string(), lexer_->GetFilePath().string()));
+        LogError(String::Format(
+            "Package name '%s' does not match file apth '%s'.", packageName.string(), lexer_->GetFilePath().string()));
         return false;
     }
 
@@ -153,7 +157,7 @@ bool Parser::ParseIdlPackage(std::shared_ptr<FileDetail>& fileDetailPtr)
     return true;
 }
 
-bool Parser::ParseIdlImport(std::shared_ptr<FileDetail>& fileDetailPtr)
+bool Parser::ParseIdlImport(std::shared_ptr<FileDetail> &fileDetailPtr)
 {
     lexer_->GetToken();
 
@@ -294,8 +298,8 @@ bool Parser::ParsePackageName()
         LogError(String::Format("Package name '%s' is illegal.", packageFullName.string()));
         return false;
     } else if (!CheckPackageName(lexer_->GetFilePath(), packageFullName)) {
-        LogError(String::Format("Package name '%s' does not match file apth '%s'.",
-            packageFullName.string(), lexer_->GetFilePath().string()));
+        LogError(String::Format("Package name '%s' does not match file apth '%s'.", packageFullName.string(),
+            lexer_->GetFilePath().string()));
         return false;
     }
 
@@ -307,7 +311,7 @@ bool Parser::ParsePackageName()
     return true;
 }
 
-bool Parser::ParserPackageInfo(const String& packageName)
+bool Parser::ParserPackageInfo(const String &packageName)
 {
     std::cmatch result;
     if (!std::regex_match(packageName.string(), result, rePackage)) {
@@ -382,7 +386,7 @@ bool Parser::ParseSequenceable()
     lexer_->GetToken();
     String classFullName;
 
-    Token token =  lexer_->PeekToken();
+    Token token = lexer_->PeekToken();
     if (token != Token::IDENTIFIER) {
         if (token == Token::SEMICOLON) {
             LogError(String::Format("expected identifier before ';'."));
@@ -461,7 +465,7 @@ bool Parser::ParseAttribute()
     return ret;
 }
 
-bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
+bool Parser::ParseInterface(const AutoPtr<Attribute> &attributes)
 {
     lexer_->GetToken();
     String interfaceName;
@@ -495,8 +499,8 @@ bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
     interface->SetNamespace(ast_->ParseNamespace(ast_->GetFullName()));
 
     if (!interface->GetName().Equals(ast_->GetName())) {
-        LogError(String::Format("Module name '%s' is not equal to interface name  '%s'.",
-            ast_->GetName().string(), interface->GetName().string()));
+        LogError(String::Format("Module name '%s' is not equal to interface name  '%s'.", ast_->GetName().string(),
+            interface->GetName().string()));
     }
 
     interface->SetLicense(ast_->GetLicense());
@@ -509,7 +513,7 @@ bool Parser::ParseInterface(const AutoPtr<Attribute>& attributes)
     return ParseInterfaceBody(interface);
 }
 
-bool Parser::ParseInterfaceBody(const AutoPtr<ASTInterfaceType>& interface)
+bool Parser::ParseInterfaceBody(const AutoPtr<ASTInterfaceType> &interface)
 {
     bool ret = true;
     Token token = lexer_->PeekToken();
@@ -537,7 +541,7 @@ bool Parser::ParseInterfaceBody(const AutoPtr<ASTInterfaceType>& interface)
     return ret;
 }
 
-bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
+bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType> &interface)
 {
     AutoPtr<Attribute> attributes = nullptr;
     if (!ParseAttributeBody(attributes)) {
@@ -580,7 +584,7 @@ bool Parser::ParseMethod(const AutoPtr<ASTInterfaceType>& interface)
     return true;
 }
 
-void Parser::SetVersionInterfaceMethod(const AutoPtr<ASTInterfaceType>& interface)
+void Parser::SetVersionInterfaceMethod(const AutoPtr<ASTInterfaceType> &interface)
 {
     AutoPtr<ASTMethod> method = new ASTMethod();
     method->SetName("GetVersion");
@@ -597,7 +601,7 @@ void Parser::SetVersionInterfaceMethod(const AutoPtr<ASTInterfaceType>& interfac
     interface->AddVersionMethod(method);
 }
 
-bool Parser::ParseAttributeBody(AutoPtr<Attribute>& attributes)
+bool Parser::ParseAttributeBody(AutoPtr<Attribute> &attributes)
 {
     Token token = lexer_->PeekToken();
     if (token != Token::BRACKETS_LEFT) {
@@ -628,7 +632,7 @@ bool Parser::ParseAttributeBody(AutoPtr<Attribute>& attributes)
     return true;
 }
 
-bool Parser::ParseAttributeParam(AutoPtr<Attribute>& attributes)
+bool Parser::ParseAttributeParam(AutoPtr<Attribute> &attributes)
 {
     Token token = lexer_->GetToken();
     switch (token) {
@@ -660,7 +664,7 @@ bool Parser::ParseAttributeParam(AutoPtr<Attribute>& attributes)
     return true;
 }
 
-bool Parser::ParseParameterList(AutoPtr<ASTMethod>& method)
+bool Parser::ParseParameterList(AutoPtr<ASTMethod> &method)
 {
     bool ret = true;
     Token token = lexer_->PeekToken();
@@ -701,7 +705,7 @@ bool Parser::ParseParameterList(AutoPtr<ASTMethod>& method)
     return true;
 }
 
-bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
+bool Parser::ParseParameter(const AutoPtr<ASTMethod> &method)
 {
     AutoPtr<ASTParameter> parameter = new ASTParameter();
     if (!ParseParamAttr(parameter)) {
@@ -730,7 +734,7 @@ bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
     lexer_->GetToken();
 
     if (type->IsInterfaceType()) {
-        AutoPtr<ASTInterfaceType> interfaceType = dynamic_cast<ASTInterfaceType*>(type.Get());
+        AutoPtr<ASTInterfaceType> interfaceType = dynamic_cast<ASTInterfaceType *>(type.Get());
         if (interfaceType->IsCallback() && parameter->GetAttribute() != ParamAttr::PARAM_IN) {
             LogError(String::Format("The attribute of callback interface parameter '%s' does not be 'in'",
                 lexer_->GetIdentifier().string()));
@@ -738,8 +742,8 @@ bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
         }
 
         if (!interfaceType->IsCallback() && parameter->GetAttribute() != ParamAttr::PARAM_OUT) {
-            LogError(String::Format("The attribute of interface parameter '%s' does not be 'in'",
-                lexer_->GetIdentifier().string()));
+            LogError(String::Format(
+                "The attribute of interface parameter '%s' does not be 'in'", lexer_->GetIdentifier().string()));
             return false;
         }
     }
@@ -756,7 +760,7 @@ bool Parser::ParseParameter(const AutoPtr<ASTMethod>& method)
     return true;
 }
 
-bool Parser::ParseParamAttr(const AutoPtr<ASTParameter>& parameter)
+bool Parser::ParseParamAttr(const AutoPtr<ASTParameter> &parameter)
 {
     Token token = lexer_->PeekToken();
     if (token != Token::BRACKETS_LEFT) {
@@ -781,8 +785,8 @@ bool Parser::ParseParamAttr(const AutoPtr<ASTParameter>& parameter)
         lexer_->GetToken();
         parameter->SetAttribute(ParamAttr::PARAM_OUT);
     } else {
-        LogError(String::Format("'%s' is not a parameter property, it must be 'in' or 'out'.",
-            lexer_->DumpToken().string()));
+        LogError(String::Format(
+            "'%s' is not a parameter property, it must be 'in' or 'out'.", lexer_->DumpToken().string()));
         while (token != Token::SEMICOLON && token != Token::END_OF_FILE) {
             lexer_->GetToken();
             token = lexer_->PeekToken();
@@ -834,8 +838,8 @@ AutoPtr<ASTType> Parser::ParseType()
     }
 
     if (type == nullptr) {
-        LogError(typeLineNo, typeColumnNo, String::Format("Type '%s' was not declared in any idl file.",
-            lexer_->DumpToken().string()));
+        LogError(typeLineNo, typeColumnNo,
+            String::Format("Type '%s' was not declared in any idl file.", lexer_->DumpToken().string()));
     }
 
     token = lexer_->PeekToken();
@@ -867,8 +871,7 @@ AutoPtr<ASTType> Parser::ParseUnsignedType(int typeLineNo, int typeColumnNo)
         }
         default: {
             LogError(typeLineNo, typeColumnNo,
-                String::Format("'unsigned %s' type was not declared in the idl file.",
-                    lexer_->DumpToken().string()));
+                String::Format("'unsigned %s' type was not declared in the idl file.", lexer_->DumpToken().string()));
             return nullptr;
         }
     }
@@ -998,7 +1001,7 @@ AutoPtr<ASTType> Parser::ParseSharedMemQueueMetaType()
     return ret;
 }
 
-AutoPtr<ASTType> Parser::ParseArrayType(const AutoPtr<ASTType>& elementType)
+AutoPtr<ASTType> Parser::ParseArrayType(const AutoPtr<ASTType> &elementType)
 {
     Token token = lexer_->PeekToken();
     if (token != Token::BRACKETS_RIGHT) {
@@ -1017,7 +1020,7 @@ AutoPtr<ASTType> Parser::ParseArrayType(const AutoPtr<ASTType>& elementType)
 
     if (type == nullptr) {
         ast_->AddType(arrayType.Get());
-        type = static_cast<ASTType*>(arrayType.Get());
+        type = static_cast<ASTType *>(arrayType.Get());
     }
 
     return type;
@@ -1051,7 +1054,7 @@ AutoPtr<ASTType> Parser::ParseCustomType()
     return type;
 }
 
-bool Parser::ParseEnumDefine(const AutoPtr<Attribute>& attributes)
+bool Parser::ParseEnumDefine(const AutoPtr<Attribute> &attributes)
 {
     lexer_->GetToken();
     AutoPtr<ASTEnumType> type = new ASTEnumType();
@@ -1096,7 +1099,7 @@ bool Parser::ParseEnumDefine(const AutoPtr<Attribute>& attributes)
     return true;
 }
 
-bool Parser::ParseEnumBaseType(const AutoPtr<ASTEnumType>& type)
+bool Parser::ParseEnumBaseType(const AutoPtr<ASTEnumType> &type)
 {
     Token token = lexer_->PeekToken();
     if (token == Token::COLON) {
@@ -1107,14 +1110,8 @@ bool Parser::ParseEnumBaseType(const AutoPtr<ASTEnumType>& type)
             lexer_->SkipCurrentLine(';');
             return false;
         }
-        if (baseType->IsByteType() ||
-            baseType->IsShortType() ||
-            baseType->IsIntegerType() ||
-            baseType->IsLongType() ||
-            baseType->IsUcharType() ||
-            baseType->IsUshortType() ||
-            baseType->IsUintType() ||
-            baseType->IsUlongType()) {
+        if (baseType->IsByteType() || baseType->IsShortType() || baseType->IsIntegerType() || baseType->IsLongType() ||
+            baseType->IsUcharType() || baseType->IsUshortType() || baseType->IsUintType() || baseType->IsUlongType()) {
             ast_->AddType(baseType);
             type->SetBaseType(baseType);
             type->SetDisplayBase(true);
@@ -1136,7 +1133,7 @@ bool Parser::ParseEnumBaseType(const AutoPtr<ASTEnumType>& type)
     return true;
 }
 
-bool Parser::ParseEnumMember(const AutoPtr<ASTEnumType>& type)
+bool Parser::ParseEnumMember(const AutoPtr<ASTEnumType> &type)
 {
     Token token = lexer_->PeekToken();
     while (token != Token::BRACES_RIGHT) {
@@ -1175,7 +1172,7 @@ bool Parser::ParseEnumMember(const AutoPtr<ASTEnumType>& type)
     return true;
 }
 
-bool Parser::ParseStructDefine(const AutoPtr<Attribute>& attributes)
+bool Parser::ParseStructDefine(const AutoPtr<Attribute> &attributes)
 {
     lexer_->GetToken();
 
@@ -1206,7 +1203,7 @@ bool Parser::ParseStructDefine(const AutoPtr<Attribute>& attributes)
     return true;
 }
 
-bool Parser::ParseStructMember(const AutoPtr<ASTStructType>& type)
+bool Parser::ParseStructMember(const AutoPtr<ASTStructType> &type)
 {
     Token token = lexer_->PeekToken();
     if (token != Token::BRACES_LEFT) {
@@ -1256,7 +1253,7 @@ bool Parser::ParseStructMember(const AutoPtr<ASTStructType>& type)
     return true;
 }
 
-bool Parser::ParseUnionDefine(const AutoPtr<Attribute>& attributes)
+bool Parser::ParseUnionDefine(const AutoPtr<Attribute> &attributes)
 {
     lexer_->GetToken();
 
@@ -1287,7 +1284,7 @@ bool Parser::ParseUnionDefine(const AutoPtr<Attribute>& attributes)
     return true;
 }
 
-bool Parser::ParseUnionMember(const AutoPtr<ASTUnionType>& type)
+bool Parser::ParseUnionMember(const AutoPtr<ASTUnionType> &type)
 {
     Token token = lexer_->PeekToken();
     if (token != Token::BRACES_LEFT) {
@@ -1337,7 +1334,7 @@ bool Parser::ParseUnionMember(const AutoPtr<ASTUnionType>& type)
     return true;
 }
 
-bool Parser::CheckType(int lineNo, int columnNo, const AutoPtr<ASTType>& type)
+bool Parser::CheckType(int lineNo, int columnNo, const AutoPtr<ASTType> &type)
 {
     if (type == nullptr) {
         return false;
@@ -1355,8 +1352,8 @@ bool Parser::CheckType(int lineNo, int columnNo, const AutoPtr<ASTType>& type)
                 case TypeKind::TYPE_DOUBLE:
                 case TypeKind::TYPE_FILEDESCRIPTOR:
                 case TypeKind::TYPE_INTERFACE:
-                    LogError(lineNo, columnNo, String::Format("The '%s' type is not supported by c language.",
-                        lexer_->DumpToken().string()));
+                    LogError(lineNo, columnNo,
+                        String::Format("The '%s' type is not supported by c language.", lexer_->DumpToken().string()));
                     break;
                 default:
                     break;
@@ -1372,8 +1369,8 @@ bool Parser::CheckType(int lineNo, int columnNo, const AutoPtr<ASTType>& type)
             case TypeKind::TYPE_STRUCT:
             case TypeKind::TYPE_UNION:
             case TypeKind::TYPE_UNKNOWN:
-                LogError(lineNo, columnNo, String::Format("The '%s' type is not supported by java language.",
-                    lexer_->DumpToken().string()));
+                LogError(lineNo, columnNo,
+                    String::Format("The '%s' type is not supported by java language.", lexer_->DumpToken().string()));
                 return false;
             default:
                 break;
@@ -1473,7 +1470,7 @@ bool Parser::CheckCallbackAst()
     return true;
 }
 
-bool Parser::IsValidTypeName(const String& typeName)
+bool Parser::IsValidTypeName(const String &typeName)
 {
     if (typeName[0] == '.') {
         return false;
@@ -1487,11 +1484,11 @@ bool Parser::IsValidTypeName(const String& typeName)
 }
 
 /*
-* For example
-* filePath: ./ohos/interface/foo/v1_0/IFoo.idl
-* package OHOS.Hdi.foo.v1_0;
-*/
-bool Parser::CheckPackageName(const String& filePath, const String& packageName)
+ * For example
+ * filePath: ./ohos/interface/foo/v1_0/IFoo.idl
+ * package OHOS.Hdi.foo.v1_0;
+ */
+bool Parser::CheckPackageName(const String &filePath, const String &packageName)
 {
     String pkgToPath = Options::GetInstance().GetPackagePath(packageName);
 
@@ -1518,7 +1515,7 @@ bool Parser::AddAst()
     return true;
 }
 
-void Parser::LogError(const String& message)
+void Parser::LogError(const String &message)
 {
     AutoPtr<ErrorInfo> error = new ErrorInfo();
 
@@ -1543,7 +1540,7 @@ void Parser::LogError(const String& message)
     }
 }
 
-void Parser::LogError(int lineNo, int columnNo, const String& message)
+void Parser::LogError(int lineNo, int columnNo, const String &message)
 {
     AutoPtr<ErrorInfo> error = new ErrorInfo();
 
@@ -1572,8 +1569,8 @@ void Parser::ShowError()
 {
     AutoPtr<ErrorInfo> error = errors_;
     while (error != nullptr) {
-        Logger::E(TAG, "%s[line %d, column %d] %s", error->file_.string(),
-            error->lineNo_, error->columnNo_, error->message_.string());
+        Logger::E(TAG, "%s[line %d, column %d] %s", error->file_.string(), error->lineNo_, error->columnNo_,
+            error->message_.string());
         error = error->next_;
     }
 }

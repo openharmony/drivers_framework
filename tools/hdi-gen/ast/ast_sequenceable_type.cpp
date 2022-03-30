@@ -11,7 +11,7 @@
 
 namespace OHOS {
 namespace HDI {
-void ASTSequenceableType::SetNamespace(const AutoPtr<ASTNamespace>& nspace)
+void ASTSequenceableType::SetNamespace(const AutoPtr<ASTNamespace> &nspace)
 {
     ASTType::SetNamespace(nspace);
     if (namespace_ != nullptr) {
@@ -34,7 +34,7 @@ TypeKind ASTSequenceableType::GetTypeKind()
     return TypeKind::TYPE_SEQUENCEABLE;
 }
 
-String ASTSequenceableType::Dump(const String& prefix)
+String ASTSequenceableType::Dump(const String &prefix)
 {
     StringBuilder sb;
 
@@ -80,54 +80,50 @@ String ASTSequenceableType::EmitJavaType(TypeMode mode, bool isInnerType) const
     return name_;
 }
 
-void ASTSequenceableType::EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix, unsigned int innerLevel) const
+void ASTSequenceableType::EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb,
+    const String &prefix, unsigned int innerLevel) const
 {
-    sb.Append(prefix).AppendFormat("if (!%s.WriteStrongParcelable(%s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).AppendFormat("if (!%s.WriteStrongParcelable(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
 
-void ASTSequenceableType::EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix, bool initVariable, unsigned int innerLevel) const
+void ASTSequenceableType::EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb,
+    const String &prefix, bool initVariable, unsigned int innerLevel) const
 {
     if (initVariable) {
-        sb.Append(prefix).AppendFormat("sptr<%s> %s = %s.ReadStrongParcelable<%s>();\n",
-            name_.string(), name.string(), parcelName.string(), name_.string());
+        sb.Append(prefix).AppendFormat("sptr<%s> %s = %s.ReadStrongParcelable<%s>();\n", name_.string(), name.string(),
+            parcelName.string(), name_.string());
     } else {
-        sb.Append(prefix).AppendFormat("%s = %s.ReadStrongParcelable<%s>();\n",
-            name.string(), parcelName.string(), name_.string());
+        sb.Append(prefix).AppendFormat(
+            "%s = %s.ReadStrongParcelable<%s>();\n", name.string(), parcelName.string(), name_.string());
     }
 }
 
-void ASTSequenceableType::EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix, unsigned int innerLevel) const
+void ASTSequenceableType::EmitCppMarshalling(const String &parcelName, const String &name, StringBuilder &sb,
+    const String &prefix, unsigned int innerLevel) const
 {
-    sb.Append(prefix).AppendFormat("if (!%s.WriteStrongParcelable(%s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).Append("return false;\n");
+    sb.Append(prefix).AppendFormat("if (!%s.WriteStrongParcelable(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + TAB).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
 
-void ASTSequenceableType::EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix, bool emitType, unsigned int innerLevel) const
+void ASTSequenceableType::EmitCppUnMarshalling(const String &parcelName, const String &name, StringBuilder &sb,
+    const String &prefix, bool emitType, unsigned int innerLevel) const
 {
     if (emitType) {
-        sb.Append(prefix).AppendFormat("%s %s = %s.ReadStrongParcelable<%s>();\n",
-            EmitCppType().string(), name.string(), parcelName.string(), name_.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = %s.ReadStrongParcelable<%s>();\n",
+        sb.Append(prefix).AppendFormat("%s %s = %s.ReadStrongParcelable<%s>();\n", EmitCppType().string(),
             name.string(), parcelName.string(), name_.string());
+    } else {
+        sb.Append(prefix).AppendFormat(
+            "%s = %s.ReadStrongParcelable<%s>();\n", name.string(), parcelName.string(), name_.string());
     }
 }
 
-void ASTSequenceableType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
+void ASTSequenceableType::EmitJavaWriteVar(
+    const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const
 {
     if (EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
         sb.Append(prefix).AppendFormat("%s.writeRemoteObject(%s);\n", parcelName.string(), name.string());
@@ -136,8 +132,8 @@ void ASTSequenceableType::EmitJavaWriteVar(const String& parcelName, const Strin
     sb.Append(prefix).AppendFormat("%s.writeSequenceable(%s);\n", parcelName.string(), name.string());
 }
 
-void ASTSequenceableType::EmitJavaReadVar(const String& parcelName, const String& name, StringBuilder& sb,
-    const String& prefix) const
+void ASTSequenceableType::EmitJavaReadVar(
+    const String &parcelName, const String &name, StringBuilder &sb, const String &prefix) const
 {
     if (EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
         sb.Append(prefix).AppendFormat("%s = %s.readRemoteObject();\n", name.string(), parcelName.string());
@@ -146,17 +142,17 @@ void ASTSequenceableType::EmitJavaReadVar(const String& parcelName, const String
     sb.Append(prefix).AppendFormat("%s.readSequenceable(%s);\n", parcelName.string(), name.string());
 }
 
-void ASTSequenceableType::EmitJavaReadInnerVar(const String& parcelName, const String& name, bool isInner,
-    StringBuilder& sb, const String& prefix) const
+void ASTSequenceableType::EmitJavaReadInnerVar(
+    const String &parcelName, const String &name, bool isInner, StringBuilder &sb, const String &prefix) const
 {
     if (!isInner && EmitJavaType(TypeMode::NO_MODE).Equals("IRemoteObject")) {
-        sb.Append(prefix).AppendFormat("IRemoteObject %s = %s.readRemoteObject();\n",
-            name.string(), parcelName.string());
+        sb.Append(prefix).AppendFormat(
+            "IRemoteObject %s = %s.readRemoteObject();\n", name.string(), parcelName.string());
         return;
     }
     if (!isInner) {
-        sb.Append(prefix).AppendFormat("%s %s = new %s();\n",
-            EmitJavaType(TypeMode::NO_MODE).string(), name.string(), EmitJavaType(TypeMode::NO_MODE).string());
+        sb.Append(prefix).AppendFormat("%s %s = new %s();\n", EmitJavaType(TypeMode::NO_MODE).string(), name.string(),
+            EmitJavaType(TypeMode::NO_MODE).string());
     }
     sb.Append(prefix).AppendFormat("%s.readSequenceable(%s);\n", parcelName.string(), name.string());
 }

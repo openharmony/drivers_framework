@@ -18,28 +18,29 @@ public:
     CServiceDriverCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CServiceDriverCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitDriverSourceFile();
 
-    void EmitDriverIncluions(StringBuilder& sb);
+    void EmitDriverInclusions(StringBuilder &sb);
 
-    void GetDriverSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetDriverSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitDriverServiceDecl(StringBuilder& sb);
+    void EmitDriverServiceDecl(StringBuilder &sb);
 
-    void EmitDriverDispatch(StringBuilder& sb);
+    void EmitDriverDispatch(StringBuilder &sb);
 
-    void EmitDriverInit(StringBuilder& sb);
+    void EmitDriverInit(StringBuilder &sb);
 
-    void EmitDriverBind(StringBuilder& sb);
+    void EmitDriverBind(StringBuilder &sb);
 
-    void EmitDriverRelease(StringBuilder& sb);
+    void EmitDriverRelease(StringBuilder &sb);
 
-    void EmitDriverEntryDefinition(StringBuilder& sb);
+    void EmitDriverEntryDefinition(StringBuilder &sb);
 };
 } // namespace HDI
 } // namespace OHOS

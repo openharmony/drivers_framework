@@ -18,34 +18,37 @@ public:
     CInterfaceCodeEmitter() : CCodeEmitter() {}
 
     virtual ~CInterfaceCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitInterfaceHeaderFile();
 
-    void EmitImportInclusions(StringBuilder& sb);
+    void EmitImportInclusions(StringBuilder &sb);
 
-    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitPreDeclaration(StringBuilder& sb);
+    void EmitPreDeclaration(StringBuilder &sb);
 
-    void EmitInterfaceDesc(StringBuilder& sb);
+    void EmitInterfaceDesc(StringBuilder &sb);
 
-    void EmitInterfaceVersionMacro(StringBuilder& sb);
+    void EmitInterfaceVersionMacro(StringBuilder &sb);
 
-    void EmitInterfaceDefinition(StringBuilder& sb);
+    void EmitInterfaceBuffSizeMacro(StringBuilder &sb);
 
-    void EmitInterfaceMethods(StringBuilder& sb, const String& prefix);
+    void EmitInterfaceDefinition(StringBuilder &sb);
 
-    void EmitInterfaceMethod(const AutoPtr<ASTMethod>& method, StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethods(StringBuilder &sb, const String &prefix);
 
-    void EmitAsObjectMethod(StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethod(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceGetMethodDecl(StringBuilder& sb);
+    void EmitAsObjectMethod(StringBuilder &sb, const String &prefix);
 
-    void EmitInterfaceReleaseMethodDecl(StringBuilder& sb);
+    void EmitInterfaceGetMethodDecl(StringBuilder &sb);
+
+    void EmitInterfaceReleaseMethodDecl(StringBuilder &sb);
 };
 } // namespace HDI
 } // namespace OHOS

@@ -11,6 +11,7 @@
 
 #include <unordered_map>
 #include <vector>
+
 #include "util/string.h"
 
 namespace OHOS {
@@ -19,12 +20,12 @@ class Options {
 public:
     using PkgPathMap = std::unordered_map<String, String, StringHashFunc, StringEqualFunc>;
 
-    static Options& GetInstance();
+    static Options &GetInstance();
 
-    Options(const Options& other) = delete;
-    Options operator=(const Options& other) = delete;
+    Options(const Options &other) = delete;
+    Options operator=(const Options &other) = delete;
 
-    Options& Parse(int argc, char *argv[]);
+    Options &Parse(int argc, char *argv[]);
 
     ~Options() = default;
 
@@ -104,13 +105,15 @@ public:
 
     void ShowUsage() const;
 
-    String GetRootPackage(const String& package);
+    String GetRootPackage(const String &package);
 
-    String GetSubPackage(const String& package);
+    String GetSubPackage(const String &package);
 
-    String GetPackagePath(const String& package);
+    String GetPackagePath(const String &package);
+
 private:
-    Options() : program_(),
+    Options()
+        : program_(),
         sourceFiles_(0),
         targetLanguage_(),
         codePart_("all"),
@@ -126,19 +129,21 @@ private:
         doModeKernel_(false),
         doGeneratePart_(false),
         doSetModuleName_(false),
-        doOutDir_(false) {}
+        doOutDir_(false)
+    {
+    }
 
     void SetOptionData(char op);
 
-    void AddPackagePath(const String& packagePath);
+    void AddPackagePath(const String &packagePath);
 
-    void SetLanguage(const String& language);
+    void SetLanguage(const String &language);
 
-    void SetCodePart(const String& part);
+    void SetCodePart(const String &part);
 
     void CheckOptions();
 
-    static const char* optSupportArgs;
+    static const char *optSupportArgs;
     static constexpr int OPT_END = -1;
 
     static constexpr int VERSION_MAJOR = 0;

@@ -21,18 +21,19 @@ namespace HDI {
 class JavaCodeEmitter : public CodeEmitter {
 public:
     virtual ~JavaCodeEmitter() = default;
+
 protected:
     bool CreateDirectory();
 
-    void EmitLicense(StringBuilder& sb);
+    void EmitLicense(StringBuilder &sb);
 
-    void EmitPackage(StringBuilder& sb);
+    void EmitPackage(StringBuilder &sb);
 
-    void EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix);
+    void EmitInterfaceMethodCommands(StringBuilder &sb, const String &prefix);
 
-    String MethodName(const String& name);
+    String MethodName(const String &name);
 
-    String SpecificationParam(StringBuilder& paramSb, const String& prefix);
+    String SpecificationParam(StringBuilder &paramSb, const String &prefix);
 };
 } // namespace HDI
 } // namespace OHOS

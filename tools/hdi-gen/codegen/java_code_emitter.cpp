@@ -10,7 +10,7 @@
 
 namespace OHOS {
 namespace HDI {
-void JavaCodeEmitter::EmitLicense(StringBuilder& sb)
+void JavaCodeEmitter::EmitLicense(StringBuilder &sb)
 {
     if (ast_->GetLicense().IsEmpty()) {
         return;
@@ -18,22 +18,21 @@ void JavaCodeEmitter::EmitLicense(StringBuilder& sb)
     sb.Append(ast_->GetLicense()).Append("\n\n");
 }
 
-void JavaCodeEmitter::EmitPackage(StringBuilder& sb)
+void JavaCodeEmitter::EmitPackage(StringBuilder &sb)
 {
     sb.AppendFormat("package %s;\n", ast_->GetPackageName().string());
 }
 
-void JavaCodeEmitter::EmitInterfaceMethodCommands(StringBuilder& sb, const String& prefix)
+void JavaCodeEmitter::EmitInterfaceMethodCommands(StringBuilder &sb, const String &prefix)
 {
     for (size_t i = 0; i < interface_->GetMethodNumber(); i++) {
         AutoPtr<ASTMethod> method = interface_->GetMethod(i);
-        sb.Append(prefix).AppendFormat(
-            "private static final int COMMAND_%s = IRemoteObject.MIN_TRANSACTION_ID + %d;\n",
+        sb.Append(prefix).AppendFormat("private static final int COMMAND_%s = IRemoteObject.MIN_TRANSACTION_ID + %d;\n",
             ConstantName(method->GetName()).string(), i);
     }
 }
 
-String JavaCodeEmitter::MethodName(const String& name)
+String JavaCodeEmitter::MethodName(const String &name)
 {
     if (name.IsEmpty() || islower(name[0])) {
         return name;
@@ -41,7 +40,7 @@ String JavaCodeEmitter::MethodName(const String& name)
     return String::Format("%c%s", tolower(name[0]), name.Substring(1).string());
 }
 
-String JavaCodeEmitter::SpecificationParam(StringBuilder& paramSb, const String& prefix)
+String JavaCodeEmitter::SpecificationParam(StringBuilder &paramSb, const String &prefix)
 {
     int maxLineLen = 120;
     int replaceLen = 2;

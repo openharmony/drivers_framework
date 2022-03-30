@@ -18,42 +18,43 @@ public:
     CppCustomTypesCodeEmitter() : CppCodeEmitter() {}
 
     virtual ~CppCustomTypesCodeEmitter() = default;
+
 private:
-    bool ResolveDirectory(const String& targetDirectory) override;
+    bool ResolveDirectory(const String &targetDirectory) override;
 
     void EmitCode() override;
 
     void EmitCustomTypesHeaderFile();
 
-    void EmitHeaderFileInclusions(StringBuilder& sb);
+    void EmitHeaderFileInclusions(StringBuilder &sb);
 
-    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitCustomTypeDecls(StringBuilder& sb);
+    void EmitCustomTypeDecls(StringBuilder &sb);
 
-    void EmitCustomTypeDecl(StringBuilder& sb, const AutoPtr<ASTType>& type);
+    void EmitCustomTypeDecl(StringBuilder &sb, const AutoPtr<ASTType> &type);
 
-    void EmitCustomTypeFuncDecl(StringBuilder& sb);
+    void EmitCustomTypeFuncDecl(StringBuilder &sb);
 
-    void EmitCustomTypeMarshallingDecl(StringBuilder& sb, const AutoPtr<ASTStructType>& type);
+    void EmitCustomTypeMarshallingDecl(StringBuilder &sb, const AutoPtr<ASTStructType> &type);
 
-    void EmitCustomTypeUnmarshallingDecl(StringBuilder& sb, const AutoPtr<ASTStructType>& type);
+    void EmitCustomTypeUnmarshallingDecl(StringBuilder &sb, const AutoPtr<ASTStructType> &type);
 
     void EmitCustomTypesSourceFile();
 
-    void EmitSourceFileInclusions(StringBuilder& sb);
+    void EmitSourceFileInclusions(StringBuilder &sb);
 
-    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet& headerFiles);
+    void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitCustomTypeDataProcess(StringBuilder& sb);
+    void EmitCustomTypeDataProcess(StringBuilder &sb);
 
-    void EmitCustomTypeMarshallingImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type);
+    void EmitCustomTypeMarshallingImpl(StringBuilder &sb, const AutoPtr<ASTStructType> &type);
 
-    void EmitCustomTypeUnmarshallingImpl(StringBuilder& sb, const AutoPtr<ASTStructType>& type);
+    void EmitCustomTypeUnmarshallingImpl(StringBuilder &sb, const AutoPtr<ASTStructType> &type);
 
-    void EmitBeginNamespace(StringBuilder& sb) override;
+    void EmitBeginNamespace(StringBuilder &sb) override;
 
-    void EmitEndNamespace(StringBuilder& sb) override;
+    void EmitEndNamespace(StringBuilder &sb) override;
 };
 } // namespace HDI
 } // namespace OHOS
