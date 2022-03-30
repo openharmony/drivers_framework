@@ -23,7 +23,7 @@
 #define LIGHT_MAKE_B_BIT    0X00000080
 #define LIGHT_WAIT_TIME     50
 
-#define LIGHT_TYPE_NUM      4
+#define LIGHT_ID_NUM      4
 
 #define CHECK_LIGHT_NULL_PTR_RETURN_VALUE(ptr, ret) do { \
     if ((ptr) == NULL) { \
@@ -64,12 +64,12 @@ enum LightState {
     LIGHT_STATE_BUTT,
 };
 
-enum LightType {
-    LIGHT_TYPE_NONE                = 0,
-    LIGHT_TYPE_BATTERY             = 1,
-    LIGHT_TYPE_NOTIFICATIONS       = 2,
-    LIGHT_TYPE_ATTENTION           = 3,
-    LIGHT_TYPE_BUTT,
+enum LightId {
+    LIGHT_ID_NONE                = 0,
+    LIGHT_ID_BATTERY             = 1,
+    LIGHT_ID_NOTIFICATIONS       = 2,
+    LIGHT_ID_ATTENTION           = 3,
+    LIGHT_ID_BUTT,
 };
 
 enum LightFlashMode {
@@ -90,7 +90,7 @@ struct LightEffect {
 };
 
 struct LightInfo {
-    uint32_t lightType;
+    uint32_t lightId;
     int32_t reserved;
 };
 
@@ -112,12 +112,12 @@ struct LightDriverData {
     HdfWork work;
     OsalTimer timer;
     struct OsalMutex mutex;
-    uint32_t lightType;
+    uint32_t lightId;
     uint32_t lightNum;
-    struct LightDeviceInfo *info[LIGHT_TYPE_BUTT];
+    struct LightDeviceInfo *info[LIGHT_ID_BUTT];
 };
 
-typedef int32_t (*LightCmdHandle)(uint32_t lightType, struct HdfSBuf *data, struct HdfSBuf *reply);
+typedef int32_t (*LightCmdHandle)(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *reply);
 
 struct LightCmdHandleList {
     enum LightOpsCmd cmd;
