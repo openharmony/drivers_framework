@@ -133,7 +133,7 @@ static struct I2cCntlr *I2cManagerFindCntlr(int16_t number)
 }
 
 /*
- * Find and return an i2c controller by number, with ref count(TO DO ...)
+ * Find and return an i2c controller by number, with ref count
  */
 struct I2cCntlr *I2cCntlrGet(int16_t number)
 {
@@ -141,7 +141,7 @@ struct I2cCntlr *I2cCntlrGet(int16_t number)
 }
 
 /*
- * Put back the i2c controller, with ref count(TO DO ...)
+ * Put back the i2c controller, with ref count
  */
 void I2cCntlrPut(struct I2cCntlr *cntlr)
 {
@@ -228,7 +228,8 @@ int32_t I2cCntlrTransfer(struct I2cCntlr *cntlr, struct I2cMsg *msgs, int16_t co
 
 static int32_t I2cTransferRebuildMsgs(struct HdfSBuf *data, struct I2cMsg **ppmsgs, int16_t *pcount, uint8_t **ppbuf)
 {
-    int16_t count, i;
+    int16_t count;
+    int16_t i;
     uint32_t len;
     uint32_t lenReply = 0;
     uint8_t *buf = NULL;
@@ -241,7 +242,7 @@ static int32_t I2cTransferRebuildMsgs(struct HdfSBuf *data, struct I2cMsg **ppms
     }
 
     count = (int16_t)len / (int16_t)sizeof(*msgs);
-    PLAT_LOGV("I2cTransferRebuildMsgs: count:%u, len:%u, sizeof(*msgs):%u",
+    PLAT_LOGV("I2cTransferRebuildMsgs: count:%d, len:%u, sizeof(*msgs):%u",
         count, len, sizeof(*msgs));
     for (i = 0; i < count; i++) {
         if ((msgs[i].flags & I2C_FLAG_READ) != 0) {

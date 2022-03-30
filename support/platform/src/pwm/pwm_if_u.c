@@ -198,6 +198,7 @@ static int32_t PwmConfigTransSet(DevHandle handle, enum PwmSetConfigType type, s
     struct PwmConfig nowCfg;
     uint32_t curValue;
     int32_t ret;
+
     if (PwmGetConfig(handle, &nowCfg) != HDF_SUCCESS) {
         HDF_LOGE("%s: PwmGetConfig fail", __func__);
         return HDF_FAILURE;
@@ -227,7 +228,7 @@ static int32_t PwmConfigTransSet(DevHandle handle, enum PwmSetConfigType type, s
 
     ret = PwmSetConfig(handle, &nowCfg);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: set [%d] cfg fail, org val[%d].", __func__, type, curValue);
+        HDF_LOGE("%s: set [%d] cfg fail, org val[%u].", __func__, type, curValue);
         return HDF_FAILURE;
     }
 

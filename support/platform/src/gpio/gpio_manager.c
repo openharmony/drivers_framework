@@ -37,7 +37,7 @@ static int32_t GpioCntlrCheckStart(struct GpioCntlr *cntlr, struct DListHead *li
         }
 
         if (cntlr->start < freeStart) {
-            PLAT_LOGE("GpioCntlrCheckStart: start:%u not available(freeStart:%u, freeCount:%u)",
+            PLAT_LOGE("GpioCntlrCheckStart: start:%hu not available(freeStart:%hu, freeCount:%hu)",
                 cntlr->start, freeStart, freeCount);
             return HDF_PLT_RSC_NOT_AVL;
         }

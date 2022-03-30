@@ -387,6 +387,11 @@ int32_t MmcStopTransmission(struct MmcCntlr *cntlr, bool writeFlag, uint32_t *st
 {
     int32_t err;
     struct MmcCmd cmd = {0};
+    
+    if (stopStatus == NULL) {
+        HDF_LOGE("%s: stopStatus is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
 
     cmd.cmdCode = STOP_TRANSMISSION;
     /* R1 for read cases and R1b for write cases. */
@@ -793,8 +798,8 @@ static int32_t EmmcDecodeCid(struct MmcCntlr *cntlr)
          */
         cbx = MmcParseBits(rawCid, CID_BITS, 112, 2);
         if (cbx == 0) {
-            cntlr->curDev->state.bits.removeable = 1;
-            HDF_LOGD("Emmc is removeable!");
+            cntlr->curDev->state.bits.removable = 1;
+            HDF_LOGD("Emmc is removable!");
         }
     }
     return HDF_SUCCESS;
@@ -1009,7 +1014,8 @@ static int32_t EmmcDecodeExtCsd(struct MmcCntlr *cntlr, uint8_t *rawExtCsd, uint
 static void EmmcSetBlockCapacity(struct MmcCntlr *cntlr)
 {
     struct EmmcDevice *emmcDev = (struct EmmcDevice *)cntlr->curDev;
-    uint32_t gibVal, mibVal;
+    uint32_t gibVal;
+    uint32_t mibVal;
 
     /*
      * ERASE_GROUP_DEF  Bit0: ENABLE:
@@ -1032,7 +1038,7 @@ static void EmmcSetBlockCapacity(struct MmcCntlr *cntlr)
 
     gibVal = emmcDev->mmc.capacity >> 21;
     mibVal = (emmcDev->mmc.capacity & ~(gibVal << 21)) >> 11;
-    HDF_LOGD("Emmc dev capacity %d.%d Gib", gibVal, mibVal);
+    HDF_LOGD("Emmc dev capacity %u.%u Gib", gibVal, mibVal);
 }
 
 static int32_t EmmcCheckExtCsd(struct MmcCntlr *cntlr, enum MmcBusWidth width)
@@ -1957,7 +1963,7 @@ static int32_t SdDecodeSSr(struct MmcCntlr *cntlr, uint32_t *rawSsr, uint32_t le
         if ((ssr->auSize <= MMC_MAX_BLOCKSIZE_SHIFT) || scr->sdSpec3 > 0) {
             ssr->auValue = 1 << (ssr->auSize + 4);
             /*
-             * ERASE_SIZE: [423:408]. If this field is set to 0, the erase timeout caculation is not supported.
+             * ERASE_SIZE: [423:408]. If this field is set to 0, the erase timeout calculation is not supported.
              * ERASE_SIZE = 1, value = 1AU; ERASE_SIZE = 2, value = 2AU...
              */
             eraseSize = MmcParseBits(rawSsr, SSR_BITS, 408, 16);
@@ -2609,7 +2615,7 @@ static int32_t SdHighSpeedDevInit(struct MmcCntlr *cntlr)
 static int32_t SdDeviceAdd(struct MmcCntlr *cntlr)
 {
     /* The SD dev must be removable. */
-    cntlr->curDev->state.bits.removeable = 1;
+    cntlr->curDev->state.bits.removable = 1;
     SdSetBlockCapacity(cntlr);
     /* add dev. */
     if (MmcDeviceAdd(cntlr->curDev) != HDF_SUCCESS) {
@@ -3579,7 +3585,7 @@ static void SdioDecodeCisTplFunce(struct MmcCntlr *cntlr, struct SdioFunction *f
     /*
      * The Function Extension Tuple provides standard information about the card(common) and each individual function.
      * There shall be one CISTPL_FUNCE in each function's CIS. There are two versions of the CISTPL_FUNCE tuple, one
-     * for the common CIS(function 0) and a version uesd by the individual function's CIS(1-7).
+     * for the common CIS(function 0) and a version used by the individual function's CIS(1-7).
      */
     if (tuple->tplBody[0] == SDIO_CIS_TPL_FUNCE_COMMON) {
         if (function != NULL) {

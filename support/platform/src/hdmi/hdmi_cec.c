@@ -667,6 +667,11 @@ void HdmiCecEncodingCecVersionMsg(struct HdmiCecMsg *msg, uint8_t version)
 
 void HdmiCecEncodingGetCecVersionMsg(struct HdmiCecMsg *msg, bool response)
 {
+    if (msg == NULL) {
+        HDF_LOGE("%s: msg is null", __func__);
+        return;
+    }
+
     msg->len = HDMI_CEC_GET_MSG_LEN(0);
     msg->data[HDMI_CEC_MSG_DATA_FIRST_ELEMENT] = HDMI_CEC_OPCODE_GET_CEC_VERSION;
     if (response == true) {

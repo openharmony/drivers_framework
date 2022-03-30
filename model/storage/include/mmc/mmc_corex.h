@@ -206,7 +206,7 @@ union MmcDevState {
         uint32_t sdxc : 1;
         uint32_t hs200 : 1;
         uint32_t sleep : 1;
-        uint32_t removeable : 1;
+        uint32_t removable : 1;
         uint32_t blkszForByteMode : 1;
         uint32_t hs400 : 1;
         uint32_t hs400es : 1;

@@ -86,8 +86,6 @@ struct HdfDriverEntry g_deviceSample = {
 ```
 int32_t SampleDriverBind(struct HdfDeviceObject *deviceObject)
 {
-    // TODO: Bind device service to device object.
-    // And you can also initialize device resources here.
     return HDF_SUCCESS;
 }
 ```
@@ -97,7 +95,6 @@ int32_t SampleDriverBind(struct HdfDeviceObject *deviceObject)
 ```
 int32_t SampleDriverInit(struct HdfDeviceObject *deviceObject)
 {
-    // TODO: Init hardware or other resources here.
     return HDF_SUCCESS;
 }
 ```

@@ -96,7 +96,7 @@ void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local)
     struct GpioIrqRecord *irqRecord = NULL;
 
     if (cntlr == NULL || cntlr->ginfos == NULL || local >= cntlr->count) {
-        PLAT_LOGW("GpioCntlrIrqCallback: invalid cntlr(ginfos) or loal num:%u!", local);
+        PLAT_LOGW("GpioCntlrIrqCallback: invalid cntlr(ginfos) or loal num:%hu!", local);
         return;
     }
     ginfo = &cntlr->ginfos[local];

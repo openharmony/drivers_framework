@@ -397,8 +397,10 @@ static int32_t HdmiEdidExtBlockNumPhase(struct HdmiEdid *edid)
 
 static int32_t HdmiEdidFirstBlockPhase(struct HdmiEdid *edid)
 {
-    uint32_t i, len;
+    uint32_t i;
+    uint32_t len;
     int32_t ret;
+
     HdmiEdidPhaseFunc func[] = {
         HdmiEdidHeaderPhase,
         HdmiEdidVendorInfoPhase,
@@ -424,7 +426,7 @@ static int32_t HdmiEdidFirstBlockPhase(struct HdmiEdid *edid)
         }
         ret = (func[i])(edid);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("func[%d] exe fail.", i);
+            HDF_LOGE("func[%u] exe fail.", i);
             return ret;
         }
     }
@@ -498,7 +500,7 @@ static void HdmiEdidExtAdbDepthAndMaxRatePhase(struct HdmiEdidAudioInfo *audio, 
     } else if (formatCode >= HDMI_AUDIO_CODING_TYPE_AC3 && formatCode <= HDMI_AUDIO_CODING_TYPE_ATRAC) {
         audio->maxBitRate = data * HDMI_EDID_EXTENSION_AUDIO_BIT_RATE_FACTOR;
     } else {
-        HDF_LOGI("formatCode %d reserved or not care", formatCode);
+        HDF_LOGI("formatCode %hhu reserved or not care", formatCode);
     }
 }
 
@@ -508,10 +510,10 @@ static int32_t HdmiEdidExtAudioDataBlockPhase(struct HdmiSinkDeviceCapability *s
 
     /*
      * Each Short Audio Descriptor is 3-bytes long. There can be up to 31 bytes following any tag,
-     * therefore there may be up to 10 Short Audio Descriptors in the Audio Data Block (ADB).
+     * therefore there may be up to 10 Short Audio Descriptors in the Audio Data Block.
      */
     if (len > (HDMI_EDID_EXTENSION_SHORT_AUDIO_DESCRIPTOR_LEN * HDMI_EDID_EXTENSION_MAX_SHORT_AUDIO_DESCRIPTOR_NUM)) {
-        HDF_LOGE("ADB: len %d is invalid", len);
+        HDF_LOGE("Audio Data Block: len %hhu is invalid", len);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -876,7 +878,7 @@ static int32_t HdmiEdidExtVsDataBlockPhase(struct HdmiSinkDeviceCapability *sink
 static int32_t HdmiEdidExtSpeakerDataBlockPhase(struct HdmiSinkDeviceCapability *sinkCap, uint8_t *data, uint8_t len)
 {
     if (len < HDMI_EDID_EXTENSION_SADB_MIN_INVALID_LEN) {
-        HDF_LOGD("SADB: len %d is too short", len);
+        HDF_LOGD("SADB: len %hhu is too short", len);
         return HDF_SUCCESS;
     }
 
@@ -1137,7 +1139,7 @@ static int32_t HdmiEdidExtUseExtDataBlockPhase(struct HdmiSinkDeviceCapability *
             HdmiEdidExtUseExtDataBlockY420CmdbPhase(sinkCap, data, len);
             break;
         default:
-            HDF_LOGD("ext use ext DB: tag code %d unphase", extTagCode);
+            HDF_LOGD("ext use ext DB: tag code %hhu unphase", extTagCode);
             break;
     }
     return HDF_SUCCESS;
@@ -1197,7 +1199,7 @@ static void HdmiEdidExtSeveralDataBlockPhase(struct HdmiEdid *edid, uint8_t bloc
         data++;
         ret = HdmiEdidExtDataBlockPhase(sinkCap, data, blkLen, dbTagCode);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("data block %d phase fail", dbTagCode);
+            HDF_LOGE("data block %hhu phase fail", dbTagCode);
             return;
         }
     }
@@ -1231,7 +1233,7 @@ static int32_t HdmiEdidExtBlockPhase(struct HdmiEdid *edid, uint8_t blockNum)
 
     /* byte0: Extension Tag */
     if (data[UINT8_ARRAY_TElEMENT_0] != HDMI_EDID_CTA_EXTENSION_TAG) {
-        HDF_LOGD("ext tag is %d", data[UINT8_ARRAY_TElEMENT_0]);
+        HDF_LOGD("ext tag is %hhu", data[UINT8_ARRAY_TElEMENT_0]);
     }
     /* byte1: Extension Revision Number */
     if (data[UINT8_ARRAY_TElEMENT_1] != HDMI_EDID_CTA_EXTENSION3_REVISION) {
@@ -1279,7 +1281,7 @@ int32_t HdmiEdidPhase(struct HdmiEdid *edid)
     for (blockNum = 1; blockNum <= sinkCap->extBlockNum; blockNum++) {
         ret = HdmiEdidExtBlockPhase(edid, blockNum);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("edid ext block%d phase fail.", blockNum);
+            HDF_LOGE("edid ext block%hhu phase fail.", blockNum);
             return ret;
         }
     }

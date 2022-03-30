@@ -163,7 +163,7 @@ static int32_t GetPinIndex(struct PinCntlr *cntlr, struct PinDesc *desc)
         }
         ret = strcmp(cntlr->pins[index].pinName, desc->pinName);
         if (ret == 0) {
-            HDF_LOGI("%s: get pin index:%d success!", __func__, index);
+            HDF_LOGI("%s: get pin index:%hu success!", __func__, index);
             return (int32_t)index;
         }
     }

@@ -276,7 +276,7 @@ static int32_t UartIfPerformanceTest(struct UartTester *tester)
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+    HDF_LOGI("----->interface performance test:[start:%llu(ms) - end:%llu(ms) = %llu (ms)] < 1ms[%d]\r\n",
         startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }

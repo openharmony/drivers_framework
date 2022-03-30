@@ -53,7 +53,7 @@ extern "C" {
 struct MmcBlock {
     char name[MMC_BLOCK_NAME_LEN]; /* name of the block device */
     int32_t index;
-    bool removeable;
+    bool removable;
     size_t capacity;               /* sized by sector */
     size_t secSize;                /* sized by bytes */
     uint32_t errCnt;               /* err count on io transfer */

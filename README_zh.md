@@ -86,8 +86,6 @@ Bind接口描述：该接口的作用主要是完成驱动设备和设备服务�
 ```
 int32_t SampleDriverBind(struct HdfDeviceObject *deviceObject)
 {
-    // TODO: Bind device service to device object.
-    // And you can also initialize device resources here.
     return HDF_SUCCESS;
 }
 ```
@@ -97,7 +95,6 @@ Init接口描述：当框架完成设备绑定动作后，就开始调用驱动�
 ```
 int32_t SampleDriverInit(struct HdfDeviceObject *deviceObject)
 {
-    // TODO: Init hardware or other resources here.
     return HDF_SUCCESS;
 }
 ```

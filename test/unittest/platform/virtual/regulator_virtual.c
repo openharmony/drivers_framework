@@ -61,7 +61,7 @@ static int32_t VirtualRegulatorSetVoltage(struct RegulatorNode *node, uint32_t m
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    HDF_LOGD("VirtualRegulatorSetVoltage %s [%d, %d] success!\n",
+    HDF_LOGD("VirtualRegulatorSetVoltage %s [%u, %u] success!\n",
         node->regulatorInfo.name, minUv, maxUv);
     return HDF_SUCCESS;
 }
@@ -98,7 +98,7 @@ static int32_t VirtualRegulatorGetCurrent(struct RegulatorNode *node, uint32_t *
     }
 
     *current = CURRENT_2500_UA;
-    HDF_LOGD("VirtualRegulatorGetCurrent get %s %d success !\n", node->regulatorInfo.name, *current);
+    HDF_LOGD("VirtualRegulatorGetCurrent get %s %u success !\n", node->regulatorInfo.name, *current);
     return HDF_SUCCESS;
 }
 

@@ -104,7 +104,7 @@ int32_t PwmSetDuty(DevHandle handle, uint32_t duty)
     config.duty = duty;
     ret = PwmSetConfig(handle, &config);
     if (ret == HDF_SUCCESS) {
-        HDF_LOGI("%s: success. duty: %d -> %d.", __func__, curValue, config.duty);
+        HDF_LOGI("%s: success. duty: %u -> %u.", __func__, curValue, config.duty);
     }
     return ret;
 }
@@ -142,7 +142,7 @@ int32_t PwmEnable(DevHandle handle)
     config.status = PWM_ENABLE_STATUS;
     ret = PwmSetConfig(handle, &config);
     if (ret == HDF_SUCCESS) {
-        HDF_LOGI("%s: success. enable: %d -> %d.", __func__, curValue, config.status);
+        HDF_LOGI("%s: success. enable: %u -> %hhu.", __func__, curValue, config.status);
     }
     return ret;
 }

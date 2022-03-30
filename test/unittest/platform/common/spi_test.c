@@ -185,7 +185,7 @@ static int32_t SpiCmpMemByBits(uint8_t *wbuf, uint8_t *rbuf, uint32_t len, uint8
             vr = *((uint16_t *)(rbuf + i)) & (~(0xFFFF << bits));
         }
         if (vw != vr) {
-            HDF_LOGE("%s: compare mem fail(i=%d, vw=%u, vr=%u, bits = %u, len=%u)",
+            HDF_LOGE("%s: compare mem fail(i=%u, vw=%hu, vr=%hu, bits = %hhu, len=%u)",
                 __func__, i, vw, vr, bits, len);
             return HDF_FAILURE;
         }
@@ -493,7 +493,7 @@ static int32_t SpiIfPerformanceTest(struct SpiTester *tester)
 
     if (ret == HDF_SUCCESS) {
         useTime = endMs - startMs;
-        HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+        HDF_LOGI("----->interface performance test:[start:%llu(ms) - end:%llu(ms) = %llu (ms)] < 1ms[%d]\r\n",
             startMs, endMs, useTime, useTime < 1 ? true : false);
         return HDF_SUCCESS;
     }

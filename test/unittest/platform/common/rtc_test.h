@@ -28,7 +28,7 @@ struct RtcTestConfig {
     uint32_t hour;
     uint32_t minute;
     uint32_t second;
-    uint32_t frequence;
+    uint32_t frequency;
     uint32_t userValue;
     uint32_t userMaxIndex;
     uint32_t waitTimeSecond;

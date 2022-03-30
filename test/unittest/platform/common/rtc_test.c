@@ -355,7 +355,7 @@ static int32_t RtcAlarmIrqAttachConfig(struct RtcTester *tester)
         return ret;
     }
 
-    freq = tester->config.frequence;
+    freq = tester->config.frequency;
     ret = RtcSetFreq(tester->handle, freq);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: set freq fail, ret :%d", __func__, ret);
@@ -449,9 +449,9 @@ static int32_t RtcSetNormalFreqTest(struct RtcTester *tester)
 {
     int32_t ret;
 
-    ret = RtcSetFreq(tester->handle, tester->config.frequence);
+    ret = RtcSetFreq(tester->handle, tester->config.frequency);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: set normal frequence fail, ret :%d", __func__, ret);
+        HDF_LOGE("%s: set normal frequency fail, ret :%d", __func__, ret);
         return HDF_FAILURE;
     }
 
@@ -462,9 +462,9 @@ static int32_t RtcSetMaxFreqTest(struct RtcTester *tester)
 {
     int32_t ret;
 
-    ret = RtcSetFreq(tester->handle, tester->config.frequence * RTC_TIME_UNIT);
+    ret = RtcSetFreq(tester->handle, tester->config.frequency * RTC_TIME_UNIT);
     if (ret == HDF_SUCCESS) {
-        HDF_LOGE("%s: set max frequence test fail", __func__);
+        HDF_LOGE("%s: set max frequency test fail", __func__);
         return HDF_FAILURE;
     }
 
@@ -477,11 +477,11 @@ static int32_t RtcSetMinFreqTest(struct RtcTester *tester)
 
     ret = RtcSetFreq(tester->handle, 0);
     if (ret == HDF_SUCCESS) {
-        HDF_LOGE("%s: set min frequence test fail", __func__);
+        HDF_LOGE("%s: set min frequency test fail", __func__);
         return HDF_FAILURE;
     }
 
-    ret = RtcSetFreq(tester->handle, tester->config.frequence);
+    ret = RtcSetFreq(tester->handle, tester->config.frequency);
 
     return ret;
 }
@@ -546,10 +546,10 @@ static int32_t RtcTestSample(struct RtcTester *tester)
         return ret;
     }
 
-    freq = tester->config.frequence;
+    freq = tester->config.frequency;
     ret = RtcSetFreq(tester->handle, freq);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: set frequence fail, ret :%d", __func__, ret);
+        HDF_LOGE("%s: set frequency fail, ret :%d", __func__, ret);
         return ret;
     }
 

@@ -390,7 +390,7 @@ union HdmiGbdHb1 {
     struct {
         uint8_t affectedGamutSeqNum : 4;  /* [0:3] */
         uint8_t gbdProfil : 3;  /* [4:5] */
-        uint8_t reseverd : 1;   /* [6] */
+        uint8_t reserved : 1;   /* [6] */
         uint8_t noCrntGbd : 1;  /* [7] */
     } bits;
     uint8_t val;

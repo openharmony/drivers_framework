@@ -22,9 +22,9 @@ extern "C" {
  * DDC(Display Data Channel)
  * The DDC channel is used by an HDMI Source to determine the capabilities and characteristics of
  * the Sink by reading the E-EDID data structure.
- * The DDC is also uesd to exchange point-to-point dynamic data between the Source and the Sink
+ * The DDC is also used to exchange point-to-point dynamic data between the Source and the Sink
  * using a new DDC address for the HDMI Status and Control Data Channel(SCDC).
- * In addition, The DDC is also uesd for HDCP to exchange key selection vector and other information.
+ * In addition, The DDC is also used for HDCP to exchange key selection vector and other information.
  */
 #define HDMI_DDC_EDID_DEV_ADDRESS 0xA0
 #define HDMI_DDC_SCDC_DEV_ADDRESS 0xA8

@@ -176,7 +176,7 @@ static int32_t SdioDeviceDefaultFunc0ReadBytes(struct SdioDevice *dev,
     for (i = 0; i < size; i++) {
         ret = SdioReadWriteByte(cntlr, false, 0, (addr + i), &data[i]);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("SdioDeviceDefaultFunc0ReadBytes fail, i = %d.", i);
+            HDF_LOGE("SdioDeviceDefaultFunc0ReadBytes fail, i = %u.", i);
             return ret;
         }
     }
@@ -208,7 +208,7 @@ static int32_t SdioDeviceDefaultFunc0WriteBytes(struct SdioDevice *dev,
     for (i = 0; i < size; i++) {
         ret = SdioReadWriteByte(cntlr, true, 0, (addr + i), &data[i]);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("SdioDeviceDefaultFunc0WriteBytes fail, i = %d.", i);
+            HDF_LOGE("SdioDeviceDefaultFunc0WriteBytes fail, i = %u.", i);
             return ret;
         }
     }

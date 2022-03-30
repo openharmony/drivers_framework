@@ -52,7 +52,7 @@ struct PlatformEventListener {
 };
 
 /**
- * @brief Initialize a platform event instace.
+ * @brief Initialize a platform event instance.
  *
  * @param pe Indicates the pointer to the the platform event instance
  *
@@ -63,7 +63,7 @@ struct PlatformEventListener {
 int32_t PlatformEventInit(struct PlatformEvent *pe);
 
 /**
- * @brief Uninitialize a platform event instace.
+ * @brief Uninitialize a platform event instance.
  *
  * @param pe Indicates the pointer to the the platform event instance
  *
@@ -74,7 +74,7 @@ int32_t PlatformEventInit(struct PlatformEvent *pe);
 int32_t PlatformEventUninit(struct PlatformEvent *pe);
 
 /**
- * @brief Write the events to a platform event instace.
+ * @brief Write the events to a platform event instance.
  *
  * @param pe Indicates the pointer to the the platform event instance
  * @param events The events to write.

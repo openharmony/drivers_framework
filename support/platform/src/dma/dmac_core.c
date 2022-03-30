@@ -282,7 +282,7 @@ static inline size_t DmacAlignedTransMax(size_t maxSize, uint8_t srcWidth, uint8
 
     ret = ((maxWidth == 0) ? maxSize : (maxSize - (maxSize % maxWidth)));
 #ifdef DMA_CORE_DEBUG
-    HDF_LOGD("%s: max:%zu, srcwidth:%u, dstwidth:%u, alignedmax:%zu", __func__, maxSize, srcWidth, destWidth, ret);
+    HDF_LOGD("%s: max:%zu, srcwidth:%u, dstwidth:%hhu, alignedmax:%zu", __func__, maxSize, srcWidth, destWidth, ret);
 #endif
     return ret;
 }
@@ -356,7 +356,7 @@ static int32_t DmacAllocLli(struct DmacChanInfo *chanInfo, size_t length, size_t
     }
     lliNum = (length / maxSize) + ((length % maxSize) > 0 ? 1 : 0);
     if (lliNum > 2048) {  /* 2048: lliNum is not more than 2048 */
-        HDF_LOGE("%s: lliNum %u is bigger than 2048", __func__, lliNum);
+        HDF_LOGE("%s: lliNum %zu is bigger than 2048", __func__, lliNum);
         return HDF_ERR_INVALID_PARAM;
     }
 

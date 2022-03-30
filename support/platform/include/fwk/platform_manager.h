@@ -90,7 +90,7 @@ int32_t PlatformManagerDelDevice(struct PlatformManager *manager, struct Platfor
  * @brief Find a particular device from the manager.
  *
  * Locate a particular device from the manager by a matching function, witch will be called for
- * each device, untill it returns true indicatting a device is "found".
+ * each device, until it returns true indicatting a device is "found".
  * The device found will be returned with reference count increased.
  *
  * @param manager Indicates the pointer to the platform manager.

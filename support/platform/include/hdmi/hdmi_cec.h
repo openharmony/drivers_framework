@@ -702,7 +702,7 @@ enum HdmiCecStatusRequest {
 
 /*
  * Deck Control Feature.
- * <Play> Used to control the playback bahavior of a source device.
+ * <Play> Used to control the playback behavior of a source device.
  * Param: [Play Mode], 1 byte.
  */
 #define HDMI_CEC_OPCODE_PLAY 0x41
@@ -1265,14 +1265,14 @@ enum HdmiCecAudioRate {
 
 /*
  * Audio Return Channel Control Feature.
- * <Report ARC Initiated> Used by an ARC RX device to indicate that its ARC functionality has been actived.
+ * <Report ARC Initiated> Used by an ARC RX device to indicate that its ARC functionality has been activated.
  * Param: None.
  */
 #define HDMI_CEC_OPCODE_REPORT_ARC_INITIATED 0xC1
 
 /*
  * Audio Return Channel Control Feature.
- * <Report ARC Termination> Used by an ARC RX device to indicate that its ARC functionality has been deactived.
+ * <Report ARC Termination> Used by an ARC RX device to indicate that its ARC functionality has been deactivated.
  * Param: None.
  */
 #define HDMI_CEC_OPCODE_REPORT_ARC_TERMINATION 0xC2
