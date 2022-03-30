@@ -460,7 +460,7 @@ int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *rem
 
     CHECK_NULL_PTR_RETURN_VALUE(direction, HDF_ERR_INVALID_PARAM);
     CHECK_NULL_PTR_RETURN_VALUE(remapData, HDF_ERR_INVALID_PARAM);
-    if (num > MAX_SENSOR_AXIS_NUM) {
+    if (num != MAX_SENSOR_AXIS_NUM) {
         HDF_LOGE("%s: afferent num failed", __func__);
         return HDF_FAILURE;
     }
