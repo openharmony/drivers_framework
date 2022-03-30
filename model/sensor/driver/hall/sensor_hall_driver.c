@@ -263,6 +263,9 @@ static int32_t SetHallDisable(void)
 
 static int32_t SetHallBatch(int64_t samplingInterval, int64_t interval)
 {
+    (void)samplingInterval;
+    (void)interval;
+
     return HDF_SUCCESS;
 }
 

@@ -47,7 +47,7 @@ static int32_t ReadBmi160RawData(struct SensorCfgData *data, struct AccelData *r
 
     int32_t ret = ReadSensor(&data->busCfg, BMI160_STATUS_ADDR, &status, sizeof(uint8_t));
     if (!(status & BMI160_ACCEL_DATA_READY_MASK) || (ret != HDF_SUCCESS)) {
-        HDF_LOGE("%s: data status [%u] ret [%d]", __func__, status, ret);
+        HDF_LOGE("%s: data status [%hhu] ret [%d]", __func__, status, ret);
         return HDF_FAILURE;
     }
 
