@@ -43,7 +43,7 @@ static void TestWorkEntry(void *para)
     static int cnt = 0;
     if (para != NULL) {
         if (cnt % DELAY_TIME_DEFAULT == 0) {
-            HDF_LOGE("%s %d", __func__, *(uint32_t *)para);
+            HDF_LOGE("%s %u", __func__, *(uint32_t *)para);
         }
         cnt++;
     }
@@ -56,7 +56,7 @@ static void TestDelayWorkEntry(void *para)
 
     if (para != NULL) {
         if (cnt % DELAY_TIME_DEFAULT == 0) {
-            HDF_LOGE("%s %d", __func__, *(uint32_t *)para);
+            HDF_LOGE("%s %u", __func__, *(uint32_t *)para);
         }
         cnt++;
     }
