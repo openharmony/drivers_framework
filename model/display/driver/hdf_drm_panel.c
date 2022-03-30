@@ -227,7 +227,7 @@ int32_t HdfDrmPanelEntryInit(struct HdfDeviceObject *object)
         ret = drm_panel_add(&hdfDrmPanel->panel);
         if (ret) {
             HDF_LOGE("%s drm_panel_add() failed", __func__);
-            hdfDrmPanel = NULL;
+            OsalMemFree(hdfDrmPanel);
             return ret;
         }
         ret = mipi_dsi_attach(dsiDev);
