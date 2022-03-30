@@ -228,6 +228,7 @@ static struct VibratorCmdHandleList g_vibratorCmdHandle[] = {
 static int32_t DispatchVibrator(struct HdfDeviceIoClient *client,
     int32_t cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
+    (void)client;
     int32_t loop;
 
     for (loop = 0; loop < sizeof(g_vibratorCmdHandle) / sizeof(g_vibratorCmdHandle[0]); ++loop) {

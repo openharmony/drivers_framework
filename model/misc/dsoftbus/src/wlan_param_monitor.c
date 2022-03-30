@@ -76,7 +76,7 @@ void SoftbusWlanParamMonitorProcess(const struct HdfSBuf *reqData, struct HdfSBu
         return;
     }
     cmd = *((uint32_t *)data);
-    HDF_LOGI("process command: %d", cmd);
+    HDF_LOGI("process command: %u", cmd);
     if (cmd == CMD_REQUEST_PARAM) {
         ProcessRequestParam();
     }

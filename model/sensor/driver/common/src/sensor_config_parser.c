@@ -278,7 +278,7 @@ int32_t DetectSensorDevice(struct SensorCfgData *config)
     }
 
     if (value != chipIdValue) {
-        HDF_LOGE("%s: sensor chip[0x%x] id [0x%x] detect value[%u]", __func__, chipIdReg, chipIdValue, value);
+        HDF_LOGE("%s: sensor chip[0x%x] id [0x%x] detect value[%hhu]", __func__, chipIdReg, chipIdValue, value);
         (void)ReleaseSensorBusHandle(&config->busCfg);
         return HDF_FAILURE;
     }

@@ -34,8 +34,8 @@ static int sensor_convert_data(char high_byte, char low_byte)
 {
     int32_t result;
 
-    result = ((int32_t)high_byte << (MXC6655_PRECISION - MXC6655_ACCEL_OUTPUT_MSB)) |
-        ((int32_t)low_byte >> (MXC6655_ACCEL_OUTPUT_16BIT - MXC6655_PRECISION));
+    result = ((uint32_t)high_byte << (MXC6655_PRECISION - MXC6655_ACCEL_OUTPUT_MSB)) |
+        ((uint32_t)low_byte >> (MXC6655_ACCEL_OUTPUT_16BIT - MXC6655_PRECISION));
 
     if (result < MXC6655_BOUNDARY) {
         result = result * MXC6655_GRAVITY_STEP;
