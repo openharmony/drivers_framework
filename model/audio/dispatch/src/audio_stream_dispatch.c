@@ -10,7 +10,7 @@
 #include "audio_driver_log.h"
 #include "audio_platform_base.h"
 
-#define HDF_LOG_TAG audio_stream_dispatch
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 #define BUFF_SIZE_MAX 64
 

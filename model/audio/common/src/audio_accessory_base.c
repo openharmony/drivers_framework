@@ -11,7 +11,7 @@
 #include "i2c_if.h"
 #include "osal_time.h"
 
-#define HDF_LOG_TAG "audio_accessory_base"
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 #define COMM_SHIFT_8BIT      (8)
 #define COMM_MASK_FF         (0xFF)

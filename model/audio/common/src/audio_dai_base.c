@@ -9,6 +9,8 @@
 #include "audio_core.h"
 #include "audio_driver_log.h"
 
+#define HDF_LOG_TAG HDF_AUDIO_KADM
+
 static const char *g_audioDaiControlsList[AUDIO_CTRL_LIST_MAX] = {
     "Main Playback Volume", "Main Capture Volume",
     "Playback Mute", "Capture Mute", "Mic Left Gain",

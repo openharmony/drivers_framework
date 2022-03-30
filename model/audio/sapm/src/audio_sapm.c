@@ -12,7 +12,7 @@
 #include "osal_time.h"
 #include "osal_timer.h"
 
-#define HDF_LOG_TAG audio_sapm
+#define HDF_LOG_TAG HDF_AUDIO_SAPM
 
 #define SAPM_POLL_TIME 10000        /* 10s */
 #define SAPM_SLEEP_TIME (3 * 60000) /* 3min */

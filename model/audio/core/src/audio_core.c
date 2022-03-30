@@ -10,7 +10,7 @@
 #include "audio_driver_log.h"
 #include "osal_io.h"
 
-#define HDF_LOG_TAG audio_core
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 #define CHANNEL_MAX_NUM 2
 #define CHANNEL_MIN_NUM 1

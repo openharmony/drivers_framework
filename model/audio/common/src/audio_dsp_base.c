@@ -9,7 +9,7 @@
 #include "audio_dsp_base.h"
 #include "audio_driver_log.h"
 
-#define HDF_LOG_TAG audio_dsp_base
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 int32_t DspGetServiceName(const struct HdfDeviceObject *device, const char **drvDspName)
 {

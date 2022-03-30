@@ -7,6 +7,8 @@
  */
 #include "audio_platform_if.h"
 
+#define HDF_LOG_TAG HDF_AUDIO_KADM
+
 int32_t AudioDmaBufAlloc(struct PlatformData *data, enum AudioStreamType streamType)
 {
     if (data != NULL && data->ops != NULL && data->ops->DmaBufAlloc != NULL) {

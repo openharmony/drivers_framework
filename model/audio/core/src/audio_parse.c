@@ -9,7 +9,7 @@
 #include "audio_parse.h"
 #include "audio_driver_log.h"
 
-#define HDF_LOG_TAG audio_parse
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 enum AudioRegCfgIndex {
     AUDIO_REG_CFG_REG_INDEX = 0,

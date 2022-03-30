@@ -10,7 +10,7 @@
 #include "audio_control.h"
 #include "audio_driver_log.h"
 
-#define HDF_LOG_TAG audio_control_dispatch
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 static struct AudioKcontrol *AudioGetKctrlInstance(const struct AudioCtrlElemId *ctrlElemId)
 {

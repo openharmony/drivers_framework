@@ -13,7 +13,7 @@
 #include "audio_driver_log.h"
 #include "audio_parse.h"
 
-#define HDF_LOG_TAG audio_host
+#define HDF_LOG_TAG HDF_AUDIO_KADM
 
 AUDIO_LIST_HEAD(cardManager);
 
