@@ -75,12 +75,8 @@ struct AdcTester *AdcTesterGet(void)
 {
     int32_t ret;
     static struct AdcTester tester;
-    static bool hasInit = false;
 
     HDF_LOGE("%s: enter", __func__);
-    if (hasInit) {
-        return &tester;
-    }
     ret = AdcTestGetConfig(&tester.config);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: read config failed:%d", __func__, ret);
@@ -91,9 +87,18 @@ struct AdcTester *AdcTesterGet(void)
         HDF_LOGE("%s: open adc device:%u failed", __func__, tester.config.devNum);
         return NULL;
     }
-    hasInit = true;
     HDF_LOGI("%s: done", __func__);
     return &tester;
+}
+
+static void AdcTesterPut(struct AdcTester *tester)
+{
+    if (tester == NULL) {
+        HDF_LOGE("%s: tester is NULL", __func__);
+        return;
+    }
+    AdcClose(tester->handle);
+    tester->handle = NULL;
 }
 
 int32_t AdcTestRead(void)
@@ -113,11 +118,13 @@ int32_t AdcTestRead(void)
         value[i] = 0;
         ret = AdcRead(tester->handle, tester->config.channel, &value[i]);
         if (ret != HDF_SUCCESS || value[i] >= (1U << tester->config.dataWidth)) {
+            AdcTesterPut(tester);
             HDF_LOGE("%s: read value failed, ret:%d", __func__, ret);
             return HDF_ERR_IO;
         }
     }
 
+    AdcTesterPut(tester);
     HDF_LOGI("%s: done", __func__);
     return HDF_SUCCESS;
 }
@@ -142,11 +149,13 @@ static int AdcTestThreadFunc(void *param)
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: AdcRead failed, ret:%d", __func__, ret);
             *((int32_t *)param) = 1;
+            AdcTesterPut(tester);
             return HDF_ERR_IO;
         }
     }
 
     *((int32_t *)param) = 1;
+    AdcTesterPut(tester);
     HDF_LOGI("%s: done", __func__);
     return val;
 }
@@ -217,6 +226,7 @@ int32_t AdcTestReliability(void)
     (void)AdcRead(tester->handle, tester->config.maxChannel + 1, &val);
     // invalid val pointer
     (void)AdcRead(tester->handle, tester->config.channel, NULL);
+    AdcTesterPut(tester);
     HDF_LOGI("%s: done", __func__);
     return HDF_SUCCESS;
 }
@@ -247,7 +257,10 @@ static int32_t AdcIfPerformanceTest(void)
         useTime = endMs - startMs;
         HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
             startMs, endMs, useTime, useTime < 1 ? true : false);
+        AdcTesterPut(tester);
+        return HDF_SUCCESS;
     }
+    AdcTesterPut(tester);
     return HDF_FAILURE;
 }
 
