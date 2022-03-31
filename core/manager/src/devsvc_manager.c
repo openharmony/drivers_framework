@@ -136,15 +136,17 @@ int DevSvcManagerUpdateService(struct IDevSvcManager *inst, const char *servName
         return HDF_DEV_ERR_NO_DEVICE;
     }
 
-    servInfoStr = HdfStringCopy(servInfo);
-    if (servInfoStr == NULL) {
-        return HDF_ERR_MALLOC_FAIL;
+    if (servInfo != NULL) {
+        servInfoStr = HdfStringCopy(servInfo);
+        if (servInfoStr == NULL) {
+            return HDF_ERR_MALLOC_FAIL;
+        }
+        OsalMemFree((char *)record->servInfo);
+        record->servInfo = servInfoStr;
     }
-    OsalMemFree((char *)record->servInfo);
 
     record->value = service;
     record->devClass = devClass;
-    record->servInfo = servInfoStr;
     OsalMutexLock(&devSvcManager->mutex);
     NotifyServiceStatusLocked(devSvcManager, record, SERVIE_STATUS_CHANGE);
     OsalMutexUnlock(&devSvcManager->mutex);
