@@ -419,6 +419,7 @@ int32_t ParseSensorDirection(struct SensorCfgData *config)
     ret = parser->GetUint32(directionNode, "direction", &index, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "direction");
     if ((num <= 0 || num > MAX_SENSOR_INDEX_NUM) || (index > num / AXIS_INDEX_MAX)) {
+        HDF_LOGE("%s: parser %d element num failed", __func__, num);
         return HDF_FAILURE;
     }
 
@@ -458,6 +459,11 @@ int32_t SensorRawDataToRemapData(struct SensorDirection *direction, int32_t *rem
     int32_t newData[MAX_SENSOR_AXIS_NUM];
 
     CHECK_NULL_PTR_RETURN_VALUE(direction, HDF_ERR_INVALID_PARAM);
+    CHECK_NULL_PTR_RETURN_VALUE(remapData, HDF_ERR_INVALID_PARAM);
+    if (num != MAX_SENSOR_AXIS_NUM) {
+        HDF_LOGE("%s: afferent num failed", __func__);
+        return HDF_FAILURE;
+    }
 
     for (axis = 0; axis < num; axis++) {
         if (direction->sign[axis] == 0) {
