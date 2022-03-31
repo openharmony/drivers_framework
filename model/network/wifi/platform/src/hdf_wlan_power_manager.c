@@ -106,6 +106,7 @@ static int32_t HdfWlanChipPowerOn(struct PowerManager* powerMgr)
     }
     return HDF_SUCCESS;
 }
+
 static int32_t HdfWlanChipPowerOff(struct PowerManager* powerMgr)
 {
     int32_t ret;

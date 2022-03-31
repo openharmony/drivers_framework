@@ -506,7 +506,7 @@ static int32_t ParseWlanChipsConfig(const struct DeviceResourceNode *node, struc
         cnt++;
         chipList->chipInstSize++;
     }
-    HDF_LOGD("%s: chipSize=%d", __func__, chipList->chipInstSize);
+    HDF_LOGD("%s: chipSize=%hu", __func__, chipList->chipInstSize);
 
     return HDF_SUCCESS;
 }

@@ -44,7 +44,7 @@ int HdfWlanAddDevice(struct HdfWlanDevice *device)
             return HDF_SUCCESS;
         }
     }
-    HDF_LOGE("%s: device list has full!", __func__);
+    HDF_LOGE("%s: device list is full!", __func__);
     return HDF_FAILURE;
 }
 
