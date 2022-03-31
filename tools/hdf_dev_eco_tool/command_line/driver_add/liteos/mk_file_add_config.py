@@ -7,58 +7,56 @@
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
 
-import re
+
 from string import Template
 
 import hdf_utils
 
-
-def replace_func(info_str):
-    replace_dict = {'(': "{", ')': "}"}
-    for key, values in replace_dict.items():
-        info_str = info_str.replace(key, values)
-    return info_str
+from .gn_file_add_config import judge_driver_config_exists
 
 
-def makefile_operation(mk_path, driver_file_path):
-    lines = hdf_utils.read_file_lines(mk_path)
-    makefile_info = {}
+def find_makefile_file_end_index(date_lines, model_name):
+    file_end_flag = "include $(HDF_DRIVER)"
+    end_index = 0
+    model_dir_name = ("%s_ROOT_DIR" % model_name.upper())
+    model_dir_value = ""
 
-    status = False
-    for index, line in enumerate(lines):
-        if line.find('LOCAL_SRCS') != -1 and status == False:
-            status = True
-        if line.find("endif") != -1:
-            status = False
-        elif status:
-            info_value = ('/'.join(line.split("=")[-1].split('/')[:-1])).strip()
-            if info_value not in list(makefile_info.values()):
-                makefile_info[index] = info_value
-
-    file_path = '/'.join(driver_file_path.split('\\'))
-    for key, info in makefile_info.items():
-        if re.search(r"[A-Z_]+", info) is not None:
-            model_name = re.search(r"[A-Z_]+", info).group()
-            for line in lines:
-                if re.search(model_name, line):
-                    temp = {model_name: line.strip().split('=')[-1].strip()}
-                    temp_path = Template(replace_func(info)).safe_substitute(temp)
-                    lines_insert(file_path, temp_path, lines, key)
-
-    hdf_utils.write_file_lines(mk_path, lines)
-
-
-def lines_insert(file_path, temp_path, lines, key):
-    insert_temp = ""
-    if file_path.find(temp_path.split('model')[-1]) != -1 and insert_temp == "":
-        insert_temp = lines[key]
-        if insert_temp.strip().endswith("\\"):
-            replace_temp = re.sub(r"[a-zA-Z0-9_]+\.c", file_path.split('/')[-1], insert_temp)
-            if replace_temp.startswith("LOCAL_SRCS"):
-                insert_temp = ((len(replace_temp.split("=")[0]) + 1) * " ") + replace_temp.split("=")[-1]
-                lines.insert(key + 1, insert_temp)
-            else:
-                lines.insert(key + 1, replace_temp)
+    for index, line in enumerate(date_lines):
+        if line.startswith("#"):
+            continue
+        elif line.strip().startswith(file_end_flag):
+            end_index = index
+        elif line.strip().startswith(model_dir_name):
+            model_dir_value = line.split("=")[-1].strip()
         else:
-            test = (file_path.split('/')[-1] + r" \\")
-            lines.insert(key, re.sub(r"[a-zA-Z0-9_]+.c$", test, insert_temp))
+            continue
+    result_tuple = (end_index, model_dir_name, model_dir_value)
+    return result_tuple
+
+
+def makefile_file_operation(path, driver_file_path, module, driver):
+    makefile_gn_path = path
+    date_lines = hdf_utils.read_file_lines(makefile_gn_path)
+    judge_result = judge_driver_config_exists(date_lines, driver_name=driver)
+    if judge_result:
+        return
+    source_file_path = driver_file_path.replace('\\', '/')
+    result_tuple = find_makefile_file_end_index(date_lines, model_name=module)
+    end_index, model_dir_name, model_dir_value = result_tuple
+    
+    first_line = "\nifeq ($(LOSCFG_DRIVERS_HDF_${model_name_upper}_${driver_name_upper}), y)\n"
+    second_line = "LOCAL_SRCS += $(${model_name_upper}_ROOT_DIR)/${source_file_path}\n"
+    third_line = "endif\n"
+    makefile_add_template = first_line + second_line + third_line
+    include_model_info = model_dir_value.split("model")[-1].strip('"')+"/"
+    makefile_path_config = source_file_path.split(include_model_info)
+    temp_handle = Template(makefile_add_template.replace("$(", "temp_flag"))
+    d = {
+        'model_name_upper': module.upper(),
+        'driver_name_upper': driver.upper(),
+        'source_file_path': makefile_path_config[-1]
+    }
+    new_line = temp_handle.substitute(d).replace("temp_flag", "$(")
+
+    date_lines = date_lines[:end_index-1] + [new_line] + date_lines[end_index-1:]
+    hdf_utils.write_file_lines(makefile_gn_path, date_lines)

@@ -1,0 +1,7 @@
+
+config DRIVERS_HDF_${model_name_upper}_${driver_name_upper}
+    bool "Enable HDF ${model_name_lower} ${driver_name_lower} driver"
+    default n
+    depends on DRIVERS_HDF_${model_name_upper}
+    help
+      Answer Y to enable HDF ${model_name_lower} ${driver_name_lower} driver.

@@ -41,10 +41,17 @@ class HdfDeviceInfoHcsFile(object):
             raise HdfToolException(
                 'hcs file: %s not exist' %
                 self.hcspath, CommandErrorCode.TARGET_NOT_EXIST)
+        self.data = {
+            "driver_name": self.driver,
+            "model_name": self.module,
+        }
 
     def _save(self):
         if self.lines:
-            hdf_utils.write_file(self.hcspath, ''.join(self.lines))
+            codetype = "utf-8"
+            with open(self.hcspath, "w+", encoding=codetype) as lwrite:
+                for line in self.lines:
+                    lwrite.write(line)
 
     def _find_line(self, pattern):
         for index, line in enumerate(self.lines):
@@ -118,17 +125,13 @@ class HdfDeviceInfoHcsFile(object):
                          hdf_utils.read_file_lines(template_path)))
         old_lines = list(filter(lambda x: x != "\n",
                                 hdf_utils.read_file_lines(self.hcspath)))
+
         new_data = old_lines[:-2] + lines + old_lines[-2:]
-        data = {
-            "driver_name": self.driver,
-            "model_name": self.module,
-        }
         for index, _ in enumerate(new_data):
-            new_data[index] = Template(new_data[index]).substitute(data)
-        codetype = "utf-8"
-        with open(self.hcspath, "w+", encoding=codetype) as lwrite:
-            for j in new_data:
-                lwrite.write(j)
+            new_data[index] = Template(new_data[index]).substitute(self.data)
+
+        self.lines = new_data
+        self._save()
         return self.hcspath
 
     def add_model_hcs_file_config_user(self):
@@ -139,15 +142,59 @@ class HdfDeviceInfoHcsFile(object):
         lines[-1] = "\t\t"+lines[-1].strip()+"\n"
         old_lines = list(filter(lambda x: x != "\n",
                                 hdf_utils.read_file_lines(self.hcspath)))
+
         new_data = old_lines[:-2] + lines + old_lines[-2:]
-        data = {
-            "driver_name": self.driver,
-            "model_name": self.module,
-        }
         for index, _ in enumerate(new_data):
-            new_data[index] = Template(new_data[index]).substitute(data)
-        codetype = "utf-8"
-        with open(self.hcspath, "w+", encoding=codetype) as lwrite:
-            for j in new_data:
-                lwrite.write(j)
+            new_data[index] = Template(new_data[index]).substitute(self.data)
+
+        self.lines = new_data
+        self._save()
         return self.hcspath
+
+    def add_hcs_config_to_exists_model(self):
+        template_path = os.path.join(self.file_path,
+                                     'exists_model_hcs_info.template')
+        lines = list(map(lambda x: "\t\t\t" + x,
+                         hdf_utils.read_file_lines(template_path)))
+        old_lines = list(filter(lambda x: x != "\n",
+                                hdf_utils.read_file_lines(self.hcspath)))
+
+        end_index, start_index = self._get_model_index(old_lines)
+        model_hcs_lines = old_lines[start_index:end_index]
+        hcs_judge = self.judge_driver_hcs_exists(date_lines=model_hcs_lines)
+        if hcs_judge:
+            return self.hcspath
+        for index, _ in enumerate(lines):
+            lines[index] = Template(lines[index]).substitute(self.data)
+
+        self.lines = old_lines[:end_index] + lines + old_lines[end_index:]
+        self._save()
+        return self.hcspath
+
+    def _get_model_index(self, old_lines):
+        model_start_index = 0
+        model_end_index = 0
+        start_state = False
+        count = 0
+        for index, old_line in enumerate(old_lines):
+            if old_line.strip().startswith(self.module):
+                model_start_index = index
+                count += 1
+                start_state = True
+            else:
+                if start_state and old_line.find("{") != -1:
+                    count += 1
+                elif start_state and old_line.find("}") != -1:
+                    count -= 1
+                    if count == 0:
+                        start_state = False
+                        model_end_index = index
+        return model_end_index, model_start_index
+
+    def judge_driver_hcs_exists(self, date_lines):
+        for _, line in enumerate(date_lines):
+            if line.startswith("#"):
+                continue
+            elif line.find(self.driver) != -1:
+                return True
+        return False
