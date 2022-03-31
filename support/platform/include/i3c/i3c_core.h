@@ -86,7 +86,7 @@ struct I3cVendor {
     uint32_t vendorProductId;
 };
 
-/* In-bind Interrupt infomation */
+/* In-bind Interrupt information */
 struct I3cIbiInfo {
     I3cIbiFunc ibiFunc;
     uint32_t payload;

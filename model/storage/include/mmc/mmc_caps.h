@@ -46,7 +46,7 @@ union MmcCaps {
         uint32_t sdioIrq : 1;            /* bit:3 signal pending SDIO irqs */
         uint32_t onlySpi : 1;            /* bit:4 only support spi protocols */
         uint32_t needPoll : 1;           /* bit:5 need polling for card-detection */
-        uint32_t nonremovable : 1;       /* bit:6 Nonremoveable eg. eMMC */
+        uint32_t nonremovable : 1;       /* bit:6 Nonremovable eg. eMMC */
         uint32_t waitWhileBusy : 1;      /* bit:7 waits while card is busy */
         uint32_t erase : 1;              /* bit:8 allow erase */
         uint32_t ddr1v8 : 1;             /* bit:9 support ddr mode at 1.8V */

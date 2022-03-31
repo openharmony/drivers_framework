@@ -173,7 +173,7 @@ static int32_t SpiTransferWriteBackMsgs(struct HdfSBuf *reply, struct SpiMsg *ms
         }
 
         if (!HdfSbufWriteBuffer(reply, msgs[i].rbuf, msgs[i].len)) {
-            HDF_LOGE("%s: write msg[%d] reply failed!", __func__, i);
+            HDF_LOGE("%s: write msg[%u] reply failed!", __func__, i);
             return HDF_ERR_IO;
         }
     }

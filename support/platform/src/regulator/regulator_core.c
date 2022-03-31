@@ -154,7 +154,7 @@ int32_t RegulatorNodeSetChild(struct RegulatorNode *parent)
         }
     }
 
-    HDF_LOGD("%s: the node %s child info process suceess", __func__, parent->regulatorInfo.name);
+    HDF_LOGD("%s: the node %s child info process success", __func__, parent->regulatorInfo.name);
     (void)OsalMutexUnlock(&manager->lock);
     return HDF_SUCCESS;
 }
@@ -572,7 +572,7 @@ int32_t RegulatorNodeSetCurrent(struct RegulatorNode *node, uint32_t minUA, uint
     if ((minUA > maxUA) ||
         (minUA < node->regulatorInfo.constraints.minUa ||
         maxUA > node->regulatorInfo.constraints.maxUa)) {
-        HDF_LOGE("RegulatorNodeSetCurrent: %s UA [%d, %d] invalid!",
+        HDF_LOGE("RegulatorNodeSetCurrent: %s UA [%u, %u] invalid!",
             node->regulatorInfo.name, minUA, maxUA);
         return HDF_FAILURE;
     }

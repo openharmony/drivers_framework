@@ -81,7 +81,7 @@ static int32_t TimerGetTest(struct TimerTest *test)
         return HDF_FAILURE;
     }
 
-    HDF_LOGD("%s:[%d][%d]", __func__, uSecond, isPeriod);
+    HDF_LOGD("%s:[%u][%d]", __func__, uSecond, isPeriod);
     return HDF_SUCCESS;
 }
 
@@ -359,7 +359,7 @@ static int32_t TimerIfPerformanceTest(struct TimerTest *test)
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+    HDF_LOGI("----->interface performance test:[start:%llu(ms) - end:%llu(ms) = %llu (ms)] < 1ms[%d]\r\n",
         startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }

@@ -164,7 +164,7 @@ static int32_t PwmSetPeriodTest(struct PwmTester *tester)
     }
 
     if (cfg.period != period) {
-        HDF_LOGE("%s: failed: cfg.period:%d period:%d", __func__, cfg.period, period);
+        HDF_LOGE("%s: failed: cfg.period:%u period:%u", __func__, cfg.period, period);
         return HDF_FAILURE;
     }
 
@@ -347,7 +347,7 @@ static int32_t PwmIfPerformanceTest(struct PwmTester *tester)
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
+    HDF_LOGI("----->interface performance test:[start:%llu(ms) - end:%llu(ms) = %llu (ms)] < 1ms[%d]\r\n",
         startMs, endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }

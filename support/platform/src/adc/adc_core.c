@@ -343,6 +343,7 @@ static int32_t AdcManagerIoClose(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     uint32_t number;
 
+    (void)reply;
     if (data == NULL) {
         HDF_LOGE("%s: invalid data!", __func__);
         return HDF_ERR_INVALID_PARAM;

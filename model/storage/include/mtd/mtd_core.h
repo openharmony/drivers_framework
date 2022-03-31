@@ -324,7 +324,7 @@ ssize_t MtdDeviceWriteWithOob(struct MtdDevice *mtdDevice, off_t to, size_t len,
  * @brief Judge whether the block where the specified address is located is a bad block
  *  
  * @param mtdDevice Indicates the pointer to the mtd device.
- * @param addr Indicates the address to judge, which is not neccessary to align by block size.
+ * @param addr Indicates the address to judge, which is not necessary to align by block size.
  *  
  * @return Returns true is the specified address falls into a bad block; returns false otherwise.
  */
@@ -334,7 +334,7 @@ bool MtdDeviceIsBadBlock(struct MtdDevice *mtdDevice, off_t addr);
  * @brief Mark the block where the specified address is located as a bad block
  *  
  * @param mtdDevice Indicates the pointer to the mtd device.
- * @param addr Indicates the address to mark, which is not neccessary to align by block size.
+ * @param addr Indicates the address to mark, which is not necessary to align by block size.
  *  
  * @return Returns 0 on success; returns a negative value otherwise.
  */

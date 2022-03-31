@@ -207,7 +207,7 @@ static int32_t HdmiHdcpAuthenticationFirstPart(struct HdmiHdcp *hdcp)
 
     /*
     * The HDCP Reciever responds by sending a response message containing the receiver's KSV(bksv) and
-    * the REPEATER bit, which indicates if the reciever is an HDCP Repeater.
+    * the REPEATER bit, which indicates if the receiver is an HDCP Repeater.
     */
     ret = HdmiHdcpReadMsgBksv(hdcp);
     if (ret != HDF_SUCCESS) {

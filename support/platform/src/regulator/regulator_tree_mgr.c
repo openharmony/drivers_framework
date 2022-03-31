@@ -343,6 +343,7 @@ int RegulatorTreeSet(const char *name, struct RegulatorNode *child, struct Regul
         name, parent->regulatorInfo.name);
     return HDF_SUCCESS;
 }
+
 static void RegulatorTreePrintChild(const char *name, struct DListHead *childHead)
 {
     CHECK_NULL_PTR_RETURN(childHead);

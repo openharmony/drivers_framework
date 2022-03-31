@@ -87,9 +87,9 @@ static int32_t RtcTestReadConfig(struct RtcTestConfig *config, const struct Devi
         HDF_LOGE("%s: read second failed", __func__);
         return ret;
     }
-    ret = drsOps->GetUint32(node, "frequence", &config->frequence, 0);
+    ret = drsOps->GetUint32(node, "frequency", &config->frequency, 0);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: read frequence failed", __func__);
+        HDF_LOGE("%s: read frequency failed", __func__);
         return ret;
     }
     ret = drsOps->GetUint32(node, "userValue", &config->userValue, 0);

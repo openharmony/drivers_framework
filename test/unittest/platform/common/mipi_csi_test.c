@@ -204,7 +204,7 @@ static void InitComboDevAttr(struct MipiCsiTest *test)
     // Hi3516CV500(MIPI_DATA_RATE_X1), Hi3516EV200(MIPI_DATA_RATE_X1)
     attr.dataRate = MIPI_DATA_RATE_X1;
     // Hi3516CV500 (0, 204, 2592, 1944), Hi3516EV200 (0, 204, 2304, 1296), Hi3516DV300-imx335 (0, 0, 2592, 1944)
-    attr.imgRect.x = 0; /* 0: image sensor left-top positon */
+    attr.imgRect.x = 0; /* 0: image sensor left-top position */
     attr.imgRect.y = 0; /* 0: image sensor right-top position */
     attr.imgRect.width = 2592; /* 2592: image sensor width size */
     attr.imgRect.height = 1944; /* 1944: image sensor height size */

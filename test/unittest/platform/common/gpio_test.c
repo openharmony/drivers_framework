@@ -192,7 +192,7 @@ static int32_t GpioTestSetGetDir(void)
         return ret;
     }
     if (dirSet != dirGet) {
-        HDF_LOGE("%s: set dir:%u, but get:%u", __func__, dirSet, dirGet);
+        HDF_LOGE("%s: set dir:%hu, but get:%hu", __func__, dirSet, dirGet);
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -221,7 +221,7 @@ static int32_t GpioTestWriteRead(void)
 
     ret = GpioWrite(tester->cfg.gpio, valWrite);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: write val:%u fail! ret:%d", __func__, valWrite, ret);
+        HDF_LOGE("%s: write val:%hu fail! ret:%d", __func__, valWrite, ret);
         return ret;
     }
     ret = GpioRead(tester->cfg.gpio, &valRead);
@@ -257,7 +257,7 @@ static int32_t GpioTestIrqHandler(uint16_t gpio, void *data)
 {
     struct GpioTester *tester = (struct GpioTester *)data;
 
-    HDF_LOGE("%s: >>>>>>>>>>>>>>>>>>>>>enter gpio:%u<<<<<<<<<<<<<<<<<<<<<<", __func__, gpio);
+    HDF_LOGE("%s: >>>>>>>>>>>>>>>>>>>>>enter gpio:%hu<<<<<<<<<<<<<<<<<<<<<<", __func__, gpio);
     if (tester != NULL) {
         tester->irqCnt++;
         return GpioDisableIrq(gpio);
@@ -300,7 +300,7 @@ static int32_t GpioTestIrqSharedFunc(struct GpioTester *tester, uint16_t mode, b
     for (timeout = 0; tester->irqCnt <= 0 && timeout <= tester->irqTimeout;
         timeout += GPIO_TEST_IRQ_DELAY) {
         if (inverse) {
-            // maybe can make a inverse ...
+            // maybe can make an inverse ...
             GpioTestHelperInversePin(tester->cfg.gpioIrq, mode);
         }
         OsalMSleep(GPIO_TEST_IRQ_DELAY);

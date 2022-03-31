@@ -38,7 +38,7 @@ int32_t MmcBlockInit(struct MmcDevice *mmcDevice)
     mb->mmc = mmcDevice;
     mb->secSize = mmcDevice->secSize;
     mb->capacity = mmcDevice->capacity;
-    mb->removeable = (mmcDevice->state.bits.removeable == 0) ? false : true;
+    mb->removable = (mmcDevice->state.bits.removable == 0) ? false : true;
     nameSize = sizeof(mb->name);
     ret = snprintf_s(mb->name, nameSize, nameSize - 1, "/dev/mmcblk%0d", mmcDevice->cntlr->index);
     if (ret <= 0) {

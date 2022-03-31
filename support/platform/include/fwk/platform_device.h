@@ -27,8 +27,8 @@ extern "C" {
 struct PlatformManager;
 
 struct PlatformDevice {
-    struct HdfDeviceObject *hdfDev;    /* releated to a hdf device object */
-    struct IDeviceIoService *service;  /* releated to a hdf io service object */
+    struct HdfDeviceObject *hdfDev;    /* related to a hdf device object */
+    struct IDeviceIoService *service;  /* related to a hdf io service object */
     struct PlatformManager *manager;   /* the platform manager it belongs to */
     int32_t number;                    /* number of the device instance */
     const char *name;                  /* name of the device instance */

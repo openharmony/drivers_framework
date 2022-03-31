@@ -656,7 +656,7 @@ struct EmmcExtCsd {
 
 enum SdCmdCode {
     SD_CMD_SEND_RELATIVE_ADDR = 3, /* ask the card to publish a new relative address (RCA). */
-    SD_CMD_SWITCH_FUNC = 6, /* Checks switchable function (mode 0) and switchs card function (mode 1). */
+    SD_CMD_SWITCH_FUNC = 6, /* Checks switchable function (mode 0) and switches card function (mode 1). */
     SD_CMD_SEND_IF_COND = 8, /*
                               * Sends SD Memory Card interface condition, which includes host supply voltage
                               * information and asks the card whether card supports voltage.
@@ -683,7 +683,7 @@ enum SdSwitchFuncMode {
                                     * Check function is used to query if the card supports
                                     * a specific function or functions.
                                     */
-    SD_SWITCH_FUNC_MODE_SET = 1,   /* Set function is uesd to switch the functionality of the card. */
+    SD_SWITCH_FUNC_MODE_SET = 1,   /* Set function is used to switch the functionality of the card. */
 };
 
 enum SdSwitchFuncGroup {

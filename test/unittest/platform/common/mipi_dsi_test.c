@@ -142,7 +142,7 @@ static int32_t MipiDsiTestByCmd(struct MipiDsiTest *test, int32_t cmd)
             HDF_LOGE("%s: not support", __func__);
             break;
     }
-    HDF_LOGI("test cmd %u, ret %d", cmd, ret);
+    HDF_LOGI("test cmd %d, ret %d", cmd, ret);
     return ret;
 }
 

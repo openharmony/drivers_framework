@@ -37,7 +37,7 @@ static void HdmiInfoFrameFillCheckSum(uint8_t *data, uint32_t len)
 static void HdmiInfoFrameFillHeader(struct HdmiInfoFrameHeader *header, uint8_t *data, uint32_t len)
 {
     if (len < HDMI_INFOFRAME_PACKET_HEADER_LEN) {
-        HDF_LOGE("len = %d, val is too small.", len);
+        HDF_LOGE("len = %u, val is too small.", len);
         return;
     }
     data[UINT8_ARRAY_TElEMENT_0] = header->type;
@@ -47,14 +47,14 @@ static void HdmiInfoFrameFillHeader(struct HdmiInfoFrameHeader *header, uint8_t 
 
 static int32_t HdmiInfoFramePacketVsEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
-    uint32_t lenght;
+    uint32_t length;
     struct HdmiVs14VsifContent *vsifContent = NULL;
     struct HdmiVsUserVsifContent *userContent = NULL;
     struct HdmiVsInfoFrame *vs = &(infoFrame->vs);
 
-    lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + vs->len;
-    if (len < lenght) {
-        HDF_LOGE("len = %d, val is too small.", len);
+    length = HDMI_INFOFRAME_PACKET_HEADER_LEN + vs->len;
+    if (len < length) {
+        HDF_LOGE("len = %u, val is too small.", len);
         return HDF_ERR_INVALID_PARAM;
     }
     if (memset_s(data, len, 0, len) != EOK) {
@@ -81,29 +81,29 @@ static int32_t HdmiInfoFramePacketVsEncoding(union HdmiInfoFrameInfo *infoFrame,
         data[UINT8_ARRAY_TElEMENT_9] = ((uint8_t)vsifContent->_3dExtData & HDMI_VENDOR_3D_EXT_DATA_MARK) <<
                                         HDMI_VENDOR_3D_EXT_DATA_SHIFT;
         if (vsifContent->_3dMetaPresent == false) {
-            if (userContent->len == 0 || (userContent->len + lenght) > len) {
+            if (userContent->len == 0 || (userContent->len + length) > len) {
                 return HDF_SUCCESS;
             }
-            if (memcpy_s(&data[lenght], (len - lenght), userContent->data, userContent->len) != EOK) {
+            if (memcpy_s(&data[length], (len - length), userContent->data, userContent->len) != EOK) {
                 HDF_LOGE("memcpy_s fail.");
                 return HDF_ERR_IO;
             }
-            lenght += userContent->len;
+            length += userContent->len;
         }
     }
-    HdmiInfoFrameFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, length);
     return HDF_SUCCESS;
 }
 
 static int32_t HdmiInfoFramePacketAviEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
-    uint32_t lenght;
+    uint32_t length;
     uint8_t *buff = data;
     struct HdmiAviInfoFrame *avi = &(infoFrame->avi);
 
-    lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + avi->len;
-    if (len < lenght) {
-        HDF_LOGE("len = %d, val is too small.", len);
+    length = HDMI_INFOFRAME_PACKET_HEADER_LEN + avi->len;
+    if (len < length) {
+        HDF_LOGE("len = %u, val is too small.", len);
         return HDF_ERR_INVALID_PARAM;
     }
     if (memset_s(buff, len, 0, len) != EOK) {
@@ -165,19 +165,19 @@ static int32_t HdmiInfoFramePacketAviEncoding(union HdmiInfoFrameInfo *infoFrame
     buff[UINT8_ARRAY_TElEMENT_11] = (uint8_t)(avi->rightBar & HDMI_AVI_BAR_MODE_MARK);
     /* PB13 */
     buff[UINT8_ARRAY_TElEMENT_12] = (uint8_t)((avi->rightBar >> HDMI_AVI_BAR_MODE_SHIFT) & HDMI_AVI_BAR_MODE_MARK);
-    HdmiInfoFrameFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, length);
     return HDF_SUCCESS;
 }
 
 static int32_t HdmiInfoFramePacketSpdEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
-    uint32_t lenght;
+    uint32_t length;
     uint8_t *buff = data;
     struct HdmiSpdInfoFrame *spd = &(infoFrame->spd);
 
-    lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + spd->len;
-    if (len < lenght) {
-        HDF_LOGE("len = %d, val is too small.", len);
+    length = HDMI_INFOFRAME_PACKET_HEADER_LEN + spd->len;
+    if (len < length) {
+        HDF_LOGE("len = %u, val is too small.", len);
         return HDF_ERR_INVALID_PARAM;
     }
     if (memset_s(buff, len, 0, len) != EOK) {
@@ -201,19 +201,19 @@ static int32_t HdmiInfoFramePacketSpdEncoding(union HdmiInfoFrameInfo *infoFrame
     buff += HDMI_SPD_PRODUCT_DESCRIPTION_LEN;
     /* PB25 */
     buff[UINT8_ARRAY_TElEMENT_0] = spd->sdi;
-    HdmiInfoFrameFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, length);
     return HDF_SUCCESS;
 }
 
 static int32_t HdmiInfoFramePacketAudioEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
-    uint32_t lenght;
+    uint32_t length;
     uint8_t *buff = data;
     struct HdmiAudioInfoFrame *audio = &(infoFrame->audio);
 
-    lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + audio->len;
-    if (len < lenght) {
-        HDF_LOGE("len = %d, val is too small.", len);
+    length = HDMI_INFOFRAME_PACKET_HEADER_LEN + audio->len;
+    if (len < length) {
+        HDF_LOGE("len = %u, val is too small.", len);
         return HDF_ERR_INVALID_PARAM;
     }
     if (memset_s(buff, len, 0, len) != EOK) {
@@ -242,20 +242,20 @@ static int32_t HdmiInfoFramePacketAudioEncoding(union HdmiInfoFrameInfo *infoFra
     if (audio->dmInh == true) {
         buff[UINT8_ARRAY_TElEMENT_4] |= (1 << HDMI_AUDIO_DM_INH_SHIFT);
     }
-    HdmiInfoFrameFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, length);
     return HDF_SUCCESS;
 }
 
 static int32_t HdmiInfoFramePacketDrmEncoding(union HdmiInfoFrameInfo *infoFrame, uint8_t *data, uint32_t len)
 {
-    uint32_t lenght;
+    uint32_t length;
     uint8_t *buff = data;
     struct HdmiDrmInfoFrame *drm = &(infoFrame->drm);
     struct HdmiStaticMetadataDescriptor1st *des = &(drm->des.type1);
 
-    lenght = HDMI_INFOFRAME_PACKET_HEADER_LEN + drm->len;
-    if (len < lenght) {
-        HDF_LOGE("len = %d, val is too small.", len);
+    length = HDMI_INFOFRAME_PACKET_HEADER_LEN + drm->len;
+    if (len < length) {
+        HDF_LOGE("len = %u, val is too small.", len);
         return HDF_ERR_INVALID_PARAM;
     }
     if (memset_s(buff, len, 0, len) != EOK) {
@@ -327,7 +327,7 @@ static int32_t HdmiInfoFramePacketDrmEncoding(union HdmiInfoFrameInfo *infoFrame
     /* PB26 */
     buff[UINT8_ARRAY_TElEMENT_25] = (uint8_t)((des->maxFrameAverageLightLevel & HDMI_DRM_METADATA_MARK) &
                                               HDMI_DRM_METADATA_MARK);
-    HdmiInfoFrameFillCheckSum(data, lenght);
+    HdmiInfoFrameFillCheckSum(data, length);
     return HDF_SUCCESS;
 }
 

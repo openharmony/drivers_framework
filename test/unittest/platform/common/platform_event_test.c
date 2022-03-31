@@ -61,7 +61,7 @@ static int32_t PlatformEventTestPostAndWait(struct PlatformEvent *pe)
     ret = PlatformEventWait(pe, PLAT_TEST_EVENT_A, 0, PLAT_EVENT_TEST_TIMEOUT, &events);
     CHECK_EQ_RETURN(ret, HDF_ERR_TIMEOUT, HDF_FAILURE);
 
-    // shoud post success
+    // should post success
     ret = PlatformEventPost(pe, PLAT_TEST_EVENT_A);
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
 
@@ -74,7 +74,7 @@ static int32_t PlatformEventTestPostAndWait(struct PlatformEvent *pe)
     ret = PlatformEventWait(pe, PLAT_TEST_EVENT_A, 0, PLAT_EVENT_TEST_TIMEOUT, &events);
     CHECK_EQ_RETURN(ret, HDF_ERR_TIMEOUT, HDF_FAILURE);
 
-    // shoud post success for multi events
+    // should post success for multi events
     ret = PlatformEventPost(pe, PLAT_TEST_EVENT_A | PLAT_TEST_EVENT_B);
     CHECK_EQ_RETURN(ret, HDF_SUCCESS, HDF_FAILURE);
     
@@ -128,19 +128,19 @@ static int32_t PlatformEventTestListenAndUnliten(struct PlatformEvent *pe)
 
     PlatformEventPost(pe, PLAT_TEST_EVENT_A);
     OsalMSleep(PLAT_EVENT_TEST_TIMEOUT);
-    // shoud got the events in callback
+    // should got the events in callback
     CHECK_EQ_RETURN(events, PLAT_TEST_EVENT_A, HDF_FAILURE);
 
     events = 0;
     PlatformEventPost(pe, PLAT_TEST_EVENT_B);
     OsalMSleep(PLAT_EVENT_TEST_TIMEOUT);
-    // shoud got the events in callback
+    // should got the events in callback
     CHECK_EQ_RETURN(events, PLAT_TEST_EVENT_B, HDF_FAILURE);
 
     events = 0;
     PlatformEventPost(pe, PLAT_TEST_EVENT_A | PLAT_TEST_EVENT_B);
     OsalMSleep(PLAT_EVENT_TEST_TIMEOUT);
-    // shoud got the events in callback
+    // should got the events in callback
     CHECK_EQ_RETURN(events, PLAT_TEST_EVENT_A | PLAT_TEST_EVENT_B, HDF_FAILURE);
 
     PLAT_LOGD("%s: exit", __func__);
