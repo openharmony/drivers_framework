@@ -56,8 +56,8 @@ struct AccessoryData {
     /**
      * @brief Defines Accesssory device init.
      *
-     * @param audioCard Indicates a audio card device.
-     * @param accesssory Indicates a Accesssory device.
+     * @param audioCard Indicates an audio card device.
+     * @param accesssory Indicates an Accesssory device.
      *
      * @return Returns <b>0</b> if Accesssory device init success; returns a non-zero value otherwise.
      *

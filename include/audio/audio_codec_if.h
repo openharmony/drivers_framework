@@ -44,7 +44,7 @@ struct CodecData {
     /**
      * @brief Defines Codec device init.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param codec Indicates a codec device.
      *
      * @return Returns <b>0</b> if codec device init success; returns a non-zero value otherwise.

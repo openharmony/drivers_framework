@@ -42,7 +42,7 @@ int32_t AudioBytesToFramesTest(void)
 
 int32_t AudioDataBigEndianChangeTest(void)
 {
-    const int dataLen = 96; // test data lenth
+    const int dataLen = 96; // test data length
     char test[dataLen];
     (void)memset_s(test, dataLen, 1, dataLen);
 
