@@ -96,7 +96,7 @@ struct MmcCntlrOps {
 };
 
 /* controller management */
-int32_t MmcCntlrAdd(struct MmcCntlr *cntlr);
+int32_t MmcCntlrAdd(struct MmcCntlr *cntlr, bool needQueue);
 void MmcCntlrRemove(struct MmcCntlr *cntlr);
 struct MmcDevice *MmcCntlrGetDevice(struct MmcCntlr *cntlr);
 

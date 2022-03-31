@@ -194,10 +194,38 @@ static int32_t MmcMsgHandleDefault(struct PlatformQueue *queue, struct PlatformM
     return ret;
 }
 
-static int32_t MmcCntlrInit(struct MmcCntlr *cntlr)
+static int32_t MmcCntlrQueueCreate(struct MmcCntlr *cntlr, bool needQueue)
 {
     int32_t ret;
     const char *threadName = NULL;
+
+    if (!needQueue) {
+        return HDF_SUCCESS;
+    }
+
+    if (cntlr->devType == MMC_DEV_SDIO) {
+        threadName = "SdioWorkerThread";
+    } else if (cntlr->devType == MMC_DEV_SD) {
+        threadName = "SdWorkerThread";
+    } else if (cntlr->devType == MMC_DEV_EMMC) {
+        threadName = "EmmcWorkerThread";
+    }
+    cntlr->msgQueue = PlatformQueueCreate(MmcMsgHandleDefault, threadName, cntlr);
+    if (cntlr->msgQueue == NULL) {
+        HDF_LOGE("MmcCntlrQueueCreate: failed to create msg queue!");
+        return HDF_PLT_ERR_OS_API;
+    }
+    ret = PlatformQueueStart(cntlr->msgQueue);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("MmcCntlrQueueCreate: failed to start msg queue!");
+        PlatformQueueDestroy(cntlr->msgQueue);
+    }
+    return ret;
+}
+
+static int32_t MmcCntlrInit(struct MmcCntlr *cntlr, bool needQueue)
+{
+    int32_t ret;
 
     if (cntlr == NULL) {
         return HDF_ERR_INVALID_OBJECT;
@@ -219,22 +247,9 @@ static int32_t MmcCntlrInit(struct MmcCntlr *cntlr)
         return ret;
     }
 
-    if (cntlr->devType == MMC_DEV_SDIO) {
-        threadName = "SdioWorkerThread";
-    } else if (cntlr->devType == MMC_DEV_SD) {
-        threadName = "SdWorkerThread";
-    } else if (cntlr->devType == MMC_DEV_EMMC) {
-        threadName = "EmmcWorkerThread";
-    }
-    cntlr->msgQueue = PlatformQueueCreate(MmcMsgHandleDefault, threadName, cntlr);
-    if (cntlr->msgQueue == NULL) {
-        HDF_LOGE("MmcCntlrInit: failed to create msg queue!");
-        return HDF_PLT_ERR_OS_API;
-    }
-    ret = PlatformQueueStart(cntlr->msgQueue);
+    ret = MmcCntlrQueueCreate(cntlr, needQueue);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("MmcCntlrInit: failed to start msg queue!");
-        PlatformQueueDestroy(cntlr->msgQueue);
+        HDF_LOGE("MmcCntlrInit: queue create fail!");
         return ret;
     }
 
@@ -253,7 +268,7 @@ static void MmcCntlrUninit(struct MmcCntlr *cntlr)
     }
 }
 
-int32_t MmcCntlrAdd(struct MmcCntlr *cntlr)
+int32_t MmcCntlrAdd(struct MmcCntlr *cntlr, bool needQueue)
 {
     int32_t ret;
 
@@ -261,7 +276,7 @@ int32_t MmcCntlrAdd(struct MmcCntlr *cntlr)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    ret = MmcCntlrInit(cntlr);
+    ret = MmcCntlrInit(cntlr, needQueue);
     if (ret != HDF_SUCCESS) {
         return ret;
     }
