@@ -30,7 +30,7 @@ struct PlatformData {
     /**
      * @brief Defines platform device init.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param platform Indicates a platform device.
      *
      * @return Returns <b>0</b> if Platform device init success; returns a non-zero value otherwise.
@@ -125,7 +125,7 @@ struct AudioDmaOps {
      *
      * @param platformData Indicates dma device.
      *
-     * @return Returns <b>0</b> if dma device submit succes; returns a non-zero value otherwise.
+     * @return Returns <b>0</b> if dma device submit success; returns a non-zero value otherwise.
      *
      * @since 1.0
      * @version 1.0

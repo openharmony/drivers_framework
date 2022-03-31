@@ -122,7 +122,7 @@ static int32_t HwPlatfromDispatch(const struct AudioCard *audioCard, const struc
     int ret = 0;
     struct AudioRuntimeDeivces *rtd;
     if ((audioCard == NULL) || (params == NULL)) {
-        ADM_LOG_ERR("Platfrom input param is NULL.");
+        ADM_LOG_ERR("Platform input param is NULL.");
         return HDF_FAILURE;
     }
 
@@ -653,7 +653,7 @@ static int32_t StreamTransferMmapWrite(const struct AudioCard *audioCard, const 
         return HDF_FAILURE;
     }
 
-    ADM_LOG_DEBUG("sucess.");
+    ADM_LOG_DEBUG("success.");
     return HDF_SUCCESS;
 }
 

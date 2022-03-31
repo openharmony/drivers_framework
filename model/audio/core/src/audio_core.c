@@ -72,8 +72,12 @@ int32_t AudioSocRegisterDai(struct HdfDeviceObject *device, struct DaiData *daiD
 {
     struct DaiDevice *dai = NULL;
 
-    if ((device == NULL) || (daiData == NULL)) {
-        ADM_LOG_ERR("Input params check error: device=%p, daiData=%p.", device, daiData);
+    if (device == NULL) {
+        ADM_LOG_ERR("Input params check error: device is NULL");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (daiData == NULL) {
+        ADM_LOG_ERR("Input params check error: daiData is NULL");
         return HDF_ERR_INVALID_OBJECT;
     }
 
@@ -781,7 +785,7 @@ int32_t AudioGetCtrlOpsRReg(struct AudioCtrlElemValue *elemValue,
             rcurValue = (rcurValue >> mixerCtrl->shift) & mixerCtrl->mask;
         }
         if (rcurValue > mixerCtrl->max || rcurValue < mixerCtrl->min) {
-            ADM_LOG_ERR("Audio invalid rcurValue=%d", rcurValue);
+            ADM_LOG_ERR("Audio invalid rcurValue=%u", rcurValue);
             return HDF_FAILURE;
         }
         if (mixerCtrl->invert) {

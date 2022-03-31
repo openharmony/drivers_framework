@@ -67,7 +67,7 @@ int32_t DaiCheckSampleRate(unsigned int sampleRates)
     if (check) {
         return HDF_SUCCESS;
     } else {
-        AUDIO_DRIVER_LOG_ERR("FramatToSampleRate fail: Invalid sampling rate: %d.", sampleRates);
+        AUDIO_DRIVER_LOG_ERR("FramatToSampleRate fail: Invalid sampling rate: %u.", sampleRates);
         return HDF_ERR_NOT_SUPPORT;
     }
 }

@@ -26,11 +26,17 @@ static struct AudioMixerControl g_audioTestReg = {
 
 static int32_t AudioDeviceReadRegMock(unsigned long virtualAddress, uint32_t reg, uint32_t *value)
 {
+    (void)virtualAddress;
+    (void)reg;
+    (void)value;
     return HDF_SUCCESS;
 }
 
 static int32_t AudioDeviceWriteRegMock(unsigned long virtualAddress, uint32_t reg, uint32_t value)
 {
+    (void)virtualAddress;
+    (void)reg;
+    (void)value;
     return HDF_SUCCESS;
 }
 

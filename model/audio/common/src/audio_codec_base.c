@@ -46,7 +46,7 @@ int32_t CodecGetServiceName(const struct HdfDeviceObject *device, const char **d
     }
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
     if (drsOps == NULL || drsOps->GetString == NULL) {
-        AUDIO_DRIVER_LOG_ERR("from resouce get drsOps fail!");
+        AUDIO_DRIVER_LOG_ERR("from resource get drsOps fail!");
         return HDF_FAILURE;
     }
 

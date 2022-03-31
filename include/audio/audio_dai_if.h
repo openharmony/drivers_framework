@@ -42,7 +42,7 @@ struct AudioDaiOps {
     /**
      * @brief Defines Dai device start up function.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param dai Indicates a dai device.
      *
      * @return Returns <b>0</b> if dai device start up success; returns a non-zero value otherwise.
@@ -55,7 +55,7 @@ struct AudioDaiOps {
     /**
      * @brief Defines Dai device hardware param set function.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param param Indicates pcm param set.
      *
      * @return Returns <b>0</b> if dai pcm param set success; returns a non-zero value otherwise.
@@ -68,7 +68,7 @@ struct AudioDaiOps {
     /**
      * @brief Defines Dai device trigger function.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param cmd Indicates a Command id.
      * @param dai Indicates a dai device.
      *
@@ -92,7 +92,7 @@ struct DaiData {
     /**
      * @brief Defines Dai device init.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param dai Indicates a dai device.
      *
      * @return Returns <b>0</b> if dai device init success; returns a non-zero value otherwise.

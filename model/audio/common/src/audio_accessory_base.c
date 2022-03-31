@@ -149,7 +149,7 @@ int32_t AccessoryI2cReadWrite(struct AudioAddrConfig *regAttr, uint16_t rwFlag)
     return HDF_SUCCESS;
 }
 
-// Read contrl reg bits value
+// Read control reg bits value
 int32_t AccessoryRegBitsRead(struct AudioMixerControl *regAttr, uint32_t *regValue)
 {
     int32_t ret;
@@ -292,7 +292,7 @@ int32_t AccessoryDeviceFrequencyParse(uint32_t rate, uint16_t *freq)
             *freq = I2S_SAMPLE_FREQUENCY_REG_VAL_96000;
             break;
         default:
-            AUDIO_DRIVER_LOG_ERR("rate: %d is not support.", rate);
+            AUDIO_DRIVER_LOG_ERR("rate: %u is not support.", rate);
             return HDF_ERR_NOT_SUPPORT;
     }
     AUDIO_DRIVER_LOG_DEBUG("success.");

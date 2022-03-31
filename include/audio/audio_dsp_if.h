@@ -38,7 +38,7 @@ struct AudioDspOps {
     /**
      * @brief Defines Dsp device start up function.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param dsp Indicates a dsp device.
      *
      * @return Returns <b>0</b> if Dsp device start up success; returns a non-zero value otherwise.
@@ -51,7 +51,7 @@ struct AudioDspOps {
     /**
      * @brief Defines Dsp device hardware param function.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param param Indicates pcm params set.
      *
      * @return Returns <b>0</b> if dsp param set success; returns a non-zero value otherwise.
@@ -64,7 +64,7 @@ struct AudioDspOps {
     /**
      * @brief Defines Dsp device trigger function.
      *
-     * @param audioCard Indicates a audio card device.
+     * @param audioCard Indicates an audio card device.
      * @param dsp Indicates a dsp device.
      *
      * @return Returns <b>0</b> if dsp device trigger success; returns a non-zero value otherwise.
@@ -139,7 +139,7 @@ struct DspData {
     /**
      * @brief Defines Dsp device decode.
      *
-     * @param audioCard Indicates a audio card.
+     * @param audioCard Indicates an audio card.
      * @param buf Indicates decode pcm buffer data.
      * @param dsp Indicates a dsp device.
      *
@@ -153,7 +153,7 @@ struct DspData {
     /**
      * @brief Defines Dsp device encode.
      *
-     * @param audioCard audioCard Indicates a audio card.
+     * @param audioCard audioCard Indicates an audio card.
      * @param buf Indicates encode pcm buffer data.
      * @param dsp Indicates a dsp device.
      *
@@ -167,7 +167,7 @@ struct DspData {
     /**
      * @brief Defines Dsp device equalizer.
      *
-     * @param audioCard audioCard Indicates a audio card.
+     * @param audioCard audioCard Indicates an audio card.
      * @param buf Indicates equalizer pcm buffer data.
      * @param dsp Indicates a dsp device.
      *
