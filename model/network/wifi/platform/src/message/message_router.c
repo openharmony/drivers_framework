@@ -184,7 +184,7 @@ static void NotifyAllNodesServiceDel(const NodeId nodeId, ServiceId serviceId)
         if (g_messageNodes[i] != NULL && g_messageNodes[i]->NotifyServiceDel != NULL) {
             ErrorCode subErrCode = g_messageNodes[i]->NotifyServiceDel(g_messageNodes[i], serviceId);
             if (subErrCode != ME_SUCCESS) {
-                HDF_LOGE("%s:Rollback service add to node failed!nodeId=%d,serviceId=%d,errCode=%d", __func__, i,
+                HDF_LOGE("%s:Rollback service add to node failed!nodeId=%hhu,serviceId=%d,errCode=%d", __func__, i,
                     serviceId, subErrCode);
             }
         }
