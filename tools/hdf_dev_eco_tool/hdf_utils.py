@@ -11,7 +11,7 @@
 import json
 import os
 import hashlib
-
+import platform
 
 from hdf_tool_exception import HdfToolException
 from hdf_tool_settings import HdfToolSettings
@@ -362,5 +362,22 @@ def get_config_config_path(root, kernel):
 
 def judge_file_path_exists(temp_path):
     if not os.path.exists(temp_path):
-        raise HdfToolException('path  "%s" not exist' %
-                               temp_path, CommandErrorCode.TARGET_NOT_EXIST)
+        raise HdfToolException(
+            'path  "%s" not exist' % temp_path,
+            CommandErrorCode.TARGET_NOT_EXIST)
+
+
+def write_config(root_path, config_file_json, config_name):
+    if platform.system() == "Windows":
+        config_file_replace = json.dumps(config_file_json, indent=4). \
+            replace(root_path.replace('\\', '\\\\') + '\\\\', "")
+        write_file(os.path.join('resources', config_name),
+                   config_file_replace.replace('\\\\', '/'))
+    if platform.system() == "Linux":
+        config_file_replace = json.dumps(config_file_json, indent=4). \
+            replace(root_path + '/', "")
+        write_file(os.path.join('resources', config_name),
+                   config_file_replace)
+
+
+

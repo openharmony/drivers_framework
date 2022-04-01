@@ -66,45 +66,49 @@ class HdfDefconfigAndPatch(object):
                 path.split("/")[-1] in self.drivers_path_list:
             files.append(path)
             if codetype is None:
-                with open(path, "rb") as fread:
-                    data = fread.readlines()
-                insert_index = None
-                state = False
-                for index, line in enumerate(data):
-                    if line.find("CONFIG_DRIVERS_HDF_INPUT=y".encode('utf-8')) >= 0:
-                        insert_index = index
-                    elif line.find(self.new_demo_config.encode('utf-8')) >= 0:
-                        files.remove(path)
-                        state = True
-                if not state:
-                    if path.split(".")[-1] != "patch":
-                        data.insert(insert_index + 1,
-                                    self.new_demo_config.encode('utf-8'))
-                    else:
-                        data.insert(insert_index + 1,
-                                    ("+" + self.new_demo_config).encode('utf-8'))
-
-                with open(path, "wb") as fwrite:
-                    fwrite.writelines(data)
+                self.binary_type_write(path)
             else:
-                with open(path, "r+", encoding=codetype) as fread:
-                    data = fread.readlines()
-                insert_index = None
-                state = False
-                for index, line in enumerate(data):
-                    if line.find("CONFIG_DRIVERS_HDF_INPUT=y") >= 0:
-                        insert_index = index
-                    elif line.find(self.new_demo_config) >= 0:
-                        files.remove(path)
-                        state = True
-                if not state:
-                    if path.split(".")[-1] != "patch":
-                        data.insert(insert_index + 1,
-                                    self.new_demo_config)
-                    else:
-                        data.insert(insert_index + 1,
-                                    "+" + self.new_demo_config)
-
-                with open(path, "w", encoding=codetype) as fwrite:
-                    fwrite.writelines(data)
+                self.utf_type_write(path, codetype)
         return files
+
+    def binary_type_write(self, path):
+        with open(path, "rb") as fread:
+            data = fread.readlines()
+        insert_index = None
+        state = False
+        for index, line in enumerate(data):
+            if line.find("CONFIG_DRIVERS_HDF_INPUT=y".encode('utf-8')) >= 0:
+                insert_index = index
+            elif line.find(self.new_demo_config.encode('utf-8')) >= 0:
+                state = True
+        if not state:
+            if path.split(".")[-1] != "patch":
+                data.insert(insert_index + 1,
+                            self.new_demo_config.encode('utf-8'))
+            else:
+                data.insert(insert_index + 1,
+                            ("+" + self.new_demo_config).encode('utf-8'))
+
+        with open(path, "wb") as fwrite:
+            fwrite.writelines(data)
+
+    def utf_type_write(self, path, codetype):
+        with open(path, "r+", encoding=codetype) as fread:
+            data = fread.readlines()
+        insert_index = None
+        state = False
+        for index, line in enumerate(data):
+            if line.find("CONFIG_DRIVERS_HDF_INPUT=y") >= 0:
+                insert_index = index
+            elif line.find(self.new_demo_config) >= 0:
+                state = True
+        if not state:
+            if path.split(".")[-1] != "patch":
+                data.insert(insert_index + 1,
+                            self.new_demo_config)
+            else:
+                data.insert(insert_index + 1,
+                            "+" + self.new_demo_config)
+
+        with open(path, "w", encoding=codetype) as fwrite:
+            fwrite.writelines(data)
