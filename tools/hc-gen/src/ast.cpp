@@ -926,7 +926,7 @@ bool Ast::Merge(const std::list<std::shared_ptr<Ast>> &astList)
         if (!astRoot_->Merge(astIt->astRoot_)) {
             return false;
         }
-        astIt->Dump("merged");
+        Dump("merged");
     }
     return true;
 }
