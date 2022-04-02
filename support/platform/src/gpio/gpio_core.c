@@ -101,7 +101,7 @@ void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local)
     }
     ginfo = &cntlr->ginfos[local];
     if (ginfo == NULL) {
-        PLAT_LOGW("GpioCntlrIrqCallback: ginfo null(start:%u, local:%u)", cntlr->start, local);
+        PLAT_LOGW("GpioCntlrIrqCallback: ginfo null(start:%hu, local:%hu)", cntlr->start, local);
         return;
     }
 
@@ -109,7 +109,7 @@ void GpioCntlrIrqCallback(struct GpioCntlr *cntlr, uint16_t local)
     irqRecord = ginfo->irqRecord;
 
     if (irqRecord == NULL) {
-        PLAT_LOGW("GpioCntlrIrqCallback: irq not set (start:%u, local:%u)", cntlr->start, local);
+        PLAT_LOGW("GpioCntlrIrqCallback: irq not set (start:%hu, local:%hu)", cntlr->start, local);
         GpioInfoUnlock(ginfo);
         return;
     }
@@ -137,7 +137,7 @@ static int32_t GpioCntlrIrqThreadHandler(void *data)
     }
     (void)OsalSpinLockIrqSave(&irqRecord->spin, &irqSave);
     (void)OsalSpinUnlockIrqRestore(&irqRecord->spin, &irqSave); // last post done
-    PLAT_LOGI("GpioCntlrIrqThreadHandler: gpio(%u) thread exit", irqRecord->global);
+    PLAT_LOGI("GpioCntlrIrqThreadHandler: gpio(%hu) thread exit", irqRecord->global);
     (void)OsalSemDestroy(&irqRecord->sem);
     (void)OsalSpinDestroy(&irqRecord->spin);
     (void)OsalThreadDestroy(&irqRecord->thread);
@@ -159,7 +159,7 @@ static int32_t GpioCntlrSetIrqInner(struct GpioInfo *ginfo, struct GpioIrqRecord
 
     if (ginfo->irqRecord != NULL) {
         GpioInfoUnlock(ginfo);
-        PLAT_LOGE("GpioCntlrSetIrqInner: gpio(%u+%u) irq already set", cntlr->start, local);
+        PLAT_LOGE("GpioCntlrSetIrqInner: gpio(%hu+%hu) irq already set", cntlr->start, local);
         return HDF_ERR_NOT_SUPPORT;
     }
 
@@ -212,7 +212,7 @@ static int32_t GpioIrqRecordCreate(struct GpioInfo *ginfo, uint16_t mode, GpioIr
             PLAT_LOGE("GpioIrqRecordCreate: start irq thread failed:%d", ret);
             return ret;
         }
-        PLAT_LOGI("GpioIrqRecordCreate: gpio(%u) thread started", GpioInfoToGlobal(ginfo));
+        PLAT_LOGI("GpioIrqRecordCreate: gpio(%hu) thread started", GpioInfoToGlobal(ginfo));
     }
 
     *new = irqRecord;
@@ -269,13 +269,13 @@ int32_t GpioCntlrUnsetIrq(struct GpioCntlr *cntlr, uint16_t local, void *arg)
     GpioInfoLock(ginfo);
     if (ginfo->irqRecord == NULL) {
         GpioInfoUnlock(ginfo);
-        PLAT_LOGE("GpioCntlrUnsetIrq: gpio(%u+%u) irq not set yet", cntlr->start, local);
+        PLAT_LOGE("GpioCntlrUnsetIrq: gpio(%hu+%hu) irq not set yet", cntlr->start, local);
         return HDF_ERR_NOT_SUPPORT;
     }
     irqRecord = ginfo->irqRecord;
     if (arg != irqRecord->irqData) {
         GpioInfoUnlock(ginfo);
-        PLAT_LOGE("GpioCntlrUnsetIrq: gpio(%u+%u) arg not match", cntlr->start, local);
+        PLAT_LOGE("GpioCntlrUnsetIrq: gpio(%hu+%hu) arg not match", cntlr->start, local);
         return HDF_ERR_INVALID_PARAM;
     }
     ret = cntlr->ops->unsetIrq(cntlr, local);

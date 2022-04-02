@@ -14,18 +14,18 @@
 
 #define PLAT_LOG_TAG gpio_if_u
 
-static void *GpioManagerServiceGet(void)
+static struct HdfIoService *GpioManagerServiceGet(void)
 {
-    static void *manager = NULL;
+    static struct HdfIoService *service = NULL;
 
-    if (manager != NULL) {
-        return manager;
+    if (service != NULL) {
+        return service;
     }
-    manager = (void *)HdfIoServiceBind("HDF_PLATFORM_GPIO_MANAGER");
-    if (manager == NULL) {
+    service = HdfIoServiceBind("HDF_PLATFORM_GPIO_MANAGER");
+    if (service == NULL) {
         HDF_LOGE("%s: fail to get gpio manager service!", __func__);
     }
-    return manager;
+    return service;
 }
 
 int32_t GpioRead(uint16_t gpio, uint16_t *val)
@@ -35,7 +35,7 @@ int32_t GpioRead(uint16_t gpio, uint16_t *val)
     struct HdfSBuf *data = NULL;
     struct HdfSBuf *reply = NULL;
 
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;
@@ -87,7 +87,7 @@ int32_t GpioWrite(uint16_t gpio, uint16_t val)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;
@@ -134,7 +134,7 @@ int32_t GpioGetDir(uint16_t gpio, uint16_t *dir)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;
@@ -186,7 +186,7 @@ int32_t GpioSetDir(uint16_t gpio, uint16_t dir)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;
@@ -225,10 +225,11 @@ int32_t GpioSetIrq(uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg)
     int32_t ret;
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
+
     (void) func;
     (void) arg;
 
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;
@@ -268,8 +269,10 @@ int32_t GpioUnsetIrq(uint16_t gpio, void *arg)
     int32_t ret;
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
+
     (void) arg;
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;
@@ -304,7 +307,7 @@ int32_t GpioEnableIrq(uint16_t gpio)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;
@@ -339,7 +342,7 @@ int32_t GpioDisableIrq(uint16_t gpio)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
-    service = (struct HdfIoService *)GpioManagerServiceGet();
+    service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: get gpio manager service fail!", __func__);
         return HDF_PLT_ERR_DEV_GET;

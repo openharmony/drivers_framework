@@ -74,7 +74,7 @@ void RegulatorNodeListPrint(void)
     }
 
     DLIST_FOR_EACH_ENTRY_SAFE(pos, tmp, &manager->regulatorHead, struct RegulatorNode, node) {
-        HDF_LOGI("RegulatorNodeListPrint: name[%s], [%d][%d][%d], [%d][%d]--[%d][%d]",
+        HDF_LOGI("RegulatorNodeListPrint: name[%s], [%u][%hhu][%hhu], [%u][%u]--[%u][%u]",
             pos->regulatorInfo.name, pos->regulatorInfo.status,
             pos->regulatorInfo.constraints.alwaysOn, pos->regulatorInfo.constraints.mode,
             pos->regulatorInfo.constraints.minUv, pos->regulatorInfo.constraints.maxUv,
@@ -346,7 +346,7 @@ int32_t RegulatorNodeStatusCb(struct RegulatorNode *node)
 
     info.status = node->regulatorInfo.status;
     info.name = node->regulatorInfo.name;
-    HDF_LOGI("%s: Cb %s %d", __func__, info.name, info.status);
+    HDF_LOGI("%s: Cb %s %u", __func__, info.name, info.status);
 
     return node->regulatorInfo.cb(&info);
 }
@@ -394,7 +394,7 @@ int32_t RegulatorNodeDisable(struct RegulatorNode *node)
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     if ((node->regulatorInfo.status == REGULATOR_STATUS_OFF) || (node->regulatorInfo.constraints.alwaysOn)) {
-        HDF_LOGI("RegulatorNodeDisable: %s [%d][%d], unsatisfied closing adjusment",
+        HDF_LOGI("RegulatorNodeDisable: %s [%u][%hhu], unsatisfied closing adjusment",
             node->regulatorInfo.name, node->regulatorInfo.status, node->regulatorInfo.constraints.alwaysOn);
         return HDF_SUCCESS;
     }
@@ -512,7 +512,7 @@ int32_t RegulatorNodeSetVoltage(struct RegulatorNode *node, uint32_t minUv, uint
     if ((minUv > maxUv) ||
         (minUv < node->regulatorInfo.constraints.minUv ||
         maxUv > node->regulatorInfo.constraints.maxUv)) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s Uv [%d, %d] invalid!",
+        HDF_LOGE("RegulatorNodeSetVoltage: %s Uv [%u, %u] invalid!",
             node->regulatorInfo.name, minUv, maxUv);
         return HDF_FAILURE;
     }
@@ -542,7 +542,7 @@ int32_t RegulatorNodeGetVoltage(struct RegulatorNode *node, uint32_t *voltage)
     CHECK_NULL_PTR_RETURN_VALUE(voltage, HDF_ERR_INVALID_PARAM);
 
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_VOLTAGE) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!",
+        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %hhu invalid!",
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }
@@ -560,7 +560,7 @@ int32_t RegulatorNodeSetCurrent(struct RegulatorNode *node, uint32_t minUA, uint
 {
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_CURRENT) {
-        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %d invalid!",
+        HDF_LOGE("RegulatorNodeSetVoltage: %s mode %hhu invalid!",
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }
@@ -600,7 +600,7 @@ int32_t RegulatorNodeGetCurrent(struct RegulatorNode *node, uint32_t *regCurrent
     CHECK_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_OBJECT);
     CHECK_NULL_PTR_RETURN_VALUE(regCurrent, HDF_ERR_INVALID_OBJECT);
     if (node->regulatorInfo.constraints.mode != REGULATOR_CHANGE_CURRENT) {
-        HDF_LOGE("RegulatorNodeGetCurrent: %s mode %d invalid!",
+        HDF_LOGE("RegulatorNodeGetCurrent: %s mode %hhu invalid!",
             node->regulatorInfo.name, node->regulatorInfo.constraints.mode);
         return HDF_FAILURE;
     }

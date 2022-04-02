@@ -62,7 +62,7 @@ static int32_t SpiMsgWriteArray(struct SpiObject *object, struct HdfSBuf *data, 
         }
 
         if (!HdfSbufWriteBuffer(data, (uint8_t *)msgs[i].wbuf, msgs[i].len)) {
-            HDF_LOGE("%s: write msg[%d] buf failed!", __func__, i);
+            HDF_LOGE("%s: write msg[%u] buf failed!", __func__, i);
             return HDF_ERR_IO;
         }
     }
