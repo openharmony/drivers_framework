@@ -7,8 +7,10 @@
  */
 
 #include "lexer.h"
+
 #include <sstream>
 #include <string>
+
 #include "logger.h"
 
 using namespace OHOS::Hardware;
@@ -267,8 +269,7 @@ void Lexer::LexHexAndBinaryNum(std::string &value, char &c, uint64_t &v)
         case 'x': // fall-through
         case 'X': // hex number
             ConsumeChar();
-            while (PeekChar(c, false) && (IsNum(c) || (c >= 'a' && c <= 'f')
-                                            || (c >= 'A' && c <= 'F'))) {
+            while (PeekChar(c, false) && (IsNum(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
                 value.push_back(c);
                 ConsumeChar();
             }

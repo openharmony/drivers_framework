@@ -1087,7 +1087,7 @@ int HdfIoserviceGetListenerCount(const struct HdfIoService *service)
     struct HdfSyscallAdapter *adapter = CONTAINER_OF(service, struct HdfSyscallAdapter, super);
 
     OsalMutexLock(&adapter->mutex);
-    int count = DlistGetCount(&adapter->listenerList);
+    int count = DListGetCount(&adapter->listenerList);
     OsalMutexUnlock(&adapter->mutex);
     return count;
 }
@@ -1124,7 +1124,7 @@ int HdfIoserviceGroupGetServiceCount(const struct HdfIoServiceGroup *group)
     }
 
     OsalMutexLock(&adapterGroup->thread->mutex);
-    int count = DlistGetCount(&adapterGroup->adapterList);
+    int count = DListGetCount(&adapterGroup->adapterList);
     OsalMutexUnlock(&adapterGroup->thread->mutex);
 
     OsalMutexUnlock(&adapterGroup->mutex);
