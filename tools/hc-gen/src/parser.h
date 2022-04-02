@@ -25,12 +25,16 @@ public:
 
     bool Parse();
 
-    std::shared_ptr<Ast> ParseOne(const std::string &src, std::list<std::string> &includeList);
+    std::list<std::shared_ptr<Ast>> ParseOne(const std::string &src);
+
+    std::shared_ptr<AstObject> ParseOneContent(const std::string &src, std::list<std::string> &includeList);
 
     std::shared_ptr<Ast> GetAst();
 
 private:
     bool ProcessInclude(std::list<std::string> &includeList);
+
+    bool CheckCycleInclude(const std::string &includeSrc);
 
     std::shared_ptr<AstObject> ParseTemplate();
 

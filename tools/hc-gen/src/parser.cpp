@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include <algorithm>
 #include <memory>
 
 #include "file.h"
@@ -16,23 +17,10 @@ using namespace OHOS::Hardware;
 
 bool Parser::Parse()
 {
-    srcQueue_.push_back(Option::Instance().GetSourceName());
-    std::list<std::shared_ptr<Ast>> astList;
-
-    while (!srcQueue_.empty()) {
-        std::list<std::string> includeList;
-        auto oneAst = ParseOne(srcQueue_.front(), includeList);
-        if (oneAst == nullptr) {
-            return false;
-        }
-
-        astList.push_back(oneAst);
-        srcQueue_.pop_front();
-        srcQueue_.splice(srcQueue_.begin(), includeList);
+    auto astList = ParseOne(Option::Instance().GetSourceName());
+    if (astList.empty()) {
+        return false;
     }
-
-    astList.push_back(astList.front());
-    astList.pop_front();
     ast_ = astList.front();
     astList.pop_front();
 
@@ -40,9 +28,7 @@ bool Parser::Parse()
         Logger().Debug() << "failed to merge ast";
         return false;
     }
-    if (!astList.empty()) {
-        ast_->Dump("merged");
-    }
+    ast_->Dump("final merged");
 
     if (ast_->GetAstRoot() == nullptr) {
         Logger().Error() << Option::Instance().GetSourceName() << ": Empty hcs file";
@@ -55,7 +41,7 @@ bool Parser::Parse()
     return true;
 }
 
-std::shared_ptr<Ast> Parser::ParseOne(const std::string &src, std::list<std::string> &includeList)
+std::shared_ptr<AstObject> Parser::ParseOneContent(const std::string &src, std::list<std::string> &includeList)
 {
     if (!lexer_.Initialize(src)) {
         return nullptr;
@@ -81,6 +67,9 @@ std::shared_ptr<Ast> Parser::ParseOne(const std::string &src, std::list<std::str
     } else if (current_ != EOF) {
         Logger().Error() << lexer_ << "syntax error, expect root node of end of file";
         return nullptr;
+    } else if (current_ == EOF && includeList.empty()) {
+        Logger().Error() << src << ": Empty hcs file";
+        return nullptr;
     }
 
     if (!lexer_.Lex(current_) || current_ != EOF) {
@@ -88,10 +77,43 @@ std::shared_ptr<Ast> Parser::ParseOne(const std::string &src, std::list<std::str
         return nullptr;
     }
 
-    auto oneAst = std::make_shared<Ast>(rootNode);
-    oneAst->Dump(*lexer_.GetSourceName());
+    return rootNode;
+}
 
-    return oneAst;
+std::list<std::shared_ptr<Ast>> Parser::ParseOne(const std::string &src)
+{
+    srcQueue_.push_back(src);
+
+    std::list<std::shared_ptr<Ast>> astList;
+    std::list<std::string> includeList;
+
+    std::shared_ptr<AstObject> rootNode = ParseOneContent(src, includeList);
+    /* hcs allows a file have only include list, but does not allow empty files */
+    if (rootNode == nullptr && includeList.empty()) {
+        return astList;
+    }
+
+    for (auto includeSrc : includeList) {
+        if (!CheckCycleInclude(includeSrc)) {
+            Logger().Error() << src << " circular include " << includeSrc;
+            return std::list<std::shared_ptr<Ast>>();
+        }
+        auto includeAstList = ParseOne(includeSrc);
+        if (includeAstList.empty()) {
+            return std::list<std::shared_ptr<Ast>>();
+        }
+        astList.splice(astList.end(), includeAstList);
+    }
+    srcQueue_.pop_back();
+    auto oneAst = std::make_shared<Ast>(rootNode);
+    oneAst->Dump(src);
+    astList.emplace_back(oneAst);
+    return astList;
+}
+
+bool Parser::CheckCycleInclude(const std::string &includeSrc)
+{
+    return std::find(std::begin(srcQueue_), std::end(srcQueue_), includeSrc) == std::end(srcQueue_);
 }
 
 bool Parser::ProcessInclude(std::list<std::string> &includeList)
@@ -108,7 +130,7 @@ bool Parser::ProcessInclude(std::list<std::string> &includeList)
             return false;
         }
         if (includePath[0] != '/') {
-            auto currentSrc = srcQueue_.front();
+            auto currentSrc = srcQueue_.back();
             auto currentSrcDir = Util::File::GetDir(currentSrc);
             includePath = currentSrcDir.append(includePath);
         }
