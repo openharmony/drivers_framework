@@ -39,7 +39,7 @@ constexpr static const char *UID_INFO_ROOT =
 constexpr static const char *UID_INFO = "            \"uid\" : ";
 constexpr static const char *GID_INFO = "            \"gid\" : [";
 constexpr static const char *CAPS_INFO = "            \"caps\" : [";
-constexpr static const char *DYNAMIC_INFO = "            \"dynamic\" : true,\n";
+constexpr static const char *DYNAMIC_INFO = "            \"ondemand\" : true,\n";
 
 StartupCfgGen::StartupCfgGen(std::shared_ptr<Ast> ast) : Generator(ast)
 {
