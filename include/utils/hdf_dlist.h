@@ -144,7 +144,7 @@ static inline void DListMerge(struct DListHead *list, struct DListHead *head)
 }
 
 
-static inline int DlistGetCount(const struct DListHead *head)
+static inline int DListGetCount(const struct DListHead *head)
 {
     struct DListHead *next = head->next;
     int count = 0;
