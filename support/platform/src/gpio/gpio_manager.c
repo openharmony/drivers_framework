@@ -53,7 +53,7 @@ static int32_t GpioCntlrCheckStart(struct GpioCntlr *cntlr, struct DListHead *li
     if (cntlr->start >= (cntlrLast->start + cntlrLast->count)) {
         return HDF_SUCCESS;
     }
-    PLAT_LOGE("GpioCntlrCheckStart: start:%u(%u) not available(lastStart:%u, lastCount:%u)",
+    PLAT_LOGE("GpioCntlrCheckStart: start:%hu(%hu) not available(lastStart:%hu, lastCount:%hu)",
         cntlr->start, cntlr->count, cntlrLast->start, cntlrLast->count);
     return GPIO_NUM_MAX;
 }
@@ -65,12 +65,12 @@ static int32_t GpioManagerAdd(struct PlatformManager *manager, struct PlatformDe
 
     ret = GpioCntlrCheckStart(cntlr, &manager->devices);
     if (ret != HDF_SUCCESS) {
-        PLAT_LOGE("GpioManagerAdd: start:%u(%u) invalid:%d", cntlr->start, cntlr->count, ret);
+        PLAT_LOGE("GpioManagerAdd: start:%hu(%hu) invalid:%d", cntlr->start, cntlr->count, ret);
         return HDF_ERR_INVALID_PARAM;
     }
 
     DListInsertTail(&device->node, &manager->devices);
-    PLAT_LOGI("GpioManagerAdd: start:%u count:%u added success", cntlr->start, cntlr->count);
+    PLAT_LOGI("GpioManagerAdd: start:%hu count:%hu added success", cntlr->start, cntlr->count);
     return HDF_SUCCESS;
 }
 
@@ -108,7 +108,7 @@ static int32_t GpioCntlrCreateGpioInfos(struct GpioCntlr *cntlr)
     for (i = 0; i < cntlr->count; i++) {
         cntlr->ginfos[i].cntlr = cntlr;
         if (snprintf_s(cntlr->ginfos[i].name, GPIO_NAME_LEN, GPIO_NAME_LEN - 1,
-            "GPIO%u+%u", cntlr->start, i) < 0) {
+            "GPIO%hu+%hu", cntlr->start, i) < 0) {
             PLAT_LOGE("GpioCntlrCreateGpioInfos: format gpio name fail");
             ret = HDF_PLT_ERR_OS_API;
             goto ERROR_EXIT;
@@ -155,7 +155,7 @@ int32_t GpioCntlrAdd(struct GpioCntlr *cntlr)
     }
 
     if (cntlr->count == 0 || cntlr->count >= MAX_CNT_PER_CNTLR) {
-        PLAT_LOGE("GpioCntlrAdd: invalid gpio count:%u", cntlr->count);
+        PLAT_LOGE("GpioCntlrAdd: invalid gpio count:%hu", cntlr->count);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -212,7 +212,7 @@ struct GpioCntlr *GpioCntlrGetByGpio(uint16_t gpio)
 
     device = PlatformManagerFindDevice(gpioMgr, (void *)(uintptr_t)gpio, GpioCntlrFindMatch);
     if (device == NULL) {
-        PLAT_LOGE("GpioCntlrGetByGpio: gpio %u not in any controllers!", gpio);
+        PLAT_LOGE("GpioCntlrGetByGpio: gpio %hu not in any controllers!", gpio);
         return NULL;
     }
     return CONTAINER_OF(device, struct GpioCntlr, device);
