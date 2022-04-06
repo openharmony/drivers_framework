@@ -13,12 +13,17 @@
 void HdfMessageLooperStart(struct HdfMessageLooper *looper)
 {
     struct HdfMessage *message = NULL;
-    while (looper != NULL) {
+    if (looper == NULL) {
+        return;
+    }
+    looper->isRunning = true;
+    while (true) {
         message = HdfMessageQueueNext(&looper->messageQueue);
         if (message != NULL) {
             if (message->messageId == MESSAGE_STOP_LOOP) {
                 HdfMessageRecycle(message);
                 OsalMessageQueueDestroy(&looper->messageQueue);
+                looper->isRunning = false;
                 break;
             } else if (message->target != NULL) {
                 struct HdfMessageTask *task = message->target;
@@ -31,7 +36,7 @@ void HdfMessageLooperStart(struct HdfMessageLooper *looper)
 
 void HdfMessageLooperStop(struct HdfMessageLooper *looper)
 {
-    if (looper == NULL) {
+    if (looper == NULL || !looper->isRunning) {
         return;
     }
 

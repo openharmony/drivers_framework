@@ -21,6 +21,7 @@ struct HdfMessageLooper {
     struct HdfMessageQueue messageQueue;
     void (*Start)(struct HdfMessageLooper *);
     void (*Stop)(struct HdfMessageLooper *);
+    bool isRunning;
 };
 
 void HdfMessageLooperConstruct(struct HdfMessageLooper *looper);
