@@ -18,7 +18,10 @@ from .gn_file_add_config import judge_driver_config_exists
 def find_makefile_file_end_index(date_lines, model_name):
     file_end_flag = "include $(HDF_DRIVER)"
     end_index = 0
-    model_dir_name = ("%s_ROOT_DIR" % model_name.upper())
+    if model_name == "sensor":
+        model_dir_name = ("FRAMEWORKS_%s_ROOT" % model_name.upper())
+    else:
+        model_dir_name = ("%s_ROOT_DIR" % model_name.upper())
     model_dir_value = ""
 
     for index, line in enumerate(date_lines):
@@ -45,9 +48,14 @@ def makefile_file_operation(path, driver_file_path, module, driver):
     end_index, model_dir_name, model_dir_value = result_tuple
     
     first_line = "\nifeq ($(LOSCFG_DRIVERS_HDF_${model_name_upper}_${driver_name_upper}), y)\n"
-    second_line = "LOCAL_SRCS += $(${model_name_upper}_ROOT_DIR)/${source_file_path}\n"
+    input_second_line = "LOCAL_SRCS += $(${model_name_upper}_ROOT_DIR)/${source_file_path}\n"
+    sensor_second_line = "LOCAL_SRCS += $(FRAMEWORKS_${model_name_upper}_ROOT)/${source_file_path}\n"
     third_line = "endif\n"
-    makefile_add_template = first_line + second_line + third_line
+
+    if module == "sensor":
+        makefile_add_template = first_line + sensor_second_line + third_line
+    else:
+        makefile_add_template = first_line + input_second_line + third_line
     include_model_info = model_dir_value.split("model")[-1].strip('"')+"/"
     makefile_path_config = source_file_path.split(include_model_info)
     temp_handle = Template(makefile_add_template.replace("$(", "temp_flag"))

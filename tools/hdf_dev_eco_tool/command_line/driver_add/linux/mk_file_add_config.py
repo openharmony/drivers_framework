@@ -43,9 +43,9 @@ def linux_makefile_operation(path, driver_file_path, module, driver):
     if judge_result:
         return
     end_index, model_dir_name, model_dir_value = result_tuple
-    
-    first_line = "\nobj-$(CONFIG_DRIVERS_HDF_${model_name_upper}_${driver_name_upper}) += \\ \n"
-    second_line = "              $(${model_name_upper}_ROOT_DIR) /${source_file_path}\n"
+
+    first_line = "\nobj-$(CONFIG_DRIVERS_HDF_${model_name_upper}_${driver_name_upper}) += \\\n"
+    second_line = "              $(${model_name_upper}_ROOT_DIR)/${source_file_path}\n"
     makefile_add_template = first_line + second_line
     include_model_info = model_dir_value.split("model")[-1].strip('"')+"/"
     makefile_path_config = source_file_path.split(include_model_info)
