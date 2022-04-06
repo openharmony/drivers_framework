@@ -172,7 +172,7 @@ static int32_t CalLux(struct SensorCfgData *CfgData, struct AlsReportData *repor
     regValue &= GroupNode->regCfgItem->mask;
     gain = GetGainByRegValue(regValue, g_gainMap, itemNum);
 
-    reportData->als = ((luxTemp * BH1745_TIME_160MSEC * BH1745_GAIN_16X) / gain) / time;
+    reportData->als = ((luxTemp / gain) * BH1745_GAIN_16X / time) * BH1745_TIME_160MSEC;
 
     return HDF_SUCCESS;
 }
