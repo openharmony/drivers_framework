@@ -41,9 +41,8 @@ constexpr static const char *GID_INFO = "            \"gid\" : [";
 constexpr static const char *CAPS_INFO = "            \"caps\" : [";
 constexpr static const char *DYNAMIC_INFO = "            \"dynamic\" : true,\n";
 
-StartupCfgGen::StartupCfgGen(std::shared_ptr<Ast> ast) : Generator(ast)
+StartupCfgGen::StartupCfgGen(const std::shared_ptr<Ast> &ast) : Generator(ast)
 {
-    InitHostInfo();
 }
 
 void StartupCfgGen::HeaderTopOutput()
@@ -138,7 +137,7 @@ void StartupCfgGen::HostInfoOutput(const std::string &name, bool end)
     ofs_ << out << '\n';
 }
 
-void StartupCfgGen::InitHostInfo()
+void StartupCfgGen::InitHostInfo(HostInfo &hostData)
 {
     hostData.dynamicLoad = true;
     hostData.hostCaps = "";
@@ -160,8 +159,8 @@ bool StartupCfgGen::TemplateNodeSeparate()
 }
 
 struct compare {
-    bool operator()(const std::pair<std::string, struct HostInfo> &p1,
-        const std::pair<std::string, struct HostInfo> &p2)
+    bool operator()(const std::pair<std::string, HostInfo> &p1,
+        const std::pair<std::string, HostInfo> &p2)
     {
         return (p1.second.hostPriority == p2.second.hostPriority) ?
             (p1.second.hostId < p2.second.hostId) : (p1.second.hostPriority < p2.second.hostPriority);
@@ -173,9 +172,9 @@ void StartupCfgGen::HostInfosOutput()
     bool end = false;
     uint32_t cnt = 1;
     uint32_t size = hostInfoMap_.size();
-    std::vector<std::pair<std::string, struct HostInfo>> vect(hostInfoMap_.begin(), hostInfoMap_.end());
+    std::vector<std::pair<std::string, HostInfo>> vect(hostInfoMap_.begin(), hostInfoMap_.end());
     sort(vect.begin(), vect.end(), compare());
-    std::vector<std::pair<std::string, struct HostInfo>>::iterator it = vect.begin();
+    std::vector<std::pair<std::string, HostInfo>>::iterator it = vect.begin();
     for (; it != vect.end(); ++it, ++cnt) {
         if (cnt == size) {
             end = true;
@@ -188,7 +187,7 @@ void StartupCfgGen::HostInfosOutput()
     }
 }
 
-void StartupCfgGen::GetHostCaps(const std::shared_ptr<AstObject> &capsTerm)
+void StartupCfgGen::GetHostCaps(const std::shared_ptr<AstObject> &capsTerm, HostInfo &hostData)
 {
     if (capsTerm == nullptr) {
         return;
@@ -200,7 +199,7 @@ void StartupCfgGen::GetHostCaps(const std::shared_ptr<AstObject> &capsTerm)
     uint16_t capArraySize = ConfigArray::CastFrom(capsArray)->ArraySize();
     std::shared_ptr<AstObject> capsInfo = capsArray->Child();
     while (capArraySize && capsInfo != nullptr) {
-        if (capsInfo->StringValue() != "") {
+        if (!capsInfo->StringValue().empty()) {
             hostData.hostCaps.append("\"").append(capsInfo->StringValue()).append("\"");
             if (capArraySize != 1) {
                 hostData.hostCaps.append(", ");
@@ -212,7 +211,7 @@ void StartupCfgGen::GetHostCaps(const std::shared_ptr<AstObject> &capsTerm)
     }
 }
 
-void StartupCfgGen::GetHostLoadMode(const std::shared_ptr<AstObject> &hostInfo)
+void StartupCfgGen::GetHostLoadMode(const std::shared_ptr<AstObject> &hostInfo, HostInfo &hostData)
 {
     uint32_t preload;
     std::shared_ptr<AstObject> devInfo = nullptr;
@@ -245,9 +244,9 @@ void StartupCfgGen::GetHostLoadMode(const std::shared_ptr<AstObject> &hostInfo)
 bool StartupCfgGen::GetHostInfo()
 {
     std::shared_ptr<AstObject> deviceInfo = ast_->GetAstRoot()->Lookup("device_info", PARSEROP_CONFNODE);
-    std::shared_ptr<AstObject> hostInfo = nullptr;
     std::shared_ptr<AstObject> object = nullptr;
     std::string serviceName;
+    HostInfo hostData;
     uint32_t hostId = 0;
 
     if (deviceInfo == nullptr) {
@@ -255,14 +254,14 @@ bool StartupCfgGen::GetHostInfo()
         return false;
     }
 
-    hostInfo = deviceInfo->Child();
+    std::shared_ptr<AstObject> hostInfo = deviceInfo->Child();
     while (hostInfo != nullptr) {
         object = hostInfo->Lookup("hostName", PARSEROP_CONFTERM);
         if (object == nullptr) {
             hostInfo = hostInfo->Next();
             continue;
         }
-        InitHostInfo();
+        InitHostInfo(hostData);
         serviceName = object->Child()->StringValue();
 
         object = hostInfo->Lookup("priority", PARSEROP_CONFTERM);
@@ -282,8 +281,8 @@ bool StartupCfgGen::GetHostInfo()
             hostData.hostGID = object->Child()->StringValue();
         }
         object = hostInfo->Lookup("caps", PARSEROP_CONFTERM);
-        GetHostCaps(object);
-        GetHostLoadMode(hostInfo);
+        GetHostCaps(object, hostData);
+        GetHostLoadMode(hostInfo, hostData);
         hostData.hostId = hostId;
         hostInfoMap_.insert(make_pair(serviceName, hostData));
         hostId++;

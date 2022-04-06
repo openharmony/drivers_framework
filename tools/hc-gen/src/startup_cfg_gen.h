@@ -23,6 +23,7 @@ struct HostInfo {
     uint32_t hostId;
     bool dynamicLoad;
 };
+
 enum EXPECT_TYPE {
     EXPECT_HOST_NAME,
     EXPECT_HOST_PRIORITY,
@@ -30,9 +31,10 @@ enum EXPECT_TYPE {
     EXPECT_DEVICE_PROLOAD,
     EXPECT_TYPE_BUTT,
 };
+
 class StartupCfgGen : public Generator {
 public:
-    explicit StartupCfgGen(std::shared_ptr<Ast> ast);
+    explicit StartupCfgGen(const std::shared_ptr<Ast> &ast);
 
     ~StartupCfgGen() override = default;
 
@@ -40,6 +42,8 @@ public:
 
 private:
     bool Initialize();
+
+    void InitHostInfo(HostInfo &hostData);
 
     bool TemplateNodeSeparate();
 
@@ -55,17 +59,14 @@ private:
 
     void HostInfosOutput();
 
-    void GetHostCaps(const std::shared_ptr<AstObject> &capsTerm);
+    void GetHostCaps(const std::shared_ptr<AstObject> &capsTerm, HostInfo &hostData);
 
-    void GetHostLoadMode(const std::shared_ptr<AstObject> &hostInfo);
-
-    void InitHostInfo();
+    void GetHostLoadMode(const std::shared_ptr<AstObject> &hostInfo, HostInfo &hostData);
 
     std::ofstream ofs_;
     std::string outFileName_;
     bool useMusl = false;
-    struct HostInfo hostData;
-    std::map<std::string, struct HostInfo> hostInfoMap_;
+    std::map<std::string, HostInfo> hostInfoMap_;
 };
 } // namespace Hardware
 } // namespace OHOS
