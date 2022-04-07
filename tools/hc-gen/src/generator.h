@@ -17,7 +17,7 @@ namespace OHOS {
 namespace Hardware {
 class Generator {
 public:
-    explicit Generator(std::shared_ptr<Ast> ast) : ast_(ast) {};
+    explicit Generator(const std::shared_ptr<Ast> &ast) : ast_(ast) {};
 
     virtual ~Generator() = default;
 
