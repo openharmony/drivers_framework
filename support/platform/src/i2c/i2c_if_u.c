@@ -17,18 +17,18 @@
 
 #define I2C_SERVICE_NAME "HDF_PLATFORM_I2C_MANAGER"
 
-static void *I2cManagerGetService(void)
+static struct HdfIoService *I2cManagerGetService(void)
 {
-    static void *manager = NULL;
+    static struct HdfIoService *service = NULL;
 
-    if (manager != NULL) {
-        return manager;
+    if (service != NULL) {
+        return service;
     }
-    manager = (void *)HdfIoServiceBind(I2C_SERVICE_NAME);
-    if (manager == NULL) {
-        HDF_LOGE("I2cManagerGetService: fail to get i2c manager!");
+    service = HdfIoServiceBind(I2C_SERVICE_NAME);
+    if (service == NULL) {
+        HDF_LOGE("I2cManagerGetService: fail to get i2c service!");
     }
-    return manager;
+    return service;
 }
 
 DevHandle I2cOpen(int16_t number)
@@ -39,8 +39,8 @@ DevHandle I2cOpen(int16_t number)
     struct HdfSBuf *reply = NULL;
     uint32_t handle = 0;
 
-    service = (struct HdfIoService *)I2cManagerGetService();
-    if (service == NULL ||service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+    service = I2cManagerGetService();
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("I2cOpen: service is invalid!");
         return NULL;
     }
@@ -83,8 +83,8 @@ void I2cClose(DevHandle handle)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
-    service = (struct HdfIoService *)I2cManagerGetService();
-    if (service == NULL ||service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+    service = I2cManagerGetService();
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("I2cOpen: service is invalid!");
         return;
     }
@@ -126,7 +126,7 @@ static int32_t I2cMsgWriteArray(DevHandle handle, struct HdfSBuf *data, struct I
             continue;
         }
         if (!HdfSbufWriteBuffer(data, (uint8_t *)msgs[i].buf, msgs[i].len)) {
-            HDF_LOGE("I2cMsgWriteArray: write msg[%d] buf fail!", i);
+            HDF_LOGE("I2cMsgWriteArray: write msg[%hd] buf fail!", i);
             return HDF_ERR_IO;
         }
     }
@@ -148,7 +148,7 @@ static int32_t I2cMsgReadBack(struct HdfSBuf *data, struct I2cMsg *msg)
         return HDF_ERR_IO;
     }
     if (msg->len != rLen) {
-        HDF_LOGE("I2cMsgReadBack: err len:%u, rLen:%u", msg->len, rLen);
+        HDF_LOGW("I2cMsgReadBack: err len:%u, rLen:%u", msg->len, rLen);
         if (rLen > msg->len) {
             rLen = msg->len;
         }
@@ -161,7 +161,7 @@ static int32_t I2cMsgReadBack(struct HdfSBuf *data, struct I2cMsg *msg)
     return HDF_SUCCESS;
 }
 
-static inline int32_t I2cMsgReadArray(struct HdfSBuf *reply, struct I2cMsg *msgs, int16_t count)
+static int32_t I2cMsgReadArray(struct HdfSBuf *reply, struct I2cMsg *msgs, int16_t count)
 {
     int16_t i;
     int32_t ret;
@@ -206,8 +206,8 @@ static int32_t I2cServiceTransfer(DevHandle handle, struct I2cMsg *msgs, int16_t
         goto EXIT;
     }
 
-    service = (struct HdfIoService *)I2cManagerGetService();
-    if (service == NULL ||service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+    service = I2cManagerGetService();
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         ret = HDF_ERR_NOT_SUPPORT;
         goto EXIT;
     }
@@ -240,11 +240,10 @@ int32_t I2cTransfer(DevHandle handle, struct I2cMsg *msgs, int16_t count)
     }
 
     if (msgs == NULL || count <= 0) {
-        HDF_LOGE("I2cTransfer: err params! msgs:%s, count:%d",
+        HDF_LOGE("I2cTransfer: err params! msgs:%s, count:%hd",
             (msgs == NULL) ? "0" : "x", count);
         return HDF_ERR_INVALID_PARAM;
     }
 
     return I2cServiceTransfer(handle, msgs, count);
 }
-

@@ -15,7 +15,7 @@
 #define HDF_LOG_TAG spi_if_u
 #define HOST_NAME_LEN 32
 
-struct SpiObject {
+struct SpiClient {
     struct SpiCntlr *cntlr;
     uint32_t csNum;
 };
@@ -23,30 +23,24 @@ struct SpiObject {
 static struct HdfIoService *SpiGetCntlrByBusNum(uint32_t num)
 {
     int ret;
-    char *name = NULL;
+    char name[HOST_NAME_LEN + 1] = {0};
     struct HdfIoService *service = NULL;
 
-    name = (char *)OsalMemCalloc(HOST_NAME_LEN + 1);
-    if (name == NULL) {
-        return NULL;
-    }
     ret = snprintf_s(name, HOST_NAME_LEN + 1, HOST_NAME_LEN, "HDF_PLATFORM_SPI_%u", num);
     if (ret < 0) {
         HDF_LOGE("%s: snprintf_s failed", __func__);
-        OsalMemFree(name);
         return NULL;
     }
     service = HdfIoServiceBind(name);
-    OsalMemFree(name);
 
     return service;
 }
 
-static int32_t SpiMsgWriteArray(struct SpiObject *object, struct HdfSBuf *data, struct SpiMsg *msgs, uint32_t count)
+static int32_t SpiMsgWriteArray(struct SpiClient *client, struct HdfSBuf *data, struct SpiMsg *msgs, uint32_t count)
 {
     uint32_t i;
 
-    if (!HdfSbufWriteUint32(data, object->csNum)) {
+    if (!HdfSbufWriteUint32(data, client->csNum)) {
         HDF_LOGE("%s: write csNum failed!", __func__);
         return HDF_ERR_IO;
     }
@@ -80,7 +74,7 @@ static int32_t SpiMsgReadBack(struct HdfSBuf *data, struct SpiMsg *msg)
         return HDF_ERR_IO;
     }
     if (msg->len != rLen) {
-        HDF_LOGE("%s: err len:%u, rLen:%u", __func__, msg->len, rLen);
+        HDF_LOGW("%s: err len:%u, rLen:%u", __func__, msg->len, rLen);
         if (rLen > msg->len) {
             rLen = msg->len;
         }
@@ -118,13 +112,13 @@ int32_t SpiTransfer(DevHandle handle, struct SpiMsg *msgs, uint32_t count)
     struct HdfSBuf *data = NULL;
     struct HdfSBuf *reply = NULL;
     struct HdfIoService *service = NULL;
-    struct SpiObject *object = NULL;
+    struct SpiClient *client = NULL;
 
-    if (handle == NULL || msgs == NULL) {
+    if (handle == NULL || msgs == NULL || count == 0) {
         HDF_LOGE("%s: invalid handle or msgs", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-    object = (struct SpiObject *)handle;
+    client = (struct SpiClient *)handle;
 
     for (i = 0; i < count; i++) {
         len += ((msgs[i].wbuf == NULL) ? 0 : msgs[i].len) + sizeof(uint64_t) + sizeof(*msgs) + sizeof(uint32_t);
@@ -145,13 +139,13 @@ int32_t SpiTransfer(DevHandle handle, struct SpiMsg *msgs, uint32_t count)
         goto EXIT;
     }
 
-    ret = SpiMsgWriteArray(object, data, msgs, count);
+    ret = SpiMsgWriteArray(client, data, msgs, count);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: failed to write msgs!", __func__);
         goto EXIT;
     }
 
-    service = (struct HdfIoService *)object->cntlr;
+    service = (struct HdfIoService *)client->cntlr;
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: service is invalid", __func__);
         ret =  HDF_FAILURE;
@@ -198,7 +192,7 @@ int32_t SpiWrite(DevHandle handle, uint8_t *buf, uint32_t len)
 int32_t SpiSetCfg(DevHandle handle, struct SpiCfg *cfg)
 {
     int32_t ret;
-    struct SpiObject *object = NULL;
+    struct SpiClient *client = NULL;
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
@@ -206,14 +200,14 @@ int32_t SpiSetCfg(DevHandle handle, struct SpiCfg *cfg)
         HDF_LOGE("%s: invalid handle", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-    object = (struct SpiObject *)handle;
+    client = (struct SpiClient *)handle;
     data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s: failed to obtain data", __func__);
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    if (!HdfSbufWriteUint32(data, object->csNum)) {
+    if (!HdfSbufWriteUint32(data, client->csNum)) {
         HDF_LOGE("%s: write csNum failed!", __func__);
         HdfSbufRecycle(data);
         return HDF_FAILURE;
@@ -225,7 +219,7 @@ int32_t SpiSetCfg(DevHandle handle, struct SpiCfg *cfg)
         return HDF_FAILURE;
     }
 
-    service = (struct HdfIoService *)object->cntlr;
+    service = (struct HdfIoService *)client->cntlr;
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: service is invalid", __func__);
         HdfSbufRecycle(data);
@@ -249,14 +243,14 @@ int32_t SpiGetCfg(DevHandle handle, struct SpiCfg *cfg)
     const void *rBuf = NULL;
     struct HdfSBuf *data = NULL;
     struct HdfSBuf *reply = NULL;
-    struct SpiObject *object = NULL;
+    struct SpiClient *client = NULL;
     struct HdfIoService *service = NULL;
 
-    if (handle == NULL  || cfg == NULL) {
+    if (handle == NULL || cfg == NULL) {
         HDF_LOGE("%s: invalid handle", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
-    object = (struct SpiObject *)handle;
+    client = (struct SpiClient *)handle;
 
     data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
@@ -269,12 +263,12 @@ int32_t SpiGetCfg(DevHandle handle, struct SpiCfg *cfg)
         HdfSbufRecycle(data);
         return HDF_ERR_MALLOC_FAIL;
     }
-    if (!HdfSbufWriteUint32(data, object->csNum)) {
+    if (!HdfSbufWriteUint32(data, client->csNum)) {
         HDF_LOGE("%s: write csNum failed!", __func__);
         ret = HDF_ERR_IO;
         goto EXIT;
     }
-    service = (struct HdfIoService *)object->cntlr;
+    service = (struct HdfIoService *)client->cntlr;
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: service is invalid", __func__);
         ret = HDF_ERR_MALLOC_FAIL;
@@ -303,7 +297,7 @@ EXIT:
 void SpiClose(DevHandle handle)
 {
     int32_t ret;
-    struct SpiObject *object = NULL;
+    struct SpiClient *client = NULL;
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
@@ -311,19 +305,19 @@ void SpiClose(DevHandle handle)
         HDF_LOGE("%s: handle is invalid", __func__);
         return;
     }
-    object = (struct SpiObject *)handle;
+    client = (struct SpiClient *)handle;
 
     data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s: failed to obtain data", __func__);
         goto EXIT;
     }
-    if (!HdfSbufWriteUint32(data, object->csNum)) {
+    if (!HdfSbufWriteUint32(data, client->csNum)) {
         HDF_LOGE("%s: write csNum failed!", __func__);
         goto EXIT;
     }
 
-    service = (struct HdfIoService *)object->cntlr;
+    service = (struct HdfIoService *)client->cntlr;
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
         HDF_LOGE("%s: service is invalid", __func__);
         goto EXIT;
@@ -335,13 +329,13 @@ void SpiClose(DevHandle handle)
 EXIT:
     HdfSbufRecycle(data);
     HdfIoServiceRecycle(service);
-    OsalMemFree(object);
+    OsalMemFree(client);
 }
 
 DevHandle SpiOpen(const struct SpiDevInfo *info)
 {
     int32_t ret;
-    struct SpiObject *object = NULL;
+    struct SpiClient *client = NULL;
     struct HdfSBuf *data = NULL;
     struct HdfIoService *service = NULL;
 
@@ -381,15 +375,15 @@ DevHandle SpiOpen(const struct SpiDevInfo *info)
         return NULL;
     }
 
-    object = (struct SpiObject *)OsalMemCalloc(sizeof(*object));
-    if (object == NULL) {
-        HDF_LOGE("%s: object malloc failed", __func__);
+    client = (struct SpiClient *)OsalMemCalloc(sizeof(*client));
+    if (client == NULL) {
+        HDF_LOGE("%s: client malloc failed", __func__);
         HdfSbufRecycle(data);
         HdfIoServiceRecycle(service);
         return NULL;
     }
-    object->cntlr = (struct SpiCntlr *)service;
-    object->csNum = info->csNum;
+    client->cntlr = (struct SpiCntlr *)service;
+    client->csNum = info->csNum;
     HdfSbufRecycle(data);
-    return (DevHandle)object;
+    return (DevHandle)client;
 }

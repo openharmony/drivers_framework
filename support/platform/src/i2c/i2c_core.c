@@ -53,7 +53,7 @@ static int32_t I2cManagerAddCntlr(struct I2cCntlr *cntlr)
     struct I2cManager *manager = g_i2cManager;
 
     if (cntlr->busId >= I2C_BUS_MAX) {
-        HDF_LOGE("I2cManagerAddCntlr: busId:%d exceed!", cntlr->busId);
+        HDF_LOGE("I2cManagerAddCntlr: busId:%hd exceed!", cntlr->busId);
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -67,7 +67,7 @@ static int32_t I2cManagerAddCntlr(struct I2cCntlr *cntlr)
     }
 
     if (manager->cntlrs[cntlr->busId] != NULL) {
-        HDF_LOGE("I2cManagerAddCntlr: cntlr of bus:%d already exits!", cntlr->busId);
+        HDF_LOGE("I2cManagerAddCntlr: cntlr of bus:%hd already exits!", cntlr->busId);
         ret = HDF_FAILURE;
     } else {
         manager->cntlrs[cntlr->busId] = cntlr;
@@ -83,7 +83,7 @@ static void I2cManagerRemoveCntlr(struct I2cCntlr *cntlr)
     struct I2cManager *manager = g_i2cManager;
 
     if (cntlr->busId < 0 || cntlr->busId >= I2C_BUS_MAX) {
-        HDF_LOGE("I2cManagerRemoveCntlr: invalid busId:%d!", cntlr->busId);
+        HDF_LOGE("I2cManagerRemoveCntlr: invalid busId:%hd!", cntlr->busId);
         return;
     }
 
@@ -97,7 +97,7 @@ static void I2cManagerRemoveCntlr(struct I2cCntlr *cntlr)
     }
 
     if (manager->cntlrs[cntlr->busId] != cntlr) {
-        HDF_LOGE("I2cManagerRemoveCntlr: cntlr(%d) not in manager!", cntlr->busId);
+        HDF_LOGE("I2cManagerRemoveCntlr: cntlr(%hd) not in manager!", cntlr->busId);
     } else {
         manager->cntlrs[cntlr->busId] = NULL;
     }
@@ -114,7 +114,7 @@ static struct I2cCntlr *I2cManagerFindCntlr(int16_t number)
     struct I2cManager *manager = g_i2cManager;
 
     if (number < 0 || number >= I2C_BUS_MAX) {
-        HDF_LOGE("I2cManagerFindCntlr: invalid busId:%d!", number);
+        HDF_LOGE("I2cManagerFindCntlr: invalid busId:%hd!", number);
         return NULL;
     }
 
@@ -242,7 +242,7 @@ static int32_t I2cTransferRebuildMsgs(struct HdfSBuf *data, struct I2cMsg **ppms
     }
 
     count = (int16_t)len / (int16_t)sizeof(*msgs);
-    PLAT_LOGV("I2cTransferRebuildMsgs: count:%d, len:%u, sizeof(*msgs):%u",
+    PLAT_LOGV("I2cTransferRebuildMsgs: count:%hd, len:%u, sizeof(*msgs):%u",
         count, len, sizeof(*msgs));
     for (i = 0; i < count; i++) {
         if ((msgs[i].flags & I2C_FLAG_READ) != 0) {
@@ -283,7 +283,7 @@ static int32_t I2cTransferWriteBackMsgs(struct HdfSBuf *reply, struct I2cMsg *ms
             continue;
         }
         if (!HdfSbufWriteBuffer(reply, msgs[i].buf, msgs[i].len)) {
-            HDF_LOGE("I2cTransferWriteBackMsgs: write msg[%d] reply fail!", i);
+            HDF_LOGE("I2cTransferWriteBackMsgs: write msg[%hd] reply fail!", i);
             return HDF_ERR_IO;
         }
     }

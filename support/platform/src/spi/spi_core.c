@@ -213,12 +213,12 @@ EXIT:
     return ret;
 }
 
-static int32_t SpiIoOpen(struct SpiCntlr *cntlr, uint32_t csNum)
+static inline int32_t SpiIoOpen(struct SpiCntlr *cntlr, uint32_t csNum)
 {
     return SpiCntlrOpen(cntlr, csNum);
 }
 
-static int32_t SpiIoClose(struct SpiCntlr *cntlr, uint32_t csNum)
+static inline int32_t SpiIoClose(struct SpiCntlr *cntlr, uint32_t csNum)
 {
     return SpiCntlrClose(cntlr, csNum);
 }
@@ -248,7 +248,7 @@ static int32_t SpiIoGetConfig(struct SpiCntlr *cntlr, uint32_t csNum, struct Hdf
 
     if (!HdfSbufWriteBuffer(reply, &cfg, sizeof(cfg))) {
         HDF_LOGE("%s: write buffer failed!", __func__);
-        return ret;
+        return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
