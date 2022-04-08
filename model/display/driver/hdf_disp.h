@@ -82,6 +82,7 @@ struct PanelInfo {
     uint32_t clockFreq;
     uint32_t pWidth;
     uint32_t pHeight;
+    int32_t connectorType;
     enum LcdIntfType intfType;
     uint32_t intfSync;
     struct MipiDsiDesc mipi;
@@ -105,6 +106,8 @@ struct PanelData {
     int32_t (*init)(struct PanelData *panel);
     int32_t (*on)(struct PanelData *panel);
     int32_t (*off)(struct PanelData *panel);
+    int32_t (*prepare)(struct PanelData *panel);
+    int32_t (*unprepare)(struct PanelData *panel);
     struct PanelInfo *info;
     enum PowerStatus powerStatus;
     struct PanelEsd *esd;

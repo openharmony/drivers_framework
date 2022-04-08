@@ -82,6 +82,7 @@ struct BacklightDev *RegisterBlDev(const char *name, struct BacklightProperties 
     struct BacklightOps *ops, void *priv)
 {
     int32_t devNum;
+    int32_t i;
     struct BacklightDev *blDev = NULL;
     struct BlDevManager *blDevManager = NULL;
 
@@ -95,7 +96,7 @@ struct BacklightDev *RegisterBlDev(const char *name, struct BacklightProperties 
         HDF_LOGE("%s: number of backlight device registrations exceeded", __func__);
         return NULL;
     }
-    for (int32_t i = 0; i < devNum; i++) {
+    for (i = 0; i < devNum; i++) {
         if (strcmp(name, blDevManager->blDev[i]->name) == 0) {
             HDF_LOGE("%s: backlight name should be unique", __func__);
             return NULL;
@@ -126,13 +127,14 @@ void *ToBlDevPriv(struct BacklightDev *blDev)
 struct BacklightDev *GetBacklightDev(const char *name)
 {
     struct BlDevManager *blDevManager = NULL;
+    int32_t i;
 
     if (name == NULL) {
         HDF_LOGE("%s name is null", __func__);
         return NULL;
     }
     blDevManager = GetBlDevManager();
-    for (int32_t i = 0; i < blDevManager->devNum; i++) {
+    for (i = 0; i < blDevManager->devNum; i++) {
         if (strcmp(name, blDevManager->blDev[i]->name) == 0) {
             return blDevManager->blDev[i];
         }
@@ -355,6 +357,7 @@ static int32_t HdfGetBlDevList(struct HdfDeviceObject *device,
     (void)device;
     (void)reqData;
     int32_t ret;
+    int32_t i;
     char *devName = NULL;
     char *tmp = NULL;
     char buffer[NAME_BUFFER_LEN] = {0};
@@ -362,7 +365,7 @@ static int32_t HdfGetBlDevList(struct HdfDeviceObject *device,
 
     blDevManager = GetBlDevManager();
     tmp = buffer;
-    for (int32_t i = 0; i < blDevManager->devNum; i++) {
+    for (i = 0; i < blDevManager->devNum; i++) {
         devName = blDevManager->blDev[i]->name;
         if ((tmp + MAX_DEST_STRING_LEN) > &buffer[NAME_BUFFER_LEN]) {
             HDF_LOGE("%s: Memory out of bounds", __func__);
