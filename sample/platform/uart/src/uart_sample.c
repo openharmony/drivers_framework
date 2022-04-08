@@ -6,8 +6,8 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "device_resource_if.h"
 #include "buf_fifo.h"
+#include "device_resource_if.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
 #include "hisoc/uart.h"
@@ -18,7 +18,7 @@
 #include "uart_dispatch_sample.h"
 #include "uart_pl011_sample.h"
 
-#define HDF_LOG_TAG uart_sample
+#define HDF_LOG_TAG       uart_sample
 #define UART_RX_FIFO_SIZE 128
 
 static uint8_t g_fifoBuffer[UART_RX_FIFO_SIZE] = {0};
@@ -180,8 +180,7 @@ static int InitUartDevice(struct UartDevice *device)
     return HDF_SUCCESS;
 }
 
-static uint32_t GetUartDeviceResource(
-    struct UartDevice *device, const struct DeviceResourceNode *resourceNode)
+static uint32_t GetUartDeviceResource(struct UartDevice *device, const struct DeviceResourceNode *resourceNode)
 {
     struct UartResource *resource = &device->resource;
     struct DeviceResourceIface *dri = NULL;
@@ -259,7 +258,7 @@ static void DeinitUartDevice(struct UartDevice *device)
 {
     struct UartRegisterMap *regMap = (struct UartRegisterMap *)device->resource.physBase;
     /* wait for uart enter idle. */
-    while (UartPl011IsBusy(regMap)) { }
+    while (UartPl011IsBusy(regMap)) {}
     UartPl011ResetRegisters(regMap);
     uart_clk_cfg(0, false);
     OsalIoUnmap((void *)device->resource.physBase);

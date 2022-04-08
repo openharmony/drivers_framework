@@ -7,9 +7,9 @@
  */
 
 #include "uart_if.h"
+#include "hdf_io_service_if.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
-#include "hdf_io_service_if.h"
 
 #define HDF_LOG_TAG uart_if
 

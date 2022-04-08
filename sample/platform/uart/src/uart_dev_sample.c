@@ -8,13 +8,13 @@
 
 #include "uart_dev_sample.h"
 #include "fs/fs.h"
-#include "securec.h"
-#include "user_copy.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
+#include "securec.h"
 #include "uart_pl011_sample.h"
+#include "user_copy.h"
 
-#define HDF_LOG_TAG uart_dev_sample
+#define HDF_LOG_TAG      uart_dev_sample
 #define HDF_UART_FS_MODE 0660
 
 static int32_t UartSampleDevOpen(struct file *filep)
@@ -33,6 +33,7 @@ static int32_t UartSampleDevOpen(struct file *filep)
     HDF_LOGI("%s: open uart%d success", __func__, host->num);
     return HDF_SUCCESS;
 }
+
 static int32_t UartSampleRelease(struct file *filep)
 {
     struct UartHost *host = NULL;
@@ -122,7 +123,7 @@ static int32_t UartSampleDevIoctl(struct file *filep, int32_t cmd, unsigned long
     if (host->priv == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
-    
+
     ret = HDF_FAILURE;
     switch (cmd) {
         case UART_CFG_BAUDRATE:
@@ -137,11 +138,11 @@ static int32_t UartSampleDevIoctl(struct file *filep, int32_t cmd, unsigned long
 }
 
 const struct file_operations_vfs g_uartSampleDevFops = {
-    .open   = UartSampleDevOpen,
-    .close  = UartSampleRelease,
-    .read   = UartSampleRead,
-    .write  = UartSampleWrite,
-    .ioctl  = UartSampleDevIoctl,
+    .open = UartSampleDevOpen,
+    .close = UartSampleRelease,
+    .read = UartSampleRead,
+    .write = UartSampleWrite,
+    .ioctl = UartSampleDevIoctl,
 };
 
 #define MAX_DEV_NAME_SIZE 32

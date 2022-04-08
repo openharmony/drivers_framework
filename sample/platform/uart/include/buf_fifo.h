@@ -9,8 +9,8 @@
 #ifndef BUF_FIFO_H
 #define BUF_FIFO_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 struct BufferFifo {
     volatile uint32_t readPosition;
@@ -32,4 +32,3 @@ static inline bool IsPowerOfTwo(int num)
 bool BufferFifoInit(struct BufferFifo *fifo, uint8_t *buf, uint16_t bufSize);
 
 #endif // BUF_FIFO_H
-

@@ -12,7 +12,7 @@
 #include "uart_if.h"
 
 #define HDF_LOG_TAG hello_uart_dispatch
-#define UART_PORT 5
+#define UART_PORT   5
 
 int main(void)
 {
