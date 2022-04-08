@@ -54,8 +54,7 @@ UartPl011Error UartPl011SetBaudrate(struct UartRegisterMap *regMap, uint32_t clk
     return UART_PL011_ERR_NONE;
 }
 
-void UartPl011SetDataFormat(
-    struct UartRegisterMap *regMap, uint32_t wordLen, uint32_t parity, uint32_t stopBits)
+void UartPl011SetDataFormat(struct UartRegisterMap *regMap, uint32_t wordLen, uint32_t parity, uint32_t stopBits)
 {
     bool uartEnabled = UartPl011IsEnabled(regMap);
     uint32_t lcr = regMap->lcr & (~UART_PL011_DATA_FORMAT_MASK);
@@ -87,4 +86,3 @@ void UartPl011ResetRegisters(struct UartRegisterMap *regMap)
     regMap->icr = UART_PL011_DEFAULT_ICR_VALUE;
     regMap->dmacr = UART_PL011_DEFAULT_DMACR_VALUE;
 }
-

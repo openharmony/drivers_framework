@@ -18,7 +18,7 @@ extern "C" {
 #endif /* __cplusplus */
 #endif /* __cplusplus */
 
-#define UART_IOC_MAGIC   'u'
+#define UART_IOC_MAGIC 'u'
 
 /* baudrate config */
 #define UART_CFG_BAUDRATE _IO(UART_IOC_MAGIC, 1)

@@ -12,11 +12,9 @@
 #include <stdint.h>
 
 #define UART_DEV_SERVICE_NAME_PREFIX "HDF_PLATFORM_UART_%d"
-#define MAX_DEV_NAME_SIZE 32
+#define MAX_DEV_NAME_SIZE            32
 
-enum {
-    UART_WRITE = 1
-};
+enum { UART_WRITE = 1 };
 
 struct DevHandle {
     void *object;

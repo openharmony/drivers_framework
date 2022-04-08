@@ -214,11 +214,10 @@ void StartupCfgGen::GetHostCaps(const std::shared_ptr<AstObject> &capsTerm, Host
 void StartupCfgGen::GetHostLoadMode(const std::shared_ptr<AstObject> &hostInfo, HostInfo &hostData)
 {
     uint32_t preload;
-    std::shared_ptr<AstObject> devInfo = nullptr;
     std::shared_ptr<AstObject> current = nullptr;
     std::shared_ptr<AstObject> devNodeInfo = nullptr;
 
-    devInfo = hostInfo->Child();
+    std::shared_ptr<AstObject> devInfo = hostInfo->Child();
     while (devInfo != nullptr) {
         if (!devInfo->IsNode()) {
             devInfo = devInfo->Next();
@@ -271,13 +270,13 @@ bool StartupCfgGen::GetHostInfo()
 
         hostData.hostUID = serviceName;
         object = hostInfo->Lookup("uid", PARSEROP_CONFTERM);
-        if (object != nullptr && object->Child()->StringValue() != "") {
+        if (object != nullptr && !object->Child()->StringValue().empty()) {
             hostData.hostUID = object->Child()->StringValue();
         }
 
         hostData.hostGID = serviceName;
         object = hostInfo->Lookup("gid", PARSEROP_CONFTERM);
-        if (object != nullptr && object->Child()->StringValue() != "") {
+        if (object != nullptr && !object->Child()->StringValue().empty()) {
             hostData.hostGID = object->Child()->StringValue();
         }
         object = hostInfo->Lookup("caps", PARSEROP_CONFTERM);

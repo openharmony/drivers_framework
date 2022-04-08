@@ -10,7 +10,7 @@
 
 bool BufferFifoInit(struct BufferFifo *fifo, uint8_t *fifoBuffer, uint16_t fifoSize)
 {
-    if (fifoBuffer == NULL) {
+    if (fifoBuffer == NULL || fifo == NULL) {
         return false;
     }
     if (!IsPowerOfTwo(fifoSize)) {

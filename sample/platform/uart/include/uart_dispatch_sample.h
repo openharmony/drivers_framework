@@ -11,9 +11,7 @@
 
 #include "uart_pl011_sample.h"
 
-enum {
-    UART_WRITE = 1
-};
+enum { UART_WRITE = 1 };
 
 int32_t SampleDispatch(struct HdfDeviceIoClient *client, int cmdId, struct HdfSBuf *data, struct HdfSBuf *reply);
 
