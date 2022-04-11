@@ -60,7 +60,7 @@ static int HdfDeviceNodePublishService(struct HdfDeviceNode *devNode)
     return status;
 }
 
-int DeviveDriverBind(struct HdfDeviceNode *devNode)
+int DeviceDriverBind(struct HdfDeviceNode *devNode)
 {
     int ret;
     const struct HdfDriverEntry *driverEntry = NULL;
@@ -102,7 +102,7 @@ int HdfDeviceLaunchNode(struct HdfDeviceNode *devNode)
     }
     devNode->devStatus = DEVNODE_LAUNCHED;
 
-    ret = DeviveDriverBind(devNode);
+    ret = DeviceDriverBind(devNode);
     if (ret != HDF_SUCCESS) {
         return ret;
     }
