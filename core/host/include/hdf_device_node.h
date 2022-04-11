@@ -64,6 +64,6 @@ void HdfDeviceNodeFreeInstance(struct HdfDeviceNode *devNode);
 void HdfDeviceNodeDelete(struct HdfDeviceNode *devNode);
 int HdfDeviceNodePublishPublicService(struct HdfDeviceNode *devNode);
 int HdfDeviceNodeRemoveService(struct HdfDeviceNode *devNode);
-int DeviveDriverBind(struct HdfDeviceNode *devNode);
+int DeviceDriverBind(struct HdfDeviceNode *devNode);
 
 #endif /* HDF_DEVICE_NODE_H */

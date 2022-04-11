@@ -283,7 +283,7 @@ int HdfDeviceObjectPublishService(struct HdfDeviceObject *dev, const char *servN
     devNode->policy = policy;
     devNode->permission = perm;
 
-    ret = DeviveDriverBind(devNode);
+    ret = DeviceDriverBind(devNode);
     if (ret != HDF_SUCCESS) {
         return ret;
     }
