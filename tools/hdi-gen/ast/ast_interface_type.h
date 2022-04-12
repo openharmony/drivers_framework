@@ -43,11 +43,22 @@ public:
     inline void SetCallback(bool callback)
     {
         isCallback_ = callback;
+        SetSerializable(callback);
     }
 
     inline bool IsCallback()
     {
         return isCallback_;
+    }
+
+    inline void SetSerializable(bool isSerializable)
+    {
+        isSerializable_ = isSerializable;
+    }
+
+    inline bool IsSerializable()
+    {
+        return isSerializable_;
     }
 
     inline void SetFull(bool full)
@@ -108,6 +119,9 @@ public:
     void EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
         const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
 
+    void EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType, const String& ecName,
+        const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
+
     void EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
         const String& gotoLabel, StringBuilder& sb, const String& prefix) const override;
 
@@ -129,6 +143,7 @@ private:
     String license_;
     bool isOneWay_ = false;
     bool isCallback_ = false;
+    bool isSerializable_ = false;
     bool isFull_ = false;
     bool isLite_ = false;
     std::vector<AutoPtr<ASTMethod>> methods_;

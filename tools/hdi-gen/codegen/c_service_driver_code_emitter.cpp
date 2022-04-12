@@ -30,8 +30,8 @@ bool CServiceDriverCodeEmitter::ResolveDirectory(const String& targetDirectory)
 
 void CServiceDriverCodeEmitter::EmitCode()
 {
-    // the callback interface have no driver file.
-    if (!isCallbackInterface()) {
+    // the callback interface or interface as method parameter have no driver file.
+    if (!interface_->IsSerializable()) {
         EmitDriverSourceFile();
     }
 }
@@ -67,7 +67,6 @@ void CServiceDriverCodeEmitter::EmitDriverIncluions(StringBuilder& sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(stubName_)));
     headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(implName_)));
     GetDriverSourceOtherLibInclusions(headerFiles);
 
@@ -82,13 +81,16 @@ void CServiceDriverCodeEmitter::GetDriverSourceOtherLibInclusions(HeaderFile::He
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
     headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_device_desc"));
+    if (!isKernelCode_) {
+        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_device_object"));
+    }
 }
 
 void CServiceDriverCodeEmitter::EmitDriverServiceDecl(StringBuilder& sb)
 {
     sb.AppendFormat("struct Hdf%sHost {\n", baseName_.string());
     sb.Append(g_tab).AppendFormat("struct IDeviceIoService ioservice;\n");
-    sb.Append(g_tab).AppendFormat("struct %s *service;\n", interfaceName_.string());
+    sb.Append(g_tab).AppendFormat("struct %s *service;\n", implName_.string());
     sb.Append("};\n");
 }
 
@@ -103,8 +105,22 @@ void CServiceDriverCodeEmitter::EmitDriverDispatch(StringBuilder& sb)
         baseName_.string(), hostName.string());
     sb.Append(g_tab).Append(g_tab).AppendFormat("client->device->service, struct Hdf%sHost, ioservice);\n",
         baseName_.string());
-    sb.Append(g_tab).AppendFormat("return %sServiceOnRemoteRequest(%s->service, cmdId, data, reply);\n",
-        baseName_.string(), hostName.string());
+
+    sb.Append(g_tab).AppendFormat("if (%s->service == NULL || %s->service->stub.OnRemoteRequest == NULL) {\n",
+        hostName.string(), hostName.string());
+    sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: invalid service obj\", __func__);\n");
+    sb.Append(g_tab).Append(g_tab).Append("return HDF_ERR_INVALID_OBJECT;\n");
+    sb.Append(g_tab).Append("}\n\n");
+
+    if (!isKernelCode_) {
+        sb.Append(g_tab).AppendFormat("if (!HdfDeviceObjectCheckInterfaceDesc(client->device, data)) {\n");
+        sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"%{public}s: check interface desc failed!\", __func__);\n");
+        sb.Append(g_tab).Append(g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+        sb.Append(g_tab).Append("}\n\n");
+    }
+
+    sb.Append(g_tab).AppendFormat("return %s->service->stub.OnRemoteRequest(", hostName.string());
+    sb.AppendFormat("&%s->service->stub.interface, cmdId, data, reply);\n", hostName.string());
     sb.Append("}\n");
 }
 
@@ -124,6 +140,16 @@ void CServiceDriverCodeEmitter::EmitDriverBind(StringBuilder& sb)
     sb.Append("{\n");
     sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverBind enter.\");\n", baseName_.string());
     sb.Append("\n");
+
+    if (!isKernelCode_) {
+        sb.Append(g_tab).AppendFormat("int32_t ret = HdfDeviceObjectSetInterfaceDesc(deviceObject, %s);\n",
+            EmitDescMacroName().string());
+        sb.Append(g_tab).Append("if (ret != HDF_SUCCESS) {\n");
+        sb.Append(g_tab).Append(g_tab).Append("HDF_LOGE(\"failed to set interface descriptor of device object\");\n");
+        sb.Append(g_tab).Append(g_tab).Append("return ret;\n");
+        sb.Append(g_tab).Append("}\n\n");
+    }
+
     sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = (struct Hdf%sHost *)OsalMemAlloc(\n",
         baseName_.string(), hostName.string(), baseName_.string());
     sb.Append(g_tab).Append(g_tab).AppendFormat("sizeof(struct Hdf%sHost));\n", baseName_.string());
@@ -137,13 +163,12 @@ void CServiceDriverCodeEmitter::EmitDriverBind(StringBuilder& sb)
         hostName.string(), baseName_.string());
     sb.Append(g_tab).AppendFormat("%s->ioservice.Open = NULL;\n", hostName.string());
     sb.Append(g_tab).AppendFormat("%s->ioservice.Release = NULL;\n", hostName.string());
-    sb.Append(g_tab).AppendFormat("%s->service = %sStubGetInstance();\n", hostName.string(), baseName_.string());
+    sb.Append(g_tab).AppendFormat("%s->service = %sServiceGet();\n", hostName.string(), baseName_.string());
     sb.Append(g_tab).AppendFormat("if (%s->service == NULL) {\n", hostName.string());
     sb.Append(g_tab).Append(g_tab).AppendFormat("OsalMemFree(%s);\n", hostName.string());
     sb.Append(g_tab).Append(g_tab).Append("return HDF_FAILURE;\n");
     sb.Append(g_tab).Append("}\n");
     sb.Append("\n");
-    sb.Append(g_tab).AppendFormat("%sServiceConstruct(%s->service);\n", baseName_.string(),  hostName.string());
     sb.Append(g_tab).AppendFormat("deviceObject->service = &%s->ioservice;\n", hostName.string());
     sb.Append(g_tab).Append("return HDF_SUCCESS;\n");
     sb.Append("}\n");
@@ -158,7 +183,7 @@ void CServiceDriverCodeEmitter::EmitDriverRelease(StringBuilder& sb)
     sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = CONTAINER_OF(", baseName_.string(), hostName.string());
     sb.AppendFormat("deviceObject->service, struct Hdf%sHost, ioservice);\n",
         baseName_.string());
-    sb.Append(g_tab).AppendFormat("%sStubRelease(%s->service);\n", baseName_.string(), hostName.string());
+    sb.Append(g_tab).AppendFormat("%sServiceRelease(%s->service);\n", baseName_.string(), hostName.string());
     sb.Append(g_tab).AppendFormat("OsalMemFree(%s);\n", hostName.string());
     sb.Append("}\n");
 }

@@ -91,6 +91,11 @@ void CCodeEmitter::EmitTailExternC(StringBuilder& sb)
     sb.Append("#endif /* __cplusplus */\n");
 }
 
+String CCodeEmitter::EmitDescMacroName()
+{
+    return String::Format("%s_INTERFACE_DESC", interfaceName_.ToUpperCase().string());
+}
+
 String CCodeEmitter::MacroName(const String& name)
 {
     if (name.IsEmpty()) {
