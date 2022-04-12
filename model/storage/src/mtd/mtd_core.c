@@ -36,11 +36,6 @@ static int32_t MtdDeviceCheckParms(struct MtdDevice *mtdDevice)
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (mtdDevice->idLen > MTD_FLASH_ID_LEN_MAX) {
-        HDF_LOGE("%s: invalid idLen:%u", __func__, mtdDevice->idLen);
-        return HDF_ERR_INVALID_OBJECT;
-    }
-
     if (mtdDevice->capacity == 0) {
         HDF_LOGE("%s: invalid capacity:%zu", __func__, mtdDevice->capacity);
         return HDF_ERR_INVALID_OBJECT;
