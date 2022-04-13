@@ -37,11 +37,10 @@ int32_t I2cTransfer(DevHandle handle, struct I2cMsg *msgs, int16_t count)
     }
 
     if (msgs == NULL || count <= 0) {
-        HDF_LOGE("I2cTransfer: err params! msgs:%s, count:%d",
+        HDF_LOGE("I2cTransfer: err params! msgs:%s, count:%hd",
             (msgs == NULL) ? "0" : "x", count);
         return HDF_ERR_INVALID_PARAM;
     }
 
     return I2cCntlrTransfer((struct I2cCntlr *)handle, msgs, count);
 }
-

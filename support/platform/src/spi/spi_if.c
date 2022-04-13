@@ -16,7 +16,7 @@
 #define HDF_LOG_TAG spi_if
 #define HOST_NAME_LEN 32
 
-struct SpiObject {
+struct SpiClient {
     struct SpiCntlr *cntlr;
     uint32_t csNum;
 };
@@ -24,33 +24,27 @@ struct SpiObject {
 static struct SpiCntlr *SpiGetCntlrByBusNum(uint32_t num)
 {
     int ret;
-    char *name = NULL;
+    char name[HOST_NAME_LEN + 1] = {0};
     struct SpiCntlr *cntlr = NULL;
 
-    name = (char *)OsalMemCalloc(HOST_NAME_LEN + 1);
-    if (name == NULL) {
-        return NULL;
-    }
     ret = snprintf_s(name, HOST_NAME_LEN + 1, HOST_NAME_LEN, "HDF_PLATFORM_SPI_%u", num);
     if (ret < 0) {
         HDF_LOGE("%s: snprintf_s failed", __func__);
-        OsalMemFree(name);
         return NULL;
     }
     cntlr = (struct SpiCntlr *)DevSvcManagerClntGetService(name);
-    OsalMemFree(name);
     return cntlr;
 }
 
 int32_t SpiTransfer(DevHandle handle, struct SpiMsg *msgs, uint32_t count)
 {
-    struct SpiObject *obj = NULL;
+    struct SpiClient *client = NULL;
 
     if (handle == NULL) {
         return HDF_ERR_INVALID_PARAM;
     }
-    obj = (struct SpiObject *)handle;
-    return SpiCntlrTransfer(obj->cntlr, obj->csNum, msgs, count);
+    client = (struct SpiClient *)handle;
+    return SpiCntlrTransfer(client->cntlr, client->csNum, msgs, count);
 }
 
 int32_t SpiRead(DevHandle handle, uint8_t *buf, uint32_t len)
@@ -75,38 +69,38 @@ int32_t SpiWrite(DevHandle handle, uint8_t *buf, uint32_t len)
 
 int32_t SpiSetCfg(DevHandle handle, struct SpiCfg *cfg)
 {
-    struct SpiObject *obj = NULL;
+    struct SpiClient *client = NULL;
 
     if (handle == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-    obj = (struct SpiObject *)handle;
-    return SpiCntlrSetCfg(obj->cntlr, obj->csNum, cfg);
+    client = (struct SpiClient *)handle;
+    return SpiCntlrSetCfg(client->cntlr, client->csNum, cfg);
 }
 
 int32_t SpiGetCfg(DevHandle handle, struct SpiCfg *cfg)
 {
-    struct SpiObject *obj = NULL;
+    struct SpiClient *client = NULL;
 
     if (handle == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
-    obj = (struct SpiObject *)handle;
-    return SpiCntlrGetCfg(obj->cntlr, obj->csNum, cfg);
+    client = (struct SpiClient *)handle;
+    return SpiCntlrGetCfg(client->cntlr, client->csNum, cfg);
 }
 
 void SpiClose(DevHandle handle)
 {
     int32_t ret;
-    struct SpiObject *obj = NULL;
+    struct SpiClient *client = NULL;
 
     if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL", __func__);
         return;
     }
 
-    obj = (struct SpiObject *)handle;
-    ret = SpiCntlrClose(obj->cntlr, obj->csNum);
+    client = (struct SpiClient *)handle;
+    ret = SpiCntlrClose(client->cntlr, client->csNum);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: error, ret is %d", __func__, ret);
     }
@@ -116,7 +110,7 @@ void SpiClose(DevHandle handle)
 DevHandle SpiOpen(const struct SpiDevInfo *info)
 {
     int32_t ret;
-    struct SpiObject *object = NULL;
+    struct SpiClient *object = NULL;
     struct SpiCntlr *cntlr = NULL;
 
     if (info == NULL) {
@@ -128,7 +122,7 @@ DevHandle SpiOpen(const struct SpiDevInfo *info)
         return NULL;
     }
 
-    object = (struct SpiObject *)OsalMemCalloc(sizeof(*object));
+    object = (struct SpiClient *)OsalMemCalloc(sizeof(*object));
     if (object == NULL) {
         HDF_LOGE("%s: object malloc error", __func__);
         return NULL;
