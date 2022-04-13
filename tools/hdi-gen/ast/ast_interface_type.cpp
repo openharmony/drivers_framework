@@ -120,7 +120,7 @@ String ASTInterfaceType::EmitCppType(TypeMode mode) const
 {
     switch (mode) {
         case TypeMode::NO_MODE:
-            return String::Format("%s", name_.string());
+            return String::Format("sptr<%s>", name_.string());
         case TypeMode::PARAM_IN:
             return String::Format("const sptr<%s>&", name_.string());
         case TypeMode::PARAM_OUT:
