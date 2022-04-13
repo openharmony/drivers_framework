@@ -41,6 +41,7 @@ enum class TypeKind {
     TYPE_STRUCT,
     TYPE_UNION,
     TYPE_SMQ,
+    TYPE_ASHMEM,
 };
 
 enum class TypeMode {
@@ -111,6 +112,8 @@ public:
     virtual bool IsFdType();
 
     virtual bool IsSmqType();
+
+    virtual bool IsAshmemType();
 
     virtual String ToShortString();
 

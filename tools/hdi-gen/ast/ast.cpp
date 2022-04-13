@@ -30,6 +30,7 @@ AST::AST()
     types_["unsigned long"] = new ASTUlongType();
     types_["void"] = new ASTVoidType();
     types_["FileDescriptor"] = new ASTFdType();
+    types_["Ashmem"] = new ASTAshmemType();
 }
 
 void AST::SetIdlFile(const String &idlFile)

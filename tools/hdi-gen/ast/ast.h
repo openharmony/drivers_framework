@@ -28,6 +28,7 @@
 #include "ast/ast_node.h"
 #include "ast/ast_sequenceable_type.h"
 #include "ast/ast_short_type.h"
+#include "ast/ast_smq_type.h"
 #include "ast/ast_string_type.h"
 #include "ast/ast_struct_type.h"
 #include "ast/ast_uchar_type.h"

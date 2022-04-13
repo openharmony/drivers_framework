@@ -24,6 +24,7 @@ enum class Token {
     FLOAT,
     DOUBLE,
     FILEDESCRIPTOR,
+    ASHMEM,
     LIST,
     MAP,
     SMEMQUEUE,

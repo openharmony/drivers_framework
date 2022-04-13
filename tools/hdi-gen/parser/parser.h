@@ -143,7 +143,7 @@ private:
 
     inline static bool IsPrimitiveType(Token token)
     {
-        return token >= Token::BOOLEAN && token <= Token::FILEDESCRIPTOR;
+        return token >= Token::BOOLEAN && token <= Token::ASHMEM;
     }
 
     bool AddAst();
