@@ -6,7 +6,12 @@
   * See the LICENSE file in the root of this repository for complete details.
   */
 
+#ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
+#include "hcs_macro.h"
+#include "hdf_config_macro.h"
+#else
 #include "device_resource_if.h"
+#endif
 #include "mmc_block.h"
 #include "mmc_dispatch.h"
 #include "mmc_emmc.h"
@@ -904,6 +909,59 @@ void MmcCntlrNotifySdioIrqThread(struct MmcCntlr *cntlr)
     }
 }
 
+#ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
+#define MMC_PARSE_DEVICE_INFO(node, cntlr) \
+    do { \
+        cntlr->index = HCS_PROP(node, hostId); \
+        cntlr->devType = HCS_PROP(node, devType); \
+    } while (0)
+
+#define MMC_PARSE_CNTLR_FREQ_INFO(node, cntlr) \
+    do { \
+        cntlr->freqMin = HCS_PROP(node, freqMin); \
+        cntlr->freqMax = HCS_PROP(node, freqMax); \
+        cntlr->freqDef = HCS_PROP(node, freqDef); \
+    } while (0)
+
+#define MMC_PARSE_CNTLR_CAPS_INFO(node, cntlr) \
+    do { \
+        cntlr->voltDef = HCS_PROP(node, voltDef); \
+        cntlr->ocrDef.ocrData = HCS_PROP(node, ocrDef); \
+        cntlr->caps.capsData = HCS_PROP(node, caps); \
+        cntlr->caps2.caps2Data = HCS_PROP(node, caps2); \
+        cntlr->maxBlkNum = HCS_PROP(node, maxBlkNum); \
+        cntlr->maxBlkSize = HCS_PROP(node, maxBlkSize); \
+        cntlr->maxReqSize = cntlr->maxBlkNum * cntlr->maxBlkSize; \
+    } while (0)
+
+#define MMC_FIND_CONFIG(node, name, cntlr) \
+    do { \
+        if (strcmp(HCS_PROP(node, match_attr), name) == 0) { \
+            MMC_PARSE_DEVICE_INFO(node, cntlr); \
+            MMC_PARSE_CNTLR_FREQ_INFO(node, cntlr); \
+            MMC_PARSE_CNTLR_CAPS_INFO(node, cntlr); \
+            break; \
+        } \
+    } while (0)
+
+#define PLATFORM_CONFIG HCS_NODE(HCS_ROOT, platform)
+#define MMC_CNTLR_PARSE_CONFIG HCS_NODE(HCS_NODE(HCS_ROOT, platform), mmc_config)
+
+int32_t MmcCntlrParse(struct MmcCntlr *cntlr, struct HdfDeviceObject *obj)
+{
+    if (cntlr == NULL || obj == NULL) {
+        HDF_LOGE("MmcCntlrParse: input param is NULL.");
+        return HDF_FAILURE;
+    }
+
+    /* parse hcs config. */
+#if HCS_NODE_HAS_PROP(PLATFORM_CONFIG, mmc_config)
+    HCS_FOREACH_CHILD_VARGS(MMC_CNTLR_PARSE_CONFIG, MMC_FIND_CONFIG, obj->deviceMatchAttr, cntlr);
+#endif
+
+    return HDF_SUCCESS;
+}
+#else
 static void MmcCntlrParseCapability(const struct DeviceResourceNode *node,
     struct DeviceResourceIface *drsOps, struct MmcCntlr *cntlr)
 {
@@ -989,6 +1047,7 @@ int32_t MmcCntlrParse(struct MmcCntlr *cntlr, struct HdfDeviceObject *obj)
     MmcCntlrParseCapability(node, drsOps, cntlr);
     return HDF_SUCCESS;
 }
+#endif
 
 int32_t MmcDeviceAdd(struct MmcDevice *mmc)
 {
