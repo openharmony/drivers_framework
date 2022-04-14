@@ -147,6 +147,11 @@ bool ASTType::IsSmqType()
     return false;
 }
 
+bool ASTType::IsAshmemType()
+{
+    return false;
+}
+
 String ASTType::ToShortString()
 {
     return name_;

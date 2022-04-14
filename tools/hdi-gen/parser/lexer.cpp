@@ -40,6 +40,7 @@ std::unordered_map<String, Token, StringHashFunc, StringEqualFunc> Lexer::keywor
     {"unsigned",       Token::UNSIGNED      },
     {"FileDescriptor", Token::FILEDESCRIPTOR},
     {"SharedMemQueue", Token::SMEMQUEUE     },
+    {"Ashmem",         Token::ASHMEM        },
 };
 
 std::unordered_map<char, Token> Lexer::delimiters_ = {
@@ -100,6 +101,7 @@ std::unordered_map<Token, String> Lexer::tokenDumps_ = {
     {Token::UNSIGNED,             "unsigned"      },
     {Token::FILEDESCRIPTOR,       "FileDescriptor"},
     {Token::SMEMQUEUE,            "SharedMemQueue"},
+    {Token::ASHMEM,               "Ashmem"        },
 };
 
 Lexer::~Lexer()

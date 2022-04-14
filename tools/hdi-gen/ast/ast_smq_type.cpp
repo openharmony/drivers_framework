@@ -69,5 +69,56 @@ void ASTSmqType::EmitCppReadVar(const String &parcelName, const String &name, St
     sb.AppendFormat(
         "std::make_shared<SharedMemQueue<%s>>(*%s);\n", innerType_->EmitCppType().string(), metaVarName.string());
 }
+
+bool ASTAshmemType::IsAshmemType()
+{
+    return false;
+}
+
+String ASTAshmemType::ToString()
+{
+    return "Ashmem";
+}
+
+TypeKind ASTAshmemType::GetTypeKind()
+{
+    return TypeKind::TYPE_ASHMEM;
+}
+
+String ASTAshmemType::EmitCppType(TypeMode mode) const
+{
+    switch (mode) {
+        case TypeMode::NO_MODE:
+            return String::Format("sptr<Ashmem>");
+        case TypeMode::PARAM_IN:
+            return String::Format("const sptr<Ashmem>&");
+        case TypeMode::PARAM_OUT:
+            return String::Format("sptr<Ashmem>&");
+        case TypeMode::LOCAL_VAR:
+            return String::Format("sptr<Ashmem>");
+        default:
+            return "unknow type";
+    }
+}
+
+void ASTAshmemType::EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb,
+    const String &prefix, unsigned int innerLevel) const
+{
+    sb.Append(prefix).AppendFormat("if (!%s.WriteAshmem(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).Append("}\n");
+}
+
+void ASTAshmemType::EmitCppReadVar(const String &parcelName, const String &name, StringBuilder &sb,
+    const String &prefix, bool initVariable, unsigned int innerLevel) const
+{
+    if (initVariable) {
+        sb.Append(prefix).AppendFormat(
+            "%s %s = %s.ReadAshmem();\n", EmitCppType().string(), name.string(), parcelName.string());
+    } else {
+        sb.Append(prefix).AppendFormat("%s = %s.ReadAshmem();\n", name.string(), parcelName.string());
+    }
+}
 } // namespace HDI
 } // namespace OHOS
