@@ -34,9 +34,9 @@ enum DriverModuleKeventId {
 
 struct HdfSysEvent {
     uint64_t eventClass;
-    uint32_t eventid;
-    const char *content;
     uint64_t syncToken;
+    uint32_t eventid;
+    uint32_t reserved;
 };
 
 struct HdfSysEventNotifyNode;
