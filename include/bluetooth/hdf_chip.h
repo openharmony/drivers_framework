@@ -148,6 +148,7 @@ inline static int32_t HdfResetVirtualDevice(struct HdfVirtualDevice *device) {
         return ret;
     }
     OsalMSleep(device->bootUpTimeOut);
+    return HDF_SUCCESS;
 }
 
 #endif
