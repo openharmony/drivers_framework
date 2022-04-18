@@ -95,8 +95,8 @@ bool CodeEmitter::NeedFlag(const AutoPtr<ASTMethod> &method)
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         AutoPtr<ASTType> type = param->GetType();
-        if (param->GetAttribute() == ParamAttr::PARAM_OUT && type->IsStringType() || type->IsArrayType() ||
-            type->IsListType()) {
+        if (param->GetAttribute() == ParamAttr::PARAM_OUT && (type->IsStringType() || type->IsArrayType() ||
+            type->IsListType())) {
             return true;
         }
     }
