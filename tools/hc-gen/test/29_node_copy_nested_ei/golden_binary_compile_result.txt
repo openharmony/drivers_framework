@@ -1,3 +1,3 @@
 [compile exit status]:1
 [compile console output]:
-[Error] ./29_node_copy_nested_ei/case.hcs:5 circular reference ./29_node_copy_nested_ei/case.hcs:3
+[Error] only allow ref base node, ./29_node_copy_nested_ei/case.hcs:5  ref invalid node which is not base type: root.foo
