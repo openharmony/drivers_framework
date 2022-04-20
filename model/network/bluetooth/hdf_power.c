@@ -22,7 +22,7 @@ struct NoManagablePower {
 struct GpioBasedPower {
     struct HdfPower base;
     uint8_t powerSeqDelay;
-    uint8_t gpioId;
+    uint16_t gpioId;
     uint8_t activeLevel;
 };
 

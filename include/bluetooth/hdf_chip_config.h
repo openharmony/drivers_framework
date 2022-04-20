@@ -26,7 +26,7 @@ enum PowerType
 };
 
 struct HdfConfigGpioBasedSwitch {
-    uint8_t gpioId;
+    uint16_t gpioId;
     uint8_t activeLevel;
 };
 
@@ -87,7 +87,7 @@ static inline int ParsePowerConfig(const struct DeviceResourceNode *node, struct
     }
 
     if (config->type == POWER_TYPE_GPIO) {
-        if (drsOps->GetUint8(node, "gpioId", &config->gpio.gpioId, 0) != HDF_SUCCESS) {
+        if (drsOps->GetUint16(node, "gpioId", &config->gpio.gpioId, 0) != HDF_SUCCESS) {
             HDF_LOGE("%s: gpioId fail!", __func__);
             return HDF_FAILURE;
         }
@@ -169,7 +169,7 @@ static inline int ParseResetConfig(const struct DeviceResourceNode *node, struct
         return HDF_FAILURE;
     }
     if (reset->resetType == RESET_TYPE_GPIO) {
-        if (drsOps->GetUint8(node, "gpioId", &reset->gpio.gpioId, 0) != HDF_SUCCESS) {
+        if (drsOps->GetUint16(node, "gpioId", &reset->gpio.gpioId, 0) != HDF_SUCCESS) {
             HDF_LOGE("%s: gpioId fail!", __func__);
             return HDF_FAILURE;
         }
