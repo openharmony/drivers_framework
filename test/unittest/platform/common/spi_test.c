@@ -243,7 +243,7 @@ static int32_t SpiTransferTest(struct SpiTester *tester)
     msg.rbuf = tester->config.rbuf;
     msg.wbuf = tester->config.wbuf;
     msg.len = tester->config.len;
-    msg.csChange = 1; // switch off the CS after transfer
+    msg.keepCs = 0; // switch off the CS after transfer
     msg.delayUs = 0;
     msg.speed = 0;    // use default speed
 
@@ -291,7 +291,7 @@ static int32_t SpiMultiTransferTest(struct SpiTester *tester)
     msgs[SPI_TEST_MSG_2].rbuf = tester->config.rbuf;
     msgs[SPI_TEST_MSG_2].len = tester->config.len;
     msgs[SPI_TEST_MSG_2].speed = 0;
-    msgs[SPI_TEST_MSG_2].csChange = 1; // switch off the CS after transfer
+    msgs[SPI_TEST_MSG_2].keepCs = 0; // switch off the CS after transfer
 
     ret = SpiSetCfg(tester->handle, &g_spiCfg);
     if (ret != HDF_SUCCESS) {
@@ -339,8 +339,8 @@ static int32_t SpiSetDmaIntMsg(struct SpiMsg *msg, uint32_t len)
     msg->wbuf = wbuf;
     msg->rbuf = rbuf;
     msg->len = len;
-    msg->csChange = 1;
-    msg->delayUs = 0,  // switch off the CS after transfer
+    msg->keepCs= 0,  // switch off the CS after transfer
+    msg->delayUs = 0;
     msg->speed = 0;    // using default speed
     return HDF_SUCCESS;
 }

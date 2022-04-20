@@ -123,7 +123,7 @@ struct SpiDevInfo {
  * @brief Defines the custom SPI transfer message.
  *
  * @attention The specific SPI controller determines whether <b>speed</b>, <b>delayUs</b>,
- * and <b>csChange</b> are supported.
+ * and <b>keepCs</b> are supported.
  *
  * @since 1.0
  */
@@ -137,8 +137,8 @@ struct SpiMsg {
     uint16_t delayUs;    /**< Delay (in microseconds) before starting the next transfer.
                           * The value <b>0</b> indicates there is no delay between transfers.
                           */
-    uint8_t csChange;    /**< Whether to switch off the CS before the next transfer when the current transfer has been
-                          * completed. <b>1</b> indicates to switch off the CS; <b>0</b> indicates to switch on the CS.
+    uint8_t keepCs;    /**< Whether to keep CS active after current transfer has been
+                          * completed. <b>1</b> indicates to keeps CS; <b>0</b> indicates to switch off the CS.
                           */
 };
 
