@@ -162,9 +162,6 @@ struct I2sCfg {
 /**
  * @brief Defines the custom I2S transfer message.
  *
- * @attention The specific I2S controller determines whether <b>speed</b>, <b>delayUs</b>,
- * and <b>csChange</b> are supported.
- *
  * @since 1.0
  */
 struct I2sMsg {
