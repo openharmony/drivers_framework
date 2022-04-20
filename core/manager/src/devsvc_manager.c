@@ -209,7 +209,7 @@ struct HdfDeviceObject *DevSvcManagerGetObject(struct IDevSvcManager *inst, cons
 }
 
 // only use for kernel space
-void DevSvcManagerListService(struct HdfSBuf *serviecNameSet, DeviceClass deviceClass)
+void DevSvcManagerListService(struct HdfSBuf *serviceNameSet, DeviceClass deviceClass)
 {
     struct DevSvcRecord *record = NULL;
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)DevSvcManagerGetInstance();
@@ -221,7 +221,7 @@ void DevSvcManagerListService(struct HdfSBuf *serviecNameSet, DeviceClass device
     OsalMutexLock(&devSvcManager->mutex);
     DLIST_FOR_EACH_ENTRY(record, &devSvcManager->services, struct DevSvcRecord, entry) {
         if (record->devClass == deviceClass) {
-            HdfSbufWriteString(serviecNameSet, record->servName);
+            HdfSbufWriteString(serviceNameSet, record->servName);
         }
     }
     OsalMutexUnlock(&devSvcManager->mutex);
