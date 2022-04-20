@@ -19,6 +19,7 @@ using namespace OHOS::Hardware;
 AstObject::AstObject(const AstObject &obj) : AstObject(obj.name_, obj.type_, obj.stringValue_)
 {
     integerValue_ = obj.integerValue_;
+    src_ = obj.src_;
 }
 
 AstObject::AstObject(std::string name, uint32_t type, uint64_t value) :
@@ -70,7 +71,7 @@ AstObject::~AstObject()
     child_ = nullptr;
 }
 
-AstObject& AstObject::operator=(const AstObject &obj)
+AstObject &AstObject::operator=(const AstObject &obj)
 {
     if (this != &obj) {
         type_ = obj.type_;
@@ -248,6 +249,9 @@ bool AstObject::Move(std::shared_ptr<AstObject> src)
 
 std::string AstObject::SourceInfo()
 {
+    if (src_ == nullptr) {
+        return "unknown";
+    }
     std::stringstream o;
     o << src_->c_str() << ":" << lineno_ << " ";
     return o.str();
@@ -443,7 +447,7 @@ ConfigNode::ConfigNode(Token &name, uint32_t nodeType, std::string refName) :
 {
 }
 
-ConfigNode& ConfigNode::operator=(const ConfigNode &node)
+ConfigNode &ConfigNode::operator=(const ConfigNode &node)
 {
     if (this != &node) {
         refNodePath_ = node.refNodePath_;
@@ -460,12 +464,12 @@ ConfigNode& ConfigNode::operator=(const ConfigNode &node)
 const std::string &ConfigNode::NodeTypeToStr(uint32_t type)
 {
     static std::map<uint32_t, std::string> type2StringMap = {
-        {NODE_NOREF,     ""             },
-        { NODE_COPY,     "NodeCopy"     },
-        { NODE_REF,      "NodeReference"},
-        { NODE_DELETE,   "NodeDelete"   },
-        { NODE_INHERIT,  "NodeInherit"  },
-        { NODE_TEMPLATE, "NodeTemplate" },
+        {NODE_NOREF,    ""             },
+        {NODE_COPY,     "NodeCopy"     },
+        {NODE_REF,      "NodeReference"},
+        {NODE_DELETE,   "NodeDelete"   },
+        {NODE_INHERIT,  "NodeInherit"  },
+        {NODE_TEMPLATE, "NodeTemplate" },
     };
     return type2StringMap[type];
 }
@@ -600,6 +604,11 @@ bool ConfigNode::RefExpand(const std::shared_ptr<AstObject> &refObj)
 
 bool ConfigNode::Copy(std::shared_ptr<AstObject> src, bool overwrite)
 {
+    Logger().Debug() << *src << "Copy To " << *this << ", overwrite=" << overwrite;
+    if (!src->IsNode()) {
+        Logger().Error() << SourceInfo() << "node copy with different type " << src->SourceInfo();
+        return false;
+    }
     auto child = src->Child();
     while (child != nullptr) {
         auto dst = Lookup(child->Name(), child->Type());
@@ -627,13 +636,14 @@ bool ConfigNode::NodeRefExpand(const std::shared_ptr<AstObject> &ref)
         Logger().Error() << SourceInfo() << "reference node '" << refNodePath_ << "' not exist";
         return false;
     }
-    return ref->Move(std::shared_ptr<AstObject>(this, [](AstObject *p) { (void)p; }));
+    return ref->Move(std::shared_ptr<AstObject>(this, [](AstObject *p) {
+        (void)p;
+    }));
 }
 
 bool ConfigNode::NodeCopyExpand(const std::shared_ptr<AstObject> &ref)
 {
     if (ref == nullptr) {
-        Logger().Error() << SourceInfo() << "copy node '" << refNodePath_ << "' not exist";
         return false;
     }
     this->nodeType_ = NODE_NOREF;
@@ -683,14 +693,32 @@ const std::list<AstObject *> &ConfigNode::SubClasses()
     return subClasses_;
 }
 
+bool ConfigNode::IsBaseNode()
+{
+    if (GetNodeType() != NODE_NOREF && GetNodeType() != NODE_TEMPLATE) {
+        return false;
+    }
+    for (auto obj = Child(); obj != nullptr; obj = obj->Next()) {
+        if (!obj->IsNode()) {
+            continue;
+        }
+        if (!CastFrom(obj)->IsBaseNode()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 ConfigTerm::ConfigTerm(const ConfigTerm &term) : ConfigTerm(term.name_, nullptr)
 {
     AstObject::AddChild(AstObjectFactory::Build(term.child_));
+    src_ = term.src_;
+    lineno_ = term.lineno_;
 }
 
 ConfigTerm::ConfigTerm(std::string name, const std::shared_ptr<AstObject> &value) :
-    AstObject(std::move(name), PARSEROP_CONFTERM, 0),
-    signNum_(0)
+    AstObject(std::move(name), PARSEROP_CONFTERM, 0), signNum_(0)
 {
     if (value != nullptr) {
         child_ = value;
@@ -699,8 +727,7 @@ ConfigTerm::ConfigTerm(std::string name, const std::shared_ptr<AstObject> &value
 }
 
 ConfigTerm::ConfigTerm(Token &name, const std::shared_ptr<AstObject> &value) :
-    AstObject(name.strval, PARSEROP_CONFTERM, 0, name),
-    signNum_(0)
+    AstObject(name.strval, PARSEROP_CONFTERM, 0, name), signNum_(0)
 {
     if (value != nullptr) {
         child_ = value;
@@ -708,7 +735,7 @@ ConfigTerm::ConfigTerm(Token &name, const std::shared_ptr<AstObject> &value) :
     }
 }
 
-ConfigTerm& ConfigTerm::operator=(const ConfigTerm &term)
+ConfigTerm &ConfigTerm::operator=(const ConfigTerm &term)
 {
     if (this != &term) {
         refNode_ = term.refNode_;
@@ -797,9 +824,7 @@ uint32_t ConfigTerm::SigNum()
     return signNum_;
 }
 
-ConfigArray::ConfigArray() : AstObject("", PARSEROP_ARRAY, 0), arrayType_(0), arraySize_(0)
-{
-}
+ConfigArray::ConfigArray() : AstObject("", PARSEROP_ARRAY, 0), arrayType_(0), arraySize_(0) {}
 
 ConfigArray::ConfigArray(const ConfigArray &array) : ConfigArray()
 {
@@ -813,11 +838,11 @@ ConfigArray::ConfigArray(const ConfigArray &array) : ConfigArray()
 }
 
 ConfigArray::ConfigArray(const Token &bindToken) :
-    AstObject("", PARSEROP_ARRAY, 0, bindToken),
-    arrayType_(0),
-    arraySize_(0) {};
+    AstObject("", PARSEROP_ARRAY, 0, bindToken), arrayType_(0), arraySize_(0)
+{
+}
 
-ConfigArray& ConfigArray::operator=(const ConfigArray &array)
+ConfigArray &ConfigArray::operator=(const ConfigArray &array)
 {
     if (this != &array) {
         arrayType_ = array.arrayType_;
@@ -933,10 +958,6 @@ bool Ast::Merge(const std::list<std::shared_ptr<Ast>> &astList)
 
 bool Ast::Expand()
 {
-    if (!RedefineCheck()) {
-        return false;
-    }
-
     if (astRoot_->Lookup("module", PARSEROP_CONFTERM) == nullptr) {
         Logger().Error() << astRoot_->SourceInfo() << "miss 'module' attribute under root node";
         return false;
@@ -949,12 +970,49 @@ bool Ast::Expand()
     if (!InheritExpand()) {
         return false;
     };
-
+    redefineChecked_ = false;
+    if (!RedefineCheck()) {
+        return false;
+    }
     Dump("expanded");
     return true;
 }
 
-bool Ast::NodeExpand()
+bool Ast::NodeExpandRef()
+{
+    return WalkBackward([this](const std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
+        (void)walkDepth;
+        if (current->IsNode()) {
+            auto node = ConfigNode::CastFrom(current);
+            if (node->GetNodeType() != NODE_REF && node->GetNodeType() != NODE_COPY) {
+                return NOERR;
+            }
+            // current node maybe deleted after reference expand, never use it after this
+            auto refObject = Lookup(current, node->GetRefPath());
+            if (refObject == nullptr) {
+                Logger().Error() << node->SourceInfo() << "reference node '" << node->GetRefPath() << "' not exist";
+                return EFAIL;
+            }
+            if (!refObject->IsNode()) {
+                Logger().Error() << node->SourceInfo() << " ref invalid node:" << node->GetRefPath();
+                return EFAIL;
+            }
+
+            auto refNode = ConfigNode::CastFrom(refObject);
+            if (!refNode->IsBaseNode()) {
+                Logger().Error() << "only allow ref base node, " << node->SourceInfo()
+                                 << " ref invalid node which is not base type: " << node->GetRefPath();
+                return EFAIL;
+            }
+            if (!node->RefExpand(refObject)) {
+                return EFAIL;
+            }
+        }
+        return NOERR;
+    });
+}
+
+bool Ast::NodeExpandDelete()
 {
     return WalkBackward([this](const std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
         (void)walkDepth;
@@ -964,20 +1022,23 @@ bool Ast::NodeExpand()
                 current->Remove();
                 return NOERR;
             }
-            if (node->GetNodeType() != NODE_REF && node->GetNodeType() != NODE_COPY) {
-                return NOERR;
-            }
-            // current node maybe deleted after reference expand, never use it after this
-            auto ret = node->RefExpand(Lookup(current, node->GetRefPath()));
-            if (!ret) {
-                return EFAIL;
-            }
         } else if (current->IsTerm()) {
             std::shared_ptr<AstObject> ref;
             if (current->child_->Type() == PARSEROP_DELETE) {
                 current->Remove();
                 return NOERR;
             }
+        }
+        return NOERR;
+    });
+}
+
+bool Ast::NodeExpandTermRef()
+{
+    return WalkBackward([this](const std::shared_ptr<AstObject> &current, int32_t walkDepth) -> int32_t {
+        (void)walkDepth;
+        if (current->IsTerm()) {
+            std::shared_ptr<AstObject> ref;
             if (current->child_->Type() == PARSEROP_NODEREF) {
                 ref = Lookup(current, current->child_->StringValue());
                 if (!ConfigTerm::CastFrom(current)->RefExpand(ref)) {
@@ -987,6 +1048,23 @@ bool Ast::NodeExpand()
         }
         return NOERR;
     });
+    ;
+}
+
+bool Ast::NodeExpand()
+{
+    if (!NodeExpandRef()) {
+        return false;
+    }
+
+    if (!NodeExpandDelete()) {
+        return false;
+    }
+
+    if (!NodeExpandTermRef()) {
+        return false;
+    }
+    return true;
 }
 
 bool Ast::InheritExpand()
@@ -1044,7 +1122,7 @@ std::shared_ptr<AstObject> Ast::Lookup(const std::shared_ptr<AstObject> &startOb
         // look up children
         target = target->Lookup(it);
         if (target == nullptr) {
-            break;
+            return nullptr;
         }
     }
 
