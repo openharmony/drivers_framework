@@ -19,8 +19,10 @@ class IdlType(object):
     TYPES = 3
 
 
-def translate_file_name(file_name):
-    name = file_name[1:] if file_name.startswith("I") else file_name
+def translate_file_name(file_name, is_interface_type_file):
+    name = file_name
+    if is_interface_type_file:
+        name = file_name[1:] if file_name.startswith("I") else file_name
     translate_name = ""
     num = 0
     for c in name:
@@ -55,7 +57,7 @@ def get_idl_file_type(file_path):
 
 def c_interface_file_translate(idl_file, out_dir, part, outputs):
     get_file_name = idl_file.split("/")[-1]
-    file_name = translate_file_name(get_file_name.split(".")[0])
+    file_name = translate_file_name(get_file_name.split(".")[0], True)
 
     iface_header_file = os.path.join(out_dir, "i" + file_name + ".h")
     client_proxy_source_file = os.path.join(out_dir, file_name + "_proxy.c")
@@ -84,7 +86,7 @@ def c_interface_file_translate(idl_file, out_dir, part, outputs):
 
 def c_callback_file_translate(idl_file, out_dir, part, outputs):
     get_file_name = idl_file.split("/")[-1]
-    file_name = translate_file_name(get_file_name.split(".")[0])
+    file_name = translate_file_name(get_file_name.split(".")[0], True)
 
     iface_header_file = os.path.join(out_dir, "i" + file_name + ".h")
     client_proxy_source_file = os.path.join(out_dir, file_name + "_proxy.c")
@@ -111,7 +113,7 @@ def c_callback_file_translate(idl_file, out_dir, part, outputs):
 
 def c_types_file_translate(idl_file, out_dir, outputs):
     get_file_name = idl_file.split("/")[-1]
-    file_name = translate_file_name(get_file_name.split(".")[0])
+    file_name = translate_file_name(get_file_name.split(".")[0], True)
 
     types_header_file = os.path.join(out_dir, file_name + ".h")
     types_source_file = os.path.join(out_dir, file_name + ".c")
@@ -122,7 +124,7 @@ def c_types_file_translate(idl_file, out_dir, outputs):
 
 def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
     get_file_name = idl_file.split("/")[-1]
-    file_name = translate_file_name(get_file_name.split(".")[0])
+    file_name = translate_file_name(get_file_name.split(".")[0], True)
 
     iface_header_file = os.path.join(out_dir, "i" + file_name + ".h")
     client_proxy_header_file = os.path.join(out_dir, file_name + "_proxy.h")
@@ -154,7 +156,7 @@ def cpp_interface_file_translate(idl_file, out_dir, part, outputs):
 
 def cpp_callback_file_translate(idl_file, out_dir, part, outputs):
     get_file_name = idl_file.split("/")[-1]
-    file_name = translate_file_name(get_file_name.split(".")[0])
+    file_name = translate_file_name(get_file_name.split(".")[0], True)
 
     iface_header_file = os.path.join(out_dir, "i" + file_name + ".h")
     client_proxy_header_file = os.path.join(out_dir, file_name + "_proxy.h")
@@ -184,7 +186,7 @@ def cpp_callback_file_translate(idl_file, out_dir, part, outputs):
 
 def cpp_types_file_translate(idl_file, out_dir, outputs):
     get_file_name = idl_file.split("/")[-1]
-    file_name = translate_file_name(get_file_name.split(".")[0])
+    file_name = translate_file_name(get_file_name.split(".")[0], False)
 
     types_header_file = os.path.join(out_dir, file_name + ".h")
     types_source_file = os.path.join(out_dir, file_name + ".cpp")
