@@ -166,7 +166,7 @@ public:
 
     const std::string &GetRefPath();
 
-    void SetNodeType(uint32_t type);
+    void SetNodeType(uint32_t nodeType);
 
     void SetRefPath(std::string ref);
 
@@ -450,9 +450,9 @@ private:
     bool redefineChecked_;
 };
 
-std::ostream &operator<<(std::ostream &s, const AstObject &obj);
-std::ostream &operator<<(std::ostream &s, const ConfigNode &obj);
-std::ostream &operator<<(std::ostream &s, const ConfigTerm &obj);
+std::ostream &operator<<(std::ostream &stream, const AstObject &t);
+std::ostream &operator<<(std::ostream &stream, const ConfigNode &t);
+std::ostream &operator<<(std::ostream &stream, const ConfigTerm &t);
 
 } // namespace Hardware
 } // namespace OHOS
