@@ -604,7 +604,6 @@ bool ConfigNode::RefExpand(const std::shared_ptr<AstObject> &refObj)
 
 bool ConfigNode::Copy(std::shared_ptr<AstObject> src, bool overwrite)
 {
-    Logger().Debug() << *src << "Copy To " << *this << ", overwrite=" << overwrite;
     if (!src->IsNode()) {
         Logger().Error() << SourceInfo() << "node copy with different type " << src->SourceInfo();
         return false;
