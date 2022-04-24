@@ -15,7 +15,7 @@
 
 using namespace OHOS::Hardware;
 
-constexpr static const char *BOOT_CONFIG_TOP =
+static constexpr const char *BOOT_CONFIG_TOP =
     "{\n"
     "    \"jobs\" : [{\n"
     "            \"name\" : \"post-fs-data\",\n"
@@ -25,21 +25,22 @@ constexpr static const char *BOOT_CONFIG_TOP =
     "        }\n"
     "    ],\n"
     "    \"services\" : [\n";
-constexpr static const char *BOOT_CONFIG_BOTTOM =
+static constexpr const char *BOOT_CONFIG_BOTTOM =
     "    ]\n"
     "}\n";
-constexpr static const char *SERVICE_TOP =
+static constexpr const char *SERVICE_TOP =
     "        {\n"
     "            \"name\" : ";
-constexpr static const char *PATH_INFO = "            \"path\" : [\"/vendor/bin/hdf_devhost\", ";
-constexpr static const char *UID_INFO_ROOT =
+static constexpr const char *PATH_INFO = "            \"path\" : [\"/vendor/bin/hdf_devhost\", ";
+static constexpr const char *UID_INFO_ROOT =
     "            \"uid\" : \"root\",\n"
     "            \"gid\" : [\"system\"]\n"
     "        }";
-constexpr static const char *UID_INFO = "            \"uid\" : ";
-constexpr static const char *GID_INFO = "            \"gid\" : [";
-constexpr static const char *CAPS_INFO = "            \"caps\" : [";
-constexpr static const char *DYNAMIC_INFO = "            \"ondemand\" : true,\n";
+static constexpr const char *UID_INFO = "            \"uid\" : ";
+static constexpr const char *GID_INFO = "            \"gid\" : [";
+static constexpr const char *CAPS_INFO = "            \"caps\" : [";
+static constexpr const char *DYNAMIC_INFO = "            \"ondemand\" : true,\n";
+static constexpr const char *SECON_INFO = "            \"secon\" : \"u:r:";
 
 StartupCfgGen::StartupCfgGen(const std::shared_ptr<Ast> &ast) : Generator(ast)
 {
@@ -101,24 +102,22 @@ bool StartupCfgGen::Initialize()
 
 void StartupCfgGen::HostInfoOutputMusl(const std::string &name, bool end)
 {
-    std::string out = SERVICE_TOP;
-    out.append("\"").append(name).append("\",\n");
+    ofs_ << SERVICE_TOP << "\"" << name << "\",\n";
     if (hostInfoMap_[name].dynamicLoad) {
-        out.append(DYNAMIC_INFO);
+        ofs_ << DYNAMIC_INFO;
     }
-    out.append(PATH_INFO).append("\"").append(std::to_string(hostInfoMap_[name].hostId)).append("\"").append(", ");
-    out.append("\"").append(name).append("\"").append("],\n");
-    out.append(UID_INFO).append("\"").append(hostInfoMap_[name].hostUID).append("\"").append(",\n");
-    out.append(GID_INFO).append("\"").append(hostInfoMap_[name].hostGID).append("\"").append("]");
+    ofs_ << PATH_INFO << "\"" << hostInfoMap_[name].hostId << "\", \"" << name <<"\"],\n";
+    ofs_ << UID_INFO << "\"" << hostInfoMap_[name].hostUID <<"\",\n";
+    ofs_ << GID_INFO << "\"" << hostInfoMap_[name].hostGID <<"\"],\n";
     if (hostInfoMap_[name].hostCaps != "") {
-        out.append(",\n");
-        out.append(CAPS_INFO).append(hostInfoMap_[name].hostCaps).append("]");
+        ofs_ << CAPS_INFO << hostInfoMap_[name].hostCaps <<"],\n";
     }
-    out.append("\n").append(TAB).append(TAB).append("}");
+    ofs_ << SECON_INFO << name << ":s0\"\n";
+    ofs_ << TAB TAB << "}";
     if (!end) {
-        out.append(",");
+        ofs_<< ",";
     }
-    ofs_ << out << '\n';
+    ofs_ << '\n';
 }
 
 void StartupCfgGen::HostInfoOutput(const std::string &name, bool end)
