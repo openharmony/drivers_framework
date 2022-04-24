@@ -80,7 +80,7 @@ private:
     int32_t lineLoc_;
 };
 
-std::ostream &operator<<(std::ostream &stream, const Lexer &lexer);
+std::ostream &operator<<(std::ostream &stream, const Lexer &p);
 } // namespace Hardware
 } // namespace OHOS
 
