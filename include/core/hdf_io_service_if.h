@@ -47,15 +47,16 @@ struct HdfIoService;
  * @since 1.0
  */
 typedef enum {
-    DEVICE_CLASS_DEFAULT = 0x1 << 0,    /** Default device */
-    DEVICE_CLASS_PLAT    = 0x1 << 1,    /** Platform device */
-    DEVICE_CLASS_SENSOR  = 0x1 << 2,    /** Sensor device */
-    DEVICE_CLASS_INPUT   = 0x1 << 3,    /** Input device */
-    DEVICE_CLASS_DISPLAY = 0x1 << 4,    /** Display device */
-    DEVICE_CLASS_AUDIO   = 0x1 << 5,    /** Audio device */
-    DEVICE_CLASS_CAMERA  = 0x1 << 6,    /** Camera device */
-    DEVICE_CLASS_USB     = 0x1 << 7,    /** USB device */
-    DEVICE_CLASS_MAX     = 0x1 << 8,    /** Maximum value of a device class */
+    DEVICE_CLASS_DEFAULT  = 0x1 << 0,    /** Default device */
+    DEVICE_CLASS_PLAT     = 0x1 << 1,    /** Platform device */
+    DEVICE_CLASS_SENSOR   = 0x1 << 2,    /** Sensor device */
+    DEVICE_CLASS_INPUT    = 0x1 << 3,    /** Input device */
+    DEVICE_CLASS_DISPLAY  = 0x1 << 4,    /** Display device */
+    DEVICE_CLASS_AUDIO    = 0x1 << 5,    /** Audio device */
+    DEVICE_CLASS_CAMERA   = 0x1 << 6,    /** Camera device */
+    DEVICE_CLASS_USB      = 0x1 << 7,    /** USB device */
+    DEVICE_CLASS_USERAUTH = 0x1 << 8,    /** UserAuth device */
+    DEVICE_CLASS_MAX      = 0x1 << 9,    /** Maximum value of a device class */
 } DeviceClass;
 
 /**
