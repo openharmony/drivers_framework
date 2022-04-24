@@ -8,8 +8,8 @@
 # See the LICENSE file in the root of this repository for complete details.
 
 
+import configparser
 import os
-import sys
 from string import Template
 
 import hdf_utils
@@ -24,7 +24,6 @@ from ..hdf_defconfig_patch import HdfDefconfigAndPatch
 from ..hdf_device_info_hcs import HdfDeviceInfoHcsFile
 
 
-
 class HdfAddDriver(object):
     def __init__(self, args):
         super(HdfAddDriver, self).__init__()
@@ -33,6 +32,7 @@ class HdfAddDriver(object):
         self.driver = args.driver_name
         self.kernel = args.kernel_name
         self.vendor = args.vendor_name
+        self.device = args.device_name
         self.root = args.root_dir
         self.template_file_path = hdf_utils.get_template_file_path(self.root)
         if not os.path.exists(self.template_file_path):
@@ -63,11 +63,12 @@ class HdfAddDriver(object):
                                        self.driver, self.template_file_path)
                 file_path['Kconfig'] = kconfig_path
 
-        device_info = HdfDeviceInfoHcsFile(
-            self.root, self.vendor, self.module, self.board, self.driver, path="")
+        device_info = HdfDeviceInfoHcsFile(self.root, self.vendor,
+                                           self.module, self.board,
+                                           self.driver, path="")
         hcs_file_path = device_info.add_hcs_config_to_exists_model()
         file_path["devices_info.hcs"] = hcs_file_path
-
+        device_enable_config_line = self.__get_enable_config()
         template_string = "CONFIG_DRIVERS_HDF_${module_upper}_${driver_upper}=y\n"
         data_model = {
             "module_upper": self.module.upper(),
@@ -75,18 +76,22 @@ class HdfAddDriver(object):
         }
 
         new_demo_config = Template(template_string).substitute(data_model)
+        if device_enable_config_line:
+            new_demo_config_list = [device_enable_config_line, new_demo_config]
+        else:
+            new_demo_config_list = [new_demo_config]
         defconfig_patch = HdfDefconfigAndPatch(
             self.root, self.vendor, self.kernel, self.board,
-            data_model, new_demo_config)
+            data_model, new_demo_config_list)
 
         config_path = defconfig_patch.get_config_config()
         files = []
-        patch_list = defconfig_patch.add_module(config_path,
-                                                files=files, codetype=None)
+        patch_list = defconfig_patch.add_module(
+            config_path, files=files, codetype=None)
         config_path = defconfig_patch.get_config_patch()
         files1 = []
-        defconfig_list = defconfig_patch.add_module(config_path,
-                                                    files=files1, codetype=None)
+        defconfig_list = defconfig_patch.add_module(
+            config_path, files=files1, codetype=None)
         file_path[self.module + "_dot_configs"] = \
             list(set(patch_list + defconfig_list))
         return file_path
@@ -122,7 +127,8 @@ class HdfAddDriver(object):
 
         # Modify hcs file
         device_info = HdfDeviceInfoHcsFile(
-            self.root, self.vendor, self.module, self.board, self.driver, path="")
+            self.root, self.vendor, self.module,
+            self.board, self.driver, path="")
         hcs_file_path = device_info.add_hcs_config_to_exists_model()
         file_path["devices_info.hcs"] = hcs_file_path
 
@@ -133,27 +139,40 @@ class HdfAddDriver(object):
             {"module_upper": self.module.upper(),
              "driver_upper": self.driver.upper()})
 
+        device_enable = self.__get_enable_config()
         for dot_file in dot_file_list:
-            file_lines = hdf_utils.read_file_lines(dot_file)
+            file_lines_old = hdf_utils.read_file_lines(dot_file)
+            if device_enable:
+                file_lines = list(
+                    filter(lambda x: hdf_utils.judge_enable_line(
+                        enable_line=x, device_base=device_enable.split("=")[0]),
+                                         file_lines_old))
+                if device_enable not in file_lines:
+                    file_lines.append(device_enable)
+            else:
+                file_lines = file_lines_old
             file_lines[-1] = file_lines[-1].strip() + "\n"
-            if new_demo_config != file_lines[-1]:
+            if new_demo_config not in file_lines:
                 file_lines.append(new_demo_config)
-                hdf_utils.write_file_lines(dot_file, file_lines)
+            hdf_utils.write_file_lines(dot_file, file_lines)
         file_path[self.module + "_dot_configs"] = dot_file_list
         return file_path
 
-    def driver_create_info_format(self, config_file_json, config_item, file_path):
+    def driver_create_info_format(self, config_file_json,
+                                  config_item, file_path):
         kernel_type = config_file_json.get(self.kernel)
         if kernel_type is None:
             config_file_json[self.kernel] = {
                 config_item.get("module_name"): {
                     'module_leve_config': {},
                     "driver_file_list": {
-                        config_item.get("driver_name"): config_item.get("driver_file_path")
+                        config_item.get("driver_name"):
+                            config_item.get("driver_file_path")
                     }
                 }
             }
-            config_file_json[self.kernel][self.module]["module_leve_config"].update(file_path)
+            config_file_json[self.kernel][self.module]["module_leve_config"]\
+                .update(file_path)
         else:
             model_type = kernel_type.get(config_item.get("module_name"))
             if model_type is None:
@@ -162,45 +181,123 @@ class HdfAddDriver(object):
                 temp[temp_module] = {
                     'module_leve_config': {},
                     "driver_file_list": {
-                        config_item.get("driver_name"): config_item.get("driver_file_path")
+                        config_item.get("driver_name"):
+                            config_item.get("driver_file_path")
                     }
                 }
-                config_file_json.get(self.kernel).get(self.module).get("module_leve_config").update(file_path)
+                config_file_json.get(self.kernel).get(self.module).\
+                    get("module_leve_config").update(file_path)
             else:
                 temp = config_file_json.get(self.kernel).\
                     get(config_item.get("module_name")).get("driver_file_list")
-                temp[config_item.get("driver_name")] = config_item.get("driver_file_path")
+                temp[config_item.get("driver_name")] = \
+                    config_item.get("driver_file_path")
 
         return config_file_json
 
     def add_driver(self, *args_tuple):
-        root, vendor, module, driver, board, kernel = args_tuple
+        root, vendor, module, driver, board, kernel, device = args_tuple
         drv_converter = hdf_utils.WordsConverter(driver)
-        drv_src_dir = hdf_utils.get_drv_src_dir(root, module)
-        new_mkdir_path = os.path.join(drv_src_dir, driver)
-        if not os.path.exists(new_mkdir_path):
-            os.mkdir(new_mkdir_path)
+        source_file, head_path, include_name = self.create_model_file_name(
+            root, vendor, module, driver, board, kernel, device)
         data_model = {
             'driver_lower_case': drv_converter.lower_case(),
             'driver_upper_camel_case': drv_converter.upper_camel_case(),
             'driver_lower_camel_case': drv_converter.lower_camel_case(),
+            "include_file": include_name,
             'driver_upper_case': drv_converter.upper_case()
         }
-        result_path = os.path.join(new_mkdir_path, '%s_driver.c' % driver)
-        if os.path.exists(result_path):
-            return True, result_path
-        self._file_gen_lite('hdf_driver.c.template', result_path, data_model)
-        result_path = os.path.join(new_mkdir_path, '%s_driver.c' % driver)
-        return True, result_path
+        if os.path.exists(source_file):
+            return True, source_file
+        templates_dir = hdf_utils.get_templates_lite_dir()
+        templates_model_dir = []
+        for path, dir_name, _ in os.walk(templates_dir):
+            if dir_name:
+                templates_model_dir.extend(dir_name)
+        templates_model_dir = list(filter(
+            lambda model_dir: self.module in model_dir,
+            templates_model_dir))
+        target_template_path = list(map(
+            lambda dir_name: os.path.join(templates_dir, dir_name),
+            templates_model_dir))[0]
+        templates_file_list = os.listdir(target_template_path)
+        source_file_template = os.path.join(
+            target_template_path,
+            list(filter(lambda file_name: "source" in file_name,
+                        templates_file_list))[0])
+        self._template_fill(source_file_template, source_file, data_model)
+        head_file_template = os.path.join(
+            target_template_path,
+            list(filter(lambda file_name: "head" in file_name,
+                        templates_file_list))[0])
+        self._template_fill(head_file_template, head_path, data_model)
+        child_dir_list, operation_object = hdf_utils.ini_file_read_operation(
+            model=module, node_name='file_dir')
+        if device not in child_dir_list:
+            child_dir_list.append(device)
+            hdf_utils.ini_file_write_operation(
+                module, operation_object, child_dir_list)
+        return True, source_file
 
     def _file_gen_lite(self, template, source_file_path, model):
         templates_dir = hdf_utils.get_templates_lite_dir()
         template_path = os.path.join(templates_dir, template)
-        self._source_template_fill(template_path, source_file_path, model)
+        self._template_fill(template_path, source_file_path, model)
 
-    def _source_template_fill(self, template_path, output_path, data_model):
+    def _template_fill(self, template_path, output_path, data_model):
         if not os.path.exists(template_path):
             return
         raw_content = hdf_utils.read_file(template_path)
         contents = Template(raw_content).safe_substitute(data_model)
         hdf_utils.write_file(output_path, contents)
+
+    def create_model_file_name(self, *args_tuple):
+        root, vendor, module, driver, board, kernel, device = args_tuple
+        drv_src_dir = hdf_utils.get_drv_src_dir(root, module)
+        if device.strip():
+            if module == "sensor":
+                new_mkdir_path = os.path.join(drv_src_dir, 'chipset', device)
+            else:
+                new_mkdir_path = os.path.join(drv_src_dir, device)
+            if not os.path.exists(new_mkdir_path):
+                os.mkdir(new_mkdir_path)
+            result_path_source = os.path.join(new_mkdir_path, '%s_%s_driver.c' % (device, driver))
+            result_path_head = os.path.join(new_mkdir_path, '%s_%s_driver.h' % (device, driver))
+            include_name = '%s_%s_driver.h' % (device, driver)
+        else:
+            if module == "sensor":
+                new_mkdir_path = os.path.join(drv_src_dir, 'chipset', driver)
+            else:
+                new_mkdir_path = os.path.join(drv_src_dir, driver)
+            if not os.path.exists(new_mkdir_path):
+                os.mkdir(new_mkdir_path)
+            result_path_source = os.path.join(new_mkdir_path, '%s_driver.c' % driver)
+            result_path_head = os.path.join(new_mkdir_path, '%s_driver.h' % driver)
+            include_name = '%s_driver.h' % driver
+        return result_path_source, result_path_head, include_name
+
+    def __get_enable_config(self):
+        templates_dir = hdf_utils.get_templates_lite_dir()
+        templates_model_dir = []
+        for path, dir_name, _ in os.walk(templates_dir):
+            if dir_name:
+                templates_model_dir.extend(dir_name)
+        templates_model_dir = list(filter(lambda model_dir: self.module in model_dir, templates_model_dir))
+        config_file = [name for name in os.listdir(os.path.join(templates_dir, templates_model_dir[0])) if
+                       name.endswith("ini")]
+        if config_file:
+            config_path = os.path.join(templates_dir, templates_model_dir[0], config_file[0])
+            config = configparser.ConfigParser()
+            config.read(config_path)
+            section_list = config.options(section=self.kernel)
+            if self.device in section_list:
+                device_enable_config, _ = hdf_utils.ini_file_read_operation(
+                    model=self.kernel, node_name=self.device, path=config_path)
+            else:
+                if self.kernel == "linux":
+                    device_enable_config = ["CONFIG_DRIVERS_HDF_SENSOR_ACCEL=y\n"]
+                else:
+                    device_enable_config = ["LOSCFG_DRIVERS_HDF_SENSOR_ACCEL=y\n"]
+        else:
+            device_enable_config = [""]
+        return device_enable_config[0]

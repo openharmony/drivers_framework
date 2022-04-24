@@ -44,6 +44,7 @@ class HdfDeviceInfoHcsFile(object):
         self.data = {
             "driver_name": self.driver,
             "model_name": self.module,
+            "module_name": "_".join([self.module, self.driver]).upper()
         }
 
     def _save(self):

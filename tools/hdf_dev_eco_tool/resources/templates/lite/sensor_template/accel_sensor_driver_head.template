@@ -1,0 +1,14 @@
+#ifndef ${driver_upper_case}_H
+#define ${driver_upper_case}_H
+
+#include "sensor_accel_driver.h"
+#include "sensor_config_parser.h"
+
+int32_t Read${driver_upper_camel_case}Data(struct SensorCfgData *cfg, struct SensorReportEvent *event);
+struct ${driver_upper_camel_case}DrvData {
+    struct IDeviceIoService ioService;
+    struct HdfDeviceObject *device;
+    struct SensorCfgData *sensorCfg;
+};
+
+#endif /* ${driver_upper_case}_H */

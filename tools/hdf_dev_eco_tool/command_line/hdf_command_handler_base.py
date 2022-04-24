@@ -60,7 +60,8 @@ class HdfCommandHandlerBase(object):
     def get_args(self):
         args = ['vendor_name', 'module_name',
                 'driver_name', 'board_name',
-                'kernel_name', "runmode"]
+                'kernel_name', "runmode",
+                'device_name']
         ret = [self._get_arg('root_dir')]
         for arg in args:
             if arg == "runmode":

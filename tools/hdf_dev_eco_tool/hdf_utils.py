@@ -12,6 +12,8 @@ import json
 import os
 import hashlib
 import platform
+import configparser
+from ast import literal_eval
 
 from hdf_tool_exception import HdfToolException
 from hdf_tool_settings import HdfToolSettings
@@ -380,4 +382,31 @@ def write_config(root_path, config_file_json, config_name):
                    config_file_replace)
 
 
+def ini_file_read_operation(model, node_name, path=""):
+    if path:
+        ini_config_path = path
+    else:
+        ini_config_path = os.path.join("resources", "config.ini")
+    config = configparser.ConfigParser()
+    config.read(ini_config_path)
+    model_child_dir_list = config.get(section=model, option=node_name)
+    return literal_eval(model_child_dir_list), config
 
+
+def ini_file_write_operation(model, operation_object, model_child_dir_list):
+    json_format_list = json.dumps(model_child_dir_list)
+    operation_object.set(model, "file_dir", json_format_list)
+    write_ini_file = open(os.path.join("resources", "config.ini"), "w")
+    operation_object.write(write_ini_file)
+    write_ini_file.close()
+
+
+def judge_enable_line(enable_line, device_base):
+    if isinstance(enable_line, bytes):
+        if enable_line.find((device_base + " ").encode("utf-8")) == -1 and \
+                enable_line.find((device_base+"=").encode("utf-8")) == -1:
+            return enable_line
+    else:
+        if enable_line.find(device_base + " ") == -1 and \
+                enable_line.find(device_base+"=") == -1:
+            return enable_line
