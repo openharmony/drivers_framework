@@ -15,7 +15,7 @@
 
 using namespace OHOS::Hardware;
 
-Parser::Parser() : errno_(NOERR) {}
+Parser::Parser() : errno_(NOERR), current_() {}
 
 void Parser::CleanError()
 {
@@ -319,7 +319,7 @@ std::shared_ptr<AstObject> Parser::ParseNodeWithRef(Token name)
     return node;
 }
 
-/* started with NodePath on gramme : LITERAL ':' NodePath '{' ConfigTermList '}'*/
+/* started with NodePath on gramme : LITERAL ':' NodePath '{' ConfigTermList '}' */
 std::shared_ptr<AstObject> Parser::ParseNodeCopy(Token &name)
 {
     auto nodePath = current_.strval;
@@ -336,7 +336,7 @@ std::shared_ptr<AstObject> Parser::ParseNodeCopy(Token &name)
     return node;
 }
 
-/* started with & on gramme : LITERAL ':' '&' NodePath '{' ConfigTermList '}'*/
+/* started with & on gramme : LITERAL ':' '&' NodePath '{' ConfigTermList '}' */
 std::shared_ptr<AstObject> Parser::ParseNodeRef(Token &name)
 {
     if (!lexer_.Lex(current_) || (current_ != LITERAL && current_ != REF_PATH)) {
@@ -355,7 +355,7 @@ std::shared_ptr<AstObject> Parser::ParseNodeRef(Token &name)
     return node;
 }
 
-/* started with DELETE on gramme : LITERAL ':' DELETE '{' ConfigTermList '}'*/
+/* started with DELETE on gramme : LITERAL ':' DELETE '{' ConfigTermList '}' */
 std::shared_ptr<AstObject> Parser::ParseNodeDelete(Token &name)
 {
     auto node = ParseNode(name);
@@ -369,7 +369,7 @@ std::shared_ptr<AstObject> Parser::ParseNodeDelete(Token &name)
     return node;
 }
 
-/* started with 2th ':' on gramme : LITERAL ':' ':' NodePath '{' ConfigTermList '}'*/
+/* started with 2th ':' on gramme : LITERAL ':' ':' NodePath '{' ConfigTermList '}' */
 std::shared_ptr<AstObject> Parser::ParseNodeInherit(Token &name)
 {
     if (!lexer_.Lex(current_) || (current_ != LITERAL && current_ != REF_PATH)) {
