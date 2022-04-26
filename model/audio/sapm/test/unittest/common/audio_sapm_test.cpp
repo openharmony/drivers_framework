@@ -85,16 +85,4 @@ HWTEST_F(AudioSapmTest, AudioSapmTest_AudioCodecSapmGetCtrlOps, TestSize.Level1)
     struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOCODECSAPMGETCTRLOPS, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
 }
-
-HWTEST_F(AudioSapmTest, AudioSapmTest_AudioAccessorySapmSetCtrlOps, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOACCESSORYSAPMSETCTRLOPS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
-
-HWTEST_F(AudioSapmTest, AudioSapmTest_AudioAccessorySapmGetCtrlOps, TestSize.Level1)
-{
-    struct HdfTestMsg msg = {g_testAudioType, TEST_AUDIOACCESSORYSAPMGETCTRLOPS, -1};
-    EXPECT_EQ(0, HdfTestSendMsgToService(&msg));
-}
 }

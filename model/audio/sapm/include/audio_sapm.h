@@ -112,7 +112,6 @@ struct AudioSapmComponent {
     char *streamName; /* stream name */
     struct AudioSapmContext *sapm;
     struct CodecDevice *codec; /* parent codec */
-    struct AccessoryDevice *accessory; /* parent accessory */
     struct PlatformDevice *platform; /* parent platform */
 
     /* sapm control */
@@ -168,14 +167,12 @@ int32_t AudioSapmNewComponents(struct AudioCard *audioCard,
 int32_t AudioSapmAddRoutes(struct AudioCard *audioCard,
     const struct AudioSapmRoute *route, int32_t routeMaxNum);
 int32_t AudioSapmNewControls(struct AudioCard *audioCard);
-int32_t AudioSapmSleep(const struct AudioCard *audioCard);
+int32_t AudioSapmSleep(struct AudioCard *audioCard);
 int32_t AudioSampPowerUp(const struct AudioCard *card);
 int32_t AudioSampSetPowerMonitor(struct AudioCard *card, bool powerMonitorState);
 
 int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue);
 int32_t AudioCodecSapmGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
-int32_t AudioAccessorySapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue);
-int32_t AudioAccessorySapmGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue);
 
 #ifdef __cplusplus
 #if __cplusplus

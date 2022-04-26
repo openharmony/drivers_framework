@@ -29,8 +29,8 @@
 #define CONNECT_SINK_AND_SOURCE 1
 #define UNCONNECT_SINK_AND_SOURCE 0
 
-static void AudioSapmEnterSleep(uintptr_t para);
-static uint64_t AudioSapmRefreshTime(bool bRefresh);
+static void AudioSapmTimerCallback(uintptr_t para);
+static int32_t AudioSapmRefreshTime(struct AudioCard *audioCard, bool bRefresh);
 
 /* power up sequences */
 static int32_t g_audioSapmPowerUpSeq[] = {
@@ -76,8 +76,6 @@ static int32_t g_audioSapmPowerDownSeq[] = {
     [AUDIO_SAPM_POST] = 12,           /* 12 is audio sapm power down sequences */
 };
 
-static int32_t g_audioSapmIsSleep = 0;
-static int32_t g_audioSapmIsStandby = 0;
 OSAL_DECLARE_TIMER(g_sleepTimer);
 
 static int32_t ConnectedInputEndPoint(const struct AudioSapmComponent *sapmComponent)
@@ -176,13 +174,12 @@ static int32_t AudioSapmAdcPowerClock(struct AudioSapmComponent *sapmComponent)
     return HDF_SUCCESS;
 }
 
-static int32_t AudioSapmDdcPowerClock(struct AudioSapmComponent *sapmComponent)
+static int32_t AudioSapmDacPowerClock(struct AudioSapmComponent *sapmComponent)
 {
     (void)sapmComponent;
-    ADM_LOG_INFO("Ddc standby mode entry!");
+    ADM_LOG_INFO("Dac standby mode entry!");
     return HDF_SUCCESS;
 }
-
 
 static int32_t AudioSapmAdcCheckPower(const struct AudioSapmComponent *sapmComponent)
 {
@@ -295,7 +292,7 @@ static void AudioSampPowerClockCallback(struct AudioSapmComponent *sapmComponent
             break;
         case AUDIO_SAPM_DAC:
         case AUDIO_SAPM_AIF_IN:
-            sapmComponent->PowerClockOp = AudioSapmDdcPowerClock;
+            sapmComponent->PowerClockOp = AudioSapmDacPowerClock;
             break;
         case AUDIO_SAPM_PGA:
         case AUDIO_SAPM_OUT_DRV:
@@ -361,7 +358,6 @@ int32_t AudioSapmNewComponent(struct AudioCard *audioCard, const struct AudioSap
     }
 
     sapmComponent->codec = audioCard->rtd->codec;
-    sapmComponent->accessory = audioCard->rtd->accessory;
     sapmComponent->kcontrolsNum = component->kcontrolsNum;
     sapmComponent->active = 0;
     AudioSampCheckPowerCallback(sapmComponent);
@@ -455,7 +451,7 @@ static void MuxValueSetPathStatus(const struct AudioSapmComponent *sapmComponent
 {
     int32_t ret;
     uint32_t val = 0;
-    int32_t item;
+    uint32_t item;
     const uint32_t reg = 0;
     uint32_t shift;
     if ((sapmComponent == NULL || sapmComponent->codec == NULL)) {
@@ -533,14 +529,8 @@ static void MixerSetPathStatus(const struct AudioSapmComponent *sapmComponent, s
             ADM_LOG_ERR("read reg fail!");
             return;
         }
-    } else if (sapmComponent->accessory != NULL) {
-        ret = AudioAccessoryReadReg(sapmComponent->accessory, reg, &curValue);
-        if (ret != HDF_SUCCESS) {
-            ADM_LOG_ERR("read reg fail!");
-            return;
-        }
     } else {
-        ADM_LOG_ERR("accessory and codec is null!");
+        ADM_LOG_ERR("codec is null!");
         return;
     }
 
@@ -705,6 +695,7 @@ static void AudioSampExtComponentsCheck(struct AudioSapmComponent *cptSource, st
 
     return;
 }
+
 static int32_t AudioSapmAddRoute(struct AudioCard *audioCard, const struct AudioSapmRoute *route)
 {
     struct AudioSapmpath *path = NULL;
@@ -952,11 +943,6 @@ static void AudioSapmPowerUpSeqRun(const struct DListHead *list)
                     mixerControl.shift, val);
                 ADM_LOG_DEBUG("Sapm Codec Power Up.");
             }
-            if (sapmComponent->accessory != NULL) {
-                AudioUpdateAccessoryRegBits(sapmComponent->accessory, mixerControl.reg, mixerControl.mask,
-                    mixerControl.shift, val);
-                ADM_LOG_DEBUG("Sapm Accessory Power Up.");
-            }
         }
     }
 
@@ -990,11 +976,6 @@ static void AudioSapmPowerDownSeqRun(const struct DListHead *list)
                     mixerControl.shift, val);
                 ADM_LOG_DEBUG("Sapm Codec Power Down.");
             }
-            if (sapmComponent->accessory != NULL) {
-                AudioUpdateAccessoryRegBits(sapmComponent->accessory, mixerControl.reg, mixerControl.mask,
-                    mixerControl.shift, val);
-                ADM_LOG_DEBUG("Sapm Accessory Power Down.");
-            }
         }
     }
 
@@ -1023,7 +1004,7 @@ static void AudioSapmPowerComponents(struct AudioCard *audioCard)
             continue;
         }
 
-        if (g_audioSapmIsStandby && sapmComponent->PowerClockOp != NULL) {
+        if (audioCard->sapmStandbyState && sapmComponent->PowerClockOp != NULL) {
             ret = sapmComponent->PowerClockOp(sapmComponent);
             if (ret != HDF_SUCCESS) {
                 continue;
@@ -1074,7 +1055,7 @@ static void ReadInitComponentPowerStatus(struct AudioSapmComponent *sapmComponen
     return;
 }
 
-int32_t AudioSapmSleep(const struct AudioCard *audioCard)
+int32_t AudioSapmSleep(struct AudioCard *audioCard)
 {
     if (audioCard == NULL) {
         ADM_LOG_ERR("input param audioCard is NULL.");
@@ -1084,10 +1065,15 @@ int32_t AudioSapmSleep(const struct AudioCard *audioCard)
     if (g_sleepTimer.realTimer != NULL) {
         OsalTimerDelete(&g_sleepTimer);
     }
-    OsalTimerCreate(&g_sleepTimer, SAPM_POLL_TIME, AudioSapmEnterSleep, (uintptr_t)audioCard);
+    OsalTimerCreate(&g_sleepTimer, SAPM_POLL_TIME, AudioSapmTimerCallback, (uintptr_t)audioCard);
     OsalTimerStartLoop(&g_sleepTimer);
-    AudioSapmRefreshTime(true);
+    if (AudioSapmRefreshTime(audioCard, true) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSapmRefreshTime failed.");
+        return HDF_FAILURE;
+    }
 
+    audioCard->sapmStandbyState = false;
+    audioCard->sapmSleepState = false;
     return HDF_SUCCESS;
 }
 
@@ -1194,16 +1180,6 @@ int32_t AudioCodecSapmGetCtrlOps(const struct AudioKcontrol *kcontrol, struct Au
     return HDF_SUCCESS;
 }
 
-int32_t AudioAccessorySapmGetCtrlOps(const struct AudioKcontrol *kcontrol, struct AudioCtrlElemValue *elemValue)
-{
-    if (AudioAccessoryGetCtrlOps(kcontrol, elemValue) != HDF_SUCCESS) {
-        ADM_LOG_ERR("Audio accessory sapm get control switch is fail!");
-        return HDF_FAILURE;
-    }
-
-    return HDF_SUCCESS;
-}
-
 /* 1.first user specify old component -- power down; 2.second user specify new component -- power up */
 static int32_t AudioSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue,
     uint32_t *value, uint32_t *pathStatus)
@@ -1241,7 +1217,8 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
     uint32_t pathStatus = 0;
     struct CodecDevice *codec = NULL;
     struct AudioMixerControl *mixerCtrl = NULL;
-    if ((kcontrol == NULL) || (kcontrol->privateValue <= 0)) {
+    struct AudioCard *audioCard = NULL;
+    if ((kcontrol == NULL) || (kcontrol->privateValue <= 0) || (kcontrol->pri == NULL)) {
         ADM_LOG_ERR("input params: kcontrol is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
@@ -1249,6 +1226,7 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
         ADM_LOG_ERR("input params: elemValue is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
+    audioCard = (struct AudioCard *)((volatile uintptr_t)(kcontrol->pri));
 
     mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
     if (AudioSapmSetCtrlOps(kcontrol, elemValue, &value, &pathStatus) != HDF_SUCCESS) {
@@ -1261,7 +1239,7 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
     }
     curValue &= mixerCtrl->mask << mixerCtrl->shift;
     value = (value & mixerCtrl->mask) << mixerCtrl->shift;
-    if (curValue != value || g_audioSapmIsSleep == true) {
+    if (curValue != value || audioCard->sapmSleepState == true) {
         if (MixerUpdatePowerStatus(kcontrol, pathStatus) != HDF_SUCCESS) {
             ADM_LOG_ERR("update power status is failure!");
             return HDF_FAILURE;
@@ -1275,70 +1253,43 @@ int32_t AudioCodecSapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const str
     return HDF_SUCCESS;
 }
 
-/* 1.first user specify old component -- power down; 2.second user specify new component -- power up */
-int32_t AudioAccessorySapmSetCtrlOps(const struct AudioKcontrol *kcontrol, const struct AudioCtrlElemValue *elemValue)
+static int32_t AudioSapmRefreshTime(struct AudioCard *audioCard, bool bRefresh)
 {
-    uint32_t curValue = 0;
-    uint32_t value = 0;
-    uint32_t pathStatus = 0;
-    struct AccessoryDevice *accessory = NULL;
-    struct AudioMixerControl *mixerCtrl = NULL;
-    if ((kcontrol == NULL) || (kcontrol->privateValue <= 0)) {
-        ADM_LOG_ERR("input params: kcontrol is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    if (elemValue == NULL) {
-        ADM_LOG_ERR("input params: elemValue is NULL.");
+    if (audioCard == NULL) {
+        ADM_LOG_ERR("input params is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    mixerCtrl = (struct AudioMixerControl *)((volatile uintptr_t)kcontrol->privateValue);
-    if (AudioSapmSetCtrlOps(kcontrol, elemValue, &value, &pathStatus) != HDF_SUCCESS) {
-        ADM_LOG_ERR("Audio sapm put control switch fail!");
+    if (bRefresh) {
+        audioCard->time = OsalGetSysTimeMs();
     }
-    accessory = AudioKcontrolGetAccessory(kcontrol);
-    if (AudioAccessoryReadReg(accessory, mixerCtrl->reg, &curValue) != HDF_SUCCESS) {
-        ADM_LOG_ERR("Device read fail!");
-        return HDF_FAILURE;
-    }
-    curValue &= mixerCtrl->mask << mixerCtrl->shift;
-    value = (value & mixerCtrl->mask) << mixerCtrl->shift;
-    if (curValue != value || g_audioSapmIsSleep == true) {
-        if (MixerUpdatePowerStatus(kcontrol, pathStatus) != HDF_SUCCESS) {
-            ADM_LOG_ERR("update power status fail!");
-            return HDF_FAILURE;
-        }
-        if (AudioUpdateAccessoryRegBits(accessory, mixerCtrl->reg, mixerCtrl->mask, mixerCtrl->shift,
-            elemValue->value[0]) != HDF_SUCCESS) {
-            ADM_LOG_ERR("update reg bits fail!");
-            return HDF_FAILURE;
-        }
-    }
-
     return HDF_SUCCESS;
 }
 
-static uint64_t AudioSapmRefreshTime(bool bRefresh)
+static int32_t AudioSapmCheckTime(struct AudioCard *audioCard, bool *timeoutStatus)
 {
-    static uint64_t time = 0;
+    int ret;
+    uint64_t diffTime;
 
-    if (bRefresh) {
-        time = OsalGetSysTimeMs();
-        g_audioSapmIsSleep = false;
-        g_audioSapmIsStandby = false;
+    if (audioCard == NULL || timeoutStatus == NULL) {
+        ADM_LOG_ERR("input params is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
     }
-    return time;
-}
 
-static bool AudioSapmCheckTime(void)
-{
-    uint64_t diffTime = OsalGetSysTimeMs() - AudioSapmRefreshTime(false);
+    ret = AudioSapmRefreshTime(audioCard, false);
+    if (ret != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSapmRefreshTime failed.");
+        return HDF_FAILURE;
+    }
+
+    diffTime = OsalGetSysTimeMs() - audioCard->time;
     if (diffTime > SAPM_SLEEP_TIME) {
-        return true;
+        *timeoutStatus = true;
+    } else {
+        *timeoutStatus = false;
     }
-    
-    AudioSapmRefreshTime(true);
-    return false;
+
+    return HDF_SUCCESS;
 }
 
 int32_t AudioSampPowerUp(const struct AudioCard *card)
@@ -1360,6 +1311,7 @@ int32_t AudioSampPowerUp(const struct AudioCard *card)
             AudioSapmPowerSeqInsert(sapmComponent, &upList, SAPM_POWER_UP);
         }
     }
+
     AudioSapmPowerUpSeqRun(&upList);
     return HDF_SUCCESS;
 }
@@ -1370,15 +1322,22 @@ int32_t AudioSampSetPowerMonitor(struct AudioCard *card, bool powerMonitorState)
         ADM_LOG_ERR("input params is null.");
         return HDF_ERR_INVALID_OBJECT;
     }
-    AudioSapmRefreshTime(true);
+
     card->sapmMonitorState = powerMonitorState;
+    if (powerMonitorState == false) {
+        card->sapmSleepState = false;
+        card->sapmStandbyState = false;
+        card->sapmStandbyStartTimeFlag = false;
+        card->sapmSleepStartTimeFlag = false;
+    }
     return HDF_SUCCESS;
 }
 
-static void AudioSapmEnterSleepSub(const uintptr_t para, struct AudioSapmComponent *sapmComponent)
+static void AudioSapmEnterSleep(const uintptr_t para)
 {
     struct DListHead downList;
     struct AudioCard *audioCard = (struct AudioCard *)para;
+    struct AudioSapmComponent *sapmComponent = NULL;
     ADM_LOG_INFO("entry!");
 
     DListHeadInit(&downList);
@@ -1395,13 +1354,55 @@ static void AudioSapmEnterSleepSub(const uintptr_t para, struct AudioSapmCompone
         }
     }
     AudioSapmPowerDownSeqRun(&downList);
-    g_audioSapmIsSleep = true;
+    audioCard->sapmSleepState = true;
 }
 
-static void AudioSapmEnterSleep(uintptr_t para)
+static bool AudioSapmEnterStandby(struct AudioCard *audioCard)
 {
+    bool timeoutStatus;
     struct AudioSapmComponent *sapmComponent = NULL;
+
+    if (audioCard == NULL) {
+        return false;
+    }
+
+    if (audioCard->sapmStandbyStartTimeFlag == false) {
+        if (AudioSapmRefreshTime(audioCard, true) != HDF_SUCCESS) {
+            ADM_LOG_ERR("AudioSapmRefreshTime failed.");
+            return false;
+        }
+        audioCard->sapmStandbyStartTimeFlag = true;
+    }
+
+    if (audioCard->standbyMode != AUDIO_SAPM_TURN_STANDBY_NOW) {
+        if (AudioSapmCheckTime(audioCard, &timeoutStatus) != HDF_SUCCESS) {
+            ADM_LOG_ERR("AudioSapmCheckTime failed.");
+            return false;
+        }
+
+        if (!timeoutStatus) {
+            return false;
+        }
+    }
+
+    if (audioCard->sapmStandbyState == false) {
+        DLIST_FOR_EACH_ENTRY(sapmComponent, &audioCard->components, struct AudioSapmComponent, list) {
+            if (sapmComponent->PowerClockOp != NULL) {
+                    sapmComponent->PowerClockOp(sapmComponent);
+                }
+        }
+        audioCard->sapmStandbyState = true;
+    }
+
+    return true;
+}
+
+static void AudioSapmTimerCallback(uintptr_t para)
+{
     struct AudioCard *audioCard = (struct AudioCard *)para;
+    bool timeoutStatus;
+    bool standbyEntry;
+
 #ifndef __LITEOS__
     ADM_LOG_DEBUG("entry!");
 #endif
@@ -1409,7 +1410,7 @@ static void AudioSapmEnterSleep(uintptr_t para)
     if (audioCard == NULL) {
         return;
     }
-    if (g_audioSapmIsSleep == true) {
+    if (audioCard->sapmSleepState == true) {
         return;
     }
 
@@ -1417,28 +1418,26 @@ static void AudioSapmEnterSleep(uintptr_t para)
         return;
     }
 
-    if (audioCard->standbyMode != AUDIO_SAPM_TURN_STANDBY_NOW) {
-        if (!AudioSapmCheckTime()) {
+    standbyEntry = AudioSapmEnterStandby(audioCard);
+    if (!standbyEntry) {
+        return;
+    }
+
+    if (audioCard->sapmSleepStartTimeFlag == false) {
+        if (AudioSapmRefreshTime(audioCard, true) != HDF_SUCCESS) {
+            ADM_LOG_ERR("AudioSapmRefreshTime failed.");
             return;
         }
+        audioCard->sapmSleepStartTimeFlag = true;
     }
 
-    if (g_audioSapmIsStandby == false) {
-        DLIST_FOR_EACH_ENTRY(sapmComponent, &audioCard->components, struct AudioSapmComponent, list) {
-            if (sapmComponent->PowerClockOp != NULL) {
-                    sapmComponent->PowerClockOp(sapmComponent);
-                    AudioSapmRefreshTime(true);
-                }
-        }
-        g_audioSapmIsStandby = true;
+    if (AudioSapmCheckTime(audioCard, &timeoutStatus) != HDF_SUCCESS) {
+        ADM_LOG_ERR("AudioSapmCheckTime failed.");
+        return;
     }
 
-    if (g_audioSapmIsStandby == true) {
-        if (!AudioSapmCheckTime()) {
-            return;
-        }
-        g_audioSapmIsStandby = false;
+    if (!timeoutStatus) {
+        return;
     }
-
-    AudioSapmEnterSleepSub(para, sapmComponent);
+    AudioSapmEnterSleep(para);
 }

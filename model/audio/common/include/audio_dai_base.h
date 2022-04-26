@@ -23,6 +23,8 @@ struct DaiData *DaiDataFromCard(const struct AudioCard *card);
 int32_t DaiGetConfigInfo(const struct HdfDeviceObject *device, struct DaiData *data);
 int32_t DaiCheckSampleRate(unsigned int sampleRates);
 int32_t DaiSetConfigInfo(struct DaiData *data);
+int32_t DaiDeviceReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *val);
+int32_t DaiDeviceWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t value);
 
 #ifdef __cplusplus
 #if __cplusplus

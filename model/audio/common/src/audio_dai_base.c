@@ -6,6 +6,7 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
+#include "osal_io.h"
 #include "audio_core.h"
 #include "audio_driver_log.h"
 
@@ -123,3 +124,26 @@ int32_t DaiSetConfigInfo(struct DaiData *data)
     return HDF_SUCCESS;
 }
 
+int32_t DaiDeviceReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *val)
+{
+    unsigned long virtualAddress;
+    if (dai == NULL || dai->devData == NULL || val == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param val is null.");
+        return HDF_FAILURE;
+    }
+    virtualAddress = dai->devData->regVirtualAddr;
+    *val = OSAL_READL((void *)((uintptr_t)(virtualAddress + reg)));
+    return HDF_SUCCESS;
+}
+
+int32_t DaiDeviceWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t value)
+{
+    unsigned long virtualAddress;
+    if (dai == NULL || dai->devData == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param val is null.");
+        return HDF_FAILURE;
+    }
+    virtualAddress = dai->devData->regVirtualAddr;
+    OSAL_WRITEL(value, (void *)((uintptr_t)(virtualAddress + reg)));
+    return HDF_SUCCESS;
+}

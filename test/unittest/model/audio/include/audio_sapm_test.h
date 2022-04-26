@@ -26,8 +26,6 @@ int32_t AudioSampPowerUpTest(void);
 int32_t AudioSampSetPowerMonitorTest(void);
 int32_t AudioCodecSapmSetCtrlOpsTest(void);
 int32_t AudioCodecSapmGetCtrlOpsTest(void);
-int32_t AudioAccessorySapmSetCtrlOpsTest(void);
-int32_t AudioAccessorySapmGetCtrlOpsTest(void);
 
 #ifdef __cplusplus
 #if __cplusplus

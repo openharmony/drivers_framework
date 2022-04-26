@@ -26,14 +26,11 @@ enum {
     TEST_AUDIOSOCREGISTERDAI,               // audio ADM audio_core
     TEST_AUDIOREGISTERDSP,                  // audio ADM audio_core
     TEST_AUDIOREGISTERCODEC,                // audio ADM audio_core
-    TEST_AUDIOREGISTERACCESSORY,            // audio ADM audio_core
     TEST_AUDIOBINDDAILINK,                  // audio ADM audio_core
     TEST_AUDIOUPDATECODECREGBITS,           // audio ADM audio_core
-    TEST_AUDIOUPDATEACCESSORYREGBITS,       // audio ADM audio_core
     TEST_AUDIOUPDATEDAIREGBITS,             // audio ADM audio_core
     TEST_AUDIOKCONTROLGETCPUDAI,            // audio ADM audio_core
     TEST_AUDIOKCONTROLGETCODEC,             // audio ADM audio_core
-    TEST_AUDIOKCONTROLGETACCESSORY,         // audio ADM audio_core
     TEST_AUDIOADDCONTROLS,                  // audio ADM audio_core
     TEST_AUDIOADDCONTROL,                   // audio ADM audio_core
     TEST_AUDIOGETCTRLOPSRREG,               // audio ADM audio_core
@@ -44,13 +41,9 @@ enum {
     TEST_AUDIODAIWRITEREG,                  // audio ADM audio_core
     TEST_AUDIOCODECREADREG,                 // audio ADM audio_core
     TEST_AUDIOCODECWRITEREG,                // audio ADM audio_core
-    TEST_AUDIOACCESSORYREADREG,             // audio ADM audio_core
-    TEST_AUDIOACCESSORYWRITEREG,            // audio ADM audio_core
     TEST_AUDIOINFOCTRLOPS,                  // audio ADM audio_core
     TEST_AUDIOCODECGETCTRLOPS,              // audio ADM audio_core
     TEST_AUDIOCODECSETCTRLOPS,              // audio ADM audio_core
-    TEST_AUDIOACCESSORYGETCTRLOPS,          // audio ADM audio_core
-    TEST_AUDIOACCESSORYSETCTRLOPS,          // audio ADM audio_core
     TEST_AUDIOCPUDAISETCTRLOPS,             // audio ADM audio_core
     TEST_AUDIOCPUDAIGETCTRLOPS = 37,        // audio ADM audio_core
 
@@ -62,8 +55,6 @@ enum {
     TEST_AUDIOSAMPSETPOWERMONITOR,          // audio ADM audio_sapm
     TEST_AUDIOCODECSAPMSETCTRLOPS,          // audio ADM audio_sapm
     TEST_AUDIOCODECSAPMGETCTRLOPS,          // audio ADM audio_sapm
-    TEST_AUDIOACCESSORYSAPMSETCTRLOPS,      // audio ADM audio_sapm
-    TEST_AUDIOACCESSORYSAPMGETCTRLOPS = 47, // audio ADM audio_sapm
 };
 
 #endif /* AUDIO_COMMON_TEST_H */

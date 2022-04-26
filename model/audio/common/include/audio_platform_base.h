@@ -17,9 +17,9 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-#define MIN_PERIOD_SIZE (2 * 1024)
 #define BITSTOBYTE 8
 #define MAX_BUFF_SIZE (128 * 1024)
+#define MIN_BUFF_SIZE (16 * 1024)
 
 enum DataBitWidth {
     DATA_BIT_WIDTH8  =  8,      /* 8 bit witdth */

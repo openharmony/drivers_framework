@@ -105,7 +105,7 @@ struct DaiData {
     /**
      * @brief Defines Dai device reg read.
      *
-     * @param virtualAddress Indicates base reg IoRemap address.
+     * @param dai Indicates a dai device.
      * @param reg Indicates reg offset.
      * @param value Indicates read reg value.
      *
@@ -114,12 +114,12 @@ struct DaiData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Read)(unsigned long virtualAddress, uint32_t reg, uint32_t *value);
+    int32_t (*Read)(const struct DaiDevice *dai, uint32_t reg, uint32_t *value);
 
     /**
      * @brief Defines Dai device reg write.
      *
-     * @param virtualAddress Indicates base reg IoRemap address.
+     * @param dai Indicates a dai device.
      * @param reg Indicates reg offset.
      * @param value Indicates write reg value.
      *
@@ -128,7 +128,7 @@ struct DaiData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Write)(unsigned long virtualAddress, uint32_t reg, uint32_t value);
+    int32_t (*Write)(const struct DaiDevice *dai, uint32_t reg, uint32_t value);
 
     const struct AudioDaiOps *ops;             /**< dai set of operation functions */
     struct PcmInfo pcmInfo;                    /**< dai pcm info */
@@ -139,6 +139,7 @@ struct DaiData {
     struct AudioRegCfgData *regConfig;         /**< dai registers configured in HCS */
     struct AudioRegCfgGroupNode **regCfgGroup; /**< dai register group configured in HCS */
     struct OsalMutex mutex;                    /**< dai mutex */
+    void *privateParam;                        /**< dai private parameter */
 };
 
 /**
