@@ -47,6 +47,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
         self.parser.add_argument("--board_name")
         self.parser.add_argument("--kernel_name")
         self.parser.add_argument("--runmode")
+        self.parser.add_argument("--device_name")
         self.args = self.parser.parse_args(args)
 
     @staticmethod
@@ -429,9 +430,10 @@ class HdfAddHandler(HdfCommandHandlerBase):
         self.check_arg_raise_if_not_exist("kernel_name")
         self.check_arg_raise_if_not_exist("board_name")
         self.check_arg_raise_if_not_exist("driver_name")
+        self.check_arg_raise_if_not_exist("device_name")
 
         args_tuple = self.get_args()
-        root, vendor, module, driver, board, kernel = args_tuple
+        root, vendor, module, driver, board, kernel, device = args_tuple
 
         board_list = HdfToolSettings().get_board_list()
         if board in board_list:
