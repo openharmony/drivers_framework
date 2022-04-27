@@ -15,12 +15,9 @@
 #include "platform_device.h"
 
 #ifdef __cplusplus
-#if __cplusplus
 extern "C" {
-#endif
 #endif /* __cplusplus */
 
-enum PlatformModuleType;
 struct PlatformManager {
     struct PlatformDevice device;
     struct DListHead devices;  /* list to keep all it's device instances */
@@ -58,7 +55,7 @@ void PlatformManagerDestroy(struct PlatformManager *manager);
  * @return Returns the pointer to the paltform manager on success; returns NULL otherwise.
  * @since 1.0
  */
-struct PlatformManager *PlatformManagerGet(enum PlatformModuleType module);
+struct PlatformManager *PlatformManagerGet(int module);
 
 /**
  * @brief Add a platform device to a platform manager.
@@ -130,9 +127,7 @@ struct PlatformDevice *PlatformManagerGetDeviceByNumber(struct PlatformManager *
 struct PlatformDevice *PlatformManagerGetDeviceByName(struct PlatformManager *manager, const char *name);
 
 #ifdef __cplusplus
-#if __cplusplus
 }
-#endif
 #endif /* __cplusplus */
 
 #endif /* PLATFORM_MANAGER_H */

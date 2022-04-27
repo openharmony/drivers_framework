@@ -12,9 +12,7 @@
 #include "hdf_base.h"
 
 #ifdef __cplusplus
-#if __cplusplus
 extern "C" {
-#endif
 #endif /* __cplusplus */
 
 enum PlatformErrno {
@@ -33,6 +31,7 @@ enum PlatformErrno {
     HDF_PLT_ERR_OBJ_REPEAT = HDF_PLT_ERR_NUM(-12),     /**< repeated object */
     HDF_PLT_ERR_NO_DATA = HDF_PLT_ERR_NUM(-13),        /**< no data available */
     HDF_PLT_RSC_NOT_AVL = HDF_PLT_ERR_NUM(-14),        /**< resource not available */
+    HDF_PLT_OUT_OF_RSC = HDF_PLT_ERR_NUM(-15),         /**< run out of resource */
 #define HDF_MMC_ERR_START (HDF_PLT_ERR_START - 50)     /**< Error number start for mmc. */
 #define HDF_MMC_ERR_NUM(v) (HDF_MMC_ERR_START + (v))
     HDF_MMC_ERR_SWITCH_FAIL = HDF_MMC_ERR_NUM(-1),
@@ -41,9 +40,7 @@ enum PlatformErrno {
 };
 
 #ifdef __cplusplus
-#if __cplusplus
 }
-#endif
 #endif /* __cplusplus */
 
 #endif /* PLATFORM_ERRNO_H */

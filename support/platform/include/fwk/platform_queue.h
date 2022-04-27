@@ -15,9 +15,7 @@
 #include "osal_spinlock.h"
 
 #ifdef __cplusplus
-#if __cplusplus
 extern "C" {
-#endif
 #endif /* __cplusplus */
 
 struct PlatformMsg;
@@ -36,22 +34,28 @@ struct PlatformQueue {
     const char *name;
     OsalSpinlock spin;
     bool start;
+    bool exited;
     struct OsalSem sem;
     struct DListHead msgs;
     struct OsalThread thread; /* the worker thread of this queue */
     PlatformMsgHandle handle;
+    uint32_t depth;
+    uint32_t depthMax;
     void *data;
 };
 
-int32_t PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg);
 struct PlatformQueue *PlatformQueueCreate(PlatformMsgHandle handle, const char *name, void *data);
+
 void PlatformQueueDestroy(struct PlatformQueue *queue);
+
 int32_t PlatformQueueStart(struct PlatformQueue *queue);
 
+int32_t PlatformQueueAddMsg(struct PlatformQueue *queue, struct PlatformMsg *msg);
+
+int32_t PlatformQueueGetMsg(struct PlatformQueue *queue, struct PlatformMsg **msg, uint32_t tms);
+
 #ifdef __cplusplus
-#if __cplusplus
 }
-#endif
 #endif /* __cplusplus */
 
 #endif /* PLATFORM_QUEUE_H */
