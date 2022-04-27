@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -25,6 +25,7 @@ struct IDevSvcManager {
     void (*RemoveService)(struct IDevSvcManager *, const char *);
     int (*RegsterServListener)(struct IDevSvcManager *, struct ServStatListenerHolder *);
     void (*UnregsterServListener)(struct IDevSvcManager *, struct ServStatListenerHolder *);
+    void (*ListAllService)(struct IDevSvcManager *, struct HdfSBuf *);
 };
 
 #endif /* DEVSVC_MANAGER_IF_H */

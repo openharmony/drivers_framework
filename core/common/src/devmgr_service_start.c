@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -31,6 +31,29 @@ static void GetDeviceServiceNameByClass(struct HdfSBuf *reply, DeviceClass devic
     HdfSbufFlush(reply);
     DevSvcManagerListService(reply, deviceClass);
     HdfSbufWriteString(reply, NULL);
+}
+
+static int32_t ListAllService(struct HdfSBuf *reply)
+{
+    struct DevSvcManager *devSvcManager = (struct DevSvcManager *)DevSvcManagerGetInstance();
+    if (reply == NULL || devSvcManager == NULL || devSvcManager->super.ListAllService == NULL) {
+        return HDF_FAILURE;
+    }
+    HdfSbufFlush(reply);
+    devSvcManager->super.ListAllService(&devSvcManager->super, reply);
+    HdfSbufWriteString(reply, NULL);
+    return HDF_SUCCESS;
+}
+
+static int32_t ListAllDevice(struct DevmgrService *devMgrSvc, struct HdfSBuf *reply)
+{
+    if (reply == NULL || devMgrSvc->super.ListAllDevice == NULL) {
+        return HDF_FAILURE;
+    }
+    HdfSbufFlush(reply);
+    devMgrSvc->super.ListAllDevice(&devMgrSvc->super, reply);
+    HdfSbufWriteString(reply, NULL);
+    return HDF_SUCCESS;
 }
 
 int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data, struct HdfSBuf *reply)
@@ -72,6 +95,12 @@ int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data
             }
             GetDeviceServiceNameByClass(reply, deviceClass);
             ret = HDF_SUCCESS;
+            break;
+        case DEVMGR_LIST_ALL_SERVICE:
+            ret = ListAllService(reply);
+            break;
+        case DEVMGR_LIST_ALL_DEVICE:
+            ret = ListAllDevice(devMgrSvc, reply);
             break;
         default:
             HDF_LOGE("%s: unsupported configuration type: %d", __func__, code);

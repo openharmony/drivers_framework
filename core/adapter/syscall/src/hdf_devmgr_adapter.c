@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -78,3 +78,60 @@ OUT:
     return ret;
 }
 
+int32_t HdfListAllService(struct HdfSBuf *reply)
+{
+    int32_t ret = HDF_FAILURE;
+    struct HdfSBuf *data = NULL;
+    if (reply == NULL) {
+        HDF_LOGE("%s input reply is null", __func__);
+        return ret;
+    }
+    struct HdfIoService *ioService = HdfIoServiceBind(DEV_MGR_NODE);
+    if (ioService == NULL) {
+        HDF_LOGE("failed to get %s service", DEV_MGR_NODE);
+        return ret;
+    }
+    data = HdfSbufObtainDefaultSize();
+    if (data == NULL) {
+        HDF_LOGE("%s failed to obtain sbuf data", __func__);
+        ret = HDF_DEV_ERR_NO_MEMORY;
+        goto OUT;
+    }
+    ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_LIST_ALL_SERVICE, data, reply);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("failed to list all service info");
+    }
+OUT:
+    HdfIoServiceRecycle(ioService);
+    HdfSbufRecycle(data);
+    return ret;
+}
+
+int32_t HdfListAllDevice(struct HdfSBuf *reply)
+{
+    int32_t ret = HDF_FAILURE;
+    struct HdfSBuf *data = NULL;
+    if (reply == NULL) {
+        HDF_LOGE("%s input reply is null", __func__);
+        return ret;
+    }
+    struct HdfIoService *ioService = HdfIoServiceBind(DEV_MGR_NODE);
+    if (ioService == NULL) {
+        HDF_LOGE("failed to get %s service", DEV_MGR_NODE);
+        return ret;
+    }
+    data = HdfSbufObtainDefaultSize();
+    if (data == NULL) {
+        HDF_LOGE("%s failed to obtain sbuf data", __func__);
+        ret = HDF_DEV_ERR_NO_MEMORY;
+        goto OUT;
+    }
+    ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_LIST_ALL_DEVICE, data, reply);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("failed to list all device info");
+    }
+OUT:
+    HdfIoServiceRecycle(ioService);
+    HdfSbufRecycle(data);
+    return ret;
+}

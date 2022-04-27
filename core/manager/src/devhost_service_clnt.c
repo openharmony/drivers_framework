@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -51,8 +51,10 @@ int DevHostServiceClntInstallDriver(struct DevHostServiceClnt *hostClnt)
             HDF_LOGE("failed to install driver %s, ret = %d", deviceInfo->svcName, ret);
             continue;
         }
+        deviceInfo->status = HDF_SERVICE_USABLE;
 #ifndef __USER__
         HdfSListIteratorRemove(&it);
+        HdfDeviceInfoFreeInstance(deviceInfo);
 #endif
     }
     return HDF_SUCCESS;

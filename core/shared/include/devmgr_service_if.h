@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -25,6 +25,7 @@ struct IDevmgrService {
     int (*UnloadDevice)(struct IDevmgrService *, const char *);
     int (*StartService)(struct IDevmgrService *);
     int (*PowerStateChange)(struct IDevmgrService *, enum HdfPowerState pEvent);
+    int (*ListAllDevice)(struct IDevmgrService *, struct HdfSBuf *);
 };
 
 #endif /* DEVMGR_SERVICE_IF_H */

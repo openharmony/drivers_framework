@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -31,6 +31,8 @@ typedef enum {
     DEVMGR_LOAD_SERVICE = 0,
     DEVMGR_UNLOAD_SERVICE,
     DEVMGR_GET_SERVICE,
+    DEVMGR_LIST_ALL_SERVICE,
+    DEVMGR_LIST_ALL_DEVICE,
 } DevMgrCmd;
 
 struct HdfWriteReadBuf {
@@ -51,6 +53,8 @@ void HdfIoServiceAdapterRecycle(struct HdfIoService *service);
 struct HdfIoService *HdfIoServiceAdapterPublish(const char *serviceName, uint32_t mode) __attribute__((weak));
 void HdfIoServiceAdapterRemove(struct HdfIoService *service) __attribute__((weak));
 int32_t HdfLoadDriverByServiceName(const char *serviceName);
+int32_t HdfListAllService(struct HdfSBuf *reply);
+int32_t HdfListAllDevice(struct HdfSBuf *reply);
 
 #ifdef __cplusplus
 }
