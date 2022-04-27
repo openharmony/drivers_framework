@@ -84,14 +84,14 @@ int32_t PlatformDeviceSetName(struct PlatformDevice *device, const char *fmt, ..
         return HDF_ERR_MALLOC_FAIL;
     }
 
-    PLAT_LOGD("PlatformDeviceSetName: tmpName:%s, realLen:%zu", tmpName, realLen);
     ret = strncpy_s(realName, realLen + 1, tmpName, realLen);
     if (ret != EOK) {
         OsalMemFree(realName);
-        PLAT_LOGE("PlatformDeviceSetName: copy name failed:%d", ret);
+        PLAT_LOGE("PlatformDeviceSetName: copy name(%s) failed:%d", tmpName, ret);
         return HDF_ERR_IO;
     }
 
+    PLAT_LOGD("PlatformDeviceSetName: realName:%s, realLen:%zu", realName, realLen);
     device->name = (const char *)realName;
     return HDF_SUCCESS;
 }
@@ -271,7 +271,7 @@ void PlatformDeviceDestroyService(struct PlatformDevice *device)
     device->service = NULL;
 }
 
-int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject *hdfDevice)
+int32_t PlatformDeviceSetHdfDev(struct PlatformDevice *device, struct HdfDeviceObject *hdfDevice)
 {
     if (device == NULL || hdfDevice == NULL) {
         return HDF_ERR_INVALID_OBJECT;
@@ -283,9 +283,19 @@ int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject
     }
 
     device->hdfDev = hdfDevice;
-    hdfDevice->service = device->service;
     hdfDevice->priv = device;
     return HDF_SUCCESS;
+}
+
+int32_t PlatformDeviceBind(struct PlatformDevice *device, struct HdfDeviceObject *hdfDevice)
+{
+    int32_t ret;
+
+    ret = PlatformDeviceSetHdfDev(device, hdfDevice);
+    if (ret == HDF_SUCCESS) {
+        hdfDevice->service = device->service;
+    }
+    return ret;
 }
 
 void PlatformDeviceUnbind(struct PlatformDevice *device, struct HdfDeviceObject *hdfDev)
@@ -362,4 +372,17 @@ void PlatformDeviceUnListenEvent(struct PlatformDevice *device, struct PlatformE
     if (device != NULL && listener != NULL) {
         PlatformEventUnlisten(&device->event, listener);
     }
+}
+
+const struct DeviceResourceNode *PlatformDeviceGetDrs(struct PlatformDevice *device)
+{
+#ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
+    (void)device;
+    return NULL;
+#else
+    if (device != NULL && device->hdfDev != NULL) {
+        return device->hdfDev->property;
+    }
+    return NULL;
+#endif
 }

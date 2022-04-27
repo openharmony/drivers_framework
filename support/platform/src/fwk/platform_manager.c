@@ -92,7 +92,7 @@ void PlatformManagerDestroy(struct PlatformManager *manager)
     OsalMemFree(manager);
 }
 
-struct PlatformManager *PlatformManagerGet(enum PlatformModuleType module)
+struct PlatformManager *PlatformManagerGet(int module)
 {
     int32_t ret;
     struct PlatformManager *manager = NULL;
