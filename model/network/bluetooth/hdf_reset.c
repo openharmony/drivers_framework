@@ -13,7 +13,7 @@
 struct GpioBasedReset {
     struct HdfReset base;
     uint8_t resetHoldTime;
-    uint8_t gpioId;
+    uint16_t gpioId;
     uint8_t activeLevel;
 };
 

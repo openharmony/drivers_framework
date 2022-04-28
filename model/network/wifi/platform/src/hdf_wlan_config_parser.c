@@ -220,7 +220,7 @@ static int32_t ParseWlanPowerConfig(const struct DeviceResourceNode *node,
         return HDF_FAILURE;
     }
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
-    if (drsOps == NULL || drsOps->GetUint8 == NULL) {
+    if (drsOps == NULL || drsOps->GetUint8 == NULL || drsOps->GetUint16 == NULL) {
         HDF_LOGE("%s: at least one of the paras is NULL!", __func__);
         return HDF_FAILURE;
     }
@@ -235,7 +235,7 @@ static int32_t ParseWlanPowerConfig(const struct DeviceResourceNode *node,
         return HDF_FAILURE;
     }
 
-    if (drsOps->GetUint8(node, "gpioId", &primaryPowerConfig->gpioId, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint16(node, "gpioId", &primaryPowerConfig->gpioId, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: gpioId fail!", __func__);
         return HDF_FAILURE;
     }
@@ -291,7 +291,7 @@ static int32_t ParseWlanResetConfig(const struct DeviceResourceNode *node, struc
     }
 
     drsOps = DeviceResourceGetIfaceInstance(HDF_CONFIG_SOURCE);
-    if (drsOps == NULL || drsOps->GetUint8 == NULL) {
+    if (drsOps == NULL || drsOps->GetUint8 == NULL || drsOps->GetUint16 == NULL) {
         HDF_LOGE("%s: at least one of the paras is NULL!", __func__);
         return HDF_FAILURE;
     }
@@ -301,7 +301,7 @@ static int32_t ParseWlanResetConfig(const struct DeviceResourceNode *node, struc
         return HDF_FAILURE;
     }
 
-    if (drsOps->GetUint8(node, "gpioId", &resetConfig->gpioId, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint16(node, "gpioId", &resetConfig->gpioId, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: gpioId fail!", __func__);
         return HDF_FAILURE;
     }
