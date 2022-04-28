@@ -355,20 +355,12 @@ static int32_t AudioDriverBind(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-static int32_t AudioDriverInit(struct HdfDeviceObject *device)
+static int32_t AudioCardInit(struct HdfDeviceObject *device, struct AudioHost *audioHost)
 {
-    struct AudioCard *audioCard = NULL;
-    struct AudioHost *audioHost = NULL;
     int32_t ret;
-
-    ADM_LOG_DEBUG("entry.");
-    if (device == NULL) {
-        ADM_LOG_ERR("device is NULL.");
-        return HDF_ERR_INVALID_OBJECT;
-    }
-    audioHost = (struct AudioHost *)device->service;
-    if (audioHost == NULL) {
-        ADM_LOG_ERR("audioHost is NULL.");
+    struct AudioCard *audioCard = NULL;
+    if (device == NULL || audioHost == NULL) {
+        ADM_LOG_ERR("device or audioHost is NULL.");
         return HDF_FAILURE;
     }
 
@@ -414,6 +406,27 @@ static int32_t AudioDriverInit(struct HdfDeviceObject *device)
     /* sound card added to list */
     DListInsertHead(&audioCard->list, &cardManager);
 
+    return HDF_SUCCESS;
+}
+
+static int32_t AudioDriverInit(struct HdfDeviceObject *device)
+{
+    struct AudioHost *audioHost = NULL;
+
+    ADM_LOG_DEBUG("entry.");
+    if (device == NULL) {
+        ADM_LOG_ERR("device is NULL.");
+        return HDF_ERR_INVALID_OBJECT;
+    }
+    if (!HdfDeviceSetClass(device, DEVICE_CLASS_AUDIO)) {
+        ADM_LOG_ERR("set audio class failed.");
+        return HDF_FAILURE;
+    }
+    audioHost = (struct AudioHost *)device->service;
+    if (AudioCardInit(device, audioHost) != HDF_SUCCESS) {
+        ADM_LOG_ERR("set audio class failed.");
+        return HDF_FAILURE;
+    }
     ADM_LOG_INFO("success.");
     return HDF_SUCCESS;
 }

@@ -23,7 +23,7 @@ const int RENDER_TRAF_BUF_SIZE = 1024;
 const int MIN_BUFF_SIZE = 16 * 1024;
 const int TIME_OUT_CONST = 50;
 const int SLEEP_TIME = 5;
-#define PNP_REPORT_MSG_LEN      32
+#define AUDIO_PNP_MSG_LEN 256
 #define INTERLEAVED 1
 const int MIN_PERIOD_SILENCE_THRESHOLD = (4 * 1024);
 const int MAX_PERIOD_SILENCE_THRESHOLD = (16 * 1024);
@@ -1194,84 +1194,33 @@ int32_t AudioPcmPointer(const struct AudioCard *card, uint32_t *pointer, enum Au
     return HDF_SUCCESS;
 }
 
-static int32_t PnpReportMsgConvert(const struct PnpReportMsg *pnpReportMsg, char *msgBuf, const uint32_t bufLen)
+int32_t AudioCapSilenceThresholdEvent(struct HdfDeviceObject *device, const struct AudioEvent *reportMsg)
 {
     int ret;
-    if (pnpReportMsg == NULL || msgBuf == NULL || bufLen < PNP_REPORT_MSG_LEN) {
-        AUDIO_DRIVER_LOG_ERR("Parameter error!");
-        return HDF_FAILURE;
-    }
-
-    switch (pnpReportMsg->reportType) {
-        case DEVICE_PULG:
-            ret = snprintf_s(msgBuf, bufLen, bufLen - 1, "%d;%d;%d;%d;%d",
-                pnpReportMsg->devPlugMsg.eventType, pnpReportMsg->devPlugMsg.state,
-                pnpReportMsg->devPlugMsg.deviceType, pnpReportMsg->devPlugMsg.deviceCap,
-                pnpReportMsg->devPlugMsg.id);
-            if (ret < 0) {
-                AUDIO_DRIVER_LOG_ERR("snprintf_s failed");
-                return HDF_ERR_IO;
-            }
-            break;
-        case EVENT_REPORT:
-            ret = snprintf_s(msgBuf, bufLen, bufLen - 1, "%d;%d;%d;%d;%d",
-                pnpReportMsg->eventMsg.eventType, pnpReportMsg->eventMsg.eventId,
-                pnpReportMsg->eventMsg.eventValue, pnpReportMsg->eventMsg.deviceType,
-                pnpReportMsg->eventMsg.reserve);
-            if (ret < 0) {
-                AUDIO_DRIVER_LOG_ERR("snprintf_s failed");
-                return HDF_ERR_IO;
-            }
-            break;
-        default:
-            AUDIO_DRIVER_LOG_ERR("Unknown message type!");
-            return HDF_FAILURE;
-    }
-
-    return HDF_SUCCESS;
-}
-
-int32_t AudioCapSilenceThresholdEvent(struct HdfDeviceObject *device, const struct PnpReportMsg *reportMsg)
-{
-    int ret;
-    char *msgBuf = NULL;
+    char msgBuf[AUDIO_PNP_MSG_LEN] = {0};
 
     if (device == NULL || reportMsg == NULL) {
         ADM_LOG_ERR("device is NULL!");
         return HDF_ERR_INVALID_PARAM;
     }
-    if (!HdfDeviceSetClass(device, DEVICE_CLASS_AUDIO)) {
-        ADM_LOG_ERR("set audio class failed.");
+
+    ret = snprintf_s(msgBuf, AUDIO_PNP_MSG_LEN, AUDIO_PNP_MSG_LEN - 1,
+                     "EVENT_TYPE=0x%x;DEVICE_TYPE=0x%x", reportMsg->eventType, reportMsg->deviceType);
+    if (ret < 0) {
+        ADM_LOG_ERR("snprintf_s fail");
         return HDF_FAILURE;
     }
-
-    msgBuf = (char *)OsalMemCalloc(PNP_REPORT_MSG_LEN);
-    if (msgBuf == NULL) {
-        ADM_LOG_ERR("Malloc memory failed!");
-        return HDF_FAILURE;
-    }
-
-    ret = PnpReportMsgConvert(reportMsg, msgBuf, PNP_REPORT_MSG_LEN);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("PnpReportMsgConvert fail");
-        OsalMemFree(msgBuf);
-        return HDF_FAILURE;
-    }
-
     if (HdfDeviceObjectSetServInfo(device, msgBuf) != HDF_SUCCESS) {
         ADM_LOG_ERR("HdfDeviceObjectSetServInfo fail!");
-        OsalMemFree(msgBuf);
         return HDF_FAILURE;
     }
 
     ret = HdfDeviceObjectUpdate(device);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("HdfDeviceObjectUpdate fail\n");
-        OsalMemFree(msgBuf);
         return HDF_FAILURE;
     }
 
-    OsalMemFree(msgBuf);
     return HDF_SUCCESS;
 }
 
