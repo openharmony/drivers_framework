@@ -78,7 +78,13 @@ void CppCustomTypesCodeEmitter::EmitHeaderFileInclusions(StringBuilder &sb)
 
 void CppCustomTypesCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_parcel"));
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "message_parcel");
+}
+
+void CppCustomTypesCodeEmitter::EmitUsingNamespace(StringBuilder &sb)
+{
+    sb.Append("using namespace OHOS;\n");
+    EmitImportUsingNamespace(sb);
 }
 
 void CppCustomTypesCodeEmitter::EmitCustomTypeDecls(StringBuilder &sb)
@@ -170,7 +176,7 @@ void CppCustomTypesCodeEmitter::EmitSourceFileInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(baseName_)));
+    headerFiles.emplace(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(baseName_));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto &file : headerFiles) {
@@ -180,12 +186,12 @@ void CppCustomTypesCodeEmitter::EmitSourceFileInclusions(StringBuilder &sb)
 
 void CppCustomTypesCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log");
     const AST::TypeStringMap &types = ast_->GetTypes();
     for (const auto &pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT || type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
+            headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec");
             break;
         }
     }

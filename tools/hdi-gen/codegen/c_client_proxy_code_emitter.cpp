@@ -67,7 +67,7 @@ void CClientProxyCodeEmitter::EmitProxyInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(interfaceName_)));
+    headerFiles.emplace(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(interfaceName_));
     GetHeaderOtherLibInclusions(headerFiles);
 
     for (const auto &file : headerFiles) {
@@ -77,23 +77,23 @@ void CClientProxyCodeEmitter::EmitProxyInclusions(StringBuilder &sb)
 
 void CClientProxyCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base");
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log");
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf");
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem");
 
     if (isKernelCode_) {
-        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_io_service_if"));
+        headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_io_service_if");
     } else {
-        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "servmgr_hdi"));
-        headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_dlist"));
+        headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "servmgr_hdi");
+        headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_dlist");
     }
 
     const AST::TypeStringMap &types = ast_->GetTypes();
     for (const auto &pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_STRING || type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
+            headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec");
             break;
         }
     }
@@ -211,9 +211,10 @@ void CClientProxyCodeEmitter::EmitProxyMethodBody(
 
     // Local variable definitions must precede all execution statements.
     EmitInitLoopVar(method, sb, prefix + TAB);
-
     sb.Append("\n");
     EmitCreateBuf(dataParcelName_, replyParcelName_, sb, prefix + TAB);
+    sb.Append("\n");
+    EmitCheckThisPointer(sb, prefix + TAB);
 
     if (!isKernelCode_) {
         sb.Append("\n");
@@ -268,6 +269,15 @@ void CClientProxyCodeEmitter::EmitCreateBuf(
     sb.Append(prefix).AppendFormat("if (%s == NULL || %s == NULL) {\n", dataBufName.string(), replyBufName.string());
     sb.Append(prefix + TAB).Append("HDF_LOGE(\"%{public}s: HdfSubf malloc failed!\", __func__);\n");
     sb.Append(prefix + TAB).AppendFormat("%s = HDF_ERR_MALLOC_FAIL;\n", errorCodeName_.string());
+    sb.Append(prefix + TAB).AppendFormat("goto %s;\n", finishedLabelName_);
+    sb.Append(prefix).Append("}\n");
+}
+
+void CClientProxyCodeEmitter::EmitCheckThisPointer(StringBuilder &sb, const String &prefix)
+{
+    sb.Append(prefix).Append("if (self == NULL) {\n");
+    sb.Append(prefix + TAB).Append("HDF_LOGE(\"%{public}: invalid interface object\", __func__);\n");
+    sb.Append(prefix + TAB).AppendFormat("%s = HDF_ERR_INVALID_OBJECT;\n", errorCodeName_.string());
     sb.Append(prefix + TAB).AppendFormat("goto %s;\n", finishedLabelName_);
     sb.Append(prefix).Append("}\n");
 }

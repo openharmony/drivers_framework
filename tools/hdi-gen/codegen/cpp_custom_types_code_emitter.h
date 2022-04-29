@@ -30,6 +30,8 @@ private:
 
     void GetHeaderOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
+    void EmitUsingNamespace(StringBuilder &sb) override;
+
     void EmitCustomTypeDecls(StringBuilder &sb);
 
     void EmitCustomTypeDecl(StringBuilder &sb, const AutoPtr<ASTType> &type);

@@ -72,7 +72,7 @@ void ASTSmqType::EmitCppReadVar(const String &parcelName, const String &name, St
 
 bool ASTAshmemType::IsAshmemType()
 {
-    return false;
+    return true;
 }
 
 String ASTAshmemType::ToString()

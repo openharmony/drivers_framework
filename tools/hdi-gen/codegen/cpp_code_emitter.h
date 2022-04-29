@@ -50,7 +50,7 @@ protected:
 
     virtual void EmitEndNamespace(StringBuilder &sb);
 
-    void EmitUsingNamespace(StringBuilder &sb);
+    virtual void EmitUsingNamespace(StringBuilder &sb);
 
     String EmitNamespace(const String &packageName);
 

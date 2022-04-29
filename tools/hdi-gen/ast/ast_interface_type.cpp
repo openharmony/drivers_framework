@@ -186,8 +186,9 @@ void ASTInterfaceType::EmitCStubReadVar(const String &parcelName, const String &
 void ASTInterfaceType::EmitCppWriteVar(const String &parcelName, const String &name, StringBuilder &sb,
     const String &prefix, unsigned int innerLevel) const
 {
-    sb.Append(prefix).AppendFormat(
-        "if (!%s.WriteRemoteObject(%s->AsObject())) {\n", parcelName.string(), name.string());
+    sb.Append(prefix).AppendFormat("if (!%s.WriteRemoteObject(", parcelName.string());
+    sb.AppendFormat("OHOS::HDI::ObjectCollector::GetInstance().GetOrNewObject(%s, %s::GetDescriptor()))) {\n",
+        name.string(), name_.string());
     sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
     sb.Append(prefix + TAB).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
@@ -197,11 +198,11 @@ void ASTInterfaceType::EmitCppReadVar(const String &parcelName, const String &na
     const String &prefix, bool initVariable, unsigned int innerLevel) const
 {
     if (initVariable) {
-        sb.Append(prefix).AppendFormat("sptr<%s> %s = iface_cast<%s>(%s.ReadRemoteObject());\n", name_.string(),
+        sb.Append(prefix).AppendFormat("sptr<%s> %s = hdi_facecast<%s>(%s.ReadRemoteObject());\n", name_.string(),
             name.string(), name_.string(), parcelName.string());
     } else {
         sb.Append(prefix).AppendFormat(
-            "%s = iface_cast<%s>(%s.ReadRemoteObject());\n", name.string(), name_.string(), parcelName.string());
+            "%s = hdi_facecast<%s>(%s.ReadRemoteObject());\n", name.string(), name_.string(), parcelName.string());
     }
 }
 

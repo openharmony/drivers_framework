@@ -44,6 +44,8 @@ private:
 
     void EmitCreateBuf(const String &dataBufName, const String &replyBufName, StringBuilder &sb, const String &prefix);
 
+    void EmitCheckThisPointer(StringBuilder &sb, const String &prefix);
+
     void EmitWriteInterfaceToken(const String &dataBufName, StringBuilder &sb, const String &prefix);
 
     void EmitWriteFlagOfNeedSetMem(

@@ -52,6 +52,8 @@ private:
 
     void EmitGetInstanceMethodImpl(StringBuilder &sb, const String &prefix);
 
+    void EmitProxyPassthroughtLoadImpl(StringBuilder &sb, const String &prefix);
+
     void EmitProxyMethodImpls(StringBuilder &sb, const String &prefix);
 
     void EmitProxyMethodImpl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);

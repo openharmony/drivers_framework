@@ -58,7 +58,7 @@ void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 void CppServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(stubName_)));
+    headerFiles.emplace(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(interfaceName_));
 
     for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -68,26 +68,24 @@ void CppServiceImplCodeEmitter::EmitServiceImplInclusions(StringBuilder &sb)
 void CppServiceImplCodeEmitter::EmitServiceImplDecl(StringBuilder &sb)
 {
     EmitBeginNamespace(sb);
-    sb.Append("\n");
-    sb.AppendFormat("class %sService : public %s {\n", baseName_.string(), stubName_.string());
+    sb.AppendFormat("class %sService : public %s {\n", baseName_.string(), interfaceName_.string());
     sb.Append("public:\n");
     EmitServiceImplBody(sb, TAB);
     sb.Append("};\n");
-
-    sb.Append("\n");
     EmitEndNamespace(sb);
 }
 
 void CppServiceImplCodeEmitter::EmitServiceImplBody(StringBuilder &sb, const String &prefix)
 {
-    EmitServiceImplDestruction(sb, TAB);
+    EmitServiceImplConstructor(sb, TAB);
     sb.Append("\n");
     EmitServiceImplMethodDecls(sb, TAB);
 }
 
-void CppServiceImplCodeEmitter::EmitServiceImplDestruction(StringBuilder &sb, const String &prefix)
+void CppServiceImplCodeEmitter::EmitServiceImplConstructor(StringBuilder &sb, const String &prefix)
 {
-    sb.Append(prefix).AppendFormat("virtual ~%sService() {}\n", baseName_.string());
+    sb.Append(prefix).AppendFormat("%s() = default;\n", implName_.string());
+    sb.Append(prefix).AppendFormat("virtual ~%s() = default;\n", implName_.string());
 }
 
 void CppServiceImplCodeEmitter::EmitServiceImplMethodDecls(StringBuilder &sb, const String &prefix)
@@ -134,9 +132,8 @@ void CppServiceImplCodeEmitter::EmitImplSourceFile()
     EmitImplSourceInclusions(sb);
     sb.Append("\n");
     EmitBeginNamespace(sb);
-    sb.Append("\n");
+    EmitServiceImplGetMethodImpl(sb, "");
     EmitServiceImplMethodImpls(sb, "");
-    sb.Append("\n");
     EmitEndNamespace(sb);
 
     String data = sb.ToString();
@@ -148,8 +145,8 @@ void CppServiceImplCodeEmitter::EmitImplSourceFile()
 void CppServiceImplCodeEmitter::EmitImplSourceInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(implName_)));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(implName_));
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base");
 
     for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -158,7 +155,7 @@ void CppServiceImplCodeEmitter::EmitImplSourceInclusions(StringBuilder &sb)
 
 void CppServiceImplCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base");
 }
 
 void CppServiceImplCodeEmitter::EmitServiceImplMethodImpls(StringBuilder &sb, const String &prefix)
@@ -197,6 +194,17 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(
     sb.Append(prefix).Append("{\n");
     sb.Append(prefix + TAB).Append("return HDF_SUCCESS;\n");
     sb.Append(prefix).Append("}\n");
+}
+
+void CppServiceImplCodeEmitter::EmitServiceImplGetMethodImpl(StringBuilder &sb, const String &prefix)
+{
+    if (!interface_->IsSerializable()) {
+        sb.Append(prefix).AppendFormat(
+            "extern \"C\" %s *%sImplGetInstance(void)\n", interfaceName_.string(), baseName_.string());
+        sb.Append(prefix).Append("{\n");
+        sb.Append(prefix + TAB).AppendFormat("return new (std::nothrow) %s();\n", implName_.string());
+        sb.Append(prefix).Append("}\n\n");
+    }
 }
 } // namespace HDI
 } // namespace OHOS
