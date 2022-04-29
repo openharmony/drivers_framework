@@ -56,34 +56,74 @@ static int32_t GetAllLightInfo(struct HdfSBuf *data, struct HdfSBuf *reply)
     return HDF_SUCCESS;
 }
 
-int32_t StartLight(uint32_t lightId)
+static int32_t WriteGpio(int32_t busNum, uint32_t lightOn)
 {
+    int32_t level;
+
+    if (busNum < 0) {
+        HDF_LOGE("%s: GPIO is wrong", __func__);
+        return HDF_SUCCESS;
+    }
+
+    if (lightOn == LIGHT_STATE_START) {
+        level = GPIO_VAL_HIGH;
+    } else {
+        level = GPIO_VAL_LOW;
+    }
+
+    return GpioWrite(busNum, level);
+}
+
+static int32_t UpdateLight(uint32_t lightId, uint32_t lightOn)
+{
+    int32_t ret;
+    uint32_t lightBrightness;
     struct LightDriverData *drvData = NULL;
 
     drvData = GetLightDrvData();
     CHECK_LIGHT_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
 
-    if (GpioWrite(drvData->info[lightId]->busNum, GPIO_VAL_HIGH) != HDF_SUCCESS) {
-        HDF_LOGE("%s: pull gpio%d to %d level failed", __func__, drvData->info[lightId]->busNum, GPIO_VAL_LOW);
-        return HDF_FAILURE;
+    if (drvData->info[lightId]->lightBrightness == 0) {
+        lightBrightness = drvData->info[lightId]->defaultBrightness;
+    } else {
+        lightBrightness = drvData->info[lightId]->lightBrightness;
+    }
+
+    if ((lightBrightness & LIGHT_MAKE_B_BIT) != 0) {
+        ret = WriteGpio(drvData->info[lightId]->busBNum, lightOn);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: write blue light's gpio failed", __func__);
+            return HDF_FAILURE;
+        }
+    }
+
+    if ((lightBrightness & LIGHT_MAKE_G_BIT) != 0) {
+        ret = WriteGpio(drvData->info[lightId]->busGNum, lightOn);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: write green light's gpio failed", __func__);
+            return HDF_FAILURE;
+        }
+    }
+
+    if ((lightBrightness & LIGHT_MAKE_R_BIT) != 0) {
+        ret = WriteGpio(drvData->info[lightId]->busRNum, lightOn);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: write red light's gpio failed", __func__);
+            return HDF_FAILURE;
+        }
     }
 
     return HDF_SUCCESS;
 }
 
+int32_t StartLight(uint32_t lightId)
+{
+    return UpdateLight(lightId, LIGHT_STATE_START);
+}
+
 int32_t StopLight(uint32_t lightId)
 {
-    struct LightDriverData *drvData = NULL;
-
-    drvData = GetLightDrvData();
-    CHECK_LIGHT_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
-
-    if (GpioWrite(drvData->info[lightId]->busNum, GPIO_VAL_LOW) != HDF_SUCCESS) {
-        HDF_LOGE("%s: pull gpio%d to %d level failed", __func__, drvData->info[lightId]->busNum, GPIO_VAL_LOW);
-        return HDF_FAILURE;
-    }
-
-    return HDF_SUCCESS;
+    return UpdateLight(lightId, LIGHT_STATE_STOP);
 }
 
 void LightTimerEntry(uintptr_t para)
@@ -123,7 +163,7 @@ void LightTimerEntry(uintptr_t para)
     return;
 }
 
-static int32_t Enable(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t TurnOnLight(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     (void)reply;
     uint32_t len;
@@ -143,22 +183,10 @@ static int32_t Enable(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *re
         return HDF_FAILURE;
     }
 
-    drvData->info[lightId]->lightBrightness = (buf->lightBrightness == 0) ?
-        drvData->info[lightId]->lightBrightness : buf->lightBrightness;
-
-    if ((drvData->info[lightId]->lightBrightness & LIGHT_MAKE_R_BIT) != 0) {
-        drvData->info[lightId]->busNum = drvData->info[lightId]->busRNum;
-    } else if ((drvData->info[lightId]->lightBrightness & LIGHT_MAKE_G_BIT) != 0) {
-        drvData->info[lightId]->busNum = drvData->info[lightId]->busGNum;
-    } else if ((drvData->info[lightId]->lightBrightness & LIGHT_MAKE_B_BIT) != 0) {
-        drvData->info[lightId]->busNum = drvData->info[lightId]->busBNum;
-    }
+    drvData->info[lightId]->lightBrightness = buf->lightBrightness;
 
     if (buf->flashEffect.flashMode == LIGHT_FLASH_NONE) {
-        if (GpioWrite(drvData->info[lightId]->busNum, GPIO_VAL_HIGH) != HDF_SUCCESS) {
-            HDF_LOGE("%s: gpio busNum %d write failed", __func__, drvData->info[lightId]->busNum);
-            return HDF_FAILURE;
-        }
+        return UpdateLight(lightId, LIGHT_STATE_START);
     }
 
     if (buf->flashEffect.flashMode == LIGHT_FLASH_TIMED) {
@@ -181,7 +209,7 @@ static int32_t Enable(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *re
     return HDF_SUCCESS;
 }
 
-static int32_t Disable(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t TurnOffLight(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     (void)data;
     (void)reply;
@@ -195,6 +223,13 @@ static int32_t Disable(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *r
         return HDF_FAILURE;
     }
 
+    if (UpdateLight(lightId, LIGHT_STATE_STOP) != HDF_SUCCESS) {
+        HDF_LOGE("%s: gpio write failed", __func__);
+        return HDF_FAILURE;
+    }
+
+    drvData->info[lightId]->lightState = LIGHT_STATE_STOP;
+
     if (drvData->timer.realTimer != NULL) {
         if (OsalTimerDelete(&drvData->timer) != HDF_SUCCESS) {
             HDF_LOGE("%s: delete light timer fail!", __func__);
@@ -202,19 +237,12 @@ static int32_t Disable(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *r
         }
     }
 
-    if (GpioWrite(drvData->info[lightId]->busRNum, GPIO_VAL_LOW) != HDF_SUCCESS) {
-        HDF_LOGE("%s: gpio write failed", __func__);
-        return HDF_FAILURE;
-    }
-
-    drvData->info[lightId]->lightState = LIGHT_STATE_STOP;
-
     return HDF_SUCCESS;
 }
 
 static struct LightCmdHandleList g_lightCmdHandle[] = {
-    {LIGHT_OPS_IO_CMD_ENABLE, Enable},
-    {LIGHT_OPS_IO_CMD_DISABLE, Disable},
+    {LIGHT_OPS_IO_CMD_ENABLE, TurnOnLight},
+    {LIGHT_OPS_IO_CMD_DISABLE, TurnOffLight},
 };
 
 static int32_t DispatchCmdHandle(uint32_t lightId, struct HdfSBuf *data, struct HdfSBuf *reply)
@@ -286,12 +314,58 @@ static int32_t DispatchLight(struct HdfDeviceIoClient *client,
     return ret;
 }
 
+static int32_t GetLightBaseConfigData(const struct DeviceResourceNode *node, const struct DeviceResourceIface *parser,
+    uint32_t lightId)
+{
+    int32_t ret;
+    uint32_t *defaultBrightness = NULL;
+    struct LightDriverData *drvData = NULL;
+
+    drvData = GetLightDrvData();
+    CHECK_LIGHT_NULL_PTR_RETURN_VALUE(drvData, HDF_ERR_INVALID_PARAM);
+    CHECK_LIGHT_NULL_PTR_RETURN_VALUE(node, HDF_ERR_INVALID_PARAM);
+    CHECK_LIGHT_NULL_PTR_RETURN_VALUE(parser, HDF_ERR_INVALID_PARAM);
+
+    drvData->info[lightId] = (struct LightDeviceInfo *)OsalMemCalloc(sizeof(struct LightDeviceInfo));
+    if (drvData->info[lightId] == NULL) {
+        HDF_LOGE("%s: malloc fail", __func__);
+        return HDF_FAILURE;
+    }
+
+    ret = parser->GetUint32(node, "busRNum", (uint32_t *)&drvData->info[lightId]->busRNum, 0);
+    if (ret != HDF_SUCCESS) {
+        drvData->info[lightId]->busRNum = LIGHT_INVALID_GPIO;
+    }
+
+    ret = parser->GetUint32(node, "busGNum", (uint32_t *)&drvData->info[lightId]->busGNum, 0);
+    if (ret != HDF_SUCCESS) {
+        drvData->info[lightId]->busGNum = LIGHT_INVALID_GPIO;
+    }
+
+    ret = parser->GetUint32(node, "busBNum", (uint32_t *)&drvData->info[lightId]->busBNum, 0);
+    if (ret != HDF_SUCCESS) {
+        drvData->info[lightId]->busBNum = LIGHT_INVALID_GPIO;
+    }
+
+    defaultBrightness = (uint32_t *)&drvData->info[lightId]->defaultBrightness;
+    ret = parser->GetUint32(node, "defaultBrightness", defaultBrightness, 0);
+    CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "defaultBrightness");
+    ret = parser->GetUint32(node, "onTime", &drvData->info[lightId]->onTime, 0);
+    CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "onTime");
+    ret = parser->GetUint32(node, "offTime", &drvData->info[lightId]->offTime, 0);
+    CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "offTime");
+
+    drvData->info[lightId]->lightBrightness = 0;
+    drvData->info[lightId]->lightState = LIGHT_STATE_STOP;
+
+    return HDF_SUCCESS;
+}
+
 static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struct DeviceResourceIface *parser)
 {
     int32_t ret;
     uint32_t i;
     uint32_t temp;
-    uint32_t *lightBrightness = NULL;
     struct LightDriverData *drvData = NULL;
 
     drvData = GetLightDrvData();
@@ -318,27 +392,11 @@ static int32_t ParseLightInfo(const struct DeviceResourceNode *node, const struc
             return HDF_FAILURE;
         }
 
-        drvData->info[temp] = (struct LightDeviceInfo *)OsalMemCalloc(sizeof(struct LightDeviceInfo));
-        if (drvData->info[temp] == NULL) {
-            HDF_LOGE("%s: malloc fail", __func__);
+        ret = GetLightBaseConfigData(node, parser, temp);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: get light base config fail", __func__);
             return HDF_FAILURE;
         }
-
-        ret = parser->GetUint32(node, "busRNum", &drvData->info[temp]->busRNum, 0);
-        CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "busRNum");
-        ret = parser->GetUint32(node, "busGNum", &drvData->info[temp]->busGNum, 0);
-        CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "busGNum");
-        ret = parser->GetUint32(node, "busBNum", &drvData->info[temp]->busBNum, 0);
-        CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "busBNum");
-        lightBrightness = (uint32_t *)&drvData->info[temp]->lightBrightness;
-        ret = parser->GetUint32(node, "lightBrightness", lightBrightness, 0);
-        CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "lightBrightness");
-        ret = parser->GetUint32(node, "onTime", &drvData->info[temp]->onTime, 0);
-        CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "onTime");
-        ret = parser->GetUint32(node, "offTime", &drvData->info[temp]->offTime, 0);
-        CHECK_LIGHT_PARSER_RESULT_RETURN_VALUE(ret, "offTime");
-
-        drvData->info[temp]->lightState = LIGHT_STATE_STOP;
     }
 
     return HDF_SUCCESS;
@@ -364,6 +422,39 @@ static int32_t GetLightConfigData(const struct DeviceResourceNode *node)
     if (ParseLightInfo(light, parser) != HDF_SUCCESS) {
         HDF_LOGE("%s: ParseLightInfo  is failed!", __func__);
         return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t SetLightGpioDir(const struct LightDriverData *drvData)
+{
+    int32_t i;
+    CHECK_LIGHT_NULL_PTR_RETURN_VALUE(drvData, HDF_FAILURE);
+
+    for (i = 0; i < LIGHT_ID_BUTT; ++i) {
+        if (drvData->info[i] == NULL) {
+            continue;
+        }
+
+        if (drvData->info[i]->busRNum >= 0) {
+            if (GpioSetDir(drvData->info[i]->busRNum, GPIO_DIR_OUT) != HDF_SUCCESS) {
+                HDF_LOGE("%s: set red light's gpio failed", __func__);
+                return HDF_FAILURE;
+            }
+        }
+        if (drvData->info[i]->busGNum >= 0) {
+            if (GpioSetDir(drvData->info[i]->busGNum, GPIO_DIR_OUT) != HDF_SUCCESS) {
+                HDF_LOGE("%s: set green light's gpio failed", __func__);
+                return HDF_FAILURE;
+            }
+        }
+        if (drvData->info[i]->busBNum >= 0) {
+            if (GpioSetDir(drvData->info[i]->busBNum, GPIO_DIR_OUT) != HDF_SUCCESS) {
+                HDF_LOGE("%s: set blue light's gpio failed", __func__);
+                return HDF_FAILURE;
+            }
+        }
     }
 
     return HDF_SUCCESS;
@@ -440,6 +531,11 @@ int32_t InitLightDriver(struct HdfDeviceObject *device)
 
     if (GetLightConfigData(device->property) != HDF_SUCCESS) {
         HDF_LOGE("%s: get light config fail!", __func__);
+        return HDF_FAILURE;
+    }
+
+    if (SetLightGpioDir(drvData) != HDF_SUCCESS) {
+        HDF_LOGE("%s: set light gpio dir fail!", __func__);
         return HDF_FAILURE;
     }
 
