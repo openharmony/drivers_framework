@@ -276,7 +276,7 @@ void CClientProxyCodeEmitter::EmitCreateBuf(
 void CClientProxyCodeEmitter::EmitCheckThisPointer(StringBuilder &sb, const String &prefix)
 {
     sb.Append(prefix).Append("if (self == NULL) {\n");
-    sb.Append(prefix + TAB).Append("HDF_LOGE(\"%{public}: invalid interface object\", __func__);\n");
+    sb.Append(prefix + TAB).Append("HDF_LOGE(\"%{public}s: invalid interface object\", __func__);\n");
     sb.Append(prefix + TAB).AppendFormat("%s = HDF_ERR_INVALID_OBJECT;\n", errorCodeName_.string());
     sb.Append(prefix + TAB).AppendFormat("goto %s;\n", finishedLabelName_);
     sb.Append(prefix).Append("}\n");
