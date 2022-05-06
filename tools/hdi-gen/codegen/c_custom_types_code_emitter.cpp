@@ -76,7 +76,7 @@ void CCustomTypesCodeEmitter::GetHeaderOtherLibInclusions(HeaderFile::HeaderFile
     for (size_t i = 0; i < ast_->GetTypeDefinitionNumber(); i++) {
         AutoPtr<ASTType> type = ast_->GetTypeDefintion(i);
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf"));
+            headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_sbuf");
             break;
         }
     }
@@ -175,7 +175,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 void CCustomTypesCodeEmitter::EmitSoucreInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(baseName_)));
+    headerFiles.emplace(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(baseName_));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto &file : headerFiles) {
@@ -185,14 +185,14 @@ void CCustomTypesCodeEmitter::EmitSoucreInclusions(StringBuilder &sb)
 
 void CCustomTypesCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log");
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem");
 
     const AST::TypeStringMap &types = ast_->GetTypes();
     for (const auto &pair : types) {
         AutoPtr<ASTType> type = pair.second;
         if (type->GetTypeKind() == TypeKind::TYPE_STRUCT || type->GetTypeKind() == TypeKind::TYPE_UNION) {
-            headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
+            headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec");
             break;
         }
     }
@@ -233,6 +233,10 @@ void CCustomTypesCodeEmitter::EmitCustomTypeMarshallingImpl(StringBuilder &sb, c
         }
     }
 
+    sb.Append(TAB).AppendFormat("if (%s == NULL) {\n", objName.string());
+    sb.Append(TAB).Append(TAB).Append("return false;\n");
+    sb.Append(TAB).Append("}\n\n");
+
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         String memberName = type->GetMemberName(i);
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
@@ -266,7 +270,7 @@ void CCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder &sb,
 
     sb.Append(TAB).AppendFormat("if (%s == NULL) {\n", objName.string());
     sb.Append(TAB).Append(TAB).Append("return false;\n");
-    sb.Append(TAB).Append("}\n");
+    sb.Append(TAB).Append("}\n\n");
 
     for (size_t i = 0; i < type->GetMemberNumber(); i++) {
         AutoPtr<ASTType> memberType = type->GetMemberType(i);

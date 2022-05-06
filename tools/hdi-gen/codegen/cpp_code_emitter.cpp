@@ -28,7 +28,7 @@ void CppCodeEmitter::GetStdlibInclusions(HeaderFile::HeaderFileSet &headerFiles)
         switch (type->GetTypeKind()) {
             case TypeKind::TYPE_STRING: {
                 if (!includeString) {
-                    headerFiles.emplace(HeaderFile(HeaderFileType::CPP_STD_HEADER_FILE, "string"));
+                    headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "string");
                     includeString = true;
                 }
                 break;
@@ -36,21 +36,21 @@ void CppCodeEmitter::GetStdlibInclusions(HeaderFile::HeaderFileSet &headerFiles)
             case TypeKind::TYPE_ARRAY:
             case TypeKind::TYPE_LIST: {
                 if (!includeList) {
-                    headerFiles.emplace(HeaderFile(HeaderFileType::CPP_STD_HEADER_FILE, "vector"));
+                    headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "vector");
                     includeList = true;
                 }
                 break;
             }
             case TypeKind::TYPE_MAP: {
                 if (!includeMap) {
-                    headerFiles.emplace(HeaderFile(HeaderFileType::CPP_STD_HEADER_FILE, "map"));
+                    headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "map");
                     includeMap = true;
                 }
                 break;
             }
             case TypeKind::TYPE_SMQ: {
                 if (!includeSmq) {
-                    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdi_smq"));
+                    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdi_smq");
                     includeSmq = true;
                 }
             }
@@ -65,7 +65,7 @@ void CppCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet &headerFiles)
     for (const auto &importPair : ast_->GetImports()) {
         AutoPtr<AST> importAst = importPair.second;
         String fileName = PackageToFilePath(importAst->GetFullName());
-        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName));
+        headerFiles.emplace(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName);
     }
 }
 
@@ -183,6 +183,7 @@ void CppCodeEmitter::EmitEndNamespace(StringBuilder &sb)
 void CppCodeEmitter::EmitUsingNamespace(StringBuilder &sb)
 {
     sb.Append("using namespace OHOS;\n");
+    sb.Append("using namespace OHOS::HDI;\n");
     EmitImportUsingNamespace(sb);
 }
 

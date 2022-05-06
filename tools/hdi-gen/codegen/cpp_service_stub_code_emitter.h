@@ -37,15 +37,15 @@ private:
 
     void EmitStubBody(StringBuilder &sb, const String &prefix);
 
-    void EmitStubDestruction(StringBuilder &sb, const String &prefix);
+    void EmitStubConstructorDecl(StringBuilder &sb, const String &prefix);
 
     void EmitStubOnRequestDecl(StringBuilder &sb, const String &prefix);
-
-    void EmitGetVersionDecl(StringBuilder &sb, const String &prefix);
 
     void EmitStubMethodDecls(StringBuilder &sb, const String &prefix);
 
     void EmitStubMethodDecl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
+
+    void EmitStubPrivateData(StringBuilder &sb, const String &prefix);
 
     // ISample.idl -> sample_service_stub.cpp
     void EmitStubSourceFile();
@@ -54,9 +54,15 @@ private:
 
     void GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles);
 
-    void EmitStubOnRequestMethodImpl(StringBuilder &sb, const String &prefix);
+    void EmitInterfaceGetMethodImpl(StringBuilder &sb, const String &prefix);
 
-    void EmitGetVersionMethodImpl(StringBuilder &sb, const String &prefix);
+    void EmitGetMethodImpl(StringBuilder &sb, const String &prefix);
+
+    void EmitGetInstanceMethodImpl(StringBuilder &sb, const String &prefix);
+
+    void EmitStubConstructorImpl(StringBuilder &sb, const String &prefix);
+
+    void EmitStubOnRequestMethodImpl(StringBuilder &sb, const String &prefix);
 
     void EmitStubMethodImpls(StringBuilder &sb, const String &prefix);
 

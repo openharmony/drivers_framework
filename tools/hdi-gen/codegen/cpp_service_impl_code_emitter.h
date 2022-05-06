@@ -32,7 +32,7 @@ private:
 
     void EmitServiceImplBody(StringBuilder &sb, const String &prefix);
 
-    void EmitServiceImplDestruction(StringBuilder &sb, const String &prefix);
+    void EmitServiceImplConstructor(StringBuilder &sb, const String &prefix);
 
     void EmitServiceImplMethodDecls(StringBuilder &sb, const String &prefix);
 
@@ -51,6 +51,8 @@ private:
     void EmitExternalGetMethodImpl(StringBuilder &sb);
 
     void EmitExternalReleaseMethodImpl(StringBuilder &sb);
+
+    void EmitServiceImplGetMethodImpl(StringBuilder &sb, const String &prefix);
 };
 } // namespace HDI
 } // namespace OHOS

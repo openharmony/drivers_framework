@@ -67,7 +67,7 @@ void CServiceImplCodeEmitter::EmitServiceImplHeaderInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(stubName_)));
+    headerFiles.emplace(HeaderFileType::OWN_MODULE_HEADER_FILE, EmitVersionHeaderName(stubName_));
 
     for (const auto &file : headerFiles) {
         sb.AppendFormat("%s\n", file.ToString().string());
@@ -111,7 +111,7 @@ void CServiceImplCodeEmitter::EmitServiceImplSourceInclusions(StringBuilder &sb)
 {
     HeaderFile::HeaderFileSet headerFiles;
 
-    headerFiles.emplace(HeaderFile(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(implName_)));
+    headerFiles.emplace(HeaderFileType::OWN_HEADER_FILE, EmitVersionHeaderName(implName_));
     GetSourceOtherLibInclusions(headerFiles);
 
     for (const auto &file : headerFiles) {
@@ -121,10 +121,10 @@ void CServiceImplCodeEmitter::EmitServiceImplSourceInclusions(StringBuilder &sb)
 
 void CServiceImplCodeEmitter::GetSourceOtherLibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem"));
-    headerFiles.emplace(HeaderFile(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec"));
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_base");
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdf_log");
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "osal_mem");
+    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "securec");
 }
 
 void CServiceImplCodeEmitter::EmitServiceImplDef(StringBuilder &sb)

@@ -38,13 +38,13 @@ private:
 
     void EmitGetMethodDecl(StringBuilder &sb, const String &prefix);
 
-    void EmitGetInstanceMethodDecl(StringBuilder &sb, const String &prefix);
-
     void EmitInterfaceDestruction(StringBuilder &sb, const String &prefix);
 
     void EmitInterfaceMethodsDecl(StringBuilder &sb, const String &prefix);
 
     void EmitInterfaceMethodDecl(const AutoPtr<ASTMethod> &method, StringBuilder &sb, const String &prefix);
+
+    void EmitInterfaceGetVersionMethod(StringBuilder &sb, const String &prefix);
 
     void EmitInterfaceMethodParameter(const AutoPtr<ASTParameter> &param, StringBuilder &sb, const String &prefix);
 };

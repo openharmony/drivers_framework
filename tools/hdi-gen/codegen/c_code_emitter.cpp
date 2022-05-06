@@ -16,7 +16,7 @@ void CCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet &headerFiles)
     for (const auto &importPair : ast_->GetImports()) {
         AutoPtr<AST> importAst = importPair.second;
         String fileName = PackageToFilePath(importAst->GetFullName());
-        headerFiles.emplace(HeaderFile(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName));
+        headerFiles.emplace(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName);
     }
 }
 
