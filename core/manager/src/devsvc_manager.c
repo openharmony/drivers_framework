@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -10,10 +10,10 @@
 #include "devmgr_service.h"
 #include "hdf_base.h"
 #include "hdf_cstring.h"
+#include "hdf_device_node.h"
 #include "hdf_log.h"
 #include "hdf_object_manager.h"
 #include "hdf_service_record.h"
-#include "hdf_device_node.h"
 #include "osal_mem.h"
 
 #define HDF_LOG_TAG devsvc_manager
@@ -39,8 +39,8 @@ static struct DevSvcRecord *DevSvcManagerSearchService(struct IDevSvcManager *in
     return searchResult;
 }
 
-static void NotifyServiceStatusLocked(struct DevSvcManager *devSvcManager,
-    struct DevSvcRecord *record, uint32_t status)
+static void NotifyServiceStatusLocked(
+    struct DevSvcManager *devSvcManager, struct DevSvcRecord *record, uint32_t status)
 {
     struct ServStatListenerHolder *holder = NULL;
     struct ServStatListenerHolder *tmp = NULL;
@@ -62,8 +62,8 @@ static void NotifyServiceStatusLocked(struct DevSvcManager *devSvcManager,
     }
 }
 
-static void NotifyServiceStatusOnRegisterLocked(struct DevSvcManager *devSvcManager,
-    struct ServStatListenerHolder *listenerHolder)
+static void NotifyServiceStatusOnRegisterLocked(
+    struct DevSvcManager *devSvcManager, struct ServStatListenerHolder *listenerHolder)
 {
     struct DevSvcRecord *record = NULL;
     DLIST_FOR_EACH_ENTRY(record, &devSvcManager->services, struct DevSvcRecord, entry) {
@@ -82,8 +82,8 @@ static void NotifyServiceStatusOnRegisterLocked(struct DevSvcManager *devSvcMana
     }
 }
 
-int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *servName,
-    uint16_t devClass, struct HdfDeviceObject *service, const char *servInfo)
+int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *servName, uint16_t devClass,
+    struct HdfDeviceObject *service, const char *servInfo)
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     struct DevSvcRecord *record = NULL;
@@ -120,8 +120,8 @@ int DevSvcManagerAddService(struct IDevSvcManager *inst, const char *servName,
     return HDF_SUCCESS;
 }
 
-int DevSvcManagerUpdateService(struct IDevSvcManager *inst, const char *servName,
-    uint16_t devClass, struct HdfDeviceObject *service, const char *servInfo)
+int DevSvcManagerUpdateService(struct IDevSvcManager *inst, const char *servName, uint16_t devClass,
+    struct HdfDeviceObject *service, const char *servInfo)
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     struct DevSvcRecord *record = NULL;
@@ -236,8 +236,25 @@ struct HdfObject *DevSvcManagerGetService(struct IDevSvcManager *inst, const cha
     return (struct HdfObject *)deviceObject->service;
 }
 
-int DevSvcManagerRegsterServListener(struct IDevSvcManager *inst,
-    struct ServStatListenerHolder *listenerHolder)
+void DevSvcManagerListAllService(struct IDevSvcManager *inst, struct HdfSBuf *reply)
+{
+    struct DevSvcRecord *record = NULL;
+    struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
+    if (devSvcManager == NULL || reply == NULL) {
+        HDF_LOGE("failed to list all service info, parameter is null");
+        return;
+    }
+    OsalMutexLock(&devSvcManager->mutex);
+    DLIST_FOR_EACH_ENTRY(record, &devSvcManager->services, struct DevSvcRecord, entry) {
+        HdfSbufWriteString(reply, record->servName);
+        HdfSbufWriteUint16(reply, record->devClass);
+        HDF_LOGD("%{public}s %{public}d", record->servName, record->devClass);
+    }
+    OsalMutexUnlock(&devSvcManager->mutex);
+    HDF_LOGI("%{public}s end ", __func__);
+}
+
+int DevSvcManagerRegsterServListener(struct IDevSvcManager *inst, struct ServStatListenerHolder *listenerHolder)
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     if (devSvcManager == NULL || listenerHolder == NULL) {
@@ -252,8 +269,7 @@ int DevSvcManagerRegsterServListener(struct IDevSvcManager *inst,
     return HDF_SUCCESS;
 }
 
-void DevSvcManagerUnregsterServListener(struct IDevSvcManager *inst,
-    struct ServStatListenerHolder *listenerHolder)
+void DevSvcManagerUnregsterServListener(struct IDevSvcManager *inst, struct ServStatListenerHolder *listenerHolder)
 {
     struct DevSvcManager *devSvcManager = (struct DevSvcManager *)inst;
     if (devSvcManager == NULL || listenerHolder == NULL) {
@@ -279,6 +295,7 @@ bool DevSvcManagerConstruct(struct DevSvcManager *inst)
     devSvcMgrIf->UnsubscribeService = NULL;
     devSvcMgrIf->RemoveService = DevSvcManagerRemoveService;
     devSvcMgrIf->GetService = DevSvcManagerGetService;
+    devSvcMgrIf->ListAllService = DevSvcManagerListAllService;
     devSvcMgrIf->GetObject = DevSvcManagerGetObject;
     devSvcMgrIf->RegsterServListener = DevSvcManagerRegsterServListener;
     devSvcMgrIf->UnregsterServListener = DevSvcManagerUnregsterServListener;

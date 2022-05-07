@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -86,6 +86,7 @@ static int DevmgrServiceLoadDevice(struct IDevmgrService *devMgrSvc, const char 
     struct HdfDeviceInfo *deviceInfo = NULL;
     struct DevHostServiceClnt *hostClnt = NULL;
     bool dynamic = true;
+    int ret;
     (void)devMgrSvc;
 
     if (serviceName == NULL) {
@@ -107,8 +108,11 @@ static int DevmgrServiceLoadDevice(struct IDevmgrService *devMgrSvc, const char 
         HDF_LOGW("failed to start device host(%s, %u)", hostClnt->hostName, hostClnt->hostId);
         return HDF_FAILURE;
     }
-
-    return hostClnt->hostService->AddDevice(hostClnt->hostService, deviceInfo);
+    ret = hostClnt->hostService->AddDevice(hostClnt->hostService, deviceInfo);
+    if (ret == HDF_SUCCESS) {
+        deviceInfo->status = HDF_SERVICE_USABLE;
+    }
+    return ret;
 }
 
 static int DevmgrServiceStopHost(struct DevHostServiceClnt *hostClnt)
@@ -148,7 +152,7 @@ static int DevmgrServiceUnloadDevice(struct IDevmgrService *devMgrSvc, const cha
         HDF_LOGI("%{public}s:unload service %{public}s delDevice failed", __func__, serviceName);
         return ret;
     }
-
+    deviceInfo->status = HDF_SERVICE_UNUSABLE;
     if (!HdfSListIsEmpty(&hostClnt->devices)) {
         HDF_LOGD("%{public}s host %{public}s devices is not empty", __func__, hostClnt->hostName);
         return HDF_SUCCESS;
@@ -176,6 +180,7 @@ int32_t DevmgrServiceLoadLeftDriver(struct DevmgrService *devMgrSvc)
                     HDF_LOGE("%s:failed to load driver %s", __func__, deviceInfo->moduleName);
                     continue;
                 }
+                deviceInfo->status = HDF_SERVICE_USABLE;
                 HdfSListIteratorRemove(&itDeviceInfo);
             }
         }
@@ -319,6 +324,35 @@ static int DevmgrServiceStartDeviceHosts(struct DevmgrService *inst)
     return HDF_SUCCESS;
 }
 
+static int32_t DevmgrServiceListAllDevice(struct IDevmgrService *inst, struct HdfSBuf *reply)
+{
+    struct DevmgrService *devMgrSvc = (struct DevmgrService *)inst;
+    struct DevHostServiceClnt *hostClnt = NULL;
+    struct HdfSListIterator iterator;
+    struct HdfSListNode *node = NULL;
+
+    if (devMgrSvc == NULL || reply == NULL) {
+        HDF_LOGE("%{public}s failed, parameter is null", __func__);
+        return HDF_FAILURE;
+    }
+    DLIST_FOR_EACH_ENTRY(hostClnt, &devMgrSvc->hosts, struct DevHostServiceClnt, node) {
+        HdfSbufWriteString(reply, hostClnt->hostName);
+        HdfSbufWriteUint32(reply, hostClnt->hostId);
+        HdfSbufWriteUint32(reply, HdfSListCount(&hostClnt->devices));
+        HdfSListIteratorInit(&iterator, &hostClnt->devices);
+        while (HdfSListIteratorHasNext(&iterator)) {
+            node = HdfSListIteratorNext(&iterator);
+            struct DeviceTokenClnt *tokenClnt = (struct DeviceTokenClnt *)node;
+            if (tokenClnt != NULL && tokenClnt->tokenIf != NULL) {
+                HdfSbufWriteUint32(reply, tokenClnt->tokenIf->devid);
+            } else {
+                HDF_LOGI("%{public}s host:%{public}s token null", __func__, hostClnt->hostName);
+            }
+        }
+    }
+    return HDF_SUCCESS;
+}
+
 int DevmgrServiceStartService(struct IDevmgrService *inst)
 {
     int ret;
@@ -389,6 +423,7 @@ bool DevmgrServiceConstruct(struct DevmgrService *inst)
         devMgrSvcIf->AttachDeviceHost = DevmgrServiceAttachDeviceHost;
         devMgrSvcIf->StartService = DevmgrServiceStartService;
         devMgrSvcIf->PowerStateChange = DevmgrServicePowerStateChange;
+        devMgrSvcIf->ListAllDevice = DevmgrServiceListAllDevice;
         DListHeadInit(&inst->hosts);
         return true;
     } else {
