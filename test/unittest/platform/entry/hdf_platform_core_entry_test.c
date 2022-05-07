@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -10,6 +10,7 @@
 #include "hdf_log.h"
 #include "platform_event_test.h"
 #include "platform_queue_test.h"
+#include "platform_dumper_test.h"
 
 #define HDF_LOG_TAG hdf_platform_core_entry_test
 
@@ -41,3 +42,10 @@ int32_t HdfPlatformManagerTestEntry(HdfTestMsg *msg)
     return HDF_SUCCESS;
 }
 
+int32_t HdfPlatformDumperTestEntry(HdfTestMsg *msg)
+{
+    if (msg != NULL) {
+        msg->result = PlatformDumperTestExecute(msg->subCmd);
+    }
+    return HDF_SUCCESS;
+}
