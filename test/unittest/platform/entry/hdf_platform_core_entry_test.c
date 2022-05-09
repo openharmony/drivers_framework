@@ -9,6 +9,9 @@
 #include "hdf_platform_core_entry_test.h"
 #include "hdf_log.h"
 #include "platform_event_test.h"
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TRACE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TRACE)
+#include "platform_trace_test.h"
+#endif
 #include "platform_queue_test.h"
 #include "platform_dumper_test.h"
 
@@ -29,6 +32,17 @@ int32_t HdfPlatformQueueTestEntry(HdfTestMsg *msg)
     }
     return HDF_SUCCESS;
 }
+
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TRACE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TRACE)
+int32_t HdfPlatformTraceTestEntry(HdfTestMsg *msg)
+{
+    HDF_LOGD("HdfPlatformTraceTestEntry enter:");
+    if (msg != NULL) {
+        msg->result = PlatformTraceTestExecute(msg->subCmd);
+    }
+    return HDF_SUCCESS;
+}
+#endif
 
 int32_t HdfPlatformDeviceTestEntry(HdfTestMsg *msg)
 {

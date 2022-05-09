@@ -15,6 +15,10 @@ int32_t HdfPlatformEventTestEntry(HdfTestMsg *msg);
 
 int32_t HdfPlatformQueueTestEntry(HdfTestMsg *msg);
 
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TRACE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TRACE)
+int32_t HdfPlatformTraceTestEntry(HdfTestMsg *msg);
+#endif
+
 int32_t HdfPlatformDeviceTestEntry(HdfTestMsg *msg);
 
 int32_t HdfPlatformManagerTestEntry(HdfTestMsg *msg);
