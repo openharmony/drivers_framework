@@ -123,6 +123,7 @@ int32_t AdcTestRead(void)
             return HDF_ERR_IO;
         }
     }
+    HDF_LOGI("%s: ADC device num is %u", __func__, tester->config.devNum);
 
     AdcTesterPut(tester);
     HDF_LOGI("%s: done", __func__);
