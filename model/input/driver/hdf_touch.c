@@ -564,13 +564,13 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
     }
 
     while (count --) {
+        OsalMSleep(100); // 100 : wait 100msthen try one time
         ret = chipDev->ops->Detect(chipDev);
         if (ret == HDF_SUCCESS) {
             break;
         }
         HDF_LOGI("%s: reset chip %d time", __func__, count);
-        ChipReset(chipDev);
-        OsalMSleep(100); // 100 : wait 100msthen try one time
+        ChipReset(chipDev);     
     }
     CHECK_RETURN_VALUE(ret);
 	
