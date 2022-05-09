@@ -570,7 +570,7 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
             break;
         }
         HDF_LOGI("%s: reset chip %d time", __func__, count);
-        ChipReset(chipDev);     
+        ChipReset(chipDev);
     }
     CHECK_RETURN_VALUE(ret);
 	
