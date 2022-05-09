@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -99,6 +99,9 @@ HdfTestFuncList g_hdfTestFuncList[] = {
     { TEST_PAL_MANAGER_TYPE, HdfPlatformManagerTestEntry },
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)
     { TEST_PAL_GPIO_TYPE, HdfGpioTestEntry },
+#endif
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TRACE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TRACE)
+        { TEST_PAL_TRACE_TYPE, HdfPlatformTraceTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PIN) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PIN)
     { TEST_PAL_PIN_TYPE, HdfPinTestEntry },
