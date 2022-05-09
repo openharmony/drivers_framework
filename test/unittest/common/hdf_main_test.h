@@ -18,7 +18,7 @@ typedef struct {
     int8_t result;
 } HdfTestMsg;
 
-typedef int32_t (*TestFunc)(HdfTestMsg*);
+typedef int32_t (*TestFunc)(HdfTestMsg *);
 typedef int32_t (*TestCaseFunc)(void);
 typedef struct {
     uint16_t cmd;      // submodule command
@@ -61,6 +61,7 @@ typedef enum {
     TEST_PAL_MIPI_CSI_TYPE  = 23,
     TEST_PAL_DAC_TYPE       = 24,
     TEST_PAL_TIMER_TYPE     = 25,
+    TEST_PAL_CAN_TYPE       = 26,
     TEST_PAL_MANAGER_TYPE   = 194,
     TEST_PAL_DEVICE_TYPE    = 195,
     TEST_PAL_QUEUE_TYPE     = 196,
