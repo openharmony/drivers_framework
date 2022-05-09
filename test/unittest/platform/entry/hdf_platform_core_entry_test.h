@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -19,4 +19,5 @@ int32_t HdfPlatformDeviceTestEntry(HdfTestMsg *msg);
 
 int32_t HdfPlatformManagerTestEntry(HdfTestMsg *msg);
 
+int32_t HdfPlatformDumperTestEntry(HdfTestMsg *msg);
 #endif // HDF_PLATFORM_CORE_ENTRY_TEST_H

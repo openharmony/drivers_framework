@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -61,10 +61,12 @@ typedef enum {
     TEST_PAL_MIPI_CSI_TYPE  = 23,
     TEST_PAL_DAC_TYPE       = 24,
     TEST_PAL_TIMER_TYPE     = 25,
-    TEST_PAL_MANAGER_TYPE   = 196,
-    TEST_PAL_DEVICE_TYPE    = 197,
-    TEST_PAL_QUEUE_TYPE     = 198,
-    TEST_PAL_EVENT_TYPE     = 199,
+    TEST_PAL_MANAGER_TYPE   = 194,
+    TEST_PAL_DEVICE_TYPE    = 195,
+    TEST_PAL_QUEUE_TYPE     = 196,
+    TEST_PAL_EVENT_TYPE     = 197,
+    TEST_PAL_DUMPER_TYPE    = 198,
+    TEST_PAL_TRACE_TYPE     = 199,
     TEST_PAL_END            = 200,
     TEST_OSAL_BEGIN         = TEST_PAL_END,
 #define HDF_OSAL_TEST_ITEM(v) (TEST_OSAL_BEGIN + (v))
