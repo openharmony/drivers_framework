@@ -557,7 +557,7 @@ static int32_t ChipDriverInit(ChipDevice *chipDev)
     ret = SetPowerOnTiming(chipDev, false);
     CHECK_RETURN_VALUE(ret);
 #endif
-
+    OsalMSleep(100); // 100 : delay time
     ret = ChipCheckResetRetry(chipDev);
     CHECK_RETURN_VALUE(ret);
 
