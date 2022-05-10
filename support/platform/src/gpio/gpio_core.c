@@ -164,12 +164,14 @@ static int32_t GpioCntlrSetIrqInner(struct GpioInfo *ginfo, struct GpioIrqRecord
     }
 
     ginfo->irqRecord = irqRecord;
+    GpioInfoUnlock(ginfo);
     ret = cntlr->ops->setIrq(cntlr, local, irqRecord->mode);
     if (ret != HDF_SUCCESS) {
+        GpioInfoLock(ginfo);
+        PLAT_LOGE("GpioCntlrSetIrqInner: gpio setIrq fail");
         ginfo->irqRecord = NULL;
+        GpioInfoUnlock(ginfo);
     }
-
-    GpioInfoUnlock(ginfo);
     return ret;
 }
 
