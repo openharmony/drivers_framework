@@ -11,17 +11,23 @@
 
 #include "hdf_main_test.h"
 
+// Platform Common Models
 int32_t HdfPlatformEventTestEntry(HdfTestMsg *msg);
 
 int32_t HdfPlatformQueueTestEntry(HdfTestMsg *msg);
-
-#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TRACE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TRACE)
-int32_t HdfPlatformTraceTestEntry(HdfTestMsg *msg);
-#endif
 
 int32_t HdfPlatformDeviceTestEntry(HdfTestMsg *msg);
 
 int32_t HdfPlatformManagerTestEntry(HdfTestMsg *msg);
 
+// Platform DFX Models
 int32_t HdfPlatformDumperTestEntry(HdfTestMsg *msg);
+
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TRACE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TRACE)
+int32_t HdfPlatformTraceTestEntry(HdfTestMsg *msg);
+#endif
+
+// Platform Bussiness Modules
+int32_t HdfCanTestEntry(HdfTestMsg *msg);
+
 #endif // HDF_PLATFORM_CORE_ENTRY_TEST_H

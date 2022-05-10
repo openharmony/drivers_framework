@@ -6,15 +6,16 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hcs_parser_test.h"
+#include "hdf_main_test.h"
+
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
-#include "hdf_main_test.h"
+#include "hcs_parser_test.h"
 #include "osal_test_entry.h"
 
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM) || defined(CONFIG_DRIVERS_HDF_PLATFORM)
-#include "hdf_platform_core_entry_test.h"
+#include "hdf_platform_entry_test.h"
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)
 #include "hdf_gpio_entry_test.h"
 #endif
@@ -64,7 +65,7 @@
 #include "hdf_mipi_csi_entry_test.h"
 #endif
 #if (defined(LOSCFG_STORAGE_EMMC) && defined(LOSCFG_DRIVERS_HDF_PLATFORM_EMMC)) || \
-     defined(CONFIG_DRIVERS_HDF_PLATFORM_EMMC)
+    defined(CONFIG_DRIVERS_HDF_PLATFORM_EMMC)
 #include "hdf_emmc_entry_test.h"
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PWM) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PWM)
@@ -78,8 +79,8 @@
 #include "hdf_wifi_test.h"
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_AUDIO_TEST) || defined(CONFIG_DRIVERS_HDF_AUDIO_TEST)
-#include "hdf_audio_test.h"
 #include "hdf_audio_driver_test.h"
+#include "hdf_audio_test.h"
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_USB_DDK_DEVICE) || defined(CONFIG_DRIVERS_HDF_USB_DDK_DEVICE)
 #include "hdf_usb_device_test.h"
@@ -98,11 +99,12 @@ HdfTestFuncList g_hdfTestFuncList[] = {
     { TEST_PAL_DEVICE_TYPE, HdfPlatformDeviceTestEntry },
     { TEST_PAL_MANAGER_TYPE, HdfPlatformManagerTestEntry },
     { TEST_PAL_DUMPER_TYPE, HdfPlatformDumperTestEntry },
+    { TEST_PAL_CAN_TYPE, HdfCanTestEntry },
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_GPIO) || defined(CONFIG_DRIVERS_HDF_PLATFORM_GPIO)
     { TEST_PAL_GPIO_TYPE, HdfGpioTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_TRACE) || defined(CONFIG_DRIVERS_HDF_PLATFORM_TRACE)
-        { TEST_PAL_TRACE_TYPE, HdfPlatformTraceTestEntry },
+    { TEST_PAL_TRACE_TYPE, HdfPlatformTraceTestEntry },
 #endif
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_PIN) || defined(CONFIG_DRIVERS_HDF_PLATFORM_PIN)
     { TEST_PAL_PIN_TYPE, HdfPinTestEntry },
@@ -273,10 +275,10 @@ int HdfTestDriverInit(struct HdfDeviceObject *device)
 
 struct HdfDriverEntry g_hdfTestDevice = {
     .moduleVersion = 1,
-    .moduleName = "HDF_TEST",
-    .Bind = HdfTestDriverBind,
-    .Init = HdfTestDriverInit,
-    .Release = HdfTestDriverRelease,
+    .moduleName    = "HDF_TEST",
+    .Bind          = HdfTestDriverBind,
+    .Init          = HdfTestDriverInit,
+    .Release       = HdfTestDriverRelease,
 };
 
 HDF_INIT(g_hdfTestDevice);

@@ -12,16 +12,17 @@
 #include "hdf_base.h"
 
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif /* __cplusplus */
 
-#define HDF_TEST_SERVICE_NAME    "HDF_TEST"
-#define CHECK_TEST_NULL_PTR_RETURN(ptr) do { \
-    if ((ptr) == NULL) { \
-        printf("pointer is null and return\n\r"); \
-        return HDF_FAILURE; \
-    } \
-} while (0)
+#define HDF_TEST_SERVICE_NAME "HDF_TEST"
+#define CHECK_TEST_NULL_PTR_RETURN(ptr)               \
+    do {                                              \
+        if ((ptr) == NULL) {                          \
+            printf("pointer is null and return\n\r"); \
+            return HDF_FAILURE;                       \
+        }                                             \
+    } while (0)
 
 struct HdfTestMsg {
     uint16_t cmd;   // submodule command
@@ -57,6 +58,7 @@ enum HdfTestSubModuleCmd {
     TEST_PAL_MIPI_CSI_TYPE  = 23,
     TEST_PAL_DAC_TYPE       = 24,
     TEST_PAL_TIMER_TYPE     = 25,
+    TEST_PAL_CAN_TYPE       = 26,
     TEST_PAL_MANAGER_TYPE   = 194,
     TEST_PAL_DEVICE_TYPE    = 195,
     TEST_PAL_QUEUE_TYPE     = 196,
