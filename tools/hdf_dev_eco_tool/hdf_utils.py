@@ -410,3 +410,7 @@ def judge_enable_line(enable_line, device_base):
         if enable_line.find(device_base + " ") == -1 and \
                 enable_line.find(device_base+"=") == -1:
             return enable_line
+
+
+def get_passwd_group_path(root_path):
+    return os.path.join(root_path, "base", "startup", "init_lite", "services", "etc")

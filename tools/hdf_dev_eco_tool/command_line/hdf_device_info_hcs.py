@@ -29,6 +29,11 @@ class HdfDeviceInfoHcsFile(object):
             self.lines = None
             board_parent_path = HdfToolSettings().get_board_parent_path(board)
             self.hcspath = os.path.join(self.root, board_parent_path, "device_info.hcs")
+            self.data = {
+                "driver_name": self.driver,
+                "model_name": self.module,
+                "module_name": "_".join([self.module, self.driver]).upper()
+            }
         else:
             self.hcspath = path
             self.root = root
@@ -41,11 +46,6 @@ class HdfDeviceInfoHcsFile(object):
             raise HdfToolException(
                 'hcs file: %s not exist' %
                 self.hcspath, CommandErrorCode.TARGET_NOT_EXIST)
-        self.data = {
-            "driver_name": self.driver,
-            "model_name": self.module,
-            "module_name": "_".join([self.module, self.driver]).upper()
-        }
 
     def _save(self):
         if self.lines:

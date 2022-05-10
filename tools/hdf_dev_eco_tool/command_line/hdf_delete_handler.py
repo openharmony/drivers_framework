@@ -80,7 +80,7 @@ class HdfDeleteHandler(HdfCommandHandlerBase):
     def _delete_model_info(self):
         self.check_arg_raise_if_not_exist("root_dir")
         self.check_arg_raise_if_not_exist("module_name")
-        root, _, module, _, _, _ = self.get_args()
+        root, _, module, _, _, _, _ = self.get_args()
         adapter_framework = hdf_utils.get_vendor_hdf_dir_framework(root=root)
         if not os.path.exists(adapter_framework):
             raise HdfToolException(
@@ -103,7 +103,7 @@ class HdfDeleteHandler(HdfCommandHandlerBase):
     def _delete_module_handler(self):
         self.check_arg_raise_if_not_exist("root_dir")
         self.check_arg_raise_if_not_exist("module_name")
-        root, _, module, _, _, _ = self.get_args()
+        root, _, module, _, _, _, _ = self.get_args()
         adapter_framework = hdf_utils.get_vendor_hdf_dir_framework(root=root)
         if not os.path.exists(adapter_framework):
             raise HdfToolException(
@@ -190,12 +190,19 @@ class HdfDeleteHandler(HdfCommandHandlerBase):
                             file_info.pop(index)
                             hdf_utils.write_file_lines(file_path, file_info)
                             break
+                elif file_name == "group" or file_name == "passwd":
+                    file_path = os.path.join(root, value2)
+                    file_info = hdf_utils.read_file_lines(file_path)
+                    for index, line in enumerate(file_info):
+                        if line.find(model) != -1:
+                            file_info.pop(index)
+                    hdf_utils.write_file_lines(file_path, file_info)
                 else:
                     if value2.endswith("hcs"):
                         hcs_path = os.path.join(root, value2)
                         HdfDeviceInfoHcsFile(
                             root=root, vendor="", module="",
-                            board="", driver="", path=hcs_path). \
+                            board="", driver=" ", path=hcs_path).\
                             delete_driver(module=model)
                     else:
                         if value2:
