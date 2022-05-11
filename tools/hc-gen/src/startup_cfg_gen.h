@@ -51,8 +51,6 @@ private:
 
     void HostInfoOutput(const std::string &name, bool end);
 
-    void HostInfoOutputMusl(const std::string &name, bool end);
-
     void HeaderTopOutput();
 
     void HeaderBottomOutput();
@@ -65,7 +63,6 @@ private:
 
     std::ofstream ofs_;
     std::string outFileName_;
-    bool useMusl = false;
     std::map<std::string, HostInfo> hostInfoMap_;
 };
 } // namespace Hardware
