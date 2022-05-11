@@ -8,14 +8,13 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 module_output_path = "hdf/hdi"
 
-ohos_fuzztest("RegisterServiceStatusListenerFuzzTest") {
+ohos_fuzztest("UnloadDeviceFuzzTest") {
   module_out_path = module_output_path
 
-  fuzz_config_file =
-      "//drivers/framework/test/fuzztest/registerservicestatuslistener_fuzzer"
+  fuzz_config_file = "//drivers/framework/test/fuzztest/hdimanager/unloaddevice_fuzzer"
 
   include_dirs = [
-    "//drivers/framework/test/fuzztest/registerservicestatuslistener_fuzzer",
+    "//drivers/framework/test/fuzztest/hdimanager/unloaddevice_fuzzer",
     "//drivers/adapter/uhdf2/include/hdi",
     "//drivers/adapter/uhdf2/osal/include",
     "//drivers/framework/include/utils",
@@ -27,7 +26,7 @@ ohos_fuzztest("RegisterServiceStatusListenerFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "registerservicestatuslistener_fuzzer.cpp" ]
+  sources = [ "unloaddevice_fuzzer.cpp" ]
 
   deps = [
     "//drivers/adapter/uhdf2/hdi:libhdi",
@@ -54,5 +53,5 @@ ohos_fuzztest("RegisterServiceStatusListenerFuzzTest") {
 group("fuzztest") {
   testonly = true
   deps = []
-  deps += [ ":RegisterServiceStatusListenerFuzzTest" ]
+  deps += [ ":UnloadDeviceFuzzTest" ]
 }

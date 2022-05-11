@@ -8,13 +8,13 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 module_output_path = "hdf/hdi"
 
-ohos_fuzztest("UnloadDeviceFuzzTest") {
+ohos_fuzztest("LoadDeviceFuzzTest") {
   module_out_path = module_output_path
 
-  fuzz_config_file = "//drivers/framework/test/fuzztest/unloaddevice_fuzzer"
+  fuzz_config_file = "//drivers/framework/test/fuzztest/hdimanager/loaddevice_fuzzer"
 
   include_dirs = [
-    "//drivers/framework/test/fuzztest/unloaddevice_fuzzer",
+    "//drivers/framework/test/fuzztest/hdimanager/loaddevice_fuzzer",
     "//drivers/adapter/uhdf2/include/hdi",
     "//drivers/adapter/uhdf2/osal/include",
     "//drivers/framework/include/utils",
@@ -26,7 +26,7 @@ ohos_fuzztest("UnloadDeviceFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "unloaddevice_fuzzer.cpp" ]
+  sources = [ "loaddevice_fuzzer.cpp" ]
 
   deps = [
     "//drivers/adapter/uhdf2/hdi:libhdi",
@@ -53,5 +53,5 @@ ohos_fuzztest("UnloadDeviceFuzzTest") {
 group("fuzztest") {
   testonly = true
   deps = []
-  deps += [ ":UnloadDeviceFuzzTest" ]
+  deps += [ ":LoadDeviceFuzzTest" ]
 }
