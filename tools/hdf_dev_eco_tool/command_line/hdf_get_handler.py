@@ -143,7 +143,7 @@ class HdfGetHandler(HdfCommandHandlerBase):
 
     def _get_model_dict(self):
         self.check_arg_raise_if_not_exist("root_dir")
-        root, _, _, _, _, _ = self.get_args()
+        root, _, _, _, _, _, _ = self.get_args()
         adapter_framework = hdf_utils.get_vendor_hdf_dir_framework(root=root)
         if not os.path.exists(adapter_framework):
             raise HdfToolException(
@@ -198,7 +198,7 @@ class HdfGetHandler(HdfCommandHandlerBase):
         self.check_arg_raise_if_not_exist("root_dir")
         self.check_arg_raise_if_not_exist("vendor_name")
         self.check_arg_raise_if_not_exist("board_name")
-        root, vendor, _, _, board, _ = self.get_args()
+        root, vendor, _, _, board, _, _ = self.get_args()
         if board.split("_")[-1] != "linux":
             return HdfLiteScan(
                 root=root, vendor=vendor, board=board).get_model_scan()

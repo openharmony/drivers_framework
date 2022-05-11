@@ -92,7 +92,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
         self.check_arg_raise_if_not_exist("driver_name")
 
         args_tuple = self.get_args()
-        root, vendor, module, driver, board, kernel = args_tuple
+        root, vendor, module, driver, board, kernel, _ = args_tuple
         board_list = HdfToolSettings().get_board_list()
         if board in board_list:
             converter = hdf_utils.WordsConverter(self.args.module_name)
@@ -113,7 +113,6 @@ class HdfAddHandler(HdfCommandHandlerBase):
             os.makedirs(framework_drv_root_dir)
 
             # create .c template driver file
-
             state, driver_file_path = self._add_driver(*args_tuple)
             if not state:
                 raise HdfToolException(
@@ -188,7 +187,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
 
     def _add_module_handler_liteos(self, framework_hdf, adapter_model_path,
                                    data_model, converter, *args_tuple):
-        root, vendor, module, driver, board, kernel = args_tuple
+        root, vendor, module, driver, board, kernel, _ = args_tuple
         liteos_file_path = {}
         liteos_level_config_file_path = {}
         liteos_file_name = ['BUILD.gn', 'Kconfig', 'Makefile']
@@ -240,7 +239,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
 
     def _add_module_handler_linux(self, framework_hdf, adapter_model_path,
                                   data_model, *args_tuple):
-        root, vendor, module, driver, board, kernel = args_tuple
+        root, vendor, module, driver, board, kernel, _ = args_tuple
         linux_file_path = {}
         linux_level_config_file_path = {}
         linux_file_name = ['Kconfig', 'Makefile']
@@ -275,7 +274,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
 
             # dot_configs config file
             template_string = "CONFIG_DRIVERS_HDF_${module_upper_case}=y\n"
-            new_demo_config = Template(template_string).substitute(data_model)
+            new_demo_config = [Template(template_string).substitute(data_model)]
             defconfig_patch = HdfDefconfigAndPatch(
                 root, vendor, kernel, board,
                 data_model, new_demo_config)
@@ -299,7 +298,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
 
             # dot_configs config file
             template_string = "CONFIG_DRIVERS_HDF_${module_upper_case}=y\n"
-            new_demo_config = Template(template_string).substitute(data_model)
+            new_demo_config = [Template(template_string).substitute(data_model)]
             defconfig_patch = HdfDefconfigAndPatch(
                 root, vendor, kernel, board,
                 data_model, new_demo_config)
@@ -319,7 +318,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
         linux_file_path = {}
         linux_level_config_file_path = {}
         # create user build.gn files
-        root, vendor, module, driver, board, kernel = args_tuple
+        root, vendor, module, driver, board, kernel, _ = args_tuple
         relative_path = HdfToolSettings().get_user_adapter_path()
         user_model_path = os.path.join(root, relative_path, module)
         if not os.path.exists(user_model_path):
@@ -348,20 +347,24 @@ class HdfAddHandler(HdfCommandHandlerBase):
                                  user_model_file_path, data_model)
                     linux_file_path["BUILD.gn"] = user_model_file_path
 
-        # hdf_devhost.cfg file
-        hdf_devhost_file_path = os.path.join(root, relative_path, 'host', 'hdf_devhost.cfg')
-        if not os.path.exists(hdf_devhost_file_path):
-            raise HdfToolException(
-                ' devhost file path  "%s" not exist' %
-                hdf_devhost_file_path, CommandErrorCode.TARGET_NOT_EXIST)
-        devhost_info = hdf_utils.read_file(hdf_devhost_file_path)
-        info_to_json = json.loads(devhost_info)
-        temp = copy.deepcopy(info_to_json["services"][-1])
-        temp["name"] = "{}_user_host".format(module)
-        info_to_json["services"].append(temp)
-        hdf_utils.write_file(file_path=hdf_devhost_file_path,
-                             content=json.dumps(info_to_json, indent=4))
-        linux_file_path["hdf_devhost.cfg"] = hdf_devhost_file_path
+        # passwd group
+        etc_path = hdf_utils.get_passwd_group_path(root_path=root)
+        passwd_lines = hdf_utils.read_file_lines(os.path.join(etc_path, 'passwd'))
+        group_lines = hdf_utils.read_file_lines(os.path.join(etc_path, 'group'))
+        id_list = []
+        for i in passwd_lines:
+            id_list.append(int(i.split(":")[3]))
+        new_uid = max(id_list) + 1
+        pwd_newline = "{model_name}_user_host:x:{uid}:{uid}:::/bin/false\n".format(
+            model_name=module, uid=new_uid)
+        group_newline = '{model_name}_user_host:x:{uid}:\n'.format(
+            model_name=module, uid=new_uid)
+        passwd_lines.append(pwd_newline)
+        group_lines.append(group_newline)
+        hdf_utils.write_file_lines(os.path.join(etc_path, 'passwd'), passwd_lines)
+        hdf_utils.write_file_lines(os.path.join(etc_path, 'group'), group_lines)
+        linux_file_path["passwd"] = os.path.join(etc_path, 'passwd')
+        linux_file_path["group"] = os.path.join(etc_path, 'group')
 
         # build.gn file add path
         ohos_path = os.path.join(root, '/'.join(relative_path.split("/")[:-1]), 'BUILD.gn')
@@ -386,7 +389,7 @@ class HdfAddHandler(HdfCommandHandlerBase):
         return linux_file_path, linux_level_config_file_path
 
     def _add_driver(self, *args_tuple):
-        root, vendor, module, driver, board, kernel = args_tuple
+        root, vendor, module, driver, board, kernel, _ = args_tuple
         drv_converter = hdf_utils.WordsConverter(self.args.driver_name)
         drv_src_dir = hdf_utils.get_drv_src_dir(root, module)
 

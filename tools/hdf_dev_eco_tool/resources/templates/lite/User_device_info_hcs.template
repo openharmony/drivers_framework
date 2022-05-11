@@ -1,6 +1,7 @@
 ${model_name} :: host {
 	hostName = "${model_name}_user_host";	// Host name. The host node is used to store a certain type of drivers.
 	priority = 50;					//Host startup priority (0-200). A larger value indicates a lower priority.
+        caps = ["DAC_OVERRIDE", "DAC_READ_SEARCH"];
 	device_${model_name} :: device {		// Device node of sample
 		device0 :: deviceNode {		// DeviceNode of the sample driver
 			policy = 2;				// Driver service release policy. For details, see section Driver Service Management.
