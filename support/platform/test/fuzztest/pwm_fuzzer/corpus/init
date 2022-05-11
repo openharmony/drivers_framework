@@ -4,11 +4,4 @@
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
 
-group("hdf_platform_fuzztest") {
-  testonly = true
-  deps = []
-  deps += [
-    "gpio_fuzzer:fuzztest",
-    "pwm_fuzzer:fuzztest",
-  ]
-}
+FUZZ
