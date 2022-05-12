@@ -32,10 +32,6 @@ static constexpr const char *SERVICE_TOP =
     "        {\n"
     "            \"name\" : ";
 static constexpr const char *PATH_INFO = "            \"path\" : [\"/vendor/bin/hdf_devhost\", ";
-static constexpr const char *UID_INFO_ROOT =
-    "            \"uid\" : \"root\",\n"
-    "            \"gid\" : [\"system\"]\n"
-    "        }";
 static constexpr const char *UID_INFO = "            \"uid\" : ";
 static constexpr const char *GID_INFO = "            \"gid\" : [";
 static constexpr const char *CAPS_INFO = "            \"caps\" : [";
@@ -85,9 +81,6 @@ bool StartupCfgGen::Initialize()
     }
     outFileName = Util::File::StripSuffix(outFileName).append(".cfg");
     outFileName_ = Util::File::FileNameBase(outFileName);
-    if (outFileName_.find("musl") != std::string::npos) {
-        useMusl = true;
-    }
 
     ofs_.open(outFileName, std::ofstream::out | std::ofstream::binary);
     if (!ofs_.is_open()) {
@@ -100,7 +93,7 @@ bool StartupCfgGen::Initialize()
     return true;
 }
 
-void StartupCfgGen::HostInfoOutputMusl(const std::string &name, bool end)
+void StartupCfgGen::HostInfoOutput(const std::string &name, bool end)
 {
     ofs_ << SERVICE_TOP << "\"" << name << "\",\n";
     if (hostInfoMap_[name].dynamicLoad) {
@@ -118,22 +111,6 @@ void StartupCfgGen::HostInfoOutputMusl(const std::string &name, bool end)
         ofs_<< ",";
     }
     ofs_ << '\n';
-}
-
-void StartupCfgGen::HostInfoOutput(const std::string &name, bool end)
-{
-    std::string out = SERVICE_TOP;
-    out.append("\"").append(name).append("\",\n");
-    if (hostInfoMap_[name].dynamicLoad) {
-        out.append(DYNAMIC_INFO);
-    }
-    out.append(PATH_INFO).append("\"").append(std::to_string(hostInfoMap_[name].hostId)).append("\"").append(", ");
-    out.append("\"").append(name).append("\"").append("],\n");
-    out.append(UID_INFO_ROOT);
-    if (!end) {
-        out.append(",");
-    }
-    ofs_ << out << '\n';
 }
 
 void StartupCfgGen::InitHostInfo(HostInfo &hostData)
@@ -178,11 +155,7 @@ void StartupCfgGen::HostInfosOutput()
         if (cnt == size) {
             end = true;
         }
-        if (useMusl) {
-            HostInfoOutputMusl(it->first, end);
-        } else {
-            HostInfoOutput(it->first, end);
-        }
+        HostInfoOutput(it->first, end);
     }
 }
 
