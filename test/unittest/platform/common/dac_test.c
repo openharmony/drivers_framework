@@ -71,7 +71,11 @@ struct DacTester *DacTesterGet(void)
 {
     int32_t ret;
     static struct DacTester tester;
+    static bool hasInit = false;
 
+    if (hasInit) {
+        return &tester;
+    }
     ret = DacTestGetConfig(&tester.config);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: write config failed:%d", __func__, ret);
@@ -82,17 +86,8 @@ struct DacTester *DacTesterGet(void)
         HDF_LOGE("%s: open dac device:%u failed", __func__, tester.config.devNum);
         return NULL;
     }
+    hasInit = true;
     return &tester;
-}
-
-static void DacTesterPut(struct DacTester *tester)
-{
-    if (tester == NULL) {
-        HDF_LOGE("%s: tester is NULL", __func__);
-        return;
-    }
-    DacClose(tester->handle);
-    tester->handle = NULL;
 }
 
 int32_t DacTestWrite(void)
@@ -112,12 +107,10 @@ int32_t DacTestWrite(void)
         ret = DacWrite(tester->handle, tester->config.channel, value[i]);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, value[i], ret);
-            DacTesterPut(tester);
             return HDF_ERR_IO;
         }
     }
 
-    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
@@ -140,13 +133,11 @@ static int DacTestThreadFunc(void *param)
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: DacWrite failed, ret:%d", __func__, ret);
             *((int32_t *)param) = 1;
-            DacTesterPut(tester);
             return HDF_ERR_IO;
         }
     }
 
     *((int32_t *)param) = 1;
-    DacTesterPut(tester);
     return val;
 }
 
@@ -219,7 +210,6 @@ int32_t DacTestReliability(void)
     (void)DacWrite(NULL, tester->config.channel, val);
     // invalid channel
     (void)DacWrite(tester->handle, tester->config.maxChannel + 1, val);
-    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
@@ -248,7 +238,6 @@ static int32_t DacIfPerformanceTest(void)
     ret = DacWrite(tester->handle, tester->config.channel, val);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: write value failed:%u, ret:%d", __func__, val, ret);
-        DacTesterPut(tester);
         return HDF_ERR_IO;
     }
     endMs = OsalGetSysTimeMs();
@@ -256,7 +245,6 @@ static int32_t DacIfPerformanceTest(void)
     useTime = endMs - startMs;
     HDF_LOGI("----->interface performance test:[start:%lld(ms) - end:%lld(ms) = %lld (ms)] < 1ms[%d]\r\n",
         startMs, endMs, useTime, useTime < 1 ? true : false);
-    DacTesterPut(tester);
     return HDF_SUCCESS;
 }
 
