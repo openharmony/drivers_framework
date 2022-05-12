@@ -199,8 +199,7 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(
 void CppServiceImplCodeEmitter::EmitServiceImplGetMethodImpl(StringBuilder &sb, const String &prefix)
 {
     if (!interface_->IsSerializable()) {
-        sb.Append(prefix).AppendFormat(
-            "extern \"C\" %s *%sImplGetInstance(void)\n", interfaceName_.string(), baseName_.string());
+        sb.Append(prefix).AppendFormat("extern \"C\" %s *HdiImplGetInstance(void)\n", interfaceName_.string());
         sb.Append(prefix).Append("{\n");
         sb.Append(prefix + TAB).AppendFormat("return new (std::nothrow) %s();\n", implName_.string());
         sb.Append(prefix).Append("}\n\n");

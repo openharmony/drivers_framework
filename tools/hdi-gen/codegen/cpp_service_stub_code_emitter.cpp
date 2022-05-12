@@ -245,9 +245,10 @@ void CppServiceStubCodeEmitter::EmitGetInstanceMethodImpl(StringBuilder &sb, con
 
     sb.Append(prefix + TAB)
         .AppendFormat("std::string desc = Str16ToStr8(%s::GetDescriptor());\n", interfaceName_.string());
-    sb.Append(prefix + TAB).Append("void *impl = LoadHdiImpl(desc.data());\n");
+    sb.Append(prefix + TAB).Append("void *impl = LoadHdiImpl(desc.c_str(), ");
+    sb.AppendFormat("serviceName == \"%s\" ? \"service\" : serviceName.c_str());\n", FileName(implName_).string());
     sb.Append(prefix + TAB).Append("if (impl == nullptr) {\n");
-    sb.Append(prefix + TAB + TAB).Append("HDF_LOGE(\"failed to load hdi impl %{public}s\", desc.data());\n");
+    sb.Append(prefix + TAB + TAB).Append("HDF_LOGE(\"failed to load hdi impl %{public}s\", desc.c_str());\n");
     sb.Append(prefix + TAB + TAB).Append("return nullptr;\n");
     sb.Append(prefix + TAB).Append("}\n");
     sb.Append(prefix + TAB).AppendFormat("return reinterpret_cast<%s *>(impl);\n", interfaceName_.string());
