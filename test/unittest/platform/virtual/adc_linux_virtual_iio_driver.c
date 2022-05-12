@@ -57,7 +57,8 @@ static int AdcReadRaw(struct iio_dev *indioDev, struct iio_chan_spec const *chan
 {
     struct VirtualAdcDev *dev = NULL;
     int ret;
- 
+
+    HDF_LOGI("%s: Enter", __func__);
     if (indioDev == NULL || chan == NULL || val == NULL || val2 == NULL) {
         HDF_LOGE("%s: Illegal parameter", __func__);
         return -EINVAL;
@@ -66,7 +67,7 @@ static int AdcReadRaw(struct iio_dev *indioDev, struct iio_chan_spec const *chan
         HDF_LOGE("%s: ADC_SCALE_DATA is Illegal", __func__);
         return -EINVAL;
     }
- 
+
     dev = iio_priv(indioDev);
     switch (mask) {
         case IIO_CHAN_INFO_RAW:
