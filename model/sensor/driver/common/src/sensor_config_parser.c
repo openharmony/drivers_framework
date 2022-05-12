@@ -194,38 +194,51 @@ error:
     return HDF_FAILURE;
 }
 
+static int32_t GetSensorI2cHandle(struct SensorBusCfg *busCfg)
+{
+    CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_ERR_INVALID_PARAM);
+    int16_t busNum = busCfg->i2cCfg.busNum;
+    busCfg->i2cCfg.handle = I2cOpen(busNum);
+    if (busCfg->i2cCfg.handle == NULL) {
+        HDF_LOGE("%s: sensor i2c Handle invalid", __func__);
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+#if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
+static int32_t GetSensorSpiHandle(struct SensorBusCfg *busCfg)
+{
+    int32_t ret;
+    struct SpiDevInfo spiDevinfo;
+    CHECK_NULL_PTR_RETURN_VALUE	(busCfg, HDF_ERR_INVALID_PARAM);
+
+    spiDevinfo.busNum = busCfg->spiCfg.busNum;
+    spiDevinfo.csNum = busCfg->spiCfg.csNum;
+    busCfg->spiCfg.handle = SpiOpen(&spiDevinfo);
+
+    ret = SpiSetCfg(busCfg->spiCfg.handle, &busCfg->spiCfg.spi);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: SpiSetCfg failed", __func__);
+        SpiClose(busCfg->spiCfg.handle);
+        return ret;
+    }
+
+    return HDF_SUCCESS;
+}
+#endif // LOSCFG_DRIVERS_HDF_PLATFORM_SPI || CONFIG_DRIVERS_HDF_PLATFORM_SPI
+
 int32_t GetSensorBusHandle(struct SensorBusCfg *busCfg)
 {
     CHECK_NULL_PTR_RETURN_VALUE(busCfg, HDF_ERR_INVALID_PARAM);
 
     if (busCfg->busType == SENSOR_BUS_I2C) {
-        uint16_t busNum = busCfg->i2cCfg.busNum;
-        busCfg->i2cCfg.handle = I2cOpen(busNum);
-        if (busCfg->i2cCfg.handle == NULL) {
-            HDF_LOGE("%s: sensor i2c Handle invalid", __func__);
-            return HDF_FAILURE;
-        }
-
+        return GetSensorI2cHandle(busCfg);
 #if defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI) || defined(CONFIG_DRIVERS_HDF_PLATFORM_SPI)
     } else if (busCfg->busType == SENSOR_BUS_SPI) {
-        struct SpiDevInfo spiDevinfo;
-        struct SpiCfg cfg;
-        int32_t ret;
-
-        spiDevinfo.busNum = busCfg->spiCfg.busNum;
-        spiDevinfo.csNum = busCfg->spiCfg.csNum;
-        busCfg->i2cCfg.handle = SpiOpen(&spiDevinfo);
-
-        cfg.mode = SPI_CLK_PHASE | SPI_CLK_POLARITY;
-        cfg.bitsPerWord = SENSOR_DATA_WIDTH_8_BIT;
-        cfg.maxSpeedHz = SENSOR_SPI_MAX_SPEED;
-        ret = SpiSetCfg(busCfg->i2cCfg.handle, &cfg);
-        if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: SpiSetCfg failed", __func__);
-            SpiClose(busCfg->i2cCfg.handle);
-            return ret;
-        }
-#endif
+        return GetSensorSpiHandle(busCfg);
+#endif // LOSCFG_DRIVERS_HDF_PLATFORM_SPI || CONFIG_DRIVERS_HDF_PLATFORM_SPI
     }
 
     return HDF_SUCCESS;
@@ -343,10 +356,28 @@ static int32_t ParseSensorInfo(struct DeviceResourceIface *parser, const struct 
     return ret;
 }
 
+static int32_t ParseSensorSpiBus(struct DeviceResourceIface *parser, const struct DeviceResourceNode *spiBusNode,
+    struct SensorBusCfg *busConfig)
+{
+    int32_t ret;
+
+    ret = parser->GetUint32(spiBusNode, "maxSpeedHz", &busConfig->spiCfg.spi.maxSpeedHz, 0);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "maxSpeedHz");
+    ret = parser->GetUint16(spiBusNode, "mode", &busConfig->spiCfg.spi.mode, 0);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "mode");
+    ret = parser->GetUint8(spiBusNode, "transferMode", &busConfig->spiCfg.spi.transferMode, 0);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "transferMode");
+    ret = parser->GetUint8(spiBusNode, "bitsPerWord", &busConfig->spiCfg.spi.bitsPerWord, 0);
+    CHECK_PARSER_RESULT_RETURN_VALUE(ret, "bitsPerWord");
+
+    return HDF_SUCCESS;
+}
+
 static int32_t ParseSensorBus(struct DeviceResourceIface *parser, const struct DeviceResourceNode *busNode,
     struct SensorCfgData *config)
 {
     int32_t ret;
+    const struct DeviceResourceNode *spiBusNode = NULL;
 
     ret = parser->GetUint8(busNode, "busType", &config->busCfg.busType, 0);
     CHECK_PARSER_RESULT_RETURN_VALUE(ret, "busType");
@@ -365,6 +396,11 @@ static int32_t ParseSensorBus(struct DeviceResourceIface *parser, const struct D
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "busNum");
         ret = parser->GetUint32(busNode, "busAddr", &config->busCfg.spiCfg.csNum, 0);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "busAddr");
+        spiBusNode = parser->GetChildNode(busNode, "spiBusCfg");
+        if (spiBusNode != NULL) {
+            ret = ParseSensorSpiBus(parser, spiBusNode, &config->busCfg);
+            CHECK_PARSER_RESULT_RETURN_VALUE(ret, "sensorBusConfig.spiBusCfg");
+        }
     } else if (config->busCfg.busType == SENSOR_BUS_GPIO) {
         ret = parser->GetUint32(busNode, "gpioIrq1", &config->busCfg.GpioNum[SENSOR_GPIO_NUM1], 0);
         CHECK_PARSER_RESULT_RETURN_VALUE(ret, "gpioIrq1");
