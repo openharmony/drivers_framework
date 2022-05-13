@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -45,6 +45,8 @@ enum BaseCommands {
     CMD_BASE_RESET_DRIVER,
     CMD_BASE_GET_NETDEV_INFO = 25,
     CMD_BASE_DO_RESET_PRIVATE,
+    CMD_BASE_GET_POWER_MODE,
+    CMD_BASE_SET_POWER_MODE
 };
 
 enum APCommands {
