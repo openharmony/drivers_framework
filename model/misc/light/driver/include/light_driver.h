@@ -18,10 +18,12 @@
 #include "osal_mutex.h"
 #include "osal_timer.h"
 
-#define LIGHT_MAKE_R_BIT    0X80000000
-#define LIGHT_MAKE_G_BIT    0X00008000
-#define LIGHT_MAKE_B_BIT    0X00000080
+#define LIGHT_MAKE_R_BIT    0X00FF0000
+#define LIGHT_MAKE_G_BIT    0X0000FF00
+#define LIGHT_MAKE_B_BIT    0X000000FF
 #define LIGHT_WAIT_TIME     50
+
+#define LIGHT_INVALID_GPIO    (-1)
 
 #define LIGHT_ID_NUM      4
 
@@ -96,11 +98,11 @@ struct LightInfo {
 
 struct LightDeviceInfo {
     enum LightState lightState;
-    uint32_t busNum;
-    uint32_t busRNum;
-    uint32_t busGNum;
-    uint32_t busBNum;
+    int32_t busRNum;
+    int32_t busGNum;
+    int32_t busBNum;
     uint32_t lightBrightness;
+    uint32_t defaultBrightness;
     uint32_t onTime;
     uint32_t offTime;
 };
