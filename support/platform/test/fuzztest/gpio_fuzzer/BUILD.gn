@@ -4,10 +4,7 @@
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
 
-import("//build/config/features.gni")
-import("//build/ohos.gni")
-import("//build/test.gni")
-module_output_path = "hdf/platform"
+import("//drivers/framework/support/platform/test/fuzztest/fuzz.gni")
 
 ohos_fuzztest("GpioFuzzTest") {
   module_out_path = module_output_path
@@ -15,26 +12,12 @@ ohos_fuzztest("GpioFuzzTest") {
   fuzz_config_file =
       "//drivers/framework/support/platform/test/fuzztest/gpio_fuzzer"
 
-  include_dirs = [
-    "//drivers/framework/support/platform/test/fuzztest/gpio_fuzzer",
-    "//drivers/framework/include/platform",
-  ]
-
-  cflags = [
-    "-g",
-    "-O0",
-    "-Wno-unused-variable",
-    "-fno-omit-frame-pointer",
-  ]
+  include_dirs +=
+      [ "//drivers/framework/support/platform/test/fuzztest/gpio_fuzzer" ]
 
   sources = [ "gpio_fuzzer.cpp" ]
 
-  deps = [ "//drivers/adapter/uhdf2/platform:libhdf_platform" ]
-
-  external_deps = [
-    "hiviewdfx_hilog_native:libhilog",
-    "utils_base:utils",
-  ]
+  external_deps = platform_fuzzexternal_deps
 }
 
 group("fuzztest") {

@@ -6,16 +6,18 @@
 
 import("//drivers/framework/support/platform/test/fuzztest/fuzz.gni")
 
-ohos_fuzztest("PwmFuzzTest") {
+ohos_fuzztest("I2cFuzzTest") {
   module_out_path = module_output_path
 
   fuzz_config_file =
-      "//drivers/framework/support/platform/test/fuzztest/pwm_fuzzer"
+      "//drivers/framework/support/platform/test/fuzztest/i2c_fuzzer"
 
   include_dirs +=
-      [ "//drivers/framework/support/platform/test/fuzztest/pwm_fuzzer" ]
+      [ "//drivers/framework/support/platform/test/fuzztest/i2c_fuzzer" ]
 
-  sources = [ "pwm_fuzzer.cpp" ]
+  include_dirs -= [ "//drivers/framework/support/platform/test/fuzztest" ]
+
+  sources = [ "i2c_fuzzer.cpp" ]
 
   external_deps = platform_fuzzexternal_deps
 }
@@ -23,5 +25,5 @@ ohos_fuzztest("PwmFuzzTest") {
 group("fuzztest") {
   testonly = true
   deps = []
-  deps += [ ":PwmFuzzTest" ]
+  deps += [ ":I2cFuzzTest" ]
 }
