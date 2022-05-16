@@ -1,0 +1,39 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+#
+# HDF is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
+
+import("//build/config/features.gni")
+import("//build/test.gni")
+module_output_path = "hdf/ioservice"
+
+ohos_fuzztest("IoserviceNameGetByDeviceClassFuzzTest") {
+  module_out_path = module_output_path
+
+  fuzz_config_file = "//drivers/framework/test/fuzztest/ioservice/ioservicenamegetbydeviceclass_fuzzer"
+
+  include_dirs = [ "//drivers/framework/test/fuzztest/ioservice/ioservicenamegetbydeviceclass_fuzzer.h" ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  if (is_standard_system) {
+    external_deps = [
+      "hiviewdfx_hilog_native:libhilog",
+      "utils_base:utils",
+    ]
+  } else {
+    external_deps = [ "hilog:libhilog" ]
+  }
+  sources = [ "ioservicenamegetbydeviceclass_fuzzer.cpp" ]
+  external_deps += [ "device_driver_framework:libhdf_utils" ]
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = []
+  deps += [ ":IoserviceNameGetByDeviceClassFuzzTest" ]
+}

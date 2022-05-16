@@ -9,6 +9,7 @@
 #include "registerservicestatuslistener_fuzzer.h"
 #include <cstddef>
 #include <cstdint>
+#include <hdf_base.h>
 #include <hdi_base.h>
 #include <iremote_broker.h>
 #include <refbase.h>
@@ -31,14 +32,19 @@ void RegisterServStatListenerFuzzer::OnReceive(const ServiceStatus &status)
 } // namespace OHOS
 
 namespace OHOS {
+sptr<IServiceManager> g_servmanager = IServiceManager::Get();
+sptr<IServStatListener> g_servstatlistener = new RegisterServStatListenerFuzzer();
+
 bool RegisterServiceStatusListenerFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
-    sptr<IServiceManager> servmanager = IServiceManager::Get();
-    sptr<IServStatListener> servstatlistener = new RegisterServStatListenerFuzzer();
-    if (!servmanager->RegisterServiceStatusListener(servstatlistener, reinterpret_cast<uintptr_t>(data))) {
+    if (g_servmanager != nullptr &&
+        g_servmanager->RegisterServiceStatusListener(
+            g_servstatlistener, reinterpret_cast<uintptr_t>(data)) == HDF_SUCCESS) {
+        g_servmanager->UnregisterServiceStatusListener(g_servstatlistener);
         result = true;
     }
+
     return result;
 }
 } // namespace OHOS
@@ -46,5 +52,5 @@ bool RegisterServiceStatusListenerFuzzTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     OHOS::RegisterServiceStatusListenerFuzzTest(data, size);
-    return 0;
+    return HDF_SUCCESS;
 }

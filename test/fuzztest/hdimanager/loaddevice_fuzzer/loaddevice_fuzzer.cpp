@@ -6,26 +6,22 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "unloaddevice_fuzzer.h"
+#include "loaddevice_fuzzer.h"
 #include <cstddef>
 #include <cstdint>
+#include <hdf_base.h>
 #include "idevmgr_hdi.h"
 
 using namespace OHOS::HDI::DeviceManager::V1_0;
 
-static constexpr const char *TEST_SERVICE_NAME = "sample_driver_service";
-
 namespace OHOS {
-bool UnloadDeviceFuzzTest(const uint8_t *data, size_t size)
+sptr<IDeviceManager> g_devicemanager = IDeviceManager::Get();
+
+bool LoadDeviceFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
     std::string serviceName((const char *)data);
-    sptr<IDeviceManager> devicemanager = IDeviceManager::Get();
-    if (!devicemanager->LoadDevice(TEST_SERVICE_NAME)) {
-        result = true;
-    }
-
-    if (!devicemanager->UnloadDevice(serviceName)) {
+    if (g_devicemanager != nullptr && g_devicemanager->LoadDevice(serviceName) == HDF_SUCCESS) {
         result = true;
     }
     return result;
@@ -34,6 +30,6 @@ bool UnloadDeviceFuzzTest(const uint8_t *data, size_t size)
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    OHOS::UnloadDeviceFuzzTest(data, size);
-    return 0;
+    OHOS::LoadDeviceFuzzTest(data, size);
+    return HDF_SUCCESS;
 }
