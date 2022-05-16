@@ -35,7 +35,8 @@ void CInterfaceCodeEmitter::EmitCode()
 
 void CInterfaceCodeEmitter::EmitInterfaceHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(interfaceName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(),
+        FileName(interfaceName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

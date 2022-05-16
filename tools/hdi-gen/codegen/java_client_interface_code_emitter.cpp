@@ -35,7 +35,8 @@ void JavaClientInterfaceCodeEmitter::EmitCode()
 
 void JavaClientInterfaceCodeEmitter::EmitInterfaceFile()
 {
-    String filePath = String::Format("%s/%s.java", directory_.string(), FileName(interfaceName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.java", directory_.string(),
+        FileName(interfaceName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

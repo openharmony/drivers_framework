@@ -264,14 +264,14 @@ String Options::GetPackagePath(const String &package)
     }
 
     if (rootPackage.IsEmpty()) {
-        return package.Replace('.', File::pathSeparator);
+        return package.Replace('.', File::separator);
     }
 
-    if (rootPath.EndsWith(File::pathSeparator)) {
+    if (rootPath.EndsWith(File::separator)) {
         rootPath = rootPath.Substring(0, rootPath.GetLength() - 1);
     }
 
-    return package.Replace(rootPackage, rootPath).Replace('.', File::pathSeparator);
+    return package.Replace(rootPackage, rootPath).Replace('.', File::separator);
 }
 } // namespace HDI
 } // namespace OHOS

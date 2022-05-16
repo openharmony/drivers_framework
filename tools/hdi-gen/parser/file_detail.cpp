@@ -15,11 +15,7 @@ namespace HDI {
 void FileDetail::SetFilePath(const String &filePath)
 {
     idlFilePath_ = filePath;
-#ifdef __MINGW32__
-    int index = idlFilePath_.LastIndexOf('\\');
-#else
-    int index = idlFilePath_.LastIndexOf('/');
-#endif
+    int index = idlFilePath_.LastIndexOf(File::separator);
     int end = idlFilePath_.LastIndexOf(".idl");
     idlName_ = idlFilePath_.Substring((index == -1) ? 0 : (index + 1), end);
 }

@@ -37,7 +37,8 @@ void CServiceStubCodeEmitter::EmitCode()
 
 void CServiceStubCodeEmitter::EmitServiceStubHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(stubName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(),
+        FileName(stubName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -106,7 +107,8 @@ void CServiceStubCodeEmitter::EmitCbServiceStubMethodsDcl(StringBuilder &sb)
 
 void CServiceStubCodeEmitter::EmitServiceStubSourceFile()
 {
-    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(stubName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.c", directory_.string(),
+        FileName(stubName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

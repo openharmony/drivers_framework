@@ -184,14 +184,7 @@ bool File::CreateParentDir(const String &path)
     }
 
     int pos = 1;
-
-#ifndef __MINGW32__
-    char Separator = '/';
-#else
-    char Separator = '\\';
-#endif
-
-    while ((pos = path.IndexOf(Separator, pos)) != -1) {
+    while ((pos = path.IndexOf(File::separator, pos)) != -1) {
         String partPath = path.Substring(0, pos);
         struct stat st;
         if (stat(partPath.string(), &st) < 0) {
@@ -217,7 +210,7 @@ bool File::CreateParentDir(const String &path)
 String File::AdapterPath(const String &path)
 {
 #ifndef __MINGW32__
-    return path;
+    return path.Replace('\\', '/');
 #else
     return path.Replace('/', '\\');
 #endif

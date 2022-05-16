@@ -36,7 +36,8 @@ void CppServiceImplCodeEmitter::EmitCode()
 
 void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Service").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(),
+        FileName(baseName_ + "Service").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -124,7 +125,8 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(
 
 void CppServiceImplCodeEmitter::EmitImplSourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_ + "Service").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(),
+        FileName(baseName_ + "Service").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

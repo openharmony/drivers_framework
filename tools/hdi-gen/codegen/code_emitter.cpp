@@ -105,12 +105,13 @@ bool CodeEmitter::NeedFlag(const AutoPtr<ASTMethod> &method)
 
 String CodeEmitter::GetFilePath(const String &outDir)
 {
-    String outPath = outDir.EndsWith(File::pathSeparator) ? outDir.Substring(0, outDir.GetLength() - 1) : outDir;
+    String outPath = outDir.EndsWith(File::separator) ? outDir.Substring(0, outDir.GetLength() - 1) : outDir;
     String packagePath = Options::GetInstance().GetPackagePath(ast_->GetPackageName());
-    if (packagePath.EndsWith(File::pathSeparator)) {
-        return String::Format("%s/%s", outPath.string(), packagePath.string());
+    if (packagePath.EndsWith(File::separator)) {
+        return File::AdapterPath(String::Format("%s%c%s", outPath.string(), File::separator, packagePath.string()));
     } else {
-        return String::Format("%s/%s/", outPath.string(), packagePath.string());
+        return File::AdapterPath(String::Format("%s%c%s%c", outPath.string(), File::separator, packagePath.string(),
+            File::separator));
     }
 }
 
@@ -121,7 +122,7 @@ String CodeEmitter::PackageToFilePath(const String &packageName)
     for (auto iter = packageVec.begin(); iter != packageVec.end(); iter++) {
         filePath.Append(FileName(*iter));
         if (iter != packageVec.end() - 1) {
-            filePath.Append("/");
+            filePath.Append(File::separator);
         }
     }
 
