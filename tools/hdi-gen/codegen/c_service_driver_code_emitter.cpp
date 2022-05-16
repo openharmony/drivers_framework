@@ -38,7 +38,8 @@ void CServiceDriverCodeEmitter::EmitCode()
 
 void CServiceDriverCodeEmitter::EmitDriverSourceFile()
 {
-    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(baseName_ + "Driver").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.c", directory_.string(),
+        FileName(baseName_ + "Driver").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

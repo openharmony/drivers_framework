@@ -35,7 +35,7 @@ void CClientProxyCodeEmitter::EmitCode()
 
 void CClientProxyCodeEmitter::EmitProxySourceFile()
 {
-    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(proxyName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.c", directory_.string(), FileName(proxyName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -121,10 +121,10 @@ void CClientProxyCodeEmitter::EmitProxyCallMethodImpl(StringBuilder &sb)
 
     String remoteName = "remote";
     sb.Append(TAB).AppendFormat("struct HdfRemoteService *%s = self->AsObject(self);\n", remoteName.string());
-    sb.Append(TAB).AppendFormat("if (%s == NULL\n", remoteName.string());
-    sb.Append(TAB).Append(TAB).AppendFormat("|| %s->dispatcher == NULL\n", remoteName.string());
-    sb.Append(TAB).Append(TAB).AppendFormat("|| %s->dispatcher->Dispatch == NULL\n", remoteName.string());
-    sb.Append(TAB).Append(TAB).AppendFormat("|| %s->dispatcher->DispatchAsync == NULL) {\n", remoteName.string());
+    sb.Append(TAB).AppendFormat("if (%s == NULL ||\n", remoteName.string());
+    sb.Append(TAB).Append(TAB).AppendFormat("%s->dispatcher == NULL ||\n", remoteName.string());
+    sb.Append(TAB).Append(TAB).AppendFormat("%s->dispatcher->Dispatch == NULL ||\n", remoteName.string());
+    sb.Append(TAB).Append(TAB).AppendFormat("%s->dispatcher->DispatchAsync == NULL) {\n", remoteName.string());
     sb.Append(TAB).Append(TAB).Append("HDF_LOGE(\"%{public}s: Invalid HdfRemoteService obj\", __func__);\n");
     sb.Append(TAB).Append(TAB).Append("return HDF_ERR_INVALID_OBJECT;\n");
     sb.Append(TAB).Append("}\n");
@@ -151,9 +151,9 @@ void CClientProxyCodeEmitter::EmitProxyKernelCallMethodImpl(StringBuilder &sb)
         baseName_.string(), baseName_.string(), remoteName.string());
     sb.Append(TAB).AppendFormat("struct HdfIoService *%s = proxy->%s;\n", remoteName.string(), remoteName.string());
 
-    sb.Append(TAB).AppendFormat("if (%s == NULL\n", remoteName.string());
-    sb.Append(TAB).Append(TAB).AppendFormat("|| %s->dispatcher == NULL\n", remoteName.string());
-    sb.Append(TAB).Append(TAB).AppendFormat("|| %s->dispatcher->Dispatch == NULL) {\n", remoteName.string());
+    sb.Append(TAB).AppendFormat("if (%s == NULL ||\n", remoteName.string());
+    sb.Append(TAB).Append(TAB).AppendFormat("%s->dispatcher == NULL ||\n", remoteName.string());
+    sb.Append(TAB).Append(TAB).AppendFormat("%s->dispatcher->Dispatch == NULL) {\n", remoteName.string());
     sb.Append(TAB).Append(TAB).Append("HDF_LOGE(\"%{public}s: Invalid HdfRemoteService obj\", __func__);\n");
     sb.Append(TAB).Append(TAB).Append("return HDF_ERR_INVALID_OBJECT;\n");
     sb.Append(TAB).Append("}\n\n");

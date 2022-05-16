@@ -1492,7 +1492,7 @@ bool Parser::CheckPackageName(const String &filePath, const String &packageName)
 {
     String pkgToPath = Options::GetInstance().GetPackagePath(packageName);
 
-    int index = filePath.LastIndexOf(File::pathSeparator);
+    int index = filePath.LastIndexOf(File::separator);
     if (index == -1) {
         return false;
     }

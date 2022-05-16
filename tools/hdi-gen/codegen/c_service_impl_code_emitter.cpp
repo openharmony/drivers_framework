@@ -36,7 +36,8 @@ void CServiceImplCodeEmitter::EmitCode()
 
 void CServiceImplCodeEmitter::EmitServiceImplHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Service").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(),
+        FileName(baseName_ + "Service").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -83,7 +84,8 @@ void CServiceImplCodeEmitter::EmitServiceImplConstructDecl(StringBuilder &sb)
 
 void CServiceImplCodeEmitter::EmitServiceImplSourceFile()
 {
-    String filePath = String::Format("%s/%s.c", directory_.string(), FileName(baseName_ + "Service").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.c", directory_.string(),
+        FileName(baseName_ + "Service").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

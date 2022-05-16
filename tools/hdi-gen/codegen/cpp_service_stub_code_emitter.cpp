@@ -36,7 +36,7 @@ void CppServiceStubCodeEmitter::EmitCode()
 
 void CppServiceStubCodeEmitter::EmitStubHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(stubName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(), FileName(stubName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -145,7 +145,8 @@ void CppServiceStubCodeEmitter::EmitStubPrivateData(StringBuilder &sb, const Str
 
 void CppServiceStubCodeEmitter::EmitStubSourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(stubName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(),
+        FileName(stubName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

@@ -34,7 +34,8 @@ void JavaClientProxyCodeEmitter::EmitCode()
 
 void JavaClientProxyCodeEmitter::EmitProxyFile()
 {
-    String filePath = String::Format("%s/%s.java", directory_.string(), FileName(proxyName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.java", directory_.string(),
+        FileName(proxyName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

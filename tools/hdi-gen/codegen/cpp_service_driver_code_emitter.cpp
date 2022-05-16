@@ -38,7 +38,8 @@ void CppServiceDriverCodeEmitter::EmitCode()
 
 void CppServiceDriverCodeEmitter::EmitDriverSourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_ + "Driver").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(),
+        FileName(baseName_ + "Driver").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

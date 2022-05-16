@@ -35,7 +35,7 @@ void CppCustomTypesCodeEmitter::EmitCode()
 
 void CppCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(), FileName(baseName_).string()));
     File file(filePath, File::WRITE);
     String marcoName = String::Format("%s.%s", ast_->GetPackageName().string(), baseName_.string());
     StringBuilder sb;
@@ -153,7 +153,8 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingDecl(StringBuilder &s
 
 void CppCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_).string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(),
+        FileName(baseName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

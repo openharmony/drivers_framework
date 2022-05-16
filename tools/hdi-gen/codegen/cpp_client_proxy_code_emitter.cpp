@@ -36,7 +36,8 @@ void CppClientProxyCodeEmitter::EmitCode()
 
 void CppClientProxyCodeEmitter::EmitProxyHeaderFile()
 {
-    String filePath = String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Proxy").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(),
+        FileName(baseName_ + "Proxy").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -144,7 +145,8 @@ void CppClientProxyCodeEmitter::EmitProxyMethodParameter(
 
 void CppClientProxyCodeEmitter::EmitProxySourceFile()
 {
-    String filePath = String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_ + "Proxy").string());
+    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(),
+        FileName(baseName_ + "Proxy").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

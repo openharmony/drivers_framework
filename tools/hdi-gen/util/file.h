@@ -70,9 +70,9 @@ public:
     static constexpr unsigned int APPEND = 0x4;
 
 #ifndef __MINGW32__
-    static constexpr char pathSeparator = '/';
+    static constexpr char separator = '/';
 #else
-    static constexpr char pathSeparator = '\\';
+    static constexpr char separator = '\\';
 #endif
 
 private:
