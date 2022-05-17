@@ -61,10 +61,10 @@ class Generator {
         ret.name_ = node.name_;
         ret.parent_ = parent;
         switch (node.type_) {
-            case 1:// uin8
-            case 2:// uin16
-            case 3:// uin32
-            case 4:// uin64
+            case 1:// uint8
+            case 2:// uint16
+            case 3:// uint32
+            case 4:// uint64
                 ret.value_ = node.integerValue_;
                 ret.jinzhi_ = node.jinzhi_;
                 break;
@@ -181,10 +181,10 @@ class Generator {
     objToHcs(node, deep) {
         let ret = ""
         switch (node.type_) {
-            case 1:// uin8
-            case 2:// uin16
-            case 3:// uin32
-            case 4:// uin64
+            case 1:// uint8
+            case 2:// uint16
+            case 3:// uint32
+            case 4:// uint64
                 ret = NodeTools.jinZhi10ToX(node.value_, node.jinzhi_);
                 break;
             case 5:// string

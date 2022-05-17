@@ -4,7 +4,7 @@
 * you may not use this file except in compliance with the License. 
 * You may obtain a copy of the License at 
 *
-* http:// www.apache.org/licenses/LICENSE-2.0 
+* http://www.apache.org/licenses/LICENSE-2.0 
 *
 * Unless required by applicable law or agreed to in writing, software 
 * distributed under the License is distributed on an "AS IS" BASIS, 
@@ -73,33 +73,33 @@ class MainEditor {
         data.posY = y;
         let ty = y;
         switch (data.type_) {
-            case 1:// uin8
-            case 2:// uin16
-            case 3:// uin32
-            case 4:// uin64
+            case 1://uint8
+            case 2://uint16
+            case 3://uint32
+            case 4://uint64
                 y += MainEditor.LINE_HEIGHT;
                 break;
-            case 5:// string
+            case 5://string
                 y += MainEditor.LINE_HEIGHT;
                 break;
-            case 6:// ConfigNode
+            case 6://ConfigNode
                 for (let i in data.value_) {
                     y = this.calcPostionY(data.value_[i], y)
                 }
                 break;
-            case 7:// ConfigTerm
+            case 7://ConfigTerm
                 y = this.calcPostionY(data.value_, y)
                 break;
-            case 8:// Array attribute
+            case 8://Array class attribute value
                 y += MainEditor.LINE_HEIGHT;
                 break;
-            case 9:// Leaf attribute
+            case 9://Attribute equal to leaf
                 y += MainEditor.LINE_HEIGHT
                 break;
-            case 10:// Delete attribute
+            case 10://Delete attribute
                 y += MainEditor.LINE_HEIGHT
                 break;
-            case 11:// bool
+            case 11://bool
                 y += MainEditor.LINE_HEIGHT
                 break;
             default:                
@@ -113,17 +113,17 @@ class MainEditor {
     }
     getNodeText(data) {
         switch (data.nodeType_) {
-            case 0:// Data class nodes, not inherit
+            case 0://Data class nodes, not inheri
                 return data.name_;
-            case 3:// Deletion class nodes
+            case 3://Deletion class nodes
                 return data.name_ + " : delete";
-            case 4:// Templete class nodes
+            case 4://Templete Class nodes
                 return "templete " + data.name_;
-            case 5:// Data class nodes, inherit
+            case 5://Data class nodes, inherit
                 return data.name_ + ' :: ' + data.ref_;
-            case 1:// Copy class nodes
+            case 1://Copy class nodes
                 return data.name_ + " : " + data.ref_;
-            case 2:// Reference modification class nodes
+            case 2://Reference modification class nodes
                 return data.name_ + " : &" + data.ref_;
             default:
                 return "unknow node type";
@@ -160,36 +160,36 @@ class MainEditor {
         data.posX = offx;
 
         switch (data.type_) {
-            case 1:// uin8
-            case 2:// uin16
-            case 3:// uin32
-            case 4:// uin64
-                w = pm2f.drawText(NodeTools.jinZhi_10_to_x(data.value_, data.jinzhi_),
+            case 1://uint8
+            case 2://uint16
+            case 3://uint32
+            case 4://uint64
+                w = pm2f.drawText(NodeTools.jinZhi10ToX(data.value_, data.jinzhi_),
                   18, offx, offy + data.posY, 1, 1, 0, -1, -1, 0xffff0000);
                 break;
-            case 5:// string
+            case 5://string
                 w = pm2f.drawText('"' + data.value_ + '"', 18, offx, offy + data.posY, 1, 1, 0, -1, -1, 0xffff0000);
                 break;
-            case 6:// ConfigNode
+            case 6://ConfigNode
                 w = this.drawNode(pm2f, this.getNodeText(data), 18, offx, offy + data.posY,
                   0xffffffff, rgba(67, 95, 188));
                 this.configNodeProc(w, pm2f, data, offx, offy, path)
                 break;
-            case 7:// ConfigTerm
+            case 7://ConfigTerm
                 w = this.drawNode(pm2f, data.name_ + "=", 18, offx, offy + data.posY, 0xffff0000, rgba(153, 217, 234));
                 this.setNodeButton(pm2f, offx, offy + data.posY, w, 20, path, data);
                 this.drawObj(pm2f, data.value_, offx + w, offy, path);
                 break;
-            case 8:// Array attribute
+            case 8://Array class attribute value
                 this.arrayNodeProc(w, pm2f, data, offx, offy);
                 break;
-            case 9:// Leaf attribute
+            case 9://Attribute equal to leaf
                 w = pm2f.drawText("&" + data.value_, 18, offx, offy + data.posY, 1, 1, 0, -1, -1, 0xffff0000);
                 break;
-            case 10:// Delete attribute
+            case 10://Delete attribute
                 w = pm2f.drawText("delete", 18, offx, offy + data.posY, 1, 1, 0, -1, -1, 0xffff0000);
                 break;
-            case 11:// bool
+            case 11://bool
                 if (data.value_) w = pm2f.drawText("true", 18, offx, offy + data.posY, 1, 1, 0, -1, -1, 0xffff0000);
                 else w = pm2f.drawText("false", 18, offx, offy + data.posY, 1, 1, 0, -1, -1, 0xffff0000);
                 break;
@@ -276,11 +276,8 @@ class MainEditor {
             AttrEditor.gi().freshEditor(this.filePoint_, this.nodePoint_);
             return true;
         }
-
+        //What can be copied: data does not inherit, copy class nodes, template class nodes and data class inheritance
         if (this.selectNode_.type == "change_target") {
-
-            /* What can be copied: data does not inherit, copy class nodes, 
-            template class nodes and data class inheritance */
             let pn = nodeBtns.node_;
             if (pn.type_ == DataType.NODE) {
                 if (this.selectNode_.pnode.type_ == DataType.NODE) {
@@ -302,8 +299,10 @@ class MainEditor {
                     }
                 }
 
-                this.checkAllError()
-                this.selectNode_.type = null
+                this.checkAllError();
+                this.selectNode_.type = null;
+                AttrEditor.gi().freshEditor(this.filePoint_, this.nodePoint_);
+                this.onAttributeChange("writefile");
             }
         }        
         return true
@@ -351,7 +350,7 @@ class MainEditor {
                 return true;
             }
         }
-        // Drag screen
+        //Drag screen
         if (msg == 1 && !this.dropAll_.locked) {
             this.dropAll_.locked = true;
             this.dropAll_.oldx = x;
@@ -444,6 +443,9 @@ class MainEditor {
             Lexer.FILE_AND_DATA[data.fn] = data.data;
             me.parse(data.fn)
         }
+        else if (type == "freshfiledata"){
+            Lexer.FILE_AND_DATA[data.fn] = data.data;
+        }
     }
     parse(fn) {
         if (this.rootPoint_ == null) {
@@ -473,6 +475,7 @@ class MainEditor {
         }
         return false;
     }
+
 }
 MainEditor.LINE_HEIGHT = 30
 
