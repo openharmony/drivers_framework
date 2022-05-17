@@ -1,0 +1,20 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+#
+# HDF is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
+
+group("hdf_framework_fuzztest") {
+  testonly = true
+  deps = []
+  deps += [
+    "hdimanager/loaddevice_fuzzer:LoadDeviceFuzzTest",
+    "hdimanager/registerservicestatuslistener_fuzzer:RegisterServiceStatusListenerFuzzTest",
+    "hdimanager/unloaddevice_fuzzer:UnloadDeviceFuzzTest",
+    "ioservice/ioservicebind_fuzzer:IoserviceBindFuzzTest",
+    "ioservice/ioservicegrouplisten_fuzzer:IoserviceGroupListenFuzzTest",
+    "ioservice/ioservicelisten_fuzzer:IoserviceListenFuzzTest",
+    "ioservice/ioservicenamegetbydeviceclass_fuzzer:IoserviceNameGetByDeviceClassFuzzTest",
+    "ioservice/ioserviceremove_fuzzer:IoserviceGroupRemoveServiceFuzzTest",
+  ]
+}

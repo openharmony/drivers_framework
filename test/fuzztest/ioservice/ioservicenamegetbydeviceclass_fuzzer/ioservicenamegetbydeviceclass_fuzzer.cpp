@@ -17,6 +17,10 @@ namespace OHOS {
 bool IoserviceNameGetByDeviceClassFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
+    if (data == nullptr) {
+        return false;
+    }
+
     struct HdfSBuf *reply = HdfSbufObtainDefaultSize();
     int32_t ret = HdfGetServiceNameByDeviceClass(static_cast<DeviceClass>(*data), reply);
     if (ret == HDF_SUCCESS) {

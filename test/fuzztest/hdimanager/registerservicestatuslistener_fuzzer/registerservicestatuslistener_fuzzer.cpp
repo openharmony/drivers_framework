@@ -38,9 +38,12 @@ sptr<IServStatListener> g_servstatlistener = new RegisterServStatListenerFuzzer(
 bool RegisterServiceStatusListenerFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
+    if (data == nullptr) {
+        return false;
+    }
+
     if (g_servmanager != nullptr &&
-        g_servmanager->RegisterServiceStatusListener(
-            g_servstatlistener, reinterpret_cast<uintptr_t>(data)) == HDF_SUCCESS) {
+        g_servmanager->RegisterServiceStatusListener(g_servstatlistener, *((uint16_t *)data)) == HDF_SUCCESS) {
         g_servmanager->UnregisterServiceStatusListener(g_servstatlistener);
         result = true;
     }
