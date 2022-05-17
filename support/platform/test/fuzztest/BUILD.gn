@@ -11,6 +11,8 @@ group("hdf_platform_fuzztest") {
     "gpio_fuzzer:fuzztest",
     "i2c_fuzzer:fuzztest",
     "pwm_fuzzer:fuzztest",
+    "rtc_fuzzer:fuzztest",
+    "uart_fuzzer:fuzztest",
     "watchdog_fuzzer:fuzztest",
   ]
 }

@@ -6,38 +6,32 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "gpio_fuzzer.h"
+#include "uart_fuzzer.h"
 #include <iostream>
 #include "random.h"
 #include "securec.h"
-#include "gpio_if.h"
 #include "hdf_base.h"
+#include "uart_if.h"
 
 using namespace std;
 
 namespace {
 constexpr int32_t MIN = 0;
 constexpr int32_t MAX = 2;
-const uint16_t gpioTestNum = 3;
+const int32_t UART_FUZZ_PORT = 1;
 }
 
 struct AllParameters {
-    uint16_t descVal;
-    uint16_t descDir;
-    uint16_t descMode;
+    uint32_t desBaudRate;
+    struct UartAttribute paraAttribute;
+    uint32_t paraMode;
 };
 
-static int32_t GpioTestIrqHandler(uint16_t gpio, void *data)
-{
-    (void)gpio;
-    (void)data;
-    return 0;
-}
-
 namespace OHOS {
-    bool GpioFuzzTest(const uint8_t *data, size_t size)
+    bool UartFuzzTest(const uint8_t *data, size_t size)
     {
         int32_t number;
+        DevHandle handle = nullptr;
         struct AllParameters params;
 
         if (data == nullptr) {
@@ -47,20 +41,23 @@ namespace OHOS {
         if (memcpy_s((void *)&params, sizeof(params), data, sizeof(params)) != EOK) {
             return false;
         }
+
         number = randNum(MIN, MAX);
+        handle = UartOpen(UART_FUZZ_PORT);
         switch (static_cast<ApiTestCmd>(number)) {
-            case ApiTestCmd::GPIO_FUZZ_WRITE:
-                GpioWrite(gpioTestNum, params.descVal);
+            case ApiTestCmd::UART_FUZZ_SET_BAUD:
+                UartSetBaud(handle, params.desBaudRate);
                 break;
-            case ApiTestCmd::GPIO_FUZZ_SET_DIR:
-                GpioSetDir(gpioTestNum, params.descDir);
+            case ApiTestCmd::UART_FUZZ_SET_ATTRIBUTE:
+                UartSetAttribute(handle, &params.paraAttribute);
                 break;
-            case ApiTestCmd::GPIO_FUZZ_SET_IRQ:
-                GpioSetIrq(gpioTestNum, params.descMode, GpioTestIrqHandler, &data);
+            case ApiTestCmd::UART_FUZZ_SET_TRANSMODE:
+                UartSetTransMode(handle, (enum UartTransMode)params.paraMode);
                 break;
             default:
                 break;
         }
+        UartClose(handle);
         return true;
     }
 }
@@ -69,6 +66,6 @@ namespace OHOS {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::GpioFuzzTest(data, size);
+    OHOS::UartFuzzTest(data, size);
     return 0;
 }

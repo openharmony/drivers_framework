@@ -6,15 +6,17 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef GPIO_FUZZER
-#define GPIO_FUZZER
+#ifndef RTC_FUZZER
+#define RTC_FUZZER
 
-#define FUZZ_PROJECT_NAME "gpio_fuzzer"
+#define FUZZ_PROJECT_NAME "rtc_fuzzer"
 
 enum class ApiTestCmd {
-    GPIO_FUZZ_WRITE = 0,
-    GPIO_FUZZ_SET_DIR,
-    GPIO_FUZZ_SET_IRQ,
+    RTC_FUZZ_WRITETIME = 0,
+    RTC_FUZZ_WRITEALARM,
+    RTC_FUZZ_ALARMINTERRUPTENABLE,
+    RTC_FUZZ_SETFREQ,
+    RTC_FUZZ_WRITEREG,
 };
 
 #endif
