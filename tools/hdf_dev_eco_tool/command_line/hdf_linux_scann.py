@@ -96,7 +96,7 @@ class HdfLinuxScan(object):
             get_config_config_path(root=self.root, kernel=self.kernel)
         for roots, dirs, files in os.walk(config_path):
             for file_name in files:
-                if file_name.strip() == "hi3516dv300_small_defconfig":
+                if file_name.endswith("small_defconfig"):
                     model_defconfig_list.append(os.path.join(roots, file_name))
         return model_defconfig_list
 
