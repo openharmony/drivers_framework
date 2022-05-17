@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -335,6 +335,7 @@ static int32_t WifiCmdGetDriverFlag(const RequestContext *context, struct HdfSBu
     ret = GetDriverFlag(netdev, &params);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fail to getdriverflag,%d", __func__, ret);
+        return HDF_FAILURE;
     }
 
     if (!HdfSbufWriteUint64(rspData, params->drvFlags)) {
@@ -342,7 +343,7 @@ static int32_t WifiCmdGetDriverFlag(const RequestContext *context, struct HdfSBu
         ret = HDF_ERR_IO;
     }
 
-    HDF_LOGE("WifiCmdGetDriverFlag:%llx", params->drvFlags);
+    HDF_LOGI("WifiCmdGetDriverFlag:%llx", params->drvFlags);
     return ret;
 }
 
