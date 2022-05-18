@@ -4,7 +4,7 @@
 * you may not use this file except in compliance with the License. 
 * You may obtain a copy of the License at 
 *
-* http:// www.apache.org/licenses/LICENSE-2.0 
+* http://www.apache.org/licenses/LICENSE-2.0 
 *
 * Unless required by applicable law or agreed to in writing, software 
 * distributed under the License is distributed on an "AS IS" BASIS, 
@@ -37,27 +37,27 @@ class AttrEditor {
         if (this.node_ != null) {
             AttributeArea.gi().addTitle(this.node_.name_)
             switch (this.node_.type_) {
-                case 6:// Nodes
+                case 6://Node
                     switch (this.node_.nodeType_) {
-                        case 0:// Data class nodes, not inherit
+                        case 0://Data class nodes, not inherit
                             this.freshDataNodeNotInheritEditor(this.node_);
                             break;
-                        case 1:// Copy class nodes
-                        case 2:// Reference modification class nodes
-                        case 5:// Data class nodes, inherit
+                        case 1://Copy class nodes
+                        case 2://Reference modification class nodes
+                        case 5://Data class nodes, inherit
                             this.freshcopyNodeEditor(this.node_);
                             break;
-                        case 3:// Deletion class nodes
+                        case 3://Deletion class nodes
                             this.freshdeleteNodeEditor(this.node_);
                             break;
-                        case 4:// Templete Class nodes
+                        case 4://Templete Class nodes
                             this.freshTempletNodeEditor(this.node_);
                             break;
                         default:
                             break;
                     }
                     break;
-                case 7:// Attribute
+                case 7://Attribute
                     this.freshDefineAttributeEditor(this.node_);
                     break;
             }
@@ -66,9 +66,8 @@ class AttrEditor {
 
         AttributeArea.gi().flush();
     }
-
     // Node0 -- Data class nodes, not inherit
-    freshDataNodeNotInheritEditor(node) {
+    freshDataNodeNotInheritEditor(node) {// Edit data class node
         AttributeArea.gi().addSelect("node_type", "节点类型", AttrEditor.NODE_TYPE_STR, 
           AttrEditor.NODE_TYPE_STR[node.nodeType_], this.root_ == this.node_);
         AttributeArea.gi().addGap(0);
@@ -96,10 +95,9 @@ class AttrEditor {
             this.freshEditor();
         }
     }
-
-    // Node1 -- Copy class nodes
-    // Node2 -- Reference modification class nodes
-    // Node5 -- Data class nodes, inherit
+    //Node1 -- Copy class nodes
+    //Node2 -- Reference modification class nodes
+    //Node5 -- Data class nodes, inherit
     freshcopyNodeEditor(node) {
         AttributeArea.gi().addInput("node_type", "节点类型", AttrEditor.NODE_TYPE_STR[node.nodeType_], true);
         AttributeArea.gi().addGap(0);
@@ -127,8 +125,7 @@ class AttrEditor {
             this.freshEditor();
         }
     }
-
-    // Node3 -- Deletion class nodes
+    //Node3 -- Deletion class nodes
     freshdeleteNodeEditor(node) {
         AttributeArea.gi().addInput("node_type", "节点类型", AttrEditor.NODE_TYPE_STR[node.nodeType_], true);
         AttributeArea.gi().addGap(0);
@@ -145,8 +142,7 @@ class AttrEditor {
             this.freshEditor();
         }
     }
-
-    // Node4 -- Templete Class nodes
+    //Node4 -- Templete Class nodes
     freshTempletNodeEditor(node) {
         AttributeArea.gi().addInput("node_type", "节点类型", AttrEditor.NODE_TYPE_STR[node.nodeType_], true);
         AttributeArea.gi().addGap(0);
@@ -171,8 +167,8 @@ class AttrEditor {
     }
 
 
-    // Attribute0 -- Define class properties
-    freshDefineAttributeEditor(node) {
+    //Properties0 Define class 
+    freshDefineAttributeEditor(node) {//Define class Attribute
         let v = node.value_;
         AttributeArea.gi().addInput("name", "名称", node.name_);
         AttributeArea.gi().addGap(0);
@@ -183,7 +179,7 @@ class AttrEditor {
             v.type_ == DataType.INT64) {
             AttributeArea.gi().addSelect("value_type", "类型", AttrEditor.ATTR_TYPE_STR, AttrEditor.ATTR_TYPE_STR[0]);
             AttributeArea.gi().addGap(0);
-            AttributeArea.gi().addInput("value", "属性值", NodeTools.jinZhi_10_to_x(v.value_, v.jinzhi_));
+            AttributeArea.gi().addInput("value", "属性值", NodeTools.jinZhi10ToX(v.value_, v.jinzhi_));
             AttributeArea.gi().addGap(0);
         }
         else if (v.type_ == DataType.STRING) {
@@ -220,28 +216,28 @@ class AttrEditor {
 
     getNodeValue(v, value) {
         switch (AttrEditor.ATTR_TYPE_STR.indexOf(value)) {
-            case 0:// int
+            case 0://int
                 v.type_ = DataType.INT8;
                 v.value_ = 0;
                 v.jinzhi_ = 10;
                 break;
-            case 1:// string
+            case 1://str
                 v.type_ = DataType.STRING;
                 v.value_ = "";
                 break;
-            case 2:// array
+            case 2://array
                 v.type_ = DataType.ARRAY;
                 v.value_ = [];
                 break;
-            case 3:// bool
+            case 3://bool
                 v.type_ = DataType.BOOL;
                 v.value_ = 1;
                 break;
-            case 4:// ref
+            case 4://ref
                 v.type_ = DataType.REFERENCE;
                 v.value_ = "_unknow_";
                 break;
-            case 5:// delete
+            case 5://delete
                 v.type_ = DataType.DELETE;
                 break;
         }
@@ -254,7 +250,7 @@ class AttrEditor {
           ModifyNode.modifyName(this.files_, this.root_, this.node_, value);
         }  
         if (searchId == "value_type") {
-          getNodeValue(v, value);
+          this.getNodeValue(v, value);
         }
         if (searchId == "change_target") {
             this.callCallback("change_target", v);
@@ -264,7 +260,7 @@ class AttrEditor {
                 v.type_ == DataType.INT16 ||
                 v.type_ == DataType.INT32 ||
                 v.type_ == DataType.INT64) {
-                let ret = NodeTools.jinZhi_x_to_10(value)
+                let ret = NodeTools.jinZhiXTo10(value)
                 if (!isNaN(ret[0])) {
                     v.value_ = ret[0]
                     v.jinzhi_ = ret[1]
@@ -285,35 +281,34 @@ class AttrEditor {
             this.freshEditor();
         }
     }
-
-    // Attribute1 -- Delete class properties
-    // Attribute2 -- Reference class properties
+    //propertie1 Deletion class
+    //propertie2 Reference modification class
     onChange(searchId, type, value) {
         let pattr = AttrEditor.gi();
         if (pattr.node_ != null) {
             AttributeArea.gi().addTitle(pattr.node_.name_)
             switch (pattr.node_.type_) {
-                case 6:// nodes
+                case 6://Node
                     switch (pattr.node_.nodeType_) {
-                        case 0:// Data class nodes, not inherit
+                        case 0://Data class nodes, not inherit
                             pattr.changeDataNodeNotInherit(searchId, type, value);
                             break;
-                        case 1:// Copy class nodes
-                        case 2:// Reference modification class nodes
-                        case 5:// Data class nodes, inherit
+                        case 1://Copy class nodes
+                        case 2://Reference modification class nodes
+                        case 5://Data class nodes, inherit
                             pattr.changecopyNode(searchId, type, value);
                             break;
-                        case 3:// Deletion class nodes
+                        case 3://Deletion class nodes
                             pattr.changedeleteNode(searchId, type, value);
                             break;
-                        case 4:// Templete Class nodes
+                        case 4://Templete Class nodes
                             pattr.changeTempletNode(searchId, type, value);
                             break;
                         default:
                             break;
                     }
                     break;
-                case 7:// Attribute
+                case 7://Attribute
                     pattr.changeDefineAttribute(searchId, type, value);
                     break;
             }
