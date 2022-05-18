@@ -6,15 +6,15 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#ifndef GPIO_FUZZER
-#define GPIO_FUZZER
+#ifndef UART_FUZZER
+#define UART_FUZZER
 
-#define FUZZ_PROJECT_NAME "gpio_fuzzer"
+#define FUZZ_PROJECT_NAME "uart_fuzzer"
 
 enum class ApiTestCmd {
-    GPIO_FUZZ_WRITE = 0,
-    GPIO_FUZZ_SET_DIR,
-    GPIO_FUZZ_SET_IRQ,
+    UART_FUZZ_SET_BAUD = 0,
+    UART_FUZZ_SET_ATTRIBUTE,
+    UART_FUZZ_SET_TRANSMODE,
 };
 
 #endif
