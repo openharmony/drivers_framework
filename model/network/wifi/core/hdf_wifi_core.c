@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -18,7 +18,6 @@
 #include "osal_thread.h"
 #include "message/message_router.h"
 #include "hdf_wlan_chipdriver_manager.h"
-#include "hdf_wlan_sdio.h"
 #include "hdf_wlan_config.h"
 #include "hdf_wlan_utils.h"
 
@@ -137,7 +136,7 @@ static int32_t HdfWlanGetConfig(const struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-#ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
+#ifndef CONFIG_AP6XXX_WIFI6_HDF
 static int32_t HdfWlanPowerOnProcess(struct PowerManager *powerMgr)
 {
     if (powerMgr == NULL) {
@@ -361,7 +360,7 @@ static struct HdfWlanDevice *ProbeDevice(struct HdfConfigWlanDevInst *deviceConf
         device->powers = HdfWlanCreatePowerManager(&deviceConfig->powers);
         device->reset = HdfWlanCreateResetManager(&deviceConfig->reset, deviceConfig->bootUpTimeOut);
 
-#ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
+#ifndef CONFIG_AP6XXX_WIFI6_HDF
         ret = HdfWlanPowerOnProcess(device->powers);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:HdfWlanPowerOnProcess failed!", __func__);
@@ -471,11 +470,7 @@ static int32_t HdfWlanInitThread(void *para)
         return HDF_SUCCESS;
     }
     for (i = 0; i < devList->deviceListSize; i++) {
-#ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
-        ret = HdfWlanConfigSDIO(devList->deviceInst[i].bus.busIdx);
-#else
-        ret = HDF_SUCCESS;
-#endif
+        ret = HdfWlanConfigBusAbs(devList->deviceInst[i].bus.busIdx);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:HdfWlanConfigSDIO %d failed!ret=%d", __func__, devList->deviceInst[i].bus.busIdx, ret);
             continue;
