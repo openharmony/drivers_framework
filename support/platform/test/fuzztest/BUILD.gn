@@ -12,6 +12,7 @@ group("hdf_platform_fuzztest") {
     "i2c_fuzzer:fuzztest",
     "pwm_fuzzer:fuzztest",
     "rtc_fuzzer:fuzztest",
+    "spi_fuzzer:fuzztest",
     "uart_fuzzer:fuzztest",
     "watchdog_fuzzer:fuzztest",
   ]
