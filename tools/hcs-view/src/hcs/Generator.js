@@ -22,7 +22,7 @@ class Generator {
         this.parser = new Parser();
     }
 
-    hscToAst(fn) {
+    hcsToAst(fn) {
           return this.parser.parse(fn)
     }
 

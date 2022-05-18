@@ -1,0 +1,12 @@
+root {
+        aaa : bbb {
+    }
+    bbb {
+        ccc : root.ddd {
+        }
+    }
+    ddd {
+        e = 1;
+    }
+
+}
