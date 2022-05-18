@@ -1372,7 +1372,7 @@ static uint32_t HdfdWlanGetPowerMode(const char *ifName, uint8_t *mode)
     if (chipDriver->ops->GetPowerMode == NULL) {
         *mode = WIFI_POWER_MODE_GENERAL;
         HDF_LOGE("%s: chipDriver->ops->GetPowerMode is null\r\n", __func__);
-        return HDF_SUCCESS;
+        return HDF_ERR_NOT_SUPPORT;
     }
     return chipDriver->ops->GetPowerMode(ifName, mode);
 }
@@ -1395,7 +1395,7 @@ static int32_t WifiCmdGetPowerMode(const RequestContext *context, struct HdfSBuf
     ret = HdfdWlanGetPowerMode(ifName, &mode);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fail to get power mode, %d", __func__, ret);
-        return HDF_FAILURE;
+        return ret;
     }
     if (!HdfSbufWriteUint8(rspData, mode)) {
         HDF_LOGE("%s: %s!", __func__, ERROR_DESC_WRITE_RSP_FAILED);
@@ -1429,7 +1429,7 @@ static uint32_t HdfdWlanSetPowerMode(const char *ifName, uint8_t mode)
 
     if (chipDriver->ops->SetPowerMode == NULL) {
         HDF_LOGE("%s: chipDriver->ops->SetPowerMode is null\r\n", __func__);
-        return HDF_SUCCESS;
+        return HDF_ERR_NOT_SUPPORT;
     }
     return chipDriver->ops->SetPowerMode(ifName, mode);
 }
@@ -1456,7 +1456,6 @@ static int32_t WifiCmdSetPowerMode(const RequestContext *context, struct HdfSBuf
     ret = HdfdWlanSetPowerMode(ifName, mode);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fail to set power mode, %d", __func__, ret);
-        return HDF_FAILURE;
     }
 
     return ret;
