@@ -29,7 +29,7 @@
 } while (0)
 
 #define CHECK_PARSER_RESULT_RETURN_VALUE(ret, str) do { \
-    if (ret != HDF_SUCCESS) { \
+    if ((ret) != HDF_SUCCESS) { \
         HDF_LOGE("%s:line %d %s fail, ret = %d!", __func__, __LINE__, str, ret); \
         return HDF_FAILURE; \
     } \
@@ -72,6 +72,7 @@ struct SensorSpiCfg {
     DevHandle handle;
     uint32_t busNum;
     uint32_t csNum;
+    struct SpiCfg spi;
 };
 
 struct SensorBusCfg {
