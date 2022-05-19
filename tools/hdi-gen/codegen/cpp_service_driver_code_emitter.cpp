@@ -153,6 +153,7 @@ void CppServiceDriverCodeEmitter::EmitDriverBind(StringBuilder &sb)
     sb.Append(TAB).AppendFormat("auto serviceImpl = %s::Get(true);\n", interfaceName_.string());
     sb.Append(TAB).Append("if (serviceImpl == nullptr) {\n");
     sb.Append(TAB).Append(TAB).Append("HDF_LOGE(\"%{public}s: failed to get of implement service\", __func__);\n");
+    sb.Append(TAB).Append(TAB).AppendFormat("delete %s;\n", objName.string());
     sb.Append(TAB).Append(TAB).Append("return HDF_FAILURE;\n");
     sb.Append(TAB).Append("}\n\n");
 
@@ -161,6 +162,7 @@ void CppServiceDriverCodeEmitter::EmitDriverBind(StringBuilder &sb)
     sb.Append(TAB).Append(TAB).AppendFormat("%s::GetDescriptor());\n", interfaceName_.string());
     sb.Append(TAB).AppendFormat("if (%s->stub == nullptr) {\n", objName.string());
     sb.Append(TAB).Append(TAB).Append("HDF_LOGE(\"%{public}s: failed to get stub object\", __func__);\n");
+    sb.Append(TAB).Append(TAB).AppendFormat("delete %s;\n", objName.string());
     sb.Append(TAB).Append(TAB).AppendFormat("return HDF_FAILURE;\n");
     sb.Append(TAB).Append("}\n\n");
 
@@ -175,6 +177,10 @@ void CppServiceDriverCodeEmitter::EmitDriverRelease(StringBuilder &sb)
     sb.AppendFormat("void Hdf%sDriverRelease(struct HdfDeviceObject *deviceObject)", baseName_.string());
     sb.Append("{\n");
     sb.Append(TAB).AppendFormat("HDF_LOGI(\"Hdf%sDriverRelease enter\");\n", baseName_.string());
+    sb.Append(TAB).AppendFormat("if (deviceObject->service == nullptr) {\n");
+    sb.Append(TAB).Append(TAB).AppendFormat("HDF_LOGE(\"Hdf%sDriverRelease not initted\");\n", baseName_.string());
+    sb.Append(TAB).Append(TAB).AppendFormat("return;\n");
+    sb.Append(TAB).Append("}\n\n");
     sb.Append(TAB).AppendFormat("auto *%s = CONTAINER_OF(", objName.string());
     sb.AppendFormat("deviceObject->service, struct Hdf%sHost, ioService);\n", baseName_.string());
     sb.Append(TAB).AppendFormat("delete %s;\n", objName.string());
