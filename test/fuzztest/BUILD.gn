@@ -15,6 +15,6 @@ group("hdf_framework_fuzztest") {
     "ioservice/ioservicegrouplisten_fuzzer:IoserviceGroupListenFuzzTest",
     "ioservice/ioservicelisten_fuzzer:IoserviceListenFuzzTest",
     "ioservice/ioservicenamegetbydeviceclass_fuzzer:IoserviceNameGetByDeviceClassFuzzTest",
-    "ioservice/ioserviceremove_fuzzer:IoserviceGroupRemoveServiceFuzzTest",
+    "ioservice/ioserviceremove_fuzzer:IoserviceRemoveFuzzTest",
   ]
 }

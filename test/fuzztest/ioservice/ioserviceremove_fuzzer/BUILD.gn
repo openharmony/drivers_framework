@@ -8,7 +8,7 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 module_output_path = "hdf/ioservice"
 
-ohos_fuzztest("IoserviceGroupRemoveServiceFuzzTest") {
+ohos_fuzztest("IoserviceRemoveFuzzTest") {
   module_out_path = module_output_path
 
   fuzz_config_file =
@@ -37,5 +37,5 @@ ohos_fuzztest("IoserviceGroupRemoveServiceFuzzTest") {
 group("fuzztest") {
   testonly = true
   deps = []
-  deps += [ ":IoserviceGroupRemoveServiceFuzzTest" ]
+  deps += [ ":IoserviceRemoveFuzzTest" ]
 }
