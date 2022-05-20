@@ -451,7 +451,7 @@ class MainEditor {
         if (this.rootPoint_ == null) {
             this.rootPoint_ = fn
         }
-        let t = Generator.gi().hscToAst(fn);
+        let t = Generator.gi().hcsToAst(fn);
         if (!t) return;
 
         let fs = []
