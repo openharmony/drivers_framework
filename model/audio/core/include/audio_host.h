@@ -75,8 +75,6 @@ struct AudioConfigData {
     const char *platformName;
     const char *cpuDaiName;
     const char *codecDaiName;
-    const char *accessoryName;
-    const char *accessoryDaiName;
     const char *dspName;
     const char *dspDaiName;
 };
@@ -104,9 +102,12 @@ struct AudioCard {
     struct DListHead paths; /* all paths for this card */
     struct DListHead sapmDirty; /* all dirty for this card */
     enum AudioSapmTurnStandbyMode standbyMode;
+    uint64_t time;
     bool sapmSleepState;
     bool sapmStandbyState;
     bool sapmMonitorState;
+    bool sapmStandbyStartTimeFlag;
+    bool sapmSleepStartTimeFlag;
 };
 
 enum CriBuffStatus {
@@ -194,8 +195,6 @@ struct AudioRuntimeDeivces       {
     struct PlatformDevice *platform;
     struct DaiDevice *codecDai;
     struct DaiDevice *cpuDai;
-    struct DaiDevice *accessoryDai;
-    struct AccessoryDevice *accessory;
     struct DspDevice *dsp;
     struct DaiDevice *dspDai;
     uint8_t complete;

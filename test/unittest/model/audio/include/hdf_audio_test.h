@@ -30,14 +30,11 @@ typedef enum {
     AUDIO_ADM_TEST_AUDIOSOCREGISTERDAI,               // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOREGISTERDSP,                  // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOREGISTERCODEC,                // audio ADM audio_core
-    AUDIO_ADM_TEST_AUDIOREGISTERACCESSORY,            // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOBINDDAILINK,                  // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOUPDATECODECREGBITS,           // audio ADM audio_core
-    AUDIO_ADM_TEST_AUDIOUPDATEACCESSORYREGBITS,       // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOUPDATEDAIREGBITS,             // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOKCONTROLGETCPUDAI,            // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOKCONTROLGETCODEC,             // audio ADM audio_core
-    AUDIO_ADM_TEST_AUDIOKCONTROLGETACCESSORY,         // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOADDCONTROLS,                  // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOADDCONTROL,                   // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOGETCTRLOPSRREG,               // audio ADM audio_core
@@ -48,13 +45,9 @@ typedef enum {
     AUDIO_ADM_TEST_AUDIODAIWRITEREG,                  // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOCODECREADREG,                 // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOCODECWRITEREG,                // audio ADM audio_core
-    AUDIO_ADM_TEST_AUDIOACCESSORYREADREG,             // audio ADM audio_core
-    AUDIO_ADM_TEST_AUDIOACCESSORYWRITEREG,            // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOINFOCTRLOPS,                  // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOCODECGETCTRLOPS,              // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOCODECSETCTRLOPS,              // audio ADM audio_core
-    AUDIO_ADM_TEST_AUDIOACCESSORYGETCTRLOPS,          // audio ADM audio_core
-    AUDIO_ADM_TEST_AUDIOACCESSORYSETCTRLOPS,          // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOCPUDAISETCTRLOPS,             // audio ADM audio_core
     AUDIO_ADM_TEST_AUDIOCPUDAIGETCTRLOPS = 37,        // audio ADM audio_core
 
@@ -66,10 +59,8 @@ typedef enum {
     AUDIO_ADM_TEST_AUDIOSAMPSETPOWERMONITOR,          // audio ADM audio_sapm
     AUDIO_ADM_TEST_AUDIOCODECSAPMSETCTRLOPS,          // audio ADM audio_sapm
     AUDIO_ADM_TEST_AUDIOCODECSAPMGETCTRLOPS,          // audio ADM audio_sapm
-    AUDIO_ADM_TEST_AUDIOACCESSORYSAPMSETCTRLOPS,      // audio ADM audio_sapm
-    AUDIO_ADM_TEST_AUDIOACCESSORYSAPMGETCTRLOPS = 47, // audio ADM audio_sapm
 
-    AUDIO_ADM_TEST_I2CREADWRITE,                      // audio ADM audio_accessory_base
+    AUDIO_ADM_TEST_I2CREADWRITE,                      // audio ADM audio_codec_base
     AUDIO_ADM_TEST_REGBITSREAD,
     AUDIO_ADM_TEST_REGBITSUPDATE,
     AUDIO_ADM_TEST_DEVICEFREQUENCYPARSE,

@@ -29,7 +29,6 @@ struct CodecDevice {
     struct CodecData *devData;      /**< Codec module private data */
     struct HdfDeviceObject *device; /**< HDF device */
     struct DListHead list;          /**< Codec list */
-    struct OsalMutex mutex;         /**< Codec mutex */
 };
 
 /**
@@ -57,7 +56,7 @@ struct CodecData {
     /**
      * @brief Defines Codec device reg read.
      *
-     * @param virtualAddress Indicates base reg IoRemap address.
+     * @param codec Indicates a codec device.
      * @param reg Indicates reg offset.
      * @param value Indicates read reg value.
      *
@@ -66,12 +65,12 @@ struct CodecData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Read)(unsigned long virtualAddress, uint32_t reg, uint32_t *value);
+    int32_t (*Read)(const struct CodecDevice *codec, uint32_t reg, uint32_t *value);
 
     /**
      * @brief Defines Codec device reg write.
      *
-     * @param virtualAddress Indicates base reg IoRemap address.
+     * @param codec Indicates a codec device.
      * @param reg Indicates reg offset.
      * @param value Indicates write reg value.
      *
@@ -80,10 +79,10 @@ struct CodecData {
      * @since 1.0
      * @version 1.0
      */
-    int32_t (*Write)(unsigned long virtualAddress, uint32_t reg, uint32_t value);
+    int32_t (*Write)(const struct CodecDevice *codec, uint32_t reg, uint32_t value);
 
     struct AudioKcontrol *controls;            /**< Codec control structure array pointer */
-    uint32_t numControls;                           /**< Number of array elements of Codec controls */
+    int numControls;                           /**< Number of array elements of Codec controls */
     struct AudioSapmComponent *sapmComponents; /**< Codec power management component array pointer */
     int numSapmComponent;                      /**< Number of array elements of codec power management component */
     const struct AudioSapmRoute *sapmRoutes;   /**< Codec power management route array pointer */
@@ -91,6 +90,8 @@ struct CodecData {
     unsigned long virtualAddress;              /**< Codec base reg IoRemap address */
     struct AudioRegCfgData *regConfig;         /**< Codec registers configured in HCS */
     struct AudioRegCfgGroupNode **regCfgGroup; /**< Codec register group configured in HCS */
+    struct OsalMutex mutex;                    /**< Codec mutex */
+    void *privateParam;                        /**< Codec private parameter */
 };
 
 /**

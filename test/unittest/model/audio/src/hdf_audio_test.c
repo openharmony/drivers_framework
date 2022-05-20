@@ -16,7 +16,6 @@
 #include "audio_dsp_base_test.h"
 #include "audio_codec_base_test.h"
 #include "audio_platform_base_test.h"
-#include "audio_accessory_base_test.h"
 #include "hdf_audio_test.h"
 
 #define HDF_LOG_TAG hdf_audio_test
@@ -35,14 +34,11 @@ static HdfTestCaseList g_hdfAudioTestCaseList[] = {
     {AUDIO_ADM_TEST_AUDIOSOCREGISTERDAI, AudioSocRegisterDaiTest},                   // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOREGISTERDSP, AudioRegisterDspTest},                         // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOREGISTERCODEC, AudioRegisterCodecTest},                     // audio ADM audio_core
-    {AUDIO_ADM_TEST_AUDIOREGISTERACCESSORY, AudioRegisterAccessoryTest},             // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOBINDDAILINK, AudioBindDaiLinkTest},                         // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOUPDATECODECREGBITS, AudioUpdateCodecRegBitsTest},           // audio ADM audio_core
-    {AUDIO_ADM_TEST_AUDIOUPDATEACCESSORYREGBITS, AudioUpdateAccessoryRegBitsTest},   // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOUPDATEDAIREGBITS, AudioUpdateDaiRegBitsTest},               // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOKCONTROLGETCPUDAI, AudioKcontrolGetCpuDaiTest},             // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOKCONTROLGETCODEC, AudioKcontrolGetCodecTest},               // audio ADM audio_core
-    {AUDIO_ADM_TEST_AUDIOKCONTROLGETACCESSORY, AudioKcontrolGetAccessoryTest},       // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOADDCONTROLS, AudioAddControlsTest},                         // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOADDCONTROL, AudioAddControlTest},                           // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOGETCTRLOPSRREG, AudioGetCtrlOpsRRegTest},                   // audio ADM audio_core
@@ -53,13 +49,9 @@ static HdfTestCaseList g_hdfAudioTestCaseList[] = {
     {AUDIO_ADM_TEST_AUDIODAIWRITEREG, AudioDaiWriteRegTest},                         // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOCODECREADREG, AudioCodecReadRegTest},                       // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOCODECWRITEREG, AudioCodecWriteRegTest},                     // audio ADM audio_core
-    {AUDIO_ADM_TEST_AUDIOACCESSORYREADREG, AudioAccessoryReadRegTest},               // audio ADM audio_core
-    {AUDIO_ADM_TEST_AUDIOACCESSORYWRITEREG, AudioAccessoryWriteRegTest},             // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOINFOCTRLOPS, AudioInfoCtrlOpsTest},                         // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOCODECGETCTRLOPS, AudioCodecGetCtrlOpsTest},                 // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOCODECSETCTRLOPS, AudioCodecSetCtrlOpsTest},                 // audio ADM audio_core
-    {AUDIO_ADM_TEST_AUDIOACCESSORYGETCTRLOPS, AudioAccessoryGetCtrlOpsTest},         // audio ADM audio_core
-    {AUDIO_ADM_TEST_AUDIOACCESSORYSETCTRLOPS, AudioAccessorySetCtrlOpsTset},         // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOCPUDAISETCTRLOPS, AudioCpuDaiSetCtrlOpsTest},               // audio ADM audio_core
     {AUDIO_ADM_TEST_AUDIOCPUDAIGETCTRLOPS, AudioCpuDaiGetCtrlOpsTest},               // audio ADM audio_core
 
@@ -71,19 +63,6 @@ static HdfTestCaseList g_hdfAudioTestCaseList[] = {
     {AUDIO_ADM_TEST_AUDIOSAMPSETPOWERMONITOR, AudioSampSetPowerMonitorTest},         // audio ADM audio_sapm
     {AUDIO_ADM_TEST_AUDIOCODECSAPMSETCTRLOPS, AudioCodecSapmSetCtrlOpsTest},         // audio ADM audio_sapm
     {AUDIO_ADM_TEST_AUDIOCODECSAPMGETCTRLOPS, AudioCodecSapmGetCtrlOpsTest},         // audio ADM audio_sapm
-    {AUDIO_ADM_TEST_AUDIOACCESSORYSAPMSETCTRLOPS, AudioAccessorySapmSetCtrlOpsTest}, // audio ADM audio_sapm
-    {AUDIO_ADM_TEST_AUDIOACCESSORYSAPMGETCTRLOPS, AudioAccessorySapmGetCtrlOpsTest}, // audio ADM audio_sapm
-
-    {AUDIO_ADM_TEST_I2CREADWRITE, AccessoryI2cReadWriteTest},
-    {AUDIO_ADM_TEST_REGBITSREAD, AccessoryRegBitsReadTest},
-    {AUDIO_ADM_TEST_REGBITSUPDATE, AccessoryRegBitsUpdateTest},
-    {AUDIO_ADM_TEST_DEVICEFREQUENCYPARSE, AccessoryDeviceFrequencyParseTest},
-    {AUDIO_ADM_TEST_DAIPARAMSUPDATE, AccessoryDaiParamsUpdateTest},
-    {AUDIO_ADM_TEST_DEVICECFGGET, AccessoryDeviceCfgGetTest},
-    {AUDIO_ADM_TEST_DEVICECTRLREGINIT, AccessoryDeviceCtrlRegInitTest},
-    {AUDIO_ADM_TEST_DEVICEREGREAD, AccessoryDeviceRegReadTest},
-    {AUDIO_ADM_TEST_DEVICEREGWRITE, AccessoryDeviceRegWriteTest},
-    {AUDIO_ADM_TEST_AGETCONFIGINFO, AccessoryGetConfigInfoTest},
 
     {AUDIO_ADM_TEST_GETSERVICENAME, CodecGetServiceNameTest},
     {AUDIO_ADM_TEST_GETDAINAME, CodecGetDaiNameTest},

@@ -74,8 +74,6 @@ int32_t AudioFillConfigData(const struct HdfDeviceObject *device, struct AudioCo
     int32_t codeDaiRet;
     int32_t dspRet;
     int32_t dspDaiRet;
-    int32_t accessoryRet;
-    int32_t accessoryDaiRet;
     ADM_LOG_DEBUG("Entry.");
 
     if (device == NULL || configData == NULL) {
@@ -101,22 +99,18 @@ int32_t AudioFillConfigData(const struct HdfDeviceObject *device, struct AudioCo
     codeDaiRet = drsOps->GetString(node, "codecDaiName", &(configData->codecDaiName), 0);
     dspRet = drsOps->GetString(node, "dspName", &(configData->dspName), 0);
     dspDaiRet = drsOps->GetString(node, "dspDaiName", &(configData->dspDaiName), 0);
-    accessoryRet = drsOps->GetString(node, "accessoryName", &(configData->accessoryName), 0);
-    accessoryDaiRet = drsOps->GetString(node, "accessoryDaiName", &(configData->accessoryDaiName), 0);
     if (serviceRet || codecRet || platformRet || cpuRet || codeDaiRet ||
-        dspRet || dspDaiRet || accessoryRet || accessoryDaiRet) {
+        dspRet || dspDaiRet) {
         ADM_LOG_ERR("Read audioDeviceName fail: serviceRet=%d, codecRet=%d, platformRet=%d, cpuRet=%d, codeDaiRet=%d,"
-            "dspRet=%d, dspDaiRet=%d, accessoryRet=%d, accessoryDaiRet=%d",
-            serviceRet, codecRet, platformRet, cpuRet, codeDaiRet, dspRet,
-            dspDaiRet, accessoryRet, accessoryDaiRet);
+            "dspRet=%d, dspDaiRet=%d",
+            serviceRet, codecRet, platformRet, cpuRet, codeDaiRet, dspRet, dspDaiRet);
         return HDF_FAILURE;
     }
 
     ADM_LOG_DEBUG("Success! codecName = %s, platformName = %s, cpuDaiName = %s, codecDaiName = %s, "
-        "dspName = %s, dspDaiName = %s, accessoryName = %s, accessoryDaiName = %s.",
+        "dspName = %s, dspDaiName = %s.",
         configData->codecName, configData->platformName, configData->cpuDaiName,
-        configData->codecDaiName, configData->dspName, configData->dspDaiName,
-        configData->accessoryName, configData->accessoryDaiName);
+        configData->codecDaiName, configData->dspName, configData->dspDaiName);
 
     return HDF_SUCCESS;
 }

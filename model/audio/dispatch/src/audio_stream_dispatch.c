@@ -70,10 +70,15 @@ static int32_t HwCodecDaiDispatch(const struct AudioCard *audioCard, const struc
     }
     codecDai = rtd->codecDai;
     if (codecDai == NULL) {
-        codecDai = rtd->accessoryDai;
+        ADM_LOG_ERR("codecDai is NULL.");
+        return HDF_FAILURE;
     }
-    if (codecDai == NULL || codecDai->devData == NULL || codecDai->devData->ops == NULL) {
-        ADM_LOG_ERR("codecDai param is NULL.");
+    if (codecDai->devData == NULL) {
+        ADM_LOG_ERR("codecDai devData is NULL.");
+        return HDF_FAILURE;
+    }
+    if (codecDai->devData->ops == NULL) {
+        ADM_LOG_ERR("codecDai ops is NULL.");
         return HDF_FAILURE;
     }
 
@@ -236,32 +241,11 @@ static int32_t DspDaiDevStartup(const struct AudioCard *audioCard, const struct 
     return HDF_SUCCESS;
 }
 
-static int32_t AccessoryDaiDevStartup(const struct AudioCard *audioCard, const struct DaiDevice *accessoryDai)
-{
-    int32_t ret;
-    if (audioCard == NULL || audioCard->rtd == NULL) {
-        ADM_LOG_ERR("audioCard is null.");
-        return HDF_FAILURE;
-    }
-    if (accessoryDai != NULL && accessoryDai->devData != NULL && accessoryDai->devData->ops != NULL &&
-        accessoryDai->devData->ops->Startup != NULL) {
-        ret = accessoryDai->devData->ops->Startup(audioCard, accessoryDai);
-        if (ret != HDF_SUCCESS) {
-            ADM_LOG_ERR("accessoryDai Startup failed.");
-            return HDF_FAILURE;
-        }
-    } else {
-        ADM_LOG_DEBUG("accessory dai startup is null.");
-    }
-    return HDF_SUCCESS;
-}
-
 static int32_t AudioDaiDeviceStartup(const struct AudioCard *audioCard)
 {
     struct DaiDevice *cpuDai = NULL;
     struct DaiDevice *codecDai = NULL;
     struct DaiDevice *dspDai = NULL;
-    struct DaiDevice *accessoryDai = NULL;
     int32_t ret;
 
     if (audioCard == NULL || audioCard->rtd == NULL) {
@@ -284,12 +268,6 @@ static int32_t AudioDaiDeviceStartup(const struct AudioCard *audioCard)
     ret = DspDaiDevStartup(audioCard, dspDai);
     if (ret != HDF_SUCCESS) {
         ADM_LOG_ERR("DspDaiDevStartup failed.");
-        return HDF_FAILURE;
-    }
-    accessoryDai = audioCard->rtd->accessoryDai;
-    ret = AccessoryDaiDevStartup(audioCard, accessoryDai);
-    if (ret != HDF_SUCCESS) {
-        ADM_LOG_ERR("AccessoryDaiDevStartup failed.");
         return HDF_FAILURE;
     }
     return HDF_SUCCESS;
@@ -928,7 +906,6 @@ static int32_t StreamTriggerRouteImpl(const struct AudioCard *audioCard, const s
     int32_t ret = HDF_SUCCESS;
     struct DaiDevice *cpuDai = NULL;
     struct DaiDevice *codecDai = NULL;
-    struct DaiDevice *accessoryDai = NULL;
     struct DaiDevice *dspDai = NULL;
     if (audioCard == NULL || rtd == NULL) {
         ADM_LOG_ERR("input param is NULL.");
@@ -952,15 +929,7 @@ static int32_t StreamTriggerRouteImpl(const struct AudioCard *audioCard, const s
             return HDF_FAILURE;
         }
     }
-    accessoryDai = rtd->accessoryDai;
-    if (accessoryDai != NULL && accessoryDai->devData != NULL && accessoryDai->devData->ops != NULL &&
-        accessoryDai->devData->ops->Trigger != NULL) {
-        ret = accessoryDai->devData->ops->Trigger(audioCard, methodCmd, accessoryDai);
-        if (ret != HDF_SUCCESS) {
-            ADM_LOG_ERR("accessoryDai Trigger failed.");
-            return HDF_FAILURE;
-        }
-    }
+
     dspDai = rtd->dspDai;
     if (dspDai != NULL && dspDai->devData != NULL && dspDai->devData->ops != NULL &&
         dspDai->devData->ops->Trigger != NULL) {

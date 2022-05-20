@@ -134,35 +134,3 @@ int32_t AudioCodecSapmGetCtrlOpsTest(void)
     HDF_LOGI("%s: success", __func__);
     return HDF_SUCCESS;
 }
-
-int32_t AudioAccessorySapmSetCtrlOpsTest(void)
-{
-    int32_t ret;
-    struct AudioKcontrol *kcontrol = NULL;
-    struct AudioCtrlElemValue *elemValue = NULL;
-    HDF_LOGI("%s: enter", __func__);
-
-    ret = AudioAccessorySapmSetCtrlOps(kcontrol, elemValue);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: AudioAccessorySapmSetCtrlOps is NULL", __func__);
-    }
-
-    HDF_LOGI("%s: success", __func__);
-    return HDF_SUCCESS;
-}
-
-int32_t AudioAccessorySapmGetCtrlOpsTest(void)
-{
-    int32_t ret;
-    struct AudioKcontrol *kcontrol = NULL;
-    struct AudioCtrlElemValue *elemValue = NULL;
-    HDF_LOGI("%s: enter", __func__);
-
-    ret = AudioAccessorySapmGetCtrlOps(kcontrol, elemValue);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: AudioAccessorySapmGetCtrlOps is NULL", __func__);
-    }
-
-    HDF_LOGI("%s: success", __func__);
-    return HDF_SUCCESS;
-}
