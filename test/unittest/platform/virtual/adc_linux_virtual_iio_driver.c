@@ -17,6 +17,7 @@
 #include "hdf_log.h"
 #include "hdf_base.h"
 
+#define HDF_LOG_TAG adc_iio_virtual
 #define ADC_SCALE 32680000
 #define ADC_SCALE_DATA 100000
 #define ADC_VIRTUAL_RAW_DATA 119
@@ -53,7 +54,7 @@ static int AdcReadChannelData(struct iio_dev *indioDev, struct iio_chan_spec con
  * val : The value written by the application, val is the integer part if it is a fractional value.
  * val2 : The value written by the application, if it is a fractional value, val2 is the fractional part.
 */
-static int AdcReadRaw(struct iio_dev *indioDev, struct iio_chan_spec const *chan, int *val, int *val2, long mask)
+static int AdcIioReadRaw(struct iio_dev *indioDev, struct iio_chan_spec const *chan, int *val, int *val2, long mask)
 {
     struct VirtualAdcDev *dev = NULL;
     int ret;
@@ -125,7 +126,7 @@ static const struct iio_chan_spec AdcChannels[] = {
 };
 
 static const struct iio_info AdcIioInfo = {
-    .read_raw = AdcReadRaw,
+    .read_raw = AdcIioReadRaw,
 };
 
 static void VirtualAdcDevRelease(struct device *dev)
