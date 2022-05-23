@@ -153,14 +153,14 @@ int32_t UsbPnpManagerRegisterDevice(struct UsbPnpManagerDeviceInfo *managerInfo)
     devObj->priv = (void *)managerInfo->privateData;
     ret = HdfDeviceObjectRegister(devObj);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to regitst device %s", __func__, managerInfo->serviceName);
+        HDF_LOGE("%s: failed to register device %s", __func__, managerInfo->serviceName);
         HdfDeviceObjectRelease(devObj);
         return ret;
     }
     ret = HdfDeviceObjectPublishService(devObj, managerInfo->serviceName, SERVICE_POLICY_CAPACITY,
         OSAL_S_IREAD | OSAL_S_IWRITE | OSAL_S_IRGRP | OSAL_S_IWGRP | OSAL_S_IROTH);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to regitst device %s", __func__, managerInfo->serviceName);
+        HDF_LOGE("%s: failed to register device %s", __func__, managerInfo->serviceName);
         HdfDeviceObjectRelease(devObj);
         return ret;
     }

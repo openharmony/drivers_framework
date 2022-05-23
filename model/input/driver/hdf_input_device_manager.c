@@ -63,13 +63,13 @@ static struct HdfDeviceObject *HidRegisterHdfDevice(InputDevice *inputDev)
     }
     ret = HdfDeviceObjectRegister(hdfDev);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to regitst device %s", __func__, moduleName);
+        HDF_LOGE("%s: failed to register device %s", __func__, moduleName);
         HdfDeviceObjectRelease(hdfDev);
         return NULL;
     }
     ret = HdfDeviceObjectPublishService(hdfDev, svcName, SERVICE_POLICY_CAPACITY, 0664); // 0664:permission setting
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: failed to regitst device %s", __func__, moduleName);
+        HDF_LOGE("%s: failed to register device %s", __func__, moduleName);
         HdfDeviceObjectRelease(hdfDev);
         return NULL;
     }
