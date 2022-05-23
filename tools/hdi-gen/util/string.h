@@ -9,6 +9,7 @@
 #ifndef OHOS_HDI_STRING_H
 #define OHOS_HDI_STRING_H
 
+#include <stdlib.h>
 #include <vector>
 
 namespace OHOS {
