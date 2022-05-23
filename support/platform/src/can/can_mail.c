@@ -68,6 +68,7 @@ int32_t CanRxBoxAddMsg(struct CanRxBox *rbox, struct CanMsg *cmsg)
     CanMsgGet(cmsg); // increase ref count before enqueue
     ret = PlatformQueueAddMsg(rbox->queue, pmsg);
     if (ret != HDF_SUCCESS) {
+        OsalMemFree(pmsg);
         CanMsgPut(cmsg); // decrase ref count if enqueue failed 
     }
     return ret;
@@ -175,5 +176,6 @@ int32_t CanRxBoxDelFilter(struct CanRxBox *rbox, const struct CanFilter *filter)
             return HDF_SUCCESS;
         }
     }
+    CanRxBoxUnlock(rbox);
     return HDF_ERR_NOT_SUPPORT;
 }

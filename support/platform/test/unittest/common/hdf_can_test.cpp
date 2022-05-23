@@ -95,7 +95,7 @@ HWTEST_F(HdfCanTest, HdfCanTest004_AddAndDelFilter, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: NA
  */
-HWTEST_F(HdfCanTest, HdfCanTest005_AddNultiFilters, TestSize.Level1)
+HWTEST_F(HdfCanTest, HdfCanTest005_AddMultiFilters, TestSize.Level1)
 {
     struct HdfTestMsg msg = {TEST_PAL_CAN_TYPE, CAN_TEST_ADD_MULTI_FILTER, -1};
     EXPECT_EQ(0, HdfTestSendMsgToService(&msg));

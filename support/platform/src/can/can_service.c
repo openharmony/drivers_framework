@@ -54,3 +54,10 @@ int32_t CanServiceBind(struct HdfDeviceObject *device)
     device->service = service;
     return HDF_SUCCESS;
 }
+
+void CanServiceRelease(struct HdfDeviceObject *device)
+{
+    if (device != NULL && device->service != NULL) {
+        OsalMemFree(device->service);
+    }
+}
