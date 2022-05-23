@@ -9,6 +9,7 @@
 #ifndef OHOS_HDI_JAVA_CODE_EMITTER_H
 #define OHOS_HDI_JAVA_CODE_EMITTER_H
 
+#include <ctype.h>
 #include "ast/ast.h"
 #include "codegen/code_emitter.h"
 #include "util/autoptr.h"
