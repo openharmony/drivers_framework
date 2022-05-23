@@ -24,6 +24,8 @@ enum CanIoCmd {
 
 int32_t CanServiceBind(struct HdfDeviceObject *device);
 
+void CanServiceRelease(struct HdfDeviceObject *device);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
