@@ -61,8 +61,8 @@ NodeTools.getPathByNode = function (node) {
     let ret = node.name_;
     while (node.parent_ != undefined) {
         node = node.parent_;
-        if(node.nodeType_==NodeType.REFERENCE){
-            node = NodeTools.getNodeByPath(getRoot(node),node.ref_);
+        if (node.nodeType_ == NodeType.REFERENCE) {
+            node = NodeTools.getNodeByPath(getRoot(node), node.ref_);
         }
         ret = node.name_ + "." + ret;
     }
@@ -78,6 +78,16 @@ NodeTools.getNodeByPath = function (node, path) {
     return node;
 }
 
+NodeTools.lookupInherit = function (node) {
+    if (node.type_ == DataType.NODE && node.nodeType_ == NodeType.INHERIT &&
+         node.parent_.nodeType_ == NodeType.INHERIT) {
+        let p = NodeTools.lookupInherit(node.parent_);
+        if (p == null) return p;
+        return NodeTools.findChildByName(p, node.ref_);
+    }
+    return NodeTools.findChildByName(node.parent_, node.ref_);
+}
+
 NodeTools.lookup = function (node) {//copy,reference,inherit
     let refname;
     if (node.type_ == DataType.NODE &&
@@ -90,7 +100,15 @@ NodeTools.lookup = function (node) {//copy,reference,inherit
         refname = node.value_.value_;
     else return null;
     if (refname.indexOf(".") >= 0) return NodeTools.getNodeByPath(getRoot(node), refname);
-    return NodeTools.findChildByName(node.parent_, refname);
+
+    let ret = NodeTools.findChildByName(node.parent_, refname);
+    if (ret == null) {
+        if (node.type_ == DataType.NODE && node.nodeType_ == NodeType.INHERIT &&
+             node.parent_.nodeType_ == NodeType.INHERIT) {
+            ret = NodeTools.lookupInherit(node);
+        }
+    }
+    return ret;
 }
 
 NodeTools.recursionNode = function (node, callback) {//Find all nodes
@@ -154,8 +172,8 @@ NodeTools.copyNode = function (node, parent) {
         type_: node.type_,
         name_: node.name_,
         parent_: parent
-    };if(node.raw_!=undefined)
-        ret.raw_=node.raw_
+    }; if (node.raw_ != undefined)
+        ret.raw_ = node.raw_
     switch (node.type_) {
         case DataType.INT8:
         case DataType.INT16:
@@ -169,20 +187,20 @@ NodeTools.copyNode = function (node, parent) {
             break;
         case 6://ConfigNode
             ret.nodeType_ = node.nodeType_;
-            if([NodeType.INHERIT,NodeType.COPY,NodeType.REFERENCE].indexOf(node.nodeType_) > -1){
+            if ([NodeType.INHERIT, NodeType.COPY, NodeType.REFERENCE].indexOf(node.nodeType_) > -1) {
                 ret.ref_ = node.ref_;
-            }else if(!([NodeType.DATA,NodeType.TEMPLETE,NodeType.DELETE].indexOf(node.nodeType_)> -1 )){
+            } else if (!([NodeType.DATA, NodeType.TEMPLETE, NodeType.DELETE].indexOf(node.nodeType_) > -1)) {
                 NapiLog.logError("unknow node type");
             }
             ret.value_ = []
-            for (let i in node.value_) {ret.value_.push(NodeTools.copyNode(node.value_[i], ret))}
+            for (let i in node.value_) { ret.value_.push(NodeTools.copyNode(node.value_[i], ret)) }
             break;
         case 7://ConfigTerm
             ret.value_ = NodeTools.copyNode(node.value_, ret)
             break;
         case 8://array Array class attribute value
             ret.value_ = []
-            for (let i in node.value_) {ret.value_.push(NodeTools.copyNode(node.value_[i], ret))}
+            for (let i in node.value_) { ret.value_.push(NodeTools.copyNode(node.value_[i], ret)) }
             break;
         case 9://Attribute equal to leaf
             ret.value_ = node.value_;
@@ -214,7 +232,7 @@ NodeTools.nodeNestCheck = function (node) {
         return false;
     }, false);
 }
-NodeTools.recursionCopyAndReferenceNodes = function(pn){
+NodeTools.recursionCopyAndReferenceNodes = function (pn) {
     let ref = NodeTools.lookup(pn);
     if (ref == null) {
         NapiLog.logError("reference not exist" + NodeTools.getPathByNode(pn) + ":" + pn.ref_);
@@ -237,40 +255,40 @@ NodeTools.recursionCopyAndReferenceNodes = function(pn){
             makeError(pn, "循环引用")
         }
         return false;
-    } else if(pn.nodeType_ == NodeType.COPY) {     
-            if(ref.nodeType_ == NodeType.COPY) {
-                pn.raw_.errMsg_="有Copy的嵌套";
-            }
-            pn.nodeType_ = NodeType.DATA;//Convert current node to data class node
-            let tref = NodeTools.copyNode(ref, pn.parent_);//Copy a Ref
-            tref.name_ = pn.name_;
-            NodeTools.merge(tref, pn)//Merge the contents of the current node
-            pn.value_ = tref.value_;
-            return false;
+    } else if (pn.nodeType_ == NodeType.COPY) {
+        if (ref.nodeType_ == NodeType.COPY) {
+            pn.raw_.errMsg_ = "有Copy的嵌套";
+        }
+        pn.nodeType_ = NodeType.DATA;//Convert current node to data class node
+        let tref = NodeTools.copyNode(ref, pn.parent_);//Copy a Ref
+        tref.name_ = pn.name_;
+        NodeTools.merge(tref, pn)//Merge the contents of the current node
+        pn.value_ = tref.value_;
+        return false;
     } else if (pn.nodeType_ == NodeType.REFERENCE) {
-            pn.nodeType_ = ref.nodeType_; pn.name_ = ref.name_;
-            NodeTools.merge(ref, pn)//Merge the contents of the current node into Ref
-            separate(pn);
-            return true;
+        pn.nodeType_ = ref.nodeType_; pn.name_ = ref.name_;
+        NodeTools.merge(ref, pn)//Merge the contents of the current node into Ref
+        separate(pn);
+        return true;
     }
     return false;
 }
 
-NodeTools.checkInheritNode = function(pn){
+NodeTools.checkInheritNode = function (pn) {
     let ref = NodeTools.lookup(pn);
     if (ref == null) {
         makeError(pn, "找不到继承目标")
-    }else if (ref.type_ != DataType.NODE) {
+    } else if (ref.type_ != DataType.NODE) {
         makeError(pn, "不能继承属性")
-    }else if (ref.nodeType_ == NodeType.REFERENCE) {
+    } else if (ref.nodeType_ == NodeType.REFERENCE) {
         makeError(pn, "不能继承引用类节点")
-    }else if (ref.nodeType_ == NodeType.DELETE) {
+    } else if (ref.nodeType_ == NodeType.DELETE) {
         makeError(pn, "不能继承删除类节点")
-    }else if (ref.nodeType_ == NodeType.DATA) {
+    } else if (ref.nodeType_ == NodeType.DATA) {
         makeError(pn, "不能继承数据类节点")
-    }else if (ref.nodeType_ == NodeType.INHERIT) {
+    } else if (ref.nodeType_ == NodeType.INHERIT) {
         makeError(pn, "不能继承继承类节点")
-    }else if (ref.nodeType_ == NodeType.COPY) {
+    } else if (ref.nodeType_ == NodeType.COPY) {
         makeError(pn, "不能继承复制类节点")
     }
 }
@@ -281,9 +299,9 @@ NodeTools.nodeExpand = function (node) {
             if (pn.nodeType_ == NodeType.DELETE) {
                 separate(pn);
                 return true;
-            }if (pn.nodeType_ == NodeType.COPY || pn.nodeType_ == NodeType.REFERENCE) {
+            } if (pn.nodeType_ == NodeType.COPY || pn.nodeType_ == NodeType.REFERENCE) {
                 return NodeTools.recursionCopyAndReferenceNodes(pn);
-            }if (pn.nodeType_ == NodeType.INHERIT){
+            } if (pn.nodeType_ == NodeType.INHERIT) {
                 NodeTools.checkInheritNode(pn);
             }
         }
@@ -291,7 +309,7 @@ NodeTools.nodeExpand = function (node) {
             if (pn.value_.type_ == DataType.DELETE) {
                 separate(pn);
                 return true;
-            }if (pn.value_.type_ == DataType.REFERENCE) {
+            } if (pn.value_.type_ == DataType.REFERENCE) {
                 let ref = NodeTools.lookup(pn);
                 if (ref == null || ref.type_ != DataType.NODE || ref.nodeType_ == NodeType.REFERENCE ||
                     ref.nodeType_ == NodeType.TEMPLETE || ref.nodeType_ == NodeType.DELETE) {
@@ -345,7 +363,7 @@ NodeTools.merge = function (node1, node2) {
             return false;
         }
         node1.nodeType_ = node2.nodeType_;
-        if (node2.nodeType_ == NodeType.INHERIT || node2.nodeType_ == NodeType.REFERENCE 
+        if (node2.nodeType_ == NodeType.INHERIT || node2.nodeType_ == NodeType.REFERENCE
             || node2.nodeType_ == NodeType.COPY) node1.ref_ = node2.ref_
         if (node1.value_ == undefined) node1.value_ = [];
 
@@ -360,8 +378,8 @@ NodeTools.merge = function (node1, node2) {
                 }
                 node1.value_.push(child1)
             }
-            else if (child1.type_ != child2.type_){
-                child2.raw_.errMsg_= "所修改的字节的类型和父节点类型不同";
+            else if (child1.type_ != child2.type_) {
+                child2.raw_.errMsg_ = "所修改的字节的类型和父节点类型不同";
                 return false;
             }
             NodeTools.merge(child1, child2);
@@ -452,15 +470,15 @@ NodeTools.arrayToString = function (node, maxw) {
 }
 
 NodeTools.stringToArray = function (s) {
-    let type = DataType.INT8; 
+    let type = DataType.INT8;
     let ret = [];
     s = s.replace(/\n/g, "")
     if (s.length <= 0)
         return ret;
     if (s.indexOf('"') >= 0) {
         type = DataType.STRING;
-        let p = 0; 
-        let stat = 0; 
+        let p = 0;
+        let stat = 0;
         let v
         while (p < s.length && stat < 100) {
             switch (stat) {
@@ -484,13 +502,13 @@ NodeTools.stringToArray = function (s) {
             }
             p += 1;
         }
-    }else {
+    } else {
         let arr = s.split(",");
-        stringToArrayWithQuote(ret,type,arr);
-    }return ret;
+        stringToArrayWithQuote(ret, type, arr);
+    } return ret;
 }
 
-function stringToArrayWithQuote(ret,type,arr){
+function stringToArrayWithQuote(ret, type, arr) {
     for (let i in arr) {
         let num = NodeTools.jinZhiXTo10(arr[i])
         if (isNaN(num[0])) num[0] = 0;
@@ -511,7 +529,7 @@ function stringToArrayWithQuote(ret,type,arr){
         }
     }
     if (type != DataType.INT8) {
-        for (let i in ret) { 
+        for (let i in ret) {
             ret[i].type_ = type;
         }
     }
