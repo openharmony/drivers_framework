@@ -9,7 +9,6 @@
 #include "sensor_hall_driver.h"
 #include <securec.h>
 #include "gpio_if.h"
-#include "hall_ak8789.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
 #include "osal_irq.h"
