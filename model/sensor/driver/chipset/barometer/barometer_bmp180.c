@@ -143,7 +143,7 @@ static int32_t ReadEepromData(struct SensorCfgData *data, struct BarometerEeprom
     return ret;
 }
 
-static int32_t ReadTempData(struct SensorCfgData *data,  struct BarometerRawData *Temp)
+static int32_t ReadTempData(struct SensorCfgData *data,  struct BarometerData *Temp)
 {
     int32_t ret;
     uint8_t status = 0;
@@ -172,7 +172,7 @@ static int32_t ReadTempData(struct SensorCfgData *data,  struct BarometerRawData
     return ret;
 }
 
-static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRawData *Barom)
+static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerData *Barom)
 {
     int32_t ret;
     uint8_t status = 0;
@@ -206,7 +206,7 @@ static int32_t ReadBarometerData(struct SensorCfgData *data, struct BarometerRaw
     return ret;
 }
 
-static int32_t CalcBarometerData(struct  BarometerRawData *barometerData, int32_t tnp[BAROMETER_SUM])
+static int32_t CalcBarometerData(struct  BarometerData *barometerData, int32_t tnp[BAROMETER_SUM])
 {
     struct Coefficient coefficientData = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -253,7 +253,7 @@ int32_t ReadBmp180Data(struct SensorCfgData *data)
 {
     int32_t ret;
     int32_t tmp[BAROMETER_SUM];
-    struct  BarometerRawData barometerData = {0, 0};
+    struct  BarometerData barometerData = {0, 0};
     OsalTimespec time;
     struct SensorReportEvent event;
 

@@ -82,12 +82,12 @@ enum Barometer {
     BAROMETER_BAR_SUM,
 };
 
-struct  BarometerRawData {
+struct  BarometerData {
     int32_t unpensatePre;
     int32_t unpensateTemp;
 };
 
-enum BarometerData {
+enum BarometerRawData {
     BAROMETER_BAROMETER   = 0,
     BAROMETER_TEMPERATURE = 1,
     BAROMETER_ALTITUDE    = 2,
