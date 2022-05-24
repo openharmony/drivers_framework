@@ -12,7 +12,6 @@ using namespace std;
 
 namespace {
 const int32_t BUS_NUM = 6;
-const int32_t MAX_LEN = 12;
 const uint16_t BUF_LEN = 7;
 }
 
@@ -22,22 +21,17 @@ struct AllParameters {
     uint8_t buf[BUF_LEN];
 };
 
-union ConvertToParam {
-    uint8_t data[MAX_LEN];
-    struct AllParameters params;
-};
-
 namespace OHOS {
     bool I2cFuzzTest(const uint8_t *data, size_t size)
     {
         DevHandle handle = nullptr;
-        union ConvertToParam convertor;
+        struct AllParameters params;
         struct I2cMsg msg;
 
         if (data == nullptr) {
             return false;
         }
-        if (memcpy_s (convertor.data, MAX_LEN, data, MAX_LEN) != EOK) {
+        if (memcpy_s((void *)&params, sizeof(params), data, sizeof(params)) != EOK) {
             return false;
         }
 
@@ -45,11 +39,12 @@ namespace OHOS {
         if (handle == nullptr) {
             return false;
         }
-        msg.addr = convertor.params.addr;
-        msg.flags = convertor.params.flags;
+        msg.addr = params.addr;
+        msg.flags = params.flags;
         msg.len = BUF_LEN;
         msg.buf = (uint8_t *)malloc(BUF_LEN);
-        if (memcpy_s(msg.buf, BUF_LEN, convertor.params.buf, BUF_LEN) != EOK) {
+        if (memcpy_s(msg.buf, BUF_LEN, params.buf, BUF_LEN) != EOK) {
+            free(msg.buf);
             return false;
         }
         I2cTransfer(handle, &msg, 1);
