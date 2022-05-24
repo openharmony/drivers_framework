@@ -281,7 +281,7 @@ int PlatformDeviceTestExecute(int cmd)
 {
     uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
-    struct PlatformDevice device;
+    struct PlatformDevice device = {0};
     struct PlatformDeviceTestEntry *entry = NULL;
 
     if (cmd > PLAT_DEVICE_TEST_CMD_MAX) {
