@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -35,35 +35,15 @@ String ASTUnionType::ToString()
 String ASTUnionType::Dump(const String &prefix)
 {
     StringBuilder sb;
-    sb.Append(prefix);
-
-    std::vector<String> attributes;
-    if (isFull_)
-        attributes.push_back("full");
-    if (isLite_)
-        attributes.push_back("lite");
-    if (attributes.size() > 0) {
-        sb.Append("[");
-        for (size_t i = 0; i < attributes.size(); i++) {
-            sb.Append(attributes[i]);
-            if (i < attributes.size() - 1) {
-                sb.Append(',');
-            }
-        }
-        sb.Append("] ");
-    }
-
+    sb.Append(prefix).Append(attr_->Dump(prefix)).Append(" ");
     sb.AppendFormat("union %s {\n", name_.string());
-
     if (members_.size() > 0) {
         for (auto it : members_) {
             sb.Append(prefix + "  ");
             sb.AppendFormat("%s %s;\n", std::get<1>(it)->ToString().string(), std::get<0>(it).string());
         }
     }
-
     sb.Append(prefix).Append("};\n");
-
     return sb.ToString();
 }
 
@@ -174,8 +154,7 @@ void ASTUnionType::EmitCProxyReadVar(const String &parcelName, const String &nam
         sb.Append(prefix).Append("uint32_t len = 0;\n");
         sb.Append(prefix).AppendFormat(
             "if (!HdfSbufReadBuffer(%s, (const void **)&%s, &len)) {\n", parcelName.string(), name.string());
-        sb.Append(prefix + TAB)
-            .AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+        sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
         sb.Append(prefix + TAB).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
         sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(prefix).Append("}\n\n");
@@ -200,8 +179,7 @@ void ASTUnionType::EmitCStubReadVar(const String &parcelName, const String &name
         sb.Append(prefix).Append("uint32_t len = 0;\n");
         sb.Append(prefix).AppendFormat(
             "if (!HdfSbufReadBuffer(%s, (const void **)&%s, &len)) {\n", parcelName.string(), name.string());
-        sb.Append(prefix + TAB)
-            .AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+        sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
         sb.Append(prefix + TAB).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
         sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(prefix).Append("}\n\n");
@@ -265,8 +243,7 @@ void ASTUnionType::EmitCUnMarshalling(const String &name, const String &gotoLabe
         sb.Append(prefix).AppendFormat("%s *%s = NULL;\n", EmitCType().string(), name.string());
         sb.Append(prefix).Append("uint32_t len = 0;\n");
         sb.Append(prefix).AppendFormat("if (!HdfSbufReadBuffer(data, (const void **)&%s, &len)) {\n", name.string());
-        sb.Append(prefix + TAB)
-            .AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+        sb.Append(prefix + TAB).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
         sb.Append(prefix + TAB).AppendFormat("goto %s;\n", gotoLabel.string());
         sb.Append(prefix).Append("}\n\n");
         sb.Append(prefix).AppendFormat("if (%s == NULL || sizeof(%s) != len) {\n", name.string(), EmitCType().string());

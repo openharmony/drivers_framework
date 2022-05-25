@@ -107,9 +107,15 @@ public:
 
     String GetRootPackage(const String &package);
 
+    String GetRootPath(const String &package);
+
     String GetSubPackage(const String &package);
 
+    String GetSubPath(const String &package);
+
     String GetPackagePath(const String &package);
+
+    String GetImportFilePath(const String &import);
 
 private:
     Options()

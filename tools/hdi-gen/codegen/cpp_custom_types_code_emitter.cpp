@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -153,8 +153,7 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingDecl(StringBuilder &s
 
 void CppCustomTypesCodeEmitter::EmitCustomTypesSourceFile()
 {
-    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(),
-        FileName(baseName_).string()));
+    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_).string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 

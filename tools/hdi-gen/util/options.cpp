@@ -117,12 +117,17 @@ void Options::AddPackagePath(const String &packagePath)
     }
 
     String package = packagePath.Substring(0, index);
-    String path = packagePath.Substring(index + 1);
+    String path = File::RealPath(packagePath.Substring(index + 1));
+    if (path.IsEmpty() || path.IsNull()) {
+        errors_.push_back(
+            String::Format("%s: invalid path '%s'.", program_.string(), packagePath.Substring(index + 1).string()));
+        return;
+    }
 
     auto it = packagePath_.find(package);
     if (it != packagePath_.end()) {
-        errors_.push_back(String::Format("%s: The '%s:%s' has been set.", program_.string(),
-            package.string(), path.string()));
+        errors_.push_back(
+            String::Format("%s: The '%s:%s' has been set.", program_.string(), package.string(), path.string()));
     }
 
     packagePath_[package] = path;
@@ -213,9 +218,9 @@ void Options::ShowUsage() const
 
 /*
  * For Example
- * -r option: -r OHOS.Hdi:drivers/interface
- * package:OHOS.Hdi.foo.v1_0
- * rootPackage:OHOS.Hdi
+ * -r option: -r ohos.hdi:./drivers/interface
+ * package:ohos.hdi.foo.v1_0
+ * rootPackage:ohos.hdi
  */
 String Options::GetRootPackage(const String &package)
 {
@@ -226,13 +231,31 @@ String Options::GetRootPackage(const String &package)
         }
     }
 
-    return String("");
+    return "";
 }
 
 /*
  * For Example
- * -r option: -r OHOS.Hdi:drivers/interface
- * package:OHOS.Hdi.foo.v1_0
+ * -r option: -r ohos.hdi:./drivers/interface
+ * package:ohos.hdi.foo.v1_0
+ * rootPath:./drivers/interface
+ */
+String Options::GetRootPath(const String &package)
+{
+    const auto &packagePaths = GetPackagePath();
+    for (const auto &packageRoot : packagePaths) {
+        if (package.StartsWith(packageRoot.first)) {
+            return packageRoot.second;
+        }
+    }
+
+    return "";
+}
+
+/*
+ * For Example
+ * -r option: -r ohos.hdi:./drivers/interface
+ * package:ohos.hdi.foo.v1_0
  * subPackage:foo.v1_0
  */
 String Options::GetSubPackage(const String &package)
@@ -247,9 +270,29 @@ String Options::GetSubPackage(const String &package)
 
 /*
  * For Example
- * -r option: -r OHOS.Hdi:drivers/interface
- * package:OHOS.Hdi.foo.v1_0
- * packagePath:drivers/interface/foo/v1_0
+ * -r option: -r ohos.hdi:./drivers/interface
+ * package:ohos.hdi.foo.v1_0
+ * subPackage:foo/v1_0
+ */
+String Options::GetSubPath(const String &package)
+{
+    String rootPackage = GetRootPackage(package);
+    if (rootPackage.IsEmpty()) {
+        return package;
+    }
+
+    String subPath = package.Substring(rootPackage.GetLength() + 1).Replace('.', File::separator);
+    if (subPath.IsEmpty()) {
+        return "";
+    }
+    return subPath;
+}
+
+/*
+ * For Example
+ * -r option: -r ohos.hdi:./drivers/interface
+ * package:ohos.hdi.foo.v1_0
+ * packagePath:./drivers/interface/foo/v1_0
  */
 String Options::GetPackagePath(const String &package)
 {
@@ -271,7 +314,26 @@ String Options::GetPackagePath(const String &package)
         rootPath = rootPath.Substring(0, rootPath.GetLength() - 1);
     }
 
-    return package.Replace(rootPackage, rootPath).Replace('.', File::separator);
+    return package.Replace(0, rootPackage.GetLength(), rootPath).Replace('.', File::separator);
+}
+
+/*
+ * For Example
+ * -r option: -r ohos.hdi:./drivers/interface
+ * import: ohos.hdi.foo.v1_0.MyTypes
+ * packagePath:./drivers/interface/foo/v1_0/MyTypes.idl
+ */
+String Options::GetImportFilePath(const String &import)
+{
+    int index = import.LastIndexOf('.');
+    if (index <= 0) {
+        return import;
+    }
+
+    String dir = GetPackagePath(import.Substring(0, index));
+    String ClassName = import.Substring(index + 1);
+
+    return String::Format("%s%c%s.idl", dir.string(), File::separator, ClassName.string());
 }
 } // namespace HDI
 } // namespace OHOS

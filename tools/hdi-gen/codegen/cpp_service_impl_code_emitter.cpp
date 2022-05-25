@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -36,8 +36,8 @@ void CppServiceImplCodeEmitter::EmitCode()
 
 void CppServiceImplCodeEmitter::EmitImplHeaderFile()
 {
-    String filePath = File::AdapterPath(String::Format("%s/%s.h", directory_.string(),
-        FileName(baseName_ + "Service").string()));
+    String filePath =
+        File::AdapterPath(String::Format("%s/%s.h", directory_.string(), FileName(baseName_ + "Service").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -125,8 +125,8 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodDecl(
 
 void CppServiceImplCodeEmitter::EmitImplSourceFile()
 {
-    String filePath = File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(),
-        FileName(baseName_ + "Service").string()));
+    String filePath =
+        File::AdapterPath(String::Format("%s/%s.cpp", directory_.string(), FileName(baseName_ + "Service").string()));
     File file(filePath, File::WRITE);
     StringBuilder sb;
 
@@ -201,7 +201,8 @@ void CppServiceImplCodeEmitter::EmitServiceImplMethodImpl(
 void CppServiceImplCodeEmitter::EmitServiceImplGetMethodImpl(StringBuilder &sb, const String &prefix)
 {
     if (!interface_->IsSerializable()) {
-        sb.Append(prefix).AppendFormat("extern \"C\" %s *HdiImplGetInstance(void)\n", interfaceName_.string());
+        sb.Append(prefix).AppendFormat(
+            "extern \"C\" %s *%sImplGetInstance(void)\n", interfaceName_.string(), baseName_.string());
         sb.Append(prefix).Append("{\n");
         sb.Append(prefix + TAB).AppendFormat("return new (std::nothrow) %s();\n", implName_.string());
         sb.Append(prefix).Append("}\n\n");

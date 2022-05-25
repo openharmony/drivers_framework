@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -30,34 +30,26 @@ public:
         return name_;
     }
 
-    inline void SetOneWay(bool oneway)
+    inline void SetAttribute(const AutoPtr<ASTMethodAttr> &attr)
     {
-        isOneWay_ = oneway;
+        if (attr != nullptr) {
+            attr_ == attr;
+        }
     }
 
     inline bool IsOneWay()
     {
-        return isOneWay_;
-    }
-
-    inline void SetFull(bool full)
-    {
-        isFull_ = full;
+        return attr_->isOneWay_;
     }
 
     inline bool IsFull()
     {
-        return isFull_;
-    }
-
-    inline void SetLite(bool lite)
-    {
-        isLite_ = lite;
+        return attr_->isFull_;
     }
 
     inline bool IsLite()
     {
-        return isLite_;
+        return attr_->isLite_;
     }
 
     void AddParameter(const AutoPtr<ASTParameter> &parameter);
@@ -73,10 +65,7 @@ public:
 
 private:
     String name_;
-    bool isOneWay_ = false;
-    bool isFull_ = false;
-    bool isLite_ = false;
-
+    AutoPtr<ASTMethodAttr> attr_ = new ASTMethodAttr();
     std::vector<AutoPtr<ASTParameter>> parameters_;
 };
 } // namespace HDI

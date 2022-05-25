@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -34,37 +34,15 @@ String ASTStructType::ToString()
 String ASTStructType::Dump(const String &prefix)
 {
     StringBuilder sb;
-    sb.Append(prefix);
-
-    std::vector<String> attributes;
-    if (isFull_) {
-        attributes.push_back("full");
-    }
-    if (isLite_) {
-        attributes.push_back("lite");
-    }
-    if (attributes.size() > 0) {
-        sb.Append("[");
-        for (size_t i = 0; i < attributes.size(); i++) {
-            sb.Append(attributes[i]);
-            if (i < attributes.size() - 1) {
-                sb.Append(',');
-            }
-        }
-        sb.Append("] ");
-    }
-
+    sb.Append(prefix).Append(attr_->Dump(prefix)).Append(" ");
     sb.AppendFormat("struct %s {\n", name_.string());
-
     if (members_.size() > 0) {
         for (auto it : members_) {
             sb.Append(prefix + "  ");
             sb.AppendFormat("%s %s;\n", std::get<1>(it)->ToString().string(), std::get<0>(it).string());
         }
     }
-
     sb.Append(prefix).Append("};\n");
-
     return sb.ToString();
 }
 

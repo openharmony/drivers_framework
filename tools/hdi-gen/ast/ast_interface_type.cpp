@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -51,33 +51,8 @@ String ASTInterfaceType::Dump(const String &prefix)
     StringBuilder sb;
 
     sb.Append(prefix);
-
-    std::vector<String> attributes;
-    if (isOneWay_) {
-        attributes.push_back("oneway");
-    }
-    if (isCallback_) {
-        attributes.push_back("callback");
-    }
-    if (isFull_) {
-        attributes.push_back("full");
-    }
-    if (isLite_) {
-        attributes.push_back("lite");
-    }
-    if (attributes.size() > 0) {
-        sb.Append("[");
-        for (size_t i = 0; i < attributes.size(); i++) {
-            sb.Append(attributes[i]);
-            if (i < attributes.size() - 1) {
-                sb.Append(',');
-            }
-        }
-        sb.Append("] ");
-    }
-
+    sb.Append(prefix).Append(attr_->Dump(prefix)).Append(" ");
     sb.AppendFormat("interface %s {\n", name_.string());
-
     for (auto method : methods_) {
         String info = method->Dump(prefix + "  ");
         sb.Append(info);

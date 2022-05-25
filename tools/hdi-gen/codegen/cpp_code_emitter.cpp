@@ -64,7 +64,9 @@ void CppCodeEmitter::GetImportInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
     for (const auto &importPair : ast_->GetImports()) {
         AutoPtr<AST> importAst = importPair.second;
-        String fileName = PackageToFilePath(importAst->GetFullName());
+        String fileName = (importAst->GetASTFileType() == ASTFileType::AST_SEQUENCEABLE) ?
+            PackageToFilePath(importAst->GetName()) :
+            PackageToFilePath(importAst->GetFullName());
         headerFiles.emplace(HeaderFileType::OWN_MODULE_HEADER_FILE, fileName);
     }
 }

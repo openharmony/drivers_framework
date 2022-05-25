@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -37,26 +37,8 @@ String ASTEnumType::ToString()
 String ASTEnumType::Dump(const String &prefix)
 {
     StringBuilder sb;
-
-    std::vector<String> attributes;
-    if (isFull_) {
-        attributes.push_back("full");
-    }
-    if (isLite_) {
-        attributes.push_back("lite");
-    }
-    if (attributes.size() > 0) {
-        sb.Append("[");
-        for (size_t i = 0; i < attributes.size(); i++) {
-            sb.Append(attributes[i]);
-            if (i < attributes.size() - 1) {
-                sb.Append(',');
-            }
-        }
-        sb.Append("] ");
-    }
-
-    if (isDisplayBase_ && baseType_ != nullptr) {
+    sb.Append(prefix).Append(attr_->Dump(prefix)).Append(" ");
+    if (baseType_ != nullptr) {
         sb.AppendFormat("enum %s : %s {\n", name_.string(), baseType_->ToString().string());
     } else {
         sb.AppendFormat("enum %s {\n", name_.string());
@@ -64,10 +46,11 @@ String ASTEnumType::Dump(const String &prefix)
 
     if (members_.size() > 0) {
         for (auto it : members_) {
-            if (it->isDefaultValue()) {
+            AutoPtr<ASTExpr> value = it->GetExprValue();
+            if (value == nullptr) {
                 sb.Append("  ").AppendFormat("%s,\n", it->GetName().string());
             } else {
-                sb.Append("  ").AppendFormat("%s = %lu,\n", it->GetName().string(), it->GetValue());
+                sb.Append("  ").AppendFormat("%s = %s,\n", it->GetName().string(), value->Dump("").string());
             }
         }
     }
@@ -126,10 +109,10 @@ String ASTEnumType::EmitCTypeDecl() const
     sb.AppendFormat("enum %s {\n", name_.string());
 
     for (auto it : members_) {
-        if (it->isDefaultValue()) {
+        if (it->GetExprValue() == nullptr) {
             sb.Append(TAB).AppendFormat("%s,\n", it->GetName().string());
         } else {
-            sb.Append(TAB).AppendFormat("%s = %lu,\n", it->GetName().string(), it->GetValue());
+            sb.Append(TAB).AppendFormat("%s = %lu,\n", it->GetName().string(), it->GetExprValue()->EmitCode().string());
         }
     }
 
@@ -140,17 +123,17 @@ String ASTEnumType::EmitCTypeDecl() const
 String ASTEnumType::EmitCppTypeDecl() const
 {
     StringBuilder sb;
-    if (isDisplayBase_ && baseType_ != nullptr) {
+    if (baseType_ != nullptr) {
         sb.AppendFormat("enum %s : %s {\n", name_.string(), baseType_->EmitCppType().string());
     } else {
         sb.AppendFormat("enum %s {\n", name_.string());
     }
 
     for (auto it : members_) {
-        if (it->isDefaultValue()) {
+        if (it->GetExprValue() == nullptr) {
             sb.Append(TAB).AppendFormat("%s,\n", it->GetName().string());
         } else {
-            sb.Append(TAB).AppendFormat("%s = %lu,\n", it->GetName().string(), it->GetValue());
+            sb.Append(TAB).AppendFormat("%s = %s,\n", it->GetName().string(), it->GetExprValue()->EmitCode().string());
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -10,16 +10,15 @@
 #define OHOS_HDI_PARSER_H
 
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "ast/ast.h"
+#include "ast/ast_attribute.h"
 #include "ast/ast_interface_type.h"
 #include "ast/ast_method.h"
-#include "ast/ast_module.h"
 #include "ast/ast_type.h"
-#include "parser/file_detail.h"
-#include "parser/lexer.h"
-#include "parser/token.h"
+#include "lexer/lexer.h"
 #include "util/autoptr.h"
 #include "util/light_refcount_base.h"
 #include "util/options.h"
@@ -27,19 +26,20 @@
 
 namespace OHOS {
 namespace HDI {
+using AttrSet = std::set<Token, TokenTypeCompare>;
+
 class Parser {
 public:
-    Parser(const Options &options, const AutoPtr<ASTModule> &module = nullptr);
+    Parser() = default;
 
     ~Parser() = default;
 
-    bool Parse(const String &sourceFile);
+    bool Parse(const std::vector<String> &sourceFiles);
 
-    bool Parse(const String &sourceFile, std::shared_ptr<FileDetail> &fileDetailPtr);
-
-    inline AutoPtr<AST> GetAst() const
+    using StrAstMap = std::unordered_map<String, AutoPtr<AST>, StringHashFunc, StringEqualFunc>;
+    inline const StrAstMap &GetAllAst() const
     {
-        return ast_;
+        return allAsts_;
     }
 
 private:
@@ -51,83 +51,110 @@ private:
         bool isLite = false;
     };
 
-    class ErrorInfo : public LightRefCountBase {
-    public:
-        String file_;
-        Token token_;
-        int lineNo_;
-        int columnNo_;
-        String message_;
-        AutoPtr<ErrorInfo> next_;
-    };
+    bool ParseOne(const String &sourceFile);
 
-    bool ParseIdlDetail(std::shared_ptr<FileDetail> &fileDetailPtr);
-
-    bool ParseIdlPackage(std::shared_ptr<FileDetail> &fileDetailPtr);
-
-    bool ParseIdlImport(std::shared_ptr<FileDetail> &fileDetailPtr);
+    bool Reset(const String &sourceFile);
 
     bool ParseFile();
 
-    bool ParseLicense();
+    String ParseLicense();
 
-    bool ParsePackageName();
+    bool ParsePackage();
 
     bool ParserPackageInfo(const String &packageFullName);
 
-    bool ParseImport();
+    bool ParseImports();
 
-    bool ParseSequenceable();
+    void ParseImportInfo();
 
-    bool ParseAttribute();
+    void ParseSequenceableInfo();
 
-    bool ParseInterface(const AutoPtr<Attribute> &attributes = nullptr);
+    bool ParseTypeDecls();
 
-    bool ParseInterfaceBody(const AutoPtr<ASTInterfaceType> &interface);
+    // parse attributes of type
+    void ParseAttribute();
 
-    bool ParseMethod(const AutoPtr<ASTInterfaceType> &interface);
+    AttrSet ParseAttributeInfo();
 
-    void SetVersionInterfaceMethod(const AutoPtr<ASTInterfaceType> &interface);
+    bool AprseAttrUnit(AttrSet &attrs);
 
-    bool ParseAttributeBody(AutoPtr<Attribute> &attributes);
+    // parse interface type
+    void ParseInterface(const AttrSet &attrs = {});
 
-    bool ParseAttributeParam(AutoPtr<Attribute> &attributes);
+    AutoPtr<ASTInfAttr> ParseInfAttrInfo(const AttrSet &attrs);
 
-    bool ParseParameterList(AutoPtr<ASTMethod> &method);
+    void ParseInterfaceBody(const AutoPtr<ASTInterfaceType> &interface);
 
-    bool ParseParameter(const AutoPtr<ASTMethod> &method);
+    AutoPtr<ASTMethod> ParseMethod();
 
-    bool ParseParamAttr(const AutoPtr<ASTParameter> &parameter);
+    AutoPtr<ASTMethodAttr> ParseMethodAttr();
 
+    AutoPtr<ASTMethod> CreateGetVersionMethod();
+
+    void ParseMethodParamList(const AutoPtr<ASTMethod> &method);
+
+    AutoPtr<ASTParameter> ParseParam();
+
+    AutoPtr<ASTParamAttr> ParseParamAttr();
+
+    // parse type
     AutoPtr<ASTType> ParseType();
 
-    AutoPtr<ASTType> ParseUnsignedType(int typeLineNo, int typeColumnNo);
-
-    AutoPtr<ASTType> ParseList();
-
-    AutoPtr<ASTType> ParseMap();
-
-    AutoPtr<ASTType> ParseSharedMemQueueMetaType();
+    AutoPtr<ASTType> ParseUnsignedType();
 
     AutoPtr<ASTType> ParseArrayType(const AutoPtr<ASTType> &elementType);
 
-    AutoPtr<ASTType> ParseCustomType();
+    AutoPtr<ASTType> ParseListType();
 
-    bool ParseEnumDefine(const AutoPtr<Attribute> &attributes = nullptr);
+    AutoPtr<ASTType> ParseMapType();
 
-    bool ParseEnumBaseType(const AutoPtr<ASTEnumType> &type);
+    AutoPtr<ASTType> ParseSmqType();
 
-    bool ParseEnumMember(const AutoPtr<ASTEnumType> &type);
+    AutoPtr<ASTType> ParseUserDefType();
 
-    bool ParseStructDefine(const AutoPtr<Attribute> &attributes = nullptr);
+    // parse declaration of enum
+    void ParseEnumDeclaration(const AttrSet &attrs = {});
 
-    bool ParseStructMember(const AutoPtr<ASTStructType> &type);
+    AutoPtr<ASTType> ParseEnumBaseType();
 
-    bool ParseUnionDefine(const AutoPtr<Attribute> &attributes = nullptr);
+    void ParserEnumMember(const AutoPtr<ASTEnumType> &enumType);
 
-    bool ParseUnionMember(const AutoPtr<ASTUnionType> &type);
+    // parse declaration of struct
+    void ParseStructDeclaration(const AttrSet &attrs = {});
 
-    bool CheckType(int lineNo, int columnNo, const AutoPtr<ASTType> &type);
+    void ParseStructMember(const AutoPtr<ASTStructType> &structType);
+
+    // parse declaration of union
+    void ParseUnionDeclaration(const AttrSet &attrs = {});
+
+    void ParseUnionMember(const AutoPtr<ASTUnionType> &unionType);
+
+    bool AddUnionMember(const AutoPtr<ASTUnionType> &unionType, const AutoPtr<ASTType> &type, const String &name);
+
+    AutoPtr<ASTTypeAttr> ParseUserDefTypeAttr(const AttrSet &attrs);
+
+    // parse expression
+    AutoPtr<ASTExpr> ParseExpr();
+
+    AutoPtr<ASTExpr> ParseAndExpr();
+
+    AutoPtr<ASTExpr> ParseXorExpr();
+
+    AutoPtr<ASTExpr> ParseOrExpr();
+
+    AutoPtr<ASTExpr> ParseShiftExpr();
+
+    AutoPtr<ASTExpr> ParseAddExpr();
+
+    AutoPtr<ASTExpr> ParseMulExpr();
+
+    AutoPtr<ASTExpr> ParseUnaryExpr();
+
+    AutoPtr<ASTExpr> ParsePrimaryExpr();
+
+    AutoPtr<ASTExpr> ParseNumExpr();
+
+    bool CheckType(const Token &token, const AutoPtr<ASTType> &type);
 
     void SetAstFileType();
 
@@ -137,30 +164,29 @@ private:
 
     bool CheckCallbackAst();
 
-    bool IsValidTypeName(const String &typeName);
-
     bool CheckPackageName(const String &filePath, const String &packageName);
+
+    bool CheckImport(const String &importName);
 
     inline static bool IsPrimitiveType(Token token)
     {
-        return token >= Token::BOOLEAN && token <= Token::ASHMEM;
+        return token.kind_ >= TokenType::BOOLEAN && token.kind_ <= TokenType::ASHMEM;
     }
 
-    bool AddAst();
+    bool AddAst(const AutoPtr<AST> &ast);
 
     void LogError(const String &message);
 
-    void LogError(int lineNo, int columnNo, const String &message);
+    void LogError(const Token &token, const String &message);
 
     void ShowError();
 
-    static const char *TAG;
+    static constexpr char *TAG = "Parser";
 
-    const Options &options_;
-    std::shared_ptr<Lexer> lexer_;
-    AutoPtr<ErrorInfo> errors_;
+    Lexer lexer_;
+    std::vector<String> errors_;
     AutoPtr<AST> ast_;
-    AutoPtr<ASTModule> astModule_;
+    StrAstMap allAsts_;
 };
 } // namespace HDI
 } // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -12,6 +12,7 @@
 #include <tuple>
 #include <vector>
 
+#include "ast/ast_attribute.h"
 #include "ast/ast_type.h"
 #include "util/autoptr.h"
 #include "util/string.h"
@@ -30,24 +31,21 @@ public:
         return name_;
     }
 
-    inline void SetFull(bool full)
+    inline void SetAttribute(const AutoPtr<ASTTypeAttr> &attr)
     {
-        isFull_ = full;
+        if (attr != nullptr) {
+            attr_ = attr;
+        }
     }
 
     inline bool IsFull()
     {
-        return isFull_;
-    }
-
-    inline void SetLite(bool lite)
-    {
-        isLite_ = lite;
+        return attr_ != nullptr ? attr_->isFull_ : false;
     }
 
     inline bool IsLite()
     {
-        return isLite_;
+        return attr_ != nullptr ? attr_->isLite_ : false;
     }
 
     void AddMember(const AutoPtr<ASTType> &typeName, String name);
@@ -123,8 +121,7 @@ public:
         const String &name, bool isClient, bool ownership, StringBuilder &sb, const String &prefix) const override;
 
 private:
-    bool isFull_ = false;
-    bool isLite_ = false;
+    AutoPtr<ASTTypeAttr> attr_ = new ASTTypeAttr();
     std::vector<std::tuple<String, AutoPtr<ASTType>>> members_;
 };
 } // namespace HDI

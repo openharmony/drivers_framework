@@ -7,7 +7,8 @@
  */
 
 #include "codegen/code_generator.h"
-#include "parser/module_parser.h"
+#include "parser/parser.h"
+#include "preprocessor/preprocessor.h"
 #include "util/file.h"
 #include "util/logger.h"
 #include "util/options.h"
@@ -48,17 +49,29 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    ModuleParser moduleParser(options);
-    AutoPtr<ASTModule> astModule = moduleParser.Parse();
-    if (astModule == nullptr) {
+    Preprocessor preprocessor;
+    std::vector<String> sourceFiles;
+    if (!preprocessor.Preprocess(sourceFiles)) {
+        Logger::E("MAIN", "preprocess failed");
+    }
+
+    Parser parser;
+    if (!parser.Parse(sourceFiles)) {
+        Logger::E("MAIN", "parse file failed");
         return -1;
+    }
+
+    if (options.DoDumpAST()) {
+        for (const auto &astPair : parser.GetAllAst()) {
+            printf("%s\n", astPair.second->Dump("").string());
+        }
     }
 
     if (!options.DoGenerateCode()) {
         return 0;
     }
 
-    if (!CodeGenerator(astModule).Generate()) {
+    if (!CodeGenerator(parser.GetAllAst()).Generate()) {
         Logger::E("hdi-gen", "Generate \"%s\" codes failed.", options.GetTargetLanguage().string());
         return -1;
     }

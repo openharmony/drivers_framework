@@ -589,7 +589,7 @@ String String::Replace(const String &target, const String &replacement) const
     return sb.ToString();
 }
 
-String &String::Replace(int position, int len, const String &other)
+String String::Replace(int position, int len, const String &other) const
 {
     if (position < 0 || position > GetLength()) {
         return *this;
@@ -605,13 +605,31 @@ String &String::Replace(int position, int len, const String &other)
 
     String lStr = Substring(0, position);
     String rStr = Substring(position + len);
-    String newStr;
-    newStr += lStr + other + rStr;
+    StringBuilder sb;
+    sb.Append(lStr).Append(other).Append(rStr);
+    return sb.ToString();
+}
 
-    SharedData::Release(string_);
-    SharedData::AddRef(newStr.string_);
-    string_ = newStr.string_;
-    return *this;
+std::vector<String> String::Split(const char separator) const
+{
+    std::vector<String> result;
+    if (IsEmpty()) {
+        return result;
+    }
+
+    int startIndex = 0;
+    int endIndex = IndexOf(separator, startIndex);
+    while (endIndex != -1) {
+        result.push_back(Substring(startIndex, endIndex));
+        startIndex = endIndex + 1;
+        endIndex = IndexOf(separator, startIndex);
+    }
+
+    if (startIndex < GetLength()) {
+        result.push_back(Substring(startIndex));
+    }
+
+    return result;
 }
 
 std::vector<String> String::Split(const String &separator) const

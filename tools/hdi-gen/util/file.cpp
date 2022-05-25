@@ -75,7 +75,7 @@ char File::GetChar()
         if (c != '\n') {
             columnNo_++;
         } else {
-            columnNo_ = 0;
+            columnNo_ = 1;
             lineNo_++;
         }
     }
@@ -116,18 +116,17 @@ int File::Read()
     return (count != 0) ? count : -1;
 }
 
-bool File::ReadData(void *data, size_t size) const
+size_t File::ReadData(void *data, size_t size) const
 {
     if (data == nullptr || size == 0) {
-        return true;
+        return 0;
     }
 
     if (fd_ == nullptr) {
-        return false;
+        return 0;
     }
 
-    size_t count = fread(data, size, 1, fd_);
-    return count == 1;
+    return fread(data, 1, size, fd_);
 }
 
 bool File::WriteData(const void *data, size_t size) const
@@ -210,20 +209,49 @@ bool File::CreateParentDir(const String &path)
 String File::AdapterPath(const String &path)
 {
 #ifndef __MINGW32__
-    return path.Replace('\\', '/');
+    String newPath = path.Replace('\\', '/');
 #else
-    return path.Replace('/', '\\');
+    String newPath = path.Replace('/', '\\');
 #endif
+
+    // "foo/v1_0//ifoo.h" -> "foo/v1_0/ifoo.h"
+    StringBuilder adapterPath;
+    bool hasSep = false;
+    for (size_t i = 0; i < newPath.GetLength(); i++) {
+        char c = newPath[i];
+        if (c == File::separator) {
+            if (hasSep) {
+                continue;
+            }
+            adapterPath.Append(c);
+            hasSep = false;
+        } else {
+            adapterPath.Append(c);
+        }
+    }
+    return adapterPath.ToString();
 }
 
-size_t File::GetHashKey()
+String File::RealPath(const String &path)
 {
-    StringBuilder fileStr;
-    while (!IsEof()) {
-        fileStr.Append(GetChar());
+    if (path.IsEmpty()) {
+        return "";
     }
 
-    return std::hash<std::string>()(fileStr.ToString().string());
+    String absPath;
+    String adapterPath = File::AdapterPath(path);
+#ifdef __MINGW32__
+    char absolutePath[_MAX_PATH];
+    _fullpath(absolutePath, adapterPath.string(), _MAX_PATH);
+    absPath = absolutePath;
+#else
+    char *absolutePath = realpath(adapterPath.string(), nullptr);
+    if (absolutePath != nullptr) {
+        absPath = absolutePath;
+        free(absolutePath);
+    }
+#endif
+    return absPath;
 }
 
 bool File::CheckValid(const String &path)
@@ -242,6 +270,39 @@ bool File::CheckValid(const String &path)
     }
 
     return true;
+}
+
+String File::Pascal2UnderScoreCase(const String &name)
+{
+    if (name.IsNull() || name.IsEmpty()) {
+        return name;
+    }
+
+    StringBuilder sb;
+    for (int i = 0; i < name.GetLength(); i++) {
+        char c = name[i];
+        if (isupper(c) != 0) {
+            // 2->Index of the last char array.
+            if (i > 1) {
+                sb.Append('_');
+            }
+            sb.Append(tolower(c));
+        } else {
+            sb.Append(c);
+        }
+    }
+
+    return sb.ToString();
+}
+
+size_t File::GetHashKey()
+{
+    StringBuilder fileStr;
+    while (!IsEof()) {
+        fileStr.Append(GetChar());
+    }
+
+    return std::hash<std::string>()(fileStr.ToString().string());
 }
 } // namespace HDI
 } // namespace OHOS
