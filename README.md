@@ -22,9 +22,6 @@ This repository stores the core source code information of the OpenHarmony drive
 
 ```
 /drivers/framework
-├── ability        # Capabilities for the driver development, such as the message model libraries
-│   ├── config     # Parsing code of the configuration
-│   └── sbuf       # Data serialization code
 ├── core           # Core code for implementing the HDF
 │   ├── adapter    # Kernel adaptation layer
 │   ├── common     # Common basic code
@@ -32,22 +29,37 @@ This repository stores the core source code information of the OpenHarmony drive
 │   ├── manager    # Management module
 │   └── shared     # Code shared by the host and manager modules
 ├── include        # Header files for the HDF to provide capabilities externally
-│   ├── config     # Header files declaring capabilities for parsing configuration
+│   ├── audio      # Header files related to audio operations
+│   ├── bluetooth  # Header files related to bluetooth operations
 │   ├── core       # Header files exposed externally
+│   ├── ethernnet  # Header files related to ethernnet operations
 │   ├── net        # Header files related to network operations
 │   ├── osal       # Header files of the OS adaptation layer
 │   ├── platform   # Header files declaring platform APIs
 │   ├── utils      # Header files declaring common capabilities
 │   └── wifi       # Header files for the WLAN module to provide capabilities externally
 ├── model          # Universal framework module for drivers
+│   ├── audio      # Audio framework module
 │   ├── display    # Display framework module
 │   ├── input      # Input framework module
+│   ├── misc       # Misc framework module, including dsoftbus, light, vibrator
 │   ├── network    # WLAN framework module
 │   └── sensor     # Sensor driver module
+│   └── storage    # Storage driver module
+│   └── usb        # Usb driver module
+├── sample         # Sample code
 ├── support        # Basic capabilities
 │   └── platform   # Platform driver framework and APIs, including GPIO, I2C, and SPI
+│   └── posix      # Posix APIs, including Mem, Mutex, Sem, Spinlock, Thread and Time
+├── test           # Testcase
 ├── tools          # Source code related to the tools of the HDF
 │   └── hc-gen     # Source code of the configuration management tool
+│   └── hcs-view   #
+│   └── hdf-dbg    #
+│   └── hdf-dev_eco_tool #
+│   └── hdf-gen    #
+│   └── idl-gen    #
+│   └── leagecy    #
 └── utils          # Basic data structures and algorithms
 ```
 
