@@ -8,7 +8,6 @@
 
 #include "sensor_als_driver.h"
 #include <securec.h>
-#include "als_bh1745.h"
 #include "osal_math.h"
 #include "osal_mem.h"
 #include "sensor_config_controller.h"
