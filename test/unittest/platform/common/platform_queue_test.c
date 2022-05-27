@@ -12,7 +12,7 @@
 
 #define HDF_LOG_TAG platform_queue_test
 
-#define PLAT_QUEUE_TEST_TIMEOUT 20
+#define PLAT_QUEUE_TEST_TIMEOUT 1000
 
 #define TEST_CODE_A 0x5A
 
