@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -56,7 +56,7 @@ bool CodeGenerator::Generate()
     bool isModeKernel = options.DoGenerateKernelCode();
     String codePart = options.GetCodePart();
 
-    for (auto &astPair : astModule_->GetAllAsts()) {
+    for (auto &astPair : allAst_) {
         AutoPtr<AST> ast = astPair.second;
         if (language.Equals("c")) {
             GenerateCCode(ast, dir, codePart, isModeKernel);

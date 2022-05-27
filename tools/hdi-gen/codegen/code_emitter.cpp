@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
+
 #include "codegen/code_emitter.h"
 
 #include <cctype>
@@ -48,6 +49,8 @@ bool CodeEmitter::Reset(const AutoPtr<AST> &ast, const String &targetDirectory, 
         implName_ = baseName_ + "Service";
         implFullName_ = interface_->GetNamespace()->ToString() + implName_;
     } else if (ast_->GetASTFileType() == ASTFileType::AST_TYPES) {
+        baseName_ = ast_->GetName();
+    } else if (ast_->GetASTFileType() == ASTFileType::AST_SEQUENCEABLE) {
         baseName_ = ast_->GetName();
     }
 
@@ -95,8 +98,8 @@ bool CodeEmitter::NeedFlag(const AutoPtr<ASTMethod> &method)
     for (size_t i = 0; i < method->GetParameterNumber(); i++) {
         AutoPtr<ASTParameter> param = method->GetParameter(i);
         AutoPtr<ASTType> type = param->GetType();
-        if (param->GetAttribute() == ParamAttr::PARAM_OUT && (type->IsStringType() || type->IsArrayType() ||
-            type->IsListType())) {
+        if (param->GetAttribute() == ParamAttr::PARAM_OUT &&
+            (type->IsStringType() || type->IsArrayType() || type->IsListType())) {
             return true;
         }
     }
@@ -106,12 +109,11 @@ bool CodeEmitter::NeedFlag(const AutoPtr<ASTMethod> &method)
 String CodeEmitter::GetFilePath(const String &outDir)
 {
     String outPath = outDir.EndsWith(File::separator) ? outDir.Substring(0, outDir.GetLength() - 1) : outDir;
-    String packagePath = Options::GetInstance().GetPackagePath(ast_->GetPackageName());
-    if (packagePath.EndsWith(File::separator)) {
-        return File::AdapterPath(String::Format("%s%c%s", outPath.string(), File::separator, packagePath.string()));
+    String subPath = Options::GetInstance().GetSubPath(ast_->GetPackageName());
+    if (subPath.IsEmpty()) {
+        return File::AdapterPath(String::Format("%s/", outPath.string(), subPath.string()));
     } else {
-        return File::AdapterPath(String::Format("%s%c%s%c", outPath.string(), File::separator, packagePath.string(),
-            File::separator));
+        return File::AdapterPath(String::Format("%s/%s/", outPath.string(), subPath.string()));
     }
 }
 

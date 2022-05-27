@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -9,6 +9,7 @@
 #ifndef OHOS_HDI_ASTPARAMETER_H
 #define OHOS_HDI_ASTPARAMETER_H
 
+#include "ast/ast_attribute.h"
 #include "ast/ast_node.h"
 #include "ast/ast_type.h"
 #include "util/autoptr.h"
@@ -16,23 +17,16 @@
 
 namespace OHOS {
 namespace HDI {
-// parameter attribute
-enum class ParamAttr {
-    PARAM_IN,
-    PARAM_OUT,
-};
-
 class ASTParameter : public ASTNode {
 public:
-    ASTParameter() : ASTNode() {}
     ASTParameter(const String &name, ParamAttr attribute, const AutoPtr<ASTType> &type)
-        : ASTNode(), name_(name), attribute_(attribute), type_(type)
+        : ASTNode(), name_(name), attr_(new ASTParamAttr(attribute)), type_(type)
     {
     }
 
-    inline void SetName(const String &name)
+    ASTParameter(const String &name, const AutoPtr<ASTParamAttr> &attribute, const AutoPtr<ASTType> &type)
+        : ASTNode(), name_(name), attr_(attribute), type_(type)
     {
-        name_ = name;
     }
 
     inline String GetName()
@@ -40,24 +34,14 @@ public:
         return name_;
     }
 
-    inline void SetType(const AutoPtr<ASTType> &type)
-    {
-        type_ = type;
-    }
-
     inline AutoPtr<ASTType> GetType()
     {
         return type_;
     }
 
-    inline void SetAttribute(ParamAttr attribute)
-    {
-        attribute_ = attribute;
-    }
-
     inline ParamAttr GetAttribute()
     {
-        return attribute_;
+        return attr_->value_;
     }
 
     String Dump(const String &prefix) override;
@@ -90,7 +74,7 @@ public:
 private:
     String name_;
     AutoPtr<ASTType> type_ = nullptr;
-    ParamAttr attribute_ = ParamAttr::PARAM_IN;
+    AutoPtr<ASTParamAttr> attr_;
 };
 } // namespace HDI
 } // namespace OHOS

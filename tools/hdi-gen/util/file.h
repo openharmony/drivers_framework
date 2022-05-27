@@ -47,7 +47,7 @@ public:
         return columnNo_;
     }
 
-    bool ReadData(void *data, size_t size) const;
+    size_t ReadData(void *data, size_t size) const;
 
     bool WriteData(const void *data, size_t size) const;
 
@@ -63,6 +63,13 @@ public:
 
     static String AdapterPath(const String &path);
 
+    static String RealPath(const String &path);
+
+    static bool CheckValid(const String &path);
+
+    // "FileName" -> "file_name"
+    static String Pascal2UnderScoreCase(const String &name);
+
     size_t GetHashKey();
 
     static constexpr unsigned int READ = 0x1;
@@ -77,8 +84,6 @@ public:
 
 private:
     int Read();
-
-    bool CheckValid(const String &path);
 
     static constexpr int BUFFER_SIZE = 1024;
 

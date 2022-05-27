@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -9,6 +9,8 @@
 #ifndef OHOS_HDI_ASTENUMTYPE_H
 #define OHOS_HDI_ASTENUMTYPE_H
 
+#include "ast/ast_attribute.h"
+#include "ast/ast_expr.h"
 #include "ast/ast_type.h"
 #include "util/autoptr.h"
 #include "util/string.h"
@@ -17,9 +19,9 @@
 
 namespace OHOS {
 namespace HDI {
-class ASTEnumValue : public LightRefCountBase {
+class ASTEnumValue : public ASTNode {
 public:
-    explicit ASTEnumValue(const String &name) : mName_(name), isDefault_(true), mValue_(0) {}
+    explicit ASTEnumValue(const String &name) : mName_(name), value_(nullptr) {}
 
     inline virtual ~ASTEnumValue() {}
 
@@ -38,27 +40,20 @@ public:
         return mType_;
     }
 
-    inline void SetValue(unsigned long value)
+    inline void SetExprValue(const AutoPtr<ASTExpr> &value)
     {
-        isDefault_ = false;
-        mValue_ = value;
+        value_ = value;
     }
 
-    inline unsigned long GetValue()
+    inline AutoPtr<ASTExpr> GetExprValue()
     {
-        return mValue_;
-    }
-
-    inline bool isDefaultValue()
-    {
-        return isDefault_;
+        return value_;
     }
 
 private:
     String mName_;
     AutoPtr<ASTType> mType_;
-    bool isDefault_;
-    unsigned long mValue_;
+    AutoPtr<ASTExpr> value_;
 };
 
 class ASTEnumType : public ASTType {
@@ -73,34 +68,21 @@ public:
         return name_;
     }
 
-    inline void SetFull(bool full)
+    inline void SetAttribute(const AutoPtr<ASTTypeAttr> &attr)
     {
-        isFull_ = full;
+        if (attr != nullptr) {
+            attr_ = attr;
+        }
     }
 
     inline bool IsFull()
     {
-        return isFull_;
-    }
-
-    inline void SetLite(bool lite)
-    {
-        isLite_ = lite;
+        return attr_ != nullptr ? attr_->isFull_ : false;
     }
 
     inline bool IsLite()
     {
-        return isLite_;
-    }
-
-    inline void SetDisplayBase(bool display)
-    {
-        isDisplayBase_ = display;
-    }
-
-    inline bool IsDisplayBase()
-    {
-        return isDisplayBase_;
+        return attr_ != nullptr ? attr_->isLite_ : false;
     }
 
     void SetBaseType(const AutoPtr<ASTType> &baseType);
@@ -172,11 +154,8 @@ public:
         bool emitType, unsigned int innerLevel = 0) const override;
 
 private:
-    bool isFull_ = false;
-    bool isLite_ = false;
-    bool isDisplayBase_ = false;
+    AutoPtr<ASTTypeAttr> attr_ = new ASTTypeAttr();
     AutoPtr<ASTType> baseType_ = nullptr;
-
     std::vector<AutoPtr<ASTEnumValue>> members_;
 };
 } // namespace HDI

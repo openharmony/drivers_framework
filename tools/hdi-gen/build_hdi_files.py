@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2022 Huawei Device Co., Ltd.
 #
 # HDF is dual licensed: you can use it either under the terms of
 # the GPL, or the BSD license, at your option.
@@ -286,7 +286,7 @@ def parse_out_dir(gen_dir, package_str, path_map):
     root_package = package_path_vec[0]
     root_package_path = package_path_vec[1]
 
-    temp_dir = package_str.replace(root_package, root_package_path)
+    temp_dir = package_str.replace(root_package, "")
     temp_dir = temp_dir.replace(".", "/")
     return gen_dir.replace(temp_dir, "")
 

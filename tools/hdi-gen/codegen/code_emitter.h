@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -109,7 +109,7 @@ protected:
     String FileName(const String &name);
 
 protected:
-    static constexpr char* TAB = "    ";
+    static constexpr char *TAB = "    ";
     bool isKernelCode_ = false;
     AutoPtr<AST> ast_ = nullptr;
     AutoPtr<ASTInterfaceType> interface_ = nullptr;

@@ -96,7 +96,9 @@ public:
 
     String Replace(const String &target, const String &replacement) const;
 
-    String &Replace(int position, int len, const String &other);
+    String Replace(int position, int len, const String &other) const;
+
+    std::vector<String> Split(const char separator) const;
 
     std::vector<String> Split(const String &separator) const;
 

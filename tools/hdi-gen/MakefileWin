@@ -17,6 +17,16 @@ PARSER_SOURCE:=$(wildcard $(PARSER_SOURCE_DIR)/*.cpp)
 PARSER_OBJS_DIR:=$(BUILD_DIR)\parser
 PARSER_OBJS:=$(addprefix $(PARSER_OBJS_DIR)\, $(patsubst %.cpp, %.o, $(notdir $(PARSER_SOURCE))))
 
+PREPROCESSOR_SOURCE_DIR := $(PWD)\preprocessor
+PREPROCESSOR_SOURCE := $(wildcard $(PREPROCESSOR_SOURCE_DIR)/*.cpp)
+PREPROCESSOR_OBJS_DIR := $(BUILD_DIR)\preprocessor
+PREPROCESSOR_OBJS := $(addprefix $(PREPROCESSOR_OBJS_DIR)\, $(patsubst %.cpp, %.o, $(notdir $(PREPROCESSOR_SOURCE))))
+
+LEXER_SOURCE_DIR := $(PWD)\lexer
+LEXER_SOURCE := $(wildcard $(LEXER_SOURCE_DIR)/*.cpp)
+LEXER_OBJS_DIR := $(BUILD_DIR)\lexer
+LEXER_OBJS := $(addprefix $(LEXER_OBJS_DIR)\, $(patsubst %.cpp, %.o, $(notdir $(LEXER_SOURCE))))
+
 AST_SOURCE_DIR:=$(PWD)\ast
 AST_SOURCE:=$(wildcard $(AST_SOURCE_DIR)/*.cpp)
 AST_OBJS_DIR:=$(BUILD_DIR)\ast
@@ -36,7 +46,7 @@ MAIN_SOURCE:=$(wildcard *.cpp)
 MAIN_OBJS:=$(addprefix $(BUILD_DIR)\, $(patsubst %.cpp, %.o, $(MAIN_SOURCE)))
 
 all : $(TARGET)
-$(TARGET) : $(BOUNDS_CHECK_OBJS) $(UTIL_OBJS) $(AST_OBJS) $(PARSER_OBJS) $(CODEGEN_OBJS) $(MAIN_OBJS)
+$(TARGET) : $(BOUNDS_CHECK_OBJS) $(UTIL_OBJS) $(AST_OBJS) $(LEXER_OBJS) $(PREPROCESSOR_OBJS) $(PARSER_OBJS) $(CODEGEN_OBJS) $(MAIN_OBJS)
 	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 	$(Q) echo $(TARGET):build successful.
 
@@ -50,6 +60,14 @@ $(CODEGEN_OBJ_DIR)\\%.o : $(CODEGEN_SOURCE_DIR)\\%.cpp
 
 $(PARSER_OBJS_DIR)\\%.o : $(PARSER_SOURCE_DIR)\\%.cpp
 	$(Q) if not exist $(PARSER_OBJS_DIR) (mkdir $(PARSER_OBJS_DIR))
+	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
+
+$(PREPROCESSOR_OBJS_DIR)\\%.o : $(PREPROCESSOR_SOURCE_DIR)\\%.cpp
+	$(Q) if not exist $(PREPROCESSOR_OBJS_DIR) (mkdir $(PREPROCESSOR_OBJS_DIR))
+	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
+
+$(LEXER_OBJS_DIR)\\%.o : $(LEXER_SOURCE_DIR)\\%.cpp
+	$(Q) if not exist $(LEXER_OBJS_DIR) (mkdir $(LEXER_OBJS_DIR))
 	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
 
 $(AST_OBJS_DIR)\\%.o : $(AST_SOURCE_DIR)\\%.cpp

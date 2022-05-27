@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -9,7 +9,6 @@
 #ifndef OHOS_HDI_CODEGENERATOR_H
 #define OHOS_HDI_CODEGENERATOR_H
 
-#include "ast/ast_module.h"
 #include "codegen/code_emitter.h"
 
 namespace OHOS {
@@ -18,10 +17,8 @@ using CodeEmitMap = std::unordered_map<String, AutoPtr<CodeEmitter>, StringHashF
 
 class CodeGenerator : public LightRefCountBase {
 public:
-    explicit CodeGenerator(const AutoPtr<ASTModule> &astModule)
-        : LightRefCountBase(), astModule_(astModule), targetDirectory_()
-    {
-    }
+    using StrAstMap = std::unordered_map<String, AutoPtr<AST>, StringHashFunc, StringEqualFunc>;
+    explicit CodeGenerator(const StrAstMap &allAst) : LightRefCountBase(), allAst_(allAst), targetDirectory_() {}
 
     bool Generate();
 
@@ -30,8 +27,9 @@ private:
     void GenerateCppCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart);
     void GenerateJavaCode(const AutoPtr<AST> &ast, const String &outDir, const String &codePart);
 
-    AutoPtr<ASTModule> astModule_;
     String targetDirectory_;
+
+    const StrAstMap &allAst_;
 
     static CodeEmitMap cCodeEmitters_;
     static CodeEmitMap cppCodeEmitters_;

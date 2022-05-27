@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -9,6 +9,7 @@
 #ifndef OHOS_HDI_ASTINTERFACETYPE_H
 #define OHOS_HDI_ASTINTERFACETYPE_H
 
+#include "ast/ast_attribute.h"
 #include "ast/ast_method.h"
 
 #include <vector>
@@ -32,25 +33,24 @@ public:
         return license_;
     }
 
-    inline void SetOneWay(bool oneway)
+    void SetAttribute(const AutoPtr<ASTInfAttr> &attr)
     {
-        isOneWay_ = oneway;
+        if (attr != nullptr) {
+            attr_ = attr;
+            if (attr_->isCallback_) {
+                isSerializable_ = true;
+            }
+        }
     }
 
     inline bool IsOneWay()
     {
-        return isOneWay_;
-    }
-
-    inline void SetCallback(bool callback)
-    {
-        isCallback_ = callback;
-        SetSerializable(callback);
+        return attr_->isOneWay_;
     }
 
     inline bool IsCallback()
     {
-        return isCallback_;
+        return attr_->isCallback_;
     }
 
     inline void SetSerializable(bool isSerializable)
@@ -63,24 +63,14 @@ public:
         return isSerializable_;
     }
 
-    inline void SetFull(bool full)
-    {
-        isFull_ = full;
-    }
-
     inline bool IsFull()
     {
-        return isFull_;
-    }
-
-    inline void SetLite(bool lite)
-    {
-        isLite_ = lite;
+        return attr_->isFull_;
     }
 
     inline bool IsLite()
     {
-        return isLite_;
+        return attr_->isLite_;
     }
 
     void AddMethod(const AutoPtr<ASTMethod> &method);
@@ -144,11 +134,9 @@ public:
 
 private:
     String license_;
-    bool isOneWay_ = false;
-    bool isCallback_ = false;
+
+    AutoPtr<ASTInfAttr> attr_ = new ASTInfAttr();
     bool isSerializable_ = false;
-    bool isFull_ = false;
-    bool isLite_ = false;
     std::vector<AutoPtr<ASTMethod>> methods_;
     AutoPtr<ASTMethod> getVerMethod_;
 };
