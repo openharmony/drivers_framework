@@ -6,7 +6,7 @@
 
 import("//build/config/features.gni")
 import("//build/test.gni")
-module_output_path = "hdf/hdi"
+module_output_path = "hdf/srvmgr"
 
 ohos_fuzztest("LoadDeviceFuzzTest") {
   module_out_path = module_output_path
