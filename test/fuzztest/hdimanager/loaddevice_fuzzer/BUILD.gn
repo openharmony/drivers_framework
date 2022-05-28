@@ -11,7 +11,8 @@ module_output_path = "hdf/srvmgr"
 ohos_fuzztest("LoadDeviceFuzzTest") {
   module_out_path = module_output_path
 
-  fuzz_config_file = "//drivers/framework/test/fuzztest/hdimanager/loaddevice_fuzzer"
+  fuzz_config_file =
+      "//drivers/framework/test/fuzztest/hdimanager/loaddevice_fuzzer"
 
   include_dirs = [
     "//drivers/framework/test/fuzztest/hdimanager/loaddevice_fuzzer",
