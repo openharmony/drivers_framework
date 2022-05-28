@@ -314,7 +314,8 @@ String Options::GetPackagePath(const String &package)
         rootPath = rootPath.Substring(0, rootPath.GetLength() - 1);
     }
 
-    return package.Replace(0, rootPackage.GetLength(), rootPath).Replace('.', File::separator);
+    String subPath = package.Substring(rootPackage.GetLength() + 1).Replace('.', File::separator);
+    return File::AdapterPath(rootPath + "/" + subPath);
 }
 
 /*
