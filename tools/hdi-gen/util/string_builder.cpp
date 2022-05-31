@@ -7,7 +7,9 @@
  */
 
 #include "util/string_builder.h"
-#include "securec.h"
+
+#include <cstdio>
+#include <cstring>
 #include "util/logger.h"
 
 namespace OHOS {
@@ -48,7 +50,7 @@ StringBuilder &StringBuilder::Append(const char *string)
         }
     }
 
-    (void)memcpy_s(buffer_ + position_, capacity_ - position_, string, len);
+    (void)memcpy(buffer_ + position_, string, len);
     position_ += len;
     return *this;
 }
@@ -66,7 +68,7 @@ StringBuilder &StringBuilder::Append(const String &string)
         }
     }
 
-    (void)memcpy_s(buffer_ + position_, capacity_ - position_, string.string(), len);
+    (void)memcpy(buffer_ + position_, string.string(), len);
     position_ += len;
     return *this;
 }
@@ -79,7 +81,7 @@ StringBuilder &StringBuilder::AppendFormat(const char *format, ...)
     va_copy(argsCopy, args);
 
     char buf[LINE_MAX_SIZE] = {0};
-    int len = vsnprintf_s(buf, LINE_MAX_SIZE, LINE_MAX_SIZE - 1, format, args);
+    int len = vsnprintf(buf, LINE_MAX_SIZE, format, args);
     if (len <= 0) {
         va_end(args);
         va_end(argsCopy);
@@ -94,7 +96,7 @@ StringBuilder &StringBuilder::AppendFormat(const char *format, ...)
         }
     }
 
-    if (vsnprintf_s(buffer_ + position_, len + 1, len, format, argsCopy) < 0) {
+    if (vsnprintf(buffer_ + position_, len + 1, format, argsCopy) < 0) {
         va_end(args);
         va_end(argsCopy);
         return *this;
@@ -132,7 +134,7 @@ bool StringBuilder::Grow(size_t size)
     }
 
     if (buffer_ != nullptr) {
-        (void)memcpy_s(newBuffer, newSize, buffer_, capacity_);
+        (void)memcpy(newBuffer, buffer_, capacity_);
         free(buffer_);
     }
     buffer_ = newBuffer;

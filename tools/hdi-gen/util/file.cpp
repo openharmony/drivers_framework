@@ -15,7 +15,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "securec.h"
 #include "util/string_builder.h"
 
 namespace OHOS {
@@ -105,7 +104,7 @@ int File::Read()
         return -1;
     }
 
-    (void)memset_s(buffer_, BUFFER_SIZE, 0, BUFFER_SIZE);
+    (void)memset(buffer_, 0, BUFFER_SIZE);
     size_t count = fread(buffer_, 1, BUFFER_SIZE - 1, fd_);
     if (count < BUFFER_SIZE - 1) {
         isError_ = ferror(fd_) != 0;

@@ -19,7 +19,7 @@ bool CppServiceDriverCodeEmitter::ResolveDirectory(const String &targetDirectory
         return false;
     }
 
-    directory_ = GetFilePath(targetDirectory);
+    directory_ = GetFileParentPath(targetDirectory);
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CppServiceDriverCodeEmitter", "Create '%s' failed!", directory_.string());
         return false;

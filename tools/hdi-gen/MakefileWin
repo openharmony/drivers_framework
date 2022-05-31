@@ -4,8 +4,7 @@
 # the GPL, or the BSD license, at your option.
 # See the LICENSE file in the root of this repository for complete details.
 
-BOUNDS_CHECK_DIR:=$(subst /,\, $(abspath ..\..\..\..\third_party\bounds_checking_function))
-INCLUDES:=-I $(PWD) -I $(BOUNDS_CHECK_DIR)\include
+INCLUDES:=-I $(PWD)
 
 CODEGEN_SOURCE_DIR:=$(PWD)\codegen
 CODEGEN_SOURCE:=$(wildcard $(CODEGEN_SOURCE_DIR)/*.cpp)
@@ -37,16 +36,11 @@ UTIL_SOURCE:=$(wildcard $(UTIL_SOURCE_DIR)/*.cpp)
 UTIL_OBJS_DIR:=$(BUILD_DIR)\util
 UTIL_OBJS:=$(addprefix $(UTIL_OBJS_DIR)\, $(patsubst %.cpp, %.o, $(notdir $(UTIL_SOURCE))))
 
-BOUNDS_CHECK_SOURCE_DIR:=$(subst /,\, $(abspath ..\..\..\..\third_party\bounds_checking_function\src))
-BOUNDS_CHECK_SOURCE:=$(wildcard $(BOUNDS_CHECK_SOURCE_DIR)/*.c)
-BOUNDS_CHECK_OBJS_DIR:=$(BUILD_DIR)\bounds_checking_function
-BOUNDS_CHECK_OBJS:=$(addprefix $(BOUNDS_CHECK_OBJS_DIR)\, $(patsubst %.c, %.o, $(notdir $(BOUNDS_CHECK_SOURCE))))
-
 MAIN_SOURCE:=$(wildcard *.cpp)
 MAIN_OBJS:=$(addprefix $(BUILD_DIR)\, $(patsubst %.cpp, %.o, $(MAIN_SOURCE)))
 
 all : $(TARGET)
-$(TARGET) : $(BOUNDS_CHECK_OBJS) $(UTIL_OBJS) $(AST_OBJS) $(LEXER_OBJS) $(PREPROCESSOR_OBJS) $(PARSER_OBJS) $(CODEGEN_OBJS) $(MAIN_OBJS)
+$(TARGET) : $(UTIL_OBJS) $(AST_OBJS) $(LEXER_OBJS) $(PREPROCESSOR_OBJS) $(PARSER_OBJS) $(CODEGEN_OBJS) $(MAIN_OBJS)
 	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 	$(Q) echo $(TARGET):build successful.
 
@@ -76,10 +70,6 @@ $(AST_OBJS_DIR)\\%.o : $(AST_SOURCE_DIR)\\%.cpp
 
 $(UTIL_OBJS_DIR)\\%.o : $(UTIL_SOURCE_DIR)\\%.cpp
 	$(Q) if not exist $(UTIL_OBJS_DIR) (mkdir $(UTIL_OBJS_DIR))
-	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
-
-$(BOUNDS_CHECK_OBJS_DIR)\\%.o : $(BOUNDS_CHECK_SOURCE_DIR)\\%.c
-	$(Q) if not exist $(BOUNDS_CHECK_OBJS_DIR) (mkdir $(BOUNDS_CHECK_OBJS_DIR))
 	$(Q) $(CXX) $(CXXFLAGS) $(INCLUDES) -c $^ -o $@
 
 clean:

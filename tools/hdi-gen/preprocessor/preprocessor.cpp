@@ -157,7 +157,13 @@ bool Preprocessor::ParsePackage(Lexer &lexer, FileDetail &info)
 bool Preprocessor::ParseImports(Lexer &lexer, FileDetail &info)
 {
     Token token = lexer.PeekToken();
-    while (token.kind_ == TokenType::IMPORT) {
+    while (token.kind_ != TokenType::END_OF_FILE) {
+        if (token.kind_ != TokenType::IMPORT) {
+            lexer.GetToken();
+            token = lexer.PeekToken();
+            continue;
+        }
+
         lexer.GetToken();
         token = lexer.PeekToken();
         if (token.kind_ != TokenType::ID) {
@@ -188,7 +194,7 @@ bool Preprocessor::LoadOtherIdlFiles(const FileDetail &ownerFileDetail, FileDeta
             continue;
         }
 
-        String otherFilePath = Options::GetInstance().GetPackagePath(importName) + ".idl";
+        String otherFilePath = Options::GetInstance().GetImportFilePath(importName);
         FileDetail otherFileDetail;
         if (!ParseFileDetail(otherFilePath, otherFileDetail)) {
             return false;

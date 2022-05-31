@@ -19,7 +19,7 @@ bool CCustomTypesCodeEmitter::ResolveDirectory(const String &targetDirectory)
         return false;
     }
 
-    directory_ = GetFilePath(targetDirectory);
+    directory_ = GetFileParentPath(targetDirectory);
     if (!File::CreateParentDir(directory_)) {
         Logger::E("CCustomTypesCodeEmitter", "Create '%s' failed!", directory_.string());
         return false;

@@ -224,7 +224,7 @@ void Options::ShowUsage() const
  */
 String Options::GetRootPackage(const String &package)
 {
-    const auto &packagePaths = GetPackagePath();
+    const auto &packagePaths = GetPackagePathMap();
     for (const auto &packageRoot : packagePaths) {
         if (package.StartsWith(packageRoot.first)) {
             return packageRoot.first;
@@ -242,7 +242,7 @@ String Options::GetRootPackage(const String &package)
  */
 String Options::GetRootPath(const String &package)
 {
-    const auto &packagePaths = GetPackagePath();
+    const auto &packagePaths = GetPackagePathMap();
     for (const auto &packageRoot : packagePaths) {
         if (package.StartsWith(packageRoot.first)) {
             return packageRoot.second;
@@ -272,33 +272,13 @@ String Options::GetSubPackage(const String &package)
  * For Example
  * -r option: -r ohos.hdi:./drivers/interface
  * package:ohos.hdi.foo.v1_0
- * subPackage:foo/v1_0
- */
-String Options::GetSubPath(const String &package)
-{
-    String rootPackage = GetRootPackage(package);
-    if (rootPackage.IsEmpty()) {
-        return package;
-    }
-
-    String subPath = package.Substring(rootPackage.GetLength() + 1).Replace('.', File::separator);
-    if (subPath.IsEmpty()) {
-        return "";
-    }
-    return subPath;
-}
-
-/*
- * For Example
- * -r option: -r ohos.hdi:./drivers/interface
- * package:ohos.hdi.foo.v1_0
  * packagePath:./drivers/interface/foo/v1_0
  */
 String Options::GetPackagePath(const String &package)
 {
     String rootPackage = "";
     String rootPath = "";
-    const auto &packagePaths = GetPackagePath();
+    const auto &packagePaths = GetPackagePathMap();
     for (const auto &packageRoot : packagePaths) {
         if (package.StartsWith(packageRoot.first)) {
             rootPackage = packageRoot.first;
@@ -307,7 +287,9 @@ String Options::GetPackagePath(const String &package)
     }
 
     if (rootPackage.IsEmpty()) {
-        return package.Replace('.', File::separator);
+        // The current path is the root path
+        String curPath = File::AdapterPath(package.Replace('.', File::separator));
+        return File::RealPath(curPath);
     }
 
     if (rootPath.EndsWith(File::separator)) {
