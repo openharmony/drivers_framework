@@ -112,7 +112,7 @@ String ASTEnumType::EmitCTypeDecl() const
         if (it->GetExprValue() == nullptr) {
             sb.Append(TAB).AppendFormat("%s,\n", it->GetName().string());
         } else {
-            sb.Append(TAB).AppendFormat("%s = %lu,\n", it->GetName().string(), it->GetExprValue()->EmitCode().string());
+            sb.Append(TAB).AppendFormat("%s = %s,\n", it->GetName().string(), it->GetExprValue()->EmitCode().string());
         }
     }
 
