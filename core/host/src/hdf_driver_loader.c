@@ -13,7 +13,7 @@
 
 #define HDF_LOG_TAG driver_loader
 
-int32_t HdfDriverEntryConstruct()
+int32_t HdfDriverEntryConstruct(void)
 {
     int i;
     struct HdfDriverEntry *driverEntry = NULL;
