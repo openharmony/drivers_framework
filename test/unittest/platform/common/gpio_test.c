@@ -327,10 +327,6 @@ static int32_t GpioTestIrqLevel(void)
 
 static int32_t GpioTestIrqEdge(void)
 {
-#if defined(_LINUX_USER_) || defined(__USER__)
-    (void)GpioTestIrqSharedFunc;
-    return HDF_SUCCESS;
-#else
     uint16_t mode;
     struct GpioTester *tester = NULL;
 
@@ -348,14 +344,10 @@ static int32_t GpioTestIrqEdge(void)
 #endif
     mode = GPIO_IRQ_TRIGGER_FALLING | GPIO_IRQ_TRIGGER_RISING;
     return GpioTestIrqSharedFunc(tester, mode, true);
-#endif
 }
 
 int32_t GpioTestIrqThread(void)
 {
-#if defined(_LINUX_USER_) || defined(__USER__)
-    return HDF_SUCCESS;
-#else
     uint16_t mode;
     struct GpioTester *tester = NULL;
 
@@ -373,7 +365,6 @@ int32_t GpioTestIrqThread(void)
 #endif
     mode = GPIO_IRQ_TRIGGER_FALLING | GPIO_IRQ_TRIGGER_RISING | GPIO_IRQ_USING_THREAD;
     return GpioTestIrqSharedFunc(tester, mode, true);
-#endif
 }
 
 static int32_t GpioTestReliability(void)

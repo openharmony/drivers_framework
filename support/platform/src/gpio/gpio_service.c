@@ -6,11 +6,14 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_device_desc.h"
-#include "platform_core.h"
-#include "gpio_if.h"
-#include "gpio/gpio_core.h"
 #include "gpio/gpio_service.h"
+#include "gpio/gpio_core.h"
+#include "gpio_if.h"
+#include "hdf_device_desc.h"
+#include "hdf_device_object.h"
+#include "platform_core.h"
+#include "platform_listener_common.h"
+#include "securec.h"
 
 #define HDF_LOG_TAG gpio_service
 
@@ -135,10 +138,47 @@ static int32_t GpioServiceIoSetDir(struct HdfSBuf *data, struct HdfSBuf *reply)
     return ret;
 }
 
+static void GpioServiceUpdate(uint16_t gpio)
+{
+    int32_t ret;
+    uint32_t id;
+    struct HdfSBuf *data = NULL;
+    struct PlatformManager *gpioMgr = NULL;
+
+    gpioMgr = GpioManagerGet();
+    if (gpioMgr == NULL || gpioMgr->device.hdfDev == NULL) {
+        HDF_LOGE("%s: get gpio manager fail", __func__);
+        return;
+    }
+
+    id = PLATFORM_LISTENER_EVENT_GPIO_INT_NOTIFY;
+    data = HdfSbufObtainDefaultSize();
+    if (data == NULL) {
+        HDF_LOGE("GpioServiceUpdate HdfSbufObtainDefaultSize failed");
+        return;
+    }
+    if (!HdfSbufWriteUint16(data, gpio)) {
+        HDF_LOGE("GpioServiceUpdate: write gpio fail!");
+        HdfSbufRecycle(data);
+        return;
+    }
+    ret = HdfDeviceSendEvent(gpioMgr->device.hdfDev, id, data);
+    HdfSbufRecycle(data);
+    HDF_LOGE("%s:set service info done, ret = %d, id = %d", __func__, ret, id);
+}
+
+static int32_t GpioServiceIrqFunc(uint16_t gpio, void *data)
+{
+    HDF_LOGD("%s:%d", __func__, gpio);
+    GpioServiceUpdate(gpio);
+    return HDF_SUCCESS;
+}
+
 static int32_t GpioServiceIoSetIrq(struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     uint16_t gpio;
     uint16_t mode;
+    int32_t ret;
 
     (void)reply;
     if (data == NULL) {
@@ -156,6 +196,11 @@ static int32_t GpioServiceIoSetIrq(struct HdfSBuf *data, struct HdfSBuf *reply)
         return HDF_ERR_IO;
     }
 
+    ret = GpioSetIrq(gpio, mode, GpioServiceIrqFunc, NULL);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: set gpio irq fail:%d", __func__, ret);
+        return ret;
+    }
     return HDF_SUCCESS;
 }
 
@@ -171,6 +216,11 @@ static int32_t GpioServiceIoUnsetIrq(struct HdfSBuf *data, struct HdfSBuf *reply
 
     if (!HdfSbufReadUint16(data, &gpio)) {
         HDF_LOGE("%s: read gpio number fail", __func__);
+        return HDF_ERR_IO;
+    }
+
+    if (GpioUnsetIrq(gpio, NULL) != HDF_SUCCESS) {
+        HDF_LOGE("%s: GpioUnsetIrq fail", __func__);
         return HDF_ERR_IO;
     }
 
@@ -227,9 +277,8 @@ static int32_t GpioServiceIoDisableIrq(struct HdfSBuf *data, struct HdfSBuf *rep
     return ret;
 }
 
-
-static int32_t GpioServiceDispatch(struct HdfDeviceIoClient *client, int cmd,
-    struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t GpioServiceDispatch(
+    struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
 

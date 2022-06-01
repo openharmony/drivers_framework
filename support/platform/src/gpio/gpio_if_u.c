@@ -10,7 +10,9 @@
 #include "gpio/gpio_service.h"
 #include "hdf_base.h"
 #include "hdf_io_service_if.h"
+#include "osal_mem.h"
 #include "platform_core.h"
+#include "platform_listener_u.h"
 
 #define PLAT_LOG_TAG gpio_if_u
 
@@ -24,6 +26,15 @@ static struct HdfIoService *GpioManagerServiceGet(void)
     service = HdfIoServiceBind("HDF_PLATFORM_GPIO_MANAGER");
     if (service == NULL) {
         HDF_LOGE("%s: fail to get gpio manager service!", __func__);
+    }
+
+    if (service->priv == NULL) {
+        struct PlatformUserListenerManager *manager = PlatformUserListenerManagerGet(PLATFORM_MODULE_GPIO);
+        if (manager == NULL) {
+            HDF_LOGE("%s: PlatformUserListenerManagerGet fail!", __func__);
+        }
+        service->priv = manager;
+        manager->service = service;
     }
     return service;
 }
@@ -220,14 +231,39 @@ int32_t GpioSetDir(uint16_t gpio, uint16_t dir)
     HdfSbufRecycle(data);
     return HDF_SUCCESS;
 }
+
+static int32_t GpioRegListener(struct HdfIoService *service, uint16_t gpio, GpioIrqFunc func, void *arg)
+{
+    struct PlatformUserListenerGpioParam *param = NULL;
+
+    param = OsalMemCalloc(sizeof(struct PlatformUserListenerGpioParam));
+    if (param == NULL) {
+        HDF_LOGE("%s: OsalMemCalloc param fail", __func__);
+        return HDF_ERR_IO;
+    }
+    param->gpio = gpio;
+    param->func = func;
+    param->data = arg;
+
+    if (PlatformUserListenerReg((struct PlatformUserListenerManager *)service->priv, gpio, (void *)param) !=
+        HDF_SUCCESS) {
+        HDF_LOGE("%s: PlatformUserListenerReg fail", __func__);
+        OsalMemFree(param);
+        return HDF_ERR_IO;
+    }
+    return HDF_SUCCESS;
+}
+
 int32_t GpioSetIrq(uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg)
 {
     int32_t ret;
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
-    (void) func;
-    (void) arg;
+    if (func == NULL) {
+        HDF_LOGE("%s: func null!", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
 
     service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
@@ -235,27 +271,36 @@ int32_t GpioSetIrq(uint16_t gpio, uint16_t mode, GpioIrqFunc func, void *arg)
         return HDF_PLT_ERR_DEV_GET;
     }
 
+    if (GpioRegListener(service, gpio, func, arg) != HDF_SUCCESS) {
+        HDF_LOGE("%s: GpioGetListener fail!", __func__);
+        return HDF_FAILURE;
+    }
+
     data = HdfSbufObtainDefaultSize();
     if (data == NULL) {
         HDF_LOGE("%s: fail to obtain data", __func__);
+        PlatformUserListenerDestory((struct PlatformUserListenerManager *)service->priv, gpio);
         return HDF_ERR_MALLOC_FAIL;
     }
 
     if (!HdfSbufWriteUint16(data, gpio)) {
         HDF_LOGE("%s: write gpio number fail!", __func__);
+        PlatformUserListenerDestory((struct PlatformUserListenerManager *)service->priv, gpio);
         HdfSbufRecycle(data);
         return HDF_ERR_IO;
     }
 
     if (!HdfSbufWriteUint16(data, mode)) {
         HDF_LOGE("%s: write gpio mode fail!", __func__);
+        PlatformUserListenerDestory((struct PlatformUserListenerManager *)service->priv, gpio);
         HdfSbufRecycle(data);
         return HDF_ERR_IO;
     }
 
     ret = service->dispatcher->Dispatch(&service->object, GPIO_IO_SETIRQ, data, NULL);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: service call fail:%d", __func__, ret);
+        HDF_LOGE("%s: service call fail:%d %d", __func__, ret, gpio);
+        PlatformUserListenerDestory((struct PlatformUserListenerManager *)service->priv, gpio);
         HdfSbufRecycle(data);
         return ret;
     }
@@ -270,7 +315,7 @@ int32_t GpioUnsetIrq(uint16_t gpio, void *arg)
     struct HdfIoService *service = NULL;
     struct HdfSBuf *data = NULL;
 
-    (void) arg;
+    (void)arg;
 
     service = GpioManagerServiceGet();
     if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
@@ -298,6 +343,7 @@ int32_t GpioUnsetIrq(uint16_t gpio, void *arg)
     }
 
     HdfSbufRecycle(data);
+    PlatformUserListenerDestory((struct PlatformUserListenerManager *)service->priv, gpio);
     return HDF_SUCCESS;
 }
 
