@@ -659,6 +659,7 @@ AutoPtr<ASTType> Parser::ParseType()
             break;
         case TokenType::SMQ:
             type = ParseSmqType();
+            break;
         case TokenType::ENUM:
         case TokenType::STRUCT:
         case TokenType::UNION:
@@ -671,7 +672,7 @@ AutoPtr<ASTType> Parser::ParseType()
             return nullptr;
     }
     if (type == nullptr) {
-        LogError(token, String::Format("this type was note declared in this scope"));
+        LogError(token, String::Format("this type was not declared in this scope"));
     }
     if (!CheckType(token, type)) {
         return nullptr;
