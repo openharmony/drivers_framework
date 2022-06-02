@@ -8,6 +8,7 @@
 
 #include "util/string.h"
 
+#include <cstdio>
 #include <atomic>
 #include <cctype>
 #include <cstddef>
@@ -15,7 +16,6 @@
 #include <cstring>
 #include <new>
 
-#include "securec.h"
 #include "util/logger.h"
 #include "util/string_builder.h"
 
@@ -57,12 +57,7 @@ SharedData *SharedData::Allocate(int size)
         return nullptr;
     }
 
-    auto handle = reinterpret_cast<SharedData *>(malloc(sizeof(SharedData) + size + 1));
-    if (handle == nullptr) {
-        Logger::E(String::TAG, "Fail to malloc %lu bytes memory", size);
-        return handle;
-    }
-
+    auto handle = reinterpret_cast<SharedData *>(calloc(1, sizeof(SharedData) + size + 1));
     new (handle) SharedData(1, size);
     return handle;
 }
@@ -104,12 +99,7 @@ String::String(const char *string)
         if (string_ == nullptr) {
             return;
         }
-
-        if (strcpy_s(string_, strlen(string) + 1, string) != EOK) {
-            Logger::E(String::TAG, "The Construct of \"%s\" is failed.", string);
-            SharedData::Release(string_);
-            string_ = nullptr;
-        }
+        (void)strcpy(string_, string);
     }
 }
 
@@ -118,7 +108,7 @@ String::String(const char *string, size_t length)
     if (string != nullptr) {
         string_ = SharedData::ToString(SharedData::Allocate(length));
         if (string_ != nullptr) {
-            (void)memcpy_s(string_, length + 1, string, length);
+            (void)strncpy(string_, string, length);
             string_[length] = '\0';
         }
     }
@@ -140,7 +130,7 @@ String::String(int size)
 {
     string_ = SharedData::ToString(SharedData::Allocate(size));
     if (string_ != nullptr) {
-        (void)memset_s(string_, size + 1, 0, size + 1);
+        (void)memset(string_, 0, size + 1);
     }
 }
 
@@ -691,12 +681,7 @@ String &String::operator=(const char *string)
         return *this;
     }
 
-    if (strcpy_s(string_, strlen(string) + 1, string) != EOK) {
-        Logger::E(String::TAG, "The operator= of \"%s\" is failed.", string);
-        SharedData::Release(string_);
-        string_ = nullptr;
-    }
-
+    (void)strcpy(string_, string);
     return *this;
 }
 
@@ -727,6 +712,7 @@ String &String::operator+=(const char *other)
     }
 
     int thisSize = GetLength();
+    int otherSize = strlen(other);
     int newSize = thisSize + strlen(other);
     String newString(newSize);
     if (newString.string_ == nullptr) {
@@ -735,15 +721,11 @@ String &String::operator+=(const char *other)
     }
 
     if (string_ != nullptr && thisSize > 0) {
-        if (memcpy_s(newString.string_, newSize + 1, string_, thisSize) != EOK) {
-            Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 2", string_);
-            goto finished;
-        }
+        (void)strncpy(newString.string_, string_, thisSize);
     }
 
-    if (strcpy_s(newString.string_ + thisSize, newSize + 1 - thisSize, other) != EOK) {
-        Logger::E(String::TAG, "The operator+= of \"%s\" is failed.", string_);
-        goto finished;
+    if (other != nullptr && otherSize > 0) {
+        (void)strncpy(newString.string_ + thisSize, other, otherSize);
     }
 
 finished:
@@ -760,7 +742,8 @@ String &String::operator+=(const String &other)
     }
 
     int thisSize = GetLength();
-    int newSize = thisSize + other.GetLength();
+    int otherSize = other.GetLength();
+    int newSize = thisSize + otherSize;
     String newString(newSize);
     if (newString.string_ == nullptr) {
         Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 1", string_);
@@ -768,15 +751,11 @@ String &String::operator+=(const String &other)
     }
 
     if (string_ != nullptr && thisSize > 0) {
-        if (memcpy_s(newString.string_, newSize + 1, string_, thisSize) != EOK) {
-            Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 2", string_);
-            goto finished;
-        }
+        (void)strncpy(newString.string_, string_, thisSize);
     }
 
-    if (strcpy_s(newString.string_ + thisSize, newSize + 1 - thisSize, other.string_) != EOK) {
-        Logger::E(String::TAG, "The operator+= of \"%s\" is failed. 3", string_);
-        goto finished;
+    if (other.string_ != nullptr && otherSize > 0) {
+        (void)strncpy(newString.string_ + thisSize, other.string_, otherSize);
     }
 
 finished:
@@ -794,7 +773,7 @@ String String::Format(const char *format, ...)
     va_copy(argsCopy, args);
 
     char buf[LINE_MAX_SIZE] = {0};
-    int len = vsnprintf_s(buf, LINE_MAX_SIZE, LINE_MAX_SIZE - 1, format, args);
+    int len = vsnprintf(buf, LINE_MAX_SIZE, format, args);
     String string;
     if (len <= 0) {
         va_end(args);
@@ -809,7 +788,7 @@ String String::Format(const char *format, ...)
         return string;
     }
 
-    if (vsnprintf_s(string.string_, len + 1, len, format, argsCopy) < 0) {
+    if (vsnprintf(string.string_, len + 1, format, argsCopy) < 0) {
         va_end(args);
         va_end(argsCopy);
         return string;

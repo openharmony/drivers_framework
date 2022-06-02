@@ -74,7 +74,7 @@ public:
         return sourceFiles_;
     }
 
-    inline PkgPathMap GetPackagePath() const
+    inline PkgPathMap GetPackagePathMap() const
     {
         return packagePath_;
     }
@@ -110,8 +110,6 @@ public:
     String GetRootPath(const String &package);
 
     String GetSubPackage(const String &package);
-
-    String GetSubPath(const String &package);
 
     String GetPackagePath(const String &package);
 

@@ -15,7 +15,7 @@ namespace HDI {
 bool CClientProxyCodeEmitter::ResolveDirectory(const String &targetDirectory)
 {
     if (ast_->GetASTFileType() == ASTFileType::AST_IFACE || ast_->GetASTFileType() == ASTFileType::AST_ICALLBACK) {
-        directory_ = GetFilePath(targetDirectory);
+        directory_ = GetFileParentPath(targetDirectory);
     } else {
         return false;
     }

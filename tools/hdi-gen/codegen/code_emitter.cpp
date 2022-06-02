@@ -106,10 +106,20 @@ bool CodeEmitter::NeedFlag(const AutoPtr<ASTMethod> &method)
     return false;
 }
 
-String CodeEmitter::GetFilePath(const String &outDir)
+/**
+ * ForExample:
+ * -r option: -r ohos.hdi:./drivers/interface
+ * outDir: ./out
+ * package: ohos.hdi.foo.v1_0
+ * subPackage: foo.v1_0
+ * subPath: foo/v1_0
+ * GenPath: ./out/foo/v1_0/
+ */
+String CodeEmitter::GetFileParentPath(const String &outDir)
 {
     String outPath = outDir.EndsWith(File::separator) ? outDir.Substring(0, outDir.GetLength() - 1) : outDir;
-    String subPath = Options::GetInstance().GetSubPath(ast_->GetPackageName());
+    String subPackage = Options::GetInstance().GetSubPackage(ast_->GetPackageName());
+    String subPath = subPackage.Replace('.', File::separator);
     if (subPath.IsEmpty()) {
         return File::AdapterPath(String::Format("%s/", outPath.string(), subPath.string()));
     } else {

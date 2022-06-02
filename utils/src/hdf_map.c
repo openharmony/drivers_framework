@@ -120,7 +120,6 @@ int32_t MapSet(Map *map, const char *key, const void *value, uint32_t valueSize)
 {
     struct MapNode *node = NULL;
     uint32_t hash;
-
     if (map == NULL || key == NULL || value == NULL || valueSize == 0) {
         return HDF_ERR_INVALID_PARAM;
     }
@@ -149,20 +148,23 @@ int32_t MapSet(Map *map, const char *key, const void *value, uint32_t valueSize)
             return HDF_SUCCESS;
         }
     }
+    // Increase the bucket size when nodes is nullptr
+    if (map->nodes == NULL) {
+        MapInit(map);
+        MapResize(map, HDF_MIN_MAP_SIZE);
+    }
     // Increase the bucket size to decrease the possibility of map search conflict.
     if (map->nodeSize >= map->bucketSize) {
         uint32_t size = (map->bucketSize < HDF_MIN_MAP_SIZE) ? HDF_MIN_MAP_SIZE : \
             (map->bucketSize << HDF_ENLARGE_FACTOR);
         MapResize(map, size);
     }
-
     node = MapCreateNode(key, hash, value, valueSize);
     if (node == NULL) {
         return HDF_ERR_INVALID_OBJECT;
     }
     MapAddNode(map, node);
     map->nodeSize++;
-
     return HDF_SUCCESS;
 }
 

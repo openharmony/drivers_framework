@@ -83,7 +83,7 @@ protected:
 
     bool NeedFlag(const AutoPtr<ASTMethod> &method);
 
-    String GetFilePath(const String &outDir);
+    String GetFileParentPath(const String &outDir);
 
     String PackageToFilePath(const String &packageName);
 

@@ -45,7 +45,10 @@ public:
 
     inline bool IsEmpty() const
     {
-        return string_ == nullptr || string_[0] == '\0';
+        if (string_ == nullptr) {
+            return true;
+        }
+        return string_[0] == '\0' ? true : false;
     }
 
     int GetLength() const;
