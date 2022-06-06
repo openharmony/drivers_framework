@@ -1,0 +1,17 @@
+root {
+    aaa : ddd {
+    }
+    bbb {
+        ccc : root.ddd {
+        }
+    }
+    ddd {
+        e = 1;
+        node_1 {
+        }
+        node_2 {
+        }
+        node_3 {
+        }
+    }
+}

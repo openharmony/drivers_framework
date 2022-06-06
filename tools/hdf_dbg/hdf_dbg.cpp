@@ -1,16 +1,9 @@
 /*
  * Copyright (c) 2022 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * HDF is dual licensed: you can use it either under the terms of
+ * the GPL, or the BSD license, at your option.
+ * See the LICENSE file in the root of this repository for complete details.
  */
 
 #include <iostream>
@@ -36,7 +29,7 @@ static constexpr int32_t DBG_HDI_PARA_MIN_LEN = 7;
 static constexpr int32_t DBG_HDI_SERVICE_LOAD_IDX = 2;
 static constexpr int32_t QUERY_INFO_PARA_CNT = 3;
 static constexpr const char *HELP_COMMENT =
-    " ============== hdf_dbg menu  ================================================================================\n"
+    " hdf_dbg menu:  \n"
     " hdf_dbg -h   :display help information\n"
     " hdf_dbg -q   :query all service and device information\n"
     " hdf_dbg -q 0 :query service information of kernel space\n"
@@ -44,13 +37,12 @@ static constexpr const char *HELP_COMMENT =
     " hdf_dbg -q 2 :query device information of kernel space\n"
     " hdf_dbg -q 3 :query device information use space\n"
     " hdf_dbg -d   :debug hdi interface\n"
-    " detail usage:\n"
-    "  debug hdi interface, parameterType can be int or string now, for example:\n"
-    "   hdf_dbg -d loadFlag serviceName interfaceToken cmd parameterCount parameterType parameterValue\n"
-    "   detail example:\n"
-    "   hdf_dbg -d 1 sample_driver_service hdf.test.sampele_service 1 2 int 100 int 200\n"
-    "   hdf_dbg -d 0 sample_driver_service hdf.test.sampele_service 7 1 string foo\n"
-    " =============================================================================================================\n";
+    "   detailed usage:\n"
+    "   debug hdi interface, parameterType can be int or string now, for example:\n"
+    "     hdf_dbg -d loadFlag serviceName interfaceToken cmd parameterCount parameterType parameterValue\n"
+    "     detailed examples:\n"
+    "       hdf_dbg -d 1 sample_driver_service hdf.test.sampele_service 1 2 int 100 int 200\n"
+    "       hdf_dbg -d 0 sample_driver_service hdf.test.sampele_service 7 1 string foo\n";
 
 using GetInfoFunc = void (*)();
 static void GetAllServiceUserSpace();
@@ -105,8 +97,7 @@ static void PrintAllServiceInfoKernel(struct HdfSBuf *data, bool flag)
             break;
         }
         uint16_t devClass;
-        bool ret = HdfSbufReadUint16(data, &devClass);
-        if (!ret) {
+        if (!HdfSbufReadUint16(data, &devClass)) {
             return;
         }
         cout << servName << ":\t0x" << std::hex << devClass << endl;
@@ -142,21 +133,21 @@ static int32_t PrintOneHostInfoKernel(struct HdfSBuf *data, uint32_t &devNodeCnt
         return HDF_FAILURE;
     }
     uint32_t hostId;
-    bool flag = HdfSbufReadUint32(data, &hostId);
-    if (!flag) {
+    if (!HdfSbufReadUint32(data, &hostId)) {
+        cout << "PrintOneHostInfoKernel HdfSbufReadUint32 hostId failed" << endl;
         return HDF_FAILURE;
     }
 
     cout << hostName << ":\t0x" << std::hex << hostId << endl;
     uint32_t devCnt;
-    flag = HdfSbufReadUint32(data, &devCnt);
-    if (!flag) {
+    if (!HdfSbufReadUint32(data, &devCnt)) {
+        cout << "PrintOneHostInfoKernel HdfSbufReadUint32 devCnt failed" << endl;
         return HDF_FAILURE;
     }
     for (uint32_t i = 0; i < devCnt; i++) {
         uint32_t devId;
-        flag = HdfSbufReadUint32(data, &devId);
-        if (!flag) {
+        if (!HdfSbufReadUint32(data, &devId)) {
+            cout << "PrintOneHostInfoKernel HdfSbufReadUint32 devId failed" << endl;
             return HDF_FAILURE;
         }
         cout << "0x" << std::hex << devId << endl;
@@ -173,8 +164,7 @@ static void PrintAllDeviceInfoKernel(struct HdfSBuf *data, bool flag)
     cout << "deviceId" << endl;
 
     while (flag) {
-        int32_t ret = PrintOneHostInfoKernel(data, devNodeCnt);
-        if (ret == HDF_FAILURE) {
+        if (PrintOneHostInfoKernel(data, devNodeCnt) == HDF_FAILURE) {
             break;
         }
         hostCnt++;
@@ -221,7 +211,7 @@ static int32_t InjectDebugHdi(int argc, char **argv)
     int32_t ret = ParseHdiParameter(argc, argv, data);
     if (ret != HDF_SUCCESS) {
         PrintHelp();
-        return ret;
+        return HDF_FAILURE;
     }
     if (loadFlag == 1) {
         devmgr->LoadDevice(argv[SERVER_NAME_IDX]);
@@ -322,7 +312,7 @@ int main(int argc, char **argv)
     } else if (argc == QUERY_INFO_PARA_CNT || argc == QUERY_INFO_PARA_CNT - 1) {
         if (strcmp(argv[FUNC_IDX], "-q") != 0) {
             PrintHelp();
-            return HDF_SUCCESS;
+            return HDF_FAILURE;
         }
         uint32_t funcCnt = sizeof(g_getInfoFuncs) / sizeof(g_getInfoFuncs[0]);
         if (argc == QUERY_INFO_PARA_CNT - 1) {
@@ -334,12 +324,14 @@ int main(int argc, char **argv)
             g_getInfoFuncs[queryIdx]();
         } else {
             PrintHelp();
+            return HDF_FAILURE;
         }
     } else if (argc > QUERY_INFO_PARA_CNT) {
         if (strcmp(argv[FUNC_IDX], "-d") == 0) {
             return InjectDebugHdi(argc, argv);
         } else {
             PrintHelp();
+            return HDF_FAILURE;
         }
     }
 
