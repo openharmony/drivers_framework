@@ -81,7 +81,6 @@ OUT:
 int32_t HdfListAllService(struct HdfSBuf *reply)
 {
     int32_t ret = HDF_FAILURE;
-    struct HdfSBuf *data = NULL;
     if (reply == NULL) {
         HDF_LOGE("%s input reply is null", __func__);
         return ret;
@@ -91,26 +90,18 @@ int32_t HdfListAllService(struct HdfSBuf *reply)
         HDF_LOGE("failed to get %s service", DEV_MGR_NODE);
         return ret;
     }
-    data = HdfSbufObtainDefaultSize();
-    if (data == NULL) {
-        HDF_LOGE("%s failed to obtain sbuf data", __func__);
-        ret = HDF_DEV_ERR_NO_MEMORY;
-        goto OUT;
-    }
-    ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_LIST_ALL_SERVICE, data, reply);
+
+    ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_LIST_ALL_SERVICE, NULL, reply);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("failed to list all service info");
     }
-OUT:
     HdfIoServiceRecycle(ioService);
-    HdfSbufRecycle(data);
     return ret;
 }
 
 int32_t HdfListAllDevice(struct HdfSBuf *reply)
 {
     int32_t ret = HDF_FAILURE;
-    struct HdfSBuf *data = NULL;
     if (reply == NULL) {
         HDF_LOGE("%s input reply is null", __func__);
         return ret;
@@ -120,18 +111,11 @@ int32_t HdfListAllDevice(struct HdfSBuf *reply)
         HDF_LOGE("failed to get %s service", DEV_MGR_NODE);
         return ret;
     }
-    data = HdfSbufObtainDefaultSize();
-    if (data == NULL) {
-        HDF_LOGE("%s failed to obtain sbuf data", __func__);
-        ret = HDF_DEV_ERR_NO_MEMORY;
-        goto OUT;
-    }
-    ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_LIST_ALL_DEVICE, data, reply);
+
+    ret = ioService->dispatcher->Dispatch(&ioService->object, DEVMGR_LIST_ALL_DEVICE, NULL, reply);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("failed to list all device info");
     }
-OUT:
     HdfIoServiceRecycle(ioService);
-    HdfSbufRecycle(data);
     return ret;
 }

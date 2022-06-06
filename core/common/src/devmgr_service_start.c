@@ -66,7 +66,7 @@ int DeviceManagerDispatch(struct HdfObject *stub, int code, struct HdfSBuf *data
         .deviceObject = NULL,
         .OnServiceConnected = NULL,
     };
-    if (data == NULL || devMgrSvc == NULL) {
+    if (devMgrSvc == NULL) {
         HDF_LOGE("%s: input param is invalid", __func__);
         return ret;
     }
