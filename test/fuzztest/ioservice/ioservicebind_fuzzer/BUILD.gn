@@ -14,8 +14,10 @@ ohos_fuzztest("IoserviceBindFuzzTest") {
   fuzz_config_file =
       "//drivers/framework/test/fuzztest/ioservice/ioservicebind_fuzzer"
 
-  include_dirs =
-      [ "//drivers/framework/test/fuzztest/ioservice/ioservicebind_fuzzer.h" ]
+  include_dirs = [
+    "//drivers/framework/test/fuzztest/ioservice/ioservicebind_fuzzer.h",
+    "//utils/native/base/include",
+  ]
   cflags = [
     "-g",
     "-O0",
@@ -23,7 +25,10 @@ ohos_fuzztest("IoserviceBindFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [ "ioservicebind_fuzzer.cpp" ]
-  external_deps = [ "device_driver_framework:libhdf_utils" ]
+  external_deps = [
+    "device_driver_framework:libhdf_utils",
+    "utils_base:utils",
+  ]
 }
 
 group("fuzztest") {

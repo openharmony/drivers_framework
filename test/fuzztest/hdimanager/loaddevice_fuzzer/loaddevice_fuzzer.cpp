@@ -11,17 +11,20 @@
 #include <cstdint>
 #include <hdf_base.h>
 #include "idevmgr_hdi.h"
+#include "parcel.h"
 
 using namespace OHOS::HDI::DeviceManager::V1_0;
 
 namespace OHOS {
-sptr<IDeviceManager> g_devicemanager = IDeviceManager::Get();
+sptr<IDeviceManager> g_deviceManager = IDeviceManager::Get();
 
 bool LoadDeviceFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
-    std::string serviceName((const char *)data);
-    if (g_devicemanager != nullptr && g_devicemanager->LoadDevice(serviceName) == HDF_SUCCESS) {
+    Parcel parcel;
+    parcel.WriteBuffer(data, size);
+    auto servicename = parcel.ReadString();
+    if (g_deviceManager != nullptr && g_deviceManager->LoadDevice(servicename) == HDF_SUCCESS) {
         result = true;
     }
     return result;
