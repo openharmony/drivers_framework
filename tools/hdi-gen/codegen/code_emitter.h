@@ -33,13 +33,16 @@ struct HeaderFile {
     struct compare {
         bool operator()(const HeaderFile &lhs, const HeaderFile &rhs)
         {
-            if (lhs.type_ < rhs.type_) {
-                return true;
-            } else if (lhs.type_ > rhs.type_) {
+            int compareRet = lhs.fileName_.Compare(rhs.fileName_);
+            if (compareRet == 0) {
                 return false;
             }
 
-            return lhs.fileName_.Compare(rhs.fileName_) <= 0;
+            if (lhs.type_ != rhs.type_) {
+                return lhs.type_ < rhs.type_;
+            }
+
+            return compareRet < 0;
         }
     };
 

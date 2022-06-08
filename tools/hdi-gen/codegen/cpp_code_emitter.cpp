@@ -17,42 +17,30 @@ namespace OHOS {
 namespace HDI {
 void CppCodeEmitter::GetStdlibInclusions(HeaderFile::HeaderFileSet &headerFiles)
 {
-    bool includeString = false;
-    bool includeList = false;
-    bool includeMap = false;
-    bool includeSmq = false;
-
     const AST::TypeStringMap &types = ast_->GetTypes();
     for (const auto &pair : types) {
         AutoPtr<ASTType> type = pair.second;
         switch (type->GetTypeKind()) {
             case TypeKind::TYPE_STRING: {
-                if (!includeString) {
-                    headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "string");
-                    includeString = true;
-                }
+                headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "string");
                 break;
             }
             case TypeKind::TYPE_ARRAY:
             case TypeKind::TYPE_LIST: {
-                if (!includeList) {
-                    headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "vector");
-                    includeList = true;
-                }
+                headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "vector");
                 break;
             }
             case TypeKind::TYPE_MAP: {
-                if (!includeMap) {
-                    headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "map");
-                    includeMap = true;
-                }
+                headerFiles.emplace(HeaderFileType::CPP_STD_HEADER_FILE, "map");
                 break;
             }
             case TypeKind::TYPE_SMQ: {
-                if (!includeSmq) {
-                    headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdi_smq");
-                    includeSmq = true;
-                }
+                headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "hdi_smq");
+                break;
+            }
+            case TypeKind::TYPE_ASHMEM: {
+                headerFiles.emplace(HeaderFileType::OTHER_MODULES_HEADER_FILE, "ashmem");
+                break;
             }
             default:
                 break;
