@@ -1,0 +1,28 @@
+#ifndef ${device_upper_case}_${driver_upper_case}_OPS_H
+#define ${device_upper_case}_${driver_upper_case}_OPS_H
+
+#include <linux/types.h>
+#include "osal_io.h"
+#include "osal_mem.h"
+#include "osal_time.h"
+#include "securec.h"
+#include "audio_codec_if.h"
+
+#ifdef __cplusplus
+#if __cplusplus
+extern "C" {
+#endif
+#endif /* __cplusplus */
+
+int32_t ${driver_upper_camel_case}DeviceInit(struct AudioCard *audioCard, const struct CodecDevice *device);
+int32_t ${driver_upper_camel_case}DaiDeviceInit(struct AudioCard *card, const struct DaiDevice *device);
+int32_t ${driver_upper_camel_case}DaiStartup(const struct AudioCard *card, const struct DaiDevice *device);
+int32_t ${driver_upper_camel_case}DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwParams *param);
+
+#ifdef __cplusplus
+#if __cplusplus
+}
+#endif
+#endif
+
+#endif

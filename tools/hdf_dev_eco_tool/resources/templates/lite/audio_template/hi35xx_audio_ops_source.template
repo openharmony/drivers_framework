@@ -1,0 +1,30 @@
+#include "${device_lower_case}_${driver_lower_case}_ops.h"
+#include "audio_codec_base.h"
+#include "audio_driver_log.h"
+#include "gpio_if.h"
+
+#define HDF_LOG_TAG HDF_AUDIO_DRIVER
+
+int32_t ${driver_upper_camel_case}DeviceInit(struct AudioCard *audioCard, const struct CodecDevice *device)
+{
+    AUDIO_DEVICE_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}
+
+int32_t ${driver_upper_camel_case}DaiDeviceInit(struct AudioCard *card, const struct DaiDevice *device)
+{
+    AUDIO_DEVICE_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}
+
+int32_t ${driver_upper_camel_case}DaiStartup(const struct AudioCard *card, const struct DaiDevice *device)
+{
+    AUDIO_DEVICE_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}
+
+int32_t ${driver_upper_camel_case}DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwParams *param)
+{
+    AUDIO_DEVICE_LOG_DEBUG("success.");
+    return HDF_SUCCESS;
+}

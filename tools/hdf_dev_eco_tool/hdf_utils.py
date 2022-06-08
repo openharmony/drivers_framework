@@ -202,6 +202,11 @@ def get_vendor_hdf_dir_framework(root):
     return os.path.join(root, relative_path)
 
 
+def get_vendor_hdf_dir_peripheral(root):
+    relative_path = HdfToolSettings().get_drivers_path_peripheral()
+    return os.path.join(root, relative_path)
+
+
 def get_vendor_hdf_dir_adapter(root, kernel='liteos'):
     relative_path = HdfToolSettings().get_drivers_path_adapter()
     return os.path.join(root, relative_path, kernel)
@@ -234,6 +239,10 @@ def get_drv_dir(root, module, driver):
 
 def get_drv_src_dir(root, module):
     return get_drv_root_dir(root, module)
+
+
+def get_drv_src_dir_peripheral(root, module):
+    return get_vendor_hdf_dir_peripheral(root)
 
 
 def get_drv_include_dir(root, module, driver):
@@ -382,14 +391,14 @@ def write_config(root_path, config_file_json, config_name):
                    config_file_replace)
 
 
-def ini_file_read_operation(model, node_name, path=""):
+def ini_file_read_operation(section_name, node_name, path=""):
     if path:
         ini_config_path = path
     else:
         ini_config_path = os.path.join("resources", "config.ini")
     config = configparser.ConfigParser()
     config.read(ini_config_path)
-    model_child_dir_list = config.get(section=model, option=node_name)
+    model_child_dir_list = config.get(section=section_name, option=node_name)
     return literal_eval(model_child_dir_list), config
 
 

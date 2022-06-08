@@ -29,13 +29,13 @@ def kconfig_file_operation(path, module, driver, template_path):
     if judge_result:
         return
     temp_handle = Template(config_add_config)
-    data = {
+    temp_replace = {
         "model_name_upper": module.upper(),
         "model_name_lower": module.lower(),
         "driver_name_upper": driver.upper(),
         "driver_name_lower": driver.lower()
     }
-    new_line = temp_handle.substitute(data)
+    new_line = temp_handle.substitute(temp_replace)
 
     date_lines = date_lines + [new_line]
     hdf_utils.write_file_lines(kconfig_gn_path, date_lines)
