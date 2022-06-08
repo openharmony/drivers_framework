@@ -6,7 +6,7 @@
 
 import("//build/config/features.gni")
 import("//build/test.gni")
-module_output_path = "hdf/srvmgr"
+module_output_path = "hdf/hdi"
 
 ohos_fuzztest("RegisterServiceStatusListenerFuzzTest") {
   module_out_path = module_output_path

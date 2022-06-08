@@ -11,12 +11,16 @@
 #include <cstdint>
 #include "hdf_base.h"
 #include "hdf_io_service.h"
+#include "parcel.h"
 
 namespace OHOS {
 bool IoserviceGroupRemoveServiceFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
-    struct HdfIoService *serv = HdfIoServiceBind((const char *)data);
+    Parcel parcel;
+    parcel.WriteBuffer(data, size);
+    auto servicename = parcel.ReadCString();
+    struct HdfIoService *serv = HdfIoServiceBind(servicename);
     if (serv == nullptr) {
         return false;
     }

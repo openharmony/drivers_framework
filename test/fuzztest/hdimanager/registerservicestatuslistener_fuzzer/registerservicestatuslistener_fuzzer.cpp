@@ -15,6 +15,7 @@
 #include <refbase.h>
 #include "iservmgr_hdi.h"
 #include "iservstat_listener_hdi.h"
+#include "parcel.h"
 
 using namespace OHOS::HDI::ServiceManager::V1_0;
 
@@ -32,8 +33,8 @@ void RegisterServStatListenerFuzzer::OnReceive(const ServiceStatus &status)
 } // namespace OHOS
 
 namespace OHOS {
-sptr<IServiceManager> g_servmanager = IServiceManager::Get();
-sptr<IServStatListener> g_servstatlistener = new RegisterServStatListenerFuzzer();
+sptr<IServiceManager> g_servManager = IServiceManager::Get();
+sptr<IServStatListener> g_servStatListener = new RegisterServStatListenerFuzzer();
 
 bool RegisterServiceStatusListenerFuzzTest(const uint8_t *data, size_t size)
 {
@@ -42,9 +43,12 @@ bool RegisterServiceStatusListenerFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
 
-    if (g_servmanager != nullptr &&
-        g_servmanager->RegisterServiceStatusListener(g_servstatlistener, *((uint16_t *)data)) == HDF_SUCCESS) {
-        g_servmanager->UnregisterServiceStatusListener(g_servstatlistener);
+    Parcel parcel;
+    parcel.WriteBuffer(data, size);
+    auto deviceclass = parcel.ReadUint16();
+    if (g_servManager != nullptr &&
+        g_servManager->RegisterServiceStatusListener(g_servStatListener, deviceclass) == HDF_SUCCESS) {
+        g_servManager->UnregisterServiceStatusListener(g_servStatListener);
         result = true;
     }
 

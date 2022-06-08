@@ -14,6 +14,7 @@
 #include "hdf_log.h"
 #include "hdf_io_service.h"
 #include "osal_time.h"
+#include "parcel.h"
 
 namespace OHOS {
 struct Eventlistener {
@@ -52,7 +53,10 @@ static int OnDevEventReceived(
 bool IoserviceGroupListenFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
-    struct HdfIoService *serv = HdfIoServiceBind((const char *)data);
+    Parcel parcel;
+    parcel.WriteBuffer(data, size);
+    auto servicename = parcel.ReadCString();
+    struct HdfIoService *serv = HdfIoServiceBind(servicename);
     if (serv == nullptr) {
         return false;
     }

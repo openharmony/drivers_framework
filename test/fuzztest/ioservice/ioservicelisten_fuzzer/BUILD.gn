@@ -14,8 +14,10 @@ ohos_fuzztest("IoserviceListenFuzzTest") {
   fuzz_config_file =
       "//drivers/framework/test/fuzztest/ioservice/ioservicelisten_fuzzer"
 
-  include_dirs =
-      [ "//drivers/framework/test/fuzztest/ioservice/ioservicelisten_fuzzer.h" ]
+  include_dirs = [
+    "//drivers/framework/test/fuzztest/ioservice/ioservicelisten_fuzzer.h",
+    "//utils/native/base/include",
+  ]
   cflags = [
     "-g",
     "-O0",
