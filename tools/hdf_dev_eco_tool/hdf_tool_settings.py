@@ -45,7 +45,8 @@ class HdfToolSettings(object):
                                        (self.file_path, str(exc)),
                                        CommandErrorCode.FILE_FORMAT_WRONG)
         self.supported_boards_key = 'supported_boards'
-        self.drivers_path_key = 'drivers_path_relative_to_vendor'
+        self.drivers_path_key_framework = 'drivers_path_relative_framework'
+        self.drivers_path_key_peripheral = 'drivers_path_relative_peripheral'
         self.drivers_adapter_path_key = 'drivers_path_relative_adapter'
         self.user_adapter_path_key = 'user_model_path_relative_adapter'
         self.dot_configs_key = 'dot_configs'
@@ -69,7 +70,11 @@ class HdfToolSettings(object):
         return board_entry.get(key, '')
 
     def get_drivers_path_framework(self):
-        key = self.drivers_path_key
+        key = self.drivers_path_key_framework
+        return self.settings.get(key, 'hdf')
+
+    def get_drivers_path_peripheral(self):
+        key = self.drivers_path_key_peripheral
         return self.settings.get(key, 'hdf')
 
     def get_drivers_path_adapter(self):

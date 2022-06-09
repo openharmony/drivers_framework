@@ -33,7 +33,8 @@
             "patch_and_config": []
         }
     },
-    "drivers_path_relative_to_vendor": "drivers/framework",
+    "drivers_path_relative_framework": "drivers/framework",
+    "drivers_path_relative_peripheral": "drivers/peripheral",
     "drivers_path_relative_adapter": "drivers/adapter/khdf",
     "user_model_path_relative_adapter": "drivers/adapter/uhdf2",
     "template_file_path": "tools/hdf_dev_eco_tool/resources/templates/lite"

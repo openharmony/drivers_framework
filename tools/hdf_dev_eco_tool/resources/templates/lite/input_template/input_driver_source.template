@@ -344,7 +344,7 @@ static void HdfGoodixChipRelease(struct HdfDeviceObject *device)
 
 struct HdfDriverEntry g_touchchip_${driver_lower_case}Entry = {
     .moduleVersion = 1,
-    .moduleName = "INPUT_${driver_upper_case}",
+    .moduleName = "${device_upper_case}_${driver_upper_case}",
     .Bind = HdfGoodixChipBind,
     .Init = HdfGoodixChipInit,
     .Release = HdfGoodixChipRelease,

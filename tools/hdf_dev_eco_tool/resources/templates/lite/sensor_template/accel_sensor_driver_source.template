@@ -149,7 +149,7 @@ void ${driver_upper_camel_case}ReleaseDriver(struct HdfDeviceObject *device)
 
 struct HdfDriverEntry g_accel${driver_upper_camel_case}DevEntry = {
     .moduleVersion = 1,
-	.moduleName = "SENSOR_${driver_upper_case}",
+	.moduleName = "${device_upper_case}_${driver_upper_case}",
     .Bind = ${driver_upper_camel_case}BindDriver,
     .Init = ${driver_upper_camel_case}InitDriver,
     .Release = ${driver_upper_camel_case}ReleaseDriver,

@@ -32,6 +32,8 @@ class HdfDeviceInfoHcsFile(object):
             self.data = {
                 "driver_name": self.driver,
                 "model_name": self.module,
+                "module_upper_case": self.module.upper(),
+                "driver_upper_case": self.driver.upper(),
                 "module_name": "_".join([self.module, self.driver]).upper()
             }
         else:
@@ -152,7 +154,7 @@ class HdfDeviceInfoHcsFile(object):
         self._save()
         return self.hcspath
 
-    def add_hcs_config_to_exists_model(self):
+    def add_hcs_config_to_exists_model(self, device):
         template_path = os.path.join(self.file_path,
                                      'exists_model_hcs_info.template')
         lines = list(map(lambda x: "\t\t\t" + x,
@@ -160,11 +162,17 @@ class HdfDeviceInfoHcsFile(object):
         old_lines = list(filter(lambda x: x != "\n",
                                 hdf_utils.read_file_lines(self.hcspath)))
 
+        if self.judge_module_branch_exists(date_lines=old_lines):
+            return self.hcspath
         end_index, start_index = self._get_model_index(old_lines)
         model_hcs_lines = old_lines[start_index:end_index]
         hcs_judge = self.judge_driver_hcs_exists(date_lines=model_hcs_lines)
         if hcs_judge:
             return self.hcspath
+        temp_replace_dict = {
+            "device_upper_case": device.upper()
+        }
+        self.data.update(temp_replace_dict)
         for index, _ in enumerate(lines):
             lines[index] = Template(lines[index]).substitute(self.data)
 
@@ -199,3 +207,12 @@ class HdfDeviceInfoHcsFile(object):
             elif line.find(self.driver) != -1:
                 return True
         return False
+
+    def judge_module_branch_exists(self, date_lines):
+        module_branch_start = "%s :: host" % self.module
+        for _, line in enumerate(date_lines):
+            if line.startswith("#"):
+                continue
+            elif line.strip().find(module_branch_start) != -1:
+                return False
+        return True
