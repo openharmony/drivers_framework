@@ -12,61 +12,75 @@
 #include "osal_sem.h"
 #include "securec.h"
 
+struct DumperDataMgrNode {
+    struct PlatformDumperData data;
+    const char *printFormat;
+    void (*printFunc)(const struct DumperDataMgrNode *data);
+    struct DListHead node;
+};
+
+struct PlatformDumper {
+    const char *name;
+    struct DListHead dumperDatas;
+    OsalSpinlock spin;
+    struct PlatformDumperMethod *ops;
+};
+
 #ifdef __LITEOS__
 #define DUMPER_PRINT(fmt, args...) dprintf(fmt, ##args)
 #else
 #define DUMPER_PRINT(fmt, args...) printk(fmt, ##args)
 #endif
 
-static void DumperPrintUint8Info(struct DumperDataMgrNode *data)
+static void DumperPrintUint8Info(const struct DumperDataMgrNode *data)
 {
     uint8_t *val = (uint8_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintUint16Info(struct DumperDataMgrNode *data)
+static void DumperPrintUint16Info(const struct DumperDataMgrNode *data)
 {
     uint16_t *val = (uint16_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintUint32Info(struct DumperDataMgrNode *data)
+static void DumperPrintUint32Info(const struct DumperDataMgrNode *data)
 {
     uint32_t *val = (uint32_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintUint64Info(struct DumperDataMgrNode *data)
+static void DumperPrintUint64Info(const struct DumperDataMgrNode *data)
 {
     uint64_t *val = (uint64_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintInt8Info(struct DumperDataMgrNode *data)
+static void DumperPrintInt8Info(const struct DumperDataMgrNode *data)
 {
     int8_t *val = (int8_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintInt16Info(struct DumperDataMgrNode *data)
+static void DumperPrintInt16Info(const struct DumperDataMgrNode *data)
 {
     int16_t *val = (int16_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintInt32Info(struct DumperDataMgrNode *data)
+static void DumperPrintInt32Info(const struct DumperDataMgrNode *data)
 {
     int32_t *val = (int32_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintInt64Info(struct DumperDataMgrNode *data)
+static void DumperPrintInt64Info(const struct DumperDataMgrNode *data)
 {
     int64_t *val = (int64_t *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintFloatInfo(struct DumperDataMgrNode *data)
+static void DumperPrintFloatInfo(const struct DumperDataMgrNode *data)
 {
 #ifdef __LITEOS__
     float *val = (float *)(data->data.paddr);
@@ -74,7 +88,7 @@ static void DumperPrintFloatInfo(struct DumperDataMgrNode *data)
 #endif
 }
 
-static void DumperPrintDoubleInfo(struct DumperDataMgrNode *data)
+static void DumperPrintDoubleInfo(const struct DumperDataMgrNode *data)
 {
 #ifdef __LITEOS__
     double *val = (double *)(data->data.paddr);
@@ -82,19 +96,19 @@ static void DumperPrintDoubleInfo(struct DumperDataMgrNode *data)
 #endif
 }
 
-static void DumperPrintCharInfo(struct DumperDataMgrNode *data)
+static void DumperPrintCharInfo(const struct DumperDataMgrNode *data)
 {
     char *val = (char *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, *val);
 }
 
-static void DumperPrintStringInfo(struct DumperDataMgrNode *data)
+static void DumperPrintStringInfo(const struct DumperDataMgrNode *data)
 {
     char *val = (char *)(data->data.paddr);
     DUMPER_PRINT(data->printFormat, data->data.name, val);
 }
 
-static void DumperPrintRegisterInfo(struct DumperDataMgrNode *data)
+static void DumperPrintRegisterInfo(const struct DumperDataMgrNode *data)
 {
     unsigned long value;
     volatile uint8_t *regAddr = (volatile uint8_t *)data->data.paddr;
@@ -115,25 +129,25 @@ static void DumperPrintRegisterInfo(struct DumperDataMgrNode *data)
 struct PlatformDumperDataFormatter {
     enum PlatformDumperDataType type;
     const char *printFormat; // type/name/value
-    void (*printFunc)(struct DumperDataMgrNode *data);
+    void (*printFunc)(const struct DumperDataMgrNode *data);
 };
 
-static struct PlatformDumperDataFormatter g_printInfos[] = {
-    {PLATFORM_DUMPER_UINT8,     "uint8           %-32s       %hhu\t", DumperPrintUint8Info   },
-    {PLATFORM_DUMPER_UINT16,    "uint16          %-32s       %hu\t",  DumperPrintUint16Info  },
-    {PLATFORM_DUMPER_UINT32,    "uint32          %-32s       %u\t",   DumperPrintUint32Info  },
-    {PLATFORM_DUMPER_UINT64,    "uint64          %-32s       %llu\t", DumperPrintUint64Info  },
-    {PLATFORM_DUMPER_INT8,      "int8            %-32s       %d\t",   DumperPrintInt8Info    },
-    {PLATFORM_DUMPER_INT16,     "int16           %-32s       %d\t",   DumperPrintInt16Info   },
-    {PLATFORM_DUMPER_INT32,     "int32           %-32s       %d\t",   DumperPrintInt32Info   },
-    {PLATFORM_DUMPER_INT64,     "int64           %-32s       %ld\t",  DumperPrintInt64Info   },
-    {PLATFORM_DUMPER_CHAR,      "char            %-32s       %c\t",   DumperPrintCharInfo    },
-    {PLATFORM_DUMPER_STRING,    "string          %-32s       %s\t",   DumperPrintStringInfo  },
-    {PLATFORM_DUMPER_FLOAT,     "float           %-32s       %f\t",   DumperPrintFloatInfo   },
-    {PLATFORM_DUMPER_DOUBLE,    "double          %-32s       %lf\t",  DumperPrintDoubleInfo  },
-    {PLATFORM_DUMPER_REGISTERL, "registerL       %-32s       %u\t",   DumperPrintRegisterInfo},
-    {PLATFORM_DUMPER_REGISTERW, "registerW       %-32s       %hu\t",  DumperPrintRegisterInfo},
-    {PLATFORM_DUMPER_REGISTERB, "registerB       %-32s       %hhu\t", DumperPrintRegisterInfo},
+static const struct PlatformDumperDataFormatter g_printInfos[] = {
+    {PLATFORM_DUMPER_UINT8,     "uint8           %-32s\t       %hhu\r\n", DumperPrintUint8Info   },
+    {PLATFORM_DUMPER_UINT16,    "uint16          %-32s\t       %hu\r\n",  DumperPrintUint16Info  },
+    {PLATFORM_DUMPER_UINT32,    "uint32          %-32s\t       %u\r\n",   DumperPrintUint32Info  },
+    {PLATFORM_DUMPER_UINT64,    "uint64          %-32s\t       %llu\r\n", DumperPrintUint64Info  },
+    {PLATFORM_DUMPER_INT8,      "int8            %-32s\t       %d\r\n",   DumperPrintInt8Info    },
+    {PLATFORM_DUMPER_INT16,     "int16           %-32s\t       %d\r\n",   DumperPrintInt16Info   },
+    {PLATFORM_DUMPER_INT32,     "int32           %-32s\t       %d\r\n",   DumperPrintInt32Info   },
+    {PLATFORM_DUMPER_INT64,     "int64           %-32s\t       %ld\r\n",  DumperPrintInt64Info   },
+    {PLATFORM_DUMPER_CHAR,      "char            %-32s\t       %c\r\n",   DumperPrintCharInfo    },
+    {PLATFORM_DUMPER_STRING,    "string          %-32s\t       %s\r\n",   DumperPrintStringInfo  },
+    {PLATFORM_DUMPER_FLOAT,     "float           %-32s\t       %f\r\n",   DumperPrintFloatInfo   },
+    {PLATFORM_DUMPER_DOUBLE,    "double          %-32s\t       %lf\r\n",  DumperPrintDoubleInfo  },
+    {PLATFORM_DUMPER_REGISTERL, "registerL       %-32s\t       %u\r\n",   DumperPrintRegisterInfo},
+    {PLATFORM_DUMPER_REGISTERW, "registerW       %-32s\t       %hu\r\n",  DumperPrintRegisterInfo},
+    {PLATFORM_DUMPER_REGISTERB, "registerB       %-32s\t       %hhu\r\n", DumperPrintRegisterInfo},
 };
 
 static int32_t DumperNodeSetPrintInfo(struct DumperDataMgrNode *node)
@@ -179,7 +193,7 @@ struct PlatformDumper *PlatformDumperCreate(const char *name)
     return dumper;
 }
 
-static int32_t DumperAddNode(struct PlatformDumper *dumper, struct PlatformDumperData *data)
+static int32_t DumperAddNode(struct PlatformDumper *dumper, const struct PlatformDumperData *data)
 {
     struct DumperDataMgrNode *pos = NULL;
     struct DumperDataMgrNode *node = NULL;
@@ -188,18 +202,17 @@ static int32_t DumperAddNode(struct PlatformDumper *dumper, struct PlatformDumpe
         return HDF_FAILURE;
     }
 
+    DLIST_FOR_EACH_ENTRY(pos, &dumper->dumperDatas, struct DumperDataMgrNode, node) {
+        if ((strcmp(pos->data.name, data->name) == 0) && (pos->data.type == data->type)) {
+            HDF_LOGE("DumperAddNode: node [%s][%d] existed", data->name, data->type);
+            return HDF_FAILURE;
+        }
+    }
+
     node = OsalMemAlloc(sizeof(struct DumperDataMgrNode));
     if (node == NULL) {
         HDF_LOGE("DumperAddNode: OsalMemAlloc node [%s] fail", data->name);
         return HDF_FAILURE;
-    }
-
-    DLIST_FOR_EACH_ENTRY(pos, &dumper->dumperDatas, struct DumperDataMgrNode, node) {
-        if ((strcmp(pos->data.name, data->name) == 0) && (pos->data.type == data->type)) {
-            HDF_LOGE("DumperAddNode: node [%s][%d] existed", data->name, data->type);
-            OsalMemFree(node);
-            return HDF_FAILURE;
-        }
     }
 
     node->data.name = data->name;
@@ -215,7 +228,7 @@ static int32_t DumperAddNode(struct PlatformDumper *dumper, struct PlatformDumpe
     return HDF_SUCCESS;
 }
 
-int32_t PlatformDumperAddData(struct PlatformDumper *dumper, struct PlatformDumperData *data)
+int32_t PlatformDumperAddData(struct PlatformDumper *dumper, const struct PlatformDumperData *data)
 {
     int32_t ret;
     if (dumper == NULL) {
@@ -349,8 +362,8 @@ int32_t PlatformDumperDump(struct PlatformDumper *dumper)
     }
 
     PlatformGetDumperOpsInfo(dumper->ops);
-    DUMPER_PRINT("The dumper %s's data list as follows:\t", dumper->name);
-    DUMPER_PRINT("type               name                              value\t");
+    DUMPER_PRINT("The dumper %s's data list as follows:\r\n", dumper->name);
+    DUMPER_PRINT("type               name\t                              value\r\n");
 
     (void)OsalSpinLock(&dumper->spin);
     DLIST_FOR_EACH_ENTRY(pos, &dumper->dumperDatas, struct DumperDataMgrNode, node) {

@@ -50,24 +50,12 @@ struct PlatformDumperData {
     void *paddr;
 };
 
-struct DumperDataMgrNode {
-    struct PlatformDumperData data;
-    const char *printFormat;
-    void (*printFunc)(struct DumperDataMgrNode *data);
-    struct DListHead node;
-};
-
-struct PlatformDumper {
-    const char *name;
-    struct DListHead dumperDatas;
-    OsalSpinlock spin;
-    struct PlatformDumperMethod *ops;
-};
+struct PlatformDumper;
 
 struct PlatformDumper *PlatformDumperCreate(const char *name);
 void PlatformDumperDestroy(struct PlatformDumper *dumper);
 int32_t PlatformDumperDump(struct PlatformDumper *dumper);
-int32_t PlatformDumperAddData(struct PlatformDumper *dumper, struct PlatformDumperData *data);
+int32_t PlatformDumperAddData(struct PlatformDumper *dumper, const struct PlatformDumperData *data);
 int32_t PlatformDumperAddDatas(struct PlatformDumper *dumper, struct PlatformDumperData datas[], int size);
 int32_t PlatformDumperSetMethod(struct PlatformDumper *dumper, struct PlatformDumperMethod *ops);
 int32_t PlatformDumperDelData(struct PlatformDumper *dumper, const char *name, enum PlatformDumperDataType type);
