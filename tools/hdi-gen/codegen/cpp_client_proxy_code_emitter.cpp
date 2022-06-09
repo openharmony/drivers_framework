@@ -375,7 +375,7 @@ void CppClientProxyCodeEmitter::EmitProxyMethodBody(
         }
     }
 
-    sb.Append(prefix + TAB).Append("return HDF_SUCCESS;\n");
+    sb.Append(prefix + TAB).AppendFormat("return %s;\n", errorCodeName_.string());
     sb.Append(prefix).Append("}\n");
 }
 
