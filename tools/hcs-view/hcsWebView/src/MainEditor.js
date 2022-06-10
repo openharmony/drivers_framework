@@ -416,7 +416,7 @@ class MainEditor {
             pme.checkAllError();
             XMessage.gi().send("writefile", {
                 fn: pme.filePoint_,
-                data: Generator.gi().objToHcs(pme.files_[pme.filePoint_], 0)
+                data: Generator.gi().makeHcs(pme.filePoint_,pme.files_[pme.filePoint_])
             })
         }
         else if (type.substring(0, 13) == "change_target") {
