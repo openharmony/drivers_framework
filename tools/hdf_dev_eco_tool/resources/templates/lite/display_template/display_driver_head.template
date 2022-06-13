@@ -1,0 +1,37 @@
+#ifndef ${device_upper_case}_${driver_upper_case}_DRIVER_H
+#define ${device_upper_case}_${driver_upper_case}_DRIVER_H
+#include "gpio_if.h"
+#include "hdf_bl.h"
+#include "hdf_disp.h"
+#include "hdf_log.h"
+#include "mipi_dsi_if.h"
+#include "osal.h"
+#include "pwm_if.h"
+
+#define RESET_GPIO                0
+#define MIPI_DSI0                 0
+#define BLK_PWM1                  0
+#define PWM_MAX_PERIOD            0
+/* backlight setting */
+#define MIN_LEVEL                 0
+#define MAX_LEVEL                 255
+#define DEFAULT_LEVEL             100
+
+#define WIDTH                     0
+#define HEIGHT                    0
+#define HORIZONTAL_BACK_PORCH     0
+#define HORIZONTAL_FRONT_PORCH    0
+#define HORIZONTAL_SYNC_WIDTH     0
+#define VERTICAL_BACK_PORCH       0
+#define VERTICAL_FRONT_PORCH      0
+#define VERTICAL_SYNC_WIDTH       0
+#define FRAME_RATE                0
+
+struct ${driver_upper_camel_case}Dev {
+    struct PanelData panel;
+    DevHandle mipiHandle;
+    uint16_t reset_gpio;
+    uint16_t reset_delay;
+};
+
+#endif /* ${device_upper_case}_${driver_upper_case}_DRIVER_H */

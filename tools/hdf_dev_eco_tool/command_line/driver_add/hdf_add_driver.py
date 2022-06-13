@@ -135,7 +135,7 @@ class HdfAddDriver(object):
                 else:
                     makefile_file_operation(
                         makefile_path, driver_file_path[0], driver_head_path[0], 
-                        self.module, self.driver)
+                        self.module, self.driver, self.root)
                 file_path['Makefile'] = makefile_path
 
             elif file_name == "Kconfig":
@@ -257,6 +257,7 @@ class HdfAddDriver(object):
             source_file_name = os.path.join(source_file, create_source_name)
             if os.path.exists(source_file_name):
                 source_statu_exist = True
+                source_file_list.append(source_file_name)
             else:
                 self._template_fill(source_file_temp, source_file_name, data_model)
                 source_file_list.append(source_file_name)
@@ -279,11 +280,12 @@ class HdfAddDriver(object):
             head_file_name = os.path.join(head_path, create_head_name)
             if os.path.exists(head_file_name):
                 head_statu_exist = True
+                head_path_list.append(head_file_name)
             else:
                 self._template_fill(head_file_temp, head_file_name, data_model)
                 head_path_list.append(head_file_name)
         if head_statu_exist and source_statu_exist:
-            return True, source_file, head_path
+            return True, source_file_list, head_path_list
         child_dir_list, operation_object = hdf_utils.ini_file_read_operation(
             section_name=module, node_name='file_dir')
         if device not in child_dir_list:
