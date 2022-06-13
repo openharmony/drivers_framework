@@ -16,9 +16,11 @@ namespace OHOS {
         DevHandle handle = nullptr;
 
         if (data == nullptr) {
+            HDF_LOGE("%{public}s:data is null", __func__);
             return false;
         }
         if (WatchdogOpen(0, &handle) != HDF_SUCCESS) {
+            HDF_LOGE("%{public}s:open handle failed", __func__);
             return false;
         }
         WatchdogSetTimeout(handle, *(uint32_t *)data);

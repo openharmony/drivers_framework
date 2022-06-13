@@ -11,6 +11,7 @@
 #include <iostream>
 #include "securec.h"
 #include "hdf_base.h"
+#include "hdf_log.h"
 #include "i2c_if.h"
 
 #define FUZZ_PROJECT_NAME "i2c_fuzzer"

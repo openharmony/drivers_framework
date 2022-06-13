@@ -29,14 +29,17 @@ namespace OHOS {
         struct I2cMsg msg;
 
         if (data == nullptr) {
+            HDF_LOGE("%{public}s:data is null", __func__);
             return false;
         }
         if (memcpy_s((void *)&params, sizeof(params), data, sizeof(params)) != EOK) {
+            HDF_LOGE("%{public}s:memcpy data failed", __func__);
             return false;
         }
 
         handle = I2cOpen(BUS_NUM);
         if (handle == nullptr) {
+            HDF_LOGE("%{public}s:handle is null", __func__);
             return false;
         }
         msg.addr = params.addr;
@@ -44,6 +47,7 @@ namespace OHOS {
         msg.len = BUF_LEN;
         msg.buf = (uint8_t *)malloc(BUF_LEN);
         if (memcpy_s(msg.buf, BUF_LEN, params.buf, BUF_LEN) != EOK) {
+            HDF_LOGE("%{public}s:memcpy buf failed", __func__);
             free(msg.buf);
             return false;
         }

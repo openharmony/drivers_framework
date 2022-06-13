@@ -11,6 +11,7 @@
 #include "random.h"
 #include "securec.h"
 #include "hdf_base.h"
+#include "hdf_log.h"
 #include "uart_if.h"
 
 using namespace std;
@@ -35,10 +36,12 @@ namespace OHOS {
         struct AllParameters params;
 
         if (data == nullptr) {
+            HDF_LOGE("%{public}s:data is null", __func__);
             return false;
         }
 
         if (memcpy_s((void *)&params, sizeof(params), data, sizeof(params)) != EOK) {
+            HDF_LOGE("%{public}s:memcpy data failed", __func__);
             return false;
         }
 

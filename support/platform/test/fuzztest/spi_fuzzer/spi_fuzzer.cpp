@@ -10,6 +10,7 @@
 #include "random.h"
 #include "securec.h"
 #include "hdf_base.h"
+#include "hdf_log.h"
 #include "spi_if.h"
 #include "spi_fuzzer.h"
 
@@ -45,9 +46,11 @@ namespace OHOS {
         struct AllParameters params;
 
         if (data == nullptr) {
+            HDF_LOGE("%{public}s:data is null", __func__);
             return false;
         }
         if (memcpy_s ((void *)&params, sizeof(params), data, sizeof(params)) != EOK) {
+            HDF_LOGE("%{public}s:memcpy data failed", __func__);
             return false;
         }
 
@@ -59,16 +62,19 @@ namespace OHOS {
         msg.len = SPI_BUF_SIZE;
         msg.rbuf = (uint8_t *)malloc(SPI_BUF_SIZE);
         if (msg.rbuf == nullptr) {
+            HDF_LOGE("%{public}s:malloc rbuf failed", __func__);
             return false;
         }
         msg.wbuf = (uint8_t *)malloc(SPI_BUF_SIZE);
         if (msg.wbuf == nullptr) {
+            HDF_LOGE("%{public}s:malloc wbuf failed", __func__);
             free(msg.rbuf);
             return false;
         }
         if (memcpy_s((void *)msg.wbuf, SPI_BUF_SIZE, params.buf, SPI_BUF_SIZE) != EOK) {
             free(msg.rbuf);
             free(msg.wbuf);
+            HDF_LOGE("%{public}s:memcpy buf failed", __func__);
             return false;
         }
         cfg.maxSpeedHz = params.desMaxSpeedHz;
