@@ -1461,6 +1461,127 @@ static int32_t WifiCmdSetPowerMode(const RequestContext *context, struct HdfSBuf
     return ret;
 }
 
+static uint32_t HdfdWlanStartChannelMeas(const char *ifName, int32_t commandId, const int32_t *paramBuf,
+    uint32_t paramBufLen)
+{
+    struct NetDevice *netdev = NULL;
+
+    netdev = NetDeviceGetInstByName(ifName);
+    if (netdev == NULL) {
+        HDF_LOGE("%s:netdev not found!ifName=%s.", __func__, ifName);
+        return HDF_FAILURE;
+    }
+    struct HdfChipDriver *chipDriver = GetChipDriver(netdev);
+    if (chipDriver == NULL) {
+        HDF_LOGE("%s:bad net device found!", __func__);
+        return HDF_FAILURE;
+    }
+    if (chipDriver->ops == NULL) {
+        HDF_LOGE("%s: chipDriver->ops is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (chipDriver->ops->StartChannelMeas == NULL) {
+        HDF_LOGE("%s: chipDriver->ops->StartChannelMeas is null", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+    return chipDriver->ops->StartChannelMeas(ifName, commandId, paramBuf, paramBufLen);
+}
+
+static int32_t WifiCmdStartChannelMeas(const RequestContext *context, struct HdfSBuf *reqData, struct HdfSBuf *rspData)
+{
+    int32_t ret;
+    const char *ifName = NULL;
+    int32_t commandId;
+    const int32_t *paramBuf = NULL;
+    uint32_t paramBufLen;
+    (void)context;
+
+    if (reqData == NULL || rspData == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+    ifName = HdfSbufReadString(reqData);
+    if (ifName == NULL) {
+        HDF_LOGE("%s: read ifName failed!", __func__);
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &commandId)) {
+        HDF_LOGE("%s: read commandId failed!", __func__);
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadBuffer(reqData, (const void **)(&paramBuf), &paramBufLen)) {
+        HDF_LOGE("%s: read paramBuf failed!", __func__);
+        return HDF_FAILURE;
+    }
+    ret = HdfdWlanStartChannelMeas(ifName, commandId, paramBuf, paramBufLen);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail to start channel meas, %d", __func__, ret);
+    }
+
+    return ret;
+}
+
+static uint32_t HdfdWlanGetChannelMeasResult(const char *ifName, int32_t commandId, uint32_t *paramBuf,
+    uint32_t *paramBufLen)
+{
+    struct NetDevice *netdev = NULL;
+
+    netdev = NetDeviceGetInstByName(ifName);
+    if (netdev == NULL) {
+        HDF_LOGE("%s:netdev not found!ifName=%s.", __func__, ifName);
+        return HDF_FAILURE;
+    }
+    struct HdfChipDriver *chipDriver = GetChipDriver(netdev);
+    if (chipDriver == NULL) {
+        HDF_LOGE("%s:bad net device found!", __func__);
+        return HDF_FAILURE;
+    }
+    if (chipDriver->ops == NULL) {
+        HDF_LOGE("%s: chipDriver->ops is null", __func__);
+        return HDF_ERR_INVALID_OBJECT;
+    }
+
+    if (chipDriver->ops->GetChannelMeasResult == NULL) {
+        HDF_LOGE("%s: chipDriver->ops->GetChannelMeasResult is null", __func__);
+        return HDF_ERR_NOT_SUPPORT;
+    }
+    return chipDriver->ops->GetChannelMeasResult(ifName, commandId, paramBuf, paramBufLen);
+}
+
+static int32_t WifiCmdGetChannelMeasResult(const RequestContext *context, struct HdfSBuf *reqData,
+    struct HdfSBuf *rspData)
+{
+    int32_t ret;
+    const char *ifName = NULL;
+    int32_t commandId;
+    uint32_t *paramBuf = NULL;
+    uint32_t paramBufLen;
+    (void)context;
+
+    if (reqData == NULL || rspData == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+    ifName = HdfSbufReadString(reqData);
+    if (ifName == NULL) {
+        HDF_LOGE("%s: read ifName failed!", __func__);
+        return HDF_FAILURE;
+    }
+    if (!HdfSbufReadInt32(reqData, &commandId)) {
+        HDF_LOGE("%s: read commandId failed!", __func__);
+        return HDF_FAILURE;
+    }
+    ret = HdfdWlanGetChannelMeasResult(ifName, commandId, paramBuf, &paramBufLen);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail to get channel meas result, %d", __func__, ret);
+        return ret;
+    }
+    if (!HdfSbufWriteBuffer(rspData, paramBuf, paramBufLen)) {
+        HDF_LOGE("%s: write paramBuf failed!", __func__);
+        ret = HDF_FAILURE;
+    }
+    return ret;
+}
+
 static struct MessageDef g_wifiBaseFeatureCmds[] = {
     DUEMessage(CMD_BASE_NEW_KEY, WifiCmdNewKey, 0),
     DUEMessage(CMD_BASE_DEL_KEY, WifiCmdDelKey, 0),
@@ -1490,6 +1611,8 @@ static struct MessageDef g_wifiBaseFeatureCmds[] = {
     DUEMessage(CMD_BASE_DO_RESET_PRIVATE, WifiCmdDoResetChip, 0),
     DUEMessage(CMD_BASE_GET_POWER_MODE, WifiCmdGetPowerMode, 0),
     DUEMessage(CMD_BASE_SET_POWER_MODE, WifiCmdSetPowerMode, 0),
+    DUEMessage(CMD_BASE_START_CHANNEL_MEAS, WifiCmdStartChannelMeas, 0),
+    DUEMessage(CMD_BASE_GET_CHANNEL_MEAS_RESULT, WifiCmdGetChannelMeasResult, 0),
 };
 ServiceDefine(BaseService, BASE_SERVICE_ID, g_wifiBaseFeatureCmds);
 

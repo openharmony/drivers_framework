@@ -629,6 +629,36 @@ struct HdfMac80211BaseOps {
      * @version 1.0
      */
     int32_t (*SetPowerMode)(const char *ifName, uint8_t mode);
+
+    /**
+     * @brief Start channel measurement.
+     *
+     * @param ifName Indicates the pointer to the network interface name.
+     * @param commandId Indicates the ID of the delivered command.
+     * @param paramBuf Parameters of the measurement channel.
+     * @param paramBufLen Buffer size for measuring channel parameters.
+     *
+     * @return Returns <b>0</b> if get infos successful; returns a negative value otherwise.
+     *
+     * @since 3.2
+     * @version 1.0
+     */
+    int32_t (*StartChannelMeas)(const char *ifName, int32_t commandId, const int32_t *paramBuf, uint32_t paramBufLen);
+
+    /**
+     * @brief Obtaining Channel Measurement Results.
+     *
+     * @param ifName Indicates the pointer to the network interface name.
+     * @param commandId Indicates the ID of the delivered command.
+     * @param paramBuf Channel measurement result data.
+     * @param paramBufLen Buffer size of channel measurement result data.
+     *
+     * @return Returns <b>0</b> if get infos successful; returns a negative value otherwise.
+     *
+     * @since 3.2
+     * @version 1.0
+     */
+    int32_t (*GetChannelMeasResult)(const char *ifName, int32_t commandId, uint32_t *paramBuf, uint32_t *paramBufLen);
 };
 
 /**
