@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <hdf_sbuf.h>
 #include "hdf_base.h"
+#include "hdf_log.h"
 #include "hdf_io_service_if.h"
 
 namespace OHOS {
@@ -18,6 +19,7 @@ bool IoserviceNameGetByDeviceClassFuzzTest(const uint8_t *data, size_t size)
 {
     bool result = false;
     if (data == nullptr) {
+        HDF_LOGE("%{public}s: data is nullptr!", __func__);
         return false;
     }
 
