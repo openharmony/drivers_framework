@@ -36,6 +36,11 @@ def kconfig_file_operation(path, module, driver, template_path):
         "driver_name_lower": driver.lower()
     }
     new_line = temp_handle.substitute(temp_replace)
+    if module == "display":
+        replace_str = "depends on DRIVERS_HDF_%s"
+        old_str = replace_str % module.upper()
+        new_str = replace_str % "disp".upper()
+        new_line = new_line.replace(old_str, new_str)
 
     date_lines = date_lines + [new_line]
     hdf_utils.write_file_lines(kconfig_gn_path, date_lines)

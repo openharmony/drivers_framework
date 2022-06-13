@@ -1,0 +1,231 @@
+#include "gpio_if.h"
+#include "hdf_bl.h"
+#include "hdf_disp.h"
+#include "osal.h"
+#include "${include_file}"
+
+
+static struct DsiCmdDesc g_OnCmd[] = {};
+
+/* panel off command payload */
+static uint8_t g_offPayLoad0[] = { 0x28 };
+static uint8_t g_offPayLoad1[] = { 0x10 };
+
+static struct DsiCmdDesc g_offCmd[] = {
+    { 0x05, 20, sizeof(g_offPayLoad0), g_offPayLoad0 },
+    { 0x05, 120, sizeof(g_offPayLoad1), g_offPayLoad1 },
+};
+
+
+static int32_t LcdResetOn(struct ${driver_upper_camel_case}Dev *${driver_lower_case})
+{
+    int32_t ret;
+
+    ret = GpioSetDir(${driver_lower_case}->reset_gpio, GPIO_DIR_OUT);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("GpioSetDir failed, ret:%d", ret);
+        return HDF_FAILURE;
+    }
+    ret = GpioWrite(${driver_lower_case}->reset_gpio, GPIO_VAL_HIGH);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("GpioWrite failed, ret:%d", ret);
+        return HDF_FAILURE;
+    }
+    /* delay 20ms */
+    OsalMSleep(${driver_lower_case}->reset_delay);
+    return HDF_SUCCESS;
+}
+
+static int32_t LcdResetOff(struct ${driver_upper_camel_case}Dev *${driver_lower_case})
+{
+    int32_t ret;
+
+    ret = GpioSetDir(${driver_lower_case}->reset_gpio, GPIO_DIR_OUT);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("GpioSetDir failed, ret:%d", ret);
+        return HDF_FAILURE;
+    }
+    ret = GpioWrite(${driver_lower_case}->reset_gpio, GPIO_VAL_LOW);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("GpioWrite failed, ret:%d", ret);
+        return HDF_FAILURE;
+    }
+    /* delay 20ms */
+    OsalMSleep(${driver_lower_case}->reset_delay);
+    return HDF_SUCCESS;
+}
+
+static struct ${driver_upper_camel_case}Dev *PanelTo${driver_upper_camel_case}Dev(const struct PanelData *panel)
+{
+    struct ${driver_upper_camel_case}Dev *${driver_lower_case} = NULL;
+
+    if (panel == NULL) {
+        HDF_LOGE("%s: panel is null", __func__);
+        return NULL;
+    }
+    if (panel->object == NULL) {
+        HDF_LOGE("%s: object is null", __func__);
+        return NULL;
+    }
+    ${driver_lower_case} = (struct ${driver_upper_camel_case}Dev *)panel->object->priv;
+    return ${driver_lower_case};
+}
+
+static int32_t ${driver_upper_camel_case}Init(struct PanelData *panel)
+{
+    struct ${driver_upper_camel_case}Dev *${driver_lower_case} = NULL;
+
+    ${driver_lower_case} = PanelTo${driver_upper_camel_case}Dev(panel);
+    if (${driver_lower_case} == NULL) {
+        HDF_LOGE("%s: ${driver_lower_case} is null", __func__);
+        return HDF_FAILURE;
+    }
+    ${driver_lower_case}->mipiHandle = MipiDsiOpen(MIPI_DSI0);
+    if (${driver_lower_case}->mipiHandle == NULL) {
+        HDF_LOGE("%s: MipiDsiOpen failed", __func__);
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t ${driver_upper_camel_case}On(struct PanelData *panel)
+{
+    int32_t ret;
+    struct ${driver_upper_camel_case}Dev *${driver_lower_case} = NULL;
+
+    ${driver_lower_case} = PanelTo${driver_upper_camel_case}Dev(panel);
+    if (${driver_lower_case} == NULL) {
+        HDF_LOGE("%s: ${driver_lower_case} is null", __func__);
+        return HDF_FAILURE;
+    }
+    /* lcd reset power on */
+    ret = LcdResetOn(${driver_lower_case});
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: LcdResetOn failed", __func__);
+        return HDF_FAILURE;
+    }
+    if (${driver_lower_case}->mipiHandle == NULL) {
+        HDF_LOGE("%s: mipiHandle is null", __func__);
+        return HDF_FAILURE;
+    }
+    /* send mipi init code */
+    int32_t count = sizeof(g_OnCmd) / sizeof(g_OnCmd[0]);
+    int32_t i;
+    /* set mipi to lp mode */
+    MipiDsiSetLpMode(${driver_lower_case}->mipiHandle);
+    for (i = 0; i < count; i++) {
+        ret = MipiDsiTx(${driver_lower_case}->mipiHandle, &(g_OnCmd[i]));
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: MipiDsiTx failed", __func__);
+            return HDF_FAILURE;
+        }
+    }
+    /* set mipi to hs mode */
+    MipiDsiSetHsMode(${driver_lower_case}->mipiHandle);
+    return HDF_SUCCESS;
+}
+
+static int32_t ${driver_upper_camel_case}Off(struct PanelData *panel)
+{
+    int32_t ret;
+    struct ${driver_upper_camel_case}Dev *${driver_lower_case} = NULL;
+
+    ${driver_lower_case} = PanelTo${driver_upper_camel_case}Dev(panel);
+    if (${driver_lower_case} == NULL) {
+        HDF_LOGE("%s: ${driver_lower_case} is null", __func__);
+        return HDF_FAILURE;
+    }
+    if (${driver_lower_case}->mipiHandle == NULL) {
+        HDF_LOGE("%s: mipiHandle is null", __func__);
+        return HDF_FAILURE;
+    }
+    /* send mipi init code */
+    int32_t count = sizeof(g_offCmd) / sizeof(g_offCmd[0]);
+    int32_t i;
+    /* set mipi to lp mode */
+    MipiDsiSetLpMode(${driver_lower_case}->mipiHandle);
+    for (i = 0; i < count; i++) {
+        ret = MipiDsiTx(${driver_lower_case}->mipiHandle, &(g_offCmd[i]));
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: MipiDsiTx failed", __func__);
+            return HDF_FAILURE;
+        }
+    }
+    /* lcd reset power off */
+    ret = LcdResetOff(${driver_lower_case});
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: LcdResetOff failed", __func__);
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+
+static int32_t ${driver_upper_camel_case}EsdCheckFunc(struct PanelData *panel)
+{
+    struct ${driver_upper_camel_case}Dev *${driver_lower_case} = NULL;
+
+    ${driver_lower_case} = PanelTo${driver_upper_camel_case}Dev(panel);
+    if (${driver_lower_case} == NULL) {
+        HDF_LOGE("%s: ${driver_lower_case} is null", __func__);
+        return HDF_FAILURE;
+    }
+    HDF_LOGE("%s: enter", __func__);
+    return HDF_SUCCESS;
+}
+
+#define OUTPUT_USER 0 /* output timing type */
+static struct PanelInfo g_panelInfo = {};
+
+static struct PanelEsd g_panelEsd = {
+    .support = false,
+    .checkFunc = ${driver_upper_camel_case}EsdCheckFunc,
+};
+
+static void ${driver_upper_camel_case}PanelInit(struct PanelData *panel)
+{
+    panel->info = &g_panelInfo;
+    panel->esd = &g_panelEsd;
+    panel->init = ${driver_upper_camel_case}Init;
+    panel->on = ${driver_upper_camel_case}On;
+    panel->off = ${driver_upper_camel_case}Off;
+}
+
+int32_t ${driver_upper_camel_case}EntryInit(struct HdfDeviceObject *object)
+{
+    struct ${driver_upper_camel_case}Dev *${driver_lower_case} = NULL;
+
+    if (object == NULL) {
+        HDF_LOGE("%s: object is null", __func__);
+        return HDF_FAILURE;
+    }
+    ${driver_lower_case} = (struct ${driver_upper_camel_case}Dev *)OsalMemCalloc(sizeof(struct ${driver_upper_camel_case}Dev));
+    if (${driver_lower_case} == NULL) {
+        HDF_LOGE("%s ${driver_lower_case} malloc fail", __func__);
+        return HDF_FAILURE;
+    }
+    ${driver_upper_camel_case}PanelInit(&${driver_lower_case}->panel);
+    ${driver_lower_case}->panel.object = object;
+    ${driver_lower_case}->reset_gpio = RESET_GPIO;
+    ${driver_lower_case}->reset_delay = 20; // delay 20ms
+    object->priv = (void *)${driver_lower_case};
+    ${driver_lower_case}->panel.blDev = GetBacklightDev("hdf_pwm");
+    if (${driver_lower_case}->panel.blDev == NULL) {
+        HDF_LOGE("%s GetBacklightDev fail", __func__);
+        return HDF_FAILURE;
+    }
+    if (RegisterPanel(&${driver_lower_case}->panel) != HDF_SUCCESS) {
+        HDF_LOGE("%s: RegisterPanel failed", __func__);
+        return HDF_FAILURE;
+    }
+    HDF_LOGI("%s: exit succ", __func__);
+    return HDF_SUCCESS;
+}
+
+struct HdfDriverEntry g_${driver_upper_case}DevEntry = {
+    .moduleVersion = 1,
+    .moduleName = "${device_upper_case}_${driver_upper_case}",
+    .Init = ${driver_upper_camel_case}EntryInit,
+};
+
+HDF_INIT(g_${driver_upper_case}DevEntry);

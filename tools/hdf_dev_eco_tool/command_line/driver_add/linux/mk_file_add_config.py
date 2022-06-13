@@ -119,5 +119,13 @@ def linux_makefile_operation(path, driver_file_path, head_path, module, driver):
         'head_file_path': '/'.join(head_path.split("model")[-1].strip(os.path.sep).split(os.path.sep)[:-1])
     }
     new_line = temp_handle.substitute(temp_replace).replace("temp_flag", "$(")
-    date_lines = date_lines + [new_line]
+    endif_status = False
+    for index, v in enumerate(date_lines[::-1]):
+        if v.strip().startswith("endif"):
+            endif_status = True
+            end_line_index = len(date_lines) - index - 1
+            date_lines = date_lines[:end_line_index] + [new_line] + [date_lines[end_line_index]]
+            break
+    if not endif_status:
+        date_lines = date_lines + [new_line]
     hdf_utils.write_file_lines(makefile_gn_path, date_lines)
