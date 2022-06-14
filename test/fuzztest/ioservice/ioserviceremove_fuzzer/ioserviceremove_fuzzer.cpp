@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include "hdf_base.h"
+#include "hdf_log.h"
 #include "hdf_io_service.h"
 #include "parcel.h"
 
@@ -22,15 +23,18 @@ bool IoserviceGroupRemoveServiceFuzzTest(const uint8_t *data, size_t size)
     auto servicename = parcel.ReadCString();
     struct HdfIoService *serv = HdfIoServiceBind(servicename);
     if (serv == nullptr) {
+        HDF_LOGE("%{public}s: HdfIoServiceBind failed!", __func__);
         return false;
     }
     struct HdfIoServiceGroup *group = HdfIoServiceGroupObtain();
     if (group == nullptr) {
+        HDF_LOGE("%{public}s: HdfIoServiceGroupObtain failed!", __func__);
         HdfIoServiceRecycle(serv);
         return false;
     }
     int ret = HdfIoServiceGroupAddService(group, serv);
     if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%{public}s: HdfIoServiceGroupAddService failed!", __func__);
         HdfIoServiceGroupRecycle(group);
         HdfIoServiceRecycle(serv);
         return false;

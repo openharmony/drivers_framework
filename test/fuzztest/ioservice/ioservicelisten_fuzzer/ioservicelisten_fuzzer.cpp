@@ -7,7 +7,6 @@
  */
 
 #include "ioservicelisten_fuzzer.h"
-#include <cinttypes>
 #include <cstddef>
 #include <cstdint>
 #include "hdf_base.h"
@@ -23,7 +22,6 @@ struct Eventlistener {
 };
 static int OnDevEventReceived(
     struct HdfDevEventlistener *listener, struct HdfIoService *service, uint32_t id, struct HdfSBuf *data);
-static int eventCount = 0;
 
 static struct Eventlistener listener0 = {
     .listener.onReceive = OnDevEventReceived,
@@ -36,8 +34,6 @@ static int OnDevEventReceived(
 {
     OsalTimespec time;
     OsalGetTime(&time);
-    HDF_LOGI("%{public}s: received event[%{public}d] from %{public}s at %" PRIu64 ".%" PRIu64 "",
-        (char *)listener->priv, eventCount++, (char *)service->priv, time.sec, time.usec);
 
     const char *string = HdfSbufReadString(data);
     if (string == nullptr) {
@@ -46,7 +42,6 @@ static int OnDevEventReceived(
     }
     struct Eventlistener *listenercount = CONTAINER_OF(listener, struct Eventlistener, listener);
     listenercount->eventCount++;
-    HDF_LOGI("%{public}s: dev event received: %{public}u %{public}s", (char *)service->priv, id, string);
     return HDF_SUCCESS;
 }
 
@@ -58,6 +53,7 @@ bool IoserviceListenFuzzTest(const uint8_t *data, size_t size)
     auto servicename = parcel.ReadCString();
     struct HdfIoService *serv = HdfIoServiceBind(servicename);
     if (serv == nullptr) {
+        HDF_LOGE("%{public}s: HdfIoServiceBind failed!", __func__);
         return false;
     }
     if (HdfDeviceRegisterEventListener(serv, &listener0.listener) == HDF_SUCCESS) {
