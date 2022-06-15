@@ -26,12 +26,14 @@ static struct HdfIoService *GpioManagerServiceGet(void)
     service = HdfIoServiceBind("HDF_PLATFORM_GPIO_MANAGER");
     if (service == NULL) {
         HDF_LOGE("%s: fail to get gpio manager service!", __func__);
+        return NULL;
     }
 
     if (service->priv == NULL) {
         struct PlatformUserListenerManager *manager = PlatformUserListenerManagerGet(PLATFORM_MODULE_GPIO);
         if (manager == NULL) {
             HDF_LOGE("%s: PlatformUserListenerManagerGet fail!", __func__);
+            return service;
         }
         service->priv = manager;
         manager->service = service;
