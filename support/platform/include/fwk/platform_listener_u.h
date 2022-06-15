@@ -12,6 +12,7 @@
 #include "gpio_if.h"
 #include "hdf_base.h"
 #include "hdf_dlist.h"
+#include "hdf_io_service_if.h"
 #include "hdf_service_status.h"
 #include "osal_mutex.h"
 #include "platform_core.h"
@@ -58,8 +59,14 @@ struct PlatformUserListenerTimerParam {
 };
 
 struct PlatformUserListenerManager *PlatformUserListenerManagerGet(enum PlatformModuleType moudle);
-int32_t PlatformUserListenerReg(struct PlatformUserListenerManager *manager, uint32_t num, void *data);
+int32_t PlatformUserListenerReg(
+    struct PlatformUserListenerManager *manager, uint32_t num, void *data, OnEventReceived callback);
 void PlatformUserListenerDestory(struct PlatformUserListenerManager *manager, uint32_t num);
+
+int GpioOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data);
+int TimerOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data);
+int RtcOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

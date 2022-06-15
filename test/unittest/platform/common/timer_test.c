@@ -10,8 +10,8 @@
 #include "device_resource_if.h"
 #include "hdf_io_service_if.h"
 #include "hdf_log.h"
-#include "osal_thread.h"
 #include "osal_mem.h"
+#include "osal_thread.h"
 #include "osal_time.h"
 #include "securec.h"
 #include "timer_if.h"
@@ -26,20 +26,21 @@ struct TimerTestFunc {
     int32_t (*Func)(struct TimerTest *test);
 };
 
-int32_t TimerTestcaseCb(void)
+int32_t TimerTestcaseCb(uint32_t number)
 {
     static uint16_t num = 0;
     num++;
     if (num >= TIMER_TEST_PERIOD_TIMES) {
-        HDF_LOGD("->>>>>>>>>>>%s:num exceed max", __func__);
+        HDF_LOGD("->>>>>>>>>>>%s:num exceed max %d", __func__, number);
         g_theard2Flag = true;
+        num = 0;
     }
     return HDF_SUCCESS;
 }
 
-int32_t TimerTestcaseOnceCb(void)
+int32_t TimerTestcaseOnceCb(uint32_t number)
 {
-    HDF_LOGD("->>>>>>>>>>>%s:", __func__);
+    HDF_LOGD("->>>>>>>>>>>%s:%d", __func__, number);
     g_theard1Flag = true;
     return HDF_SUCCESS;
 }
@@ -350,7 +351,7 @@ static int32_t TimerIfPerformanceTest(struct TimerTest *test)
 
     uint64_t startMs;
     uint64_t endMs;
-    uint64_t useTime;    // ms
+    uint64_t useTime; // ms
     uint32_t uSecond;
     bool isPeriod;
 
@@ -359,19 +360,19 @@ static int32_t TimerIfPerformanceTest(struct TimerTest *test)
     endMs = OsalGetSysTimeMs();
 
     useTime = endMs - startMs;
-    HDF_LOGI("----->interface performance test:[start:%llu(ms) - end:%llu(ms) = %llu (ms)] < 1ms[%d]\r\n",
-        startMs, endMs, useTime, useTime < 1 ? true : false);
+    HDF_LOGI("----->interface performance test:[start:%llu(ms) - end:%llu(ms) = %llu (ms)] < 1ms[%d]\r\n", startMs,
+        endMs, useTime, useTime < 1 ? true : false);
     return HDF_SUCCESS;
 }
 
 static struct TimerTestFunc g_timerTestFunc[] = {
-    {TIMER_TEST_SET, TimerSetTest},
-    {TIMER_TEST_SETONCE, TimerSetOnceTest},
-    {TIMER_TEST_GET, TimerGetTest},
-    {TIMER_TEST_START, TimerStartTest},
-    {TIMER_TEST_STOP, TimerStopTest},
-    {TIMER_MULTI_THREAD_TEST, TimerTestMultiThread},
-    {TIMER_RELIABILITY_TEST, TimerTestReliability},
+    {TIMER_TEST_SET,            TimerSetTest          },
+    {TIMER_TEST_SETONCE,        TimerSetOnceTest      },
+    {TIMER_TEST_GET,            TimerGetTest          },
+    {TIMER_TEST_START,          TimerStartTest        },
+    {TIMER_TEST_STOP,           TimerStopTest         },
+    {TIMER_MULTI_THREAD_TEST,   TimerTestMultiThread  },
+    {TIMER_RELIABILITY_TEST,    TimerTestReliability  },
     {TIMER_IF_PERFORMANCE_TEST, TimerIfPerformanceTest},
 };
 
@@ -379,7 +380,7 @@ int32_t TimerTestExecute(int cmd)
 {
     uint32_t i;
     int32_t ret = HDF_ERR_NOT_SUPPORT;
-    
+
     if (cmd > TIMER_TEST_MAX_CMD) {
         HDF_LOGE("%s: invalid cmd:%d", __func__, cmd);
         return HDF_ERR_NOT_SUPPORT;
