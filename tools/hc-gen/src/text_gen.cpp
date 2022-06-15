@@ -288,8 +288,8 @@ bool TextGen::GenTermDefinition(const std::shared_ptr<AstObject> &term)
                 ofs_ << TAB << "const " << TypeToStr(array->ArrayType()) << "* " << term->Name() << ";\n";
                 ofs_ << TAB << "uint32_t " << term->Name() << "Size;\n";
             } else {
-                ofs_ << TAB << TypeToStr(array->ArrayType()) << " " << term->Name() << "[" << array->ArraySize()
-                     << "];\n";
+                ofs_ << TAB << TypeToStr(array->ArrayType()) << " " << term->Name() << "[" << std::dec
+                     << array->ArraySize() << "];\n";
             }
             break;
         }
@@ -450,7 +450,7 @@ bool TextGen::TemplateObjectImplGen(const std::shared_ptr<AstObject> &object, in
         ofs_ << '0';
     }
     ofs_ << ",\n";
-    ofs_ << Indent(depth) << '.' << nodeName << "Size = " << node->InheritCount() << ",\n";
+    ofs_ << Indent(depth) << '.' << nodeName << "Size = " << std::dec << node->InheritCount() << ",\n";
     return ofs_.good();
 }
 
@@ -559,7 +559,7 @@ bool TextGen::PrintArrayImplInSubClass(const std::shared_ptr<AstObject> &object,
     auto arrayName = GenArrayName(object);
 
     ofs_ << Indent(depth) << '.' << object->Name() << " = " << arrayName << ",\n";
-    ofs_ << Indent(depth) << '.' << object->Name() << "Size = " << std::to_string(array->ArraySize()) << ",\n";
+    ofs_ << Indent(depth) << '.' << object->Name() << "Size = " << std::dec << array->ArraySize() << ",\n";
 
     return ofs_.good();
 }
@@ -624,7 +624,7 @@ bool TextGen::OutputTemplateImpl()
         auto subClass = node->SubClasses();
         for (auto nodeObj : subClass) {
             std::shared_ptr<AstObject> obj = std::shared_ptr<AstObject>(nodeObj, [](auto p) {});
-            ofs_ << Indent() << '[' << ConfigNode::CastFrom(obj)->InheritIndex() << "] = {\n";
+            ofs_ << Indent() << '[' << std::dec << ConfigNode::CastFrom(obj)->InheritIndex() << "] = {\n";
             if (!TemplateVariableGen(obj)) {
                 return EOUTPUT;
             }
@@ -666,8 +666,8 @@ uint32_t TextGen::ArrayVariablesDeclareGen(const std::shared_ptr<AstObject> &obj
 
     auto arrayName = GenArrayName(object);
     auto array = ConfigArray::CastFrom(object->Child());
-    ofs_ << "static const " << TypeToStr(array->ArrayType()) << ' ' << arrayName << '[' << array->ArraySize()
-         << "] = {\n"
+    ofs_ << "static const " << TypeToStr(array->ArrayType()) << ' ' << arrayName << '[' << std::dec
+         << array->ArraySize() << "] = {\n"
          << Indent();
     HcsPrintArrayContent(object->Child(), 1);
     ofs_ << "\n};\n\n";
