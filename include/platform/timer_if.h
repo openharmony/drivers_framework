@@ -6,7 +6,6 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-
 #ifndef TIMER_IF_H
 #define TIMER_IF_H
 
@@ -21,7 +20,7 @@ extern "C" {
 /**
  * @brief Defines a callback that will be invoked when a timer's interrupt involved.
  */
-typedef int32_t (*TimerHandleCb)(void);
+typedef int32_t (*TimerHandleCb)(uint32_t number);
 
 /**
  * @brief Gets a hardware timer.
@@ -96,13 +95,13 @@ int32_t HwTimerGet(DevHandle handle, uint32_t *useconds, bool *isPeriod);
  * @since 1.0
  */
 enum TimerIoCmd {
-    TIMER_IO_OPEN = 0,     /**< Open the TIMER device. */
-    TIMER_IO_CLOSE,        /**< Close the TIMER device. */
-    TIMER_IO_START,        /**< Start the TIMER. */
-    TIMER_IO_STOP,         /**< Stop the TIMER. */
-    TIMER_IO_SET,          /**< Set the period TIMER info. */
-    TIMER_IO_SETONCE,      /**< Set the once TIMER info. */
-    TIMER_IO_GET,          /**< Get the TIMER info. */
+    TIMER_IO_OPEN = 0, /**< Open the TIMER device. */
+    TIMER_IO_CLOSE,    /**< Close the TIMER device. */
+    TIMER_IO_START,    /**< Start the TIMER. */
+    TIMER_IO_STOP,     /**< Stop the TIMER. */
+    TIMER_IO_SET,      /**< Set the period TIMER info. */
+    TIMER_IO_SETONCE,  /**< Set the once TIMER info. */
+    TIMER_IO_GET,      /**< Get the TIMER info. */
 };
 
 struct TimerConfig {

@@ -11,13 +11,17 @@
 #include "hdf_log.h"
 #include "hdf_sbuf.h"
 #include "osal_mem.h"
+#include "platform_listener_u.h"
 #include "securec.h"
 
 #define HDF_LOG_TAG rtc_if_u_c
 
 DevHandle RtcOpen()
 {
-    struct HdfIoService *service = NULL;
+    static struct HdfIoService *service = NULL;
+    if (service != NULL) {
+        return service;
+    }
 
     service = HdfIoServiceBind("HDF_PLATFORM_RTC");
     if (service == NULL) {
@@ -25,17 +29,29 @@ DevHandle RtcOpen()
         return NULL;
     }
 
+    if (service->priv == NULL) {
+        struct PlatformUserListenerManager *manager = PlatformUserListenerManagerGet(PLATFORM_MODULE_RTC);
+        if (manager == NULL) {
+            HDF_LOGE("%s: PlatformUserListenerManagerGet fail!", __func__);
+            return (DevHandle)service;
+        }
+        service->priv = manager;
+        manager->service = service;
+    }
+
     return (DevHandle)service;
 }
 
 void RtcClose(DevHandle handle)
 {
+    struct HdfIoService *service = NULL;
     if (handle == NULL) {
         HDF_LOGE("%s: handle is NULL", __func__);
         return;
     }
 
-    HdfIoServiceRecycle((struct HdfIoService *)handle);
+    service = (struct HdfIoService *)handle;
+    PlatformUserListenerDestory((struct PlatformUserListenerManager *)service->priv, 0);
 }
 
 int32_t RtcReadTime(DevHandle handle, struct RtcTime *time)
@@ -251,14 +267,72 @@ int32_t RtcWriteAlarm(DevHandle handle, enum RtcAlarmIndex alarmIndex, const str
     return HDF_SUCCESS;
 }
 
+static int32_t RtcRegListener(struct HdfIoService *service, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb)
+{
+    struct PlatformUserListenerRtcParam *param = NULL;
+
+    param = OsalMemCalloc(sizeof(struct PlatformUserListenerRtcParam));
+    if (param == NULL) {
+        HDF_LOGE("%s: OsalMemCalloc param fail", __func__);
+        return HDF_ERR_IO;
+    }
+    param->index = alarmIndex;
+    param->func = cb;
+
+    if (PlatformUserListenerReg((struct PlatformUserListenerManager *)service->priv, 0, (void *)param,
+            RtcOnDevEventReceive) != HDF_SUCCESS) {
+        HDF_LOGE("%s: PlatformUserListenerReg fail", __func__);
+        OsalMemFree(param);
+        return HDF_ERR_IO;
+    }
+    HDF_LOGD("%s: get rtc listener for %d success", __func__, alarmIndex);
+    return HDF_SUCCESS;
+}
+
 int32_t RtcRegisterAlarmCallback(DevHandle handle, enum RtcAlarmIndex alarmIndex, RtcAlarmCallback cb)
 {
-    (void)alarmIndex;
+    int ret;
+    struct HdfSBuf *data = NULL;
+    struct HdfIoService *service = (struct HdfIoService *)handle;
     if (handle == NULL || cb == NULL) {
         HDF_LOGE("%s: handle or cb is NULL.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
 
+    data = HdfSbufObtainDefaultSize();
+    if (data == NULL) {
+        HDF_LOGE("%s: fail to obtain data", __func__);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    if (!HdfSbufWriteUint32(data, (uint32_t)alarmIndex)) {
+        HDF_LOGE("%s: write alarmIndex fail!", __func__);
+        HdfSbufRecycle(data);
+        return HDF_ERR_IO;
+    }
+
+    if (service == NULL || service->dispatcher == NULL || service->dispatcher->Dispatch == NULL) {
+        HDF_LOGE("%s: service is invalid", __func__);
+        HdfSbufRecycle(data);
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    ret = RtcRegListener(service, alarmIndex, cb);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: RtcListenerReg fail, ret is %d", __func__, ret);
+        HdfSbufRecycle(data);
+        return ret;
+    }
+
+    ret = service->dispatcher->Dispatch(&service->object, RTC_IO_REGISTERALARMCALLBACK, data, NULL);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: fail, ret is %d", __func__, ret);
+        HdfSbufRecycle(data);
+        PlatformUserListenerDestory((struct PlatformUserListenerManager *)service->priv, 0);
+        return ret;
+    }
+
+    HdfSbufRecycle(data);
     return HDF_SUCCESS;
 }
 

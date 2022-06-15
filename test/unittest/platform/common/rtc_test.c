@@ -95,7 +95,7 @@ struct RtcTester *RtcTesterGet(void)
 
 static void RtcTesterPut(struct RtcTester *tester)
 {
-    if (tester == NULL ||  tester->handle == NULL) {
+    if (tester == NULL || tester->handle == NULL) {
         HDF_LOGE("%s: tester or handle is null", __func__);
         return;
     }
@@ -343,7 +343,7 @@ static int32_t RtcAlarmEnableTest(struct RtcTester *tester)
 
     return HDF_SUCCESS;
 }
-#ifndef __USER__
+
 static int32_t RtcAlarmIrqAttachConfig(struct RtcTester *tester)
 {
     int32_t ret;
@@ -370,11 +370,9 @@ static int32_t RtcAlarmIrqAttachConfig(struct RtcTester *tester)
 
     return HDF_SUCCESS;
 }
-#endif
 
 static int32_t RtcAlarmIrqTest(struct RtcTester *tester)
 {
-#ifndef __USER__
     int32_t ret;
 
     /* set time 2020-08-08 Saturday 08:08:08 .000 */
@@ -386,7 +384,7 @@ static int32_t RtcAlarmIrqTest(struct RtcTester *tester)
     tester->time.second = tester->config.second;
     tester->time.millisecond = 0;
     tester->time.weekday = RtcGetWeekDay(&tester->time);
-    
+
     ret = RtcAlarmIrqAttachConfig(tester);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: alarm irq attach config fail, ret :%d", __func__, ret);
@@ -413,9 +411,6 @@ static int32_t RtcAlarmIrqTest(struct RtcTester *tester)
         return HDF_FAILURE;
     }
     g_rtcIrqCallback = HDF_FAILURE;
-#else
-    (void)tester;
-#endif
     return HDF_SUCCESS;
 }
 
@@ -559,7 +554,7 @@ static int32_t RtcTestSample(struct RtcTester *tester)
         return ret;
     }
 
-    tester->time.year= tester->config.year;
+    tester->time.year = tester->config.year;
     tester->time.month = RTC_JANUARY;
     tester->time.day = tester->config.day;
     tester->time.hour = 0;
@@ -620,23 +615,23 @@ struct RtcTestEntry {
 
 // add test case entry
 static struct RtcTestEntry g_entry[] = {
-    { RTC_TEST_CMD_WR_TIME, RtcReadWriteTimeTest, "RtcReadWriteTimeTest"},
-    { RTC_TEST_CMD_WR_MAX_TIME, RtcReadWriteMaxTimeTest, "RtcReadWriteMaxTimeTest"},
-    { RTC_TEST_CMD_WR_MIN_TIME, RtcReadWriteMinTimeTest, "RtcReadWriteMinTimeTest"},
-    { RTC_TEST_CMD_WR_ALARM_TIME, RtcReadWriteAlarmTimeTest, "RtcReadWriteAlarmTimeTest"},
-    { RTC_TEST_CMD_WR_ALARM_MAX_TIME, RtcReadWriteAlarmMaxTimeTest, "RtcReadWriteAlarmMaxTimeTest"},
-    { RTC_TEST_CMD_WR_ALARM_MIN_TIME, RtcReadWriteAlarmMinTimeTest, "RtcReadWriteAlarmMinTimeTest"},
-    { RTC_TEST_CMD_RTC_ALARM_ENABLE, RtcAlarmEnableTest, "RtcAlarmEnableTest"},
-    { RTC_TEST_CMD_RTC_ALARM_IRQ, RtcAlarmIrqTest, "RtcAlarmIrqTest"},
-    { RTC_TEST_CMD_RTC_REGISTER_CALLBACK, RtcRegisterCallbackTest, "RtcRegisterCallbackTest"},
-    { RTC_TEST_CMD_RTC_REGISTER_CALLBACK_NULL, RtcRegisterNullCallbackTest, "RtcRegisterNullCallbackTest"},
-    { RTC_TEST_CMD_RTC_WR_FREQ, RtcSetNormalFreqTest, "RtcSetNormalFreqTest"},
-    { RTC_TEST_CMD_RTC_WR_MAX_FREQ, RtcSetMaxFreqTest, "RtcSetMaxFreqTest"},
-    { RTC_TEST_CMD_RTC_WR_MIN_FREQ, RtcSetMinFreqTest, "RtcSetMinFreqTest"},
-    { RTC_TEST_CMD_RTC_WR_USER_REG, RtcReadWriteUserRegTest, "RtcReadWriteUserRegTest"},
-    { RTC_TEST_CMD_RTC_WR_USER_REG_MAX_INDEX, RtcReadWriteMaxUserIndexTest, "RtcReadWriteMaxUserIndexTest"},
-    { RTC_TEST_CMD_RTC_FUNCTION_TEST, RtcTestSample, "RtcTestSample"},
-    { RTC_TEST_CMD_RTC_WR_RELIABILITY, RtcReadWriteReliability, "RtcReadWriteReliability"},
+    {RTC_TEST_CMD_WR_TIME,                    RtcReadWriteTimeTest,         "RtcReadWriteTimeTest"        },
+    {RTC_TEST_CMD_WR_MAX_TIME,                RtcReadWriteMaxTimeTest,      "RtcReadWriteMaxTimeTest"     },
+    {RTC_TEST_CMD_WR_MIN_TIME,                RtcReadWriteMinTimeTest,      "RtcReadWriteMinTimeTest"     },
+    {RTC_TEST_CMD_WR_ALARM_TIME,              RtcReadWriteAlarmTimeTest,    "RtcReadWriteAlarmTimeTest"   },
+    {RTC_TEST_CMD_WR_ALARM_MAX_TIME,          RtcReadWriteAlarmMaxTimeTest, "RtcReadWriteAlarmMaxTimeTest"},
+    {RTC_TEST_CMD_WR_ALARM_MIN_TIME,          RtcReadWriteAlarmMinTimeTest, "RtcReadWriteAlarmMinTimeTest"},
+    {RTC_TEST_CMD_RTC_ALARM_ENABLE,           RtcAlarmEnableTest,           "RtcAlarmEnableTest"          },
+    {RTC_TEST_CMD_RTC_ALARM_IRQ,              RtcAlarmIrqTest,              "RtcAlarmIrqTest"             },
+    {RTC_TEST_CMD_RTC_REGISTER_CALLBACK,      RtcRegisterCallbackTest,      "RtcRegisterCallbackTest"     },
+    {RTC_TEST_CMD_RTC_REGISTER_CALLBACK_NULL, RtcRegisterNullCallbackTest,  "RtcRegisterNullCallbackTest" },
+    {RTC_TEST_CMD_RTC_WR_FREQ,                RtcSetNormalFreqTest,         "RtcSetNormalFreqTest"        },
+    {RTC_TEST_CMD_RTC_WR_MAX_FREQ,            RtcSetMaxFreqTest,            "RtcSetMaxFreqTest"           },
+    {RTC_TEST_CMD_RTC_WR_MIN_FREQ,            RtcSetMinFreqTest,            "RtcSetMinFreqTest"           },
+    {RTC_TEST_CMD_RTC_WR_USER_REG,            RtcReadWriteUserRegTest,      "RtcReadWriteUserRegTest"     },
+    {RTC_TEST_CMD_RTC_WR_USER_REG_MAX_INDEX,  RtcReadWriteMaxUserIndexTest, "RtcReadWriteMaxUserIndexTest"},
+    {RTC_TEST_CMD_RTC_FUNCTION_TEST,          RtcTestSample,                "RtcTestSample"               },
+    {RTC_TEST_CMD_RTC_WR_RELIABILITY,         RtcReadWriteReliability,      "RtcReadWriteReliability"     },
 };
 
 int32_t RtcTestExecute(int cmd)

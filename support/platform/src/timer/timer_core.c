@@ -7,9 +7,11 @@
  */
 
 #include "timer_core.h"
+#include "hdf_device_object.h"
 #include "hdf_log.h"
 #include "osal_mem.h"
 #include "osal_time.h"
+#include "platform_listener_common.h"
 #include "securec.h"
 
 #define HDF_LOG_TAG timer_core
@@ -22,7 +24,7 @@ struct TimerManager {
 };
 
 static struct TimerManager *g_timerManager = NULL;
-#define TIMER_HANDLE_SHIFT    ((uintptr_t)(-1) << 16)
+#define TIMER_HANDLE_SHIFT ((uintptr_t)(-1) << 16)
 
 struct TimerCntrl *TimerCntrlOpen(const uint32_t number)
 {
@@ -247,8 +249,25 @@ static int32_t TimerIoStop(struct HdfSBuf *data, struct HdfSBuf *reply)
     return TimerCntrlStop(TimerCntrlOpen(number));
 }
 
-static int32_t TimerIoCb()
+static int32_t TimerIoCb(uint32_t number)
 {
+    uint32_t handle = number + TIMER_HANDLE_SHIFT;
+    int32_t ret;
+    struct HdfSBuf *data = NULL;
+
+    data = HdfSbufObtainDefaultSize();
+    if (data == NULL) {
+        HDF_LOGE("%s: HdfSbufObtainDefaultSize failed", __func__);
+        return HDF_ERR_IO;
+    }
+    if (!HdfSbufWriteUint32(data, handle)) {
+        HDF_LOGE("%s: write handle fail!", __func__);
+        HdfSbufRecycle(data);
+        return HDF_ERR_IO;
+    }
+    ret = HdfDeviceSendEvent(g_timerManager->device, PLATFORM_LISTENER_EVENT_TIMER_NOTIFY, data);
+    HdfSbufRecycle(data);
+    HDF_LOGD("%s:set servce info done, ret = %d %d", __func__, ret, handle);
     return HDF_SUCCESS;
 }
 
@@ -344,8 +363,7 @@ static int32_t TimerIoGet(struct HdfSBuf *data, struct HdfSBuf *reply)
     return HDF_SUCCESS;
 }
 
-static int32_t TimerIoDispatch(struct HdfDeviceIoClient *client, int cmd,
-    struct HdfSBuf *data, struct HdfSBuf *reply)
+static int32_t TimerIoDispatch(struct HdfDeviceIoClient *client, int cmd, struct HdfSBuf *data, struct HdfSBuf *reply)
 {
     int32_t ret;
 
@@ -359,16 +377,16 @@ static int32_t TimerIoDispatch(struct HdfDeviceIoClient *client, int cmd,
         case TIMER_IO_START:
             ret = TimerIoStart(data, reply);
             break;
-        case  TIMER_IO_STOP:
+        case TIMER_IO_STOP:
             ret = TimerIoStop(data, reply);
             break;
-        case  TIMER_IO_SET:
+        case TIMER_IO_SET:
             ret = TimerIoSet(data, reply);
             break;
-        case  TIMER_IO_SETONCE:
+        case TIMER_IO_SETONCE:
             ret = TimerIoSetOnce(data, reply);
             break;
-        case  TIMER_IO_GET:
+        case TIMER_IO_GET:
             ret = TimerIoGet(data, reply);
             break;
         default:
@@ -499,8 +517,7 @@ static int32_t TimerManagerBind(struct HdfDeviceObject *device)
 
 static int32_t TimerManagerInit(struct HdfDeviceObject *device)
 {
-    (void)device;
-
+    HdfDeviceSetClass(device, DEVICE_CLASS_PLAT);
     HDF_LOGI("%s: success", __func__);
     return HDF_SUCCESS;
 }

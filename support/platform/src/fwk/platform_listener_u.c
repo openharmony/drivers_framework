@@ -6,36 +6,88 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 #include "platform_listener_u.h"
-#include "hdf_io_service_if.h"
 #include "hdf_log.h"
 #include "ioservstat_listener.h"
 #include "osal_mem.h"
 #include "securec.h"
 
-struct ModuleOnDevEventReceived {
-    enum PlatformModuleType moudle;
-    OnEventReceived callback;
-};
+int RtcOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data)
+{
+    struct PlatformUserListenerRtcParam *rtc = NULL;
+    struct PlatformUserListener *userListener = NULL;
+    uint8_t index;
+    if (priv == NULL || data == NULL) {
+        HDF_LOGE("RtcOnDevEventReceive id %d param error", id);
+        return HDF_FAILURE;
+    }
 
-static int GpioOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data)
+    userListener = (struct PlatformUserListener *)priv;
+    rtc = (struct PlatformUserListenerRtcParam *)userListener->data;
+    if (rtc == NULL || rtc->func == NULL) {
+        HDF_LOGE("RtcOnDevEventReceive rtc id %d error", id);
+        return HDF_FAILURE;
+    }
+
+    if (!HdfSbufReadUint8(data, &index)) {
+        HDF_LOGE("RtcOnDevEventReceive id %d read sbuf fail", id);
+        return HDF_ERR_IO;
+    }
+
+    HDF_LOGD("RtcOnDevEventReceive event %d index:%d == index:%d", id, index, rtc->index);
+    if ((id == PLATFORM_LISTENER_EVENT_RTC_ALARM_NOTIFY) && (index == rtc->index)) {
+        rtc->func(index);
+    }
+    return HDF_SUCCESS;
+}
+
+int TimerOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data)
+{
+    struct PlatformUserListenerTimerParam *timer = NULL;
+    struct PlatformUserListener *userListener = NULL;
+    uint32_t handle;
+    if (priv == NULL || data == NULL) {
+        HDF_LOGE("TimerOnDevEventReceive id %d param error", id);
+        return HDF_FAILURE;
+    }
+
+    userListener = (struct PlatformUserListener *)priv;
+    timer = (struct PlatformUserListenerTimerParam *)userListener->data;
+    if (timer == NULL || timer->func == NULL) {
+        HDF_LOGE("TimerOnDevEventReceive timer id %d error", id);
+        return HDF_FAILURE;
+    }
+
+    if (!HdfSbufReadUint32(data, &handle)) {
+        HDF_LOGE("TimerOnDevEventReceive id %d read sbuf fail", id);
+        return HDF_ERR_IO;
+    }
+
+    HDF_LOGD("TimerOnDevEventReceive event %d handle:%d == handle:%d", id, handle, timer->handle);
+    if ((id == PLATFORM_LISTENER_EVENT_TIMER_NOTIFY) && (handle == timer->handle)) {
+        timer->func(handle);
+    }
+    return HDF_SUCCESS;
+}
+
+int GpioOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data)
 {
     struct PlatformUserListenerGpioParam *gpio = NULL;
     struct PlatformUserListener *userListener = NULL;
     uint16_t gpioId;
     if (priv == NULL || data == NULL) {
-        HDF_LOGE("GpioOnDevEventReceive param error");
+        HDF_LOGE("GpioOnDevEventReceive id %d param error", id);
         return HDF_FAILURE;
     }
 
     userListener = (struct PlatformUserListener *)priv;
     gpio = (struct PlatformUserListenerGpioParam *)userListener->data;
     if (gpio == NULL || gpio->data == NULL || gpio->func == NULL) {
-        HDF_LOGE("GpioOnDevEventReceive gpio error");
+        HDF_LOGE("GpioOnDevEventReceive id %d gpio error", id);
         return HDF_FAILURE;
     }
 
     if (!HdfSbufReadUint16(data, &gpioId)) {
-        HDF_LOGE("GpioOnDevEventReceive read sbuf fail");
+        HDF_LOGE("GpioOnDevEventReceive id %d read sbuf fail", id);
         return HDF_ERR_IO;
     }
 
@@ -46,24 +98,8 @@ static int GpioOnDevEventReceive(void *priv, uint32_t id, struct HdfSBuf *data)
     return HDF_SUCCESS;
 }
 
-static struct ModuleOnDevEventReceived g_Receives[] = {
-    {PLATFORM_MODULE_GPIO, GpioOnDevEventReceive},
-};
-
-static OnEventReceived PlatformUserListenerCbGet(enum PlatformModuleType moudle)
-{
-    unsigned int i;
-    for (i = 0; i < sizeof(g_Receives) / sizeof(g_Receives[0]); i++) {
-        if (moudle == g_Receives[i].moudle) {
-            return g_Receives[i].callback;
-        }
-    }
-    HDF_LOGD("PlatformUserListenerCbGet module callback[%d]not find", moudle);
-    return NULL;
-}
-
 static struct PlatformUserListener *PlatformUserListenerInit(
-    struct PlatformUserListenerManager *manager, uint32_t num, void *data)
+    const struct PlatformUserListenerManager *manager, uint32_t num, void *data, OnEventReceived callback)
 {
     struct PlatformUserListener *userListener = NULL;
     struct HdfDevEventlistener *listener = NULL;
@@ -86,13 +122,7 @@ static struct PlatformUserListener *PlatformUserListenerInit(
     userListener->num = num;
     userListener->data = data;
 
-    listener->callBack = PlatformUserListenerCbGet(manager->moudle);
-    if (listener->callBack == NULL) {
-        HDF_LOGE("PlatformUserListenerInit hdf listener cb get failed");
-        OsalMemFree(userListener);
-        OsalMemFree(listener);
-        return NULL;
-    }
+    listener->callBack = callback;
     listener->priv = userListener;
     if (HdfDeviceRegisterEventListener(manager->service, listener) != HDF_SUCCESS) {
         HDF_LOGE("PlatformUserListenerInit HdfDeviceRegisterEventListener failed");
@@ -105,12 +135,13 @@ static struct PlatformUserListener *PlatformUserListenerInit(
     return userListener;
 }
 
-int32_t PlatformUserListenerReg(struct PlatformUserListenerManager *manager, uint32_t num, void *data)
+int32_t PlatformUserListenerReg(
+    struct PlatformUserListenerManager *manager, uint32_t num, void *data, OnEventReceived callback)
 {
     struct PlatformUserListener *pos = NULL;
     struct PlatformUserListener *node = NULL;
-    if (manager == NULL) {
-        HDF_LOGE("PlatformUserListenerReg manager null");
+    if (manager == NULL || callback == NULL) {
+        HDF_LOGE("PlatformUserListenerReg param null");
         return HDF_FAILURE;
     }
 
@@ -125,7 +156,7 @@ int32_t PlatformUserListenerReg(struct PlatformUserListenerManager *manager, uin
         }
     }
 
-    node = PlatformUserListenerInit(manager, num, data);
+    node = PlatformUserListenerInit(manager, num, data, callback);
     if (node == NULL) {
         HDF_LOGE("PlatformUserListenerReg PlatformUserListenerInit fail");
         (void)OsalMutexUnlock(&manager->lock);

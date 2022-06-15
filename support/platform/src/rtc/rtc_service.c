@@ -6,9 +6,12 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_log.h"
+#include "devsvc_manager_clnt.h"
 #include "hdf_device_desc.h"
+#include "hdf_device_object.h"
+#include "hdf_log.h"
 #include "osal_mem.h"
+#include "platform_listener_common.h"
 #include "rtc_core.h"
 #include "rtc_if.h"
 
@@ -104,11 +107,45 @@ static int32_t RtcServiceIoWriteAlarm(struct RtcHost *host, struct HdfSBuf *data
     return HDF_SUCCESS;
 }
 
+static int32_t RtcAlarmServiceCallback(enum RtcAlarmIndex index)
+{
+    struct RtcHost *host = NULL;
+    int32_t ret;
+    struct HdfSBuf *data = NULL;
+
+    host = (struct RtcHost *)DevSvcManagerClntGetService("HDF_PLATFORM_RTC");
+    if (host == NULL) {
+        HDF_LOGE("%s rtc get service fail", __func__);
+        return HDF_FAILURE;
+    }
+
+    data = HdfSbufObtainDefaultSize();
+    if (data == NULL) {
+        HDF_LOGE("%s HdfSbufObtainDefaultSize failed", __func__);
+        return HDF_ERR_IO;
+    }
+    if (!HdfSbufWriteUint8(data, index)) {
+        HDF_LOGE("%s: write index fail!", __func__);
+        HdfSbufRecycle(data);
+        return HDF_ERR_IO;
+    }
+    ret = HdfDeviceSendEvent(host->device, PLATFORM_LISTENER_EVENT_RTC_ALARM_NOTIFY, data);
+    HdfSbufRecycle(data);
+    return HDF_SUCCESS;
+}
+
 static int32_t RtcServiceIoRegisterAlarmCallback(struct RtcHost *host, struct HdfSBuf *data)
 {
-    (void)host;
-    (void)data;
-    return HDF_SUCCESS;
+    uint32_t alarmIndex;
+    if (data == NULL) {
+        return HDF_ERR_INVALID_PARAM;
+    }
+    if (!HdfSbufReadUint32(data, &alarmIndex)) {
+        HDF_LOGE("%s: read alarmIndex fail!", __func__);
+        return HDF_ERR_IO;
+    }
+
+    return RtcHostRegisterAlarmCallback(host, alarmIndex, RtcAlarmServiceCallback);
 }
 
 static int32_t RtcServiceIoInterruptEnable(struct RtcHost *host, struct HdfSBuf *data)
@@ -117,7 +154,7 @@ static int32_t RtcServiceIoInterruptEnable(struct RtcHost *host, struct HdfSBuf 
     uint32_t alarmIndex = 0;
     uint8_t enable = 0;
 
-    if (!HdfSbufReadUint32(data, &alarmIndex))  {
+    if (!HdfSbufReadUint32(data, &alarmIndex)) {
         HDF_LOGE("%s: read alarmIndex fail!", __func__);
         return HDF_ERR_IO;
     }
