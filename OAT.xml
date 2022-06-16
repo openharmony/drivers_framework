@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+    The framework directory is dual licensed: you can use it either under the terms of
+    the GPL V2, or the BSD3 license, at your option.
+    The adapter/khdf/liteos and khdf/liteos_m subdirectories are licensed under 3-Clause BSD License.
+    The adapter/khdf/linux subdirectory is licensed under the GPL V2 License.
+    The adapter/platform subdirectory is is dual licensed: you can use it either under the terms of
+    the GPL V2, or the 3-Clause BSD License, at your option.
+    The adapter/uhdf and adapter/uhdf2 and others subdirectories are licensed under Apache License, Version 2.0.
 
-     HDF is dual licensed: you can use it either under the terms of
-     the GPL, or the BSD license, at your option.
-     See the LICENSE file in the root of this repository for complete details.
+    See the LICENSE file in the root of this repository for complete details.
 -->
 <!-- OAT(OSS Audit Tool) configuration guide:
 basedir: Root dir, the basedir + project path is the real source file location.
@@ -52,30 +57,47 @@ Note:If the text contains special characters, please escape them according to th
                 <policyitem type="license" name="BSD" path=".*" desc="huawei codes"/>
                 <policyitem type="copyright" name="Chipsea Technologies (Shenzhen) Corp., Ltd." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="kaihong codes"/>
                 <policyitem type="copyright" name="Shenzhen Kaihong Digital" path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="kaihong codes"/>
-                <!--policyitem type="compatibility" name="GPL" path=".*" desc="linux kernel adapter codes"/-->
-                <!--policyitem type="compatibility" name="GPL-2.0+" path=".*" desc="linux kernel adapter codes"/--> 
+                <policyitem type="copyright" name="Bestechnic (Shanghai) Co., Ltd." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Developed by Bestechnic"/>
+                <policyitem type="copyright" name="GOODIX." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Developed by Goodix"/>
+                <policyitem type="copyright" name="ASR Microelectronics (Shanghai) Co., Ltd." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Developed by asr"/>
+                <policyitem type="copyright" name="Talkweb Co., Ltd." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Developed by Talkweb"/>
+                <policyitem type="copyright" name="Jiangsu Hoperun Software Co., Ltd." path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="Developed By Hoperun"/>
+                <policyitem type="copyright" name="Samsung Electronics Co.," path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="kernel codes"/>
+                <policyitem type="copyright" name="Samsung Electronics" path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="kernel codes"/>
+                <policyitem type="copyright" name="David Brownell" path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="kernel codes"/>
+                <policyitem type="copyright" name="Agilent Technologies" path=".*" rule="may" group="defaultGroup" filefilter="copyrightPolicyFilter" desc="kernel codes"/>
+
             </policy>
         </policylist>
         <filefilterlist>
             <filefilter name="defaultFilter" desc="Files not to check">
                 <filteritem type="filename" name="*.lds|*.pod"/>
                 <filteritem type="filename" name="*.a|*.d|*.o|*.cmd|*.hcb|*.swp|hc-gen"/>
+                <filteritem type="filename" name="*.a|*.d|*.o|*.so|*.cmd|*.hcb|*.swp"/>
                 <filteritem type="filename" name="*.clang-format"/>
                 <filteritem type="filepath" name="dir name underproject/.*" desc="Describe the reason for filtering scan results"/>
+                <filteritem type="filename" name="*.lds|*.pod" desc="Building scripts"/>
+                <filteritem type="filename" name="*.a|*.d|*.o|*.cmd|*.hcb|*.swp" desc="Intermediate products"/>
             </filefilter>
             <filefilter name="defaultPolicyFilter" desc="Filters for compatibility，license header policies">
                 <filteritem type="filename" name="README.OpenSource"/>
                 <filteritem type="filename" name="README"/>
+                <filteritem type="filename" name="BUILD.gn"/>
+                <filteritem type="filename" name="*.gni"/>
                 <filteritem type="filepath" name="dir name underproject/.*" desc="Describe the reason for filtering scan results"/>
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies" >
                 <filteritem type="filename" name="README.OpenSource"/>
                 <filteritem type="filename" name="README"/>
+                <filteritem type="filename" name="BUILD.gn"/>
+                <filteritem type="filename" name="*.gni"/>
                 <filteritem type="filepath" name="dir name underproject/.*" desc="Describe the reason for filtering scan results"/>
             </filefilter>
             <filefilter name="licenseFileNamePolicyFilter" desc="Filters for LICENSE file policies" >
                 <filteritem type="filepath" name="dir name underproject/.*" desc="Describe the reason for filtering scan results"/>
-                <filteritem type="filepath" name="core/adapter/.*" desc="it's not a repo"/>
+                <filteritem type="filepath" name="framework/core/adapter/.*" desc="it's not a repo"/>
+                <filteritem type="filename" name="BUILD.gn"/>
+                <filteritem type="filename" name="*.gni"/>
             </filefilter>
             <filefilter name="readmeFileNamePolicyFilter" desc="Filters for README file policies" >
                 <filteritem type="filepath" name="dir name underproject/.*" desc="Describe the reason for filtering scan results"/>
@@ -85,6 +107,7 @@ Note:If the text contains special characters, please escape them according to th
             </filefilter>
             <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies" >
                 <filteritem type="filepath" name="figures/.*.png" desc="driver framework architecture diagram"/>
+                <filteritem type="filepath" name="adapter/uhdf2/test/resource/audio/audiofile/audiorendertest.wav" desc="Self-developed voice files are used for testing"/>
             </filefilter>
         </filefilterlist>
     </oatconfig>
