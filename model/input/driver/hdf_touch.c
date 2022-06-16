@@ -10,6 +10,7 @@
 #include "gpio_if.h"
 #include "hdf_device_desc.h"
 #include "hdf_log.h"
+#include "hdf_pm.h"
 #include "osal_mem.h"
 #include "osal_io.h"
 #include "event_hub.h"
@@ -352,6 +353,10 @@ static int32_t SetupChipIrq(ChipDevice *chipDev)
 
 static void ChipReset(ChipDevice *chipDev)
 {
+    if (chipDev == NULL) {
+        HDF_LOGE("%s: invalid param", __func__);
+        return;
+    }
     (void)SetPowerOnTiming(chipDev, true);
 }
 
@@ -1018,6 +1023,78 @@ static int32_t HdfTouchDriverBind(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
+#if defined(CONFIG_ARCH_ROCKCHIP)
+static int HdfTouchDriverDozeResume(struct HdfDeviceObject *device)
+{
+    if (device == NULL) {
+        HDF_LOGE("%s: param is null", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+    HDF_LOGI("%s:called", __func__);
+
+    static int32_t isFirstResume = 1;
+    if (isFirstResume == 1) {
+        isFirstResume = 0;
+        return HDF_SUCCESS;
+    }
+    TouchDriver *touchDriver = (TouchDriver *)device->priv;
+    ChipReset(touchDriver->device);
+
+    return HDF_SUCCESS;
+}
+
+static int HdfTouchDriverDozeSuspend(struct HdfDeviceObject *device)
+{
+    if (device == NULL) {
+        HDF_LOGE("%s: param is null", __func__);
+        return HDF_ERR_INVALID_PARAM;
+    }
+    HDF_LOGI("%s:called", __func__);
+
+    int32_t ret = -1;
+    uint8_t writeBuf[3]; // 3: buffer size
+    TouchDriver *touchDriver = (TouchDriver *)device->priv;
+    uint16_t intGpioNum = touchDriver->device->boardCfg->pins.intGpio;
+
+    GpioSetDir(intGpioNum, 1);
+    GpioWrite(intGpioNum, 0);
+
+    writeBuf[0] = 0x80;  // 0x42: reg address high bit
+    writeBuf[1] = 0x40;  // 0x26: reg address low bit
+    writeBuf[2] = 0x05;  // 0x01: reg value
+    ret = InputI2cWrite(&touchDriver->i2cClient, writeBuf, 3); // 3: len
+    HDF_LOGI("%s:ret = %d", __func__, ret);
+
+    return HDF_SUCCESS;
+}
+
+static void HdfTouchDriverRegisterPowerListener(struct HdfDeviceObject *device)
+{
+    int ret;
+    static struct IPowerEventListener powerListener = {0};
+    HDF_LOGI("%s::enter!", __func__);
+    powerListener.DozeResume = HdfTouchDriverDozeResume;
+    powerListener.DozeSuspend = HdfTouchDriverDozeSuspend;
+    powerListener.Resume = NULL;
+    powerListener.Suspend = NULL;
+
+    ret = HdfPmRegisterPowerListener(device, &powerListener);
+    HDF_LOGI("%s:register power listener, ret = %d", __func__, ret);
+}
+
+static void HdfTouchDriverUnregisterPowerListener(struct HdfDeviceObject *device)
+{
+    static struct IPowerEventListener powerListener = {0};
+    HDF_LOGI("%s::enter!", __func__);
+    powerListener.DozeResume = NULL;
+    powerListener.DozeSuspend = NULL;
+    powerListener.Resume = NULL;
+    powerListener.Suspend = NULL;
+
+    HdfPmUnregisterPowerListener(device, &powerListener);
+}
+#endif
+
 static int32_t HdfTouchDriverProbe(struct HdfDeviceObject *device)
 {
     int32_t ret;
@@ -1045,6 +1122,9 @@ static int32_t HdfTouchDriverProbe(struct HdfDeviceObject *device)
         touchDriver->boardCfg = boardCfg;
         AddTouchDriver(touchDriver);
         device->priv = (void *)touchDriver;
+#if defined(CONFIG_ARCH_ROCKCHIP)
+        HdfTouchDriverRegisterPowerListener(device);
+#endif
         HDF_LOGI("%s: %s exit succ", __func__, boardCfg->attr.devName);
         return HDF_SUCCESS;
     }
@@ -1081,6 +1161,10 @@ static void HdfTouchDriverRelease(struct HdfDeviceObject *device)
         UnregisterInputDevice(inputDev);
         driver->inputDev = NULL;
     }
+
+#if defined(CONFIG_ARCH_ROCKCHIP)
+    HdfTouchDriverUnregisterPowerListener(device);
+#endif
 
     OsalMutexDestroy(&driver->mutex);
     OsalMemFree(driver);
