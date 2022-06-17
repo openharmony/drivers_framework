@@ -1,0 +1,29 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+#
+# HDF is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
+
+import("//build/config/features.gni")
+import("//build/ohos.gni")
+import("//build/test.gni")
+module_output_path = "hdf/platform"
+
+include_dirs = [
+  "//drivers/hdf_core/framework/include/platform",
+  "//drivers/hdf_core/framework/support/platform/test/fuzztest",
+]
+
+deps = [ "//drivers/hdf_core/adapter/uhdf2/platform:libhdf_platform" ]
+
+cflags = [
+  "-g",
+  "-O0",
+  "-Wno-unused-variable",
+  "-fno-omit-frame-pointer",
+]
+
+platform_fuzzexternal_deps = [
+  "hiviewdfx_hilog_native:libhilog",
+  "utils_base:utils",
+]

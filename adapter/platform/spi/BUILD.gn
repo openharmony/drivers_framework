@@ -1,0 +1,41 @@
+#
+# Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+#
+# This file is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
+#
+
+import("//drivers/hdf_core/adapter/khdf/liteos_m/hdf.gni")
+
+module_switch = defined(LOSCFG_DRIVERS_HDF_PLATFORM_SPI)
+module_name = get_path_info(rebase_path("."), "name")
+
+hdf_driver(module_name) {
+  sources = []
+  if (defined(LOSCFG_SOC_COMPANY_BESTECHNIC)) {
+    sources += [ "spi_bes.c" ]
+  }
+  if (defined(LOSCFG_SOC_COMPANY_WINNERMICRO)) {
+    sources += [ "spi_wm.c" ]
+  }
+  if (defined(LOSCFG_SOC_SERIES_STM32F4xx)) {
+    sources += [ "spi_stm32f4xx.c" ]
+  }
+
+  include_dirs = [ "." ]
+  if (defined(LOSCFG_SHIELD_V200ZR_EVB_T1) &&
+      defined(LOSCFG_DRIVERS_HDF_CONFIG_MACRO)) {
+    deps = [ "//device/board/fnlink/shields" ]
+  }
+  if (defined(LOSCFG_DRIVERS_HDF_CONFIG_MACRO)) {
+    HDF_HCS_BUILD_PATH = rebase_path(
+            "//device/board/$device_company/$device_name/liteos_m/hdf_config")
+    cmd = "if [ -f ${HDF_HCS_BUILD_PATH}/BUILD.gn ]; then echo true; else echo false; fi"
+    HAVE_HCS_BUILD_PATH =
+        exec_script("//build/lite/run_shell_cmd.py", [ cmd ], "value")
+    if (HAVE_HCS_BUILD_PATH) {
+      deps = [ "${HDF_HCS_BUILD_PATH}" ]
+    }
+  }
+}

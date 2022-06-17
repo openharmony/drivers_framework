@@ -1,0 +1,35 @@
+config DRIVERS_HDF_AUDIO
+    bool "Enable HDF Audio driver"
+    default n
+    depends on DRIVERS_HDF
+    help
+        Answer Y to choice HDF Audio driver.
+config DRIVERS_HDF_AUDIO_HI3516CODEC
+    bool "Enable HDF Audio Codec driver"
+    default n
+    depends on DRIVERS_HDF_AUDIO
+    help
+        Answer Y to choice HDF Audio Codec driver.
+
+config DRIVERS_HDF_AUDIO_RK3568
+    bool "Enable HDF Audio Codec driver"
+    default n
+    depends on DRIVERS_HDF_AUDIO
+    help
+        Answer Y to choice HDF Audio Codec driver.
+
+config DRIVERS_HDF_AUDIO_ANA_HEADSET
+    bool "Audio Headset support"
+    default n
+    depends on DRIVERS_HDF_AUDIO_RK3568
+    help
+        Audio Headset support:
+            support hook interrupt mode.
+            support hook adc mode.
+
+config DRIVERS_HDF_AUDIO_TEST
+    bool "Enable HDF Audio driver Test"
+    default n
+    depends on DRIVERS_HDF_AUDIO
+    help
+        Answer Y to choice HDF Audio driver Test.

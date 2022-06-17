@@ -1,0 +1,28 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+#
+# HDF is dual licensed: you can use it either under the terms of
+# the GPL, or the BSD license, at your option.
+# See the LICENSE file in the root of this repository for complete details.
+
+import("//drivers/hdf_core/framework/support/platform/test/fuzztest/fuzz.gni")
+
+ohos_fuzztest("PwmFuzzTest") {
+  module_out_path = module_output_path
+
+  fuzz_config_file =
+      "//drivers/hdf_core/framework/support/platform/test/fuzztest/pwm_fuzzer"
+
+  include_dirs += [
+    "//drivers/hdf_core/framework/support/platform/test/fuzztest/pwm_fuzzer",
+  ]
+
+  sources = [ "pwm_fuzzer.cpp" ]
+
+  external_deps = platform_fuzzexternal_deps
+}
+
+group("fuzztest") {
+  testonly = true
+  deps = []
+  deps += [ ":PwmFuzzTest" ]
+}
