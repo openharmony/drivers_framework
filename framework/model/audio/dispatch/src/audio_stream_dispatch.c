@@ -122,7 +122,7 @@ static int32_t HwDspDaiDispatch(const struct AudioCard *audioCard, const struct 
     return HDF_SUCCESS;
 }
 
-static int32_t HwPlatfromDispatch(const struct AudioCard *audioCard, const struct AudioPcmHwParams *params)
+static int32_t HwPlatformDispatch(const struct AudioCard *audioCard, const struct AudioPcmHwParams *params)
 {
     int ret = 0;
     struct AudioRuntimeDeivces *rtd;
@@ -167,7 +167,7 @@ static int32_t HwParamsDispatch(const struct AudioCard *audioCard, const struct 
         return HDF_FAILURE;
     }
 
-    if (HwPlatfromDispatch(audioCard, params) != HDF_SUCCESS) {
+    if (HwPlatformDispatch(audioCard, params) != HDF_SUCCESS) {
         ADM_LOG_ERR("platform dai hardware params failed.");
         return HDF_FAILURE;
     }
