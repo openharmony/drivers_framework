@@ -154,7 +154,12 @@ template("hdi") {
 
       install_images = [ system_base_dir ]
       subsystem_name = invoker.subsystem_name
-      part_name = invoker.part_name + "_interface"
+      partname_list = string_split(invoker.part_name, "_")
+      if (partname_list[0] == "drivers") {
+        part_name = invoker.part_name
+      } else {
+        part_name = invoker.part_name + "_interface"
+      }
     }
   }
 
@@ -204,7 +209,14 @@ template("hdi") {
 
       install_images = [ chipset_base_dir ]
       subsystem_name = invoker.subsystem_name
-      part_name = invoker.part_name
+      partname_list = string_split(invoker.part_name, "_")
+      if (partname_list[0] == "drivers") {
+        part_name = string_replace(invoker.part_name,
+                                   "drivers_interface",
+                                   "drivers_peripheral")
+      } else {
+        part_name = invoker.part_name
+      }
     }
   }
 
