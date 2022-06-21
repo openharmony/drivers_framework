@@ -14,7 +14,7 @@
 
 MODULE_NAME := hdf_vendor_wifi
 
-HDF_VENDOR_PREFIX := ../../../../../../../../
+HDF_VENDOR_PREFIX := ../../../../../../../../..
 
 include drivers/hdf/khdf/model/network/wifi/hdfwifi.mk
 
