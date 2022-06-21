@@ -432,10 +432,10 @@ static int32_t ParseWlanDevListConfig(const struct DeviceResourceNode *node, str
 }
 
 /* BEGIN for WLAN2.1 to get chips configures: Added by hdf-wlan */
-static int32_t ParseWlanChipSdioConfig(const struct DeviceResourceNode *node, struct HdfConfWlanSdioArgs *sdioArgs)
+static int32_t ParseWlanChipBusConfig(const struct DeviceResourceNode *node, struct HdfConfWlanBusArgs *busArgs)
 {
     struct DeviceResourceIface *drsOps = NULL;
-    if (node == NULL || sdioArgs == NULL) {
+    if (node == NULL || busArgs == NULL) {
         HDF_LOGE("%s: at least one of the paras is NULL!", __func__);
         return HDF_FAILURE;
     }
@@ -445,11 +445,11 @@ static int32_t ParseWlanChipSdioConfig(const struct DeviceResourceNode *node, st
         return HDF_FAILURE;
     }
 
-    if (drsOps->GetUint16(node, "vendorId", &sdioArgs->vendorId, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint16(node, "vendorId", &busArgs->vendorId, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: vendorId fail!", __func__);
         return HDF_FAILURE;
     }
-    if (drsOps->GetUint16Array(node, "deviceId", sdioArgs->deviceId, CHIP_SDIO_DEVICE_ID_COUNT, 0) != HDF_SUCCESS) {
+    if (drsOps->GetUint16Array(node, "deviceId", busArgs->deviceId, CHIP_BUS_DEVICE_ID_COUNT, 0) != HDF_SUCCESS) {
         HDF_LOGE("%s: deviceId fail!", __func__);
         return HDF_FAILURE;
     }
@@ -477,12 +477,12 @@ static int32_t ParseWlanChipsCompsConfig(const struct DeviceResourceNode *node, 
     }
     HDF_LOGI("%s: driverName=%s", __func__, chipInst->driverName);
 
-    chipBusNode = drsOps->GetChildNode(node, "sdio");
+    chipBusNode = drsOps->GetChildNode(node, "bus");
     if (chipBusNode == NULL) {
         HDF_LOGE("%s: GetChildNode fail!", __func__);
         return HDF_FAILURE;
     }
-    if (ParseWlanChipSdioConfig(chipBusNode, &chipInst->chipSdio) != HDF_SUCCESS) {
+    if (ParseWlanChipBusConfig(chipBusNode, &chipInst->chipBus) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
 
