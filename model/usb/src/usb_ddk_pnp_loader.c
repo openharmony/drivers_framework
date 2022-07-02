@@ -8,6 +8,7 @@
 
 #include "usb_ddk_pnp_loader.h"
 #include <unistd.h>
+
 #include "devhost_service_clnt.h"
 #include "device_resource_if.h"
 #include "hcs_tree_if.h"
@@ -982,6 +983,7 @@ static int32_t UsbDdkPnpLoaderDevice(struct HdfDeviceObject *usbPnpManagerDevice
     return HDF_SUCCESS;
 }
 
+#ifndef USB_EVENT_NOTIFY_LINUX_NATIVE_MODE
 static int32_t UsbDdkPnpLoaderEventSend(const struct HdfIoService *serv, const char *eventData)
 {
     int32_t ret;
@@ -1028,6 +1030,7 @@ OUT:
 
     return ret;
 }
+#endif
 
 int32_t UsbDdkPnpLoaderEventReceived(void *usbPnpManagerPtr, uint32_t id, struct HdfSBuf *data)
 {
@@ -1082,9 +1085,9 @@ int32_t UsbDdkPnpLoaderEventReceived(void *usbPnpManagerPtr, uint32_t id, struct
 
 int32_t UsbDdkPnpLoaderEventHandle(void)
 {
+#ifndef USB_EVENT_NOTIFY_LINUX_NATIVE_MODE
     int32_t status;
     int32_t tableCount = 0;
-    static bool firstInitFlag = true;
     const struct UsbPnpMatchIdTable *idTable = NULL;
     struct HdfIoService *usbPnpServ = HdfIoServiceBind(USB_PNP_NOTIFY_SERVICE_NAME);
 
@@ -1092,7 +1095,9 @@ int32_t UsbDdkPnpLoaderEventHandle(void)
         HDF_LOGE("%s: HdfIoServiceBind faile.", __func__);
         return HDF_ERR_INVALID_OBJECT;
     }
+#endif
 
+    static bool firstInitFlag = true;
     if (firstInitFlag == true) {
         firstInitFlag = false;
 
@@ -1101,17 +1106,19 @@ int32_t UsbDdkPnpLoaderEventHandle(void)
 
     g_usbPnpMatchIdTable = UsbDdkPnpLoaderPnpMatch();
     if ((g_usbPnpMatchIdTable == NULL) || (g_usbPnpMatchIdTable[0] == NULL)) {
-        status = HDF_ERR_INVALID_PARAM;
         HDF_LOGE("%s: g_usbPnpMatchIdTable or g_usbPnpMatchIdTable[0] is NULL!", __func__);
-        return status;
+        return HDF_ERR_INVALID_PARAM;
     }
 
+#ifndef USB_EVENT_NOTIFY_LINUX_NATIVE_MODE
     status = UsbDdkPnpLoaderEventSend(usbPnpServ, "USB PNP Handle Info");
     if (status != HDF_SUCCESS) {
         HDF_LOGE("UsbDdkPnpLoaderEventSend faile status=%d", status);
         goto ERROR;
     }
-    return status;
+#endif
+    return HDF_SUCCESS;
+#ifndef USB_EVENT_NOTIFY_LINUX_NATIVE_MODE
 ERROR:
     idTable = g_usbPnpMatchIdTable[0];
     while (idTable != NULL) {
@@ -1126,4 +1133,5 @@ ERROR:
     g_usbPnpMatchIdTable = NULL;
 
     return status;
+#endif
 }
