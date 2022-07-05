@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -31,10 +31,13 @@ static int32_t SetListenClass(struct SvcMgrIoservice *svcmgrInst, uint16_t devCl
     (void)HdfSbufWriteUint16(data, devClass);
     if (svcmgrInst->iosvc == NULL || svcmgrInst->iosvc->dispatcher == NULL
         || svcmgrInst->iosvc->dispatcher->Dispatch == NULL) {
+        HdfSbufRecycle(data);
         return HDF_ERR_INVALID_OBJECT;
     }
-    return svcmgrInst->iosvc->dispatcher->Dispatch(
+    int32_t ret = svcmgrInst->iosvc->dispatcher->Dispatch(
         (struct HdfObject *)svcmgrInst->iosvc, SVCMGR_REGISTER_LISTENER, data, NULL);
+    HdfSbufRecycle(data);
+    return ret;
 }
 
 static int32_t UnSetListenClass(struct SvcMgrIoservice *svcmgrInst, uint16_t devClass)
@@ -47,10 +50,13 @@ static int32_t UnSetListenClass(struct SvcMgrIoservice *svcmgrInst, uint16_t dev
     (void)HdfSbufWriteUint16(data, devClass);
     if (svcmgrInst->iosvc == NULL || svcmgrInst->iosvc->dispatcher == NULL
         || svcmgrInst->iosvc->dispatcher->Dispatch == NULL) {
+        HdfSbufRecycle(data);
         return HDF_ERR_INVALID_OBJECT;
     }
-    return svcmgrInst->iosvc->dispatcher->Dispatch(
+    int32_t ret = svcmgrInst->iosvc->dispatcher->Dispatch(
         (struct HdfObject *)svcmgrInst->iosvc, SVCMGR_UNREGISTER_LISTENER, data, NULL);
+    HdfSbufRecycle(data);
+    return ret;
 }
 
 int32_t SvcMgrIoserviceRegSvcStatListener(
