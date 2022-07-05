@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -62,6 +62,7 @@ int32_t KServStatListenerHolderNotifyStatus(struct ServStatListenerHolder *holde
 
     if (HdfDeviceSendEventToClient(holderInst->listenerClient, 0, data) != HDF_SUCCESS) {
         HDF_LOGE("failed to notify service status, send error");
+        HdfSbufRecycle(data);
         return HDF_FAILURE;
     }
 
