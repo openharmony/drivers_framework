@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -74,6 +74,9 @@ struct BusDev {
 };
 
 struct BusDev *HdfWlanCreateBusManager(const struct HdfConfigWlanBus *busConfig);
+int32_t HdfWlanBusAbsInit(struct BusDev *dev, const struct HdfConfigWlanBus *busConfig);
+int32_t HdfWlanConfigBusAbs(uint8_t busId);
+
 
 #ifdef __cplusplus
 #if __cplusplus

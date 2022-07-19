@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -12,7 +12,7 @@
 #define WLAN_DEVICE_MAX 3
 #define WLAN_MAX_CHIP_NUM 3
 #define BUS_FUNC_MAX 1
-#define CHIP_SDIO_DEVICE_ID_COUNT 1
+#define CHIP_BUS_DEVICE_ID_COUNT 1
 
 struct HdfConfigWlanStation {
     const char *name;
@@ -97,13 +97,13 @@ struct HdfConfigWlanDeviceList {
 /* ----------------------------------------------*
  * chip config                             *
  * ---------------------------------------------- */
-struct HdfConfWlanSdioArgs {
+struct HdfConfWlanBusArgs {
     uint16_t vendorId;
     uint16_t deviceId[1];
 };
 struct HdfConfigWlanChipInst {
     const char *driverName;
-    struct HdfConfWlanSdioArgs chipSdio;
+    struct HdfConfWlanBusArgs chipBus;
 };
 struct HdfConfigWlanChipList {
     struct HdfConfigWlanChipInst chipInst[WLAN_MAX_CHIP_NUM];
