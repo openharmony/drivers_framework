@@ -1,15 +1,19 @@
 /*
- * Copyright (c) 2021-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include "hdf_sdio_intf.h"
 #include "osal_mem.h"
 #include "sdio_if.h"
 #include "wifi_inc.h"
+#include "hdf_wlan_sdio.h"
+#include "hdf_base.h"
+#include "hdf_ibus_intf.h"
+#include "hdf_log.h"
+#include "securec.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -289,8 +293,8 @@ static struct DevHandle *HdfGetDevHandle(struct BusDev *dev, const struct HdfCon
     tmpChipList = &rootConfig->wlanConfig.chipList;
     for (cnt = 0; (cnt < tmpChipList->chipInstSize) && (cnt < WLAN_MAX_CHIP_NUM); cnt++) {
         // once detected card break
-        palSdioConfig[cnt].deviceId = tmpChipList->chipInst[cnt].chipSdio.deviceId[0];
-        palSdioConfig[cnt].vendorId = tmpChipList->chipInst[cnt].chipSdio.vendorId;
+        palSdioConfig[cnt].deviceId = tmpChipList->chipInst[cnt].chipBus.deviceId[0];
+        palSdioConfig[cnt].vendorId = tmpChipList->chipInst[cnt].chipBus.vendorId;
         palSdioConfig[cnt].funcNr = busCfg->funcNum[0];
         handle = SdioOpen(busCfg->busIdx, &palSdioConfig[cnt]);
         if (handle != NULL) {
@@ -368,7 +372,7 @@ static void HdfSetBusOps(struct BusDev *dev)
     dev->ops.claimHost = HdfSdioClaimHost;
     dev->ops.releaseHost = HdfSdioReleaseHost;
 }
-int32_t HdfSdioBusInit(struct BusDev *dev, const struct HdfConfigWlanBus *busConfig)
+int32_t HdfWlanBusAbsInit(struct BusDev *dev, const struct HdfConfigWlanBus *busConfig)
 {
     if (dev == NULL) {
         HDF_LOGE("%s:set sdio device ops failed!", __func__);
@@ -376,6 +380,11 @@ int32_t HdfSdioBusInit(struct BusDev *dev, const struct HdfConfigWlanBus *busCon
     }
     HdfSetBusOps(dev);
     return HdfSdioInit(dev, busConfig);
+}
+
+int32_t HdfWlanConfigBusAbs(uint8_t busId)
+{
+    return HdfWlanConfigSDIO(busId);
 }
 
 #ifdef __cplusplus

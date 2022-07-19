@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -18,7 +18,6 @@
 #include "osal_thread.h"
 #include "message/message_router.h"
 #include "hdf_wlan_chipdriver_manager.h"
-#include "hdf_wlan_sdio.h"
 #include "hdf_wlan_config.h"
 #include "hdf_wlan_utils.h"
 
@@ -39,7 +38,7 @@ int32_t HdfWifiGetBusIdx(void)
  * @brief  as for now, we just support one wlan module in one board cause driver binds to wlan featere
  * due to that reason, once we detected one chip, we stop rescan.
  */
-int HdfWlanBusInit(struct HdfWlanDevice *data, const struct HdfConfigWlanBus *busConfig)
+static int HdfWlanBusInit(struct HdfWlanDevice *data, const struct HdfConfigWlanBus *busConfig)
 {
     struct BusDev *bus = NULL;
     bus = HdfWlanCreateBusManager(busConfig);
@@ -137,7 +136,7 @@ static int32_t HdfWlanGetConfig(const struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-#ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
+#ifndef CONFIG_AP6XXX_WIFI6_HDF
 static int32_t HdfWlanPowerOnProcess(struct PowerManager *powerMgr)
 {
     if (powerMgr == NULL) {
@@ -313,7 +312,7 @@ static int32_t HdfWlanInitInterfaces(struct HdfWlanDevice *device, struct HdfChi
     for (i = 0; i < maxIFCount; i++) {
         ret = HdfWlanInitInterface(device, chipDriverFact, i);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s:Init NetInterface failed!driverName=%s,portIndex=%d", __func__, device->driverName, i);
+            HDF_LOGE("%s:Init NetInterface failed!driverName=%s,portIndex=%hhu", __func__, device->driverName, i);
         }
     }
     HDF_LOGI("%s:%s init interfaces finished!", __func__, chipDriverFact->driverName);
@@ -339,21 +338,29 @@ static void ReleaseWlanDevice(struct HdfWlanDevice *device)
 
 static struct HdfWlanDevice *ProbeDevice(struct HdfConfigWlanDevInst *deviceConfig)
 {
+    if (deviceConfig == NULL) {
+        return NULL;
+    }
     struct HdfWlanDevice *device = NULL;
     int32_t ret;
-    if (deviceConfig == NULL) {
+    struct HdfConfigWlanChipList *tmpChipList = NULL;
+    struct HdfConfigWlanRoot *rootConfig = HdfWlanGetModuleConfigRoot();
+    if (rootConfig == NULL) {
+        HDF_LOGE("%s:ProbeDevice rootConfig NULL", __func__);
         return NULL;
     }
     device = (struct HdfWlanDevice *)OsalMemCalloc(sizeof(struct HdfWlanDevice));
     if (device == NULL) {
-        HDF_LOGE("%s:oom", __func__);
+        HDF_LOGE("%s:ProbeDevice device NULL", __func__);
         return NULL;
     }
+
+    tmpChipList = &rootConfig->wlanConfig.chipList;
     do {
         device->powers = HdfWlanCreatePowerManager(&deviceConfig->powers);
         device->reset = HdfWlanCreateResetManager(&deviceConfig->reset, deviceConfig->bootUpTimeOut);
 
-#ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
+#ifndef CONFIG_AP6XXX_WIFI6_HDF
         ret = HdfWlanPowerOnProcess(device->powers);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:HdfWlanPowerOnProcess failed!", __func__);
@@ -371,7 +378,7 @@ static struct HdfWlanDevice *ProbeDevice(struct HdfConfigWlanDevInst *deviceConf
         ret = HDF_SUCCESS;
         OsalMSleep(SLEEPTIME);
         device->bus = NULL;
-        device->driverName = "hisi";  // from BDH6_DRIVER_NAME
+        device->driverName = tmpChipList->chipInst[0].driverName;  // from BDH6_DRIVER_NAME
         HDF_LOGW("Do not call GPIO and HdfWlanBusInit");
 #endif
 
@@ -463,11 +470,7 @@ static int32_t HdfWlanInitThread(void *para)
         return HDF_SUCCESS;
     }
     for (i = 0; i < devList->deviceListSize; i++) {
-#ifndef CONFIG_DRIVERS_HDF_NETDEV_EXT
-        ret = HdfWlanConfigSDIO(devList->deviceInst[i].bus.busIdx);
-#else
-        ret = HDF_SUCCESS;
-#endif
+        ret = HdfWlanConfigBusAbs(devList->deviceInst[i].bus.busIdx);
         if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s:HdfWlanConfigSDIO %d failed!ret=%d", __func__, devList->deviceInst[i].bus.busIdx, ret);
             continue;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2022 Huawei Device Co., Ltd.
  *
  * HDF is dual licensed: you can use it either under the terms of
  * the GPL, or the BSD license, at your option.
@@ -79,6 +79,7 @@ enum WifiMainFeatureType {
 enum WifiBusType {
     BUS_SDIO,  /**< Secure Digital Input and Output (SDIO) */
     BUS_USB,   /**< Universal Serial Bus (USB) */
+    BUS_BUTT,
 };
 
 #ifdef __cplusplus

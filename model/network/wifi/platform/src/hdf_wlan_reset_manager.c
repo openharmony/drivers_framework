@@ -45,8 +45,8 @@ int32_t HdfChipReset(struct ResetManager *resetManager)
     }
     resetMgrImpl = (struct ResetManagerImpl*)resetManager;
     if (resetMgrImpl->resetData.resetCfg.resetType == RESET_ALWAYS_ON) {
-        HDF_LOGE("%s: the reset type is not managed", __func__);
-        return HDF_FAILURE;
+        HDF_LOGI("%s: the reset type is not managed", __func__);
+        return HDF_SUCCESS;
     }
     ret = GpioSetDir(resetMgrImpl->resetData.resetCfg.gpioId, GPIO_DIR_OUT);
     if (ret != HDF_SUCCESS) {

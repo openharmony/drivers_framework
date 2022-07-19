@@ -335,6 +335,7 @@ static int32_t WifiCmdGetDriverFlag(const RequestContext *context, struct HdfSBu
     ret = GetDriverFlag(netdev, &params);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("%s: fail to getdriverflag,%d", __func__, ret);
+        return HDF_FAILURE;
     }
 
     if (!HdfSbufWriteUint64(rspData, params->drvFlags)) {
