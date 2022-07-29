@@ -381,7 +381,7 @@ static int32_t PcmReadData(struct PlatformData *data, struct AudioRxData *rxData
     }
 
     // 3. Big Small Exchange
-    if (!data->capturePcmInfo.isBigEndian) {
+    if (data->capturePcmInfo.isBigEndian) {
         if (rxData->buf == NULL || AudioDataBigEndianChange(rxData->buf,
             data->captureBufInfo.curTrafSize, data->capturePcmInfo.bitWidth) != HDF_SUCCESS) {
             AUDIO_DRIVER_LOG_ERR("AudioDataBigEndianChange: failed.");
@@ -602,7 +602,7 @@ static int32_t MmapReadData(struct PlatformData *data, const struct AudioMmapDat
             data->captureBufInfo.curTrafSize = validDataSize;
         }
     }
-    if (!data->capturePcmInfo.isBigEndian) {
+    if (data->capturePcmInfo.isBigEndian) {
         if (AudioDataBigEndianChange((char *)(data->captureBufInfo.virtAddr) + rPtr,
             data->captureBufInfo.curTrafSize, data->capturePcmInfo.bitWidth) != HDF_SUCCESS) {
                 AUDIO_DRIVER_LOG_ERR("AudioDataBigEndianChange: failed.");
