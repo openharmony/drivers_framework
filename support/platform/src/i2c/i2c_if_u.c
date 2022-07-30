@@ -115,13 +115,24 @@ static int32_t I2cMsgWriteArray(DevHandle handle, struct HdfSBuf *data, struct I
         HDF_LOGE("I2cMsgWriteArray: write handle fail!");
         return HDF_ERR_IO;
     }
-
-    if (!HdfSbufWriteBuffer(data, (uint8_t *)msgs, sizeof(*msgs) * count)) {
-        HDF_LOGE("I2cMsgWriteArray: write msgs array fail!");
+    if (!HdfSbufWriteInt16(data, count)) {
+        HDF_LOGE("I2cMsgWriteArray: write count fail!");
         return HDF_ERR_IO;
     }
 
     for (i = 0; i < count; i++) {
+        if (!HdfSbufWriteUint16(data, msgs[i].addr)) {
+            HDF_LOGE("I2cMsgWriteArray: write addr fail!");
+            return HDF_ERR_IO;
+        }
+        if (!HdfSbufWriteUint16(data, msgs[i].flags)) {
+            HDF_LOGE("I2cMsgWriteArray: write flags fail!");
+            return HDF_ERR_IO;
+        }
+        if (!HdfSbufWriteUint16(data, msgs[i].len)) {
+            HDF_LOGE("I2cMsgWriteArray: write len fail!");
+            return HDF_ERR_IO;
+        }
         if ((msgs[i].flags & I2C_FLAG_READ) != 0) {
             continue;
         }
