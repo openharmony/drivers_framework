@@ -226,33 +226,50 @@ int32_t I2cCntlrTransfer(struct I2cCntlr *cntlr, struct I2cMsg *msgs, int16_t co
     return ret;
 }
 
-static int32_t I2cTransferRebuildMsgs(struct HdfSBuf *data, struct I2cMsg **ppmsgs, int16_t *pcount, uint8_t **ppbuf)
+static int32_t I2cTransferReadOneMsg(struct HdfSBuf *data, struct I2cMsg *msgs, int16_t i, uint32_t *lenReply)
 {
-    int16_t count, i;
     uint32_t len;
+    uint8_t *buf = NULL;
+
+    if (!HdfSbufReadUint16(data, &msgs[i].addr)) {
+        HDF_LOGE("I2cTransferReadOneMsg: read addr fail!");
+        return HDF_ERR_IO;
+    }
+    if (!HdfSbufReadUint16(data, &msgs[i].flags)) {
+        HDF_LOGE("I2cTransferReadOneMsg: read flags fail!");
+        return HDF_ERR_IO;
+    }
+    if (!HdfSbufReadUint16(data, &msgs[i].len)) {
+        HDF_LOGE("I2cTransferReadOneMsg: read len fail!");
+        return HDF_ERR_IO;
+    }
+    if ((msgs[i].flags & I2C_FLAG_READ) != 0) {
+        *lenReply += msgs[i].len;
+    } else if (!HdfSbufReadBuffer(data, (const void **)&buf, &len)) {
+        HDF_LOGE("I2cTransferReadOneMsg: read msg[%d] buf fail!", i);
+        return HDF_ERR_IO;
+    } else {
+        msgs[i].buf = buf;
+        msgs[i].len = len;
+    }
+    return HDF_SUCCESS;
+}
+
+static int32_t I2cTransferRebuildMsgs(struct HdfSBuf *data, struct I2cMsg *msgs, int16_t count, uint8_t **ppbuf)
+{
+    int16_t i;
+    int32_t ret;
     uint32_t lenReply = 0;
     uint8_t *buf = NULL;
     uint8_t *bufReply = NULL;
-    struct I2cMsg *msgs = NULL;
 
-    if (!HdfSbufReadBuffer(data, (const void **)&msgs, &len) || msgs == NULL) {
-        HDF_LOGE("I2cTransferRebuildMsgs: read msgs fail!");
-        return HDF_ERR_IO;
-    }
-
-    count = (int16_t)len / (int16_t)sizeof(*msgs);
-    PLAT_LOGV("I2cTransferRebuildMsgs: count:%u, len:%u, sizeof(*msgs):%u",
-        count, len, sizeof(*msgs));
     for (i = 0; i < count; i++) {
-        if ((msgs[i].flags & I2C_FLAG_READ) != 0) {
-            lenReply += msgs[i].len;
-        } else if (!HdfSbufReadBuffer(data, (const void **)&buf, &len)) {
-            HDF_LOGE("I2cTransferRebuildMsgs: read msg[%d] buf fail!", i);
-        } else {
-            msgs[i].buf = buf;
-            msgs[i].len = len;
+        ret = I2cTransferReadOneMsg(data, msgs, i, &lenReply);
+        if (ret != HDF_SUCCESS) {
+            return ret;
         }
     }
+    HDF_LOGV("I2cTransferRebuildMsgs: count:%hd, sizeof(*msgs):%u", count, sizeof(*msgs));
 
     if (lenReply > 0) {
         bufReply = OsalMemCalloc(lenReply);
@@ -267,8 +284,6 @@ static int32_t I2cTransferRebuildMsgs(struct HdfSBuf *data, struct I2cMsg **ppms
         }
     }
 
-    *ppmsgs = msgs;
-    *pcount = count;
     *ppbuf = bufReply;
     return HDF_SUCCESS;
 }
@@ -309,25 +324,34 @@ static int32_t I2cManagerIoTransfer(struct HdfSBuf *data, struct HdfSBuf *reply)
     }
     number = (int16_t)(handle - I2C_HANDLE_SHIFT);
 
-    ret = I2cTransferRebuildMsgs(data, &msgs, &count, &bufReply);
+    if (!HdfSbufReadInt16(data, &count)) {
+        HDF_LOGE("I2cManagerIoTransfer: read count fail!");
+        return HDF_ERR_IO;
+    }
+
+    msgs = OsalMemCalloc(sizeof(struct I2cMsg) * count);
+    if (msgs == NULL) {
+        HDF_LOGE("I2cManagerIoTransfer: malloc msgs fail");
+        return HDF_ERR_MALLOC_FAIL;
+    }
+
+    ret = I2cTransferRebuildMsgs(data, msgs, count, &bufReply);
     if (ret != HDF_SUCCESS) {
         HDF_LOGE("I2cManagerIoTransfer: rebuild msgs fail:%d", ret);
+        OsalMemFree(msgs);
         return ret;
     }
 
     ret = I2cCntlrTransfer(I2cManagerFindCntlr(number), msgs, count);
     if (ret != count) {
-        if (bufReply != NULL) {
-            OsalMemFree(bufReply);
-        }
+        OsalMemFree(msgs);
+        OsalMemFree(bufReply);
         return ret;
     }
-
     ret = I2cTransferWriteBackMsgs(reply, msgs, count);
+    OsalMemFree(msgs);
+    OsalMemFree(bufReply);
 
-    if (bufReply != NULL) {
-        OsalMemFree(bufReply);
-    }
     return ret;
 }
 
