@@ -105,6 +105,10 @@ static int DevmgrServiceLoadDevice(struct IDevmgrService *devMgrSvc, const char 
         return HDF_FAILURE;
     }
 
+    if (hostClnt->hostService == NULL) {
+        return HDF_FAILURE;
+    }
+
     return hostClnt->hostService->AddDevice(hostClnt->hostService, deviceInfo);
 }
 
