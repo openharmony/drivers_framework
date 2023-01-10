@@ -125,6 +125,11 @@ void ASTFdType::EmitCppReadVar(const String& parcelName, const String& name, Str
     } else {
         sb.Append(prefix).AppendFormat("%s = %s.ReadFileDescriptor();\n", name.string(), parcelName.string());
     }
+
+    sb.Append(prefix).AppendFormat("if (%s  < 0) {\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).AppendFormat("}\n");
 }
 
 void ASTFdType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
@@ -166,6 +171,11 @@ void ASTFdType::EmitCppUnMarshalling(const String& parcelName, const String& nam
     } else {
         sb.Append(prefix).AppendFormat("%s = %s.ReadFileDescriptor();\n", name.string(), parcelName.string());
     }
+
+    sb.Append(prefix).AppendFormat("if (%s  < 0) {\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).AppendFormat("}\n");
 }
 
 void ASTFdType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,

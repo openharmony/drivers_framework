@@ -110,11 +110,13 @@ void ASTFloatType::EmitCppReadVar(const String& parcelName, const String& name, 
     const String& prefix, bool initVariable, unsigned int innerLevel) const
 {
     if (initVariable) {
-        sb.Append(prefix).AppendFormat("%s %s = %s.ReadFloat();\n", EmitCppType().string(),
-            name.string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = %s.ReadFloat();\n", name.string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s = 0;\n", EmitCppType().string(), name.string());
     }
+    sb.Append(prefix).AppendFormat("if (!%s.ReadFloat(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTFloatType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
@@ -151,11 +153,13 @@ void ASTFloatType::EmitCppUnMarshalling(const String& parcelName, const String& 
     const String& prefix, bool emitType, unsigned int innerLevel) const
 {
     if (emitType) {
-        sb.Append(prefix).AppendFormat("%s %s = %s.ReadFloat();\n",
-            EmitCppType().string(), name.string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = %s.ReadFloat();\n", name.string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s = 0;\n", EmitCppType().string(), name.string());
     }
+    sb.Append(prefix).AppendFormat("if (!%s.ReadFloat(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab).Append("return false;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTFloatType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,

@@ -125,6 +125,9 @@ void ASTStringType::EmitCStubReadOutVar(const String& parcelName, const String& 
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n\n");
 
+    sb.Append(prefix).AppendFormat("%s(%s, >, %s / sizeof(char), %s, HDF_ERR_INVALID_PARAM, %s);\n",
+        CHECK_VALUE_RET_GOTO_MACRO, lenName.string(), MAX_BUFF_SIZE_MACRO, ecName.string(), gotoLabel.string());
+
     sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
     sb.Append(prefix + g_tab).AppendFormat("%s = (%s)OsalMemCalloc(%s);\n", name.string(), EmitCType().string(),
         lenName.string());
@@ -151,11 +154,13 @@ void ASTStringType::EmitCppReadVar(const String& parcelName, const String& name,
     const String& prefix, bool initVariable, unsigned int innerLevel) const
 {
     if (initVariable) {
-        sb.Append(prefix).AppendFormat("%s %s = %s.ReadString();\n",
-            EmitCppType().string(), name.string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = %s.ReadString();\n", name.string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s;\n", EmitCppType().string(), name.string());
     }
+
+    sb.Append(prefix).AppendFormat("if (!%s.ReadString(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTStringType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
@@ -193,12 +198,12 @@ void ASTStringType::EmitCppUnMarshalling(const String& parcelName, const String&
     const String& prefix, bool emitType, unsigned int innerLevel) const
 {
     if (emitType) {
-        sb.Append(prefix).AppendFormat("%s %s = %s.ReadString();\n",
-            EmitCppType().string(), name.string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = %s.ReadString();\n",
-            name.string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s;\n", EmitCppType().string(), name.string());
     }
+    sb.Append(prefix).AppendFormat("if (!%s.ReadString(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("return false;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTStringType::EmitMemoryRecycle(const String& name, bool isClient, bool ownership, StringBuilder& sb,

@@ -110,12 +110,12 @@ void ASTByteType::EmitCppReadVar(const String& parcelName, const String& name, S
     const String& prefix, bool initVariable, unsigned int innerLevel) const
 {
     if (initVariable) {
-        sb.Append(prefix).AppendFormat("%s %s = (%s)%s.ReadInt8();\n", EmitCppType().string(),
-            name.string(), EmitCppType().string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = (%s)%s.ReadInt8();\n", name.string(),
-            EmitCppType().string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s = 0;\n", EmitCppType().string(), name.string());
     }
+    sb.Append(prefix).AppendFormat("if (!%s.ReadInt8(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTByteType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
@@ -152,11 +152,12 @@ void ASTByteType::EmitCppUnMarshalling(const String& parcelName, const String& n
     const String& prefix, bool emitType, unsigned int innerLevel) const
 {
     if (emitType) {
-        sb.Append(prefix).AppendFormat("%s %s = (%s)%s.ReadInt8();\n",
-            EmitCppType().string(), name.string(), EmitCppType().string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = %s.ReadInt8();\n", name.string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s = 0;\n", EmitCppType().string(), name.string());
     }
+    sb.Append(prefix).AppendFormat("if (!%s.ReadInt8(%s)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab).Append("return false;\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTByteType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,

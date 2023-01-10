@@ -14,6 +14,7 @@
 #include "util/autoptr.h"
 #include "util/light_refcount_base.h"
 #include "util/string.h"
+#include "util/common.h"
 
 namespace OHOS {
 namespace HDI {
@@ -105,6 +106,8 @@ protected:
     // FileName -> file_name
     String FileName(const String& name);
 
+    void EmitInterfaceBuffSizeMacro(StringBuilder &sb);
+
     bool isKernelCode_ = false;
     AutoPtr<AST> ast_ = nullptr;
     AutoPtr<ASTInterfaceType> interface_ = nullptr;
@@ -121,6 +124,7 @@ protected:
     String implFullName_;
     String majorVerName_;
     String minorVerName_;
+    String bufferSizeMacroName_;
 
     String dataParcelName_;
     String replyParcelName_;

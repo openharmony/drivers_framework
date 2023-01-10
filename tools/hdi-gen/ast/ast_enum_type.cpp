@@ -164,7 +164,7 @@ String ASTEnumType::EmitJavaTypeDecl() const
 void ASTEnumType::EmitCWriteVar(const String& parcelName, const String& name, const String& ecName,
     const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUint32(%s, (uint32_t)%s)) {\n",
+    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUint64(%s, (uint64_t)%s)) {\n",
         parcelName.string(), name.string());
     sb.Append(prefix + g_tab).AppendFormat(
         "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
@@ -176,34 +176,50 @@ void ASTEnumType::EmitCWriteVar(const String& parcelName, const String& name, co
 void ASTEnumType::EmitCProxyReadVar(const String& parcelName, const String& name, bool isInnerType,
     const String& ecName, const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(%s, (uint32_t*)%s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
-    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    String tmpVarName = "enumTmp";
+    sb.Append(prefix).Append("{\n");
+    sb.Append(prefix + g_tab).AppendFormat("uint64_t %s = 0;\n", tmpVarName.string());
+    sb.Append(prefix + g_tab)
+        .AppendFormat("if (!HdfSbufReadUint64(%s, &%s)) {\n", parcelName.string(), tmpVarName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("}\n\n");
+    sb.Append(prefix + g_tab).AppendFormat("if (%s == NULL) {\n", name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: invlid parameter %s\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("}\n\n");
+    sb.Append(prefix + g_tab).AppendFormat("*%s = (%s)%s;\n", name.string(), EmitCType().string(),
+        tmpVarName.string());
     sb.Append(prefix).Append("}\n");
 }
 
 void ASTEnumType::EmitCStubReadVar(const String& parcelName, const String& name, const String& ecName,
     const String& gotoLabel, StringBuilder& sb, const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("if (!HdfSbufReadUint32(%s, (uint32_t*)%s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
-    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    String tmpVarName = "enumTmp";
+    sb.Append(prefix).Append("{\n");
+    sb.Append(prefix + g_tab).AppendFormat("uint64_t %s = 0;\n", tmpVarName.string());
+    sb.Append(prefix + g_tab)
+        .AppendFormat("if (!HdfSbufReadUint64(%s, &%s)) {\n", parcelName.string(), tmpVarName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("%s = HDF_ERR_INVALID_PARAM;\n", ecName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = (%s)%s;\n", name.string(), EmitCType().string(), tmpVarName.string());
     sb.Append(prefix).Append("}\n");
 }
 
 void ASTEnumType::EmitCppWriteVar(const String& parcelName, const String& name, StringBuilder& sb,
     const String& prefix, unsigned int innerLevel) const
 {
-    sb.Append(prefix).AppendFormat("if (!%s.WriteUint32((uint32_t)%s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix).AppendFormat("if (!%s.WriteUint64(static_cast<uint64_t>(%s))) {\n", parcelName.string(),
+        name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
     sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
     sb.Append(prefix).Append("}\n");
 }
@@ -211,20 +227,27 @@ void ASTEnumType::EmitCppWriteVar(const String& parcelName, const String& name, 
 void ASTEnumType::EmitCppReadVar(const String& parcelName, const String& name, StringBuilder& sb,
     const String& prefix, bool initVariable, unsigned int innerLevel) const
 {
+    String tmpVarName = "enumTmp";
     if (initVariable) {
-        sb.Append(prefix).AppendFormat("%s %s = (%s)%s.ReadUint32();\n",
-            EmitCppType().string(), name.string(), EmitCppType().string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = (%s)%s.ReadUint32();\n",
-            name.string(), EmitCppType().string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s = static_cast<%s>(0);\n", EmitCppType().string(), name.string(),
+            EmitCType().string());
     }
+    sb.Append(prefix).Append("{\n");
+    sb.Append(prefix + g_tab).AppendFormat("uint64_t %s = 0;\n", tmpVarName.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (!%s.ReadUint64(%s)) {\n", parcelName.string(), tmpVarName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = static_cast<%s>(%s);\n", name.string(), EmitCType().string(),
+        tmpVarName.string());
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTEnumType::EmitCMarshalling(const String& name, StringBuilder& sb, const String& prefix) const
 {
-    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteInt32(data, (int32_t)%s)) {\n", name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix).AppendFormat("if (!HdfSbufWriteUint64(data, (uint64_t)%s)) {\n", name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
     sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
@@ -232,20 +255,24 @@ void ASTEnumType::EmitCMarshalling(const String& name, StringBuilder& sb, const 
 void ASTEnumType::EmitCUnMarshalling(const String& name, const String& gotoLabel, StringBuilder& sb,
     const String& prefix, std::vector<String>& freeObjStatements) const
 {
-    sb.Append(prefix).AppendFormat("if (!HdfSbufReadInt32(data, (int32_t*)&%s)) {\n", name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
-    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    String tmpVarName = "enumTmp";
+    sb.Append(prefix).Append("{\n");
+    sb.Append(prefix + g_tab).AppendFormat("uint64_t %s = 0;\n", tmpVarName.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (!HdfSbufReadUint64(data, &%s)) {\n", tmpVarName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = (%s)%s;\n", name.string(), EmitCType().string(), tmpVarName.string());
     sb.Append(prefix).Append("}\n");
 }
 
 void ASTEnumType::EmitCppMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
     const String& prefix, unsigned int innerLevel) const
 {
-    sb.Append(prefix).AppendFormat("if (!%s.WriteUint32((uint32_t)%s)) {\n",
-        parcelName.string(), name.string());
-    sb.Append(prefix + g_tab).AppendFormat(
-        "HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix).AppendFormat(
+        "if (!%s.WriteUint64(static_cast<uint64_t>(%s))) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n", name.string());
     sb.Append(prefix + g_tab).Append("return false;\n");
     sb.Append(prefix).Append("}\n");
 }
@@ -253,13 +280,21 @@ void ASTEnumType::EmitCppMarshalling(const String& parcelName, const String& nam
 void ASTEnumType::EmitCppUnMarshalling(const String& parcelName, const String& name, StringBuilder& sb,
     const String& prefix, bool emitType, unsigned int innerLevel) const
 {
+    String tmpVarName = "enumTmp";
     if (emitType) {
-        sb.Append(prefix).AppendFormat("%s %s = (%s)%s.ReadUint32();\n",
-            EmitCppType().string(), name.string(), EmitCppType().string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = (%s)%s.ReadUint32();\n",
-            name.string(), EmitCppType().string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("%s %s = static_cast<%s>(0);\n", EmitCppType().string(), name.string(),
+            EmitCType().string());
     }
+    sb.Append(prefix).Append("{\n");
+    sb.Append(prefix + g_tab).AppendFormat("uint64_t %s = 0;\n", tmpVarName.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (!%s.ReadUint64(%s)) {\n", parcelName.string(), tmpVarName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: write %s failed!\", __func__);\n",
+        name.string());
+    sb.Append(prefix + g_tab + g_tab).Append("return false;\n");
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = static_cast<%s>(%s);\n", name.string(), EmitCType().string(),
+        tmpVarName.string());
+    sb.Append(prefix).Append("}\n");
 }
 } // namespace HDI
 } // namespace OHOS

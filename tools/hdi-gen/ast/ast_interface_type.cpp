@@ -193,12 +193,26 @@ void ASTInterfaceType::EmitCppReadVar(const String& parcelName, const String& na
     const String& prefix, bool initVariable, unsigned int innerLevel) const
 {
     if (initVariable) {
-        sb.Append(prefix).AppendFormat("sptr<%s> %s = iface_cast<%s>(%s.ReadRemoteObject());\n",
-            name_.string(), name.string(), name_.string(), parcelName.string());
-    } else {
-        sb.Append(prefix).AppendFormat("%s = iface_cast<%s>(%s.ReadRemoteObject());\n",
-            name.string(), name_.string(), parcelName.string());
+        sb.Append(prefix).AppendFormat("sptr<%s> %s;\n", name_.string(), name.string());
     }
+
+    String remoteName = "remote";
+    sb.Append(prefix).Append("{\n");
+    sb.Append(prefix + g_tab).AppendFormat("sptr<IRemoteObject> %s = %s.ReadRemoteObject();\n", remoteName.string(),
+        parcelName.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (%s == nullptr) {\n", remoteName.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", remoteName.string());
+    sb.Append(prefix + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("}\n\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = iface_cast<%s>(%s);\n", name.string(), name_.string(),
+        remoteName.string());
+    sb.Append(prefix + g_tab).AppendFormat("if (%s == nullptr) {\n", name.string());
+    sb.Append(prefix + g_tab + g_tab).AppendFormat(
+        "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", name.string());
+    sb.Append(prefix + g_tab + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix + g_tab).Append("}\n");
+    sb.Append(prefix).Append("}\n");
 }
 
 void ASTInterfaceType::EmitJavaWriteVar(const String& parcelName, const String& name, StringBuilder& sb,

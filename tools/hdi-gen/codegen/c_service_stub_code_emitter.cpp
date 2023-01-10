@@ -252,7 +252,7 @@ void CServiceStubCodeEmitter::EmitReadStubMethodParameter(const AutoPtr<ASTParam
     } else if (type->GetTypeKind() == TypeKind::TYPE_INTERFACE) {
         type->EmitCStubReadVar(parcelName, param->GetName(), errorCodeName_, gotoLabel, sb, prefix);
     } else if (type->GetTypeKind() == TypeKind::TYPE_STRUCT) {
-        sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemAlloc(sizeof(%s));\n", param->GetName().string(),
+        sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s));\n", param->GetName().string(),
             type->EmitCType(TypeMode::NO_MODE).string(), type->EmitCType(TypeMode::NO_MODE).string());
         sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", param->GetName().string());
         sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: malloc %s failed\", __func__);\n",
@@ -264,7 +264,7 @@ void CServiceStubCodeEmitter::EmitReadStubMethodParameter(const AutoPtr<ASTParam
     } else if (type->GetTypeKind() == TypeKind::TYPE_UNION) {
         String cpName = String::Format("%sCp", param->GetName().string());
         type->EmitCStubReadVar(parcelName, cpName, errorCodeName_, gotoLabel, sb, prefix);
-        sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemAlloc(sizeof(%s));\n", param->GetName().string(),
+        sb.Append(prefix).AppendFormat("%s = (%s*)OsalMemCalloc(sizeof(%s));\n", param->GetName().string(),
             type->EmitCType(TypeMode::NO_MODE).string(), type->EmitCType(TypeMode::NO_MODE).string());
         sb.Append(prefix).AppendFormat("if (%s == NULL) {\n", param->GetName().string());
         sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: malloc %s failed\", __func__);\n",
@@ -315,6 +315,19 @@ void CServiceStubCodeEmitter::EmitReadCStringStubMethodParameter(const AutoPtr<A
 void CServiceStubCodeEmitter::EmitStubCallMethod(const AutoPtr<ASTMethod>& method, const String& gotoLabel,
     StringBuilder& sb, const String& prefix)
 {
+    sb.Append(prefix).Append("if (serviceImpl == NULL) {\n");
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: invalid serviceImpl object\", __func__);\n");
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_INVALID_OBJECT;\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n\n");
+
+    sb.Append(prefix).AppendFormat("if (serviceImpl->%s == NULL) {\n", method->GetName().string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: invalid interface function %s \", __func__);\n",
+        method->GetName().string());
+    sb.Append(prefix + g_tab).AppendFormat("%s = HDF_ERR_NOT_SUPPORT;\n", errorCodeName_.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n\n");
+
     if (method->GetParameterNumber() == 0) {
         sb.Append(prefix).AppendFormat("%s = serviceImpl->%s(serviceImpl);\n", errorCodeName_.string(),
             method->GetName().string());
