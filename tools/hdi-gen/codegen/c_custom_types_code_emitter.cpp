@@ -45,6 +45,8 @@ void CCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
     sb.Append("\n");
     EmitHeaderInclusions(sb);
     sb.Append("\n");
+    EmitInterfaceBuffSizeMacro(sb);
+    sb.Append("\n");
     EmitHeadExternC(sb);
     sb.Append("\n");
     EmitCustomTypeDecls(sb);

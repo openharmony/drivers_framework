@@ -47,6 +47,8 @@ void CppInterfaceCodeEmitter::EmitInterfaceHeaderFile()
     sb.Append("\n");
     EmitInterfaceVersionMacro(sb);
     sb.Append("\n");
+    EmitInterfaceBuffSizeMacro(sb);
+    sb.Append("\n");
     EmitBeginNamespace(sb);
     EmitUsingNamespace(sb);
     sb.Append("\n");

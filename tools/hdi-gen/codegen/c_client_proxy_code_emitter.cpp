@@ -508,7 +508,7 @@ void CClientProxyCodeEmitter::EmitProxySetInterfaceDesc(const String& remoteName
 void CClientProxyCodeEmitter::EmitProxyCreateProxyObject(const String& clientObjName, const String& remoteName,
     const String& recycleFuncName, StringBuilder& sb, const String& prefix)
 {
-    sb.Append(prefix).AppendFormat("struct %sProxy *proxy = (struct %sProxy *)OsalMemAlloc(sizeof(struct %sProxy));\n",
+    sb.Append(prefix).AppendFormat("struct %sProxy *proxy = (struct %sProxy *)OsalMemCalloc(sizeof(struct %sProxy));\n",
         baseName_.string(), baseName_.string(), baseName_.string());
     sb.Append(prefix).Append("if (proxy == NULL) {\n");
     sb.Append(prefix + g_tab).AppendFormat(

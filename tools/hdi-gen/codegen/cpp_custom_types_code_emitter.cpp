@@ -45,6 +45,8 @@ void CppCustomTypesCodeEmitter::EmitCustomTypesHeaderFile()
     sb.Append("\n");
     EmitHeaderFileInclusions(sb);
     sb.Append("\n");
+    EmitInterfaceBuffSizeMacro(sb);
+    sb.Append("\n");
     EmitBeginNamespace(sb);
     sb.Append("\n");
     EmitUsingNamespace(sb);
@@ -241,12 +243,7 @@ void CppCustomTypesCodeEmitter::EmitCustomTypeUnmarshallingImpl(StringBuilder& s
         AutoPtr<ASTType> memberType = type->GetMemberType(i);
         String memberName = type->GetMemberName(i);
         String name = String::Format("%s.%s", objName.string(), memberName.string());
-
-        if (i > 0 &&
-            (memberType->GetTypeKind() == TypeKind::TYPE_STRUCT
-            || memberType->GetTypeKind() == TypeKind::TYPE_UNION
-            || memberType->GetTypeKind() == TypeKind::TYPE_ARRAY
-            || memberType->GetTypeKind() == TypeKind::TYPE_LIST)) {
+        if (i > 0) {
             sb.Append("\n");
         }
 

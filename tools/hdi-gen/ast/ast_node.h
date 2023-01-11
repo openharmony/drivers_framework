@@ -11,6 +11,7 @@
 
 #include "util/light_refcount_base.h"
 #include "util/string.h"
+#include "util/common.h"
 
 namespace OHOS {
 namespace HDI {

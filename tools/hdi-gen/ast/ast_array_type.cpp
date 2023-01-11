@@ -206,6 +206,10 @@ void ASTArrayType::EmitCStubReadOutVar(const String& parcelName, const String& n
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n\n");
 
+    sb.Append(prefix).AppendFormat("%s(%s, >, %s / sizeof(%s), %s, HDF_ERR_INVALID_PARAM, %s);\n",
+        CHECK_VALUE_RET_GOTO_MACRO, lenName.string(), MAX_BUFF_SIZE_MACRO, elementType_->EmitCType().string(),
+        ecName.string(), gotoLabel.string());
+
     sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
     EmitCMallocVar(name, lenName, false, ecName, gotoLabel, sb, prefix + g_tab);
     sb.Append(prefix).Append("}\n");
@@ -233,7 +237,15 @@ void ASTArrayType::EmitCppReadVar(const String& parcelName, const String& name, 
     if (initVariable) {
         sb.Append(prefix).AppendFormat("%s %s;\n", EmitCppType().string(), name.string());
     }
-    sb.Append(prefix).AppendFormat("uint32_t %sSize = %s.ReadUint32();\n", name.string(), parcelName.string());
+
+    sb.Append(prefix).AppendFormat("uint32_t %sSize = 0;\n", name.string());
+    sb.Append(prefix).AppendFormat("if (!%s.ReadUint32(%sSize)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: failed to read size\", __func__);\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).Append("}\n\n");
+
+    sb.Append(prefix).AppendFormat("%s(%sSize, >, %s / sizeof(%s), HDF_ERR_INVALID_PARAM);\n",
+        CHECK_VALUE_RETURN_MACRO, name.string(), MAX_BUFF_SIZE_MACRO, elementType_->EmitCppType().string());
     sb.Append(prefix).AppendFormat("for (uint32_t i%d = 0; i%d < %sSize; ++i%d) {\n",
         innerLevel, innerLevel, name.string(), innerLevel);
 
@@ -271,6 +283,14 @@ void ASTArrayType::EmitCUnMarshalling(const String& name, const String& gotoLabe
         "HDF_LOGE(\"%%{public}s: read %s failed!\", __func__);\n", lenName.string());
     sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
     sb.Append(prefix).Append("}\n");
+
+    sb.Append(prefix).AppendFormat("if (%s > %s / sizeof(%s)) {\n", lenName.string(), MAX_BUFF_SIZE_MACRO,
+        elementType_->EmitCType().string());
+    sb.Append(prefix + g_tab).AppendFormat("HDF_LOGE(\"%%{public}s: %s is invalid data\", __func__);\n",
+        lenName.string());
+    sb.Append(prefix + g_tab).AppendFormat("goto %s;\n", gotoLabel.string());
+    sb.Append(prefix).Append("}\n");
+
     sb.Append(prefix).AppendFormat("if (%s > 0) {\n", lenName.string());
     String newPrefix = prefix + g_tab;
 
@@ -352,13 +372,21 @@ void ASTArrayType::EmitCppUnMarshalling(const String& parcelName, const String& 
 {
     int index = name.IndexOf('.', 0);
     String memberName = name.Substring(index + 1);
+    String sizeName = String::Format("%sSize", memberName.string());
     if (emitType) {
         sb.Append(prefix).AppendFormat("%s %s;\n", EmitCppType().string(), memberName.string());
     }
-    sb.Append(prefix).AppendFormat("uint32_t %sSize = %s.ReadUint32();\n",
-        memberName.string(), parcelName.string());
-    sb.Append(prefix).AppendFormat("for (uint32_t i%d = 0; i%d < %sSize; ++i%d) {\n",
-        innerLevel, innerLevel, memberName.string(), innerLevel);
+
+    sb.Append(prefix).AppendFormat("uint32_t %s = 0;\n", sizeName.string());
+    sb.Append(prefix).AppendFormat("if (!%s.ReadUint32(%s)) {\n", parcelName.string(), sizeName.string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: failed to read size\", __func__);\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
+    sb.Append(prefix).Append("}\n\n");
+
+    sb.Append(prefix).AppendFormat("%s(%s, >, %s / sizeof(%s), false);\n",
+        CHECK_VALUE_RETURN_MACRO, sizeName.string(), MAX_BUFF_SIZE_MACRO, elementType_->EmitCppType().string());
+    sb.Append(prefix).AppendFormat("for (uint32_t i%d = 0; i%d < %s; ++i%d) {\n",
+        innerLevel, innerLevel, sizeName.string(), innerLevel);
 
     String valueName = String::Format("value%d", innerLevel++);
     if (elementType_->GetTypeKind() == TypeKind::TYPE_STRUCT) {
