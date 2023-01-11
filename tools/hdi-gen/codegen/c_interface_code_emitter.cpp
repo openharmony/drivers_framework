@@ -53,6 +53,8 @@ void CInterfaceCodeEmitter::EmitInterfaceHeaderFile()
     sb.Append("\n");
     EmitInterfaceVersionMacro(sb);
     sb.Append("\n");
+    EmitInterfaceBuffSizeMacro(sb);
+    sb.Append("\n");
     EmitInterfaceMethodCommands(sb, "");
     sb.Append("\n");
     EmitInterfaceDefinition(sb);

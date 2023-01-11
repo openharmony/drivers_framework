@@ -81,9 +81,13 @@ void ASTMapType::EmitCppReadVar(const String& parcelName, const String& name, St
     if (initVariable) {
         sb.Append(prefix).AppendFormat("%s %s;\n", EmitCppType().string(), name.string());
     }
-    sb.Append(prefix).AppendFormat("uint32_t %sSize = %s.ReadUint32();\n", name.string(), parcelName.string());
-    sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %sSize; ++i) {\n", name.string());
+    sb.Append(prefix).AppendFormat("uint32_t %sSize = 0;\n", name.string());
+    sb.Append(prefix).AppendFormat("if (!%s.ReadUint32(%sSize)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: failed to read size\", __func__);\n");
+    sb.Append(prefix + g_tab).Append("return HDF_ERR_INVALID_PARAM;\n");
+    sb.Append(prefix).Append("}\n\n");
 
+    sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %sSize; ++i) {\n", name.string());
     String KeyName = String::Format("key%d", innerLevel);
     String valueName = String::Format("value%d", innerLevel);
     innerLevel++;
@@ -117,7 +121,12 @@ void ASTMapType::EmitCppUnMarshalling(const String& parcelName, const String& na
     if (emitType) {
         sb.Append(prefix).AppendFormat("%s %s;\n", EmitCppType().string(), name.string());
     }
-    sb.Append(prefix).AppendFormat("uint32_t %sSize = %s.ReadUint32();\n", name.string(), parcelName.string());
+    sb.Append(prefix).AppendFormat("uint32_t %sSize = 0;\n", name.string());
+    sb.Append(prefix).AppendFormat("if (!%s.ReadUint32(%sSize)) {\n", parcelName.string(), name.string());
+    sb.Append(prefix + g_tab).Append("HDF_LOGE(\"%{public}s: failed to read size\", __func__);\n");
+    sb.Append(prefix + g_tab).Append("return false;\n");
+    sb.Append(prefix).Append("}\n\n");
+
     sb.Append(prefix).AppendFormat("for (uint32_t i = 0; i < %sSize; ++i) {\n", name.string());
 
     String KeyName = String::Format("key%d", innerLevel);

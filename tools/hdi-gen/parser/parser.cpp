@@ -525,6 +525,11 @@ bool Parser::ParseInterfaceBody(const AutoPtr<ASTInterfaceType>& interface)
     }
     lexer_->GetToken();
 
+    token = lexer_->PeekToken();
+    if (token == Token::SEMICOLON) {
+        lexer_->GetToken();
+    }
+
     if (ast_->GetInterfaceDef() != nullptr) {
         LogError(String::Format("an interface class already exists int idl file."));
         lexer_->SkipEof();

@@ -137,11 +137,11 @@ void CppServiceDriverCodeEmitter::EmitDriverBind(StringBuilder& sb)
     sb.Append("{\n");
     sb.Append(g_tab).AppendFormat("HDF_LOGI(\"Hdf%sDriverBind enter\");\n\n", baseName_.string());
 
-    sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = (struct Hdf%sHost *)OsalMemAlloc(\n",
+    sb.Append(g_tab).AppendFormat("struct Hdf%sHost *%s = (struct Hdf%sHost *)OsalMemCalloc(\n",
         baseName_.string(), objName.string(), baseName_.string());
     sb.Append(g_tab).Append(g_tab).AppendFormat("sizeof(struct Hdf%sHost));\n", baseName_.string());
     sb.Append(g_tab).AppendFormat("if (%s == nullptr) {\n", objName.string());
-    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"Hdf%sDriverBind OsalMemAlloc Hdf%sHost failed!\");\n",
+    sb.Append(g_tab).Append(g_tab).AppendFormat("HDF_LOGE(\"Hdf%sDriverBind OsalMemCalloc Hdf%sHost failed!\");\n",
         baseName_.string(), baseName_.string());
     sb.Append(g_tab).Append(g_tab).Append("return HDF_FAILURE;\n");
     sb.Append(g_tab).Append("}\n\n");
